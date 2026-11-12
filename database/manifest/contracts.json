@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "943fbc6b01fb37538d20b69cc0aed43355a6962647208358d94d716bed2d2d48",
+      "fingerprint": "86ae937c63f1837a292341548850fd56e4dba19b72202a3eb084fad9502982fc",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1505,6 +1505,7 @@
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
         "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest",
         "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
         "Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto",
@@ -3853,7 +3854,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "d06023d3584c297d180c7a3ff0251e20bdd5b360c02012ec834c5b0f527b94a7",
+      "fingerprint": "8ed912f759c13e51ad7cb4b38ab790407a8b9d36b327b6ea58e244e66f860984",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -4173,6 +4174,7 @@
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
         "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest",
         "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
         "Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto",
@@ -4814,7 +4816,7 @@
       ]
     }
   ],
-  "fingerprint": "092349dcdb4116b1798b4b63902c993b33b47127592239430d049c7b17226979",
+  "fingerprint": "123d29dc198b414d74bb1d237ef61c67706815a3e765bf9a4a3b142a603ac3aa",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6449,7 +6451,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "2186d10fa255443302f349d0a6523357340ec3f79401d07d58117512ff9d0838",
+      "fingerprint": "d0f6b00421a9a133fe71c23281c51ffce213e75d0f0ecc1c05508d08fad2b683",
       "mapped_schemas": [
         "ledger"
       ],
@@ -6702,6 +6704,7 @@
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
         "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest",
         "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
         "Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto",
@@ -7035,7 +7038,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "d38904afb0a97382744e5eac3bc422448bfc6374a785fe86823fcd66889f0b83",
+      "fingerprint": "b43a5c899b24d9e63f1378b3d939e9bdda21ce4ef027f51ecc0ee101bff873ca",
       "mapped_schemas": [
         "security_master"
       ],
@@ -171829,7 +171832,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cfde8f563b45c41417f6e444c78730872c84bb656a9ac9ab517855ee52cf5ccc",
+      "fingerprint": "c8a18a86d2b4b1555a34b3e96795d1f9751c0a830453083308a00dd8b438efe2",
       "full_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto",
       "id": "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto",
       "kind": "record",
@@ -171848,7 +171851,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountingBasisKindDto",
-          "source_line": 1058,
+          "source_line": 1066,
           "type": "AccountingBasisKindDto"
         },
         {
@@ -171862,7 +171865,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "PostingRuleJournalCandidateResultDto",
-          "source_line": 1061,
+          "source_line": 1069,
           "type": "PostingRuleJournalCandidateResultDto"
         },
         {
@@ -171877,7 +171880,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1063,
+          "source_line": 1071,
           "type": "string?"
         },
         {
@@ -171891,7 +171894,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1059,
+          "source_line": 1067,
           "type": "Guid"
         },
         {
@@ -171905,7 +171908,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1060,
+          "source_line": 1068,
           "type": "Guid"
         },
         {
@@ -171919,7 +171922,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1062,
+          "source_line": 1070,
           "type": "string"
         }
       ],
@@ -171930,159 +171933,6 @@
       "references": [
         "Meridian.Contracts.Ledger.AccountingBasisKindDto",
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
-      ],
-      "source": {
-        "line": 1057,
-        "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
-      },
-      "sources": [
-        {
-          "line": 1057,
-          "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts",
-        "ledger-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "ledger-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "c5e44a7f43ee4cddd0e5b9c72ff0bb2d05edf041064675745b155d05570a6b11",
-      "full_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
-      "id": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "ledger"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Currency",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 1071,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EffectiveDate",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateOnly",
-          "source_line": 1069,
-          "type": "DateOnly"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EventAmount",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 1070,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundProfileId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 1067,
-          "type": "string"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "AccountingBasisProjectionItemDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Items",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<AccountingBasisProjectionItemDto>",
-          "source_line": 1075,
-          "type": "IReadOnlyList<AccountingBasisProjectionItemDto>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ProjectedAtUtc",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset",
-          "source_line": 1072,
-          "type": "DateTimeOffset"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceEventId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 1066,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceEventType",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 1068,
-          "type": "string"
-        }
-      ],
-      "name": "AccountingBasisProjectionSetDto",
-      "namespace": "Meridian.Contracts.Ledger",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
-      "references": [
-        "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto"
       ],
       "source": {
         "line": 1065,
@@ -172109,9 +171959,9 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a73719561dc32af62ad4bfd547bfbb369a1f34f6e50539bf55abd64bfbb406a9",
-      "full_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto",
-      "id": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto",
+      "fingerprint": "6d08c00636e8b74198816bcd351ae51f560e6a515d5bdf09f8941f055b8c1a68",
+      "full_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
+      "id": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
       "kind": "record",
       "mapped_schemas": [
         "ledger"
@@ -172124,98 +171974,11 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "AccountingTimestamp",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset",
-          "source_line": 1039,
-          "type": "DateTimeOffset"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Actor",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 1037,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CompanyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 1048,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CorrelationId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 1042,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CounterpartyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 1043,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
           "name": "Currency",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1035,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Description",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 1040,
+          "source_line": 1079,
           "type": "string"
         },
         {
@@ -172229,7 +171992,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 1036,
+          "source_line": 1077,
           "type": "DateOnly"
         },
         {
@@ -172243,22 +172006,8 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 1034,
+          "source_line": 1078,
           "type": "decimal"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceLinks",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 1053,
-          "type": "IReadOnlyList<string>"
         },
         {
           "collection": false,
@@ -172271,23 +172020,36 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1032,
+          "source_line": 1075,
           "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AccountingBasisProjectionItemDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Items",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<AccountingBasisProjectionItemDto>",
+          "source_line": 1083,
+          "type": "IReadOnlyList<AccountingBasisProjectionItemDto>"
         },
         {
           "collection": false,
           "collection_kind": null,
-          "default": "null",
           "element_type": null,
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
-          "name": "InstrumentSymbol",
-          "nullable": true,
+          "name": "ProjectedAtUtc",
+          "nullable": false,
           "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 1044,
-          "type": "string?"
+          "raw_type": "DateTimeOffset",
+          "source_line": 1080,
+          "type": "DateTimeOffset"
         },
         {
           "collection": false,
@@ -172300,7 +172062,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1038,
+          "source_line": 1074,
           "type": "Guid"
         },
         {
@@ -172314,69 +172076,24 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1033,
+          "source_line": 1076,
           "type": "string"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "AccountingBasisProjectionTargetDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Targets",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<AccountingBasisProjectionTargetDto>",
-          "source_line": 1050,
-          "type": "IReadOnlyList<AccountingBasisProjectionTargetDto>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TenantId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 1047,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TreasuryContext",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "TreasuryLedgerContextDto?",
-          "source_line": 1045,
-          "type": "TreasuryLedgerContextDto?"
         }
       ],
-      "name": "AccountingBasisProjectionSetRequestDto",
+      "name": "AccountingBasisProjectionSetDto",
       "namespace": "Meridian.Contracts.Ledger",
       "partial": false,
-      "qualified_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto",
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
       "references": [
-        "Meridian.Contracts.Ledger.AccountingBasisProjectionTargetDto",
-        "Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
+        "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto"
       ],
       "source": {
-        "line": 1031,
+        "line": 1073,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1031,
+          "line": 1073,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -172395,7 +172112,293 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1bd580f7cd78340fe4e42e00c27171b63c22c68d7e5204f09064ae4140548b73",
+      "fingerprint": "7bddf781b0ef1a682e3d15ba133aa3f6bbb7dbe08ec2187950f21a47d2a777b0",
+      "full_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto",
+      "id": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingTimestamp",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 1047,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Actor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 1045,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CompanyId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 1056,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrelationId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 1050,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CounterpartyId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 1051,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 1043,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Description",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 1048,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 1044,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EventAmount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 1042,
+          "type": "decimal"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceLinks",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 1061,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 1040,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "InstrumentSymbol",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 1052,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEventId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 1046,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEventType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 1041,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AccountingBasisProjectionTargetDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Targets",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<AccountingBasisProjectionTargetDto>",
+          "source_line": 1058,
+          "type": "IReadOnlyList<AccountingBasisProjectionTargetDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TenantId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 1055,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TreasuryContext",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "TreasuryLedgerContextDto?",
+          "source_line": 1053,
+          "type": "TreasuryLedgerContextDto?"
+        }
+      ],
+      "name": "AccountingBasisProjectionSetRequestDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingBasisProjectionTargetDto",
+        "Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
+      ],
+      "source": {
+        "line": 1039,
+        "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 1039,
+          "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "5b50cdce7b28cc1d420c2da49bc43d3c4c5bdbfa11a651a4a519b812e7d5745c",
       "full_name": "Meridian.Contracts.Ledger.AccountingBasisProjectionTargetDto",
       "id": "Meridian.Contracts.Ledger.AccountingBasisProjectionTargetDto",
       "kind": "record",
@@ -172414,7 +172417,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountingBasisKindDto",
-          "source_line": 1024,
+          "source_line": 1032,
           "type": "AccountingBasisKindDto"
         },
         {
@@ -172429,7 +172432,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "LedgerDimensionSetDto?",
-          "source_line": 1029,
+          "source_line": 1037,
           "type": "LedgerDimensionSetDto?"
         },
         {
@@ -172443,7 +172446,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1025,
+          "source_line": 1033,
           "type": "Guid"
         },
         {
@@ -172457,7 +172460,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1026,
+          "source_line": 1034,
           "type": "Guid"
         },
         {
@@ -172472,7 +172475,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1027,
+          "source_line": 1035,
           "type": "string?"
         },
         {
@@ -172487,7 +172490,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "AccountingTreatmentKindDto?",
-          "source_line": 1028,
+          "source_line": 1036,
           "type": "AccountingTreatmentKindDto?"
         }
       ],
@@ -172501,12 +172504,12 @@
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto"
       ],
       "source": {
-        "line": 1023,
+        "line": 1031,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1023,
+          "line": 1031,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -176769,7 +176772,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cae73e38b68696d177b495ea92710b0d1cd728a2c7423cd733263f71e7aea2f3",
+      "fingerprint": "523d97ad0aa3986edb1a70054a07e4a3c38aa47e1c44bbb71895c351257d31a6",
       "full_name": "Meridian.Contracts.Ledger.AccountingRuleDryRunMatchDto",
       "id": "Meridian.Contracts.Ledger.AccountingRuleDryRunMatchDto",
       "kind": "record",
@@ -176788,7 +176791,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 861,
+          "source_line": 869,
           "type": "string"
         },
         {
@@ -176802,7 +176805,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 865,
+          "source_line": 873,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -176816,7 +176819,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 864,
+          "source_line": 872,
           "type": "bool"
         },
         {
@@ -176830,7 +176833,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 863,
+          "source_line": 871,
           "type": "int"
         },
         {
@@ -176844,7 +176847,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 860,
+          "source_line": 868,
           "type": "string"
         },
         {
@@ -176858,7 +176861,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 862,
+          "source_line": 870,
           "type": "string"
         },
         {
@@ -176872,7 +176875,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountingConfigurationValidationIssueDto>",
-          "source_line": 866,
+          "source_line": 874,
           "type": "IReadOnlyList<AccountingConfigurationValidationIssueDto>"
         }
       ],
@@ -176884,12 +176887,12 @@
         "Meridian.Contracts.Ledger.AccountingConfigurationValidationIssueDto"
       ],
       "source": {
-        "line": 859,
+        "line": 867,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 859,
+          "line": 867,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -178237,7 +178240,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8b63043972aca3118afe2d22d2a594d37acf0768eaf1a64bcbf8f968cb11b21b",
+      "fingerprint": "a8f13046d4bc4b26eb2406ac351e32a094695a2d6635b6745c16b9109843fa17",
       "full_name": "Meridian.Contracts.Ledger.AccountingRuleTestCaseDto",
       "id": "Meridian.Contracts.Ledger.AccountingRuleTestCaseDto",
       "kind": "record",
@@ -178256,7 +178259,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1081,
+          "source_line": 1089,
           "type": "string"
         },
         {
@@ -178270,7 +178273,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1096,
+          "source_line": 1104,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -178285,7 +178288,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1085,
+          "source_line": 1093,
           "type": "bool"
         },
         {
@@ -178299,7 +178302,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<GeneratedPostingLineDto>",
-          "source_line": 1093,
+          "source_line": 1101,
           "type": "IReadOnlyList<GeneratedPostingLineDto>"
         },
         {
@@ -178313,7 +178316,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1090,
+          "source_line": 1098,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -178328,7 +178331,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1083,
+          "source_line": 1091,
           "type": "string?"
         },
         {
@@ -178343,7 +178346,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1084,
+          "source_line": 1092,
           "type": "string?"
         },
         {
@@ -178357,7 +178360,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RuleDryRunRequestDto",
-          "source_line": 1082,
+          "source_line": 1090,
           "type": "RuleDryRunRequestDto"
         },
         {
@@ -178371,7 +178374,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1080,
+          "source_line": 1088,
           "type": "string"
         }
       ],
@@ -178384,12 +178387,12 @@
         "Meridian.Contracts.Ledger.RuleDryRunRequestDto"
       ],
       "source": {
-        "line": 1079,
+        "line": 1087,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1079,
+          "line": 1087,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -178408,7 +178411,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4533c21ee63ab8942e1d5f48992d588c6fc4b66a850e45a71da844e6692049b6",
+      "fingerprint": "e062bbc5dc497ae6b31cc9e054ca4f480acd8b6a48f85bc0eae0776745f30ef3",
       "full_name": "Meridian.Contracts.Ledger.AccountingRuleTestCaseResultDto",
       "id": "Meridian.Contracts.Ledger.AccountingRuleTestCaseResultDto",
       "kind": "record",
@@ -178427,7 +178430,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountingConfigurationValidationIssueDto>",
-          "source_line": 1105,
+          "source_line": 1113,
           "type": "IReadOnlyList<AccountingConfigurationValidationIssueDto>"
         },
         {
@@ -178441,7 +178444,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1102,
+          "source_line": 1110,
           "type": "string"
         },
         {
@@ -178455,7 +178458,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "RuleDryRunResultDto",
-          "source_line": 1104,
+          "source_line": 1112,
           "type": "RuleDryRunResultDto"
         },
         {
@@ -178469,7 +178472,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1103,
+          "source_line": 1111,
           "type": "bool"
         },
         {
@@ -178483,7 +178486,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1101,
+          "source_line": 1109,
           "type": "string"
         }
       ],
@@ -178496,12 +178499,12 @@
         "Meridian.Contracts.Ledger.RuleDryRunResultDto"
       ],
       "source": {
-        "line": 1100,
+        "line": 1108,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1100,
+          "line": 1108,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -178520,7 +178523,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cf7b2f88057e046ffde7d6426fec041fb81c910cd852078344b8f7210e97d5ae",
+      "fingerprint": "2999a4162b2c13f8a1f6a4cadab4954c9c0e5d25977fda7e8938c7d74a893acc",
       "full_name": "Meridian.Contracts.Ledger.AccountingRuleTestSuiteResultDto",
       "id": "Meridian.Contracts.Ledger.AccountingRuleTestSuiteResultDto",
       "kind": "record",
@@ -178539,7 +178542,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1111,
+          "source_line": 1119,
           "type": "string"
         },
         {
@@ -178553,7 +178556,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 1110,
+          "source_line": 1118,
           "type": "DateTimeOffset"
         },
         {
@@ -178567,7 +178570,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1114,
+          "source_line": 1122,
           "type": "int"
         },
         {
@@ -178581,7 +178584,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1108,
+          "source_line": 1116,
           "type": "string"
         },
         {
@@ -178595,7 +178598,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 1109,
+          "source_line": 1117,
           "type": "Guid?"
         },
         {
@@ -178609,7 +178612,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1113,
+          "source_line": 1121,
           "type": "int"
         },
         {
@@ -178623,7 +178626,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountingRuleTestCaseResultDto>",
-          "source_line": 1115,
+          "source_line": 1123,
           "type": "IReadOnlyList<AccountingRuleTestCaseResultDto>"
         },
         {
@@ -178637,7 +178640,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1112,
+          "source_line": 1120,
           "type": "int"
         }
       ],
@@ -178649,12 +178652,12 @@
         "Meridian.Contracts.Ledger.AccountingRuleTestCaseResultDto"
       ],
       "source": {
-        "line": 1107,
+        "line": 1115,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1107,
+          "line": 1115,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -190198,7 +190201,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "0f67f167c20f5a9583540b6a35b233cdff1571a6cfb54c0225b8dae02cf48fb7",
+      "fingerprint": "378a396b852f11713e59ba0001b6b7dda6d24365f3379b28d9393f20ebb96c39",
       "full_name": "Meridian.Contracts.Ledger.ExecuteAccountingRuleTestCasesRequestDto",
       "id": "Meridian.Contracts.Ledger.ExecuteAccountingRuleTestCasesRequestDto",
       "kind": "record",
@@ -190217,7 +190220,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1119,
+          "source_line": 1127,
           "type": "string"
         },
         {
@@ -190232,7 +190235,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1124,
+          "source_line": 1132,
           "type": "string?"
         },
         {
@@ -190247,7 +190250,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1122,
+          "source_line": 1130,
           "type": "string?"
         },
         {
@@ -190261,7 +190264,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1118,
+          "source_line": 1126,
           "type": "string"
         },
         {
@@ -190276,7 +190279,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 1121,
+          "source_line": 1129,
           "type": "Guid?"
         },
         {
@@ -190291,7 +190294,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1123,
+          "source_line": 1131,
           "type": "string?"
         },
         {
@@ -190305,7 +190308,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<AccountingRuleTestCaseDto>",
-          "source_line": 1126,
+          "source_line": 1134,
           "type": "IReadOnlyList<AccountingRuleTestCaseDto>"
         }
       ],
@@ -190317,12 +190320,12 @@
         "Meridian.Contracts.Ledger.AccountingRuleTestCaseDto"
       ],
       "source": {
-        "line": 1117,
+        "line": 1125,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1117,
+          "line": 1125,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -193110,7 +193113,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9c9ce004e14ce69358269335ff49c1550370c9a2f75bafb238102368bb4305b6",
+      "fingerprint": "1d0489116559a24d4a98b721ae6aaeb9ec7f39d177aad5d21076aad562088ce0",
       "full_name": "Meridian.Contracts.Ledger.JournalEntryLifecycleActionRequestDto",
       "id": "Meridian.Contracts.Ledger.JournalEntryLifecycleActionRequestDto",
       "kind": "record",
@@ -193129,7 +193132,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "JournalEntryLifecycleActionDto",
-          "source_line": 1148,
+          "source_line": 1156,
           "type": "JournalEntryLifecycleActionDto"
         },
         {
@@ -193144,7 +193147,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OperationsActionOriginDto",
-          "source_line": 1154,
+          "source_line": 1162,
           "type": "OperationsActionOriginDto"
         },
         {
@@ -193158,7 +193161,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1149,
+          "source_line": 1157,
           "type": "string"
         },
         {
@@ -193172,7 +193175,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 1170,
+          "source_line": 1178,
           "type": "string?"
         },
         {
@@ -193187,7 +193190,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1159,
+          "source_line": 1167,
           "type": "string?"
         },
         {
@@ -193202,7 +193205,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1152,
+          "source_line": 1160,
           "type": "string?"
         },
         {
@@ -193216,7 +193219,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1162,
+          "source_line": 1170,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -193230,7 +193233,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1147,
+          "source_line": 1155,
           "type": "string"
         },
         {
@@ -193244,7 +193247,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1146,
+          "source_line": 1154,
           "type": "Guid"
         },
         {
@@ -193259,7 +193262,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 1157,
+          "source_line": 1165,
           "type": "Guid?"
         },
         {
@@ -193274,7 +193277,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1151,
+          "source_line": 1159,
           "type": "string?"
         },
         {
@@ -193289,7 +193292,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1155,
+          "source_line": 1163,
           "type": "bool"
         },
         {
@@ -193303,7 +193306,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<ManualJournalEntryLineDto>",
-          "source_line": 1165,
+          "source_line": 1173,
           "type": "IReadOnlyList<ManualJournalEntryLineDto>"
         },
         {
@@ -193318,7 +193321,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 1160,
+          "source_line": 1168,
           "type": "IReadOnlyList<string>?"
         },
         {
@@ -193333,7 +193336,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1158,
+          "source_line": 1166,
           "type": "string?"
         },
         {
@@ -193347,7 +193350,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 1150,
+          "source_line": 1158,
           "type": "int"
         }
       ],
@@ -193361,12 +193364,12 @@
         "Meridian.Contracts.Workstation.OperationsActionOriginDto"
       ],
       "source": {
-        "line": 1145,
+        "line": 1153,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1145,
+          "line": 1153,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -193385,7 +193388,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "da09db3768b73dc59e609c935d29df751ef087491dc575856d335d4a66cc2a6f",
+      "fingerprint": "cf48595fe2fbf4ef0679ff17be5753245303814febe25b13a2643132bf50968a",
       "full_name": "Meridian.Contracts.Ledger.JournalEntryLifecycleActionResultDto",
       "id": "Meridian.Contracts.Ledger.JournalEntryLifecycleActionResultDto",
       "kind": "record",
@@ -193404,7 +193407,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<ManualJournalEntryDraftDto>",
-          "source_line": 1206,
+          "source_line": 1214,
           "type": "IReadOnlyList<ManualJournalEntryDraftDto>"
         },
         {
@@ -193418,7 +193421,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ManualJournalEntryDraftDto",
-          "source_line": 1201,
+          "source_line": 1209,
           "type": "ManualJournalEntryDraftDto"
         },
         {
@@ -193433,7 +193436,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "PostedLedgerJournalEntryResultDto?",
-          "source_line": 1204,
+          "source_line": 1212,
           "type": "PostedLedgerJournalEntryResultDto?"
         },
         {
@@ -193447,7 +193450,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "JournalEntryLifecycleTransitionDto",
-          "source_line": 1202,
+          "source_line": 1210,
           "type": "JournalEntryLifecycleTransitionDto"
         }
       ],
@@ -193461,12 +193464,12 @@
         "Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto"
       ],
       "source": {
-        "line": 1200,
+        "line": 1208,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1200,
+          "line": 1208,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -193485,7 +193488,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d172bc3492455da3fc332ef2a7ed6e984f9de2df90adcf1692ae4ccfebc28fc6",
+      "fingerprint": "fff191b492b850db9776fa66ed457879915e38e5dd80c3a5988a4042be8f5387",
       "full_name": "Meridian.Contracts.Ledger.JournalEntryLifecycleTransitionDto",
       "id": "Meridian.Contracts.Ledger.JournalEntryLifecycleTransitionDto",
       "kind": "record",
@@ -193504,7 +193507,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "JournalEntryLifecycleActionDto",
-          "source_line": 1134,
+          "source_line": 1142,
           "type": "JournalEntryLifecycleActionDto"
         },
         {
@@ -193518,7 +193521,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1135,
+          "source_line": 1143,
           "type": "string"
         },
         {
@@ -193533,7 +193536,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1138,
+          "source_line": 1146,
           "type": "string?"
         },
         {
@@ -193547,7 +193550,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 1141,
+          "source_line": 1149,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -193561,7 +193564,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ManualJournalEntryStatusDto",
-          "source_line": 1132,
+          "source_line": 1140,
           "type": "ManualJournalEntryStatusDto"
         },
         {
@@ -193576,7 +193579,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1137,
+          "source_line": 1145,
           "type": "string?"
         },
         {
@@ -193590,7 +193593,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 1136,
+          "source_line": 1144,
           "type": "DateTimeOffset"
         },
         {
@@ -193604,7 +193607,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ManualJournalEntryStatusDto",
-          "source_line": 1133,
+          "source_line": 1141,
           "type": "ManualJournalEntryStatusDto"
         },
         {
@@ -193618,7 +193621,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1131,
+          "source_line": 1139,
           "type": "string"
         }
       ],
@@ -193631,12 +193634,12 @@
         "Meridian.Contracts.Ledger.ManualJournalEntryStatusDto"
       ],
       "source": {
-        "line": 1130,
+        "line": 1138,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1130,
+          "line": 1138,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -193655,7 +193658,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e73968b0c0d8d2531be460380ec5eaaa5090a665a66469bcf40d0939b99c5753",
+      "fingerprint": "e2999f8ea7bae193b0a9b2f240acbfebc7ceb5bf9d9ecd23f4e73bd7eaaec9c6",
       "full_name": "Meridian.Contracts.Ledger.JournalEntryRebookDto",
       "id": "Meridian.Contracts.Ledger.JournalEntryRebookDto",
       "kind": "record",
@@ -193674,7 +193677,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 1184,
+          "source_line": 1192,
           "type": "DateTimeOffset"
         },
         {
@@ -193688,7 +193691,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1185,
+          "source_line": 1193,
           "type": "string"
         },
         {
@@ -193702,7 +193705,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1181,
+          "source_line": 1189,
           "type": "Guid"
         },
         {
@@ -193716,7 +193719,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1183,
+          "source_line": 1191,
           "type": "string"
         },
         {
@@ -193730,7 +193733,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1182,
+          "source_line": 1190,
           "type": "Guid"
         }
       ],
@@ -193740,12 +193743,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.JournalEntryRebookDto",
       "references": [],
       "source": {
-        "line": 1180,
+        "line": 1188,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1180,
+          "line": 1188,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -193764,7 +193767,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "90365f6323ead232baccfdd15902c3fa8a3969458076252a7c687db43296c673",
+      "fingerprint": "b752ec76b870ee5d23255de6754cecadf2d4185011e934121b998f9f58efe40b",
       "full_name": "Meridian.Contracts.Ledger.JournalEntryReversalDto",
       "id": "Meridian.Contracts.Ledger.JournalEntryReversalDto",
       "kind": "record",
@@ -193783,7 +193786,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 1177,
+          "source_line": 1185,
           "type": "DateTimeOffset"
         },
         {
@@ -193797,7 +193800,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1178,
+          "source_line": 1186,
           "type": "string"
         },
         {
@@ -193811,7 +193814,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1174,
+          "source_line": 1182,
           "type": "Guid"
         },
         {
@@ -193825,7 +193828,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 1176,
+          "source_line": 1184,
           "type": "string"
         },
         {
@@ -193839,7 +193842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1175,
+          "source_line": 1183,
           "type": "Guid"
         }
       ],
@@ -193849,12 +193852,12 @@
       "qualified_name": "Meridian.Contracts.Ledger.JournalEntryReversalDto",
       "references": [],
       "source": {
-        "line": 1173,
+        "line": 1181,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1173,
+          "line": 1181,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -201215,7 +201218,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f00a4c2700af9e72a52fac56226f32956c94bd0261a6ade75f8fa8c4dd9aacf1",
+      "fingerprint": "613af0d765e92e0954ab55da1f1485621d07f1349cd9ca054cd0aa6cac0f8806",
       "full_name": "Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
       "id": "Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
       "kind": "record",
@@ -201307,7 +201310,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "AssetAccountingApprovalReceiptDto?",
-          "source_line": 830,
+          "source_line": 838,
           "type": "AssetAccountingApprovalReceiptDto?"
         },
         {
@@ -201321,7 +201324,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "AssetAccountingPostingCandidateDto?",
-          "source_line": 827,
+          "source_line": 835,
           "type": "AssetAccountingPostingCandidateDto?"
         },
         {
@@ -201335,7 +201338,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "PostedPostingRuleJournalCandidateResultDto?",
-          "source_line": 836,
+          "source_line": 844,
           "type": "PostedPostingRuleJournalCandidateResultDto?"
         },
         {
@@ -201349,7 +201352,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "AssetAccountingPostIntentDto?",
-          "source_line": 833,
+          "source_line": 841,
           "type": "AssetAccountingPostIntentDto?"
         },
         {
@@ -201484,6 +201487,20 @@
           "raw_type": "LedgerDimensionSetDto?",
           "source_line": 793,
           "type": "LedgerDimensionSetDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "DistributionDeclarationJson",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 828,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -201625,7 +201642,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<JournalEntryLifecycleTransitionDto>",
-          "source_line": 822,
+          "source_line": 830,
           "type": "IReadOnlyList<JournalEntryLifecycleTransitionDto>"
         },
         {
@@ -201721,11 +201738,25 @@
           "json_ignored": true,
           "json_name": null,
           "key_type": null,
+          "name": "PriorPeriodAdjustmentSource",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "PriorPeriodAdjustmentSourceDto?",
+          "source_line": 820,
+          "type": "PriorPeriodAdjustmentSourceDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
           "name": "PrivateCapitalAuthorityJson",
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 820,
+          "source_line": 824,
           "type": "string?"
         },
         {
@@ -202060,6 +202091,7 @@
         "Meridian.Contracts.Ledger.ManualJournalEntryStatusDto",
         "Meridian.Contracts.Ledger.ManualJournalEntryTypeDto",
         "Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
       ],
       "source": {
@@ -205396,7 +205428,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "8fb4adbacf838f2f7a44a45509953752e298b3adcf2d10dc8c46dad4ed5fd306",
+      "fingerprint": "33f520f629b29e72b17391d1a76295dbb26dbea71ae588064ac7236b49078306",
       "full_name": "Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto",
       "id": "Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto",
       "kind": "record",
@@ -205415,7 +205447,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountingBasisKindDto",
-          "source_line": 1190,
+          "source_line": 1198,
           "type": "AccountingBasisKindDto"
         },
         {
@@ -205429,7 +205461,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1192,
+          "source_line": 1200,
           "type": "Guid"
         },
         {
@@ -205443,7 +205475,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 1193,
+          "source_line": 1201,
           "type": "Guid?"
         },
         {
@@ -205457,7 +205489,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 1195,
+          "source_line": 1203,
           "type": "Guid?"
         },
         {
@@ -205472,7 +205504,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "long?",
-          "source_line": 1196,
+          "source_line": 1204,
           "type": "long?"
         },
         {
@@ -205487,7 +205519,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 1198,
+          "source_line": 1206,
           "type": "string?"
         },
         {
@@ -205501,7 +205533,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1188,
+          "source_line": 1196,
           "type": "Guid"
         },
         {
@@ -205515,7 +205547,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1189,
+          "source_line": 1197,
           "type": "Guid"
         },
         {
@@ -205529,7 +205561,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 1191,
+          "source_line": 1199,
           "type": "Guid"
         },
         {
@@ -205544,7 +205576,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 1197,
+          "source_line": 1205,
           "type": "DateTimeOffset?"
         },
         {
@@ -205558,7 +205590,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 1194,
+          "source_line": 1202,
           "type": "Guid?"
         }
       ],
@@ -205570,12 +205602,12 @@
         "Meridian.Contracts.Ledger.AccountingBasisKindDto"
       ],
       "source": {
-        "line": 1187,
+        "line": 1195,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1187,
+          "line": 1195,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -206278,7 +206310,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "bea16710b15f98c3e9453798d5f744a1fb15c0577ba8bcb3f1c686c558fb8b6e",
+      "fingerprint": "3d9918e59e2393dc3ba5a074f72509843e822f111199f9b5a25277a6e0d6724e",
       "full_name": "Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
       "id": "Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
       "kind": "record",
@@ -206297,7 +206329,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "PostingRuleJournalCandidateResultDto",
-          "source_line": 1012,
+          "source_line": 1020,
           "type": "PostingRuleJournalCandidateResultDto"
         },
         {
@@ -206311,7 +206343,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "PostedJournalImpactDto?",
-          "source_line": 1016,
+          "source_line": 1024,
           "type": "PostedJournalImpactDto?"
         },
         {
@@ -206325,7 +206357,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<AssetAccountingStageEvidenceDto>",
-          "source_line": 1020,
+          "source_line": 1028,
           "type": "IReadOnlyList<AssetAccountingStageEvidenceDto>"
         },
         {
@@ -206339,7 +206371,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "PostedLedgerJournalEntryResultDto",
-          "source_line": 1013,
+          "source_line": 1021,
           "type": "PostedLedgerJournalEntryResultDto"
         },
         {
@@ -206353,7 +206385,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "Guid?",
-          "source_line": 1018,
+          "source_line": 1026,
           "type": "Guid?"
         },
         {
@@ -206368,7 +206400,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 1014,
+          "source_line": 1022,
           "type": "bool"
         }
       ],
@@ -206383,12 +206415,12 @@
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
       ],
       "source": {
-        "line": 1011,
+        "line": 1019,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 1011,
+          "line": 1019,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -206730,7 +206762,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "780ed9cb06c0700cc4d26eb2dc7c0f65c1c4a5d1494fc61f9ae6275be4de3abf",
+      "fingerprint": "d255c8170f79213ccaf14032e94646e08fbbc1429f548d43be1b9a7220cfd9b8",
       "full_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateIssueDto",
       "id": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateIssueDto",
       "kind": "record",
@@ -206749,7 +206781,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 946,
+          "source_line": 954,
           "type": "bool"
         },
         {
@@ -206763,7 +206795,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 943,
+          "source_line": 951,
           "type": "string"
         },
         {
@@ -206777,7 +206809,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 945,
+          "source_line": 953,
           "type": "string"
         },
         {
@@ -206791,7 +206823,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountingConfigurationValidationSeverityDto",
-          "source_line": 944,
+          "source_line": 952,
           "type": "AccountingConfigurationValidationSeverityDto"
         },
         {
@@ -206806,7 +206838,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 948,
+          "source_line": 956,
           "type": "string?"
         },
         {
@@ -206821,7 +206853,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 947,
+          "source_line": 955,
           "type": "string?"
         }
       ],
@@ -206831,877 +206863,6 @@
       "qualified_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateIssueDto",
       "references": [
         "Meridian.Contracts.Ledger.AccountingConfigurationValidationSeverityDto"
-      ],
-      "source": {
-        "line": 942,
-        "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
-      },
-      "sources": [
-        {
-          "line": 942,
-          "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts",
-        "ledger-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "ledger-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "e1a8cd245c839a80f3d54ec6e1f0c1456db98b99bde7655362aaac22c1d72d5a",
-      "full_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
-      "id": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "ledger"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "AccountingBasisKindDto.Primary",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AccountingBasis",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "AccountingBasisKindDto",
-          "source_line": 897,
-          "type": "AccountingBasisKindDto"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AccountingTimestamp",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateTimeOffset",
-          "source_line": 895,
-          "type": "DateTimeOffset"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Actor",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 892,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AdjustmentApproval",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "LedgerAdjustmentApprovalMetadataDto?",
-          "source_line": 908,
-          "type": "LedgerAdjustmentApprovalMetadataDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AggregateId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 893,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "AssetLotMutation",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "AssetLotMutationInstructionDto?",
-          "source_line": 937,
-          "type": "AssetLotMutationInstructionDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BookContext",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "AccountingBookContextDto?",
-          "source_line": 923,
-          "type": "AccountingBookContextDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BookPositionId",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "Guid?",
-          "source_line": 925,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CompanyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 912,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CorrelationId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 902,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CounterpartyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 900,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Currency",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 890,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Description",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 896,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Dimensions",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "LedgerDimensionSetDto?",
-          "source_line": 899,
-          "type": "LedgerDimensionSetDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EconomicEvent",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "EconomicEventReferenceDto?",
-          "source_line": 927,
-          "type": "EconomicEventReferenceDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EffectiveDate",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "DateOnly",
-          "source_line": 891,
-          "type": "DateOnly"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EventAmount",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 889,
-          "type": "decimal"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceLinks",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 914,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ExpectedPeriodVersion",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "long?",
-          "source_line": 939,
-          "type": "long?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "FundProfileId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 887,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "InstrumentSymbol",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 901,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "LedgerBookId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 898,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PeriodId",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "Guid",
-          "source_line": 894,
-          "type": "Guid"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PolicyId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 905,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "LedgerPostingKindDto.Originating",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PostingKind",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "LedgerPostingKindDto",
-          "source_line": 907,
-          "type": "LedgerPostingKindDto"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ProjectionLineage",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "ProjectionLineageDto?",
-          "source_line": 929,
-          "type": "ProjectionLineageDto?"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "RetainedEvidenceIdentityDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RetainedEvidence",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
-          "source_line": 921,
-          "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RulePackReference",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "AccountingRulePackReferenceDto?",
-          "source_line": 931,
-          "type": "AccountingRulePackReferenceDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceEventId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 903,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceEventType",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 888,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SourceJournalEntryId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 904,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TenantId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 911,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TreasuryContext",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "TreasuryLedgerContextDto?",
-          "source_line": 909,
-          "type": "TreasuryLedgerContextDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TreatmentKind",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "AccountingTreatmentKindDto?",
-          "source_line": 906,
-          "type": "AccountingTreatmentKindDto?"
-        }
-      ],
-      "name": "PostingRuleJournalCandidateRequestDto",
-      "namespace": "Meridian.Contracts.Ledger",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
-      "references": [
-        "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
-        "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
-        "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
-        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
-        "Meridian.Contracts.Ledger.AccountingBasisKindDto",
-        "Meridian.Contracts.Ledger.AccountingBookContextDto",
-        "Meridian.Contracts.Ledger.AccountingRulePackReferenceDto",
-        "Meridian.Contracts.Ledger.AccountingTreatmentKindDto",
-        "Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto",
-        "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
-        "Meridian.Contracts.Ledger.LedgerPostingKindDto",
-        "Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
-      ],
-      "source": {
-        "line": 886,
-        "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
-      },
-      "sources": [
-        {
-          "line": 886,
-          "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
-        }
-      ],
-      "type_parameters": []
-    },
-    {
-      "base_types": [],
-      "classification": "dto",
-      "containing_type": null,
-      "contract_sets": [
-        "all-contracts",
-        "ledger-contracts"
-      ],
-      "diagram": true,
-      "diagram_contract_sets": [
-        "ledger-contracts"
-      ],
-      "enum_members": [],
-      "fingerprint": "18911acc0aebad8a120bb6ac4994ac11d8e3e4e37d0ea1a0e38972774130c59a",
-      "full_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
-      "id": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
-      "kind": "record",
-      "mapped_schemas": [
-        "ledger"
-      ],
-      "members": [
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BookContext",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "AccountingBookContextDto?",
-          "source_line": 976,
-          "type": "AccountingBookContextDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "BookPositionId",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "Guid?",
-          "source_line": 978,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CanPostWithoutAdditionalApproval",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 963,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "CanSubmitForApproval",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 962,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "DryRunResult",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "RuleDryRunResultDto",
-          "source_line": 951,
-          "type": "RuleDryRunResultDto"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EconomicEvent",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "EconomicEventReferenceDto?",
-          "source_line": 980,
-          "type": "EconomicEventReferenceDto?"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "string",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceLinks",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<string>",
-          "source_line": 970,
-          "type": "IReadOnlyList<string>"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "GeneratedPostingLineDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "GeneratedPostingLines",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<GeneratedPostingLineDto>",
-          "source_line": 967,
-          "type": "IReadOnlyList<GeneratedPostingLineDto>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "HasBlockingIssues",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 961,
-          "type": "bool"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Imbalance",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 959,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "IsBalanced",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "bool",
-          "source_line": 960,
-          "type": "bool"
-        },
-        {
-          "collection": true,
-          "collection_kind": "IReadOnlyList",
-          "element_type": "PostingRuleJournalCandidateIssueDto",
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Issues",
-          "nullable": false,
-          "origin": "property",
-          "raw_type": "IReadOnlyList<PostingRuleJournalCandidateIssueDto>",
-          "source_line": 973,
-          "type": "IReadOnlyList<PostingRuleJournalCandidateIssueDto>"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "JournalEntryId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "Guid?",
-          "source_line": 956,
-          "type": "Guid?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "PostingCommand",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "AccountingPostingCommandDto?",
-          "source_line": 955,
-          "type": "AccountingPostingCommandDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ProjectionLineage",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "ProjectionLineageDto?",
-          "source_line": 982,
-          "type": "ProjectionLineageDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "RulePackReference",
-          "nullable": true,
-          "origin": "property",
-          "raw_type": "AccountingRulePackReferenceDto?",
-          "source_line": 984,
-          "type": "AccountingRulePackReferenceDto?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SelectedRuleId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 952,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "SelectedRuleVersion",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 953,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TotalCredits",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 958,
-          "type": "decimal"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "TotalDebits",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "decimal",
-          "source_line": 957,
-          "type": "decimal"
-        }
-      ],
-      "name": "PostingRuleJournalCandidateResultDto",
-      "namespace": "Meridian.Contracts.Ledger",
-      "partial": false,
-      "qualified_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
-      "references": [
-        "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
-        "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
-        "Meridian.Contracts.Ledger.AccountingBookContextDto",
-        "Meridian.Contracts.Ledger.AccountingPostingCommandDto",
-        "Meridian.Contracts.Ledger.AccountingRulePackReferenceDto",
-        "Meridian.Contracts.Ledger.GeneratedPostingLineDto",
-        "Meridian.Contracts.Ledger.PostingRuleJournalCandidateIssueDto",
-        "Meridian.Contracts.Ledger.RuleDryRunResultDto"
       ],
       "source": {
         "line": 950,
@@ -207728,7 +206889,878 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2c310e4bdbfe93c9e36ad4e4887b3318f747464acd60edb71866ac4809cf819d",
+      "fingerprint": "7f0ed7d64c8a2f3750557bbdec63705f9a1c74e2956d0ebd2eea1b800b3344e2",
+      "full_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "id": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "AccountingBasisKindDto.Primary",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingBasisKindDto",
+          "source_line": 905,
+          "type": "AccountingBasisKindDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingTimestamp",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 903,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Actor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 900,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AdjustmentApproval",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "LedgerAdjustmentApprovalMetadataDto?",
+          "source_line": 916,
+          "type": "LedgerAdjustmentApprovalMetadataDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AggregateId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 901,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AssetLotMutation",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "AssetLotMutationInstructionDto?",
+          "source_line": 945,
+          "type": "AssetLotMutationInstructionDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookContext",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "AccountingBookContextDto?",
+          "source_line": 931,
+          "type": "AccountingBookContextDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookPositionId",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "Guid?",
+          "source_line": 933,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CompanyId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 920,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CorrelationId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 910,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CounterpartyId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 908,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 898,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Description",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 904,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Dimensions",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "LedgerDimensionSetDto?",
+          "source_line": 907,
+          "type": "LedgerDimensionSetDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EconomicEvent",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "EconomicEventReferenceDto?",
+          "source_line": 935,
+          "type": "EconomicEventReferenceDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 899,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EventAmount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 897,
+          "type": "decimal"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceLinks",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 922,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedPeriodVersion",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "long?",
+          "source_line": 947,
+          "type": "long?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 895,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "InstrumentSymbol",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 909,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 906,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 902,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PolicyId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 913,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "LedgerPostingKindDto.Originating",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PostingKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "LedgerPostingKindDto",
+          "source_line": 915,
+          "type": "LedgerPostingKindDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProjectionLineage",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "ProjectionLineageDto?",
+          "source_line": 937,
+          "type": "ProjectionLineageDto?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "RetainedEvidenceIdentityDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RetainedEvidence",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
+          "source_line": 929,
+          "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RulePackReference",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "AccountingRulePackReferenceDto?",
+          "source_line": 939,
+          "type": "AccountingRulePackReferenceDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEventId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 911,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceEventType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 896,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceJournalEntryId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 912,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TenantId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 919,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TreasuryContext",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "TreasuryLedgerContextDto?",
+          "source_line": 917,
+          "type": "TreasuryLedgerContextDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TreatmentKind",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingTreatmentKindDto?",
+          "source_line": 914,
+          "type": "AccountingTreatmentKindDto?"
+        }
+      ],
+      "name": "PostingRuleJournalCandidateRequestDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+        "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+        "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
+        "Meridian.Contracts.Ledger.AccountingBasisKindDto",
+        "Meridian.Contracts.Ledger.AccountingBookContextDto",
+        "Meridian.Contracts.Ledger.AccountingRulePackReferenceDto",
+        "Meridian.Contracts.Ledger.AccountingTreatmentKindDto",
+        "Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto",
+        "Meridian.Contracts.Ledger.LedgerDimensionSetDto",
+        "Meridian.Contracts.Ledger.LedgerPostingKindDto",
+        "Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
+      ],
+      "source": {
+        "line": 894,
+        "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 894,
+          "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "bdfb9b2ae7bc1142e81d0e03ce329076409adc333a3d6c4aebf931cbc43ff504",
+      "full_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
+      "id": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookContext",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "AccountingBookContextDto?",
+          "source_line": 984,
+          "type": "AccountingBookContextDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BookPositionId",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "Guid?",
+          "source_line": 986,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CanPostWithoutAdditionalApproval",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 971,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CanSubmitForApproval",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 970,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DryRunResult",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "RuleDryRunResultDto",
+          "source_line": 959,
+          "type": "RuleDryRunResultDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EconomicEvent",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "EconomicEventReferenceDto?",
+          "source_line": 988,
+          "type": "EconomicEventReferenceDto?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceLinks",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 978,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "GeneratedPostingLineDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "GeneratedPostingLines",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<GeneratedPostingLineDto>",
+          "source_line": 975,
+          "type": "IReadOnlyList<GeneratedPostingLineDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HasBlockingIssues",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 969,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Imbalance",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 967,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsBalanced",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 968,
+          "type": "bool"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "PostingRuleJournalCandidateIssueDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Issues",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<PostingRuleJournalCandidateIssueDto>",
+          "source_line": 981,
+          "type": "IReadOnlyList<PostingRuleJournalCandidateIssueDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "JournalEntryId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 964,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PostingCommand",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingPostingCommandDto?",
+          "source_line": 963,
+          "type": "AccountingPostingCommandDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProjectionLineage",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "ProjectionLineageDto?",
+          "source_line": 990,
+          "type": "ProjectionLineageDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RulePackReference",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "AccountingRulePackReferenceDto?",
+          "source_line": 992,
+          "type": "AccountingRulePackReferenceDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SelectedRuleId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 960,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SelectedRuleVersion",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 961,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TotalCredits",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 966,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TotalDebits",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 965,
+          "type": "decimal"
+        }
+      ],
+      "name": "PostingRuleJournalCandidateResultDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+        "Meridian.Contracts.AssetOperations.ProjectionLineageDto",
+        "Meridian.Contracts.Ledger.AccountingBookContextDto",
+        "Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+        "Meridian.Contracts.Ledger.AccountingRulePackReferenceDto",
+        "Meridian.Contracts.Ledger.GeneratedPostingLineDto",
+        "Meridian.Contracts.Ledger.PostingRuleJournalCandidateIssueDto",
+        "Meridian.Contracts.Ledger.RuleDryRunResultDto"
+      ],
+      "source": {
+        "line": 958,
+        "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 958,
+          "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "e174987ba8e641c2eb91dbf132943f3ef3c3892dda8cd0955fe9317a232c41b2",
       "full_name": "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "id": "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "kind": "record",
@@ -207747,7 +207779,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "AssetAcquisitionTermsCompletionDto?",
-          "source_line": 1008,
+          "source_line": 1016,
           "type": "AssetAcquisitionTermsCompletionDto?"
         },
         {
@@ -207762,7 +207794,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OperationsActionOriginDto",
-          "source_line": 994,
+          "source_line": 1002,
           "type": "OperationsActionOriginDto"
         },
         {
@@ -207776,7 +207808,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 989,
+          "source_line": 997,
           "type": "string"
         },
         {
@@ -207790,7 +207822,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<RetainedEvidenceIdentityDto>",
-          "source_line": 1004,
+          "source_line": 1012,
           "type": "IReadOnlyList<RetainedEvidenceIdentityDto>"
         },
         {
@@ -207804,7 +207836,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 990,
+          "source_line": 998,
           "type": "string"
         },
         {
@@ -207819,7 +207851,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 991,
+          "source_line": 999,
           "type": "string?"
         },
         {
@@ -207833,7 +207865,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "PostingRuleJournalCandidateRequestDto",
-          "source_line": 988,
+          "source_line": 996,
           "type": "PostingRuleJournalCandidateRequestDto"
         },
         {
@@ -207848,7 +207880,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 996,
+          "source_line": 1004,
           "type": "string?"
         },
         {
@@ -207863,7 +207895,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 993,
+          "source_line": 1001,
           "type": "string?"
         },
         {
@@ -207877,7 +207909,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 998,
+          "source_line": 1006,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -207892,7 +207924,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 995,
+          "source_line": 1003,
           "type": "string?"
         }
       ],
@@ -207907,12 +207939,12 @@
         "Meridian.Contracts.Workstation.OperationsActionOriginDto"
       ],
       "source": {
-        "line": 987,
+        "line": 995,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 987,
+          "line": 995,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -208869,6 +208901,173 @@
         {
           "line": 140,
           "path": "src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "64f438e12f3d5a49a202c48be8aaf5d2586359efed25ddc660f998063407b93e",
+      "full_name": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "id": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 9,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ManualJournalEntryLineDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedLines",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<ManualJournalEntryLineDto>",
+          "source_line": 15,
+          "type": "IReadOnlyList<ManualJournalEntryLineDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IntentId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 10,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OriginalEffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 7,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReversePeriodEndMark",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 12,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceJournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 5,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourcePeriodId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 6,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TargetPeriodId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 8,
+          "type": "Guid"
+        }
+      ],
+      "name": "PriorPeriodAdjustmentSourceDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "references": [
+        "Meridian.Contracts.Ledger.ManualJournalEntryLineDto"
+      ],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs"
         }
       ],
       "type_parameters": []
@@ -217385,7 +217584,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ea0adc10622356102baa8cc4cccecfd4722a52a5c83a7ef7b3aa4614ec0c22f1",
+      "fingerprint": "8848c80f2700d3e012f857f7a96039545e3a85a418154431acfa369bf8f4643a",
       "full_name": "Meridian.Contracts.Ledger.RuleDryRunRequestDto",
       "id": "Meridian.Contracts.Ledger.RuleDryRunRequestDto",
       "kind": "record",
@@ -217404,7 +217603,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 845,
+          "source_line": 853,
           "type": "string"
         },
         {
@@ -217419,7 +217618,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 852,
+          "source_line": 860,
           "type": "string?"
         },
         {
@@ -217434,7 +217633,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 850,
+          "source_line": 858,
           "type": "string?"
         },
         {
@@ -217449,7 +217648,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 848,
+          "source_line": 856,
           "type": "string?"
         },
         {
@@ -217463,7 +217662,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 843,
+          "source_line": 851,
           "type": "string"
         },
         {
@@ -217478,7 +217677,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "LedgerDimensionSetDto?",
-          "source_line": 847,
+          "source_line": 855,
           "type": "LedgerDimensionSetDto?"
         },
         {
@@ -217492,7 +217691,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 844,
+          "source_line": 852,
           "type": "DateOnly"
         },
         {
@@ -217506,7 +217705,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 842,
+          "source_line": 850,
           "type": "decimal"
         },
         {
@@ -217520,7 +217719,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 840,
+          "source_line": 848,
           "type": "string"
         },
         {
@@ -217535,7 +217734,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 849,
+          "source_line": 857,
           "type": "string?"
         },
         {
@@ -217550,7 +217749,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 846,
+          "source_line": 854,
           "type": "Guid?"
         },
         {
@@ -217565,7 +217764,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyDictionary<string, decimal>?",
-          "source_line": 857,
+          "source_line": 865,
           "type": "IReadOnlyDictionary<string, decimal>?"
         },
         {
@@ -217579,7 +217778,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 841,
+          "source_line": 849,
           "type": "string"
         },
         {
@@ -217594,7 +217793,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 851,
+          "source_line": 859,
           "type": "string?"
         }
       ],
@@ -217606,12 +217805,12 @@
         "Meridian.Contracts.Ledger.LedgerDimensionSetDto"
       ],
       "source": {
-        "line": 839,
+        "line": 847,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 839,
+          "line": 847,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -217630,7 +217829,7 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "546a68a81d86a1042cc373d47b4eb1242bbf76bfb6580987be1f860976b4b901",
+      "fingerprint": "9c639dfe9bb0d0eddc668c530bcaeb4e6104917879c8345221f03c5f665a6263",
       "full_name": "Meridian.Contracts.Ledger.RuleDryRunResultDto",
       "id": "Meridian.Contracts.Ledger.RuleDryRunResultDto",
       "kind": "record",
@@ -217649,7 +217848,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 874,
+          "source_line": 882,
           "type": "string"
         },
         {
@@ -217663,7 +217862,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 872,
+          "source_line": 880,
           "type": "DateOnly"
         },
         {
@@ -217677,7 +217876,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 873,
+          "source_line": 881,
           "type": "decimal"
         },
         {
@@ -217691,7 +217890,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 869,
+          "source_line": 877,
           "type": "string"
         },
         {
@@ -217705,7 +217904,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountingJournalPreviewLineDto>",
-          "source_line": 878,
+          "source_line": 886,
           "type": "IReadOnlyList<AccountingJournalPreviewLineDto>"
         },
         {
@@ -217719,7 +217918,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<GeneratedPostingLineDto>",
-          "source_line": 882,
+          "source_line": 890,
           "type": "IReadOnlyList<GeneratedPostingLineDto>"
         },
         {
@@ -217733,7 +217932,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 875,
+          "source_line": 883,
           "type": "bool"
         },
         {
@@ -217747,7 +217946,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 870,
+          "source_line": 878,
           "type": "Guid?"
         },
         {
@@ -217761,7 +217960,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountingRuleDryRunMatchDto>",
-          "source_line": 877,
+          "source_line": 885,
           "type": "IReadOnlyList<AccountingRuleDryRunMatchDto>"
         },
         {
@@ -217775,7 +217974,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 876,
+          "source_line": 884,
           "type": "string?"
         },
         {
@@ -217789,7 +217988,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 871,
+          "source_line": 879,
           "type": "string"
         },
         {
@@ -217803,7 +218002,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountingConfigurationValidationIssueDto>",
-          "source_line": 879,
+          "source_line": 887,
           "type": "IReadOnlyList<AccountingConfigurationValidationIssueDto>"
         }
       ],
@@ -217818,12 +218017,12 @@
         "Meridian.Contracts.Ledger.GeneratedPostingLineDto"
       ],
       "source": {
-        "line": 868,
+        "line": 876,
         "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
       },
       "sources": [
         {
-          "line": 868,
+          "line": 876,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
         }
       ],
@@ -240944,17 +241143,17 @@
         {
           "explicit_value": false,
           "name": "Receive",
-          "source_line": 118,
+          "source_line": 147,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Pay",
-          "source_line": 119,
+          "source_line": 148,
           "value": null
         }
       ],
-      "fingerprint": "d8e3fe231d23b2952296874d994b975c5218d8b84ab5b133ff3236763f19c5e4",
+      "fingerprint": "9d814a9c2e671aee4aae3f7668455e4196da2e752d7f157b4251fd60c58f552d",
       "full_name": "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
       "id": "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
       "kind": "enum",
@@ -240968,12 +241167,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
       "references": [],
       "source": {
-        "line": 116,
+        "line": 145,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 116,
+          "line": 145,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -240995,17 +241194,17 @@
         {
           "explicit_value": false,
           "name": "Fixed",
-          "source_line": 111,
+          "source_line": 140,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Floating",
-          "source_line": 112,
+          "source_line": 141,
           "value": null
         }
       ],
-      "fingerprint": "037e8baa20b3901798baa1ab19892b8328ae265c658662eb42d13848eff7c152",
+      "fingerprint": "548810a214cfaecf1cc3f2140ea8c3a672ee1fdb3d3d7365acdf7dd74a46230f",
       "full_name": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
       "id": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
       "kind": "enum",
@@ -241019,12 +241218,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
       "references": [],
       "source": {
-        "line": 109,
+        "line": 138,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 109,
+          "line": 138,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -286598,7 +286797,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "40497b3a620058cbe35c3ad803fe1e6bd31f05b8052fad23e788a972e15edaa7",
+      "fingerprint": "3414c24aa108e601e6770669d3faaffba9f51e8df90c4f8581e770a66b22676f",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
       "kind": "record",
@@ -286617,7 +286816,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 221,
+          "source_line": 250,
           "type": "string"
         },
         {
@@ -286631,7 +286830,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 222,
+          "source_line": 251,
           "type": "string"
         },
         {
@@ -286645,7 +286844,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 223,
+          "source_line": 252,
           "type": "string"
         }
       ],
@@ -286655,12 +286854,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence",
       "references": [],
       "source": {
-        "line": 220,
+        "line": 249,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 220,
+          "line": 249,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -286679,7 +286878,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e591e1521036f5e3aca404bc6558c02cc8985df9bb5693d63d84a10abb24fbfa",
+      "fingerprint": "f0a7077d1ff9896d28d5815f80372fe70d8725b5911cd63ec876b4d7a437f60c",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
       "kind": "record",
@@ -286698,7 +286897,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 234,
+          "source_line": 263,
           "type": "string"
         },
         {
@@ -286712,7 +286911,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 235,
+          "source_line": 264,
           "type": "DateOnly"
         },
         {
@@ -286726,7 +286925,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 236,
+          "source_line": 265,
           "type": "DateOnly"
         }
       ],
@@ -286736,12 +286935,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
       "references": [],
       "source": {
-        "line": 233,
+        "line": 262,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 233,
+          "line": 262,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -286760,7 +286959,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2375ebb723939dff4285bbb8c6c72edf24a856a12b491ef6af7ba30a79975327",
+      "fingerprint": "4bf4b0d4b1662c5358bcd902893c58671fad3bc7a20c37606c433d11110db9fa",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
       "kind": "record",
@@ -286779,7 +286978,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 299,
+          "source_line": 328,
           "type": "string"
         },
         {
@@ -286793,7 +286992,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 300,
+          "source_line": 329,
           "type": "string"
         },
         {
@@ -286807,7 +287006,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 304,
+          "source_line": 333,
           "type": "decimal"
         },
         {
@@ -286821,7 +287020,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 303,
+          "source_line": 332,
           "type": "decimal"
         },
         {
@@ -286835,7 +287034,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 302,
+          "source_line": 331,
           "type": "string?"
         },
         {
@@ -286849,7 +287048,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 301,
+          "source_line": 330,
           "type": "string?"
         }
       ],
@@ -286859,12 +287058,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
       "references": [],
       "source": {
-        "line": 298,
+        "line": 327,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 298,
+          "line": 327,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -286883,7 +287082,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6eb688100b58366e21f04c4a9fa2fce4cb528ef92c21908671ba578616c2b46f",
+      "fingerprint": "c27883852e1c87c59cb5cc413b39ddb791d20d233eeeb5a18855251ff553c34d",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
       "kind": "record",
@@ -286902,7 +287101,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 311,
+          "source_line": 340,
           "type": "string"
         },
         {
@@ -286916,7 +287115,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 314,
+          "source_line": 343,
           "type": "bool"
         },
         {
@@ -286930,7 +287129,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowLedgerLine>",
-          "source_line": 315,
+          "source_line": 344,
           "type": "IReadOnlyList<StructuredCashFlowLedgerLine>"
         },
         {
@@ -286944,7 +287143,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 310,
+          "source_line": 339,
           "type": "DateTimeOffset"
         },
         {
@@ -286958,7 +287157,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 313,
+          "source_line": 342,
           "type": "decimal"
         },
         {
@@ -286972,7 +287171,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 312,
+          "source_line": 341,
           "type": "decimal"
         }
       ],
@@ -286984,12 +287183,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
       ],
       "source": {
-        "line": 309,
+        "line": 338,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 309,
+          "line": 338,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -287008,7 +287207,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c0ce09476c2e2a8850c9956b0632565634a739596a9736bc8efcc442df7c8e04",
+      "fingerprint": "f61333bd6662030e41bdde0628b10e88147b3b05b27b5c66fc2b7c9c3a20c6a9",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
       "kind": "record",
@@ -287027,7 +287226,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 326,
+          "source_line": 355,
           "type": "string?"
         },
         {
@@ -287041,7 +287240,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "SecurityCashFlowBlockerDto?",
-          "source_line": 330,
+          "source_line": 359,
           "type": "SecurityCashFlowBlockerDto?"
         },
         {
@@ -287055,7 +287254,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 325,
+          "source_line": 354,
           "type": "bool"
         },
         {
@@ -287069,7 +287268,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowLedgerPosting>",
-          "source_line": 327,
+          "source_line": 356,
           "type": "IReadOnlyList<StructuredCashFlowLedgerPosting>"
         },
         {
@@ -287083,7 +287282,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 324,
+          "source_line": 353,
           "type": "Guid"
         }
       ],
@@ -287096,12 +287295,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
       ],
       "source": {
-        "line": 323,
+        "line": 352,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 323,
+          "line": 352,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -287120,7 +287319,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e0bd01cacd8f2869402a8857239e332c3519e7698bdc8a49f9b37261a789962c",
+      "fingerprint": "980b6cd3adbde2f20b3f2ffe7d5648c61130937f797fb96d9f084dc4efe9e048",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg",
       "kind": "record",
@@ -287139,7 +287338,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 153,
+          "source_line": 182,
           "type": "decimal?"
         },
         {
@@ -287153,7 +287352,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 143,
+          "source_line": 172,
           "type": "decimal?"
         },
         {
@@ -287167,7 +287366,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 166,
+          "source_line": 195,
           "type": "string?"
         },
         {
@@ -287181,7 +287380,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateOnly?",
-          "source_line": 164,
+          "source_line": 193,
           "type": "DateOnly?"
         },
         {
@@ -287195,7 +287394,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 146,
+          "source_line": 175,
           "type": "string?"
         },
         {
@@ -287209,7 +287408,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "CashFlowLegDirection?",
-          "source_line": 139,
+          "source_line": 168,
           "type": "CashFlowLegDirection?"
         },
         {
@@ -287224,7 +287423,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 147,
+          "source_line": 176,
           "type": "bool"
         },
         {
@@ -287238,7 +287437,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 140,
+          "source_line": 169,
           "type": "decimal?"
         },
         {
@@ -287252,7 +287451,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 157,
+          "source_line": 186,
           "type": "decimal?"
         },
         {
@@ -287266,7 +287465,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 162,
+          "source_line": 191,
           "type": "bool"
         },
         {
@@ -287280,7 +287479,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 141,
+          "source_line": 170,
           "type": "string?"
         },
         {
@@ -287294,7 +287493,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 137,
+          "source_line": 166,
           "type": "string"
         },
         {
@@ -287308,7 +287507,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 144,
+          "source_line": 173,
           "type": "decimal?"
         },
         {
@@ -287323,7 +287522,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowNotionalStep>?",
-          "source_line": 148,
+          "source_line": 177,
           "type": "IReadOnlyList<StructuredCashFlowNotionalStep>?"
         },
         {
@@ -287337,7 +287536,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 145,
+          "source_line": 174,
           "type": "string?"
         },
         {
@@ -287351,7 +287550,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CashFlowLegRateKind",
-          "source_line": 138,
+          "source_line": 167,
           "type": "CashFlowLegRateKind"
         },
         {
@@ -287365,7 +287564,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityCouponRateUnit",
-          "source_line": 160,
+          "source_line": 189,
           "type": "SecurityCouponRateUnit"
         },
         {
@@ -287380,7 +287579,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowResetFixing>?",
-          "source_line": 149,
+          "source_line": 178,
           "type": "IReadOnlyList<StructuredCashFlowResetFixing>?"
         },
         {
@@ -287394,7 +287593,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 142,
+          "source_line": 171,
           "type": "decimal?"
         }
       ],
@@ -287410,12 +287609,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing"
       ],
       "source": {
-        "line": 136,
+        "line": 165,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 136,
+          "line": 165,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -287434,7 +287633,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "316c3a793595e885369aed3c5933d6905146b792ccfe3ec2268212961022e50e",
+      "fingerprint": "c9a9ab16aecc3430b43c727e6150e3898c9daa8e0dd69a67e9693bcb754f9b83",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLegSchedule",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLegSchedule",
       "kind": "record",
@@ -287453,7 +287652,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "CashFlowLegDirection?",
-          "source_line": 205,
+          "source_line": 234,
           "type": "CashFlowLegDirection?"
         },
         {
@@ -287467,7 +287666,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 203,
+          "source_line": 232,
           "type": "string"
         },
         {
@@ -287481,7 +287680,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CashFlowLegRateKind",
-          "source_line": 204,
+          "source_line": 233,
           "type": "CashFlowLegRateKind"
         },
         {
@@ -287496,7 +287695,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 207,
+          "source_line": 236,
           "type": "string?"
         },
         {
@@ -287510,7 +287709,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowScheduleEntry>",
-          "source_line": 206,
+          "source_line": 235,
           "type": "IReadOnlyList<StructuredCashFlowScheduleEntry>"
         }
       ],
@@ -287524,12 +287723,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry"
       ],
       "source": {
-        "line": 202,
+        "line": 231,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 202,
+          "line": 231,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -287548,7 +287747,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "5199a7b59e9dfe74b4a15b90d02e48f4727349f0cd7d570ffbb0f099848b2b63",
+      "fingerprint": "ab73dcc28cb36cb607de688a2f53e2051ca28d27a0fe95314c17740893f83277",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep",
       "kind": "record",
@@ -287567,7 +287766,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 192,
+          "source_line": 221,
           "type": "DateOnly"
         },
         {
@@ -287581,7 +287780,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 192,
+          "source_line": 221,
           "type": "decimal"
         }
       ],
@@ -287591,12 +287790,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep",
       "references": [],
       "source": {
-        "line": 192,
+        "line": 221,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 192,
+          "line": 221,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -287615,7 +287814,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2b7e680cc22927522b4c0186d0245e7037c25b1bd6693328e91ea9777990a7ed",
+      "fingerprint": "1a88a97db410e5b93f2a916c8aba41208cba7d0c85c47a3614ce9ddd9786b200",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "kind": "record",
@@ -287634,7 +287833,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 272,
+          "source_line": 301,
           "type": "DateTimeOffset"
         },
         {
@@ -287649,7 +287848,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 279,
+          "source_line": 308,
           "type": "string?"
         },
         {
@@ -287663,7 +287862,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "SecurityCashFlowBlockerDto?",
-          "source_line": 284,
+          "source_line": 313,
           "type": "SecurityCashFlowBlockerDto?"
         },
         {
@@ -287678,7 +287877,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredFactorScheduleEntry>?",
-          "source_line": 276,
+          "source_line": 305,
           "type": "IReadOnlyList<StructuredFactorScheduleEntry>?"
         },
         {
@@ -287692,7 +287891,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "IReadOnlyList<Meridian.Contracts.FixedIncome.BondCalculationInput>?",
-          "source_line": 292,
+          "source_line": 321,
           "type": "IReadOnlyList<Meridian.Contracts.FixedIncome.BondCalculationInput>?"
         },
         {
@@ -287707,7 +287906,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 280,
+          "source_line": 309,
           "type": "bool"
         },
         {
@@ -287722,7 +287921,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowLegSchedule>?",
-          "source_line": 278,
+          "source_line": 307,
           "type": "IReadOnlyList<StructuredCashFlowLegSchedule>?"
         },
         {
@@ -287736,7 +287935,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "StructuredCashFlowScenario",
-          "source_line": 271,
+          "source_line": 300,
           "type": "StructuredCashFlowScenario"
         },
         {
@@ -287750,7 +287949,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowScheduleEntry>",
-          "source_line": 273,
+          "source_line": 302,
           "type": "IReadOnlyList<StructuredCashFlowScheduleEntry>"
         },
         {
@@ -287764,7 +287963,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "StructuredCashFlowScheduleEvidence?",
-          "source_line": 288,
+          "source_line": 317,
           "type": "StructuredCashFlowScheduleEvidence?"
         },
         {
@@ -287778,7 +287977,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 269,
+          "source_line": 298,
           "type": "Guid"
         },
         {
@@ -287792,7 +287991,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "StructuredCashFlowSourceKind",
-          "source_line": 270,
+          "source_line": 299,
           "type": "StructuredCashFlowSourceKind"
         },
         {
@@ -287807,7 +288006,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 275,
+          "source_line": 304,
           "type": "DateTimeOffset?"
         },
         {
@@ -287822,7 +288021,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "StructuredCashFlowStaleness",
-          "source_line": 274,
+          "source_line": 303,
           "type": "StructuredCashFlowStaleness"
         },
         {
@@ -287837,7 +288036,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "StructuredCashFlowTerms?",
-          "source_line": 277,
+          "source_line": 306,
           "type": "StructuredCashFlowTerms?"
         }
       ],
@@ -287858,12 +288057,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry"
       ],
       "source": {
-        "line": 268,
+        "line": 297,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 268,
+          "line": 297,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -287882,7 +288081,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cafebd0fd06150dd5d4825ebc48bde1556ef00b182953bf82ffa805f020231ad",
+      "fingerprint": "9d47bbdb3b152be74494d73e88d20c8870929e7a701f7358e66d7833fc18cacc",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing",
       "kind": "record",
@@ -287901,7 +288100,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 195,
+          "source_line": 224,
           "type": "decimal?"
         },
         {
@@ -287915,7 +288114,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 195,
+          "source_line": 224,
           "type": "DateOnly"
         }
       ],
@@ -287925,12 +288124,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing",
       "references": [],
       "source": {
-        "line": 195,
+        "line": 224,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 195,
+          "line": 224,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -288036,7 +288235,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f4e4192fda112de138b109391875a47affd20c9e8c587e713a1a426a3b41ba0a",
+      "fingerprint": "b93def73261af63d2e77436225464de0e6adfbce7311eefba3af309235036098",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry",
       "kind": "record",
@@ -288099,6 +288298,34 @@
           "raw_type": "decimal",
           "source_line": 93,
           "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "InterestMeasuredFrom",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "DateOnly?",
+          "source_line": 111,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "InterestMeasuredTo",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "DateOnly?",
+          "source_line": 113,
+          "type": "DateOnly?"
         },
         {
           "collection": false,
@@ -288203,7 +288430,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "98cc9af8aaed5659abc86f153b0b041f40da32a1dcae1a59dde515482aa9a536",
+      "fingerprint": "37add57db1cee01d7653d942c53172b4958e608a14bac43eabe8935ea956eb91",
       "full_name": "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence",
       "id": "Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence",
       "kind": "record",
@@ -288222,7 +288449,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowCalendarEvidence>",
-          "source_line": 250,
+          "source_line": 279,
           "type": "IReadOnlyList<StructuredCashFlowCalendarEvidence>"
         },
         {
@@ -288236,7 +288463,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StructuredCashFlowCoverageGap>",
-          "source_line": 251,
+          "source_line": 280,
           "type": "IReadOnlyList<StructuredCashFlowCoverageGap>"
         },
         {
@@ -288250,7 +288477,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 249,
+          "source_line": 278,
           "type": "string"
         },
         {
@@ -288264,7 +288491,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 248,
+          "source_line": 277,
           "type": "string"
         }
       ],
@@ -288277,12 +288504,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
       ],
       "source": {
-        "line": 247,
+        "line": 276,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 247,
+          "line": 276,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],
@@ -290208,7 +290435,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "36d73d743f6f74b32a2b8784986572f0f36f04926cc63eb254df11a69a0f68e5",
+      "fingerprint": "fd68aebdf8f2da50ce052519ff326b0c084f8d1d29d41c363dcbf2fdc073220f",
       "full_name": "Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "id": "Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "kind": "record",
@@ -290227,7 +290454,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 345,
+          "source_line": 374,
           "type": "string"
         },
         {
@@ -290241,7 +290468,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 344,
+          "source_line": 373,
           "type": "string?"
         },
         {
@@ -290256,7 +290483,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 348,
+          "source_line": 377,
           "type": "bool"
         },
         {
@@ -290270,7 +290497,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 343,
+          "source_line": 372,
           "type": "bool"
         },
         {
@@ -290284,7 +290511,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 341,
+          "source_line": 370,
           "type": "Guid"
         },
         {
@@ -290298,7 +290525,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "StructuredCashFlowSourceKind",
-          "source_line": 342,
+          "source_line": 371,
           "type": "StructuredCashFlowSourceKind"
         }
       ],
@@ -290310,12 +290537,12 @@
         "Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
       ],
       "source": {
-        "line": 340,
+        "line": 369,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
       },
       "sources": [
         {
-          "line": 340,
+          "line": 369,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
         }
       ],

@@ -1,5 +1,10 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto["PrivateCapitalCallPreviewDto"] {
+        +IReadOnlyList~string~ Blockers
+        +PrivateCapitalCallDto? Call
+        +bool IsReady
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto["PrivateCapitalCapitalAccountActivityDto"] {
         +string CapitalAccountId
         +decimal Contributions

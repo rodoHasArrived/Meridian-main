@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 250,
-    "warning": 250
+    "total": 254,
+    "warning": 254
   },
   "failed": false,
   "findings": [
@@ -660,6 +660,16 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "period_close_snapshots"
+      },
+      "message": "Business table ledger.period_close_snapshots does not have a table comment.",
+      "object": "ledger.period_close_snapshots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "tax_lot_mutations"
       },
       "message": "Business table ledger.tax_lot_mutations does not have a table comment.",
@@ -724,6 +734,26 @@
       },
       "message": "Business table money_market.mmf_rebuild_checkpoints does not have a table comment.",
       "object": "money_market.mmf_rebuild_checkpoints",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "operator_triage",
+        "table": "item_metadata"
+      },
+      "message": "Business table operator_triage.item_metadata does not have a table comment.",
+      "object": "operator_triage.item_metadata",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "operator_triage",
+        "table": "operator_triage_schema_migrations"
+      },
+      "message": "Business table operator_triage.operator_triage_schema_migrations does not have a table comment.",
+      "object": "operator_triage.operator_triage_schema_migrations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1907,6 +1937,20 @@
     {
       "details": {
         "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "period_close_snapshots_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "period_close_snapshots"
+      },
+      "message": "Foreign key ledger.period_close_snapshots.period_close_snapshots_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.period_close_snapshots.period_close_snapshots_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "corrects_mutation_batch_id"
         ],
         "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
@@ -2753,5 +2797,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "d45f8bf8166ca7663e7dd237ef113a5a7ce736fb3c3e92d0655814742e4788a9"
+  "fingerprint": "6f9e9f6bf4922cb359044c7feb802e0aed3995440ab789fbe5dfadac2f0abd67"
 }

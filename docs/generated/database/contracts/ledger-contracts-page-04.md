@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 367. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 368. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -689,6 +689,17 @@ classDiagram
         +string PeriodId
         +string? Purpose
     }
+    class Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto["PriorPeriodAdjustmentSourceDto"] {
+        +DateOnly AccountingDate
+        +IReadOnlyList~ManualJournalEntryLineDto~ ExpectedLines
+        +string IntentId
+        +DateOnly OriginalEffectiveDate
+        +string Reason
+        +bool ReversePeriodEndMark
+        +Guid SourceJournalEntryId
+        +Guid SourcePeriodId
+        +Guid TargetPeriodId
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto["PrivateCapitalActivityProjectionDto"] {
         +int ApprovalQueueCount
         +int CapitalAccountCount
@@ -750,11 +761,6 @@ classDiagram
         +decimal UncalledAfter
         +decimal UncalledBefore
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto["PrivateCapitalCallPreviewDto"] {
-        +IReadOnlyList~string~ Blockers
-        +PrivateCapitalCallDto? Call
-        +bool IsReady
-    }
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest --> Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto
@@ -787,6 +793,7 @@ classDiagram
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryTypeDto
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto
+    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto
     Meridian_Contracts_Ledger_ManualJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ManualJournalEntryWorkbenchDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_ManualJournalEntryWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto
@@ -817,7 +824,7 @@ classDiagram
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto
+    Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_ManualJournalEntryLineDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowDto
     Meridian_Contracts_Ledger_PrivateCapitalCallDto --> Meridian_Contracts_Ledger_PrivateCapitalCallLineDto
-    Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto --> Meridian_Contracts_Ledger_PrivateCapitalCallDto
 ```

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "c38b561e8a4c3306f34a09c6981c7ac3124c1b4a8892e03640ce03250f265c96",
+  "database_fingerprint": "bd09dc7bf1d535cc4822e0d1a0e7caf9ea6bba06c4249c662540c9bacf2eef6f",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -3119,6 +3119,114 @@
       "target": "ledger.accounting_periods_pkey",
       "target_kind": "index",
       "target_name": "accounting_periods_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "42b10a5d055e816004a3e5c577aeded98f7af09bf093ef7625b479be9d8a6e35",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.period_close_events.event_id",
+      "target_kind": "table column",
+      "target_name": "period_close_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3544f7844205dcaf9867cf713f09d0db6d0a92c61d69292b4694e40498b18a81",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.period_close_events_pkey",
+      "target_kind": "index",
+      "target_name": "period_close_events_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ef4eb83f5554bd918ec5ee7684c5cfdd77805a2a05924f012a14507ca3c5abf3",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_content_hash_sha256_check on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.period_close_snapshots.content_hash_sha256",
+      "target_kind": "table column",
+      "target_name": "period_close_snapshots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "2fb9ef4f82afde9f5a84f01dc9187946944d2dd92f246fb6ddc6d5ea0749050c",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "ledger_books",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "dd2437a5b17457915a3f113905f2573d061a085611f9737d8dcdd6204cc39903",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books_pkey",
+      "target_kind": "index",
+      "target_name": "ledger_books_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "722b1ec984467df394af106a0333578289772001b363ab75be7cc71f05caab4a",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_payload_json_check on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.period_close_snapshots.payload_json",
+      "target_kind": "table column",
+      "target_name": "period_close_snapshots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "fd03bb96a8a97195db58a5138822071ec9b6f903a3ee8f57f19db881501dd070",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_periods.period_id",
+      "target_kind": "table column",
+      "target_name": "accounting_periods",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "020af102ba321fa2906e35643319cbb5063eb546362084c64055a44bb139abfa",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_periods_pkey",
+      "target_kind": "index",
+      "target_name": "accounting_periods_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ea4490a728d16fa7b0fad3982b950be5b950489ca03c6a2329203551facd961b",
+      "kind": "normal",
+      "source": "ledger.period_close_snapshots_period_version_check on ledger.period_close_snapshots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.period_close_snapshots.period_version",
+      "target_kind": "table column",
+      "target_name": "period_close_snapshots",
       "target_schema": "ledger"
     },
     {
@@ -10787,6 +10895,7 @@
     "identity_access",
     "ledger",
     "money_market",
+    "operator_triage",
     "public",
     "reporting",
     "security_master"
@@ -10831,6 +10940,11 @@
       "display_name": "Money Market",
       "id": "money-market",
       "physical_schema": "money_market"
+    },
+    {
+      "display_name": "Operator Triage",
+      "id": "operator-triage",
+      "physical_schema": "operator_triage"
     },
     {
       "display_name": "Reporting",
@@ -14293,6 +14407,34 @@
       "object": "column:ledger.period_close_events.recorded_at"
     },
     {
+      "fingerprint": "ad733e0d1e52e50bbd29da2631315cab1c317bddc8b3121a59e23e9e49dfb500",
+      "object": "column:ledger.period_close_snapshots.close_event_id"
+    },
+    {
+      "fingerprint": "51aeca057f2c8ef9f6a849a813df13c77edd6194fe3ddf16bcbe927dec32803f",
+      "object": "column:ledger.period_close_snapshots.closed_at"
+    },
+    {
+      "fingerprint": "e66dd444657af5b76ad8bb6825b0a26121efd23dc084db5e1f82ac611868eca3",
+      "object": "column:ledger.period_close_snapshots.content_hash_sha256"
+    },
+    {
+      "fingerprint": "52dbf8ad14264d786bfaefa404c7ebde82528d4e0ceb859cb00928977843bda2",
+      "object": "column:ledger.period_close_snapshots.ledger_book_id"
+    },
+    {
+      "fingerprint": "ed38282adcb7459edd282acd9bcb63968856ca67460abf8347cc081cfbd8e81f",
+      "object": "column:ledger.period_close_snapshots.payload_json"
+    },
+    {
+      "fingerprint": "d07f5cce510dce03ee44001c05f876fc688c93c9f2e0a7f431c11262b48e42f0",
+      "object": "column:ledger.period_close_snapshots.period_id"
+    },
+    {
+      "fingerprint": "ba1603fb0d31702eac735ddc4d80918358c02c5f98184074ca2eb5139da72d81",
+      "object": "column:ledger.period_close_snapshots.period_version"
+    },
+    {
       "fingerprint": "ab97ab525ff5a5e21e9e9ea20806a30d5bd7f0bd40eb6395039f20e915c8bf41",
       "object": "column:ledger.private_capital_calls.call_id"
     },
@@ -14839,6 +14981,34 @@
     {
       "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
       "object": "column:money_market.schema_migrations.filename"
+    },
+    {
+      "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+      "object": "column:operator_triage.item_metadata.company_id"
+    },
+    {
+      "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+      "object": "column:operator_triage.item_metadata.state"
+    },
+    {
+      "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+      "object": "column:operator_triage.item_metadata.tenant_id"
+    },
+    {
+      "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+      "object": "column:operator_triage.item_metadata.work_item_id"
+    },
+    {
+      "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+      "object": "column:operator_triage.operator_triage_schema_migrations.applied_at"
+    },
+    {
+      "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+      "object": "column:operator_triage.operator_triage_schema_migrations.checksum"
+    },
+    {
+      "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+      "object": "column:operator_triage.operator_triage_schema_migrations.filename"
     },
     {
       "fingerprint": "65f4c57eede1346c9b829f7a5de35e762a98bd72eab6a75e984da1802989341b",
@@ -22645,6 +22815,38 @@
       "object": "constraint:ledger.period_close_events.period_close_events_pkey"
     },
     {
+      "fingerprint": "696522a5fff49a4e6ac4379419102d3a00d219547eccf967836e2047f7da0897",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_close_event_id_fkey"
+    },
+    {
+      "fingerprint": "221f12b1c2374585441a819b57960fe3bef9908d41e6f28da19c0545acd13d26",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_close_event_id_key"
+    },
+    {
+      "fingerprint": "9312fa2dff8d30e6bc7f00bf54c09c4cdd486f30e9da806c3550568695eea9ed",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_content_hash_sha256_check"
+    },
+    {
+      "fingerprint": "cc7273b474aca16279882a3bd039065eb0c160435412818c9778d08a9c838c14",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_ledger_book_id_fkey"
+    },
+    {
+      "fingerprint": "592d3a9880be17e3bc5b8bbd4d4b66530b485cab7f0757d84029b34cc08a59b9",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_payload_json_check"
+    },
+    {
+      "fingerprint": "637f6d399007d93b5524d923cbfe8b1292b49d1a699589992e2f8e851689363b",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_period_id_fkey"
+    },
+    {
+      "fingerprint": "3dfd42eb7235852613317e57f0d12746784cebc986b756a55e0b1578f348ee39",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_period_version_check"
+    },
+    {
+      "fingerprint": "220393d8d33830ae6aa454c64593cd14a3864af9616884f8e0783c08977ef3f5",
+      "object": "constraint:ledger.period_close_snapshots.period_close_snapshots_pkey"
+    },
+    {
       "fingerprint": "4aba3c677c2fea6cceb41dd6c79349e5c3ee1130f992ffa2340b89c716273ec4",
       "object": "constraint:ledger.private_capital_calls.private_capital_calls_document_check"
     },
@@ -22891,6 +23093,14 @@
     {
       "fingerprint": "f15d373bffeb0d61ac995ee43ad7b7d17132475f719b05197db7d392c4104560",
       "object": "constraint:money_market.schema_migrations.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+      "object": "constraint:operator_triage.item_metadata.item_metadata_pkey"
+    },
+    {
+      "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+      "object": "constraint:operator_triage.operator_triage_schema_migrations.operator_triage_schema_migrations_pkey"
     },
     {
       "fingerprint": "1287069ffaea7de02274ce4bbc14913987d1ed6f78fdabb111f5f39453df88df",
@@ -26005,6 +26215,42 @@
       "object": "dependency:ledger.period_close_events_period_id_fkey on ledger.period_close_events->ledger.accounting_periods_pkey:normal"
     },
     {
+      "fingerprint": "42b10a5d055e816004a3e5c577aeded98f7af09bf093ef7625b479be9d8a6e35",
+      "object": "dependency:ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots->ledger.period_close_events.event_id:normal"
+    },
+    {
+      "fingerprint": "3544f7844205dcaf9867cf713f09d0db6d0a92c61d69292b4694e40498b18a81",
+      "object": "dependency:ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots->ledger.period_close_events_pkey:normal"
+    },
+    {
+      "fingerprint": "ef4eb83f5554bd918ec5ee7684c5cfdd77805a2a05924f012a14507ca3c5abf3",
+      "object": "dependency:ledger.period_close_snapshots_content_hash_sha256_check on ledger.period_close_snapshots->ledger.period_close_snapshots.content_hash_sha256:normal"
+    },
+    {
+      "fingerprint": "2fb9ef4f82afde9f5a84f01dc9187946944d2dd92f246fb6ddc6d5ea0749050c",
+      "object": "dependency:ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots->ledger.ledger_books.ledger_book_id:normal"
+    },
+    {
+      "fingerprint": "dd2437a5b17457915a3f113905f2573d061a085611f9737d8dcdd6204cc39903",
+      "object": "dependency:ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots->ledger.ledger_books_pkey:normal"
+    },
+    {
+      "fingerprint": "722b1ec984467df394af106a0333578289772001b363ab75be7cc71f05caab4a",
+      "object": "dependency:ledger.period_close_snapshots_payload_json_check on ledger.period_close_snapshots->ledger.period_close_snapshots.payload_json:normal"
+    },
+    {
+      "fingerprint": "fd03bb96a8a97195db58a5138822071ec9b6f903a3ee8f57f19db881501dd070",
+      "object": "dependency:ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots->ledger.accounting_periods.period_id:normal"
+    },
+    {
+      "fingerprint": "020af102ba321fa2906e35643319cbb5063eb546362084c64055a44bb139abfa",
+      "object": "dependency:ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots->ledger.accounting_periods_pkey:normal"
+    },
+    {
+      "fingerprint": "ea4490a728d16fa7b0fad3982b950be5b950489ca03c6a2329203551facd961b",
+      "object": "dependency:ledger.period_close_snapshots_period_version_check on ledger.period_close_snapshots->ledger.period_close_snapshots.period_version:normal"
+    },
+    {
       "fingerprint": "50325dc305799c907a7fbb84575ca3c7171f5f208278204310a1474092eeceea",
       "object": "dependency:ledger.private_capital_calls_document_check on ledger.private_capital_calls->ledger.private_capital_calls.document:normal"
     },
@@ -28621,6 +28867,10 @@
       "object": "function:ledger.reject_atomic_tax_lot_audit_mutation()"
     },
     {
+      "fingerprint": "96af22c54011c7e3d7fddba6acdab8d82428be7e88595f2e13ec0b21287e64b5",
+      "object": "function:ledger.reject_close_snapshot_mutation()"
+    },
+    {
       "fingerprint": "885cffaa167852e2cb1b592625903d8f949b67946ef477695003ea64452bc6f5",
       "object": "function:ledger.reject_journal_entry_mutation()"
     },
@@ -29609,6 +29859,14 @@
       "object": "index:ledger.period_close_events_pkey"
     },
     {
+      "fingerprint": "04735979122dd6c50edfb3f30eb2a49ec39b0c4337671010ab753b555ae6af78",
+      "object": "index:ledger.period_close_snapshots_close_event_id_key"
+    },
+    {
+      "fingerprint": "87d07458552e1599685b125ef58d2573cca08050efa34c13bd17ee839ec40a97",
+      "object": "index:ledger.period_close_snapshots_pkey"
+    },
+    {
       "fingerprint": "32f35e20b2fd07c3e5258f89080d848472d2207bf358da9557a44ea6276868e3",
       "object": "index:ledger.private_capital_calls_pkey"
     },
@@ -29751,6 +30009,14 @@
     {
       "fingerprint": "80d8c42285e79c5c6df20b2c25cd9d123dac12f27d30aaf4af2387da628a36d0",
       "object": "index:money_market.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+      "object": "index:operator_triage.item_metadata_pkey"
+    },
+    {
+      "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+      "object": "index:operator_triage.operator_triage_schema_migrations_pkey"
     },
     {
       "fingerprint": "46fb9195989bc4d94d890b7ca772f2c01b58105c5351185c2b97650d44dcae80",
@@ -31521,6 +31787,10 @@
       "object": "rls:ledger.period_close_events"
     },
     {
+      "fingerprint": "89b9eb9d48b15092f3c79dadb698bb7ab32621deba5d86c712cb2ab91c06c6f3",
+      "object": "rls:ledger.period_close_snapshots"
+    },
+    {
       "fingerprint": "6d421498995a7e2a45b714d848b1fda0bf635dcc40a5f4a869f6cd3cdd3f0a3a",
       "object": "rls:ledger.private_capital_calls"
     },
@@ -31563,6 +31833,14 @@
     {
       "fingerprint": "41992f51682d986cea6461b23a6bed92498ddaa6e8e1ef6956f584536b7e4ecf",
       "object": "rls:money_market.schema_migrations"
+    },
+    {
+      "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+      "object": "rls:operator_triage.item_metadata"
+    },
+    {
+      "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+      "object": "rls:operator_triage.operator_triage_schema_migrations"
     },
     {
       "fingerprint": "126a90253412551ea2694fba5515ec4c4ac7045eccda00e51fcf76a5053323f2",
@@ -32169,12 +32447,16 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "c9cdfce41ee87d59104010dc4f6d8f565ff67004a15aa73fea77d15faf19f1c7",
+      "fingerprint": "e5cb91b0e9b7078dfca49ba05176f74c519ba7fb4d0a1b97d97139e63d17ad89",
       "object": "schema:ledger"
     },
     {
       "fingerprint": "4c336b5362a4019a14aafa69a48e98ab382d27eebd20da0ab1591f6b6eccf31b",
       "object": "schema:money_market"
+    },
+    {
+      "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+      "object": "schema:operator_triage"
     },
     {
       "fingerprint": "d50d95b1e1f14ff63c78aa659d07cab43b51d2ee16152371176bb5564e18c5b3",
@@ -32529,6 +32811,10 @@
       "object": "table:ledger.period_close_events"
     },
     {
+      "fingerprint": "a767239fdd8d5992d4e1c8251a73ddc668cd200b1ef73028aff030ca856072b7",
+      "object": "table:ledger.period_close_snapshots"
+    },
+    {
       "fingerprint": "66ce7e43e5d0030398cdca447f9c06985fe0f4b146d070882334c9d1d2c117f3",
       "object": "table:ledger.private_capital_calls"
     },
@@ -32571,6 +32857,14 @@
     {
       "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
       "object": "table:money_market.schema_migrations"
+    },
+    {
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+      "object": "table:operator_triage.item_metadata"
+    },
+    {
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+      "object": "table:operator_triage.operator_triage_schema_migrations"
     },
     {
       "fingerprint": "98ca98760d135dbef6f9b34d034f24d25064637af018c65080fd16660e6785a8",
@@ -33261,6 +33555,10 @@
       "object": "trigger:ledger.open_lot_backfill_reviews.protect_open_lot_backfill_evidence"
     },
     {
+      "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
+      "object": "trigger:ledger.period_close_snapshots.close_snapshot_immutable"
+    },
+    {
       "fingerprint": "938c1efd46a00184f95e5124967123b3d57ea0d583b09f6a035324cec087cf8b",
       "object": "trigger:ledger.private_capital_calls.protect_private_capital_call"
     },
@@ -33493,6 +33791,7 @@
     "identity_access",
     "ledger",
     "money_market",
+    "operator_triage",
     "reporting",
     "security_master"
   ],
@@ -71346,6 +71645,114 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "42b10a5d055e816004a3e5c577aeded98f7af09bf093ef7625b479be9d8a6e35",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.period_close_events.event_id",
+          "target_kind": "table column",
+          "target_name": "period_close_events",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "3544f7844205dcaf9867cf713f09d0db6d0a92c61d69292b4694e40498b18a81",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_close_event_id_fkey on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.period_close_events_pkey",
+          "target_kind": "index",
+          "target_name": "period_close_events_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ef4eb83f5554bd918ec5ee7684c5cfdd77805a2a05924f012a14507ca3c5abf3",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_content_hash_sha256_check on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.period_close_snapshots.content_hash_sha256",
+          "target_kind": "table column",
+          "target_name": "period_close_snapshots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "2fb9ef4f82afde9f5a84f01dc9187946944d2dd92f246fb6ddc6d5ea0749050c",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books.ledger_book_id",
+          "target_kind": "table column",
+          "target_name": "ledger_books",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "dd2437a5b17457915a3f113905f2573d061a085611f9737d8dcdd6204cc39903",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_ledger_book_id_fkey on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books_pkey",
+          "target_kind": "index",
+          "target_name": "ledger_books_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "722b1ec984467df394af106a0333578289772001b363ab75be7cc71f05caab4a",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_payload_json_check on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.period_close_snapshots.payload_json",
+          "target_kind": "table column",
+          "target_name": "period_close_snapshots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "fd03bb96a8a97195db58a5138822071ec9b6f903a3ee8f57f19db881501dd070",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_periods.period_id",
+          "target_kind": "table column",
+          "target_name": "accounting_periods",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "020af102ba321fa2906e35643319cbb5063eb546362084c64055a44bb139abfa",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_period_id_fkey on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_periods_pkey",
+          "target_kind": "index",
+          "target_name": "accounting_periods_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ea4490a728d16fa7b0fad3982b950be5b950489ca03c6a2329203551facd961b",
+          "kind": "normal",
+          "source": "ledger.period_close_snapshots_period_version_check on ledger.period_close_snapshots",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.period_close_snapshots.period_version",
+          "target_kind": "table column",
+          "target_name": "period_close_snapshots",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "50325dc305799c907a7fbb84575ca3c7171f5f208278204310a1474092eeceea",
           "kind": "normal",
           "source": "ledger.private_capital_calls_document_check on ledger.private_capital_calls",
@@ -71986,7 +72393,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "c9cdfce41ee87d59104010dc4f6d8f565ff67004a15aa73fea77d15faf19f1c7",
+      "fingerprint": "e5cb91b0e9b7078dfca49ba05176f74c519ba7fb4d0a1b97d97139e63d17ad89",
       "foreign_tables": [],
       "functions": [
         {
@@ -72389,6 +72796,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "reject_atomic_tax_lot_audit_mutation()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "2e3befc073ae3d6da27f4c51139ac708f05db97eacf6b4f082d70a730fa38da1",
+          "fingerprint": "96af22c54011c7e3d7fddba6acdab8d82428be7e88595f2e13ec0b21287e64b5",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_close_snapshot_mutation",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_close_snapshot_mutation()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -84540,6 +84978,421 @@
           ],
           "columns": [
             {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d07f5cce510dce03ee44001c05f876fc688c93c9f2e0a7f431c11262b48e42f0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ba1603fb0d31702eac735ddc4d80918358c02c5f98184074ca2eb5139da72d81",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "52dbf8ad14264d786bfaefa404c7ebde82528d4e0ceb859cb00928977843bda2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "ad733e0d1e52e50bbd29da2631315cab1c317bddc8b3121a59e23e9e49dfb500",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "close_event_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "51aeca057f2c8ef9f6a849a813df13c77edd6194fe3ddf16bcbe927dec32803f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "closed_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ed38282adcb7459edd282acd9bcb63968856ca67460abf8347cc081cfbd8e81f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_json",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e66dd444657af5b76ad8bb6825b0a26121efd23dc084db5e1f82ac611868eca3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "content_hash_sha256",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "content_hash_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (content_hash_sha256 ~ '^[a-f0-9]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "9312fa2dff8d30e6bc7f00bf54c09c4cdd486f30e9da806c3550568695eea9ed",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_content_hash_sha256_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(payload_json::jsonb) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "592d3a9880be17e3bc5b8bbd4d4b66530b485cab7f0757d84029b34cc08a59b9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_payload_json_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "period_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (period_version > 0)",
+              "delete_action": null,
+              "fingerprint": "3dfd42eb7235852613317e57f0d12746784cebc986b756a55e0b1578f348ee39",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_period_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "close_event_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (close_event_id) REFERENCES ledger.period_close_events(event_id)",
+              "delete_action": "no_action",
+              "fingerprint": "696522a5fff49a4e6ac4379419102d3a00d219547eccf967836e2047f7da0897",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "period_close_snapshots_close_event_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "event_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "period_close_events",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+              "delete_action": "no_action",
+              "fingerprint": "cc7273b474aca16279882a3bd039065eb0c160435412818c9778d08a9c838c14",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "period_close_snapshots_ledger_book_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "ledger_book_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "ledger_books",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "period_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (period_id) REFERENCES ledger.accounting_periods(period_id)",
+              "delete_action": "no_action",
+              "fingerprint": "637f6d399007d93b5524d923cbfe8b1292b49d1a699589992e2f8e851689363b",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "period_close_snapshots_period_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "period_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "accounting_periods",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "period_id",
+                "period_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (period_id, period_version)",
+              "delete_action": null,
+              "fingerprint": "220393d8d33830ae6aa454c64593cd14a3864af9616884f8e0783c08977ef3f5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "close_event_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (close_event_id)",
+              "delete_action": null,
+              "fingerprint": "221f12b1c2374585441a819b57960fe3bef9908d41e6f28da19c0545acd13d26",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_close_event_id_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "a767239fdd8d5992d4e1c8251a73ddc668cd200b1ef73028aff030ca856072b7",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX period_close_snapshots_close_event_id_key ON ledger.period_close_snapshots USING btree (close_event_id)",
+              "expression": null,
+              "fingerprint": "04735979122dd6c50edfb3f30eb2a49ec39b0c4337671010ab753b555ae6af78",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "close_event_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "period_close_snapshots_close_event_id_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX period_close_snapshots_pkey ON ledger.period_close_snapshots USING btree (period_id, period_version)",
+              "expression": null,
+              "fingerprint": "87d07458552e1599685b125ef58d2573cca08050efa34c13bd17ee839ec40a97",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "period_id",
+                "period_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "period_close_snapshots_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "period_close_snapshots",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER close_snapshot_immutable BEFORE DELETE OR UPDATE ON ledger.period_close_snapshots FOR EACH ROW EXECUTE FUNCTION ledger.reject_close_snapshot_mutation()",
+              "definition_hash": "f4eeb41de5bd3175be844c08059ed74ba3e1966ceeac1c6e710bfd54defc48ce",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
+              "function_schema": "ledger",
+              "function_signature": "reject_close_snapshot_mutation()",
+              "level": "row",
+              "name": "close_snapshot_immutable",
+              "relation": "period_close_snapshots",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
               "collation": "pg_catalog.default",
               "comment": null,
               "data_type": "text",
@@ -89230,6 +90083,14 @@
           "forced": false,
           "policies": [],
           "relation": "period_close_events",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "89b9eb9d48b15092f3c79dadb698bb7ab32621deba5d86c712cb2ab91c06c6f3",
+          "forced": false,
+          "policies": [],
+          "relation": "period_close_snapshots",
           "schema": "ledger"
         },
         {
@@ -101077,6 +101938,421 @@
           ],
           "columns": [
             {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d07f5cce510dce03ee44001c05f876fc688c93c9f2e0a7f431c11262b48e42f0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ba1603fb0d31702eac735ddc4d80918358c02c5f98184074ca2eb5139da72d81",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "period_version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "52dbf8ad14264d786bfaefa404c7ebde82528d4e0ceb859cb00928977843bda2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "ad733e0d1e52e50bbd29da2631315cab1c317bddc8b3121a59e23e9e49dfb500",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "close_event_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "51aeca057f2c8ef9f6a849a813df13c77edd6194fe3ddf16bcbe927dec32803f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "closed_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ed38282adcb7459edd282acd9bcb63968856ca67460abf8347cc081cfbd8e81f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_json",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e66dd444657af5b76ad8bb6825b0a26121efd23dc084db5e1f82ac611868eca3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "content_hash_sha256",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "content_hash_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (content_hash_sha256 ~ '^[a-f0-9]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "9312fa2dff8d30e6bc7f00bf54c09c4cdd486f30e9da806c3550568695eea9ed",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_content_hash_sha256_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(payload_json::jsonb) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "592d3a9880be17e3bc5b8bbd4d4b66530b485cab7f0757d84029b34cc08a59b9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_payload_json_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "period_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (period_version > 0)",
+              "delete_action": null,
+              "fingerprint": "3dfd42eb7235852613317e57f0d12746784cebc986b756a55e0b1578f348ee39",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_period_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "close_event_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (close_event_id) REFERENCES ledger.period_close_events(event_id)",
+              "delete_action": "no_action",
+              "fingerprint": "696522a5fff49a4e6ac4379419102d3a00d219547eccf967836e2047f7da0897",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "period_close_snapshots_close_event_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "event_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "period_close_events",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+              "delete_action": "no_action",
+              "fingerprint": "cc7273b474aca16279882a3bd039065eb0c160435412818c9778d08a9c838c14",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "period_close_snapshots_ledger_book_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "ledger_book_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "ledger_books",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "period_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (period_id) REFERENCES ledger.accounting_periods(period_id)",
+              "delete_action": "no_action",
+              "fingerprint": "637f6d399007d93b5524d923cbfe8b1292b49d1a699589992e2f8e851689363b",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "period_close_snapshots_period_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "period_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "accounting_periods",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "period_id",
+                "period_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (period_id, period_version)",
+              "delete_action": null,
+              "fingerprint": "220393d8d33830ae6aa454c64593cd14a3864af9616884f8e0783c08977ef3f5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "close_event_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (close_event_id)",
+              "delete_action": null,
+              "fingerprint": "221f12b1c2374585441a819b57960fe3bef9908d41e6f28da19c0545acd13d26",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "period_close_snapshots_close_event_id_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "a767239fdd8d5992d4e1c8251a73ddc668cd200b1ef73028aff030ca856072b7",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX period_close_snapshots_close_event_id_key ON ledger.period_close_snapshots USING btree (close_event_id)",
+              "expression": null,
+              "fingerprint": "04735979122dd6c50edfb3f30eb2a49ec39b0c4337671010ab753b555ae6af78",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "close_event_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "period_close_snapshots_close_event_id_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX period_close_snapshots_pkey ON ledger.period_close_snapshots USING btree (period_id, period_version)",
+              "expression": null,
+              "fingerprint": "87d07458552e1599685b125ef58d2573cca08050efa34c13bd17ee839ec40a97",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "period_id",
+                "period_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "period_close_snapshots_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "period_close_snapshots",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER close_snapshot_immutable BEFORE DELETE OR UPDATE ON ledger.period_close_snapshots FOR EACH ROW EXECUTE FUNCTION ledger.reject_close_snapshot_mutation()",
+              "definition_hash": "f4eeb41de5bd3175be844c08059ed74ba3e1966ceeac1c6e710bfd54defc48ce",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
+              "function_schema": "ledger",
+              "function_signature": "reject_close_snapshot_mutation()",
+              "level": "row",
+              "name": "close_snapshot_immutable",
+              "relation": "period_close_snapshots",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
               "collation": "pg_catalog.default",
               "comment": null,
               "data_type": "text",
@@ -105880,6 +107156,24 @@
         },
         {
           "comment": null,
+          "definition": "CREATE TRIGGER close_snapshot_immutable BEFORE DELETE OR UPDATE ON ledger.period_close_snapshots FOR EACH ROW EXECUTE FUNCTION ledger.reject_close_snapshot_mutation()",
+          "definition_hash": "f4eeb41de5bd3175be844c08059ed74ba3e1966ceeac1c6e710bfd54defc48ce",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "155dacffb9b52dc3901f76e7b4f3b71f3b6f2ce640579c431b81fd4d659a9acc",
+          "function_schema": "ledger",
+          "function_signature": "reject_close_snapshot_mutation()",
+          "level": "row",
+          "name": "close_snapshot_immutable",
+          "relation": "period_close_snapshots",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
           "definition": "CREATE TRIGGER protect_private_capital_call BEFORE DELETE OR UPDATE ON ledger.private_capital_calls FOR EACH ROW EXECUTE FUNCTION ledger.protect_private_capital_authority()",
           "definition_hash": "fe3d2cc9826f00f90e0a73af34e0707135771081946db225b9b0b012116fe418",
           "enabled": "origin",
@@ -107946,6 +109240,756 @@
           "rls_enabled": false,
           "rls_forced": false,
           "schema": "money_market",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "triggers": [],
+      "views": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "create"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "comment": null,
+      "comments": [],
+      "composite_types": [],
+      "dependencies": [],
+      "domains": [],
+      "enums": [],
+      "exists": true,
+      "extensions": [],
+      "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+      "foreign_tables": [],
+      "functions": [],
+      "logical_modules": [
+        "operator-triage"
+      ],
+      "materialized_views": [],
+      "name": "operator_triage",
+      "owner": "meridian",
+      "partitions": [],
+      "policies": [],
+      "procedures": [],
+      "relations": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "work_item_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+              "delete_action": null,
+              "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "item_metadata_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+              "expression": null,
+              "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "item_metadata_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "item_metadata",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operator_triage_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "operator_triage_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "operator_triage_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "row_level_security": [
+        {
+          "enabled": false,
+          "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+          "forced": false,
+          "policies": [],
+          "relation": "item_metadata",
+          "schema": "operator_triage"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+          "forced": false,
+          "policies": [],
+          "relation": "operator_triage_schema_migrations",
+          "schema": "operator_triage"
+        }
+      ],
+      "security_labels": [],
+      "sequences": [],
+      "tables": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "work_item_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+              "delete_action": null,
+              "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "item_metadata_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+              "expression": null,
+              "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "item_metadata_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "item_metadata",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operator_triage_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "operator_triage_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "operator_triage_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
           "security_labels": [],
           "sequence": null,
           "triggers": []

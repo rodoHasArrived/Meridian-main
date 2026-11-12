@@ -25,7 +25,7 @@ flowchart LR
     Artifacts --> Drift[Committed-artifact drift check]
 ```
 
-The registry currently covers the ten SQL migration modules under `Meridian.Storage` and
+The registry currently covers the eleven SQL migration modules under `Meridian.Storage` and
 `Meridian.Identity`. Direct Lending remains a distinct migration module even though its default
 physical location is the `security_master` schema.
 
