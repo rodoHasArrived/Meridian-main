@@ -8,6 +8,7 @@ export interface BondCalculationContext {
   settlementDate?: string | null;
   knownAt?: string | null;
   securityVersion?: number | null;
+  observedFixingReceiptIds?: string[] | null;
   curves?: Array<{
     role: string;
     curveId: string;
@@ -88,4 +89,26 @@ export interface BondAnalyticsQuery {
   cleanPrice?: string;
   yield?: string;
   yieldConvention?: BondYieldConvention;
+  selectionReceiptId?: string;
+  priceAccountId?: string;
+  observedFixingReceiptIds?: string;
+}
+
+/** Exact retained provider observation and immutable operator-choice receipt. */
+export interface BondRetainedObservation {
+  securityId: string;
+  selectedSource: string;
+  goldenCopyPrice: BondDecimal;
+  priceAsOf: string;
+  selectionReceiptId: string;
+  isStaleFallback: boolean;
+  daysStale?: number | null;
+  unit: string;
+  quotation?: {
+    basis: "Unspecified" | "Clean" | "Dirty";
+    convention: "Unspecified" | "Per100Face" | "CurrencyPerUnit";
+    status: "Unspecified" | "Bid" | "Ask" | "Mid" | "Evaluated" | "Trade";
+    settlementDate: string;
+    settlementBasis: string;
+  } | null;
 }
