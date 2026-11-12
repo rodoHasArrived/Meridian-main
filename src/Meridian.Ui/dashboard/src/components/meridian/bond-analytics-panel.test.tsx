@@ -345,3 +345,88 @@ describe("bond analytics inputs", () => {
     expect(await screen.findByText("1,234,567.123456789012")).toBeInTheDocument();
   });
 });
+
+describe("retained bond observations", () => {
+  it("routes observed and forward blockers separately and preserves inputs when a fixing receipt is selected", async () => {
+    const onSelectFixing = vi.fn();
+    const onSelectForwardCurve = vi.fn();
+    const calculate = vi.fn().mockResolvedValue({ ...floatingResult(), isBlocked: true, blockers: [{ code: "MissingFixing", reason: "No observed fixing for 2026-01-15." }] });
+    const props = { securityId: SECURITY_ID, calculate, onSelectFixing, onSelectForwardCurve };
+    const { rerender } = render(<BondAnalyticsPanel {...props} />);
+    fireEvent.change(screen.getByLabelText("Calculation version"), { target: { value: "bond-analytics-v3" } });
+    fireEvent.change(screen.getByLabelText("Calculation date (UTC)"), { target: { value: "2026-02-15" } });
+    fireEvent.change(screen.getByLabelText("Settlement date"), { target: { value: "2026-02-16" } });
+    fireEvent.change(screen.getByLabelText("Recorded cutoff (UTC, optional)"), { target: { value: "2026-02-16T12:00" } });
+    fireEvent.change(screen.getByLabelText("Clean price / 100"), { target: { value: "98.123456789012345678" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Select observed fixing" }));
+    expect(onSelectFixing).toHaveBeenCalledOnce(); expect(onSelectForwardCurve).not.toHaveBeenCalled();
+    calculate.mockResolvedValue({ ...floatingResult(), isBlocked: true, blockers: [{ code: "ForwardCurveRequired", reason: "Future resets require a curve." }] });
+    rerender(<BondAnalyticsPanel {...props} observedFixingReceiptIds={["fixing-receipt"]} />);
+    expect(screen.getByLabelText("Calculation version")).toHaveValue("bond-analytics-v3");
+    expect(screen.getByLabelText("Clean price / 100")).toHaveValue("98.123456789012345678");
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Select forward curve" }));
+    expect(onSelectForwardCurve).toHaveBeenCalledOnce();
+    expect(calculate.mock.calls[1][1]).toMatchObject({ calculationVersion: "bond-analytics-v3", asOf: "2026-02-15T00:00:00Z",
+      settlementDate: "2026-02-16", knownAt: "2026-02-16T12:00:00Z", cleanPrice: "98.123456789012345678", observedFixingReceiptIds: "fixing-receipt" });
+  });
+
+  it("shows provider quotation evidence and submits only the immutable receipt", async () => {
+    const calculate = vi.fn().mockResolvedValue(result());
+    const loadObservations = vi.fn().mockResolvedValue([{
+      securityId: SECURITY_ID, selectedSource: "Dealer A", goldenCopyPrice: "98.500000000000000001",
+      priceAsOf: "2026-10-29T00:00:00Z", selectionReceiptId: "receipt-a", unit: "PercentOfPar",
+      isStaleFallback: false, daysStale: 0,
+      quotation: { basis: "Clean", convention: "Per100Face", status: "Bid", settlementDate: "2026-10-30", settlementBasis: "T+1 US government" }
+    }]);
+    const user = userEvent.setup();
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} loadObservations={loadObservations} />);
+    await user.selectOptions(screen.getByLabelText("Input basis"), "retained");
+    await user.click(screen.getByRole("button", { name: "Load retained observations" }));
+    await screen.findByRole("option", { name: /Dealer A.*Fresh.*Bid.*Clean.*T\+1/ });
+    await user.selectOptions(screen.getByLabelText("Use retained observation"), "receipt-a");
+    expect(screen.getByLabelText("Retained observation evidence")).toHaveTextContent("98.500000000000000001");
+    await user.click(screen.getByRole("button", { name: "Calculate bond analytics" }));
+    await screen.findByText("Calculation ready.");
+    const query = calculate.mock.calls[0][1];
+    expect(query.selectionReceiptId).toBe("receipt-a");
+    expect(query).not.toHaveProperty("cleanPrice");
+    expect(query).not.toHaveProperty("yield");
+    fireEvent.change(screen.getByLabelText("Calculation date (UTC)"), { target: { value: "2026-10-30" } });
+    expect(screen.getByLabelText("Use retained observation")).toHaveValue("");
+    expect(screen.queryByLabelText("Retained observation evidence")).not.toBeInTheDocument();
+  });
+
+  it("keeps calculation inputs while an actionable blocker opens convention review", async () => {
+    const onReviewConventions = vi.fn();
+    const calculate = vi.fn().mockResolvedValue({ ...result(), isBlocked: true,
+      blockers: [{ code: "DeclaredScheduleRequired", reason: "Explicit day count required." }] });
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} onReviewConventions={onReviewConventions} />);
+    fireEvent.change(screen.getByLabelText("Clean price / 100"), { target: { value: "98.5" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Review conventions" }));
+    expect(onReviewConventions).toHaveBeenCalledOnce();
+    expect(screen.getByLabelText("Clean price / 100")).toHaveValue("98.5");
+    expect(screen.getByText(/DeclaredScheduleRequired:/)).toBeInTheDocument();
+  });
+});
+
+it("clears the prior calculation when source observations are reloaded", async () => {
+  const calculate = vi.fn().mockResolvedValue(result());
+  const loadObservations = vi.fn().mockResolvedValue([{
+    securityId: SECURITY_ID, selectedSource: "Source", goldenCopyPrice: "100", priceAsOf: "2026-10-29T00:00:00Z",
+    selectionReceiptId: "receipt", isStaleFallback: false, unit: "PercentOfPar"
+  }]);
+  const user = userEvent.setup();
+  render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} loadObservations={loadObservations} />);
+  await user.selectOptions(screen.getByLabelText("Input basis"), "retained");
+  await user.click(screen.getByRole("button", { name: "Load retained observations" }));
+  await screen.findByRole("option", { name: /Source.*Fresh/ });
+  await user.selectOptions(screen.getByLabelText("Use retained observation"), "receipt");
+  await user.click(screen.getByRole("button", { name: "Calculate bond analytics" }));
+  await screen.findByText("Calculation ready.");
+  await user.click(screen.getByRole("button", { name: "Load retained observations" }));
+  expect(screen.queryByText("0.0512345")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Use retained observation")).toHaveValue("");
+});

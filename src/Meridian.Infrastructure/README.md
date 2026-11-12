@@ -11,6 +11,12 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Infrastructure
 
+FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
+Fixed-income ingestion uses original decimal text, provider units, observation date, publication
+(unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-
+maturity Treasury yields are labeled par-curve observations and are never silently treated as
+zero rates or discount factors. Provider verification here is synthetic; live FRED access remains untested.
+
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.

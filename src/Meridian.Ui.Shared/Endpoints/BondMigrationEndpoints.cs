@@ -15,6 +15,7 @@ public static class BondMigrationEndpoints
 {
     public static void MapBondMigrationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         var group = app.MapGroup(string.Empty).WithTags("BondMigration").RequireWorkstationTenantScope();
         group.MapPost(UiApiRoutes.ReferenceDataBondMigrationPreview, (
             BondMigrationPreviewRequest request, [FromServices] IBondMigrationService service, CancellationToken ct) =>

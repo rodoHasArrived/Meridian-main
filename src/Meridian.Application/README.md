@@ -11,6 +11,25 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Application
 
+Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
+the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
+security/version, reviewer and justification remain bound to a content hash. Retrieval-only retries
+return the original receipt. Calculations use explicit receipt IDs; retention never changes a prior
+unpinned calculation or selects a changing latest fixing.
+
+Fixed-income holding imports require explicit original face, current factor, per-100 quotation,
+clean/dirty price and market-value bases, and total accrued interest with matching currencies.
+The mapped record retains exact-string `bondValueReconciliation` evidence (provider value,
+normalized consideration, signed variance and calculation inputs). Template v2 requires reviewed
+currency and explicit coupon units, frequency, day count, calendar, settlement, call schedules and
+factor history; its sample-payment preview uses shared schedule and bond kernels before staging.
+Configured holiday calendars are resolved by the host rather than inferred.
+
+Provider capability matrices separate terms, evaluated prices, executable quotes, trades, curves,
+fixings, factors and lifecycle notices. A configured connection or general certification never
+establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
+IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
+
 The governed Security Master field-edit lifecycle accepts `assetSpecificTerms.rateUnit` on scalar-rate
 classes without schedule anchors. Publishing the approved edit promotes only its declaration,
 preserves the stored rate amount, emits `rateConvention` economics, and feeds the same normalized
@@ -605,6 +624,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   REST dry-run, and quarantine-replay paths all route through it rather than carrying their own
   copies, so a dry run and the replay it predicts coerce a value identically, and the
   operator-visible `transform.*` issue codes have one definition.
+  Identity preview resolves all supplied security identifiers before selecting a match. Conflicting
+  targets block reconciliation; retained operator choices bind the exact source and candidate
+  evidence hash. A changed match or source invalidates the choice without rewriting source data.
   When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained
@@ -1316,8 +1338,9 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the same opening outstanding principal used by calculated cash flows. Dated factors
-include only payments through their evidence date; later contractual payments completed before
+quote by the same opening outstanding principal used by calculated cash flows. Dirty quotations
+block with `PriceBasisRequiresNormalization` until settlement-aware clean/dirty normalization is
+reviewed. Dated factors include only payments through their evidence date; later contractual payments completed before
 the valuation date reduce the balance. Without an applicable factor, all completed in-window
 contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
 twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.

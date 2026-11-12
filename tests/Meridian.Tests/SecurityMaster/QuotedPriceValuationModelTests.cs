@@ -23,6 +23,23 @@ public sealed class QuotedPriceValuationModelTests
     private static readonly DateTimeOffset KnownAt = ValuationTestSecurities.AsOf.AddHours(6);
 
     [Fact]
+    public async Task ExplicitDirtyQuote_CannotSilentlyBecomeCleanMarketValue()
+    {
+        var bond = ValuationTestSecurities.Bond();
+        var selection = new SecurityPriceGoldenCopyDto(bond.SecurityId, 101.4m, SecurityPriceKind.MarketGoldenCopy,
+            "provider", PriceAsOf, false, 1, [], SecurityPriceUnit.PercentOfPar)
+        {
+            Quotation = new(SecurityPriceBasis.Dirty, SecurityQuotationConvention.Per100Face,
+            SecurityQuoteStatus.Evaluated, DateOnly.FromDateTime(ValuationTestSecurities.AsOf.UtcDateTime), "T+1")
+        };
+        var result = await new QuotedPriceValuationModel(Pricing(bond, selection)).ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: 100_000m), bond, CancellationToken.None);
+        result.IsBlocked.Should().BeTrue();
+        result.Blockers.Should().ContainSingle().Which.Code.Should().Be("PriceBasisRequiresNormalization");
+        result.MarketValue.Should().BeNull();
+    }
+
+    [Fact]
     public async Task PassesTheSelectionThrough_AndValuesFaceValueLotsPercentOfPar()
     {
         var bond = ValuationTestSecurities.Bond();
