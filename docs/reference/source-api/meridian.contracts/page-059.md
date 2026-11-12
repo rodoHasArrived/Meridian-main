@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseworkOperationResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:915](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L915).
+
+API-safe terminal receipt for a single reconciliation casework attempt. HTTP success only means the command was evaluated; callers must use Outcome to determine whether its postconditions were satisfied, blocked, or failed.
+
+```csharp
+public sealed record ReconciliationCaseworkOperationResult(string TransitionStatus, ReconciliationBreakQueueItem? Item, VerifiedOperationOutcome Outcome, string? Error = null, string? ErrorCode = null, IReadOnlyList<string>? ValidationIssues = null);
+```
+
+## ReconciliationCompletedRunObservation
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L40).
+
+```csharp
+public sealed record ReconciliationCompletedRunObservation(string RunId, ReconciliationRunObservationScope Scope, DateTimeOffset ObservedAt, bool Succeeded, bool CompletePopulation, IReadOnlyList<ReconciliationBreakObservation> Breaks);
+```
+
 ## ReconciliationCorrelationContext
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCorrelationContext</code>. Kind: `record`.
@@ -644,24 +666,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1369]
 
 ```csharp
 public sealed record ReportingRunRequestDto(string TemplateId, DateOnly? AsOfDate = null, int MaxRetries = 0, string? JobId = null, string? RequestedBy = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? RetryReason = null, bool AllowRestatement = false, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? Parameters = null);
-```
-
-## ReportingRunResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1382](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1382).
-
-```csharp
-public sealed record ReportingRunResultDto(WorkstationReportingRunPayload Run);
-```
-
-## ReportingRunScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1313](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1313).
-
-```csharp
-public sealed record ReportingRunScopeDto(string FundProfileId, ReportingEntityScopeKindDto EntityScopeKind = ReportingEntityScopeKindDto.AllEntities, string? EntityId = null, string? PortfolioId = null, string? InvestorId = null, LedgerDimensionSetDto? Dimensions = null);
 ```

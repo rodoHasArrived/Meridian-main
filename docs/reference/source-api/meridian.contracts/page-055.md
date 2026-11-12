@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingWorkspaceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingWorkspaceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:113](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L113).
+
+```csharp
+public sealed record OnboardingWorkspaceDto(string WorkspaceId, string Name, string OwnerId, OnboardingScopeDto Scope, int Version, int DataRevision, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, OnboardingCriteriaDto Criteria, IReadOnlyList<OnboardingCriteriaRevisionDto> CriteriaHistory, IReadOnlyList<OnboardingComparisonDto> Comparisons, IReadOnlyList<OnboardingDifferenceDto> CurrentDifferences, IReadOnlyList<OnboardingDifferenceAssignmentDto> Assignments, IReadOnlyList<OnboardingReviewDto> Reviews, IReadOnlyList<OnboardingReadinessPacketDto> Packets, OnboardingReadinessDto Readiness, string AuthorityPosture);
+```
+
+## OpenLotSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.OpenLotSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1115](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1115).
+
+Workstation-facing summary of a single open lot for a strategy run.
+
+```csharp
+public sealed record OpenLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, DateTimeOffset OpenedAt, decimal CurrentUnrealizedPnl, bool IsLongTerm, string? AccountId = null);
+```
+
 ## OperatingScopeValuesDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatingScopeValuesDto</code>. Kind: `record`.
@@ -574,57 +596,3 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:505](../
 ```csharp
 public sealed record OperationsGatePostureRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, bool? ProviderAccountLinked = null, bool? ProviderSyncStale = null, int? SecurityCoverageIssueCount = null, int? SecurityAccountingIssueCount = null, bool? LedgerPreviewAvailable = null, bool? LedgerDraftBalanced = null, bool? LedgerPostingValidated = null, int? OpenCriticalBreakCount = null, int? OpenNonCriticalBreakCount = null, bool? ReportPackReady = null, string? ReportPackId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? ProviderRequiredCapabilityGaps = null, IReadOnlyList<string>? ProviderDegradedCapabilityGaps = null);
 ```
-
-## OperationsGateStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsGateStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L29).
-
-Server-derived status for a required operations continuity gate.
-
-```csharp
-public enum OperationsGateStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L31) |  |
-| <code>InProgress = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L32) |  |
-| <code>Passed = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L33) |  |
-| <code>ReviewRequired = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L34) |  |
-| <code>Blocked = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L35) |  |
-
-## OperationsIssueCodeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsIssueCodeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:445](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L445).
-
-```csharp
-public enum OperationsIssueCodeDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:447](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L447) |  |
-| <code>WorkflowAlreadyExists = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:448](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L448) |  |
-| <code>VersionMismatch = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:449](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L449) |  |
-| <code>BrokerSourceMissing = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:450](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L450) |  |
-| <code>BrokerImportFailed = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:451](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L451) |  |
-| <code>SecurityCoverageMissing = 5</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:452](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L452) |  |
-| <code>SecurityAccountingClassificationMissing = 6</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:453](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L453) |  |
-| <code>LedgerPreviewUnavailable = 7</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:454](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L454) |  |
-| <code>LedgerDraftUnbalanced = 8</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:455](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L455) |  |
-| <code>LedgerPostingValidationFailed = 9</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:456](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L456) |  |
-| <code>ReconciliationBreaksOpen = 10</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:457](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L457) |  |
-| <code>ReconciliationCriticalBreaksOpen = 11</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:458](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L458) |  |
-| <code>ApprovalReviewerMissing = 12</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:459](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L459) |  |
-| <code>ApprovalRejected = 13</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:460](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L460) |  |
-| <code>ReportPackMissing = 14</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L461) |  |
-| <code>ReportPackNotReady = 15</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:462](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L462) |  |
-| <code>GovernanceApprovalRequired = 16</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:463](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L463) |  |

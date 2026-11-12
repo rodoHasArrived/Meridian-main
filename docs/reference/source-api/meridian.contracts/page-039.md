@@ -54,6 +54,24 @@ Held units exchanged for a successor security, optionally with cash (merger, con
 public sealed record ExchangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, decimal? ExchangeRatio, decimal? CashPerUnit, bool? IsVoluntary) : CorporateActionTerms(EventType);
 ```
 
+## FaceValueAccrualHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L10).
+
+A retained lot&#x27;s entitlement for one accounting date. OpenShare reflects closing disposals, while AccrualFactor is the factor before that date&#x27;s principal paydown: interest accrues through the paydown date before principal is reduced. Lot retains the acquisition facts and the factor held at that day&#x27;s close. This read projection must never be persisted as a replacement lot of record.
+
+```csharp
+public sealed record FaceValueAccrualHolding(DateOnly Date, FaceValueLot Lot, decimal OpenShare, decimal AccrualFactor, Guid? TaxLotRecordId = null, long? Version = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccrualFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L19) | Face entitled to the date&#x27;s interest, with the factor and open share applied once. |
+
 ## FaceValueLot
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLot</code>. Kind: `record`.
@@ -948,23 +966,3 @@ Declared public members:
 | <code>string ProviderId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L9) |  |
 | <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectedCashFlowsAsync(Guid securityId, string? isin, DateTimeOffset factorDate, StructuredCashFlowScenario scenario, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L11) |  |
 | <code>Task&lt;decimal?&gt; GetCurrentFactorAsync(Guid securityId, string? isin, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L18) |  |
-
-## IUnitizedLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IUnitizedLot</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L12).
-
-The one lot shape shared by execution, backtesting, the ledger and face-value accounting: a decimal quantity, what one unit of it measures, and the contract multiplier that scales it to economic exposure. A face-value lot is the SecurityLotUnitKind.FaceValue case with a multiplier of one; a listed-option lot is the SecurityLotUnitKind.Contracts case carrying the option&#x27;s multiplier.
-
-```csharp
-public interface IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>decimal Quantity { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L15) | Lot quantity in UnitKind units. Never fractional-unsafe: always decimal. |
-| <code>SecurityLotUnitKind UnitKind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L18) | What one unit of Quantity measures. |
-| <code>decimal Multiplier { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L21) | The factor that scales one unit to economic exposure (1 unless the unit is a contract). |
