@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
  * and event classification throughout the operator workstation.
  *
  * **Variants:**
- * - `"default"` - primary/cyan, general status
+ * - `"default"` - copper, general status
  * - `"outline"` - muted, secondary metadata
  * - `"success"` / `"warning"` / `"danger"` - semantic state tones
- * - `"paper"` - paper (simulated) trading mode (blue)
+ * - `"paper"` - paper (simulated) trading mode (copper)
  * - `"live"` - LIVE environment alarm using `--live-env` (alarm red). NOT the same as
  *   data-posture "live" (cyan). Workspace status `live` maps to `"success"` in view-models.
  * - `"research"` - research/backtest mode
@@ -25,18 +25,18 @@ export interface DesignSystemBadgeProps extends HTMLAttributes<HTMLSpanElement> 
 }
 
 const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>, string> = {
-  default: "mds-badge--info border-primary/40 bg-primary/15 text-primary",
+  default: "mds-badge--info border-primary/40 bg-primary/15 text-[var(--state-paper-fg)]",
   outline: "mds-badge--neutral border-border bg-secondary/35 text-muted-foreground",
   // These semantic variants have always been unfilled: /12 was not emitted by
   // Tailwind 3. Retain that contrast instead of adding a new tint under v4.
-  success: "mds-badge--success border-success/35 text-success",
-  warning: "mds-badge--warning border-warning/35 text-warning",
-  danger: "mds-badge--danger border-danger/35 text-danger",
-  paper: "mds-badge--paper border-paper/35 text-paper",
+  success: "mds-badge--success border-success/35 text-[var(--state-healthy-fg)]",
+  warning: "mds-badge--warning border-warning/35 text-[var(--state-warn-fg)]",
+  danger: "mds-badge--danger border-danger/35 text-[var(--state-danger-fg)]",
+  paper: "mds-badge--paper border-paper/35 text-[var(--state-paper-fg)]",
   // "live" variant = LIVE environment (real-money alarm). Uses --live-env (alarm red),
   // not --live (cyan data-posture). Workspace status "live" maps to "success" in view-models.
-  live: "mds-badge--live border-live-env/40 text-live-env",
-  research: "mds-badge--info border-primary/35 text-primary"
+  live: "mds-badge--live border-live-env/40 text-[var(--state-live-fg)]",
+  research: "mds-badge--info border-primary/35 text-[var(--state-paper-fg)]"
 };
 
 export function DesignSystemBadge({ children, className, dot = false, variant = "default", ...props }: DesignSystemBadgeProps) {

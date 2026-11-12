@@ -21,7 +21,7 @@ function inject() {
 .mds-number-btn:disabled{opacity:.5;cursor:not-allowed;}
 .mds-number-input{flex:1;border:none;background:transparent;color:var(--text-primary,#22252A);
   font-family:var(--font-data);font-size:13px;padding:0 8px;text-align:center;}
-.mds-number-input:focus{outline:none;}
+.mds-number-input:focus-visible,.mds-number-btn:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-number-input::placeholder{color:var(--text-disabled,#94999F);}
 `;
   const el = document.createElement("style");
@@ -30,8 +30,10 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function NumberInput({ label, value = 0, onChange, min, max, step = 1, disabled = false }) {
+export function NumberInput({ label, value = 0, onChange, min, max, step = 1, disabled = false, id, "aria-label": ariaLabel, "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-invalid": ariaInvalid }) {
   inject();
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
   const [localValue, setLocalValue] = useState(value);
 
   const handleChange = (newVal) => {
@@ -43,9 +45,10 @@ export function NumberInput({ label, value = 0, onChange, min, max, step = 1, di
 
   return (
     <div>
-      {label && <label className="mds-number-label">{label}</label>}
+      {label && <label htmlFor={inputId} className="mds-number-label">{label}</label>}
       <div className="mds-number-wrap">
         <button
+          type="button" aria-label={`Decrease ${label || ariaLabel || "value"}`}
           className="mds-number-btn"
           onClick={() => handleChange(localValue - step)}
           disabled={disabled || (min !== undefined && localValue <= min)}
@@ -53,6 +56,7 @@ export function NumberInput({ label, value = 0, onChange, min, max, step = 1, di
           −
         </button>
         <input
+          id={inputId} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy} aria-describedby={ariaDescribedBy} aria-invalid={ariaInvalid}
           type="number"
           className="mds-number-input"
           value={localValue}
@@ -63,6 +67,7 @@ export function NumberInput({ label, value = 0, onChange, min, max, step = 1, di
           disabled={disabled}
         />
         <button
+          type="button" aria-label={`Increase ${label || ariaLabel || "value"}`}
           className="mds-number-btn"
           onClick={() => handleChange(localValue + step)}
           disabled={disabled || (max !== undefined && localValue >= max)}

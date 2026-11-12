@@ -8,18 +8,18 @@
 <link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 18px; font-family: var(--font-sans); color: var(--fg); }
-  .wrap { border: 1px solid #4A443C; border-radius: 8px; overflow: hidden; background: #201D19; }
+  .wrap { border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; background: var(--bg-light); }
   table { width: 100%; border-collapse: collapse; }
-  thead { background: hsl(213 34% 13%); }
-  th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); border-bottom: 1px solid #4A443C; font-family: var(--font-mono); }
+  thead { background: var(--bg-medium); }
+  th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
   th.r, td.r { text-align: right; }
-  td { padding: 7px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--fg); border-bottom: 1px solid hsl(208 38% 22% / .35); font-variant-numeric: tabular-nums; }
+  td { padding: 7px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--fg); border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
   tr:last-child td { border-bottom: 0; }
-  tr:hover td { background: hsl(213 40% 18% / .4); }
-  .success { color: #5FA37C; }
-  .danger { color: #CE7068; }
+  tr:hover td { background: var(--bg-hover); }
+  .success { color: var(--green-dim); }
+  .danger { color: var(--red-dim); }
   .muted { color: var(--fg-muted); }
-  .tag { display:inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; }
+  .tag { display:inline-block; padding: 1px 6px; border-radius: var(--radius-card); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; }
 </style>
 </head>
 <body class="bg-app">

@@ -11,15 +11,15 @@
     .container { max-width: 1000px; margin: 0 auto; }
     h1 { font-size: 28px; margin-top: 0; }
     h2 { font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 32px; }
-    .swatch { display: inline-flex; align-items: center; gap: 12px; margin: 8px 0; padding: 12px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 4px; }
+    .swatch { display: inline-flex; align-items: center; gap: 12px; margin: 8px 0; padding: 12px; background: var(--bg-light); border: 1px solid var(--border); border-radius: var(--radius-card); }
     .swatch-box { width: 80px; height: 60px; border: 1px solid var(--border); }
     .swatch-label { font-family: var(--font-data); font-size: 12px; }
     .mode-toggle { display: flex; gap: 8px; margin: 20px 0; }
-    .mode-toggle button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 13px; }
+    .mode-toggle button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; border-radius: var(--radius-card); font-family: inherit; font-size: 13px; }
     .mode-toggle button.active { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
     .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 16px 0; }
-    .example-card { padding: 16px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 4px; }
-    .note { background: var(--bg-active); border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; border-radius: 4px; }
+    .example-card { padding: 16px; background: var(--bg-light); border: 1px solid var(--border); border-radius: var(--radius-card); }
+    .note { background: var(--bg-active); border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; border-radius: var(--radius-card); }
     code { font-family: var(--font-data); background: var(--bg-medium); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
   </style>
 </head>
@@ -37,7 +37,7 @@
     <h2>How to Use</h2>
     <div class="note">
       <strong>Automatic:</strong> Dark mode activates when user's OS has <code>prefers-color-scheme: dark</code> enabled (system settings).
-      <br><strong>Manual override:</strong> Add <code>data-theme="dark"</code> to the <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code> tag.
+      <br><strong>Manual override:</strong> Add <code>data-theme="dark"</code> to the <code>&lt;html&gt;</code> tag.
       <br><strong>Example:</strong> <code>&lt;html data-theme="dark"&gt;</code>
     </div>
 

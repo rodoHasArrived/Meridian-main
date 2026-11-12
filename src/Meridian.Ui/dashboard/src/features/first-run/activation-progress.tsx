@@ -58,7 +58,7 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
     <div className="flex items-center gap-2">
       {liveStatus.workspace.isSample ? (
         <span
-          className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-semibold text-amber-200"
+          className="inline-flex items-center gap-1.5 rounded-[var(--radius-chip)] bg-[var(--state-warn-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--state-warn-fg)]"
           title={liveStatus.workspace.safetyMessage}
         >
           <FlaskConical size={13} />
@@ -72,11 +72,11 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         title={model.triggerTitle}
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
+          "inline-flex items-center gap-1.5 rounded-[var(--radius-chip)] px-2.5 py-1 text-xs transition-colors",
           "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           model.finished
-            ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
-            : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+            ? "bg-[var(--state-healthy-bg)] text-[var(--state-healthy-fg)] hover:bg-[var(--state-healthy-bg)]"
+            : "bg-secondary text-[var(--ws-text-secondary)] hover:bg-muted hover:text-foreground"
         )}
       >
         {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
@@ -84,7 +84,7 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
       </button>
 
       <button
-        className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300 hover:border-cyan-400 hover:text-cyan-200"
+        className="rounded-[var(--radius-chip)] border border-border px-2.5 py-1 text-xs text-[var(--ws-text-secondary)] hover:border-primary hover:text-[var(--ws-accent-pressed)]"
         onClick={() => void apiPostJson(WORKSTATION_API_ENDPOINTS.desktopLaunch, { page: "Portfolio" })}
       >
         Open desktop workstation

@@ -28,7 +28,7 @@ function inject() {
 .mds-btn--danger:hover{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);}
 .mds-btn--danger:active{background:var(--red-a20,rgba(168,68,60,.20));border-color:var(--red-dim,#7E332D);}
 /* link — text-only */
-.mds-btn--link{background:transparent;border:none;padding:0;color:var(--accent,#A85436);font-weight:600;font-size:12px;}
+.mds-btn--link{background:transparent;border:none;padding:0;color:var(--accent-dim,#8C4429);font-weight:600;font-size:12px;}
 .mds-btn--link:hover{text-decoration:underline;}
 `;
   const el = document.createElement("style");

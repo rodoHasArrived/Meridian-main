@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Token reference</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
 <style>
@@ -53,8 +55,8 @@
     vertical-align: -1px; margin-right: 6px; }
   .use { font-size: 10.5px; line-height: 1.45; color: var(--text-muted); }
   .use b { color: var(--text-primary); font-weight: 600; }
-  .sample-sec { color: #4E5258; }
-  .sample-mut { color: #5E666F; }
+  .sample-sec { color: var(--text-secondary); }
+  .sample-mut { color: var(--text-muted); }
 
   .mini { border: 1px solid var(--border); background: var(--bg-light); padding: 10px 12px;
     margin-top: 11px; }
@@ -121,42 +123,42 @@
         </thead>
         <tbody>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#4E5258"></span>text-secondary</td>
+            <td class="tk"><span class="swatch" style="background:var(--text-secondary)"></span>text-secondary</td>
             <td class="tk">7.1:1</td>
             <td class="use"><b class="sample-sec">Read it to work</b> — field labels, row labels, side-panel copy.</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#5E666F"></span>text-muted</td>
+            <td class="tk"><span class="swatch" style="background:var(--text-muted)"></span>text-muted</td>
             <td class="tk">6.1:1</td>
             <td class="use"><b class="sample-mut">Annotates content</b> — captions, units, timestamps, "last synced".</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#AF6143"></span>accent-hover</td>
+            <td class="tk"><span class="swatch" style="background:var(--accent-hover)"></span>accent-hover</td>
             <td class="tk">—</td>
             <td class="use"><b>Lighter</b> — pointer hover.</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#8C4429"></span>accent-dim</td>
+            <td class="tk"><span class="swatch" style="background:var(--accent-dim)"></span>accent-dim</td>
             <td class="tk">—</td>
             <td class="use"><b>Darker</b> — pressed / active.</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#F0EEE9"></span>bg-hover</td>
+            <td class="tk"><span class="swatch" style="background:var(--bg-hover)"></span>bg-hover</td>
             <td class="tk">—</td>
             <td class="use">Transient hover — flat neutral shift.</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#F2E3DB"></span>bg-active</td>
+            <td class="tk"><span class="swatch" style="background:var(--bg-active)"></span>bg-active</td>
             <td class="tk">—</td>
             <td class="use">Persisting <b>selected</b> state — cool wash.</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#E4E3DE"></span>border</td>
+            <td class="tk"><span class="swatch" style="background:var(--border)"></span>border</td>
             <td class="tk">—</td>
             <td class="use">Default hairline.</td>
           </tr>
           <tr>
-            <td class="tk"><span class="swatch" style="background:#AFABA1"></span>border-strong</td>
+            <td class="tk"><span class="swatch" style="background:var(--border-strong)"></span>border-strong</td>
             <td class="tk">—</td>
             <td class="use">Emphasis — totals, headers, section frames.</td>
           </tr>

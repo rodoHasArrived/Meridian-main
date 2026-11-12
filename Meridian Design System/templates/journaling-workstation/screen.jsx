@@ -124,8 +124,8 @@ function PostingHistory({ entries, onEdit, onReconcile }) {
           <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{filtered.length} of {entries.length} entries</span>
         </div>
         <div className="journ-search">
-          <input type="text" placeholder="Search by ref, memo, account…" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: "8px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", fontSize: 12, cursor: "pointer" }}>
+          <input type="text" aria-label="Search posting history" placeholder="Search by ref, memo, account…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select aria-label="Posting history filter" value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: "8px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", fontSize: 12, cursor: "pointer" }}>
             <option value="all">All entries</option>
             <option value="posted">Posted only</option>
             <option value="reconciled">Reconciled</option>

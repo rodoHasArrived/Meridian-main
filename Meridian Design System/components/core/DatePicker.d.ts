@@ -1,10 +1,10 @@
-/** Single date input with a calendar popover — click the field to open, click a day to select and close. */
-export interface DatePickerProps {
-  /** Small-caps label rendered above the field. */
-  label?: string;
-  /** Selected date as an ISO string (`YYYY-MM-DD`). */
+import type React from "react";
+/** Civil-date calendar. Enter/Space/ArrowDown opens; arrows, Home/End and PageUp/PageDown
+ * navigate dates; Escape closes the calendar and restores its named trigger. */
+export interface DatePickerProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "value" | "onChange" | "children"> {
+  label?: React.ReactNode;
+  /** Selected civil date (`YYYY-MM-DD`); never converted through a local timestamp. */
   value?: string;
-  /** Fires with the new ISO date string when a day is picked. */
   onChange?: (value: string) => void;
 }
-export declare function DatePicker(props: DatePickerProps): JSX.Element;
+export declare function DatePicker(props: DatePickerProps): React.ReactElement;

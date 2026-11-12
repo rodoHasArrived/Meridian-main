@@ -1,8 +1,8 @@
 /* Meridian — Elevation, Radius & Spacing
    ───────────────────────────────────────
-   Institutional-ops surfaces: shallow. ONE subtle card shadow, a small fixed
-   radius scale (chip → button → card). No heavy/material elevation, no
-   decorative blur. These are the exact tokens components consume.
+   Institutional-ops surfaces are flat and use one 2px corner across chips,
+   controls and panels. Only detached overlays use the menu shadow.
+   These are the exact tokens components consume.
 */
 :root {
   /* Motion — unified timing & easing across all components */

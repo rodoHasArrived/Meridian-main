@@ -52,7 +52,7 @@ function contrast(foreground: string, background: string): number {
 }
 
 describe("native design-system color integration", () => {
-  it.each(["light", "dark"] as const)("keeps dense table headers and alternating rows readable in %s appearance", (theme) => {
+  it.each(["light", "dark"] as const)("keeps dense table headers, alternating rows and selected evidence readable in %s appearance", (theme) => {
     const colors = themeColors(theme, theme === "dark");
     const styles = postcss.parse(readFileSync(resolve(sourceRoot, "styles/ui-kit-primitives.css"), "utf8"));
     const backgrounds = new Map<string, string>();
@@ -61,7 +61,8 @@ describe("native design-system color integration", () => {
     });
     for (const [selector, foreground] of [
       [".dense-data-table thead", "--ws-text-muted"],
-      [".dense-data-table tbody tr:nth-child(even)", "--ws-text"]
+      [".dense-data-table tbody tr:nth-child(even)", "--ws-text"],
+      [".dense-data-table tbody tr.selected", "--ws-text-secondary"]
     ]) {
       const background = backgrounds.get(selector);
       expect(background, selector).toBeDefined();

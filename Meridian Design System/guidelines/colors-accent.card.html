@@ -2,19 +2,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Accent &amp; text</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
 <style>
   body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .group { display: flex; flex-direction: column; gap: 6px; }
   .swrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .sw { border-radius: 8px; padding: 10px 10px 8px; height: 64px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
-  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: #fff; }
-  .v { font-family: var(--font-data); font-size: 8.5px; color: rgba(255,255,255,.8); }
+  .sw { border-radius: var(--radius-card); padding: 10px 10px 8px; height: 64px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
+  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-on-fill); }
+  .v { font-family: var(--font-data); font-size: 8.5px; color: var(--text-on-accent); }
   /* --accent-figure is a motif colour and never sits behind white text (3.58:1).
      The one swatch that shows it carries the dark ink instead, at 5.06:1. */
-  .sw--ink .n { color: #1A1511; }
-  .sw--ink .v { color: rgba(26,21,17,.75); }
+  .sw--ink { background: var(--card-surface); border-top: 8px solid var(--accent-figure); }
+  .sw--ink .n { color: var(--text-primary); }
+  .sw--ink .v { color: var(--text-secondary); }
   .txt { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
   .tline { font-family: var(--font-data); font-size: 12.5px; }
   .cap { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; color: var(--text-muted); }
@@ -26,7 +29,7 @@
     <div class="swrow">
       <div class="sw" style="background: var(--accent);"><span class="n">accent</span><span class="v">#A85436</span></div>
       <div class="sw" style="background: var(--accent-dim);"><span class="n">dim · pressed</span><span class="v">#8C4429</span></div>
-      <div class="sw sw--ink" style="background: var(--accent-figure);"><span class="n">figure · motif only</span><span class="v">#D16A4A</span></div>
+      <div class="sw sw--ink"><span class="n">figure · no text on fill</span><span class="v">--accent-figure</span></div>
     </div>
   </div>
   <div class="group">
@@ -35,7 +38,7 @@
       <span class="tline" style="color: var(--text-primary);">primary · #22252A</span>
       <span class="tline" style="color: var(--text-secondary);">secondary · #4E5258</span>
       <span class="tline" style="color: var(--text-muted);">muted · #5E666F</span>
-      <span class="tline" style="color: var(--text-disabled);">disabled · #8A939F</span>
+      <button class="tline" disabled style="color:var(--text-disabled);background:transparent;border:0;padding:0;text-align:left;">disabled · --text-disabled</button>
     </div>
   </div>
 </body>

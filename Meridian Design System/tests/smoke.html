@@ -6,20 +6,22 @@
 <title>Meridian — component smoke test</title>
 <link rel="stylesheet" href="../styles.css" />
 <style>
-  body { margin: 0; background: #DEE3EA; font-family: "Segoe UI", system-ui, sans-serif; font-size: 12px; }
-  header { padding: 10px 16px; background: #171A1F; color: #F4F6F8; position: sticky; top: 0; z-index: 10; }
+  body { margin: 0; background: var(--bg); font-family: var(--font-body); font-size: 12px; }
+  header { padding: 10px 16px; background: var(--topbar-bg); color: var(--topbar-text); position: sticky; top: 0; z-index: 10; }
   #summary { font-size: 12px; }
   #summary b { font-weight: 600; }
-  .ok { color: #7fd6a8; }
-  .bad { color: #ef9aa8; }
+  .ok { color: var(--green-dim); }
+  .bad { color: var(--red-dim); }
+  header .ok { color: var(--chrome-ok); }
+  header .bad { color: var(--chrome-err); }
   main { padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
-  figure { margin: 0; background: #fff; border: 1px solid #CBD3DC; display: flex; flex-direction: column; min-height: 120px; }
-  figure.err { border-color: #BA3F55; }
-  figcaption { padding: 5px 8px; font-size: 11px; color: #4D5967; border-bottom: 1px solid #D2D9E2; display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+  figure { margin: 0; background: var(--bg-light); border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 120px; }
+  figure.err { border-color: var(--red); }
+  figcaption { padding: 5px 8px; font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
   figcaption .status { font-weight: 400; }
-  .err figcaption { background: rgba(186,63,85,.10); color: #8C2F40; }
+  .err figcaption { background: var(--red-a10); color: var(--red-dim); }
   .body { padding: 8px; overflow: auto; max-height: 260px; }
-  .errmsg { font-family: "Cascadia Mono", monospace; font-size: 10px; color: #8C2F40; white-space: pre-wrap; word-break: break-word; }
+  .errmsg { font-family: "Cascadia Mono", monospace; font-size: 10px; color: var(--red-dim); white-space: pre-wrap; word-break: break-word; }
 </style>
 </head>
 <body>
@@ -83,7 +85,7 @@ function tryRender(name, Comp) {
 
   if (SKIP.has(name)) {
     statusEl.textContent = "skip"; results.skipped.push(name);
-    body.innerHTML = '<span style="color:#889099">provider/hook carrier — mounted in context tests</span>';
+    body.innerHTML = '<span style="color:var(--text-muted)">provider/hook carrier — mounted in context tests</span>';
     return;
   }
   try {
@@ -127,7 +129,7 @@ for (const name of names) {
     tryRender(name, Comp);
   } else {
     // Non-render export (object of hooks, etc.)
-    tryRender(name, () => React.createElement("span", { style: { color: "#889099" } }, "non-component export"));
+    tryRender(name, () => React.createElement("span", { style: { color: "var(--text-muted)" } }, "non-component export"));
   }
 }
 

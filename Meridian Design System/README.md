@@ -6,7 +6,14 @@ A reusable operator-workstation design-system package for **Meridian** — a sel
 
 This system is grounded in the **desktop application** (`src/Meridian.Wpf`), whose visual language is **"Institutional Ops"**: a **light** workstation — a warm-paper canvas (`#F2F0EC`) of flat architect-white panels, capped by a warm near-black brand bar and status bar (`#1F1D1A`). One muted copper accent (`#A85436`), desaturated semantic colors used as alpha-10 washes (never solid fills), Segoe UI + Cascadia Mono, and structure built from **visible, load-bearing borders — no shadows, no glow, no gradients**. Think a Bloomberg-grade institutional terminal: utilitarian, flat, hard-edged — not a soft consumer-fintech app.
 
-> **Programmed Institutionalism** keeps the structural essentials of the Concrete refresh — square chips (0px), crisp 2px controls, flat surfaces where borders carry the elevation — and changes the material: the canvas becomes warm drafting stock rather than industrial gray, the accent becomes copper rather than steel-blue, and the semantics become forest/brick/ochre/slate-violet. Dark mode is warm graphite, material rather than luminous. The superseded identity remains selectable as `<html data-brand="steel">`. Earlier history lives in `docs/changelog/`.
+> **Programmed Institutionalism** keeps the structural essentials of the Concrete refresh — unified 2px chips, crisp 2px controls, flat surfaces where borders carry the elevation — and changes the material: the canvas becomes warm drafting stock rather than industrial gray, the accent becomes copper rather than steel-blue, and the semantics become forest/brick/ochre/slate-violet. Dark mode is warm graphite, material rather than luminous. The superseded identity remains selectable as `<html data-brand="steel">`. Earlier history lives in `docs/changelog/`.
+
+## Compliance and implementation evidence
+
+Use [the compliance workflow](docs/COMPLIANCE.md) for generation, source policy, rendered acceptance,
+and the required Windows Chrome/Edge and NVDA pass. The browser consumption inventory distinguishes
+route integration from available adapters and reference-only components. Automated success does not
+substitute for the Windows manual evidence.
 
 ## Sources
 
@@ -73,7 +80,7 @@ Every name is exposed on `window.MeridianDesignSystem_4f61be`. Compounds export 
 
 **Form helpers**: `DatePicker` · `DateRangePicker` · `FileUpload` · `FieldInput` · `FormValidation` · `FormErrorSummary` · `Validators`
 
-**Content-rule primitives & rails**: `Timestamp` (UTC mono time — full/time-of-day/relative) · `Delta` (explicit-sign change value) · `TagInput` (symbol/recipient chip entry) · `SplitPane` (resizable job and l oil two-panel rail — keyboard, persisted)
+**Content-rule primitives & rails**: `Timestamp` (UTC mono time — full/time-of-day/relative) · `Delta` (explicit-sign change value) · `TagInput` (symbol/recipient chip entry) · `SplitPane` (resizable two-panel rail — keyboard, persisted)
 
 **Workstation services**: `ErrorBoundary` (panel crash isolation) · `NotificationCenter` (persistent "while you were away" rail) · `HotkeysProvider` (chord/sequence bindings + the "?" shortcut sheet) · `AsyncCombobox` (type-ahead over 40k options — async, windowed)
 
@@ -127,9 +134,9 @@ Reference material lives in `guidelines/` (visual + content + the two new refere
 - **`guidelines/ENTITY_SCHEMAS.md`** — *new.* The shared wire shapes (Order, Fill, Alert, Run, Instrument) that Blotter, FillsFeed, NotificationCenter, and the templates all speak — map once, drop in everywhere.
 - **`guidelines/STATES_AND_ANTIPATTERNS.md`** — *new.* The five data states every surface owes (loading/empty/filtered-empty/error/ready), per-component edge cases, and do→don't anti-patterns.
 - **`PATTERNS.md`** — when to reach for each component; composition and decision trees.
-- **`docs/PERFORMANCE.md`** — *new.* What a consumer pays: measured payload (135 KB gzip bundle · 13 KB CSS closure · React peer), CSS-injection behavior, and the monolith trade-off.
+- **`docs/PERFORMANCE.md`** — *new.* What a consumer pays: payload measurements and re-measuring commands, CSS-injection behavior, and the monolith trade-off.
 - **`docs/UPGRADING.md`** — per-release consumer migration notes; **`CHANGELOG.md`** — semver history.
-- **`docs/changelog/SYSTEM_STATE_2026-06.md`** — current system-state report (supersedes the older audit).
+- **`docs/changelog/SYSTEM_STATE_2026-06.md`** — historical June 2026 system-state snapshot.
 
 ## Compilation & consumption
 
@@ -198,8 +205,28 @@ Reference material lives in `guidelines/` (visual + content + the two new refere
 - **`operations/` (13)** — operator readiness layer: severity badges, readiness panels, the gate-pipeline rail, validation issue lists, evidence links, trust strip, workspace sections, diff view, log tail, event timeline, case queue, SLA chip, provenance chip
 - **`trading/` (5)** — order ticket with the live-environment confirm gate, blotter, fills feed, depth ladder, option chain (straddle layout, ITM wash, keyboard strike selection)
 
-All components are **functional-first**: minimal motion, restrained elevation (one subtle `--shadow-card`), small fixed radii — pure operator UX.
+All components are **functional-first**: minimal motion, restrained elevation (flat `--shadow-card: none`), small fixed radii — pure operator UX.
 
 ## Fonts
 
-The desktop uses native Windows faces — **Segoe UI Variable** (display/body) and **Cascadia Mono** (data) — referenced by name with system fallback stacks; no webfont binaries ship for them. **JetBrains Mono** is loaded from Google Fonts as the cross-platform stand-in for Cascadia so numerics render identically everywhere. For pixel-exact desktop parity, upload the Segoe UI Variable and Cascadia Mono font files and add `@font-face` rules.
+The desktop uses native Windows faces — **Segoe UI Variable** (display/body) and **Cascadia Mono** (data) — referenced by name with system fallback stacks; no webfont binaries ship for them. A locally installed **JetBrains Mono** is the cross-platform fallback for Cascadia; no font CDN request is made. For pixel-exact desktop parity, upload the Segoe UI Variable and Cascadia Mono font files and add `@font-face` rules.
+
+## Source ownership and compliance
+
+`styles.css` loads the authoritative token layers. `colors_and_type.css` retains catalogue
+classes and derives compatibility roles from those layers; it does not define another palette.
+Its HSL consumers use `--border-hsl` / `--accent-hsl`, while the package's `--border` / `--accent`
+remain complete CSS colors. Current visual guidance lives under `guidelines/`; root guide paths
+are compatibility entry points. Historical snapshots are [preserved separately](../archive/docs/design-system/README.md).
+The sole active governance baseline is `scripts/governance-baseline.json`; the former unused root
+baseline is historical material. Component availability is distinct from browser route integration;
+the consumption inventory records that distinction rather than treating exports as runtime proof.
+
+`design-system-consumption.json` classifies every manifest export. Regenerate it with
+`node --max-old-space-size=4096 src/Meridian.Ui/dashboard/scripts/design-system-consumption.mjs --write`
+from the repository root; use `--check` to reject stale inventory. Its TypeScript symbol graph follows
+actual runtime references from the browser entry, including lazy route exports, and excludes tests.
+A barrel export, metadata entry, or copied adapter alone cannot promote a component to integrated.
+Reviewed alias mappings and intentional differences are maintained in that generator.
+Static integration evidence does not assert API equivalence or rendered accessibility; browser
+acceptance checks provide that separate evidence.

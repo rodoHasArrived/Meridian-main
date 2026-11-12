@@ -9,10 +9,10 @@
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
   .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .swatch { border-radius: 12px; padding: 18px 18px 16px; min-height: 90px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+  .swatch { border-radius: var(--radius-card); padding: 18px 18px 16px; min-height: 90px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
   .name { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
-  .hex { font-family: var(--font-mono); font-size: 11px; opacity: .75; }
-  .tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.24em; opacity: .8; }
+  .hex { font-family: var(--font-mono); font-size: 11px; opacity: 1; }
+  .tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.24em; opacity: 1; }
 </style>
 </head>
 <body class="bg-app">
@@ -20,13 +20,13 @@
 <h1 class="preview-sr-only">Colors: Brand &amp; Accent</h1>
 <a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="row">
-    <div class="swatch" style="background:#D98A64; color:#1A1712;">
+    <div class="swatch" style="background:var(--accent); color:var(--text-on-fill);">
       <span class="tag">PRIMARY · SIGNAL</span>
-      <div><div class="name">Cyan</div><div class="hex">#D98A64 · hsl(19 61% 62%)</div></div>
+      <div><div class="name">Copper</div><div class="hex">var(--accent) · theme-aware</div></div>
     </div>
-    <div class="swatch" style="background:#C29A4A; color:#1A1712;">
+    <div class="swatch" style="background:var(--orange); color:var(--text-on-fill);">
       <span class="tag">ACCENT · CAUTION</span>
-      <div><div class="name">Amber</div><div class="hex">#C29A4A · hsl(40 50% 53%)</div></div>
+      <div><div class="name">Ochre</div><div class="hex">var(--orange) · theme-aware</div></div>
     </div>
   </div>
 </main>

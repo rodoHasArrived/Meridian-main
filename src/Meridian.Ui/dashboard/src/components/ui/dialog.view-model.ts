@@ -51,9 +51,10 @@ export function useDialogInteractionViewModel({ open, onOpenChange }: DialogInte
       return;
     }
 
-    // An expanded combobox owns its first Escape; the next Escape closes the dialog.
+    // Expanded comboboxes and calendars own their first Escape; the next closes the dialog.
     if (event.key === "Escape" && event.target instanceof Element &&
-      event.target.closest('[role="combobox"][aria-expanded="true"]')) {
+      (event.target.closest('[role="combobox"][aria-expanded="true"]') ||
+        event.target.closest('[data-date-field-open="true"]'))) {
       return;
     }
 
@@ -128,7 +129,7 @@ export function buildDialogContentViewModel(tabIndex = -1): DialogContentViewMod
     className: [
       "w-full max-w-lg",
       "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
-      "rounded-[2px] border border-border bg-card p-5 text-card-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
+      "rounded-[2px] border border-border bg-card p-5 text-card-foreground shadow-float",
       "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
     ].join(" ")
   };

@@ -20,11 +20,13 @@
     .example { background: var(--bg-light); border: 1px solid var(--border); padding: 16px; margin: 16px 0; }
     .example-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
     .example-preview { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .example-code { background: #E4E7EA; border: 1px solid var(--border); padding: 12px; font-family: var(--font-data); font-size: 11px; overflow-x: auto; border-radius: 2px; }
-    .note { background: #D2D8DE; border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; }
+    .example-code { background: var(--border); border: 1px solid var(--border); padding: 12px; font-family: var(--font-data); font-size: 11px; overflow-x: auto; border-radius: 2px; }
+    .note { background: var(--bg-medium); border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; }
     button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; font-family: inherit; font-size: 13px; }
     button:hover { background: var(--bg-hover); }
-    button.primary { background: var(--accent); color: white; border-color: var(--accent); font-weight: 600; }
+    button.primary { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); font-weight: 600; }
+    button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+    button.primary:active:not(:disabled) { background: var(--accent-dim); border-color: var(--accent-dim); }
     button.ghost { background: transparent; border-color: var(--border); }
     button.danger { background: var(--bg-light); border-color: var(--border); color: var(--red); font-weight: 600; }
     button.link { background: transparent; border: none; padding: 0; color: var(--accent); font-weight: 600; font-size: 12px; }

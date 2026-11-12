@@ -76,14 +76,14 @@
 
 .accounting-reference-badge-success,
 .accounting-reference-balance-badge.is-balanced {
-  border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
-  background: var(--state-healthy-bg, rgba(58, 122, 86, 0.1));
+  border-color: var(--state-healthy-bd, color-mix(in srgb, var(--green) 32%, transparent));
+  background: var(--state-healthy-bg, color-mix(in srgb, var(--green) 10%, transparent));
   color: var(--state-healthy-fg, #2C5C40);
 }
 
 .accounting-reference-badge-warning {
-  border-color: var(--state-warn-bd, rgba(138, 92, 18, 0.38));
-  background: var(--state-warn-bg, rgba(138, 92, 18, 0.11));
+  border-color: var(--state-warn-bd, color-mix(in srgb, var(--orange) 38%, transparent));
+  background: var(--state-warn-bg, color-mix(in srgb, var(--orange) 11%, transparent));
   color: var(--state-warn-fg, #68450E);
 }
 
@@ -96,13 +96,13 @@
 .accounting-reference-balance-badge span[aria-hidden="true"] {
   width: 0.45rem;
   height: 0.45rem;
-  border-radius: 999px;
+  border-radius: var(--radius-chip);
   background: currentColor;
 }
 
 .accounting-reference-balance-badge.is-out {
-  border-color: var(--state-danger-bd, rgba(168, 68, 60, 0.35));
-  background: var(--state-danger-bg, rgba(168, 68, 60, 0.1));
+  border-color: var(--state-danger-bd, color-mix(in srgb, var(--red) 35%, transparent));
+  background: var(--state-danger-bg, color-mix(in srgb, var(--red) 10%, transparent));
   color: var(--state-danger-fg, #7E332D);
 }
 
@@ -345,7 +345,7 @@
 .accounting-draft-button:hover,
 .accounting-draft-button.is-active {
   border-color: var(--ws-accent, #A85436);
-  background: var(--state-paper-bg, rgba(168, 84, 54, 0.1));
+  background: var(--state-paper-bg, color-mix(in srgb, var(--ws-accent) 10%, transparent));
   box-shadow: inset 3px 0 0 var(--ws-accent, #A85436);
 }
 
@@ -439,7 +439,7 @@
 }
 
 .accounting-journal-table tr.is-selected td {
-  background: var(--state-paper-bg, rgba(168, 84, 54, 0.1));
+  background: var(--state-paper-bg, color-mix(in srgb, var(--ws-accent) 10%, transparent));
 }
 
 .accounting-journal-support-button {
@@ -454,7 +454,7 @@
 
 .accounting-journal-support-button:hover {
   border-color: var(--ws-accent, #A85436);
-  background: var(--state-paper-bg, rgba(168, 84, 54, 0.1));
+  background: var(--state-paper-bg, color-mix(in srgb, var(--ws-accent) 10%, transparent));
 }
 
 .accounting-journal-total-row td {
@@ -497,9 +497,8 @@
   border: 1px solid var(--ws-border-strong, #AFABA1);
   border-radius: var(--radius-card, 2px);
   background: color-mix(in srgb, var(--ws-surface, #FBFAF8) 94%, transparent);
-  box-shadow: 0 8px 24px rgba(31, 42, 55, 0.12);
+  box-shadow: var(--shadow-panel);
   padding: 0.75rem;
-  backdrop-filter: blur(10px);
 }
 
 .accounting-journal-health-summary,
@@ -520,7 +519,7 @@
   align-items: center;
   gap: 0.45rem;
   border: 1px solid var(--ws-border, #E4E3DE);
-  border-radius: 999px;
+  border-radius: var(--radius-chip);
   background: var(--ws-surface-subtle, #EDEAE4);
   padding: 0.25rem 0.65rem;
   color: var(--ws-text, #22252A);
@@ -532,7 +531,7 @@
   width: 0.5rem;
   height: 0.5rem;
   flex: 0 0 auto;
-  border-radius: 999px;
+  border-radius: var(--radius-chip);
   background: var(--ws-text-muted, #5E666F);
 }
 

@@ -22,6 +22,7 @@ function inject() {
 .mds-logtail__chip:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-logtail__body{flex:1 1 auto;min-height:0;overflow:auto;padding:6px 0;
   font-family:var(--font-data,'Cascadia Mono',monospace);font-size:11.5px;line-height:1.55;}
+.mds-logtail__body:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-logtail__line{display:flex;gap:10px;padding:0 10px;white-space:pre;align-items:baseline;}
 .mds-logtail--wrap .mds-logtail__line{white-space:pre-wrap;}
 .mds-logtail__line:hover{background:var(--bg-hover,#F0EEE9);}
@@ -30,7 +31,7 @@ function inject() {
 .mds-logtail__src{color:var(--text-secondary,#4E5258);flex:0 0 auto;}
 .mds-logtail__msg{color:var(--text-primary,#22252A);min-width:0;}
 .mds-logtail__lvl--info{color:var(--text-secondary,#4E5258);}
-.mds-logtail__lvl--debug{color:var(--text-disabled,#94999F);}
+.mds-logtail__lvl--debug{color:var(--text-secondary,#4E5258);}
 .mds-logtail__lvl--warn{color:var(--orange-dim,#68450E);}
 .mds-logtail__lvl--error{color:var(--red-dim,#7E332D);}
 .mds-logtail__line--error{background:var(--red-a10,rgba(168,68,60,.08));}
@@ -105,7 +106,7 @@ export function LogTail({
       style={{ height, ...style }} {...rest}>
       <div className="mds-logtail__bar">
         <span className="mds-logtail__title">{title}</span>
-        <span className="mds-logtail__title" style={{ opacity: 0.7 }}>· {entries.length.toLocaleString("en-US")} lines</span>
+        <span className="mds-logtail__title">· {entries.length.toLocaleString("en-US")} lines</span>
         <span style={{ flex: 1 }} />
         {levelFilter && LEVELS.map((lvl) => (
           <button key={lvl} type="button" aria-pressed={levels.has(lvl)}
@@ -123,7 +124,7 @@ export function LogTail({
         </button>
       </div>
       <div className="mds-logtail__wrapref">
-        <div className="mds-logtail__body" ref={bodyRef} onScroll={onScroll} role="log" aria-label={title}>
+        <div className="mds-logtail__body" ref={bodyRef} tabIndex={0} onScroll={onScroll} role="log" aria-label={title}>
           {visible.length === 0 ? (
             <div className="mds-logtail__empty">No log lines{entries.length > 0 ? " at the selected levels" : ""}.</div>
           ) : (

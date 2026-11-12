@@ -92,7 +92,7 @@ export function OperationalTrustSummary({
                 */}
                 <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-1">
                   <span
-                    className={cn("inline-flex shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", toneClasses[tone])}
+                    className={cn("inline-flex shrink-0 rounded-[var(--radius-chip)] border px-2 py-0.5 text-xs font-medium", toneClasses[tone])}
                   >
                     {toneLabels[tone]}
                   </span>
@@ -127,7 +127,7 @@ export function OperationalTrustSummary({
                 <span key={id} className="min-w-0 text-xs leading-5">
                   <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                     <span className="text-muted-foreground">{factLabel}</span>
-                    <span className={cn("inline-flex rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
+                    <span className={cn("inline-flex rounded-[var(--radius-chip)] border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
                       {toneLabels[fact.tone ?? "unknown"]}
                     </span>
                   </span>

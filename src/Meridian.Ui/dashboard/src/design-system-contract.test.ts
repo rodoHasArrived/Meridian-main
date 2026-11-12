@@ -656,7 +656,7 @@ describe("dashboard design-system contract", () => {
     // elevation is the detached-overlay menu shadow — surfaces are otherwise flat.
     // (The --radius-*/--shadow-* tokens themselves are asserted separately above.)
     expect(primitiveSource).toContain("rounded-[2px]");
-    expect(primitiveSource).toContain("shadow-[0_2px_6px_rgba(0,0,0,0.18)]");
+    expect(primitiveSource).toContain("shadow-float");
     expect(primitiveSource).not.toContain("1px_1px_0");
     expect(primitiveSource).not.toContain("2px_2px_0");
     expect(primitiveSource).not.toContain("border-slate");

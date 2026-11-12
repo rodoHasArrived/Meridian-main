@@ -17,7 +17,7 @@ function inject() {
 .mds-corr__rh{justify-content:flex-end;padding-right:8px;}
 .mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:11px;
   color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;cursor:default;}
-.mds-corr__cell--diag{color:var(--text-muted,#5E666F);background:var(--bg-active,#F2E3DB)!important;}
+.mds-corr__cell--diag{color:var(--text-secondary,#4E5258);background:var(--bg-active,#F2E3DB)!important;}
 .mds-corr__corner{background:var(--bg-medium,#EDEAE4);}
 `;
   const el = document.createElement("style");
@@ -48,20 +48,24 @@ export function CorrelationHeatmap({
   const cols = `${headerSize}px repeat(${n}, ${cellSize}px)`;
 
   return (
-    <div className="mds-corr" style={{ gridTemplateColumns: cols }} role="grid" aria-label="Correlation matrix">
-      <div className="mds-corr__corner" />
+    <div className="mds-corr" style={{ gridTemplateColumns: cols }} role="table" aria-label="Correlation matrix" aria-rowcount={matrix.length + 1} aria-colcount={n + 1}>
+      <div role="row" aria-rowindex={1} style={{ display: "contents" }}>
+      <div className="mds-corr__corner" role="columnheader" aria-label="Instrument" />
       {labels.map((l) => (
         <div key={"ch" + l} className="mds-corr__h" role="columnheader">{l}</div>
       ))}
+      </div>
       {matrix.map((row, r) => (
-        <React.Fragment key={"r" + r}>
+        <div key={"r" + r} role="row" aria-rowindex={r + 2} style={{ display: "contents" }}>
           <div className="mds-corr__h mds-corr__rh" role="rowheader">{labels[r]}</div>
           {row.map((v, c) => {
             const diag = r === c;
             return (
               <div
                 key={"c" + r + "-" + c}
-                role="gridcell"
+                role="cell"
+                aria-colindex={c + 2}
+                aria-label={`${labels[r]} · ${labels[c]} = ${v == null ? "—" : valueFmt(v)}`}
                 className={`mds-corr__cell${diag ? " mds-corr__cell--diag" : ""}`}
                 style={{ background: cellColor(v), height: cellSize }}
                 title={`${labels[r]} · ${labels[c]} = ${v == null ? "—" : valueFmt(v)}`}
@@ -71,7 +75,7 @@ export function CorrelationHeatmap({
               </div>
             );
           })}
-        </React.Fragment>
+        </div>
       ))}
     </div>
   );

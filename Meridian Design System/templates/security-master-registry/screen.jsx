@@ -102,14 +102,14 @@ function assetClassBadge(assetClass) { return <Badge variant="neutral">{assetCla
 function flagsCell(r) {
   return r.flags.length
     ? <Tooltip content="Trading restricted"><Badge variant="danger" dot>R</Badge></Tooltip>
-    : <span style={{ color: "var(--text-disabled)" }}>—</span>;
+    : <span style={{ color: "var(--text-muted)" }}>—</span>;
 }
 
 const BASE_COLUMNS = [
   { key: "name", label: "Security Name", align: "left", width: 240, pinned: true, render: (r) => (
     <div>
       <div style={{ fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>{r.name}</div>
-      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{r.shortCode}</div>
+      <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{r.shortCode}</div>
     </div>
   ) },
   { key: "cusip", label: "CUSIP", width: 112 },
@@ -343,7 +343,7 @@ function DetailView({ row, onBack, notesById, onAddNote, auditExtra, onCommitEdi
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <h1 style={{ font: "600 20px var(--font-display)", margin: 0, color: "var(--text-primary)" }}>{row.name}</h1>
+            <h2 style={{ font: "600 20px var(--font-display)", margin: 0, color: "var(--text-primary)" }}>{row.name}</h2>
             {assetClassBadge(row.assetClass)}
             {row.flags.map((f, i) => (
               <Tooltip key={i} content={f === "Restricted" ? "Trading restricted — see Compliance tab" : f}>

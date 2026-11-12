@@ -55,7 +55,7 @@ export function Tooltip({ children, className, content, side = "top" }: TooltipP
         className={cn(
           "pointer-events-none absolute z-50 whitespace-nowrap",
           "rounded-[2px] border border-border bg-popover px-2.5 py-1.5",
-          "font-mono text-[11px] text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
+          "font-mono text-[11px] text-popover-foreground shadow-float",
           "opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100",
           sideClasses[side],
           className

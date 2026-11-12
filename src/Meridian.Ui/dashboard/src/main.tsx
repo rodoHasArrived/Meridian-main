@@ -10,6 +10,7 @@ import "@/styles/command-palette.css";
 import "@/styles/workstation-refinements.css";
 import "@/styles/density.css";
 import "@/styles/print.css";
+import "@/styles/forced-colors.css";
 
 applyAppearance(readStoredAppearance());
 applyDensity(readStoredDensity());

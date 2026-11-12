@@ -116,7 +116,7 @@ export function Drawer({
         aria-labelledby={title ? generatedTitleId : undefined}
         tabIndex={-1}
         className={cn(
-          "flex h-full w-full max-w-[360px] flex-col bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-hidden",
+          "flex h-full w-full max-w-[360px] flex-col bg-card shadow-float focus:outline-hidden",
           side === "left" ? "border-r border-border sheet-slide-left" : "border-l border-border sheet-slide-right",
           className
         )}

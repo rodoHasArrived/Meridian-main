@@ -38,7 +38,7 @@ export function EmptyState({
       {action && onAction && (
         <button onClick={onAction} style={{
           marginTop:4, padding:"7px 16px",
-          background:"var(--accent,#A85436)", color:"white",
+          background:"var(--accent,#A85436)", color:"var(--text-on-accent,#fff)",
           border:"none", borderRadius:"var(--radius-button,2px)",
           fontFamily:"var(--font-body)", fontSize:12, fontWeight:600, cursor:"pointer",
           transition:"background .12s ease",

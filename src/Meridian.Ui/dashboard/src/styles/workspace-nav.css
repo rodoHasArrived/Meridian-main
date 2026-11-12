@@ -225,12 +225,12 @@
 }
 
 .operator-nav-status-available {
-  border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
+  border-color: var(--state-healthy-bd, color-mix(in srgb, var(--green) 32%, transparent));
   color: var(--state-healthy-fg, #2C5C40);
 }
 
 .operator-nav-status-preview {
-  border-color: var(--state-warn-bd, rgba(138, 92, 18, 0.38));
+  border-color: var(--state-warn-bd, color-mix(in srgb, var(--orange) 38%, transparent));
   color: var(--state-warn-fg, #68450E);
 }
 

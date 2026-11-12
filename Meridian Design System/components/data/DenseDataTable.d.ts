@@ -17,6 +17,9 @@ export interface DenseDataTableColumn {
   render?: (row: Record<string, any>) => React.ReactNode;
 }
 export interface DenseDataTableProps {
+  /** Name for the table and its keyboard-scrollable region. @default "Data table" */
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
   columns: DenseDataTableColumn[];
   rows: Record<string, any>[];
   /** Row index highlighted with the cyan rail. @default -1 */

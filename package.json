@@ -17,7 +17,10 @@
     "generate-wpf-screen-tracker": "node scripts/generate-diagrams.mjs --tracker-only",
     "ui:dashboard:install": "npm --prefix src/Meridian.Ui/dashboard install",
     "ui:dashboard:build": "npm --prefix src/Meridian.Ui/dashboard run build",
-    "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test"
+    "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test",
+    "design:build": "npm --prefix src/Meridian.Ui/dashboard run design:build",
+    "design:check": "npm --prefix src/Meridian.Ui/dashboard run design:check",
+    "design:test:browser": "npm --prefix src/Meridian.Ui/dashboard run design:test:browser --"
   },
   "devDependencies": {
     "@viz-js/viz": "^3.31.0",

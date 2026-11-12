@@ -115,11 +115,11 @@ function ChartingWorkstationScreen() {
           <ChartCard
             title="AAPL · 1D" subtitle="Apple Inc." style={{ flex: 1, minHeight: 0 }} height={undefined}
             readout={[
-              { label: "Last", value: bar.c.toFixed(2), color: chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)" },
-              { label: "Chg", value: (chg >= 0 ? "+" : "") + chg.toFixed(2), color: chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)" },
+              { label: "Last", value: bar.c.toFixed(2), color: chg >= 0 ? "var(--green-dim)" : "var(--red-dim)" },
+              { label: "Chg", value: (chg >= 0 ? "+" : "") + chg.toFixed(2), color: chg >= 0 ? "var(--green-dim)" : "var(--red-dim)" },
               { label: "O", value: bar.o.toFixed(2) },
-              { label: "H", value: bar.h.toFixed(2), color: "var(--chart-equity)" },
-              { label: "L", value: bar.l.toFixed(2), color: "var(--chart-drawdown)" },
+              { label: "H", value: bar.h.toFixed(2), color: "var(--green-dim)" },
+              { label: "L", value: bar.l.toFixed(2), color: "var(--red-dim)" },
               { label: "Vol", value: "1.92M" },
             ]}
             actions={

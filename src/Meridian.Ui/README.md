@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui
@@ -43,6 +43,11 @@ detail. Reconciliation commands and approvals remain owned by the existing share
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.
+
+The rebuilt workstation consumes Meridian's canonical design tokens and shared browser adapters.
+Regenerate and verify the package, consumption inventory, and host assets with the dashboard's
+design-system commands; [compliance evidence](../../Meridian%20Design%20System/docs/COMPLIANCE.md)
+distinguishes automated checks from the pending Windows browser and NVDA manual pass.
 
 ## Layer responsibility
 

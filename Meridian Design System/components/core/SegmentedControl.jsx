@@ -9,10 +9,10 @@ function inject() {
   const css = `
 .mds-seg{display:inline-flex;align-items:stretch;padding:2px;gap:2px;
   background:var(--bg-medium,#EDEAE4);border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-button,4px);font-family:var(--font-body);}
+  border-radius:var(--radius-button,2px);font-family:var(--font-body);}
 .mds-seg--full{display:flex;width:100%;}
 .mds-seg__btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
+  min-height:24px;box-sizing:border-box;padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
   color:var(--text-secondary,#4E5258);background:transparent;border:none;
   border-radius:var(--radius-chip,3px);}
 .mds-seg__btn:hover:not(.mds-seg__btn--active):not(:disabled){color:var(--text-primary,#22252A);background:var(--bg-hover,#F0EEE9);}
@@ -41,15 +41,39 @@ export function SegmentedControl({
 }) {
   inject();
   const items = normalize(options);
+  const buttons = React.useRef(new Map());
+  const enabled = items.filter((option) => !option.disabled);
+  const tabStop = enabled.some((option) => option.value === value) ? value : enabled[0]?.value;
+  const handleKeyDown = (event, current) => {
+    if (enabled.length === 0) return;
+    const index = enabled.findIndex((option) => option.value === current);
+    let nextIndex;
+    switch (event.key) {
+      case "ArrowRight": case "ArrowDown": nextIndex = (index + 1) % enabled.length; break;
+      case "ArrowLeft": case "ArrowUp": nextIndex = (index - 1 + enabled.length) % enabled.length; break;
+      case "Home": nextIndex = 0; break;
+      case "End": nextIndex = enabled.length - 1; break;
+      default: return;
+    }
+    event.preventDefault();
+    const next = enabled[nextIndex].value;
+    buttons.current.get(next)?.focus();
+    onChange?.(next);
+  };
   return (
-    <div role="tablist"
+    <div role="tablist" aria-orientation="horizontal"
       className={`mds-seg mds-seg--${size}${fullWidth ? " mds-seg--full" : ""}${className ? " " + className : ""}`}
       {...rest}>
       {items.map((opt) => {
         const active = opt.value === value;
         return (
           <button key={opt.value} type="button" role="tab" aria-selected={active}
-            disabled={opt.disabled}
+            disabled={opt.disabled} tabIndex={opt.value === tabStop ? 0 : -1}
+            ref={(element) => {
+              if (element) buttons.current.set(opt.value, element);
+              else buttons.current.delete(opt.value);
+            }}
+            onKeyDown={(event) => handleKeyDown(event, opt.value)}
             className={`mds-seg__btn${active ? " mds-seg__btn--active" : ""}`}
             onClick={() => !opt.disabled && onChange?.(opt.value)}>
             {opt.icon && <span aria-hidden="true">{opt.icon}</span>}

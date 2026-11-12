@@ -15,7 +15,7 @@ function inject() {
   border-radius:var(--radius-button,2px);font-family:var(--font-body);}
 .mds-den--full{display:flex;width:100%;}
 .mds-den__btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
+  min-height:24px;box-sizing:border-box;padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
   color:var(--text-secondary,#4E5258);background:transparent;border:none;border-radius:var(--radius-button,2px);}
 .mds-den__btn:hover:not(.mds-den__btn--active){color:var(--text-primary,#22252A);background:var(--bg-hover,#F0EEE9);}
 .mds-den__btn--active{color:var(--text-primary,#22252A);background:var(--bg-light,#FBFAF8);
@@ -75,12 +75,15 @@ export function DensityToggle({
   ...rest
 }) {
   inject();
+  const buttons = React.useRef(new Map());
   const isControlled = controlled != null;
   const [internal, setInternal] = React.useState(() => {
     if (isControlled) return controlled;
-    if (persist && typeof localStorage !== "undefined") {
-      const saved = localStorage.getItem(persist);
-      if (saved) return saved;
+    if (persist) {
+      try {
+        const saved = localStorage.getItem(persist);
+        if (LEVELS.some((level) => level.value === saved)) return saved;
+      } catch { /* Storage is optional; keep the usable default. */ }
     }
     return defaultValue;
   });
@@ -93,19 +96,43 @@ export function DensityToggle({
 
   const select = (v) => {
     if (!isControlled) setInternal(v);
-    if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v);
+    if (persist) {
+      try { localStorage.setItem(persist, v); }
+      catch { /* The choice still applies when persistence is unavailable. */ }
+    }
     onChange && onChange(v);
   };
 
+  const handleKeyDown = (event, current) => {
+    const index = LEVELS.findIndex((level) => level.value === current);
+    let nextIndex;
+    switch (event.key) {
+      case "ArrowRight": case "ArrowDown": nextIndex = (index + 1) % LEVELS.length; break;
+      case "ArrowLeft": case "ArrowUp": nextIndex = (index - 1 + LEVELS.length) % LEVELS.length; break;
+      case "Home": nextIndex = 0; break;
+      case "End": nextIndex = LEVELS.length - 1; break;
+      default: return;
+    }
+    event.preventDefault();
+    const next = LEVELS[nextIndex].value;
+    buttons.current.get(next)?.focus();
+    select(next);
+  };
+
   return (
-    <div role="radiogroup" aria-label="Display density"
+    <div role="radiogroup" aria-label="Display density" aria-orientation="horizontal"
       className={`mds-den mds-den--${size}${fullWidth ? " mds-den--full" : ""}${className ? " " + className : ""}`}
       {...rest}>
       {LEVELS.map((lv) => {
         const active = lv.value === value;
         return (
           <button key={lv.value} type="button" role="radio" aria-checked={active}
-            title={lv.label}
+            title={lv.label} tabIndex={active ? 0 : -1}
+            ref={(element) => {
+              if (element) buttons.current.set(lv.value, element);
+              else buttons.current.delete(lv.value);
+            }}
+            onKeyDown={(event) => handleKeyDown(event, lv.value)}
             className={`mds-den__btn${active ? " mds-den__btn--active" : ""}`}
             onClick={() => select(lv.value)}>
             <Glyph gap={lv.gap} />

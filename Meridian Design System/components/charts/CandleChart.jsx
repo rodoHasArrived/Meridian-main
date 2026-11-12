@@ -104,7 +104,7 @@ export function CandleChart({
           <circle cx={x(crosshairIndex)} cy={yP(ch.c)} r="4" fill="var(--chart-crosshair)" opacity="0.9" />
           <g>
             <rect x={plotR + 2} y={yP(ch.c) - 10} width={axisR - 4} height="20" fill="var(--chart-crosshair)" rx="4" opacity="0.95" />
-            <text x={plotR + axisR / 2} y={yP(ch.c) + 5} fill="#fff" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{ch.c.toFixed(2)}</text>
+            <text x={plotR + axisR / 2} y={yP(ch.c) + 5} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{ch.c.toFixed(2)}</text>
           </g>
         </g>
       )}

@@ -1,3 +1,5 @@
+import React from "react";
+
 /**
  * Meridian FormField — Wrapper combining label, input, error, and hint.
  * Reduces boilerplate in forms by bundling all field furniture.
@@ -15,8 +17,13 @@ export function FormField({
   children,
   className = '',
   style = {},
+  id,
 }) {
-  const fieldId = Math.random().toString(36).slice(2);
+  const generatedId = React.useId();
+  const control = React.isValidElement(children) && children.type !== React.Fragment ? children : null;
+  const fieldId = control?.props.id || id || generatedId;
+  const feedbackId = `${fieldId}--feedback`;
+  const describedBy = [control?.props["aria-describedby"], hint || error ? feedbackId : null].filter(Boolean).join(" ") || undefined;
 
   return (
     <div
@@ -31,7 +38,7 @@ export function FormField({
       {/* Label */}
       {label && (
         <label
-          htmlFor={fieldId}
+          htmlFor={control ? fieldId : undefined}
           style={{
             fontSize: 'var(--type-label)',
             fontWeight: 600,
@@ -42,29 +49,27 @@ export function FormField({
         >
           {label}
           {required && (
-            <span style={{ color: 'var(--red)', marginLeft: '4px' }}>*</span>
+            <span aria-hidden="true" style={{ color: 'var(--red-dim)', marginLeft: '4px' }}>*</span>
           )}
         </label>
       )}
 
       {/* Input (cloned with id and aria attrs) */}
-      {children && typeof children === 'object' && children.type
-        ? (() => {
-            const cloned = children;
-            return cloned.props ? (
-              children
-            ) : (
-              children
-            );
-          })()
-        : children}
+      {control ? React.cloneElement(control, {
+        id: fieldId,
+        required: required || control.props.required,
+        "aria-invalid": error ? true : control.props["aria-invalid"],
+        "aria-describedby": describedBy,
+      }) : children}
 
       {/* Hint or error message */}
       {(hint || error) && (
         <div
+          id={feedbackId}
+          role={error ? "alert" : undefined}
           style={{
             fontSize: 'var(--type-caption)',
-            color: error ? 'var(--red)' : 'var(--text-muted)',
+            color: error ? 'var(--red-dim)' : 'var(--text-muted)',
             marginTop: '-4px',
           }}
         >

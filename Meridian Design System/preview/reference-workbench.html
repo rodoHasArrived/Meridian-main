@@ -130,13 +130,13 @@
   }
 
   .toolbar-chip.active {
-    color: var(--cyan-primary);
+    color: var(--accent-dim);
     border-color: hsl(var(--primary) / 0.58);
     background: hsl(var(--primary) / 0.10);
   }
 
   .toolbar-chip.disabled {
-    opacity: 0.54;
+    color: var(--fg-muted);
   }
 
   .workbench {
@@ -172,7 +172,7 @@
     font-size: 12px;
   }
 
-  .search-line .prompt { color: var(--cyan-primary); }
+  .search-line .prompt { color: var(--accent-dim); }
   .search-line .term { color: hsl(var(--foreground)); }
   .search-line .count { color: var(--fg-muted); font-size: 10px; }
 
@@ -197,7 +197,7 @@
   td {
     min-height: var(--data-row-h);
     padding: 8px 10px;
-    border-bottom: 1px solid hsl(var(--border) / 0.55);
+    border-bottom: 1px solid hsl(var(--border-hsl) / 0.55);
     font-size: 12px;
     vertical-align: top;
   }
@@ -242,6 +242,8 @@
     background: hsl(var(--card));
   }
 
+  .selected .primary-cell span { color:var(--text-secondary); }
+
   .detail-title {
     display: flex;
     flex-wrap: wrap;
@@ -262,7 +264,7 @@
     border: 1px solid hsl(var(--primary) / 0.35);
     border-radius: var(--radius-xs);
     background: hsl(var(--primary) / 0.10);
-    color: var(--cyan-primary);
+    color: var(--accent-dim);
   }
 
   .state-badge {

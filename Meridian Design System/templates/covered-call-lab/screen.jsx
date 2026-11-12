@@ -82,10 +82,10 @@ function ParamsPanel() {
         <SeverityBadge status="Completed" label="Run CC-0118" />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        <FormField label="Underlying"><Input value="MSFT" readOnly /></FormField>
-        <FormField label="Min strike"><Input value="440" readOnly /></FormField>
-        <FormField label="From"><Input value="2026-01-02" readOnly /></FormField>
-        <FormField label="To"><Input value="2026-06-30" readOnly /></FormField>
+        <FormField label="Underlying"><Input aria-label="Underlying" value="MSFT" readOnly /></FormField>
+        <FormField label="Min strike"><Input aria-label="Min strike" value="440" readOnly /></FormField>
+        <FormField label="From"><Input aria-label="From" value="2026-01-02" readOnly /></FormField>
+        <FormField label="To"><Input aria-label="To" value="2026-06-30" readOnly /></FormField>
       </div>
       <Slider label="Overwrite ratio" value={ratio} onChange={setRatio} min={0} max={1} step={0.05} showValue valueFmt={(v) => (v * 100).toFixed(0) + "%"} />
       <Slider label="Max delta" value={maxDelta} onChange={setMaxDelta} min={0.1} max={0.6} step={0.01} showValue valueFmt={(v) => v.toFixed(2) + "Δ"} />

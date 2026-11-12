@@ -7,20 +7,20 @@
 <link rel="stylesheet" href="../colors_and_type.css">
 <link rel="stylesheet" href="preview-common.css">
 <style>
-  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
-  .card { background: #201D19; border: 1px solid #736B60; border-radius: 8px; padding: 16px; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #736B60; }
-  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #B5AEA4; }
-  .title b { color: #FFF; margin-right: 10px; }
-  .scale { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; }
-  .scale .bar { display: inline-block; width: 140px; height: 6px; background: linear-gradient(90deg, #4A443C 0%, #D98A64 40%, #D6B169 75%, #CE7068 100%); border-radius: 1px; }
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--text-primary); }
+  .card { background: var(--bg-light); border: 1px solid var(--border-strong); border-radius: var(--radius-card); padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-strong); }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-secondary); }
+  .title b { color: var(--text-primary); margin-right: 10px; }
+  .scale { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); }
+  .scale .bar { display: inline-block; width: 140px; height: 6px; /* @design-role quantitative-scale */ background: linear-gradient(90deg, color-mix(in srgb, var(--border) 20%, var(--bg-light)) 0%, color-mix(in srgb, var(--accent) 20%, var(--bg-light)) 40%, color-mix(in srgb, var(--orange) 20%, var(--bg-light)) 75%, color-mix(in srgb, var(--red) 20%, var(--bg-light)) 100%); border-radius: 1px; }
   .wrap { display: grid; grid-template-columns: 60px 1fr; gap: 8px; }
-  .ylabels { display: grid; grid-template-rows: repeat(7, 1fr); font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; text-align: right; padding-right: 4px; }
+  .ylabels { display: grid; grid-template-rows: repeat(7, 1fr); font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); text-align: right; padding-right: 4px; }
   .grid { display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(7, 32px); gap: 2px; }
-  .cell { border-radius: 2px; font-family: var(--font-mono); font-size: 10px; color: #FFF; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+  .cell { border-radius: var(--radius-card); font-family: var(--font-mono); font-size: 10px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
   .xlabels { display: grid; grid-template-columns: 60px 1fr; margin-top: 6px; }
-  .xl { display: grid; grid-template-columns: repeat(9, 1fr); font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; text-align: center; }
-  .axistitle { font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; text-transform: uppercase; letter-spacing: 0.12em; text-align: center; margin-top: 4px; }
+  .xl { display: grid; grid-template-columns: repeat(9, 1fr); font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); text-align: center; }
+  .axistitle { font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.12em; text-align: center; margin-top: 4px; }
 </style>
 </head>
 <body class="bg-app">
@@ -61,19 +61,14 @@
   const g = document.getElementById('surf');
   function color(v){
     const t = Math.max(0, Math.min(1, (v - 12) / (48 - 12)));
-    // 0=graphite, 0.4=copper, 0.75=brass, 1=brick
-    let r,gg,b;
-    if (t < 0.4){
-      const k = t/0.4;
-      r = 31 + (42-31)*k; gg = 52 + (178-52)*k; b = 76 + (212-76)*k;
-    } else if (t < 0.75){
-      const k = (t-0.4)/0.35;
-      r = 42 + (230-42)*k; gg = 178 + (169-178)*k; b = 212 + (60-212)*k;
-    } else {
-      const k = (t-0.75)/0.25;
-      r = 230 + (222-230)*k; gg = 169 + (88-169)*k; b = 60 + (120-60)*k;
-    }
-    return `rgb(${r|0},${gg|0},${b|0})`;
+    // Quantitative color scale: interpolate semantic stops, then use a restrained
+    // wash so the numeric labels retain AA contrast in either appearance.
+    const stops = ["--border", "--accent", "--orange", "--red"];
+    const thresholds = [0, 0.4, 0.75, 1];
+    const segment = t < 0.4 ? 0 : t < 0.75 ? 1 : 2;
+    const k = (t - thresholds[segment]) / (thresholds[segment + 1] - thresholds[segment]);
+    const signal = `color-mix(in srgb, var(${stops[segment]}) ${(1 - k) * 100}%, var(${stops[segment + 1]}))`;
+    return `color-mix(in srgb, ${signal} 20%, var(--bg-light))`;
   }
   surface.forEach(row => {
     row.forEach(v => {

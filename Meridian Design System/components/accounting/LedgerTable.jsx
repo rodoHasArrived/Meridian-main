@@ -34,13 +34,14 @@ function inject() {
 .ldg td.ldg--r{text-align:right;}
 .ldg tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
 .ldg tbody tr.ldg__row--click{cursor:pointer;}
+.ldg tbody tr.ldg__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg tbody tr.ldg__row--on td{background:var(--bg-active,#F2E3DB);}
 .ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
 .ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(138,92,18,.07));}
-.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#94999F);text-decoration:line-through;}
-.ldg tbody tr.ldg__row--void td span{color:var(--text-disabled,#94999F) !important;}
+.ldg tbody tr.ldg__row--void td{color:var(--text-secondary,#4E5258);text-decoration:line-through;}
+.ldg tbody tr.ldg__row--void td span{color:var(--text-secondary,#4E5258) !important;}
 .ldg__date{color:var(--text-secondary,#4E5258);}
-.ldg__ref{color:var(--accent,#A85436);}
+.ldg__ref{color:var(--accent-dim,#8C4429);}
 .ldg__chip{display:inline-block;margin-left:7px;font-family:var(--font-body);font-size:9px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid;
   border-radius:var(--radius-chip,2px);padding:0 5px;line-height:1.5;vertical-align:1px;}
@@ -87,6 +88,8 @@ export function LedgerTable({
   inject();
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState(1);
+  const [focusedRow, setFocusedRow] = useState(null);
+  const rowRefs = React.useRef(new Map());
   const open = opening != null ? opening : openingBalance;
 
   const handleSort = (key) => {
@@ -118,13 +121,31 @@ export function LedgerTable({
     display = [...computed].sort((a, b) => sortDir * compareRows(a, b, sortKey));
   }
 
+  const tabStop = display.some((row) => row._i === focusedRow) ? focusedRow
+    : display.some((row) => row._i === selectedIndex) ? selectedIndex : display[0]?._i;
+  const onRowKeyDown = (event, originalIndex) => {
+    // Nested links/inputs own their keys; never turn their activation into a row action.
+    if (event.target !== event.currentTarget || !onRowClick) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault(); onRowClick(rows[originalIndex], originalIndex); return;
+    }
+    const index = display.findIndex((row) => row._i === originalIndex);
+    let next;
+    if (event.key === "ArrowDown") next = Math.min(display.length - 1, index + 1);
+    else if (event.key === "ArrowUp") next = Math.max(0, index - 1);
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = display.length - 1;
+    else return;
+    event.preventDefault(); rowRefs.current.get(display[next]?._i)?.focus();
+  };
+
   const live = computed.filter((r) => !r._void);
   const totalD = live.reduce((a, r) => a + (toNumber(r.debit) || 0), 0);
   const totalC = live.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
   const voided = computed.length - live.length;
 
-  const Head = ({ k, children, right }) => (
-    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => handleSort(k)}
+  const renderHead = ({ k, children, right }) => (
+    <th key={k} className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => handleSort(k)}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(k); } }}
       aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
       {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
@@ -136,13 +157,13 @@ export function LedgerTable({
       <table className="ldg">
         <thead>
           <tr>
-            <Head k="date">Date</Head>
-            <Head k="ref">Ref</Head>
-            {showAccount && <Head k="account">Account</Head>}
-            <Head k="memo">Description</Head>
-            <Head k="debit" right>Debit</Head>
-            <Head k="credit" right>Credit</Head>
-            <Head k="balance" right>Balance</Head>
+            {renderHead({ k: "date", children: "Date" })}
+            {renderHead({ k: "ref", children: "Ref" })}
+            {showAccount && renderHead({ k: "account", children: "Account" })}
+            {renderHead({ k: "memo", children: "Description" })}
+            {renderHead({ k: "debit", children: "Debit", right: true })}
+            {renderHead({ k: "credit", children: "Credit", right: true })}
+            {renderHead({ k: "balance", children: "Balance", right: true })}
           </tr>
         </thead>
         <tbody>
@@ -168,7 +189,15 @@ export function LedgerTable({
             ].filter(Boolean).join(" ") || undefined;
             return (
               <tr key={r._i} className={cls}
-                onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
+                tabIndex={onRowClick ? (tabStop === r._i ? 0 : -1) : undefined}
+                aria-selected={selectedIndex == null ? undefined : selectedIndex === r._i}
+                ref={(element) => { if (element) rowRefs.current.set(r._i, element); else rowRefs.current.delete(r._i); }}
+                onFocus={onRowClick ? (event) => { if (event.target === event.currentTarget) setFocusedRow(r._i); } : undefined}
+                onKeyDown={onRowClick ? (event) => onRowKeyDown(event, r._i) : undefined}
+                onClick={onRowClick ? (event) => {
+                  if (event.defaultPrevented || event.target.closest?.("a,button,input,select,textarea,[role='button']")) return;
+                  onRowClick(rows[r._i], r._i);
+                } : undefined}>
                 <td className="ldg__date">{r.date}</td>
                 <td>
                   <span className="ldg__ref">{r.ref}</span>
@@ -184,7 +213,7 @@ export function LedgerTable({
                 </td>
                 <td className="ldg--r">
                   {r._void || !hasRunning
-                    ? <span style={{ color: "var(--text-disabled,#94999F)" }}>&mdash;</span>
+                    ? <span style={{ color: "var(--text-muted,#5E666F)" }}>&mdash;</span>
                     : <AmountCell value={r._bal} currency={currency} parens />}
                 </td>
               </tr>

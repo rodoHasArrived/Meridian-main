@@ -96,7 +96,7 @@ export function ConfigureCommandBar(): JSX.Element {
               type="button"
               title={section.description}
               onClick={() => scrollToConfigureAnchor(section.anchorId)}
-              className="rounded-full border border-border/70 bg-secondary/30 px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="rounded-[var(--radius-chip)] border border-border/70 bg-secondary/30 px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               {section.label}
             </button>
@@ -123,7 +123,7 @@ export function ConfigureCommandBar(): JSX.Element {
             <ul
               role="listbox"
               aria-label="Configuration setting search results"
-              className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-auto rounded-md border border-border bg-popover p-1 shadow-md"
+              className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-auto rounded-md border border-border bg-popover p-1 shadow-none"
             >
               {results.map((entry) => (
                 <li key={entry.id}>

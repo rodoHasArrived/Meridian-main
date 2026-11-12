@@ -25,6 +25,7 @@ function inject() {
 .act__row:hover{background:var(--bg-hover,#F0EEE9);}
 .act__row--sel{cursor:pointer;}
 .act__row--on{background:var(--bg-active,#F2E3DB);box-shadow:inset 3px 0 0 var(--accent,#A85436);}
+.act__row--on .act__code{color:var(--text-secondary,#4E5258);}
 .act__row:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .act__name{display:flex;align-items:center;gap:8px;min-width:0;
   font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22252A);}

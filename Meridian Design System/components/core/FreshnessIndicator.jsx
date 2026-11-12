@@ -17,7 +17,7 @@ function inject() {
 .mds-fresh--connecting .mds-fresh__dot{animation:mds-fresh-pulse 1.1s ease-in-out infinite;}
 @keyframes mds-fresh-pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
 .mds-fresh__src{color:var(--text-primary,#22252A);font-weight:600;}
-.mds-fresh__state{color:var(--mds-fresh-c);font-weight:600;font-variant:all-small-caps;
+.mds-fresh__state{color:var(--mds-fresh-fg);font-weight:600;font-variant:all-small-caps;
   letter-spacing:.04em;}
 .mds-fresh__sep{color:var(--text-disabled,#94999F);}
 .mds-fresh__time{color:var(--text-muted,#5E666F);}
@@ -31,13 +31,13 @@ function inject() {
 }
 
 const STATUS = {
-  live:       { label: "live",       c: "var(--green,#3A7A56)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
-  fresh:      { label: "fresh",      c: "var(--green,#3A7A56)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
-  stale:      { label: "stale",      c: "var(--orange,#8A5C12)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-  delayed:    { label: "delayed",    c: "var(--orange,#8A5C12)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-  offline:    { label: "offline",    c: "var(--red,#A8443C)",    ring: "var(--red-a20)",    wash: "var(--red-a10)" },
-  connecting: { label: "connecting", c: "var(--accent,#A85436)", ring: "var(--blue-a10)",   wash: "var(--blue-a10)" },
-  idle:       { label: "idle",       c: "var(--text-disabled,#94999F)", ring: "rgba(136,144,153,.25)", wash: "transparent" },
+  live:       { label: "live", fg: "var(--green-dim)",       c: "var(--green,#3A7A56)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
+  fresh:      { label: "fresh", fg: "var(--green-dim)",      c: "var(--green,#3A7A56)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
+  stale:      { label: "stale", fg: "var(--orange-dim)",      c: "var(--orange,#8A5C12)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+  delayed:    { label: "delayed", fg: "var(--orange-dim)",    c: "var(--orange,#8A5C12)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+  offline:    { label: "offline", fg: "var(--red-dim)",    c: "var(--red,#A8443C)",    ring: "var(--red-a20)",    wash: "var(--red-a10)" },
+  connecting: { label: "connecting", fg: "var(--accent-dim)", c: "var(--accent,#A85436)", ring: "var(--blue-a10)",   wash: "var(--blue-a10)" },
+  idle:       { label: "idle", fg: "var(--text-muted)",       c: "var(--text-disabled,#94999F)", ring: "color-mix(in srgb, var(--text-muted) 25%, transparent)", wash: "transparent" },
 };
 
 function relativeTime(then) {
@@ -105,7 +105,7 @@ export function FreshnessIndicator({
   return (
     <span
       className={`mds-fresh mds-fresh--${status}${badge ? " mds-fresh--badge" : ""}${className ? " " + className : ""}`}
-      style={{ "--mds-fresh-c": s.c, "--mds-fresh-ring": s.ring, "--mds-fresh-wash": s.wash }}
+      style={{ "--mds-fresh-c": s.c, "--mds-fresh-fg": s.fg, "--mds-fresh-ring": s.ring, "--mds-fresh-wash": s.wash }}
       role="status"
       {...rest}
     >

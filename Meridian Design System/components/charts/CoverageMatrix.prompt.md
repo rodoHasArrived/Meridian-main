@@ -10,3 +10,7 @@ Symbol × session data-availability heat grid — which instrument has which day
 ```
 
 Feed a `data[rowId][colId]` map or a `cell(row, col)` resolver. Put the evidence in `detail` ("412/780 bars") — it lands in the readout and tooltip. With `onCellClick` the cells become buttons (drill into the gap-scan). This is the coverage view for a market-data platform; pair with `LogTail` to show the scan behind a clicked cell.
+
+Read-only coverage exposes a table. Supplying onCellClick exposes an interactive grid
+with owned rows/cells and one roving button tab stop. Arrow keys and Home/End retain
+cell coordinates while the row wrappers preserve the visual grid layout.

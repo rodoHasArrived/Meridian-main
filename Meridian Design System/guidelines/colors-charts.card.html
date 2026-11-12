@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Chart encodings</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
 <style>
@@ -9,7 +11,7 @@
   body { margin: 0; padding: 14px 16px; background: var(--bg); font-family: var(--font-body); }
   .root { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 
-  .chart-wrap { background: var(--chart-plot); border: 1px solid var(--chart-border); border-radius: 6px; overflow: hidden; }
+  .chart-wrap { background: var(--chart-plot); border: 1px solid var(--chart-border); border-radius: var(--radius-card); overflow: hidden; }
   .chart-label { font-size: 9px; font-family: var(--font-data); letter-spacing: .1em; text-transform: uppercase; color: var(--chart-axis); padding: 5px 8px 4px; border-bottom: 1px solid var(--chart-border); }
 
   .legend { display: flex; flex-direction: column; gap: 1px; }

@@ -17,28 +17,28 @@
     display: grid; grid-template-columns: 1fr auto; align-items: end;
     padding-bottom: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 6px;
   }
-  .index h1 { font-family: var(--font-display); font-size: 22px; color: #FFF; font-weight: 600; margin: 0;
+  .index h1 { font-family: var(--font-display); font-size: 22px; color: var(--text-primary); font-weight: 600; margin: 0;
               letter-spacing: -0.01em; }
   .index .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);
                 text-transform: uppercase; letter-spacing: 0.16em; margin-top: 4px; }
   .index .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; }
-  .index .meta b { color: #D98A64; font-weight: 500; }
+  .index .meta b { color: var(--accent-dim); font-weight: 500; }
 
   /* ---------- panel ---------- */
-  .panel { background: #201D19; border: 1px solid var(--border-color); border-radius: 4px;
+  .panel { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-card);
            overflow: hidden; }
   .panel-head {
     display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px;
-    align-items: center; padding: 10px 16px; background: #100E0C;
+    align-items: center; padding: 10px 16px; background: var(--bg-medium);
     border-bottom: 1px solid var(--border-color);
     font-family: var(--font-mono); font-size: 10px;
     text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
   }
-  .panel-head .num { color: #D98A64; font-weight: 600; }
-  .panel-head .title { color: #FFF; letter-spacing: 0.18em; font-weight: 500; }
-  .panel-head .file { color: #D4CEC5; }
+  .panel-head .num { color: var(--accent-dim); font-weight: 600; }
+  .panel-head .title { color: var(--text-primary); letter-spacing: 0.18em; font-weight: 500; }
+  .panel-head .file { color: var(--text-secondary); }
   .panel-head .copy { color: var(--fg-muted); cursor: pointer; }
-  .panel-head .copy:hover { color: #D98A64; }
+  .panel-head .copy:hover { color: var(--accent-dim); }
 
   /* ---------- primary block ---------- */
   .primary {
@@ -46,9 +46,7 @@
   }
   .primary .stage {
     position: relative; padding: 56px 40px; min-height: 280px;
-    background:
-      radial-gradient(circle at 30% 40%, rgba(217,138,100,0.06), transparent 60%),
-      #1A1712;
+    background: var(--chart-plot);
     border-right: 1px solid var(--border-color);
     display: flex; align-items: center; justify-content: center;
   }
@@ -56,20 +54,17 @@
   /* construction grid overlay */
   .construct {
     position: absolute; inset: 24px; pointer-events: none;
-    background-image:
-      linear-gradient(to right, rgba(217,138,100,0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(217,138,100,0.05) 1px, transparent 1px);
-    background-size: 16px 16px;
+    border: 1px solid var(--border);
   }
   /* clearspace ring */
   .clearspace {
     position: absolute; left: 50%; top: 50%; width: 220px; height: 220px;
     transform: translate(-50%, -50%);
-    border: 1px dashed rgba(217,138,100,0.45); border-radius: 4px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent); border-radius: var(--radius-card);
   }
   .clearspace::before, .clearspace::after,
   .clearspace .l, .clearspace .r {
-    content: ""; position: absolute; background: #D98A64;
+    content: ""; position: absolute; background: var(--accent);
   }
   .clearspace::before { left: -4px; top: -4px; width: 8px; height: 8px; }
   .clearspace::after  { right: -4px; bottom: -4px; width: 8px; height: 8px; }
@@ -77,7 +72,7 @@
   .clearspace .r { right: -4px; top: -4px; width: 8px; height: 8px; }
   .stage .axis-label {
     position: absolute; font-family: var(--font-mono); font-size: 9px;
-    color: rgba(217,138,100,0.7); letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent-dim); letter-spacing: 0.15em; text-transform: uppercase;
   }
   .stage .axis-label.tl { top: 18px; left: 18px; }
   .stage .axis-label.br { bottom: 18px; right: 18px; }
@@ -86,10 +81,10 @@
   .primary .specs { padding: 22px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 22px; align-content: start; }
   .spec .k { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted);
              text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 4px; }
-  .spec .v { font-family: var(--font-mono); font-size: 12px; color: #FFF; font-variant-numeric: tabular-nums; }
+  .spec .v { font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
   .spec .v small { color: var(--fg-muted); }
   .spec.full { grid-column: 1 / -1; }
-  .anatomy { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: #EFEBE4; }
+  .anatomy { display: flex; flex-direction: column; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); }
   .anatomy .item { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; }
   .anatomy .swatch { width: 12px; height: 12px; border-radius: 1px; }
   .anatomy .meta { font-size: 10px; color: var(--fg-muted); }
@@ -97,28 +92,28 @@
   /* ---------- size ramp ---------- */
   .ramp {
     display: grid; grid-template-columns: repeat(7, 1fr); gap: 0;
-    background: #1A1712;
+    background: var(--chart-plot);
   }
   .ramp .step { padding: 18px 8px 12px; border-right: 1px solid var(--border-color);
                 display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 130px;
                 position: relative; }
   .ramp .step:last-child { border-right: 0; }
   .ramp .step img { display: block; }
-  .ramp .step .px { font-family: var(--font-mono); font-size: 10px; color: #FFF; font-variant-numeric: tabular-nums; }
+  .ramp .step .px { font-family: var(--font-mono); font-size: 10px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
   .ramp .step .ctx { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
                      text-transform: uppercase; letter-spacing: 0.12em; text-align: center; }
   .ramp .step.min::after {
     content: "MIN"; position: absolute; top: 8px; right: 8px;
-    font-family: var(--font-mono); font-size: 8.5px; color: #CE7068;
-    border: 1px solid rgba(206,112,104,0.4); padding: 1px 5px; border-radius: 2px; letter-spacing: 0.1em;
+    font-family: var(--font-mono); font-size: 8.5px; color: var(--red-dim);
+    border: 1px solid color-mix(in srgb, var(--red) 40%, transparent); padding: 1px 5px; border-radius: var(--radius-card); letter-spacing: 0.1em;
   }
 
   /* ---------- wordmark ---------- */
   .wordmark-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
   .wordmark-row .stage { padding: 30px 36px; min-height: 140px;
                          display: flex; align-items: center; justify-content: center;
-                         border-right: 1px solid var(--border-color); background: #1A1712; }
-  .wordmark-row .stage:last-child { border-right: 0; background: #EFEBE4; }
+                         border-right: 1px solid var(--border-color); background: var(--chart-plot); }
+  .wordmark-row .stage:last-child { border-right: 0; background: var(--bg-light); }
   .wordmark-row .stage img { height: 60px; }
   .wordmark-row .stage.light img { filter: invert(95%) hue-rotate(180deg) saturate(0.4) brightness(0.4); }
   .wordmark-row .label-pill {
@@ -128,7 +123,7 @@
   }
   .wordmark-row .stage { position: relative; }
   .wordmark-row .stage.dark .label-pill { color: var(--fg-muted); }
-  .wordmark-row .stage.light .label-pill { color: #736B60; }
+  .wordmark-row .stage.light .label-pill { color: var(--text-muted); }
 
   /* ---------- variants grid ---------- */
   .variants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
@@ -141,19 +136,19 @@
     font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted);
   }
   .variants .cell .name {
-    font-family: var(--font-mono); font-size: 11px; color: #FFF; letter-spacing: 0.1em;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); letter-spacing: 0.1em;
   }
   .variants .cell .meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--fg-muted); }
-  .variants .stage-dark { background: #1A1712; }
-  .variants .stage-deep { background: #100E0C; }
-  .variants .stage-light { background: #EFEBE4; }
-  .variants .stage-cyan { background: #D98A64; }
-  .variants .stage-light .name { color: #14120F; }
-  .variants .stage-light .meta { color: #736B60; }
-  .variants .stage-light .tag { color: #736B60; }
-  .variants .stage-cyan .name { color: #100E0C; }
-  .variants .stage-cyan .meta { color: #100E0C; opacity: 0.7; }
-  .variants .stage-cyan .tag { color: #100E0C; opacity: 0.7; }
+  .variants .stage-dark { background: var(--chart-plot); }
+  .variants .stage-deep { background: var(--bg-medium); }
+  .variants .stage-light { background: var(--bg-light); }
+  .variants .stage-cyan { background: var(--accent); }
+  .variants .stage-light .name { color: var(--text-primary); }
+  .variants .stage-light .meta { color: var(--text-secondary); }
+  .variants .stage-light .tag { color: var(--text-muted); }
+  .variants .stage-cyan .name { color: var(--text-on-accent); }
+  .variants .stage-cyan .meta { color: var(--text-on-accent); }
+  .variants .stage-cyan .tag { color: var(--text-on-accent); }
 
   .variants .cell img.mono { width: 72px; height: 72px; }
 
@@ -161,14 +156,14 @@
   .misuse { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
   .misuse .cell { padding: 22px 16px 16px; border-right: 1px solid var(--border-color);
                   display: flex; flex-direction: column; align-items: center; gap: 10px;
-                  background: #1A1712; position: relative; min-height: 160px; }
+                  background: var(--chart-plot); position: relative; min-height: 160px; }
   .misuse .cell:last-child { border-right: 0; }
   .misuse .cell .x {
     position: absolute; top: 10px; right: 12px;
-    color: #CE7068; font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+    color: var(--red-dim); font-family: var(--font-mono); font-size: 14px; font-weight: 600;
   }
   .misuse .cell .label {
-    font-family: var(--font-mono); font-size: 10px; color: #CE7068;
+    font-family: var(--font-mono); font-size: 10px; color: var(--red-dim);
     text-transform: uppercase; letter-spacing: 0.14em;
   }
   .misuse .cell .desc { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-align: center; line-height: 1.4; }
@@ -182,71 +177,71 @@
 
   /* favicon mockup */
   .favicon-mock {
-    background: #252119;
+    background: var(--card-surface-raised);
     height: 100%; display: flex; flex-direction: column;
   }
   .favicon-mock .browser-bar {
-    background: #302B25; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
-    border-bottom: 1px solid #100E0C;
+    background: var(--chart-grid); padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+    border-bottom: 1px solid var(--bg-medium);
   }
   .favicon-mock .traffic { display: flex; gap: 5px; }
-  .favicon-mock .traffic span { width: 9px; height: 9px; border-radius: 50%; background: #5F584E; }
+  .favicon-mock .traffic span { width: 9px; height: 9px; border-radius: 50%; background: var(--border-hover); }
   .favicon-mock .tab {
-    background: #252119; padding: 6px 10px; border-radius: 4px 4px 0 0;
-    font-family: var(--font-sans); font-size: 11px; color: #EFEBE4;
+    background: var(--card-surface-raised); padding: 6px 10px; border-radius: var(--radius-card) 4px 0 0;
+    font-family: var(--font-sans); font-size: 11px; color: var(--text-primary);
     display: flex; align-items: center; gap: 7px; max-width: 200px;
   }
   .favicon-mock .tab img { width: 14px; height: 14px; }
   .favicon-mock .tab .ttl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .favicon-mock .tab .close { color: #9A9289; margin-left: 4px; font-size: 11px; }
+  .favicon-mock .tab .close { color: var(--text-muted); margin-left: 4px; font-size: 11px; }
   .favicon-mock .body-area { flex: 1; padding: 16px; }
   .favicon-mock .label-pill { color: var(--fg-muted); font-family: var(--font-mono); font-size: 9px;
                               text-transform: uppercase; letter-spacing: 0.14em; }
 
   /* avatar / icon mockup */
-  .avatar-mock { padding: 20px; display: flex; flex-direction: column; gap: 16px; background: #1A1712; height: 100%; box-sizing: border-box; }
+  .avatar-mock { padding: 20px; display: flex; flex-direction: column; gap: 16px; background: var(--chart-plot); height: 100%; box-sizing: border-box; }
   .avatar-mock .label-pill { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
                              text-transform: uppercase; letter-spacing: 0.14em; }
   .avatar-mock .row { display: flex; align-items: center; gap: 14px; }
   .avatar-mock .pill {
     display: inline-flex; align-items: center; gap: 8px;
-    background: #201D19; border: 1px solid var(--border-color); border-radius: 999px;
+    background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-chip);
     padding: 6px 12px 6px 6px;
   }
   .avatar-mock .pill img { width: 22px; height: 22px; border-radius: 50%; }
-  .avatar-mock .pill .t { font-family: var(--font-mono); font-size: 11px; color: #FFF; }
+  .avatar-mock .pill .t { font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); }
   .avatar-mock .ios-icon {
-    width: 56px; height: 56px; border-radius: 12px;
-    background: #1A1712; border: 1px solid var(--border-color);
+    width: 56px; height: 56px; border-radius: var(--radius-card);
+    background: var(--chart-plot); border: 1px solid var(--border-color);
     display: grid; place-items: center;
   }
   .avatar-mock .ios-icon img { width: 38px; height: 38px; }
-  .avatar-mock .ios-label { font-family: var(--font-sans); font-size: 10.5px; color: #EFEBE4; }
+  .avatar-mock .ios-label { font-family: var(--font-sans); font-size: 10.5px; color: var(--text-primary); }
 
   /* monogram mockup */
-  .mono-mock { padding: 20px; height: 100%; box-sizing: border-box; background: #1A1712;
+  .mono-mock { padding: 20px; height: 100%; box-sizing: border-box; background: var(--chart-plot);
                 display: flex; flex-direction: column; gap: 14px; }
   .mono-mock .label-pill { font-family: var(--font-mono); font-size: 9px; color: var(--fg-muted);
                             text-transform: uppercase; letter-spacing: 0.14em; }
   .mono-mock .lockup {
-    background: #100E0C; border: 1px solid var(--border-color); padding: 10px 14px;
-    display: flex; align-items: center; gap: 10px; border-radius: 4px;
+    background: var(--bg-medium); border: 1px solid var(--border-color); padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px; border-radius: var(--radius-card);
   }
   .mono-mock .lockup img { width: 20px; height: 20px; }
   .mono-mock .lockup .stack { display: flex; flex-direction: column; line-height: 1.1; }
-  .mono-mock .lockup .top { font-family: var(--font-display); font-weight: 600; color: #FFF; font-size: 13px; letter-spacing: 0.06em; }
-  .mono-mock .lockup .bot { font-family: var(--font-mono); font-size: 9px; color: #D98A64; letter-spacing: 0.18em; }
+  .mono-mock .lockup .top { font-family: var(--font-display); font-weight: 600; color: var(--text-primary); font-size: 13px; letter-spacing: 0.06em; }
+  .mono-mock .lockup .bot { font-family: var(--font-mono); font-size: 9px; color: var(--accent-dim); letter-spacing: 0.18em; }
 
   /* ---------- color tokens ---------- */
   .tokens { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
   .tokens .tok { padding: 14px 16px; border-right: 1px solid var(--border-color);
-                 display: flex; gap: 12px; align-items: center; background: #1A1712; }
+                 display: flex; gap: 12px; align-items: center; background: var(--chart-plot); }
   .tokens .tok:last-child { border-right: 0; }
-  .tokens .sw { width: 36px; height: 36px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.06); }
+  .tokens .sw { width: 36px; height: 36px; border-radius: var(--radius-card); flex-shrink: 0; border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent); }
   .tokens .info { display: flex; flex-direction: column; gap: 2px; }
-  .tokens .info .nm { font-family: var(--font-mono); font-size: 11px; color: #FFF; letter-spacing: 0.04em; }
+  .tokens .info .nm { font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); letter-spacing: 0.04em; }
   .tokens .info .hex { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
-  .tokens .info .role { font-family: var(--font-mono); font-size: 9.5px; color: #D98A64;
+  .tokens .info .role { font-family: var(--font-mono); font-size: 9.5px; color: var(--accent-dim);
                         text-transform: uppercase; letter-spacing: 0.14em; }
 </style>
 </head>
@@ -292,15 +287,15 @@
           <div class="spec full">
             <div class="k">Anatomy</div>
             <div class="anatomy">
-              <div class="item"><span class="swatch" style="background:#EFEBE4;"></span><span>Celestial circle</span><span class="meta">Bone · stroke 10</span></div>
-              <div class="item"><span class="swatch" style="background:#EFEBE4;"></span><span>Vertical &amp; horizontal axes</span><span class="meta">Bone · square caps</span></div>
-              <div class="item"><span class="swatch" style="background:#D98A64;"></span><span>Latitude tick</span><span class="meta">Cyan · sight-line accent</span></div>
-              <div class="item"><span class="swatch" style="background:#D98A64; border-radius:50%;"></span><span>Origin point</span><span class="meta">Cyan · r 8</span></div>
+              <div class="item"><span class="swatch" style="background:var(--bg-light);"></span><span>Celestial circle</span><span class="meta">Bone · stroke 10</span></div>
+              <div class="item"><span class="swatch" style="background:var(--bg-light);"></span><span>Vertical &amp; horizontal axes</span><span class="meta">Bone · square caps</span></div>
+              <div class="item"><span class="swatch" style="background:var(--accent);"></span><span>Latitude tick</span><span class="meta">Cyan · sight-line accent</span></div>
+              <div class="item"><span class="swatch" style="background:var(--accent); border-radius:50%;"></span><span>Origin point</span><span class="meta">Cyan · r 8</span></div>
             </div>
           </div>
           <div class="spec full">
             <div class="k">Concept</div>
-            <div class="v" style="font-family: var(--font-sans); font-size: 12.5px; color: #EFEBE4; line-height: 1.5;">
+            <div class="v" style="font-family: var(--font-sans); font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">
               Sight along a meridian. The circle is the celestial sphere, the cross is the observer's frame, and the cyan tick is the moment of fix — the line at which a measurement becomes a position.
             </div>
           </div>
@@ -317,13 +312,13 @@
         <span class="copy">⧉ Copy ramp</span>
       </div>
       <div class="ramp">
-        <div class="step min"><img src="../assets/brand/meridian-mark.svg" style="width:14px;height:14px;"><span class="px">14</span><span class="ctx">Inline · prose</span></div>
-        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:16px;height:16px;"><span class="px">16</span><span class="ctx">Favicon</span></div>
-        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:24px;height:24px;"><span class="px">24</span><span class="ctx">Nav · header</span></div>
-        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:32px;height:32px;"><span class="px">32</span><span class="ctx">Avatar · pill</span></div>
-        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:48px;height:48px;"><span class="px">48</span><span class="ctx">App tile</span></div>
-        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:80px;height:80px;"><span class="px">80</span><span class="ctx">Splash</span></div>
-        <div class="step"><img src="../assets/brand/meridian-mark.svg" style="width:120px;height:120px;"><span class="px">120</span><span class="ctx">Hero · merch</span></div>
+        <div class="step min"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:14px;height:14px;"><span class="px">14</span><span class="ctx">Inline · prose</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:16px;height:16px;"><span class="px">16</span><span class="ctx">Favicon</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:24px;height:24px;"><span class="px">24</span><span class="ctx">Nav · header</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:32px;height:32px;"><span class="px">32</span><span class="ctx">Avatar · pill</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:48px;height:48px;"><span class="px">48</span><span class="ctx">App tile</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:80px;height:80px;"><span class="px">80</span><span class="ctx">Splash</span></div>
+        <div class="step"><img src="../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:120px;height:120px;"><span class="px">120</span><span class="ctx">Hero · merch</span></div>
       </div>
     </div>
 
@@ -362,18 +357,18 @@
           <img src="../assets/brand/meridian-mark.svg" class="mono" alt="">
           <div>
             <div class="name">DUOTONE</div>
-            <div class="meta">Bone + Cyan · default</div>
+            <div class="meta">Paper + Copper · default</div>
           </div>
         </div>
 
         <div class="cell stage-deep">
           <span class="tag">B · MONO LIGHT</span>
           <svg class="mono" viewBox="0 0 256 256">
-            <circle cx="128" cy="128" r="88" fill="none" stroke="#EFEBE4" stroke-width="10"/>
-            <line x1="40" y1="128" x2="216" y2="128" stroke="#EFEBE4" stroke-width="10" stroke-linecap="square"/>
-            <line x1="128" y1="28" x2="128" y2="228" stroke="#EFEBE4" stroke-width="10" stroke-linecap="square"/>
-            <line x1="96" y1="88" x2="160" y2="88" stroke="#EFEBE4" stroke-width="10" stroke-linecap="square"/>
-            <circle cx="128" cy="128" r="8" fill="#EFEBE4"/>
+            <circle cx="128" cy="128" r="88" fill="none" stroke="var(--text-primary)" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="var(--text-primary)" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="var(--text-primary)" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="var(--text-primary)" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="var(--text-primary)"/>
           </svg>
           <div>
             <div class="name">BONE MONO</div>
@@ -384,11 +379,11 @@
         <div class="cell stage-light">
           <span class="tag">C · ON LIGHT</span>
           <svg class="mono" viewBox="0 0 256 256">
-            <circle cx="128" cy="128" r="88" fill="none" stroke="#14120F" stroke-width="10"/>
-            <line x1="40" y1="128" x2="216" y2="128" stroke="#14120F" stroke-width="10" stroke-linecap="square"/>
-            <line x1="128" y1="28" x2="128" y2="228" stroke="#14120F" stroke-width="10" stroke-linecap="square"/>
-            <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10" stroke-linecap="square"/>
-            <circle cx="128" cy="128" r="8" fill="#D98A64"/>
+            <circle cx="128" cy="128" r="88" fill="none" stroke="var(--bg)" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="var(--bg)" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="var(--bg)" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="var(--accent)" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="var(--accent)"/>
           </svg>
           <div>
             <div class="name">INVERSE</div>
@@ -399,15 +394,15 @@
         <div class="cell stage-cyan">
           <span class="tag">D · KNOCKOUT</span>
           <svg class="mono" viewBox="0 0 256 256">
-            <circle cx="128" cy="128" r="88" fill="none" stroke="#100E0C" stroke-width="10"/>
-            <line x1="40" y1="128" x2="216" y2="128" stroke="#100E0C" stroke-width="10" stroke-linecap="square"/>
-            <line x1="128" y1="28" x2="128" y2="228" stroke="#100E0C" stroke-width="10" stroke-linecap="square"/>
-            <line x1="96" y1="88" x2="160" y2="88" stroke="#100E0C" stroke-width="10" stroke-linecap="square"/>
-            <circle cx="128" cy="128" r="8" fill="#100E0C"/>
+            <circle cx="128" cy="128" r="88" fill="none" stroke="var(--bg-medium)" stroke-width="10"/>
+            <line x1="40" y1="128" x2="216" y2="128" stroke="var(--bg-medium)" stroke-width="10" stroke-linecap="square"/>
+            <line x1="128" y1="28" x2="128" y2="228" stroke="var(--bg-medium)" stroke-width="10" stroke-linecap="square"/>
+            <line x1="96" y1="88" x2="160" y2="88" stroke="var(--bg-medium)" stroke-width="10" stroke-linecap="square"/>
+            <circle cx="128" cy="128" r="8" fill="var(--bg-medium)"/>
           </svg>
           <div>
             <div class="name">KNOCKOUT</div>
-            <div class="meta">Solid cyan field · merch</div>
+            <div class="meta">Solid copper field · brand</div>
           </div>
         </div>
 
@@ -452,13 +447,13 @@
                 <span class="ios-label">Meridian</span>
               </div>
               <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-                <div class="ios-icon" style="background:#D98A64; border-color:#D98A64;">
+                <div class="ios-icon" style="background:var(--accent); border-color:var(--accent);">
                   <svg width="38" height="38" viewBox="0 0 256 256">
-                    <circle cx="128" cy="128" r="88" fill="none" stroke="#100E0C" stroke-width="14"/>
-                    <line x1="40" y1="128" x2="216" y2="128" stroke="#100E0C" stroke-width="14"/>
-                    <line x1="128" y1="28" x2="128" y2="228" stroke="#100E0C" stroke-width="14"/>
-                    <line x1="96" y1="88" x2="160" y2="88" stroke="#100E0C" stroke-width="14"/>
-                    <circle cx="128" cy="128" r="10" fill="#100E0C"/>
+                    <circle cx="128" cy="128" r="88" fill="none" stroke="var(--bg-medium)" stroke-width="14"/>
+                    <line x1="40" y1="128" x2="216" y2="128" stroke="var(--bg-medium)" stroke-width="14"/>
+                    <line x1="128" y1="28" x2="128" y2="228" stroke="var(--bg-medium)" stroke-width="14"/>
+                    <line x1="96" y1="88" x2="160" y2="88" stroke="var(--bg-medium)" stroke-width="14"/>
+                    <circle cx="128" cy="128" r="10" fill="var(--bg-medium)"/>
                   </svg>
                 </div>
                 <span class="ios-label">Terminal</span>
@@ -503,11 +498,11 @@
           <span class="x">✕</span>
           <div class="demo">
             <svg width="64" height="64" viewBox="0 0 256 256" style="transform: scaleX(0.6);">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#EFEBE4" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#EFEBE4" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#EFEBE4" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#D98A64"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="var(--accent)" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="var(--accent)"/>
             </svg>
           </div>
           <div class="label">DON'T DISTORT</div>
@@ -518,11 +513,11 @@
           <span class="x">✕</span>
           <div class="demo">
             <svg width="64" height="64" viewBox="0 0 256 256">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#D6B169" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#D6B169" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#D6B169" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#CE7068" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#CE7068"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="var(--orange)" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="var(--orange)" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="var(--orange)" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="var(--red)" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="var(--red)"/>
             </svg>
           </div>
           <div class="label">DON'T RECOLOR</div>
@@ -533,11 +528,11 @@
           <span class="x">✕</span>
           <div class="demo">
             <svg width="64" height="64" viewBox="0 0 256 256" style="transform: rotate(28deg);">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#EFEBE4" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#EFEBE4" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#EFEBE4" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#D98A64"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="var(--accent)" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="var(--accent)"/>
             </svg>
           </div>
           <div class="label">DON'T ROTATE</div>
@@ -546,13 +541,13 @@
 
         <div class="cell">
           <span class="x">✕</span>
-          <div class="demo" style="background: linear-gradient(135deg,#D6B169,#CE7068); border-radius: 4px; width:80px; height:64px; padding: 8px;">
+          <div class="demo" style="background: var(--accent); border-radius: var(--radius-card); width:80px; height:64px; padding: 8px;">
             <svg width="48" height="48" viewBox="0 0 256 256">
-              <circle cx="128" cy="128" r="88" fill="none" stroke="#FFF" stroke-width="10"/>
-              <line x1="40" y1="128" x2="216" y2="128" stroke="#FFF" stroke-width="10"/>
-              <line x1="128" y1="28" x2="128" y2="228" stroke="#FFF" stroke-width="10"/>
-              <line x1="96" y1="88" x2="160" y2="88" stroke="#FFF" stroke-width="10"/>
-              <circle cx="128" cy="128" r="8" fill="#FFF"/>
+              <circle cx="128" cy="128" r="88" fill="none" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="40" y1="128" x2="216" y2="128" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="128" y1="28" x2="128" y2="228" stroke="var(--text-primary)" stroke-width="10"/>
+              <line x1="96" y1="88" x2="160" y2="88" stroke="var(--text-primary)" stroke-width="10"/>
+              <circle cx="128" cy="128" r="8" fill="var(--text-primary)"/>
             </svg>
           </div>
           <div class="label">DON'T ON BUSY BG</div>
@@ -572,19 +567,19 @@
       </div>
       <div class="tokens">
         <div class="tok">
-          <span class="sw" style="background:#14120F;"></span>
+          <span class="sw" style="background:var(--bg);"></span>
           <div class="info"><span class="role">SURFACE</span><span class="nm">brand.bg</span><span class="hex">#14120F</span></div>
         </div>
         <div class="tok">
-          <span class="sw" style="background:#EFEBE4;"></span>
+          <span class="sw" style="background:var(--bg-light);"></span>
           <div class="info"><span class="role">PRIMARY INK</span><span class="nm">brand.bone</span><span class="hex">#EFEBE4</span></div>
         </div>
         <div class="tok">
-          <span class="sw" style="background:#D98A64;"></span>
-          <div class="info"><span class="role">ACCENT</span><span class="nm">brand.cyan</span><span class="hex">#D98A64</span></div>
+          <span class="sw" style="background:var(--accent);"></span>
+          <div class="info"><span class="role">ACCENT</span><span class="nm">brand.accent</span><span class="hex">#D98A64</span></div>
         </div>
         <div class="tok">
-          <span class="sw" style="background:#100E0C;"></span>
+          <span class="sw" style="background:var(--bg-medium);"></span>
           <div class="info"><span class="role">DEEP</span><span class="nm">brand.deep</span><span class="hex">#100E0C</span></div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 <!-- @dsCard group="Documentation" viewport="1920x1080" name="Component API Reference" subtitle="Interactive, searchable reference for the exported component API" -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,10 +11,10 @@
     body {
       margin: 0;
       padding: 0;
-      background: var(--bg-canvas, #F2F0EC);
+      background: var(--bg-canvas, var(--bg));
       font-family: var(--font-body, 'Segoe UI', sans-serif);
       font-size: 13px;
-      color: var(--text-primary, #22252A);
+      color: var(--text-primary, var(--text-primary));
     }
     .container {
       max-width: 1400px;
@@ -32,7 +32,7 @@
     }
     .subtitle {
       font-size: 14px;
-      color: var(--text-secondary, #4E5258);
+      color: var(--text-secondary, var(--text-secondary));
       margin: 0;
     }
     .controls {
@@ -44,7 +44,7 @@
     }
     .search-input {
       padding: 8px 12px;
-      border: 1px solid var(--border, #E4E3DE);
+      border: 1px solid var(--border, var(--border));
       border-radius: 2px;
       font-family: var(--font-body);
       font-size: 13px;
@@ -52,16 +52,16 @@
     }
     .filter-select {
       padding: 8px 12px;
-      border: 1px solid var(--border, #E4E3DE);
+      border: 1px solid var(--border, var(--border));
       border-radius: 2px;
       font-family: var(--font-body);
       font-size: 13px;
-      background: var(--bg-light, #FBFAF8);
+      background: var(--bg-light, var(--bg-light));
       cursor: pointer;
     }
     .results-count {
       font-size: 12px;
-      color: var(--text-muted, #5E666F);
+      color: var(--text-muted, var(--text-muted));
     }
     .component-grid {
       display: grid;
@@ -69,8 +69,8 @@
       gap: 16px;
     }
     .component-card {
-      background: var(--bg-light, #FBFAF8);
-      border: 1px solid var(--border, #E4E3DE);
+      background: var(--bg-light, var(--bg-light));
+      border: 1px solid var(--border, var(--border));
       border-radius: 2px;
       padding: 20px;
       cursor: pointer;
@@ -78,12 +78,12 @@
     }
     .component-card:hover {
       background: var(--bg-hover, #F0EEE9);
-      border-color: var(--border-hover, #C6C3BB);
+      border-color: var(--border-hover, var(--border-hover));
     }
     .component-card.active {
-      background: var(--bg-active, #F2E3DB);
-      border-color: var(--accent, #A85436);
-      box-shadow: inset 3px 0 0 var(--accent, #A85436);
+      background: var(--bg-active, var(--bg-active));
+      border-color: var(--accent, var(--accent));
+      box-shadow: inset 3px 0 0 var(--accent, var(--accent));
       padding-left: 17px;
     }
     .component-name {
@@ -96,12 +96,12 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: var(--text-muted, #5E666F);
+      color: var(--text-muted, var(--text-muted));
       margin: 0 0 12px 0;
     }
     .component-description {
       font-size: 12px;
-      color: var(--text-secondary, #4E5258);
+      color: var(--text-secondary, var(--text-secondary));
       margin: 0;
       line-height: 1.4;
     }
@@ -111,12 +111,12 @@
       right: 0;
       width: 480px;
       height: 100vh;
-      background: var(--bg-light, #FBFAF8);
-      border-left: 1px solid var(--border, #E4E3DE);
+      background: var(--bg-light, var(--bg-light));
+      border-left: 1px solid var(--border, var(--border));
       overflow-y: auto;
       padding: 32px;
       z-index: 100;
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--shadow-card);
     }
     .detail-panel.hidden {
       display: none;
@@ -140,7 +140,7 @@
     .detail-category {
       font-size: 11px;
       text-transform: uppercase;
-      color: var(--text-muted, #5E666F);
+      color: var(--text-muted, var(--text-muted));
       margin-bottom: 24px;
     }
     .detail-section {
@@ -150,12 +150,12 @@
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
-      color: var(--text-secondary, #4E5258);
+      color: var(--text-secondary, var(--text-secondary));
       margin: 0 0 12px 0;
     }
     .prop-item {
       background: var(--bg-hover, #F0EEE9);
-      border: 1px solid var(--border, #E4E3DE);
+      border: 1px solid var(--border, var(--border));
       border-radius: 2px;
       padding: 12px;
       margin-bottom: 8px;
@@ -167,15 +167,15 @@
       color: var(--text-primary);
     }
     .prop-type {
-      color: var(--text-muted, #5E666F);
+      color: var(--text-muted, var(--text-muted));
     }
     .prop-default {
-      color: var(--green, #3A7A56);
+      color: var(--green, var(--green));
     }
     .no-results {
       text-align: center;
       padding: 64px 32px;
-      color: var(--text-muted, #5E666F);
+      color: var(--text-muted, var(--text-muted));
     }
     .grid-wrapper {
       margin-right: 0;
@@ -211,7 +211,7 @@
         placeholder="Search components by name..."
         autocomplete="off"
       />
-      <select class="filter-select" id="categoryFilter">
+      <select class="filter-select" id="categoryFilter" aria-label="Component category">
         <option value="">All categories</option>
         <option value="core">Core UI</option>
         <option value="data">Data & Tables</option>

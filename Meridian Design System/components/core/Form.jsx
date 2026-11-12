@@ -33,12 +33,25 @@ function inject() {
 
 export function FormRow({ label, hint, error, horizontal = false, children, span }) {
   inject();
+  const identity = React.useId();
+  const labelId = `${identity}-label`;
+  const detailId = `${identity}-detail`;
+  const control = React.isValidElement(children) && children.type !== React.Fragment ? children : null;
+  const fieldId = control?.props.id || `${identity}-field`;
+  const detail = error || hint;
+  const descriptions = [control?.props["aria-describedby"], detail ? detailId : null].filter(Boolean).join(" ") || undefined;
+  const field = control ? React.cloneElement(control, {
+    id: fieldId,
+    "aria-labelledby": control.props["aria-labelledby"] || (!control.props["aria-label"] && label ? labelId : undefined),
+    "aria-describedby": descriptions,
+    "aria-invalid": error ? true : control.props["aria-invalid"],
+  }) : children;
   return (
     <div className={`mds-form-row${horizontal ? " mds-form-row--horizontal" : ""}${span ? ` mds-form-grid__span-${span}` : ""}`}>
-      {label && <span className="mds-form-row__label">{label}</span>}
-      <div className="mds-form-row__field">{children}</div>
-      {error && <span className="mds-form-row__error">{error}</span>}
-      {hint && !error && <span className="mds-form-row__hint">{hint}</span>}
+      {label && <label id={labelId} htmlFor={control ? fieldId : undefined} className="mds-form-row__label">{label}</label>}
+      <div className="mds-form-row__field" role={!control ? "group" : undefined} aria-labelledby={!control && label ? labelId : undefined}>{field}</div>
+      {error && <span id={detailId} className="mds-form-row__error">{error}</span>}
+      {hint && !error && <span id={detailId} className="mds-form-row__hint">{hint}</span>}
     </div>
   );
 }

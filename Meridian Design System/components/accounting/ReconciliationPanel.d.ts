@@ -58,5 +58,9 @@ export interface ReconciliationPanelProps {
   searchable?: boolean;
   /** Show the All / Matched / Open status filter. @default true */
   filterable?: boolean;
+  /** Request a match-state change for one identified item. Omit for read-only evidence. */
+  onToggleItem?: (id: string | number, matched: boolean) => void;
+  /** Request a match-state change for the complete loaded side, including filtered-out items. */
+  onToggleAll?: (side: ReconciliationSide, matched: boolean) => void;
 }
 export declare function ReconciliationPanel(props: ReconciliationPanelProps): JSX.Element;

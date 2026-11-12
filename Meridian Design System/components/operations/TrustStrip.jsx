@@ -18,7 +18,7 @@ function inject() {
 .mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(168,68,60,.35));border-left-color:var(--state-danger-fg,#7E332D);background:var(--state-danger-bg,rgba(168,68,60,.10));}
 .mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(93,84,134,.34));border-left-color:var(--state-pending-fg,#463F64);background:var(--state-pending-bg,rgba(93,84,134,.10));}
 .mds-trust__label{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--text-muted,#5E666F);white-space:nowrap;}
+  letter-spacing:.05em;color:var(--text-secondary,#4E5258);white-space:nowrap;}
 .mds-trust__value{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#22252A);white-space:nowrap;}
 `;
   const el = document.createElement("style");

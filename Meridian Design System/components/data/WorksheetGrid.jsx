@@ -18,7 +18,7 @@ function inject() {
 .mds-ws__formula{flex:1;display:flex;align-items:center;padding:0 10px;min-height:30px;font:13px var(--font-data);color:var(--text-primary,#22252A);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-ws__scroll{overflow:auto;}
 .mds-ws__grid{display:inline-block;min-width:100%;outline:none;}
-.mds-ws__grid:focus-visible{outline:none;}
+.mds-ws__grid:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-ws__row{display:flex;}
 .mds-ws__corner{position:sticky;top:0;z-index:3;}
 .mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#E4E3DE);border-bottom:1px solid var(--border,#E4E3DE);font:13px var(--font-data);color:var(--text-primary,#22252A);background:var(--card-surface,#FBFAF8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
@@ -66,6 +66,9 @@ export function WorksheetGrid({
   const [internal, setInternal] = React.useState(defaultActiveCell);
   const active = isControlled ? activeCell : internal;
   const activeParsed = parseRef(active);
+  const gridId = React.useId();
+  const gridRef = React.useRef(null);
+  const cellId = (ref) => `${gridId}-${ref}`;
 
   const select = (ref) => {
     if (!isControlled) setInternal(ref);
@@ -75,8 +78,11 @@ export function WorksheetGrid({
   const [editing, setEditing] = React.useState(null);
   const [draft, setDraft] = React.useState("");
   const inputRef = React.useRef(null);
+  const previousEditing = React.useRef(null);
   React.useEffect(() => {
     if (editing && inputRef.current) { inputRef.current.focus(); if (inputRef.current.select) inputRef.current.select(); }
+    else if (previousEditing.current != null) gridRef.current?.focus();
+    previousEditing.current = editing;
   }, [editing]);
 
   const startEdit = (ref, initial) => {
@@ -107,7 +113,12 @@ export function WorksheetGrid({
 
   const onKeyDown = (e) => {
     if (editing != null) return;
-    if (!activeParsed) return;
+    if (!activeParsed) {
+      if (rows > 0 && cols.length > 0 && ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End", "PageDown", "PageUp"].includes(e.key)) {
+        e.preventDefault(); select(cols[0].key + "1");
+      }
+      return;
+    }
     if (editable && (e.key === "Enter" || e.key === "F2")) { e.preventDefault(); startEdit(active); return; }
     if (editable && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); startEdit(active, e.key); return; }
     let ci = cols.findIndex((c) => c.key === activeParsed.col);
@@ -155,16 +166,16 @@ export function WorksheetGrid({
         </div>
       )}
       <div className="mds-ws__scroll">
-        <div className="mds-ws__grid" tabIndex={0} role="grid" onKeyDown={onKeyDown}>
-          <div className="mds-ws__row mds-ws__corner">
-            <div className="mds-ws__hdr" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AFABA1)", position: "sticky", left: 0, zIndex: 4 }} />
+        <div ref={gridRef} className="mds-ws__grid" tabIndex={0} role="grid" aria-label="Worksheet" aria-rowcount={rows + 1} aria-colcount={cols.length + 1} aria-readonly={!editable} aria-activedescendant={activeParsed && cols.some((col) => col.key === activeParsed.col) && activeParsed.row >= 1 && activeParsed.row <= rows ? cellId(active) : undefined} onKeyDown={onKeyDown}>
+          <div className="mds-ws__row mds-ws__corner" role="row" aria-rowindex={1}>
+            <div className="mds-ws__hdr" role="columnheader" aria-label="Row" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AFABA1)", position: "sticky", left: 0, zIndex: 4 }} />
             {cols.map((col) => {
               const on = activeParsed && activeParsed.col === col.key;
               const w = col.width || 92;
               return (
-                <div key={col.key} className="mds-ws__hdr" style={{
+                <div key={col.key} className="mds-ws__hdr" role="columnheader" style={{
                   width: w, minWidth: w, height: headerHeight,
-                  color: on ? "var(--accent,#A85436)" : undefined,
+                  color: on ? "var(--accent-dim,#8C4429)" : undefined,
                   background: on ? "color-mix(in srgb, var(--accent) 12%, transparent)" : undefined,
                 }}>{col.label != null ? col.label : col.key}</div>
               );
@@ -173,8 +184,8 @@ export function WorksheetGrid({
           {Array.from({ length: rows }, (_, i) => i + 1).map((r) => {
             const rowOn = activeParsed && activeParsed.row === r;
             return (
-              <div key={r} className="mds-ws__row">
-                <div className="mds-ws__rownum" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--accent,#A85436)" : undefined }}>{r}</div>
+              <div key={r} className="mds-ws__row" role="row" aria-rowindex={r + 1}>
+                <div className="mds-ws__rownum" role="rowheader" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--accent-dim,#8C4429)" : undefined }}>{r}</div>
                 {cols.map((col) => {
                   const ref = col.key + r;
                   const c = cells[ref];
@@ -184,12 +195,12 @@ export function WorksheetGrid({
                   const isEditing = editing === ref;
                   const colAlign = col.align || (c && (c.type === "label" || c.type === "text") ? "left" : "right");
                   return (
-                    <div key={ref} className={cls} style={cellInner(c, col)}
-                      onClick={() => select(ref)}
+                    <div key={ref} id={cellId(ref)} role="gridcell" aria-selected={active === ref} className={cls} style={cellInner(c, col)}
+                      onClick={() => { if (!isEditing) { select(ref); gridRef.current?.focus(); } }}
                       onDoubleClick={() => startEdit(ref)}
                       title={c && c.formula ? c.formula : undefined}>
                       {isEditing ? (
-                        <input ref={inputRef} className="mds-ws__input" value={draft}
+                        <input ref={inputRef} className="mds-ws__input" aria-label={`Edit ${ref}`} value={draft}
                           style={{ textAlign: colAlign }}
                           onChange={(e) => setDraft(e.target.value)}
                           onKeyDown={onInputKeyDown}

@@ -100,8 +100,8 @@ const STATE_BADGE_VARIANT: Record<PassportStateTone, "default" | "outline" | "su
 };
 
 const BANNER_CLASS: Record<PassportBannerViewModel["tone"], string> = {
-  error: "border-[var(--danger)] text-[var(--danger)]",
-  warning: "border-[var(--warning)] text-[var(--warning)]",
+  error: "border-[var(--state-danger-bd)] text-[var(--state-danger-fg)]",
+  warning: "border-[var(--state-warn-bd)] text-[var(--state-warn-fg)]",
   info: "border-border text-foreground"
 };
 
@@ -431,7 +431,7 @@ export function SecurityPassportEditor({
                 aria-invalid={valueError ? true : undefined}
               />
             )}
-            {valueError ? <span className="text-xs text-[var(--danger)]">{valueError}</span> : null}
+            {valueError ? <span className="text-xs text-[var(--state-danger-fg)]">{valueError}</span> : null}
           </label>
           <label className="space-y-1 text-sm">
             <span className="text-muted-foreground">Effective from</span>

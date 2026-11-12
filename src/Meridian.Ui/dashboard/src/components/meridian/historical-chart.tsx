@@ -274,7 +274,7 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
     <li
       aria-label={chip.ariaLabel}
       data-testid={`historical-chart-compare-chip-${chip.symbol}`}
-      className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/30 px-2 py-0.5 text-xs"
+      className="flex items-center gap-1.5 rounded-[var(--radius-chip)] border border-border/60 bg-secondary/30 px-2 py-0.5 text-xs"
     >
       <span
         aria-hidden="true"
@@ -287,7 +287,7 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
         type="button"
         onClick={chip.remove}
         aria-label={chip.removeAriaLabel}
-        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-secondary/60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-secondary/60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         data-testid={`historical-chart-compare-chip-${chip.symbol}-remove`}
       >
         <X className="h-3 w-3" aria-hidden="true" />

@@ -18,7 +18,7 @@ function inject() {
   border-bottom:1px solid var(--border-divider,#DAD8D3);display:flex;flex-direction:column;justify-content:space-between;
   gap:2px;min-width:0;}
 .mds-pnlcal__cell:nth-child(7n){border-right:none;}
-.mds-pnlcal__day{font-family:var(--font-data);font-size:9px;color:var(--text-muted,#5E666F);}
+.mds-pnlcal__day{font-family:var(--font-data);font-size:9px;color:var(--text-secondary,#4E5258);}
 .mds-pnlcal__val{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;text-align:right;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-pnlcal__cell--up .mds-pnlcal__val{color:var(--green-dim,#2C5C40);}

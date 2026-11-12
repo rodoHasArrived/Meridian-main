@@ -60,7 +60,7 @@ export function MarginControlCenterScreen() {
 
       {data ? (
         <>
-          <div className="rounded-[2px] border border-amber-300/70 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
+          <div className="rounded-[2px] border border-[var(--state-warn-bd)] bg-[var(--state-warn-bg)] p-3 text-xs leading-5 text-[var(--state-warn-fg)]">
             {data.authorityNote} <span className="font-medium">Next:</span> {data.nextAction}
           </div>
           <PrimeTable data={data} />
@@ -209,7 +209,7 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
             {certificationError ? <p className="text-xs text-destructive" role="alert">{certificationError}</p> : null}
           </div>
         ) : account.certificationState === "Certified" ? (
-          <div className="rounded-[2px] border border-emerald-300/60 bg-emerald-50 p-3 text-xs text-emerald-950">
+          <div className="rounded-[2px] border border-[var(--state-healthy-bd)] bg-[var(--state-healthy-bg)] p-3 text-xs text-[var(--state-healthy-fg)]">
             Certified by {account.certifiedBy ?? "operator"} at {account.certifiedAtUtc ? dateTime(account.certifiedAtUtc) : "recorded time"}. {account.certificationNote}
           </div>
         ) : null}

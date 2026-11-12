@@ -159,7 +159,7 @@ export function Combobox({
         <div
           role="listbox"
           id={listboxId}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto rounded-[2px] border border-border bg-popover shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto rounded-[2px] border border-border bg-popover shadow-float"
         >
           {filtered.length === 0 ? (
             <div className="px-3 py-2.5 text-xs text-muted-foreground">{emptyText}</div>

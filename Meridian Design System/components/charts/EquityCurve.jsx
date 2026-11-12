@@ -109,7 +109,7 @@ export function EquityCurve({
             <line x1={plotL} x2={x(n - 1)} y1={y(series[0].points[n - 1])} y2={y(series[0].points[n - 1])} stroke={series[0].color} strokeWidth="0.8" strokeDasharray="2 3" opacity="0.45" />
             <circle cx={x(n - 1)} cy={y(series[0].points[n - 1])} r="3.5" fill={series[0].color} />
             <rect x={plotR + 2} y={y(series[0].points[n - 1]) - 10} width={axisR - 4} height="20" fill={series[0].color} />
-            <text x={plotR + axisR / 2} y={y(series[0].points[n - 1]) + 5} fill="#fff" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{valueFmt(series[0].points[n - 1])}</text>
+            <text x={plotR + axisR / 2} y={y(series[0].points[n - 1]) + 5} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{valueFmt(series[0].points[n - 1])}</text>
           </g>
         )}
 
@@ -130,7 +130,7 @@ export function EquityCurve({
             <line x1={x(crosshairIndex)} x2={x(crosshairIndex)} y1={eqT} y2={ddB} stroke="var(--chart-crosshair)" strokeWidth="1.2" strokeDasharray="4 2" opacity="0.8" />
             {series.map((s, k) => <circle key={k} cx={x(crosshairIndex)} cy={y(s.points[crosshairIndex])} r="4" fill={s.color} opacity="0.9" />)}
             <rect x={plotR + 2} y={y(series[0].points[crosshairIndex]) - 10} width={axisR - 4} height="20" fill="var(--chart-crosshair)" rx="4" opacity="0.95" />
-            <text x={plotR + axisR / 2} y={y(series[0].points[crosshairIndex]) + 5} fill="#fff" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{valueFmt(series[0].points[crosshairIndex])}</text>
+            <text x={plotR + axisR / 2} y={y(series[0].points[crosshairIndex]) + 5} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{valueFmt(series[0].points[crosshairIndex])}</text>
           </g>
         )}
       </svg>

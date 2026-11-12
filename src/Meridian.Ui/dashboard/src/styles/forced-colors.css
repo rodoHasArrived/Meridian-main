@@ -1,0 +1,54 @@
+/* Windows High Contrast uses the operator's palette. Preserve textual status,
+   focus and selection instead of retaining branded ink on UA-replaced fills. */
+@media (forced-colors: active) {
+  :root,
+  :root[data-theme] {
+    --ws-page-bg: Canvas;
+    --ws-surface: Canvas;
+    --ws-surface-subtle: Canvas;
+    --ws-surface-raised: Canvas;
+    --ws-text: CanvasText;
+    --ws-text-secondary: CanvasText;
+    --ws-text-muted: CanvasText;
+    --ws-border: CanvasText;
+    --ws-border-strong: CanvasText;
+    --ws-row-border: CanvasText;
+    --ws-row-hover: Canvas;
+    --ws-row-selected: Canvas;
+    --ws-masthead-bg: Canvas;
+    --ws-masthead-fg: CanvasText;
+    --topbar-field-bg: Canvas;
+  }
+
+  .workstation-frame,
+  .workstation-frame * {
+    color: CanvasText !important;
+    border-color: CanvasText;
+  }
+
+  .workstation-frame :where(button, input, select, textarea) {
+    background-color: ButtonFace;
+    color: ButtonText !important;
+    border-color: ButtonBorder;
+  }
+
+  .workstation-frame :where(a, a *) {
+    color: LinkText !important;
+  }
+
+  .workstation-frame :where([aria-selected="true"], [aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .workstation-frame :where([aria-selected="true"], [aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) * {
+    color: HighlightText !important;
+  }
+
+  .workstation-frame :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
+  }
+}

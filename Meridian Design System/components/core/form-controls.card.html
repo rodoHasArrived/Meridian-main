@@ -5,20 +5,21 @@
   <meta charset="UTF-8" />
   <title>Form Controls</title>
   <link rel="stylesheet" href="../../styles.css" />
-  <script src="../../_ds_bundle.js"></script>
+<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
 const {
-  ToastProvider, useToast, Select, Checkbox, Toggle,
+  ToastProvider, Select, Checkbox, Toggle,
   Tooltip, Tabs, TabPanel, FormRow, FormGrid, FormDivider, Breadcrumb, Button, Input
 } = window.MeridianDesignSystem_4f61be;
 const { useState } = React;
 
 function Section({ title, children }) {
   return (
-    <div style={{ background:"white", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", padding:16 }}>
       <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
         color:"var(--text-muted)", marginBottom:12 }}>{title}</div>
       {children}
@@ -27,7 +28,7 @@ function Section({ title, children }) {
 }
 
 function Demo() {
-  const toast = useToast();
+  const toast = window.MeridianToast;
   const [sel, setSel] = useState("aapl");
   const [chk, setChk] = useState(true);
   const [tog, setTog] = useState(true);
@@ -79,13 +80,13 @@ function Demo() {
       <Section title="Tooltip · hover for detail">
         <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
           <Tooltip content="Apple Inc. — Common Stock" placement="above">
-            <span style={{ fontFamily:"var(--font-data)", fontSize:13, fontWeight:600,
+            <span tabIndex={0} style={{ fontFamily:"var(--font-data)", fontSize:13, fontWeight:600,
               color:"var(--accent)", cursor:"default", borderBottom:"1px dashed var(--accent)" }}>
               AAPL
             </span>
           </Tooltip>
           <Tooltip content="Last updated 14:02:11Z" placement="above">
-            <span style={{ fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-muted)",
+            <span tabIndex={0} style={{ fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-muted)",
               cursor:"default" }}>$189.42 ↑</span>
           </Tooltip>
           <Tooltip content="Weighted avg cost basis across all lots" placement="right">

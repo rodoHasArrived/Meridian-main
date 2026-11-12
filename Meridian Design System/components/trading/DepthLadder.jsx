@@ -139,7 +139,7 @@ export function DepthLadder({
         role="cell"
         aria-label={`${side} ${fmt(level.price, priceDecimals)}`}
       >
-        {nearLast(level.price) && <span className="mds-ladder__last" aria-label="last price" />}
+        {nearLast(level.price) && <span className="mds-ladder__last" role="img" aria-label="Last price" />}
         {fmt(level.price, priceDecimals)}
       </PriceTag>
       <span className="mds-ladder__size mds-ladder__size--ask" role="cell">

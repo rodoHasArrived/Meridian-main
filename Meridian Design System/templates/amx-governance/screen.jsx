@@ -65,7 +65,7 @@ function FieldCard({ f, expanded, toggle }) {
       <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-            <span style={{ color: "var(--text-disabled)", fontFamily: "var(--font-data)" }}>⋮⋮</span>
+            <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-data)" }}>⋮⋮</span>
             <span style={{ font: "600 13px var(--font-body)", color: "var(--text-primary)" }}>{f.name}</span>
             <Badge variant={TYPE_TONE[f.type]}>{f.type}</Badge>
           </div>
@@ -99,7 +99,7 @@ function FieldCard({ f, expanded, toggle }) {
           )}
         </div>
       )}
-      <div style={{ fontSize: 11, fontStyle: "italic", color: "var(--text-disabled)" }}>Drag to insert into formula</div>
+      <div style={{ fontSize: 11, fontStyle: "italic", color: "var(--text-muted)" }}>Drag to insert into formula</div>
     </PanelSurface>
   );
 }

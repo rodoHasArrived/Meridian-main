@@ -11,6 +11,11 @@ export function VirtualizedList({
   renderRow,
   className = "",
   style = {},
+  tabIndex = 0,
+  role = "list",
+  "aria-label": ariaLabel = "Virtualized list",
+  onScroll,
+  ...rest
 }) {
   const [scrollTop, setScrollTop] = React.useState(0);
   const total = items.length;
@@ -22,7 +27,11 @@ export function VirtualizedList({
 
   return (
     <div
+      {...rest}
       className={className}
+      tabIndex={tabIndex}
+      role={role}
+      aria-label={ariaLabel}
       style={{
         height,
         overflowY: "auto",
@@ -31,7 +40,7 @@ export function VirtualizedList({
         background: "var(--bg-light, #FBFAF8)",
         ...style,
       }}
-      onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+      onScroll={(e) => { setScrollTop(e.currentTarget.scrollTop); onScroll?.(e); }}
     >
       {/* Spacer sets the true scroll height */}
       <div style={{ height: total * rowHeight, position: "relative" }}>
@@ -42,6 +51,9 @@ export function VirtualizedList({
             return (
               <div
                 key={index}
+                role={role === "list" ? "listitem" : undefined}
+                aria-setsize={role === "list" ? total : undefined}
+                aria-posinset={role === "list" ? index + 1 : undefined}
                 style={{
                   height: rowHeight,
                   display: "flex",

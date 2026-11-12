@@ -41,18 +41,21 @@ export function SplitPane({
   const rootRef = React.useRef(null);
   const clamp = (v) => Math.min(max, Math.max(min, v));
   const [size, setSize] = React.useState(() => {
-    if (persistKey && typeof localStorage !== "undefined") {
-      const v = parseFloat(localStorage.getItem("mds-split:" + persistKey));
-      if (Number.isFinite(v)) return clamp(v);
+    if (persistKey) {
+      try {
+        const v = parseFloat(localStorage.getItem("mds-split:" + persistKey));
+        if (Number.isFinite(v)) return clamp(v);
+      } catch { /* Layout persistence must not block the workstation. */ }
     }
-    return initial;
+    return clamp(initial);
   });
   const [drag, setDrag] = React.useState(false);
   const commit = (v) => {
     const c = clamp(v);
     setSize(c);
-    if (persistKey && typeof localStorage !== "undefined") {
-      localStorage.setItem("mds-split:" + persistKey, String(c));
+    if (persistKey) {
+      try { localStorage.setItem("mds-split:" + persistKey, String(c)); }
+      catch { /* The operator's local resize remains usable without storage. */ }
     }
   };
   const onPointerDown = (e) => {

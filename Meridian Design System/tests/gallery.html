@@ -4,17 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Meridian — card gallery (visual-regression baseline)</title>
+<link rel="stylesheet" href="../styles.css" />
 <style>
-  :root { color-scheme: light; }
-  body { margin: 0; background: #DEE3EA; font-family: "Segoe UI", system-ui, sans-serif; }
-  header { padding: 14px 20px; background: #171A1F; color: #F4F6F8; font-size: 13px; display: flex; gap: 12px; align-items: baseline; }
+  body { margin: 0; background: var(--bg); font-family: var(--font-body); }
+  header { padding: 14px 20px; background: var(--topbar-bg); color: var(--topbar-text); font-size: 13px; display: flex; gap: 12px; align-items: baseline; }
   header b { font-weight: 600; }
-  header span { color: #8A929B; font-size: 11px; }
+  header span { color: var(--topbar-text-muted); font-size: 11px; }
   main { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 16px; }
-  figure { margin: 0; background: #fff; border: 1px solid #CBD3DC; display: flex; flex-direction: column; }
-  figcaption { padding: 7px 10px; font-size: 11px; color: #4D5967; border-bottom: 1px solid #D2D9E2; display: flex; justify-content: space-between; gap: 8px; }
-  figcaption code { font-size: 10px; color: #59636F; }
-  iframe { border: none; width: 100%; height: 420px; display: block; background: #fff; }
+  figure { margin: 0; background: var(--bg-light); border: 1px solid var(--border); display: flex; flex-direction: column; }
+  figcaption { padding: 7px 10px; font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; gap: 8px; }
+  figcaption code { font-size: 10px; color: var(--text-muted); }
+  iframe { border: none; width: 100%; height: 420px; display: block; background: var(--bg-light); }
 </style>
 </head>
 <body>

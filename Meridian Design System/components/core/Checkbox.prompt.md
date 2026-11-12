@@ -6,3 +6,5 @@ Checkbox and Toggle — the two boolean controls. `Checkbox` for settings and mu
 ```
 
 Use Toggle when flipping it takes effect immediately; use Checkbox when the choice is submitted with a form or drives row selection.
+
+Toggle is a native button with switch semantics: Tab focuses it; Space or Enter requests the next checked state; disabled switches cannot activate. Its label supplies the accessible name, or provide aria-label for a visually unlabelled switch. Both controls provide a minimum 24px-high hit area and a visible keyboard focus indicator.

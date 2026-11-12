@@ -55,7 +55,7 @@ export function ActivityCenter() {
         {unseenCount > 0 ? (
           <span
             aria-hidden="true"
-            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-primary px-1 font-mono text-[10px] font-semibold leading-none text-background"
+            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-[var(--radius-chip)] border border-background bg-primary px-1 font-mono text-[10px] font-semibold leading-none text-background"
           >
             {unseenCount > 99 ? "99+" : unseenCount}
           </span>

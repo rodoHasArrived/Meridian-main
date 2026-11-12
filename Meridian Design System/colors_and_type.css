@@ -1,216 +1,93 @@
-/* =====================================================================
-   Meridian Design System — Colors & Type  v2.3
-   Mirrors the canonical palette in tokens/colors.css + tokens/colors-dark.css. Values here
-   are the dark-mode resolutions of those tokens; change them there first, then re-derive.
-   No @font-face import: the catalogue is opened from disk and served under a CSP with no
-   font CDN, so an external @import is a request that only ever fails. Platform stacks only.
-   ===================================================================== */
+/* Meridian catalogue compatibility layer.
+   Canonical styles own colors, typography, geometry, elevation and theme switching.
+   Relative HSL channels retain catalogue hsl(var(--background) / alpha) callers
+   without copying numeric palettes. --border and --accent are complete CSS colors;
+   HSL consumers use --border-hsl / --accent-hsl to avoid the former name collision. */
+@import "./styles.css";
 
 :root {
-  /* ---------- RAW HSL (matches dashboard tokens) ---------- */
-  --background:          36 14% 7%;
-  --foreground:         38 26% 92%;
-  --card:               34 12% 11%;
-  --card-foreground:    38 26% 92%;
-  --popover:             38 18% 9%;
-  --popover-foreground: 38 26% 92%;
-  --primary:            19 61% 62%;
-  --primary-foreground:  36 14% 7%;
-  --secondary:          33 12% 14%;
-  --secondary-foreground: 37 19% 86%;
-  --muted:              33 12% 14%;
-  --muted-foreground:    32 8% 57%;
-  --accent:             40 50% 53%;
-  --accent-foreground:   36 14% 7%;
-  --border:             34 10% 26%;
-  --input:              34 10% 26%;
-  --ring:               19 61% 62%;
-  --paper:              19 66% 68%;
-  --live:               19 61% 62%;
-  --live-env:            5 51% 61%;   /* LIVE environment alarm — distinct from data-posture accent */
-  --warning:            40 50% 53%;
-  --success:           146 27% 51%;
-  --danger:              5 51% 61%;
-  --panel-strong:       40 19% 12%;
-  --panel-soft:         33 12% 14%;
-  --surface-raise:      36 12% 16%;
-
-  /* ---------- RESOLVED HEX ---------- */
-  --bg:                #14120F;
-  --fg:                #EFEBE4;
-  --fg-muted:          #9A9289;
-  --card-bg:           #201D19;
-  --panel-strong-bg:   #252119;
-  --panel-soft-bg:     #292520;
-  --surface-raise-bg:  #2E2A24;
-  --border-color:      #4A443C;
-  --border-hi:         #736B60;  /* high-contrast border — panels, active states */
-
-  /* ================================================
-     ACCENT ALIAS SYSTEM
-     Single canonical accent: #D98A64 (copper, dark mode).
-     The --cyan-* names are the repo's working-name layer
-     — tokens/colors.css maps them onto --ws-accent* — so
-     they are kept for call-site compatibility. Only the
-     identity behind them changed; nothing here is cyan.
-     Never use raw hex in components — use these.
-     ================================================ */
-  --cyan-primary:      #D98A64;  /* nav active, chart line, CTA tint — the default */
-  --cyan-secondary:    #E6A585;  /* hover on accent surfaces (= --ws-accent-hover) */
-  --cyan-focus:        #E6A585;  /* keyboard focus ring ONLY (matches WPF FocusBrush) */
-  --cyan-pressed:      #E39A77;  /* hover/pressed on accent interactive elements (WPF HoverBrush) */
-  --cyan-crosshair:    #9A9289;  /* chart crosshair & price labels — chrome, not the accent */
-  --cyan-live:         #D98A64;  /* deprecated: use --state-live-* for LIVE environment; kept for nav status posture tint */
-  --cyan-nav:          #D98A64;  /* active nav inset / underline */
-
-  /* ================================================
-     SEMANTIC STATE TOKENS
-     Three-tier system: fg / border / bg
-     All tones follow the same structural pattern.
-     ================================================ */
-
-  /* Healthy / positive / completed */
-  --state-healthy-fg:  #5FA37C;
-  --state-healthy-bd:  rgba(95, 163, 124, 0.35);
-  --state-healthy-bg:  rgba(95, 163, 124, 0.10);
-
-  /* Observe / warning / caution */
-  --state-warn-fg:     #C29A4A;
-  --state-warn-bd:     rgba(194, 154, 74, 0.35);
-  --state-warn-bg:     rgba(194, 154, 74, 0.10);
-
-  /* Critical / danger / offline */
-  --state-danger-fg:   #CE7068;
-  --state-danger-bd:   rgba(206, 112, 104, 0.35);
-  --state-danger-bg:   rgba(206, 112, 104, 0.10);
-
-  /* Paper environment (blue) */
-  --state-paper-fg:    #E39A77;
-  --state-paper-bd:    rgba(227, 154, 119, 0.35);
-  --state-paper-bg:    rgba(227, 154, 119, 0.10);
-
-  /* Research environment */
-  --state-research-fg: #B5AEA4;
-  --state-research-bd: rgba(181, 174, 164, 0.35);
-  --state-research-bg: rgba(181, 174, 164, 0.10);
-
-  /* Live environment — real-money alarm (distinct from danger/error) */
-  --state-live-fg:     #CE7068;
-  --state-live-bd:     rgba(206, 112, 104, 0.40);
-  --state-live-bg:     rgba(206, 112, 104, 0.12);
-
-  /* Neutral / inactive / muted */
-  --state-muted-fg:    #9A9289;
-  --state-muted-bd:    #4A443C;
-  --state-muted-bg:    #201D19;
-
-  /* Pending / loading / in-progress */
-  --state-pending-fg:  #9089B5;
-  --state-pending-bd:  rgba(144, 137, 181, 0.35);
-  --state-pending-bg:  rgba(144, 137, 181, 0.10);
-
-  /* Sidebar tokens mirror the browser workstation operator rail contract. */
-  --sidebar:  30 14% 5%;
-  --sidebar-foreground:  38 26% 92%;
-  --sidebar-primary:  19 61% 62%;
-  --sidebar-primary-foreground:  36 14% 7%;
-  --sidebar-accent:  33 12% 14%;
-  --sidebar-accent-foreground:  37 19% 86%;
-  --sidebar-border:  35 10% 34%;
-  --sidebar-ring:  19 61% 62%;
-
-  /* Chart tokens use the browser workstation chart-1...5 naming contract. */
-  --chart-1: 146 27% 51%;
-  --chart-2:  19 61% 62%;
-  --chart-3: 250 23% 62%;
-  --chart-4: 40 50% 53%;
-  --chart-5:   5 51% 61%;
-
-  /* ================================================
-     WORKSPACE ACCENTS
-     Current top-level navigation: Trading, Portfolio,
-     Accounting, Reporting, Strategy, Data, Settings.
-     Use as accent strips and icon/status tints only.
-     ================================================ */
-  --workspace-trading:    #D98A64;  /* copper — the accent lane */
-  --workspace-portfolio:  #7FBA97;  /* pale spruce */
-  --workspace-accounting: #5FA37C;  /* spruce */
-  --workspace-reporting:  #C29A4A;  /* brass */
-  --workspace-strategy:   #9089B5;  /* slate-violet */
-  --workspace-data:       #8C857A;  /* warm grey */
-  --workspace-settings:   #B5AEA4;  /* bone */
-
-  /* ================================================
-     SURFACE RADII — tighter for quant density
-     Major panels: 4px. Inputs/buttons: 4px. Tags: 3px.
-     Never exceed 10px. No soft pillows.
-     ================================================ */
-  --radius-xl:  0.625rem;  /* 10px — outermost panel */
-  --radius-lg:  0.5rem;    /* 8px  — card */
-  --radius-md:  0.375rem;  /* 6px  — button / input */
-  --radius-sm:  0.25rem;   /* 4px  — chip / badge */
-  --radius-xs:  0.1875rem; /* 3px  — tag / price label */
-  --space-panel: 1.5rem;
-
-  /* ================================================
-     SHADOWS — inset highlight + flat workstation offset.
-     No large poster shadows. No glow. No elevation theatre.
-     ================================================ */
-  --shadow-workstation:
-    0 1px 0 rgba(255,255,255,0.02) inset,
-    3px 3px 0 rgba(0,0,0,0.72);
-  --shadow-panel:
-    0 1px 0 rgba(255,255,255,0.02) inset,
-    0 1px 1px rgba(0,0,0,0.25);
-  --shadow-float:
-    0 2px 8px rgba(0,0,0,0.40),
-    0 0 0 1px rgba(255,255,255,0.02) inset;
-  --shadow-color:  34 10% 0%;
-  --shadow-opacity: 0.24;
-  --shadow-blur: 2px;
-  --shadow-spread: 0px;
-  --shadow-offset-x: 0px;
-  --shadow-offset-y: 1px;
-
-  /* ================================================
-     TYPOGRAPHY
-     Sans: labels, prose. Mono: ALL DATA. Display: titles.
-     Key rule: numbers and identifiers are ALWAYS mono.
-     ================================================ */
-  --font-sans:    "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
-  --font-mono:    "Cascadia Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --font-display: "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-
-  /* ================================================
-     DENSE DATA READABILITY — chart & table standards
-     ================================================ */
-  --data-row-h:       28px;   /* minimum row height for touch/click targets */
-  --data-cell-px:     12px;   /* horizontal cell padding */
-  --data-cell-py:      7px;   /* vertical cell padding */
-  --data-font-size:   12px;   /* tabular data font size */
-  --data-micro-size:  10px;   /* column headers, badges, eyebrows */
-  --data-line-h:      1.45;   /* data body line height */
-
-  /* ================================================
-     CHART STANDARDS
-     ================================================ */
-  --chart-grid:        #302B25;   /* grid lines — subtle, never overwhelming */
-  --chart-grid-major:  #4A443C;   /* axis lines */
-  --chart-up:          #5FA37C;   /* bull / gain */
-  --chart-dn:          #CE7068;   /* bear / loss */
-  --chart-ma20:        #9089B5;   /* MA(20) overlay */
-  --chart-ma50:        #C29A4A;   /* MA(50) overlay */
-  --chart-bench:       #8C857A;   /* benchmark series */
-  --chart-band:        rgba(140,133,122,0.15); /* Bollinger band fill */
-  --chart-crosshair:   #9A9289;   /* crosshair + price tag */
-  --chart-dd:          rgba(206,112,104,0.35); /* drawdown fill */
-
-  /* ================================================
-     AMBIENT BACKGROUND — flat. The restyle brief rules out
-     glowing grids, saturated gradients and glass; the canvas
-     is one opaque colour and every separation is a 1px rule.
-     Kept as a token so surfaces can keep painting it.
-     ================================================ */
+  --background: from var(--bg) h s l;
+  --foreground: from var(--text-primary) h s l;
+  --card: from var(--bg-light) h s l;
+  --card-foreground: from var(--text-primary) h s l;
+  --popover: from var(--bg-light) h s l;
+  --popover-foreground: from var(--text-primary) h s l;
+  --primary: from var(--accent) h s l;
+  --primary-foreground: from var(--text-on-accent) h s l;
+  --secondary: from var(--bg-medium) h s l;
+  --secondary-foreground: from var(--text-primary) h s l;
+  --muted: from var(--card-surface-raised) h s l;
+  --muted-foreground: from var(--text-muted) h s l;
+  --accent-foreground: from var(--text-on-accent) h s l;
+  --input: from var(--border) h s l;
+  --ring: from var(--border-focus) h s l;
+  --paper: from var(--accent) h s l;
+  --live: from var(--accent) h s l;
+  --live-env: from var(--red) h s l;
+  --warning: from var(--orange) h s l;
+  --success: from var(--green) h s l;
+  --danger: from var(--red) h s l;
+  --panel-strong: from var(--bg-light) h s l;
+  --panel-soft: from var(--bg-medium) h s l;
+  --surface-raise: from var(--card-surface-raised) h s l;
+  --sidebar: from var(--bg-medium) h s l;
+  --sidebar-foreground: from var(--text-secondary) h s l;
+  --sidebar-primary: from var(--accent) h s l;
+  --sidebar-primary-foreground: from var(--text-on-accent) h s l;
+  --sidebar-accent: from var(--bg-active) h s l;
+  --sidebar-accent-foreground: from var(--text-primary) h s l;
+  --sidebar-border: from var(--border) h s l;
+  --sidebar-ring: from var(--border-focus) h s l;
+  --chart-1: from var(--green) h s l;
+  --chart-2: from var(--accent) h s l;
+  --chart-3: from var(--purple) h s l;
+  --chart-4: from var(--orange) h s l;
+  --chart-5: from var(--red) h s l;
+  --border-hsl: from var(--border) h s l;
+  --accent-hsl: from var(--accent) h s l;
+  --card-bg: var(--bg-light);
+  --panel-strong-bg: var(--bg-light);
+  --panel-soft-bg: var(--bg-medium);
+  --surface-raise-bg: var(--card-surface-raised);
+  --fg: var(--text-primary);
+  --fg-muted: var(--text-muted);
+  --fg-secondary: var(--text-secondary);
+  --fg-strong: var(--text-primary);
+  --border-color: var(--border);
+  --border-hi: var(--border-strong);
+  --cyan-primary: var(--accent);
+  --cyan-secondary: var(--accent-hover);
+  --cyan-focus: var(--border-focus);
+  --cyan-pressed: var(--accent-dim);
+  --cyan-crosshair: var(--chart-crosshair);
+  --cyan-live: var(--accent);
+  --cyan-nav: var(--accent);
+  --workspace-trading: var(--accent);
+  --workspace-portfolio: var(--green-dim);
+  --workspace-accounting: var(--green);
+  --workspace-reporting: var(--orange);
+  --workspace-strategy: var(--purple);
+  --workspace-data: var(--text-muted);
+  --workspace-settings: var(--text-secondary);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
+  --chart-grid-major: var(--border-strong);
+  --chart-up: var(--chart-equity);
+  --chart-dn: var(--chart-drawdown);
+  --chart-bench: var(--chart-secondary);
+  --state-research-fg: var(--text-secondary);
+  --state-research-bd: var(--border-strong);
+  --state-research-bg: var(--bg-medium);
+  --shadow-1: var(--shadow-card);
+  --space-panel: var(--space-xl);
+  --data-row-h: var(--theme-row-height);
+  --data-cell-px: var(--theme-spacing-md);
+  --data-cell-py: 7px;
+  --data-font-size: 12px;
+  --data-micro-size: 10px;
+  --data-line-h: 1.45;
+  --chart-band: color-mix(in srgb, var(--chart-bench) 15%, transparent);
+  --chart-dd: color-mix(in srgb, var(--chart-drawdown) 22%, transparent);
   --bg-ambient: none;
 }
 
@@ -260,7 +137,7 @@ html, body {
 
 .fg         { color: hsl(var(--foreground)); }
 .fg-muted   { color: hsl(var(--muted-foreground)); }
-.fg-primary { color: var(--cyan-primary); }
+.fg-primary { color: var(--accent-dim); }
 .fg-success { color: var(--state-healthy-fg); }
 .fg-warning { color: var(--state-warn-fg); }
 .fg-danger  { color: var(--state-danger-fg); }
@@ -284,32 +161,32 @@ html, body {
 .state-research { color:var(--state-research-fg);background:var(--state-research-bg);border:1px solid var(--state-research-bd); }
 .state-pending  { color:var(--state-pending-fg); background:var(--state-pending-bg); border:1px solid var(--state-pending-bd); }
 .state-muted    { color:var(--state-muted-fg);   background:var(--state-muted-bg);   border:1px solid var(--state-muted-bd); }
-.state-selected { color:var(--cyan-primary);      background:rgba(217,138,100,0.10);  border:1px solid rgba(217,138,100,0.35); }
+.state-selected { color:var(--accent-dim);      background:color-mix(in srgb, var(--accent) 10%, transparent);  border:1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
 .state-stale    { color:var(--state-warn-fg);    background:var(--state-warn-bg);    border:1px dashed var(--state-warn-bd); }
 .state-error    { color:var(--state-danger-fg);  background:var(--state-danger-bg);  border:1px solid var(--state-danger-bd); }
-.state-disabled { color:var(--state-muted-fg);   background:rgba(154,146,137,0.06); border:1px solid var(--state-muted-bd); opacity:0.72; }
+.state-disabled { color:var(--state-muted-fg);   background:color-mix(in srgb, var(--text-muted) 6%, transparent); border:1px solid var(--state-muted-bd); }
 
 /* ================================================================
    SURFACE PRIMITIVES
    ================================================================ */
 
 .panel-surface {
-  border-radius: var(--radius-xl);
-  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-card);
+  border: 1px solid hsl(var(--border-hsl));
   background: hsl(var(--card));
   box-shadow: var(--shadow-workstation);
 }
 
 .panel-surface-strong {
-  border-radius: var(--radius-xl);
-  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-card);
+  border: 1px solid hsl(var(--border-hsl));
   background: hsl(var(--panel-strong));
   box-shadow: var(--shadow-workstation);
 }
 
 .glass-card {
-  border-radius: var(--radius-lg);
-  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-card);
+  border: 1px solid hsl(var(--border-hsl));
   background: hsl(var(--card));
   box-shadow: var(--shadow-panel);
 }
@@ -334,7 +211,7 @@ html, body {
 }
 .data-table td {
   padding: var(--data-cell-py) var(--data-cell-px);
-  color: var(--fg); border-bottom: 1px solid hsl(var(--border) / 0.35);
+  color: var(--fg); border-bottom: 1px solid hsl(var(--border-hsl) / 0.35);
   line-height: var(--data-line-h);
 }
 .data-table tr:last-child td { border-bottom: 0; }
@@ -358,12 +235,14 @@ html, body {
 }
 
 .workstation-masthead {
+  --fg: var(--topbar-text);
+  --fg-muted: var(--topbar-text-muted);
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(240px, 1fr) auto;
   gap: 16px;
   align-items: center;
   padding: 0 18px;
-  background: #100E0C;
+  background: var(--topbar-bg);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-panel);
 }
@@ -386,7 +265,7 @@ html, body {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0;
-  color: #FFFFFF;
+  color: var(--topbar-text);
 }
 
 .workstation-brand .sub {
@@ -394,7 +273,7 @@ html, body {
   font-size: 9.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cyan-primary);
+  color: var(--topbar-text-faint);
 }
 
 .workstation-search {
@@ -407,14 +286,14 @@ html, body {
   padding: 0 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background: #201D19;
+  background: var(--topbar-bg);
   color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 11px;
 }
 
 .workstation-search b {
-  color: #FFFFFF;
+  color: var(--topbar-text);
   font-weight: 500;
 }
 
@@ -438,7 +317,7 @@ html, body {
   min-height: 0;
   overflow: auto;
   padding: 12px 10px;
-  background: #1A1712;
+  background: var(--bg-medium);
   border-right: 1px solid var(--border-color);
 }
 
@@ -477,19 +356,19 @@ html, body {
 }
 
 .operator-nav-item:hover {
-  background: rgba(217,138,100,0.06);
-  color: #FFFFFF;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  color: var(--text-primary);
 }
 
 .operator-nav-item.active {
-  background: rgba(217,138,100,0.10);
-  border-color: rgba(217,138,100,0.28);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
   box-shadow: inset 3px 0 0 var(--cyan-primary);
-  color: #FFFFFF;
+  color: var(--text-primary);
 }
 
 .operator-nav-item.active .status {
-  color: var(--cyan-primary);
+  color: var(--accent-dim);
 }
 
 .workbench {
@@ -497,7 +376,7 @@ html, body {
   min-height: 0;
   display: grid;
   grid-template-rows: 44px auto 1fr;
-  background: #14120F;
+  background: var(--bg);
 }
 
 .toolbar-strip {
@@ -506,7 +385,7 @@ html, body {
   gap: 8px;
   min-width: 0;
   padding: 0 18px;
-  background: #201D19;
+  background: var(--bg-light);
   border-bottom: 1px solid var(--border-color);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -520,15 +399,15 @@ html, body {
   padding: 0 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  background: #14120F;
+  background: var(--bg);
   color: var(--fg);
   white-space: nowrap;
 }
 
 .toolbar-chip.active {
-  border-color: rgba(217,138,100,0.42);
-  background: rgba(217,138,100,0.10);
-  color: var(--cyan-primary);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-dim);
 }
 
 .toolbar-spacer {
@@ -541,14 +420,14 @@ html, body {
   gap: 8px;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border-color);
-  background: #1A1712;
+  background: var(--bg-medium);
 }
 
 .metric-tile {
   min-width: 0;
   padding: 12px 14px;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   box-shadow: var(--shadow-panel);
 }
@@ -568,7 +447,7 @@ html, body {
   line-height: 1;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
-  color: #FFFFFF;
+  color: var(--text-primary);
 }
 
 .metric-tile .d {
@@ -591,8 +470,8 @@ html, body {
   min-height: 0;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: #201D19;
+  border-radius: var(--radius-card);
+  background: var(--bg-light);
   box-shadow: var(--shadow-panel);
 }
 
@@ -603,7 +482,7 @@ html, body {
   min-height: 38px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border-color);
-  background: #100E0C;
+  background: var(--bg-medium);
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -612,7 +491,7 @@ html, body {
 }
 
 .workbench-panel-header b {
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
@@ -636,7 +515,7 @@ html, body {
   z-index: 1;
   padding: 8px 10px;
   border-bottom: 1px solid var(--border-color);
-  background: #14120F;
+  background: var(--bg);
   color: var(--fg-muted);
   font-size: 9.5px;
   font-weight: 500;
@@ -647,22 +526,22 @@ html, body {
 
 .dense-table tbody td {
   padding: 7px 10px;
-  border-bottom: 1px solid #292520;
+  border-bottom: 1px solid var(--border-divider);
   color: var(--fg);
   white-space: nowrap;
 }
 
 .dense-table tbody tr:nth-child(even) td {
-  background: rgba(255,255,255,0.018);
+  background: var(--card-surface-raised);
 }
 
 .dense-table tbody tr:hover td {
-  background: rgba(217,138,100,0.06);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 .dense-table tbody tr.selected td {
-  background: rgba(217,138,100,0.14);
-  color: #FFFFFF;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text-primary);
 }
 
 .dense-table .r {
@@ -678,8 +557,8 @@ html, body {
 .entity-summary .field {
   min-width: 0;
   padding: 11px 14px;
-  border-right: 1px solid #292520;
-  border-bottom: 1px solid #292520;
+  border-right: 1px solid var(--border-divider);
+  border-bottom: 1px solid var(--border-divider);
 }
 
 .entity-summary .field:nth-child(2n) {
@@ -698,7 +577,7 @@ html, body {
   margin-top: 5px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #FFFFFF;
+  color: var(--text-primary);
   word-break: break-word;
 }
 
@@ -708,9 +587,9 @@ html, body {
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-chip);
   background: var(--state-danger-fg);
-  color: #FFFFFF;
+  color: var(--text-on-fill);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
@@ -726,8 +605,8 @@ html, body {
 .reference-card {
   overflow: hidden;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: #201D19;
+  border-radius: var(--radius-card);
+  background: var(--bg-light);
   box-shadow: var(--shadow-panel);
 }
 
@@ -753,7 +632,7 @@ html, body {
 
 .reference-card .t {
   margin-top: 6px;
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-size: 12.5px;
   font-weight: 500;
 }
@@ -797,7 +676,7 @@ html, body {
   font-size: 24px;
   font-weight: 600;
   letter-spacing: 0;
-  color: #FFFFFF;
+  color: var(--text-primary);
 }
 
 .state-matrix-sub,
@@ -815,16 +694,16 @@ html, body {
   display: grid;
   grid-template-columns: minmax(180px, 0.8fr) repeat(3, minmax(220px, 1fr));
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   overflow: hidden;
-  background: #201D19;
+  background: var(--bg-light);
 }
 
 .state-matrix-cell {
   min-width: 0;
   padding: 12px 14px;
   border-right: 1px solid var(--border-color);
-  border-bottom: 1px solid #292520;
+  border-bottom: 1px solid var(--border-divider);
 }
 
 .state-matrix-cell:nth-child(4n) {
@@ -832,7 +711,7 @@ html, body {
 }
 
 .state-matrix-cell.header {
-  background: #100E0C;
+  background: var(--bg-medium);
   color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -850,7 +729,7 @@ html, body {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--text-primary);
 }
 
 .state-matrix-use {
@@ -888,7 +767,7 @@ html, body {
 
 .state-matrix-banner b {
   display: block;
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-weight: 500;
   margin-bottom: 2px;
 }
@@ -897,7 +776,7 @@ html, body {
   display: grid;
   gap: 5px;
   padding: 10px 12px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
 }
 
 .state-matrix-kpi .k {
@@ -920,7 +799,7 @@ html, body {
   align-items: center;
   padding: 7px 9px;
   border-radius: var(--radius-xs);
-  background: #14120F;
+  background: var(--bg);
   font-size: 11.5px;
 }
 
@@ -941,8 +820,8 @@ html, body {
   display: grid;
   grid-template-rows: auto 1fr;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: #201D19;
+  border-radius: var(--radius-card);
+  background: var(--bg-light);
   overflow: hidden;
   box-shadow: var(--shadow-panel);
 }
@@ -955,13 +834,13 @@ html, body {
   min-height: 40px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border-color);
-  background: #100E0C;
+  background: var(--bg-medium);
 }
 
 .screen-recipe-title b {
   font-family: var(--font-display);
   font-size: 15px;
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -982,8 +861,8 @@ html, body {
 .screen-recipe-block {
   min-width: 0;
   padding: 12px 14px;
-  border-right: 1px solid #292520;
-  border-bottom: 1px solid #292520;
+  border-right: 1px solid var(--border-divider);
+  border-bottom: 1px solid var(--border-divider);
 }
 
 .screen-recipe-block:nth-child(2n) {
@@ -1000,7 +879,7 @@ html, body {
 }
 
 .screen-recipe-block .v {
-  color: #E3DED6;
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -1013,8 +892,8 @@ html, body {
 
 .chart-standard-card {
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: #201D19;
+  border-radius: var(--radius-card);
+  background: var(--bg-light);
   overflow: hidden;
   box-shadow: var(--shadow-panel);
 }
@@ -1026,12 +905,12 @@ html, body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: #100E0C;
+  background: var(--bg-medium);
   border-bottom: 1px solid var(--border-color);
 }
 
 .chart-standard-title b {
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
 }
@@ -1051,8 +930,8 @@ html, body {
 .chart-standard-box {
   min-height: 210px;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: #100E0C;
+  border-radius: var(--radius-card);
+  background: var(--bg-medium);
   overflow: hidden;
 }
 
@@ -1074,8 +953,8 @@ html, body {
 .status-window,
 .row-detail-panel {
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: #14120F;
+  border-radius: var(--radius-card);
+  background: var(--bg);
   overflow: hidden;
 }
 
@@ -1088,13 +967,13 @@ html, body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-muted);
-  background: #100E0C;
+  background: var(--bg-medium);
 }
 
 .status-window .body,
 .row-detail-panel .body {
   padding: 10px;
-  color: #E3DED6;
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.5;
 }

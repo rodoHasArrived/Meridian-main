@@ -309,7 +309,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       {shown ? (
         <div className="grid gap-2">
           {shown.blockers.length > 0 ? (
-            <ul className="grid gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2" aria-label="Calculation blockers">
+            <ul className="grid gap-1 rounded-md border border-[var(--state-warn-bd)] bg-[var(--state-warn-bg)] px-3 py-2" aria-label="Calculation blockers">
               {shown.blockers.map((blocker) => (
                 <li key={`${blocker.code}:${blocker.streamId ?? ""}:${blocker.message}`}><span className="font-mono">{blocker.code}</span>{blocker.streamId ? ` (${blocker.streamId})` : ""}: {blocker.message}</li>
               ))}

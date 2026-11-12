@@ -121,6 +121,10 @@
     color: var(--ws-text) !important;
   }
 
+  .workstation-session-card .mds-badge--paper {
+    color: var(--state-paper-fg) !important;
+  }
+
   .workbench-scroll { padding: 0.75rem 0 !important; }
 
   .workspace-workbench-shell-context-rail,

@@ -84,24 +84,25 @@ export function JournalEntryForm({
   const totalC = lines.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
   const diff = totalD - totalC;
   const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
+  const fieldId = React.useId();
   const dlId = accounts && accounts.length ? "jnl-accts" : undefined;
 
   return (
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl">Date</label>
-          <Input type="date" value={header.date}
+          <label className="jnl__lbl" htmlFor={`${fieldId}-date`}>Date</label>
+          <Input id={`${fieldId}-date`} type="date" value={header.date}
             onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Reference</label>
-          <Input placeholder="JE-0001" value={header.ref}
+          <label className="jnl__lbl" htmlFor={`${fieldId}-reference`}>Reference</label>
+          <Input id={`${fieldId}-reference`} placeholder="JE-0001" value={header.ref}
             onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Memo</label>
-          <Input placeholder="Description" value={header.memo}
+          <label className="jnl__lbl" htmlFor={`${fieldId}-memo`}>Memo</label>
+          <Input id={`${fieldId}-memo`} placeholder="Description" value={header.memo}
             onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>

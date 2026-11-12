@@ -13,7 +13,7 @@ function inject() {
 .mds-prog__value{font-family:var(--font-data,monospace);font-size:12px;font-weight:600;
   color:var(--text-primary,#22252A);letter-spacing:var(--letter-spacing-data,.01em);}
 .mds-prog__track{position:relative;width:100%;height:6px;overflow:hidden;
-  background:var(--bg-active,#F2E3DB);border-radius:var(--radius-chip,3px);}
+  background:var(--bg-active,#F2E3DB);border-radius:var(--radius-chip,2px);}
 .mds-prog--sm .mds-prog__track{height:4px;}
 .mds-prog--lg .mds-prog__track{height:10px;}
 .mds-prog__fill{position:absolute;top:0;left:0;height:100%;border-radius:inherit;
@@ -36,6 +36,7 @@ export function ProgressBar({
   size = "md", className = "", ...rest
 }) {
   inject();
+  const labelId = React.useId();
   const indeterminate = value === null || value === undefined;
   const pct = indeterminate ? 0 : Math.max(0, Math.min(100, value));
   const variantClass = variant && variant !== "accent" ? ` mds-prog--${variant}` : "";
@@ -43,11 +44,13 @@ export function ProgressBar({
     <div className={`mds-prog mds-prog--${size}${variantClass}${className ? " " + className : ""}`} {...rest}>
       {(label || showValue) && (
         <div className="mds-prog__head">
-          {label && <span className="mds-prog__label">{label}</span>}
+          {label && <span id={labelId} className="mds-prog__label">{label}</span>}
           {showValue && !indeterminate && <span className="mds-prog__value">{Math.round(pct)}%</span>}
         </div>
       )}
       <div className="mds-prog__track" role="progressbar"
+        aria-label={rest["aria-label"]}
+        aria-labelledby={rest["aria-labelledby"] || (label ? labelId : undefined)}
         aria-valuenow={indeterminate ? undefined : Math.round(pct)}
         aria-valuemin={0} aria-valuemax={100}>
         <div className={`mds-prog__fill${indeterminate ? " mds-prog__fill--indet" : ""}`}

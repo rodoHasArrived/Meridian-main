@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<title>Meridian — Report Pack</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
 </head>
-<body>
+<body class="meridian">
 <x-dc>
 <!-- @template name="Report Pack" description="Printable monthly report pack — cover, performance summary with equity curve, income statement, positions. Letter sheets on screen; Cmd/Ctrl-P paginates via the design-system print layer" -->
 <helmet>
@@ -13,7 +14,7 @@
 <meta name="dc-template" content="report-pack">
 <style>html,body{margin:0;padding:0;}</style>
 </helmet>
-<div data-screen-label="Report pack" style="min-height:100vh;background:var(--bg);padding:24px 16px 48px;font-family:var(--font-body);color:var(--text-primary);">
+<main data-screen-label="Report pack" style="min-height:100vh;background:var(--bg);padding:24px 16px 48px;font-family:var(--font-body);color:var(--text-primary);">
 
   <!-- Print toolbar — screen only -->
   <div class="mds-no-print" style="width:816px;box-sizing:border-box;margin:0 auto 16px;display:flex;align-items:center;gap:12px;">
@@ -242,7 +243,7 @@
       <span>Meridian Capital Partners LP · June 2026</span><span style="flex:1;"></span><span>Page 4 of 4</span>
     </div>
   </section>
-</div>
+</main>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{
   &quot;benchmark&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Chart&quot; },

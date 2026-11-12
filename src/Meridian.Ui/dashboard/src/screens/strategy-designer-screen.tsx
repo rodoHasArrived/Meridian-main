@@ -749,9 +749,9 @@ function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
         </div>
         <span className="font-mono text-xs text-muted-foreground">{slice.sharePercent}</span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/40" role="presentation">
+      <div className="h-2 w-full overflow-hidden rounded-[var(--radius-button)] bg-secondary/40" role="presentation">
         <div
-          className={cn("h-full rounded-full", slice.tone === "long" ? "bg-success" : "bg-warning")}
+          className={cn("h-full rounded-[var(--radius-button)]", slice.tone === "long" ? "bg-success" : "bg-warning")}
           style={{ width: slice.barWidth }}
           data-testid={`participation-bar-${slice.legId}`}
         />

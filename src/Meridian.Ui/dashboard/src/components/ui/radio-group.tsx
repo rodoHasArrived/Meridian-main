@@ -1,4 +1,4 @@
-import { type KeyboardEvent, type ReactNode, useId } from "react";
+import { type KeyboardEvent, type ReactNode, useId, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export interface RadioOption {
@@ -38,17 +38,23 @@ export function RadioGroup({
   "aria-label": ariaLabel
 }: RadioGroupProps) {
   const generatedName = useId();
+  const inputs = useRef(new Map<string, HTMLInputElement>());
   const groupName = name ?? generatedName;
   const items = normalize(options);
   const enabled = items.filter((option) => !(disabled || option.disabled));
 
-  const move = (currentValue: string, delta: number) => {
+  const tabStop = enabled.some((option) => option.value === value) ? value : enabled[0]?.value;
+
+  const move = (currentValue: string, delta: number | "first" | "last") => {
     if (enabled.length === 0) {
       return;
     }
     const index = enabled.findIndex((option) => option.value === currentValue);
-    const nextIndex = index < 0 ? 0 : (index + delta + enabled.length) % enabled.length;
-    onChange?.(enabled[nextIndex]!.value);
+    const nextIndex = delta === "first" ? 0 : delta === "last" ? enabled.length - 1
+      : index < 0 ? 0 : (index + delta + enabled.length) % enabled.length;
+    const next = enabled[nextIndex]!.value;
+    inputs.current.get(next)?.focus();
+    onChange?.(next);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLLabelElement>, optionValue: string) => {
@@ -62,6 +68,14 @@ export function RadioGroup({
       case "ArrowLeft":
         event.preventDefault();
         move(optionValue, -1);
+        break;
+      case "Home":
+        event.preventDefault();
+        move(optionValue, "first");
+        break;
+      case "End":
+        event.preventDefault();
+        move(optionValue, "last");
         break;
       case " ":
       case "Enter":
@@ -77,6 +91,8 @@ export function RadioGroup({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
+      aria-orientation={orientation}
+      aria-disabled={disabled || undefined}
       className={cn("flex", orientation === "horizontal" ? "flex-row flex-wrap gap-4" : "flex-col gap-2.5", className)}
     >
       {items.map((option) => {
@@ -86,7 +102,7 @@ export function RadioGroup({
           <label
             key={option.value}
             className={cn(
-              "inline-flex items-start gap-2 text-sm",
+              "inline-flex min-h-6 items-start gap-2 text-sm focus-within:outline-2 focus-within:outline-primary focus-within:outline-offset-2",
               itemDisabled ? "cursor-not-allowed opacity-55" : "cursor-pointer"
             )}
             onKeyDown={(event) => !itemDisabled && handleKeyDown(event, option.value)}
@@ -108,7 +124,11 @@ export function RadioGroup({
               disabled={itemDisabled}
               onChange={() => onChange?.(option.value)}
               className="sr-only"
-              tabIndex={checked || (!value && option.value === enabled[0]?.value) ? 0 : -1}
+              tabIndex={option.value === tabStop ? 0 : -1}
+              ref={(element) => {
+                if (element) inputs.current.set(option.value, element);
+                else inputs.current.delete(option.value);
+              }}
             />
             <span className="grid gap-0.5">
               <span className="leading-[18px] text-foreground">{option.label}</span>

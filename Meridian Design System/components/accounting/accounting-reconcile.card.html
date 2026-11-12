@@ -5,9 +5,7 @@
 <meta charset="UTF-8">
 <title>Accounting components — reconciliation & journal</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../scripts/demo-runtime.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
   body { margin: 0; padding: 16px; background: var(--bg); }
@@ -16,17 +14,17 @@
 </style>
 </head>
 <body class="meridian">
-<template id="__bundler_thumbnail" data-bg-color="#0a5e3e">
+<template id="__bundler_thumbnail" data-bg-color="var(--bg-canvas)">
   <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-    <rect x="180" y="220" width="380" height="360" rx="16" fill="#ffffff" opacity="0.95"/>
-    <rect x="640" y="220" width="380" height="360" rx="16" fill="#ffffff" opacity="0.95"/>
-    <rect x="220" y="270" width="180" height="20" rx="6" fill="#0a5e3e"/>
-    <rect x="680" y="270" width="180" height="20" rx="6" fill="#0a5e3e"/>
-    <rect x="220" y="330" width="300" height="14" rx="5" fill="#cfe3d8"/>
-    <rect x="220" y="370" width="300" height="14" rx="5" fill="#cfe3d8"/>
-    <rect x="220" y="410" width="300" height="14" rx="5" fill="#cfe3d8"/>
-    <rect x="680" y="330" width="300" height="14" rx="5" fill="#cfe3d8"/>
-    <rect x="680" y="370" width="300" height="14" rx="5" fill="#cfe3d8"/>
+    <rect x="180" y="220" width="380" height="360" rx="2" fill="var(--bg-light)" opacity="0.95"/>
+    <rect x="640" y="220" width="380" height="360" rx="2" fill="var(--bg-light)" opacity="0.95"/>
+    <rect x="220" y="270" width="180" height="20" rx="2" fill="var(--accent)"/>
+    <rect x="680" y="270" width="180" height="20" rx="2" fill="var(--accent)"/>
+    <rect x="220" y="330" width="300" height="14" rx="2" fill="var(--border)"/>
+    <rect x="220" y="370" width="300" height="14" rx="2" fill="var(--border)"/>
+    <rect x="220" y="410" width="300" height="14" rx="2" fill="var(--border)"/>
+    <rect x="680" y="330" width="300" height="14" rx="2" fill="var(--border)"/>
+    <rect x="680" y="370" width="300" height="14" rx="2" fill="var(--border)"/>
   </svg>
 </template>
 <div id="root"></div>

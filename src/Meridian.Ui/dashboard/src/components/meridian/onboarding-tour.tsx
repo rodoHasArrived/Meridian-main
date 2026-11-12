@@ -134,7 +134,7 @@ export function OnboardingCoachMark({ controller }: { controller: OnboardingTour
     <aside
       role="region"
       aria-label="Getting started tour"
-      className="fixed bottom-5 right-5 z-40 w-[min(22rem,calc(100vw-2.5rem))] overflow-hidden rounded-md border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.18)]"
+      className="fixed bottom-5 right-5 z-40 w-[min(22rem,calc(100vw-2.5rem))] overflow-hidden rounded-md border border-border bg-card shadow-float"
     >
       <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-3">
         <div className="min-w-0">

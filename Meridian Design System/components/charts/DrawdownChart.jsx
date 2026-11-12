@@ -79,7 +79,7 @@ export function DrawdownChart({
           <line x1={x(maxIdx)} x2={x(maxIdx)} y1={y(0)} y2={y(dd[maxIdx])} stroke="var(--chart-drawdown)" strokeWidth="1" strokeDasharray="3 3" opacity="0.7" />
           <circle cx={x(maxIdx)} cy={y(dd[maxIdx])} r="3.5" fill="var(--chart-drawdown)" />
           <rect x={Math.min(x(maxIdx) + 6, plotR - 70)} y={y(dd[maxIdx]) - 9} width="66" height="18" fill="var(--chart-drawdown)" opacity="0.95" />
-          <text x={Math.min(x(maxIdx) + 6, plotR - 70) + 33} y={y(dd[maxIdx]) + 4} fill="#fff" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>max {valueFmt(dd[maxIdx])}</text>
+          <text x={Math.min(x(maxIdx) + 6, plotR - 70) + 33} y={y(dd[maxIdx]) + 4} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>max {valueFmt(dd[maxIdx])}</text>
         </g>
       )}
       <line x1={plotR} x2={plotR} y1={plotT} y2={plotB} stroke="var(--chart-border)" strokeWidth="1.2" />

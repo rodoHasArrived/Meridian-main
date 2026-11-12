@@ -102,7 +102,7 @@ function FieldFormulaScreen() {
                   <span style={{ font: "11px var(--font-data)", color: "var(--text-muted)" }}>1 : {lhs.length + s.formula.length}</span>
                 </div>
                 <div style={{ display: "flex", font: "14px var(--font-data)", minHeight: 96 }}>
-                  <div style={{ width: 40, padding: "12px 0", textAlign: "center", color: "var(--text-disabled)", background: "var(--bg-medium)", borderRight: "1px solid var(--border)" }}>1</div>
+                  <div style={{ width: 40, padding: "12px 0", textAlign: "center", color: "var(--text-muted)", background: "var(--bg-medium)", borderRight: "1px solid var(--border)" }}>1</div>
                   <div style={{ padding: "12px 14px", color: "var(--text-primary)", lineHeight: 1.7 }}>
                     <span style={{ color: "var(--purple-dim)" }}>Let </span>
                     <span>current_yield = </span>
@@ -113,7 +113,7 @@ function FieldFormulaScreen() {
 
                 {/* Autocomplete popup */}
                 <div style={{ position: "absolute", left: 40, top: 84, width: 460, zIndex: 5,
-                  background: "var(--card-surface)", border: "1px solid var(--border)", boxShadow: "0 2px 6px rgba(0,0,0,.18)" }}>
+                  background: "var(--card-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-menu)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderBottom: "1px solid var(--border)", background: "var(--bg-medium)" }}>
                     <Eyebrow>Suggestions</Eyebrow>
                     <div style={{ flex: 1 }}></div>
@@ -126,7 +126,7 @@ function FieldFormulaScreen() {
                       borderLeft: i === sel ? "4px solid var(--accent)" : "4px solid transparent",
                       background: i === sel ? "var(--bg-active)" : "transparent" }}>
                       <code style={{ font: "13px var(--font-data)", color: "var(--text-primary)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.formula}</code>
-                      <span style={{ fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{it.desc}</span>
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{it.desc}</span>
                       <Badge variant={CAT_TONE[it.cat]}>{it.cat}</Badge>
                     </div>
                   ))}

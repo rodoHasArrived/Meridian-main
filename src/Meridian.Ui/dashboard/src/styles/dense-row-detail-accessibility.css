@@ -1,16 +1,16 @@
 .row-detail-panel {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-md);
-  background: rgba(20, 18, 15, 0.72);
+  background: var(--ws-surface);
   box-shadow: var(--shadow-panel);
 }
 
 .row-detail-panel .head {
   padding: 0.5rem 0.625rem;
-  border-bottom: 1px solid rgba(74, 68, 60, 0.95);
-  background: #14120F;
+  border-bottom: 1px solid var(--ws-border);
+  background: var(--ws-surface);
   color: var(--fg-muted);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
@@ -20,7 +20,7 @@
 
 .row-detail-panel .body {
   padding: 0.625rem;
-  color: #E0DAD1;
+  color: var(--ws-text);
   font-size: 0.75rem;
   line-height: 1.5;
 }
@@ -28,10 +28,10 @@
 [data-dense-row-detail-panel="true"],
 .row-detail-panel {
   position: relative;
-  border-color: rgba(168, 84, 54, 0.26);
+  border-color: color-mix(in srgb, var(--ws-accent) 26%, transparent);
   background: var(--ws-surface);
   color: var(--ws-text);
-  box-shadow: inset 3px 0 0 rgba(168, 84, 54, 0.72), var(--shadow-panel);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--ws-accent) 72%, transparent), var(--shadow-panel);
 }
 
 [data-dense-row-detail-panel="true"]::before,
@@ -42,9 +42,9 @@
   max-width: calc(100% - 1rem);
   margin: 0.625rem 0.625rem 0;
   overflow: hidden;
-  border: 1px solid rgba(168, 84, 54, 0.28);
+  border: 1px solid color-mix(in srgb, var(--ws-accent) 28%, transparent);
   border-radius: var(--radius-xs);
-  background: rgba(168, 84, 54, 0.09);
+  background: color-mix(in srgb, var(--ws-accent) 9%, transparent);
   color: var(--cyan-primary);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.75rem;
@@ -62,8 +62,8 @@
 
 .row-detail-panel .head,
 [data-dense-row-detail-panel="true"] .head {
-  border-color: rgba(168, 84, 54, 0.26);
-  background: rgba(168, 84, 54, 0.07);
+  border-color: color-mix(in srgb, var(--ws-accent) 26%, transparent);
+  background: color-mix(in srgb, var(--ws-accent) 7%, transparent);
   color: var(--ws-text-muted);
 }
 

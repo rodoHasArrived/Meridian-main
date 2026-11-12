@@ -253,7 +253,7 @@ function BasketsSidebar({ baskets, activeId, onSelect, filter, setFilter, query,
             cursor: "pointer", fontFamily: "var(--font-body)",
           }}>
             <span style={{ fontSize: 13, fontWeight: b.id === activeId ? 600 : 500, color: "var(--text-primary)" }}>{b.name}</span>
-            <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>{b.constituents.length} lines · {b.category}</span>
+            <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: b.id === activeId ? "var(--text-secondary)" : "var(--text-muted)" }}>{b.constituents.length} lines · {b.category}</span>
           </button>
         ))}
       </div>

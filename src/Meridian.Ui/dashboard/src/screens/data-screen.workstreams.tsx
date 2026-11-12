@@ -57,8 +57,8 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
     render: (backfill) => (
       <span className="block min-w-[8rem]">
         <span className="mb-1 block font-mono text-xs text-muted-foreground">{backfill.progress}</span>
-        <span className="block h-1 rounded-full bg-border/70">
-          <span className="block h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
+        <span className="block h-1 rounded-[var(--radius-button)] bg-border/70">
+          <span className="block h-1 rounded-[var(--radius-button)] bg-primary transition-all" style={{ width: backfill.progress }} />
         </span>
       </span>
     )

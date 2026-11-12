@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui/dashboard
@@ -1691,6 +1691,13 @@ navigation and command chrome, releases ordinary scroll containers, repeats tabl
 keeps source/financial notices. Printing covers the current rendered view; it does not fetch rows,
 open disclosures, or replace governed report generation. Virtualized offscreen records require the
 workflow's export/report path.
+
+The root `npm run design:build`, `npm run design:check`, and `npm run design:test:browser` commands
+provide maintained generation, source checks, and rendered acceptance. See
+[design-system compliance](../../../Meridian%20Design%20System/docs/COMPLIANCE.md) for the exact scope
+and the required Windows Chrome/Edge keyboard, 200% zoom, and NVDA evidence. A passing Linux
+Chromium run leaves that manual acceptance pending. The generated package consumption inventory
+uses symbol reachability and records intentional adapter differences; it is not a visual test.
 
 Design-system validation has separate scopes: dashboard contract/component tests check the native
 adapters; package contrast checks cover declared color pairs and runtime token references; package

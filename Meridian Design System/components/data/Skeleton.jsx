@@ -7,9 +7,10 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-skel{display:block;background:var(--bg-active,#F2E3DB);border-radius:var(--radius-chip,3px);
+.mds-skel{display:block;background:var(--bg-active,#F2E3DB);border-radius:var(--radius-chip,2px);
   position:relative;overflow:hidden;}
 .mds-skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  /* @design-role loading-sweep */
   background:linear-gradient(90deg,transparent,var(--bg-hover,#F0EEE9),transparent);
   animation:mds-skel-sweep 1.3s ease-in-out infinite;}
 .mds-skel--text{height:12px;margin:3px 0;}

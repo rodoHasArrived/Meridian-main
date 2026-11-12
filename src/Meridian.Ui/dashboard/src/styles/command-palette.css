@@ -12,7 +12,7 @@
   background: var(--ws-surface, #FBFAF8);
   color: var(--ws-text, #22252A);
   padding: 1rem;
-  box-shadow: var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
+  box-shadow: var(--shadow-menu);
   animation: commandPalettePanelIn 140ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -109,26 +109,26 @@
 }
 
 .command-palette-status {
-  border-color: var(--state-paper-bd, rgba(168, 84, 54, 0.34));
-  background: var(--state-paper-bg, rgba(168, 84, 54, 0.1));
+  border-color: var(--state-paper-bd, color-mix(in srgb, var(--ws-accent) 34%, transparent));
+  background: var(--state-paper-bg, color-mix(in srgb, var(--ws-accent) 10%, transparent));
   color: var(--state-paper-fg, #8C4429);
 }
 
 .command-palette-status-blocked {
-  border-color: var(--state-danger-bd, rgba(168, 68, 60, 0.35));
-  background: var(--state-danger-bg, rgba(168, 68, 60, 0.1));
+  border-color: var(--state-danger-bd, color-mix(in srgb, var(--red) 35%, transparent));
+  background: var(--state-danger-bg, color-mix(in srgb, var(--red) 10%, transparent));
   color: var(--state-danger-fg, #7E332D);
 }
 
 .command-palette-status-review {
-  border-color: var(--state-warn-bd, rgba(138, 92, 18, 0.38));
-  background: var(--state-warn-bg, rgba(138, 92, 18, 0.11));
+  border-color: var(--state-warn-bd, color-mix(in srgb, var(--orange) 38%, transparent));
+  background: var(--state-warn-bg, color-mix(in srgb, var(--orange) 11%, transparent));
   color: var(--state-warn-fg, #68450E);
 }
 
 .command-palette-status-ready {
-  border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
-  background: var(--state-healthy-bg, rgba(58, 122, 86, 0.1));
+  border-color: var(--state-healthy-bd, color-mix(in srgb, var(--green) 32%, transparent));
+  background: var(--state-healthy-bg, color-mix(in srgb, var(--green) 10%, transparent));
   color: var(--state-healthy-fg, #2C5C40);
 }
 

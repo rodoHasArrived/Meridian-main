@@ -14,7 +14,10 @@
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",
     "test:watch": "vitest",
-    "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts"
+    "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts",
+    "design:build": "node scripts/build-design-system.mjs && node --max-old-space-size=4096 scripts/design-system-consumption.mjs --write && npm run build",
+    "design:check": "node scripts/check-design-system.mjs",
+    "design:test:browser": "node scripts/design-system-browser.mjs"
   },
   "dependencies": {
     "lucide-react": "1.61.0",

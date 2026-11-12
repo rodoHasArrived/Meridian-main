@@ -6,7 +6,7 @@
 
 :root {
   /* Families — Segoe UI Variable is the desktop face; system-ui covers other OSes.
-     JetBrains Mono is loaded (fonts.css) as the cross-platform Cascadia Mono. */
+     A locally installed JetBrains Mono is a cross-platform Cascadia Mono fallback. */
   --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-body:    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-data:    "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;

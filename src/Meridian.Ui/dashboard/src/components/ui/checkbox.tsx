@@ -100,7 +100,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         aria-checked={checkedState}
         disabled={disabled}
         className={cn(
-          "inline-flex items-center gap-2.5 text-sm text-foreground transition-opacity",
+          "inline-flex min-h-6 items-center gap-2.5 text-sm text-foreground transition-opacity",
           "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer",
           className
@@ -111,13 +111,13 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         <span
           aria-hidden="true"
           className={cn(
-            "relative h-5 w-9 rounded-full border transition-colors duration-150",
+            "relative h-5 w-9 rounded-[var(--radius-button)] border transition-colors duration-150",
             checkedState ? "border-primary bg-primary" : "border-border bg-[var(--ws-surface-raised)]"
           )}
         >
           <span
             className={cn(
-              "absolute top-0.5 h-4 w-4 rounded-full bg-background transition-transform duration-150",
+              "absolute top-0.5 h-4 w-4 rounded-[var(--radius-button)] bg-background transition-transform duration-150",
               checkedState ? "translate-x-[1.0625rem]" : "translate-x-0.5"
             )}
           />

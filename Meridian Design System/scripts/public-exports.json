@@ -1,0 +1,660 @@
+{
+  "schemaVersion": 1,
+  "namespace": "MeridianDesignSystem_4f61be",
+  "components": [
+    {
+      "name": "AccountTree",
+      "sourcePath": "components/accounting/AccountTree.jsx"
+    },
+    {
+      "name": "AgingTable",
+      "sourcePath": "components/accounting/AgingTable.jsx"
+    },
+    {
+      "name": "AllocationEditor",
+      "sourcePath": "components/accounting/AllocationEditor.jsx"
+    },
+    {
+      "name": "AmountCell",
+      "sourcePath": "components/accounting/AmountCell.jsx"
+    },
+    {
+      "name": "CommitmentBar",
+      "sourcePath": "components/accounting/CommitmentBar.jsx"
+    },
+    {
+      "name": "FxRevaluationTable",
+      "sourcePath": "components/accounting/FxRevaluationTable.jsx"
+    },
+    {
+      "name": "JournalEntryForm",
+      "sourcePath": "components/accounting/JournalEntryForm.jsx"
+    },
+    {
+      "name": "LedgerTable",
+      "sourcePath": "components/accounting/LedgerTable.jsx"
+    },
+    {
+      "name": "Money",
+      "sourcePath": "components/accounting/Money.jsx"
+    },
+    {
+      "name": "ReconciliationPanel",
+      "sourcePath": "components/accounting/ReconciliationPanel.jsx"
+    },
+    {
+      "name": "StatementTable",
+      "sourcePath": "components/accounting/StatementTable.jsx"
+    },
+    {
+      "name": "TaxLotTable",
+      "sourcePath": "components/accounting/TaxLotTable.jsx"
+    },
+    {
+      "name": "TrialBalance",
+      "sourcePath": "components/accounting/TrialBalance.jsx"
+    },
+    {
+      "name": "BarChart",
+      "sourcePath": "components/charts/BarChart.jsx"
+    },
+    {
+      "name": "CandleChart",
+      "sourcePath": "components/charts/CandleChart.jsx"
+    },
+    {
+      "name": "ChartCard",
+      "sourcePath": "components/charts/ChartCard.jsx"
+    },
+    {
+      "name": "ChartTooltip",
+      "sourcePath": "components/charts/ChartTooltip.jsx"
+    },
+    {
+      "name": "CorrelationHeatmap",
+      "sourcePath": "components/charts/CorrelationHeatmap.jsx"
+    },
+    {
+      "name": "CoverageMatrix",
+      "sourcePath": "components/charts/CoverageMatrix.jsx"
+    },
+    {
+      "name": "DepthChart",
+      "sourcePath": "components/charts/DepthChart.jsx"
+    },
+    {
+      "name": "DrawdownChart",
+      "sourcePath": "components/charts/DrawdownChart.jsx"
+    },
+    {
+      "name": "EquityCurve",
+      "sourcePath": "components/charts/EquityCurve.jsx"
+    },
+    {
+      "name": "Histogram",
+      "sourcePath": "components/charts/Histogram.jsx"
+    },
+    {
+      "name": "OwnershipGraph",
+      "sourcePath": "components/charts/OwnershipGraph.jsx"
+    },
+    {
+      "name": "PnLCalendar",
+      "sourcePath": "components/charts/PnLCalendar.jsx"
+    },
+    {
+      "name": "ScatterChart",
+      "sourcePath": "components/charts/ScatterChart.jsx"
+    },
+    {
+      "name": "Sparkline",
+      "sourcePath": "components/charts/Sparkline.jsx"
+    },
+    {
+      "name": "TimeframeSwitcher",
+      "sourcePath": "components/charts/TimeframeSwitcher.jsx"
+    },
+    {
+      "name": "AsOfControl",
+      "sourcePath": "components/charts/TimeframeSwitcher.jsx"
+    },
+    {
+      "name": "Treemap",
+      "sourcePath": "components/charts/Treemap.jsx"
+    },
+    {
+      "name": "WaterfallChart",
+      "sourcePath": "components/charts/WaterfallChart.jsx"
+    },
+    {
+      "name": "YieldCurve",
+      "sourcePath": "components/charts/YieldCurve.jsx"
+    },
+    {
+      "name": "ChartCursorSync",
+      "sourcePath": "components/charts/useChartCrosshair.js"
+    },
+    {
+      "name": "ChartCursor",
+      "sourcePath": "components/charts/useChartCrosshair.js"
+    },
+    {
+      "name": "Accordion",
+      "sourcePath": "components/core/Accordion.jsx"
+    },
+    {
+      "name": "AsyncCombobox",
+      "sourcePath": "components/core/AsyncCombobox.jsx"
+    },
+    {
+      "name": "Badge",
+      "sourcePath": "components/core/Badge.jsx"
+    },
+    {
+      "name": "Breadcrumb",
+      "sourcePath": "components/core/Breadcrumb.jsx"
+    },
+    {
+      "name": "Button",
+      "sourcePath": "components/core/Button.jsx"
+    },
+    {
+      "name": "Callout",
+      "sourcePath": "components/core/Callout.jsx"
+    },
+    {
+      "name": "Checkbox",
+      "sourcePath": "components/core/Checkbox.jsx"
+    },
+    {
+      "name": "Toggle",
+      "sourcePath": "components/core/Checkbox.jsx"
+    },
+    {
+      "name": "Combobox",
+      "sourcePath": "components/core/Combobox.jsx"
+    },
+    {
+      "name": "CommandPalette",
+      "sourcePath": "components/core/CommandPalette.jsx"
+    },
+    {
+      "name": "ContextMenu",
+      "sourcePath": "components/core/ContextMenu.jsx"
+    },
+    {
+      "name": "DatePicker",
+      "sourcePath": "components/core/DatePicker.jsx"
+    },
+    {
+      "name": "DateRangePicker",
+      "sourcePath": "components/core/DateRangePicker.jsx"
+    },
+    {
+      "name": "Delta",
+      "sourcePath": "components/core/Delta.jsx"
+    },
+    {
+      "name": "DensityToggle",
+      "sourcePath": "components/core/DensityToggle.jsx"
+    },
+    {
+      "name": "Dialog",
+      "sourcePath": "components/core/Dialog.jsx"
+    },
+    {
+      "name": "DialogHeader",
+      "sourcePath": "components/core/Dialog.jsx"
+    },
+    {
+      "name": "DialogBody",
+      "sourcePath": "components/core/Dialog.jsx"
+    },
+    {
+      "name": "DialogFooter",
+      "sourcePath": "components/core/Dialog.jsx"
+    },
+    {
+      "name": "Drawer",
+      "sourcePath": "components/core/Drawer.jsx"
+    },
+    {
+      "name": "DrawerHeader",
+      "sourcePath": "components/core/Drawer.jsx"
+    },
+    {
+      "name": "DrawerBody",
+      "sourcePath": "components/core/Drawer.jsx"
+    },
+    {
+      "name": "ErrorBoundary",
+      "sourcePath": "components/core/ErrorBoundary.jsx"
+    },
+    {
+      "name": "Eyebrow",
+      "sourcePath": "components/core/Eyebrow.jsx"
+    },
+    {
+      "name": "FileUpload",
+      "sourcePath": "components/core/FileUpload.jsx"
+    },
+    {
+      "name": "Flex",
+      "sourcePath": "components/core/Flex.jsx"
+    },
+    {
+      "name": "FormRow",
+      "sourcePath": "components/core/Form.jsx"
+    },
+    {
+      "name": "FormGrid",
+      "sourcePath": "components/core/Form.jsx"
+    },
+    {
+      "name": "FormDivider",
+      "sourcePath": "components/core/Form.jsx"
+    },
+    {
+      "name": "FormSectionLabel",
+      "sourcePath": "components/core/Form.jsx"
+    },
+    {
+      "name": "Form",
+      "sourcePath": "components/core/Form.jsx"
+    },
+    {
+      "name": "FormField",
+      "sourcePath": "components/core/FormField.jsx"
+    },
+    {
+      "name": "FormValidation",
+      "sourcePath": "components/core/FormValidation.jsx"
+    },
+    {
+      "name": "FieldInput",
+      "sourcePath": "components/core/FormValidation.jsx"
+    },
+    {
+      "name": "FormErrorSummary",
+      "sourcePath": "components/core/FormValidation.jsx"
+    },
+    {
+      "name": "ConnectionDot",
+      "sourcePath": "components/core/FreshnessIndicator.jsx"
+    },
+    {
+      "name": "FreshnessIndicator",
+      "sourcePath": "components/core/FreshnessIndicator.jsx"
+    },
+    {
+      "name": "Gauge",
+      "sourcePath": "components/core/Gauge.jsx"
+    },
+    {
+      "name": "Grid",
+      "sourcePath": "components/core/Grid.jsx"
+    },
+    {
+      "name": "HotkeysProvider",
+      "sourcePath": "components/core/HotkeysProvider.jsx"
+    },
+    {
+      "name": "Input",
+      "sourcePath": "components/core/Input.jsx"
+    },
+    {
+      "name": "InstrumentChip",
+      "sourcePath": "components/core/InstrumentChip.jsx"
+    },
+    {
+      "name": "Kbd",
+      "sourcePath": "components/core/Kbd.jsx"
+    },
+    {
+      "name": "LinearGauge",
+      "sourcePath": "components/core/LinearGauge.jsx"
+    },
+    {
+      "name": "Modal",
+      "sourcePath": "components/core/Modal.jsx"
+    },
+    {
+      "name": "ModalHeader",
+      "sourcePath": "components/core/Modal.jsx"
+    },
+    {
+      "name": "ModalBody",
+      "sourcePath": "components/core/Modal.jsx"
+    },
+    {
+      "name": "ModalFooter",
+      "sourcePath": "components/core/Modal.jsx"
+    },
+    {
+      "name": "ModalForm",
+      "sourcePath": "components/core/Modal.jsx"
+    },
+    {
+      "name": "MultiSelect",
+      "sourcePath": "components/core/MultiSelect.jsx"
+    },
+    {
+      "name": "SelectCheckbox",
+      "sourcePath": "components/core/MultiSelect.jsx"
+    },
+    {
+      "name": "NotificationCenter",
+      "sourcePath": "components/core/NotificationCenter.jsx"
+    },
+    {
+      "name": "NumberInput",
+      "sourcePath": "components/core/NumberInput.jsx"
+    },
+    {
+      "name": "PanelSurface",
+      "sourcePath": "components/core/PanelSurface.jsx"
+    },
+    {
+      "name": "Popover",
+      "sourcePath": "components/core/Popover.jsx"
+    },
+    {
+      "name": "ProgressBar",
+      "sourcePath": "components/core/ProgressBar.jsx"
+    },
+    {
+      "name": "RadioGroup",
+      "sourcePath": "components/core/RadioGroup.jsx"
+    },
+    {
+      "name": "SegmentedControl",
+      "sourcePath": "components/core/SegmentedControl.jsx"
+    },
+    {
+      "name": "Select",
+      "sourcePath": "components/core/Select.jsx"
+    },
+    {
+      "name": "Slider",
+      "sourcePath": "components/core/Slider.jsx"
+    },
+    {
+      "name": "Spinner",
+      "sourcePath": "components/core/Spinner.jsx"
+    },
+    {
+      "name": "SplitPane",
+      "sourcePath": "components/core/SplitPane.jsx"
+    },
+    {
+      "name": "Stack",
+      "sourcePath": "components/core/Stack.jsx"
+    },
+    {
+      "name": "StatusBanner",
+      "sourcePath": "components/core/StatusBanner.jsx"
+    },
+    {
+      "name": "Stepper",
+      "sourcePath": "components/core/Stepper.jsx"
+    },
+    {
+      "name": "Tabs",
+      "sourcePath": "components/core/Tabs.jsx"
+    },
+    {
+      "name": "TabPanel",
+      "sourcePath": "components/core/Tabs.jsx"
+    },
+    {
+      "name": "TagInput",
+      "sourcePath": "components/core/TagInput.jsx"
+    },
+    {
+      "name": "TextArea",
+      "sourcePath": "components/core/TextArea.jsx"
+    },
+    {
+      "name": "Timestamp",
+      "sourcePath": "components/core/Timestamp.jsx"
+    },
+    {
+      "name": "ToastProvider",
+      "sourcePath": "components/core/Toast.jsx"
+    },
+    {
+      "name": "Toast",
+      "sourcePath": "components/core/Toast.jsx"
+    },
+    {
+      "name": "Tooltip",
+      "sourcePath": "components/core/Tooltip.jsx"
+    },
+    {
+      "name": "TreeView",
+      "sourcePath": "components/core/TreeView.jsx"
+    },
+    {
+      "name": "Validators",
+      "sourcePath": "components/core/Validators.js"
+    },
+    {
+      "name": "FormHooks",
+      "sourcePath": "components/core/useFormState.js"
+    },
+    {
+      "name": "BulkActionBar",
+      "sourcePath": "components/data/BulkActionBar.jsx"
+    },
+    {
+      "name": "BulkSelectCheckbox",
+      "sourcePath": "components/data/BulkActionBar.jsx"
+    },
+    {
+      "name": "ColumnChooser",
+      "sourcePath": "components/data/ColumnChooser.jsx"
+    },
+    {
+      "name": "ColumnManager",
+      "sourcePath": "components/data/ColumnManager.jsx"
+    },
+    {
+      "name": "DenseDataTable",
+      "sourcePath": "components/data/DenseDataTable.jsx"
+    },
+    {
+      "name": "EditableCell",
+      "sourcePath": "components/data/EditableCell.jsx"
+    },
+    {
+      "name": "EmptyState",
+      "sourcePath": "components/data/EmptyState.jsx"
+    },
+    {
+      "name": "EntitySummary",
+      "sourcePath": "components/data/EntitySummary.jsx"
+    },
+    {
+      "name": "ExpandableDataTable",
+      "sourcePath": "components/data/ExpandableDataTable.jsx"
+    },
+    {
+      "name": "FilterBuilder",
+      "sourcePath": "components/data/FilterBuilder.jsx"
+    },
+    {
+      "name": "FilteredDataTable",
+      "sourcePath": "components/data/FilteredDataTable.jsx"
+    },
+    {
+      "name": "KeyValueGrid",
+      "sourcePath": "components/data/KeyValueGrid.jsx"
+    },
+    {
+      "name": "MetricCard",
+      "sourcePath": "components/data/MetricCard.jsx"
+    },
+    {
+      "name": "Pagination",
+      "sourcePath": "components/data/Pagination.jsx"
+    },
+    {
+      "name": "SavedViews",
+      "sourcePath": "components/data/SavedViews.jsx"
+    },
+    {
+      "name": "SelectionToolbar",
+      "sourcePath": "components/data/SelectionToolbar.jsx"
+    },
+    {
+      "name": "Skeleton",
+      "sourcePath": "components/data/Skeleton.jsx"
+    },
+    {
+      "name": "SkeletonTable",
+      "sourcePath": "components/data/Skeleton.jsx"
+    },
+    {
+      "name": "TableHooks",
+      "sourcePath": "components/data/TableHooks.js"
+    },
+    {
+      "name": "Toolbar",
+      "sourcePath": "components/data/Toolbar.jsx"
+    },
+    {
+      "name": "ToolbarGroup",
+      "sourcePath": "components/data/Toolbar.jsx"
+    },
+    {
+      "name": "ToolbarSpacer",
+      "sourcePath": "components/data/Toolbar.jsx"
+    },
+    {
+      "name": "ToolbarDivider",
+      "sourcePath": "components/data/Toolbar.jsx"
+    },
+    {
+      "name": "VirtualizedList",
+      "sourcePath": "components/data/VirtualizedList.jsx"
+    },
+    {
+      "name": "WorksheetGrid",
+      "sourcePath": "components/data/WorksheetGrid.jsx"
+    },
+    {
+      "name": "CaseQueue",
+      "sourcePath": "components/operations/CaseQueue.jsx"
+    },
+    {
+      "name": "DiffView",
+      "sourcePath": "components/operations/DiffView.jsx"
+    },
+    {
+      "name": "EventTimeline",
+      "sourcePath": "components/operations/EventTimeline.jsx"
+    },
+    {
+      "name": "EvidenceLink",
+      "sourcePath": "components/operations/EvidenceLink.jsx"
+    },
+    {
+      "name": "GateRail",
+      "sourcePath": "components/operations/GateRail.jsx"
+    },
+    {
+      "name": "LogTail",
+      "sourcePath": "components/operations/LogTail.jsx"
+    },
+    {
+      "name": "ProvenanceChip",
+      "sourcePath": "components/operations/ProvenanceChip.jsx"
+    },
+    {
+      "name": "ReadinessPanel",
+      "sourcePath": "components/operations/ReadinessPanel.jsx"
+    },
+    {
+      "name": "SeverityBadge",
+      "sourcePath": "components/operations/SeverityBadge.jsx"
+    },
+    {
+      "name": "SlaChip",
+      "sourcePath": "components/operations/SlaChip.jsx"
+    },
+    {
+      "name": "TrustStrip",
+      "sourcePath": "components/operations/TrustStrip.jsx"
+    },
+    {
+      "name": "ValidationIssueList",
+      "sourcePath": "components/operations/ValidationIssueList.jsx"
+    },
+    {
+      "name": "WorkspaceSection",
+      "sourcePath": "components/operations/WorkspaceSection.jsx"
+    },
+    {
+      "name": "NavRail",
+      "sourcePath": "components/shell/NavRail.jsx"
+    },
+    {
+      "name": "UserMenu",
+      "sourcePath": "components/shell/SessionControls.jsx"
+    },
+    {
+      "name": "RoleBadge",
+      "sourcePath": "components/shell/SessionControls.jsx"
+    },
+    {
+      "name": "ReadOnlyBanner",
+      "sourcePath": "components/shell/SessionControls.jsx"
+    },
+    {
+      "name": "SessionControls",
+      "sourcePath": "components/shell/SessionControls.jsx"
+    },
+    {
+      "name": "StatusBar",
+      "sourcePath": "components/shell/StatusBar.jsx"
+    },
+    {
+      "name": "WorkstationTopbar",
+      "sourcePath": "components/shell/WorkstationTopbar.jsx"
+    },
+    {
+      "name": "Blotter",
+      "sourcePath": "components/trading/Blotter.jsx"
+    },
+    {
+      "name": "DepthLadder",
+      "sourcePath": "components/trading/DepthLadder.jsx"
+    },
+    {
+      "name": "FillsFeed",
+      "sourcePath": "components/trading/FillsFeed.jsx"
+    },
+    {
+      "name": "OptionChainTable",
+      "sourcePath": "components/trading/OptionChainTable.jsx"
+    },
+    {
+      "name": "OrderTicket",
+      "sourcePath": "components/trading/OrderTicket.jsx"
+    }
+  ],
+  "brandFontTokens": {
+    "Segoe UI Variable Display": [
+      "--font-display",
+      "--theme-font-display"
+    ],
+    "Segoe UI Variable Text": [
+      "--font-body",
+      "--theme-font-body"
+    ],
+    "Cascadia Mono": [
+      "--font-data",
+      "--theme-font-mono"
+    ]
+  }
+}

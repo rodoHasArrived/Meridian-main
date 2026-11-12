@@ -1,10 +1,12 @@
 <!-- @dsCard group="Theming" viewport="1200x800" name="Theming & White-Label" subtitle="Brand color variants, density scales, font customization" -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<title>Meridian — Theming and white-label</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+<script src="./brand-preview.js"></script>
 <style>
   body { background: var(--bg); font-family: var(--font-body); color: var(--text-primary); padding: 24px; }
   .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
@@ -25,49 +27,7 @@
 
 <h2>Brand Color Variants</h2>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 12px;">Use <code>data-brand="name"</code> to apply white-label accent colors.</p>
-<div class="demo-grid">
-  <div class="brand-swatch">
-    <h3>Default (Teal)</h3>
-    <div class="swatch-color" style="background: #A85436;"></div>
-    <div class="swatch-code">#A85436 · data-brand="meridian"</div>
-  </div>
-
-  <div class="brand-swatch">
-    <h3>Indigo</h3>
-    <div class="swatch-color" style="background: #4F46E5;"></div>
-    <div class="swatch-code">#4F46E5 · data-brand="indigo"</div>
-  </div>
-
-  <div class="brand-swatch">
-    <h3>Emerald</h3>
-    <div class="swatch-color" style="background: #10B981;"></div>
-    <div class="swatch-code">#10B981 · data-brand="emerald"</div>
-  </div>
-
-  <div class="brand-swatch">
-    <h3>Rose</h3>
-    <div class="swatch-color" style="background: #E11D48;"></div>
-    <div class="swatch-code">#E11D48 · data-brand="rose"</div>
-  </div>
-
-  <div class="brand-swatch">
-    <h3>Slate</h3>
-    <div class="swatch-color" style="background: #64748B;"></div>
-    <div class="swatch-code">#64748B · data-brand="slate"</div>
-  </div>
-
-  <div class="brand-swatch">
-    <h3>Cyan</h3>
-    <div class="swatch-color" style="background: #06B6D4;"></div>
-    <div class="swatch-code">#06B6D4 · data-brand="cyan"</div>
-  </div>
-
-  <div class="brand-swatch">
-    <h3>Amber</h3>
-    <div class="swatch-color" style="background: #D97706;"></div>
-    <div class="swatch-code">#D97706 · data-brand="amber"</div>
-  </div>
-</div>
+<div class="demo-grid" id="brand-swatches"></div>
 
 <h2 style="margin-top: 32px;">Density Variants</h2>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 12px;">Use <code>data-theme-density="terminal|compact|spacious"</code> to adjust spacing &amp; row heights. Terminal is the densest scope, for multi-monitor ops walls.</p>
@@ -96,7 +56,7 @@
       <button class="btn-demo">Button</button>
       <div style="padding: 8px 12px; border: 1px solid var(--border); font-size: 13px;">Input row height: 40px</div>
     </div>
-    <code style="font-size: 10px;">data-theme-density="cozy" (default)</code>
+    <code style="font-size: 10px;">no data-theme-density (default)</code>
   </div>
 
   <div class="density-row">
@@ -134,7 +94,17 @@ document.body.setAttribute('data-theme-density', 'spacious');</pre>
 <div>--theme-primary-text: <code style="background: transparent;">#22252A</code></div>
 <div>--theme-bg-canvas: <code style="background: transparent;">#F2F0EC</code></div>
 <div>--theme-border: <code style="background: transparent;">#E4E3DE</code></div>
-<div style="color: var(--text-muted); margin-top: 8px;">…and 20+ more. See <code>tokens/theme.css</code> for complete list.</div>
+<div style="color: var(--text-secondary); margin-top: 8px;">…and 20+ more. See <code>tokens/theme.css</code> for complete list.</div>
 </div>
+<script>
+for (const brand of window.MeridianBrandPreview.capture()) {
+  const card = document.createElement("div"); card.className = "brand-swatch";
+  const title = document.createElement("h3"); title.textContent = brand.label;
+  const swatch = document.createElement("div"); swatch.className = "swatch-color"; swatch.style.background = brand.color;
+  const code = document.createElement("div"); code.className = "swatch-code";
+  code.textContent = brand.color + (brand.id ? ' · data-brand="' + brand.id + '"' : " · default (no data-brand)");
+  card.append(title, swatch, code); document.getElementById("brand-swatches").append(card);
+}
+</script>
 </body>
 </html>

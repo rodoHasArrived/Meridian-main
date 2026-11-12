@@ -1937,7 +1937,7 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
           <div className="font-semibold text-foreground">{state.title}</div>
           <div className="mt-1 text-xs text-muted-foreground">{state.summary}</div>
         </div>
-        <span className="rounded-full border border-border/70 bg-background px-2 py-1 text-xs font-medium text-foreground">
+        <span className="rounded-[var(--radius-chip)] border border-border/70 bg-background px-2 py-1 text-xs font-medium text-foreground">
           {state.active ? "Running" : "Settled"}
         </span>
       </div>
@@ -1948,10 +1948,10 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(state.overallPercent)}
-        className="h-2 overflow-hidden rounded-full bg-secondary"
+        className="h-2 overflow-hidden rounded-[var(--radius-button)] bg-secondary"
       >
         <div
-          className="h-full rounded-full bg-primary transition-[width] duration-300"
+          className="h-full rounded-[var(--radius-button)] bg-primary transition-[width] duration-300"
           style={{ width: `${state.overallPercent}%` }}
         />
       </div>

@@ -79,6 +79,7 @@ export function OptionChainTable({
   ...rest
 }) {
   inject();
+  const chainId = React.useId();
   const sorted = rows.slice().sort((a, b) => a.strike - b.strike);
   const callCols = columns;
   const putCols = columns.slice().reverse();
@@ -99,6 +100,8 @@ export function OptionChainTable({
 
   const [focusIdx, setFocusIdx] = React.useState(atmIdx);
   const interactive = !!onSelect;
+  const activeIndex = Math.max(0, Math.min(sorted.length - 1, focusIdx));
+  const cellRole = interactive ? "gridcell" : "cell";
 
   const select = (r) => {
     if (!isControlled) setInternalSel(r.strike);
@@ -107,12 +110,12 @@ export function OptionChainTable({
 
   const onKeyDown = (e) => {
     if (!interactive || !sorted.length) return;
-    let i = focusIdx;
+    let i = activeIndex;
     if (e.key === "ArrowDown") i = Math.min(sorted.length - 1, i + 1);
     else if (e.key === "ArrowUp") i = Math.max(0, i - 1);
     else if (e.key === "Home") i = 0;
     else if (e.key === "End") i = sorted.length - 1;
-    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sorted[focusIdx]); return; }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sorted[activeIndex]); return; }
     else return;
     e.preventDefault();
     setFocusIdx(i);
@@ -138,7 +141,7 @@ export function OptionChainTable({
     cols.map((key) => {
       const { text, tone } = fmtCell(side, key, r);
       return (
-        <span key={side + key} role="gridcell"
+        <span key={side + key} role={cellRole}
           className={`mds-ochain__cell${itm ? " mds-ochain__cell--itm" : ""}${tone ? ` mds-ochain__cell--${tone}` : ""}`}>
           {text}
         </span>
@@ -148,16 +151,21 @@ export function OptionChainTable({
   return (
     <div
       className={`mds-ochain${interactive ? " mds-ochain--interactive" : ""}${className ? " " + className : ""}`}
-      role="grid" aria-label="Option chain"
+      role={interactive ? "grid" : "table"} aria-label="Option chain"
+      aria-colcount={nC + nP + 1}
+      aria-activedescendant={interactive && sorted.length ? `${chainId}-strike-${activeIndex}` : undefined}
       tabIndex={interactive ? 0 : undefined}
       onKeyDown={onKeyDown}
       {...rest}
     >
       <div className="mds-ochain__grid" style={{ gridTemplateColumns: template }}>
-        <span className="mds-ochain__group" style={{ gridColumn: `span ${nC}` }}>Calls</span>
-        <span className="mds-ochain__group mds-ochain__group--strike">Strike</span>
-        <span className="mds-ochain__group" style={{ gridColumn: `span ${nP}` }}>Puts</span>
+        <div role="row" className="mds-ochain__row">
+        <span role="columnheader" aria-colspan={nC} className="mds-ochain__group" style={{ gridColumn: `span ${nC}` }}>Calls</span>
+        <span role="columnheader" className="mds-ochain__group mds-ochain__group--strike">Strike</span>
+        <span role="columnheader" aria-colspan={nP} className="mds-ochain__group" style={{ gridColumn: `span ${nP}` }}>Puts</span>
+        </div>
 
+        <div role="row" className="mds-ochain__row">
         {callCols.map((k) => (
           <span key={"ch" + k} className="mds-ochain__hdr" role="columnheader">{(COLS[k] || { label: k }).label}</span>
         ))}
@@ -165,32 +173,35 @@ export function OptionChainTable({
         {putCols.map((k) => (
           <span key={"ph" + k} className="mds-ochain__hdr" role="columnheader">{(COLS[k] || { label: k }).label}</span>
         ))}
+        </div>
 
         {sorted.map((r, i) => {
           const callItm = underlyingPrice != null && r.strike < underlyingPrice;
           const putItm = underlyingPrice != null && r.strike > underlyingPrice;
           const isSel = selected != null && r.strike === selected;
-          const isFocus = interactive && i === focusIdx;
+          const isFocus = interactive && i === activeIndex;
           return (
             <React.Fragment key={r.strike}>
               <div
                 className={`mds-ochain__row${isSel ? " mds-ochain__row--selected" : ""}${isFocus ? " mds-ochain__row--focus" : ""}`}
                 role="row" aria-selected={interactive ? isSel : undefined}
-                onClick={interactive ? () => { setFocusIdx(i); select(r); } : undefined}
+                onClick={interactive ? (event) => { event.currentTarget.closest('[role="grid"]').focus(); setFocusIdx(i); select(r); } : undefined}
               >
                 {cells(r, "call", callCols, callItm)}
-                <span className="mds-ochain__cell mds-ochain__cell--strike" role="gridcell">
+                <span id={`${chainId}-strike-${i}`} className="mds-ochain__cell mds-ochain__cell--strike" role={interactive ? "gridcell" : "rowheader"}>
                   {r.strike.toFixed(strikeDecimals)}
                 </span>
                 {cells(r, "put", putCols, putItm)}
               </div>
               {i === spotAfter && (
-                <div className="mds-ochain__spot" role="row" aria-label={`${underlyingLabel} ${underlyingPrice}`}>
+                <div className="mds-ochain__row" role="row">
+                <div className="mds-ochain__spot" role={cellRole} aria-colspan={nC + nP + 1}>
                   <span className="mds-ochain__spotrule" aria-hidden="true"></span>
                   <span className="mds-ochain__spotlab">
                     {underlyingPrice.toFixed(priceDecimals)} · {underlyingLabel}
                   </span>
                   <span className="mds-ochain__spotrule" aria-hidden="true"></span>
+                </div>
                 </div>
               )}
             </React.Fragment>

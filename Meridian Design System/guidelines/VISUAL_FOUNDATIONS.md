@@ -54,8 +54,8 @@ grids, no saturated gradients, no glass.
 - Data — Cascadia Mono / JetBrains Mono / Consolas, tabular-nums, for every price, id,
   timestamp, count
 
-Ramp (px): page title 22 · section 15 · card title 14 · body 13 · **metric 24 (mono 600)** ·
-data value 18 (mono 600) · label 10 (small-caps, muted). Labels use `AllSmallCaps`, so they
+Ramp (px), from `tokens/typography.css`: page title 24 · section 16 · card title 13 · body 13 ·
+**metric 28 (mono 700)** · data value 16 (mono 600) · label 9 (small-caps, muted). Labels use `AllSmallCaps`, so they
 render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)

@@ -81,7 +81,7 @@
 }
 
 .workspace-filter-segment.active {
-  border-color: rgba(168, 84, 54, 0.34);
+  border-color: color-mix(in srgb, var(--ws-accent) 34%, transparent);
   background: var(--ws-row-selected);
   color: var(--ws-accent-pressed);
 }
@@ -184,7 +184,7 @@
 .workspace-document-page {
   min-height: 36rem;
   border: 1px solid var(--ws-border);
-  background: #fff;
+  background: var(--ws-surface);
   box-shadow: var(--shadow-float);
 }
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { CandleChart, type Candle } from "./CandleChart";
 import { EquityCurve } from "./EquityCurve";
 import { DrawdownChart } from "./DrawdownChart";
@@ -143,7 +143,7 @@ describe("DepthChart", () => {
 });
 
 describe("CorrelationHeatmap", () => {
-  it("renders a grid with the diagonal reading 1.00", () => {
+  it("exposes a read-only matrix with owned rows, headers and cell values", () => {
     render(
       <CorrelationHeatmap
         labels={["AAPL", "MSFT"]}
@@ -153,7 +153,13 @@ describe("CorrelationHeatmap", () => {
         ]}
       />
     );
-    expect(screen.getByRole("grid", { name: "Correlation matrix" })).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "Correlation matrix" });
+    expect(table).toHaveAttribute("aria-rowcount", "3");
+    const rows = within(table).getAllByRole("row");
+    expect(rows).toHaveLength(3);
+    expect(within(rows[0]!).getAllByRole("columnheader")).toHaveLength(3);
+    expect(within(rows[1]!).getByRole("rowheader", { name: "AAPL" })).toBeInTheDocument();
+    expect(within(rows[1]!).getByRole("cell", { name: "AAPL · MSFT = 0.40" })).toBeInTheDocument();
     expect(screen.getAllByText("1.00").length).toBe(2);
   });
 });

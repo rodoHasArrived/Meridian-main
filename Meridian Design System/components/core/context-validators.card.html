@@ -94,13 +94,15 @@
       background: var(--bg-light);
     }
     .form-input:focus {
-      outline: none;
+      outline: var(--focus-ring);
+      outline-offset: var(--focus-ring-offset);
       border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(168, 84, 54, 0.15);
+
     }
     .form-input.error {
       border-color: var(--red);
-      box-shadow: 0 0 0 2px rgba(168, 68, 60, 0.15);
+      outline: 2px solid var(--red);
+      outline-offset: var(--focus-ring-offset);
     }
     .error-message {
       font-size: 11px;

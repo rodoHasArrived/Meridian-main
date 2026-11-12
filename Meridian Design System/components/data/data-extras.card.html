@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <title>Data Extras</title>
   <link rel="stylesheet" href="../../styles.css" />
-  <script src="../../_ds_bundle.js"></script>
+<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);">
 <div id="root"></div>
@@ -15,7 +16,7 @@ const { useState } = React;
 
 function Section({ title, children }) {
   return (
-    <div style={{ background:"white", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", padding:16 }}>
       <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
         color:"var(--text-muted)", marginBottom:12 }}>{title}</div>
       {children}
@@ -46,7 +47,7 @@ function Demo() {
       {/* Sparklines in MetricCards */}
       <Section title="Sparkline · inline mini charts">
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", padding:"10px 12px",
             borderLeft:"3px solid var(--green)" }}>
             <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Equity curve</div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -54,7 +55,7 @@ function Demo() {
               <Sparkline points={EQ} width={80} height={28} variant="area" color="var(--chart-equity)" />
             </div>
           </div>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", padding:"10px 12px",
             borderLeft:"3px solid var(--red)" }}>
             <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Drawdown</div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -62,7 +63,7 @@ function Demo() {
               <Sparkline points={DD} width={80} height={28} variant="area" color="var(--chart-drawdown)" baseline={0} />
             </div>
           </div>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", padding:"10px 12px",
             borderLeft:"3px solid var(--accent)" }}>
             <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Volume (line)</div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -70,7 +71,7 @@ function Demo() {
               <Sparkline points={VOL} width={80} height={28} variant="line" color="var(--accent)" />
             </div>
           </div>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", padding:"10px 12px",
             borderLeft:"3px solid var(--amber)" }}>
             <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Volume (bar)</div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -84,16 +85,16 @@ function Demo() {
       {/* EmptyState variants */}
       <Section title="EmptyState · zero-data placeholders">
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", overflow:"hidden" }}>
             <EmptyState icon="table" title="No transactions" detail="Run a backfill to populate this ledger." action="Run backfill" onAction={() => {}} compact />
           </div>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", overflow:"hidden" }}>
             <EmptyState icon="search" title="No results" detail="Try adjusting your search or filters." compact />
           </div>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", overflow:"hidden" }}>
             <EmptyState icon="chart" title="No data yet" detail="Strategy hasn't been run." action="Run strategy" onAction={() => {}} compact />
           </div>
-          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+          <div style={{ border:"1px solid var(--border)", borderRadius:"var(--radius-card,2px)", overflow:"hidden" }}>
             <EmptyState icon="inbox" title="Inbox empty" compact />
           </div>
         </div>
@@ -110,12 +111,12 @@ function Demo() {
         <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
           {COLS.map(c => (
             <span key={c.key} style={{
-              padding:"3px 8px", borderRadius:3, fontSize:11,
+              padding:"3px 8px", borderRadius:"var(--radius-chip,2px)", fontSize:11,
               fontFamily:"var(--font-data)", fontVariant:"all-small-caps",
               background: visible.includes(c.key) ? "var(--bg-active)" : "var(--bg-medium)",
-              color: visible.includes(c.key) ? "var(--accent)" : "var(--text-disabled)",
+              color: visible.includes(c.key) ? "var(--accent-dim)" : "var(--text-secondary)",
               border:"1px solid var(--border)",
-            }}>{c.label}</span>
+            }}>{c.label}{visible.includes(c.key) ? "" : " (hidden)"}</span>
           ))}
         </div>
       </Section>

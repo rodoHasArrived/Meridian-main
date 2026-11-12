@@ -502,7 +502,7 @@ function RunStage({ vm }: { vm: CoveredCallScreenViewModel }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div
-          className="h-2 w-full overflow-hidden rounded-full bg-secondary/40"
+          className="h-2 w-full overflow-hidden rounded-[var(--radius-button)] bg-secondary/40"
           role="progressbar"
           aria-valuenow={progress.percentComplete}
           aria-valuemin={0}

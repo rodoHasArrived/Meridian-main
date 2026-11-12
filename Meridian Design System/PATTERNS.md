@@ -267,13 +267,16 @@ Don't attach raw `keydown` listeners for shortcuts.
 `tokens/print.css` carries two layers:
 
 - **Defensive (automatic):** any workstation prints as a document — chrome hidden, scroll
-  regions unrolled, table headers repeat, rows don't split across pages.
+  regions unrolled, table headers repeat, rows don't split across pages. This prints the
+  mounted current view; it does not fetch other pages or virtualized offscreen records. Use
+  the governed report/export path for a complete dataset.
 - **Sheet model (opt-in):** compose printable deliverables from `.mds-sheet` sections — each
   renders as a Letter page card on screen and becomes a real page in print (`@page` Letter,
   0.6in margins). Helpers: `.mds-no-print` (screen-only toolbars), `.mds-avoid-break`, and
   `.mds-sheet__footer` (pins the running footer to the sheet bottom).
 
-Keep print surfaces on `data-theme="light"` — paper is light. `templates/report-pack/` is the
+Print tokens force light paper and matching text/semantic ink even when screen appearance is dark.
+Composed report packs should also use `data-theme="light"` on screen. `templates/report-pack/` is the
 reference deliverable: cover, performance summary (with a live `EquityCurve`), income
 statement, positions — the figures tie out across sheets.
 

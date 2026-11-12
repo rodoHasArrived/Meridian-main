@@ -206,7 +206,7 @@ export function CommandPalette({
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6"
-      style={{ background: "rgba(14, 17, 19, 0.32)" }}
+      style={{ background: "var(--scrim)" }}
       data-testid="command-palette-backdrop"
       onClick={(event) => {
         if (event.target === event.currentTarget) {

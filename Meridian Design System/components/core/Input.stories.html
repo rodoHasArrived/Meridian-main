@@ -20,11 +20,11 @@
     .example { background: var(--bg-light); border: 1px solid var(--border); padding: 16px; margin: 16px 0; }
     .example-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
     .example-preview { margin-bottom: 12px; }
-    .example-code { background: #E4E7EA; border: 1px solid var(--border); padding: 12px; font-family: var(--font-data); font-size: 11px; overflow-x: auto; border-radius: 2px; }
-    .note { background: #D2D8DE; border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; }
-    input { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg-light); font-family: var(--font-data); font-size: 13px; width: 100%; max-width: 300px; box-sizing: border-box; }
-    input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--border-focus) 20%, transparent); }
-    input:disabled { opacity: 0.6; background: #E4E7EA; }
+    .example-code { background: var(--border); border: 1px solid var(--border); padding: 12px; font-family: var(--font-data); font-size: 11px; overflow-x: auto; border-radius: 2px; }
+    .note { background: var(--bg-medium); border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; }
+    input { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg-light); color: var(--text-primary); font-family: var(--font-data); font-size: 13px; width: 100%; max-width: 300px; box-sizing: border-box; }
+    input:focus { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); border-color: var(--border-focus); }
+    input:disabled { opacity: 0.6; background: var(--border); }
     input.error { border-color: var(--red); }
     .error-msg { color: var(--red); font-size: 11px; margin-top: 5px; }
     .field { margin-bottom: 12px; }
@@ -98,8 +98,8 @@
       <div class="example-title">1. Basic Input</div>
       <div class="example-preview">
         <div class="field">
-          <label class="label">Name</label>
-          <input type="text" placeholder="Enter your name">
+          <label class="label" for="story-input-name">Name</label>
+          <input id="story-input-name" type="text" placeholder="Enter your name">
         </div>
       </div>
       <div class="example-code">&lt;Input label="Name" placeholder="Enter your name" /&gt;</div>
@@ -120,9 +120,9 @@
       <div class="example-title">3. With Error State</div>
       <div class="example-preview">
         <div class="field">
-          <label class="label">Password</label>
-          <input type="password" class="error" placeholder="Min 8 characters">
-          <div class="error-msg">Password must be at least 8 characters</div>
+          <label class="label" for="story-input-password">Password</label>
+          <input id="story-input-password" type="password" class="error" aria-invalid="true" aria-describedby="story-input-password-error" placeholder="Min 8 characters">
+          <div id="story-input-password-error" class="error-msg">Password must be at least 8 characters</div>
         </div>
       </div>
       <div class="example-code">&lt;Input
@@ -137,8 +137,8 @@
       <div class="example-title">4. Disabled Input</div>
       <div class="example-preview">
         <div class="field">
-          <label class="label">Account ID</label>
-          <input type="text" value="ACC-12345" disabled>
+          <label class="label" for="story-input-account">Account ID</label>
+          <input id="story-input-account" type="text" value="ACC-12345" disabled>
         </div>
       </div>
       <div class="example-code">&lt;Input label="Account ID" value="ACC-12345" disabled /&gt;</div>
@@ -148,8 +148,8 @@
       <div class="example-title">5. Different Input Types</div>
       <div class="example-preview">
         <div class="field">
-          <label class="label">Date</label>
-          <input type="date">
+          <label class="label" for="story-input-date">Date</label>
+          <input id="story-input-date" type="date">
         </div>
       </div>
       <div class="example-code">&lt;Input type="date" label="Transaction date" /&gt;
@@ -166,7 +166,7 @@
     <h2>Accessibility</h2>
     <div class="note">
       ✓ <strong>Labels:</strong> Always use the <code>label</code> prop or associated &lt;label&gt; element.
-      <br>✓ <strong>Focus visible:</strong> Clear blue focus ring on keyboard navigation.
+      <br>✓ <strong>Focus visible:</strong> Clear token-based focus ring on keyboard navigation.
       <br>✓ <strong>Error announcement:</strong> Use <code>aria-invalid="true"</code> + <code>aria-describedby</code> for error messages.
       <br>✓ <strong>Placeholder:</strong> Never use placeholder as the only label.
     </div>

@@ -16,11 +16,11 @@ function inject() {
   color:var(--text-muted,#5E666F);}
 .mds-slider__value{font-family:var(--font-data,monospace);font-size:12px;font-weight:600;
   color:var(--text-primary,#22252A);letter-spacing:var(--letter-spacing-data,.01em);}
-.mds-slider__track-wrap{position:relative;display:flex;align-items:center;height:16px;}
+.mds-slider__track-wrap{position:relative;display:flex;align-items:center;height:24px;}
 .mds-slider__track-bg{position:absolute;left:0;right:0;height:6px;
   background:var(--bg-active,#F2E3DB);border:1px solid var(--border,#E4E3DE);box-sizing:border-box;}
 .mds-slider__track-fill{position:absolute;left:0;height:6px;background:var(--accent,#A85436);}
-.mds-slider__input{position:relative;-webkit-appearance:none;appearance:none;width:100%;height:16px;margin:0;
+.mds-slider__input{position:relative;-webkit-appearance:none;appearance:none;width:100%;height:24px;margin:0;
   background:transparent;cursor:pointer;}
 .mds-slider__input:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:var(--focus-ring-offset,2px);}
 .mds-slider__input::-webkit-slider-runnable-track{height:6px;background:transparent;border:none;}
@@ -63,6 +63,8 @@ export function Slider({
   className = "", ...rest
 }) {
   inject();
+  const generatedId = React.useId();
+  const inputId = rest.id || generatedId;
   const clamped = Math.min(max, Math.max(min, value));
   const pct = max > min ? ((clamped - min) / (max - min)) * 100 : 0;
   const display = valueFmt ? valueFmt(clamped) : String(clamped);
@@ -70,7 +72,7 @@ export function Slider({
     <div className={`mds-slider${variant !== "accent" ? ` mds-slider--${variant}` : ""}${className ? " " + className : ""}`}>
       {(label || showValue) && (
         <div className="mds-slider__head">
-          {label && <span className="mds-slider__label">{label}</span>}
+          {label && <label className="mds-slider__label" htmlFor={inputId}>{label}</label>}
           {showValue && <span className="mds-slider__value">{display}</span>}
         </div>
       )}
@@ -79,6 +81,7 @@ export function Slider({
         <div className="mds-slider__track-fill" style={{ width: pct + "%" }} />
         <input
           type="range"
+          id={inputId}
           className="mds-slider__input"
           min={min}
           max={max}

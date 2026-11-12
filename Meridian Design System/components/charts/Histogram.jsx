@@ -87,7 +87,7 @@ export function Histogram({
         <g>
           <line x1={bx(mean)} x2={bx(mean)} y1={plotT} y2={plotB} stroke="var(--chart-crosshair)" strokeWidth="1.2" strokeDasharray="5 3" />
           <rect x={Math.min(bx(mean) + 5, plotR - 78)} y={plotT} width="74" height="17" fill="var(--chart-crosshair)" opacity="0.95" />
-          <text x={Math.min(bx(mean) + 5, plotR - 78) + 37} y={plotT + 12} fill="#fff" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>μ {valueFmt(mean)}</text>
+          <text x={Math.min(bx(mean) + 5, plotR - 78) + 37} y={plotT + 12} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>μ {valueFmt(mean)}</text>
         </g>
       )}
 

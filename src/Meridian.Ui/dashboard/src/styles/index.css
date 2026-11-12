@@ -1,6 +1,3 @@
-@import "tailwindcss";
-@config "../../tailwind.config.ts";
-
 /* Monospace resolves through the local Cascadia Mono @font-face below and the
    system `ui-monospace` stack — no external font fetch. A render-blocking
    external Google Fonts import for JetBrains Mono was removed: it failed under
@@ -209,6 +206,20 @@
     --chrome-ok: #56A37E;
     --chrome-warn: #C79A4C;
     --chrome-err: #D1746B;
+    /* Chrome remains near-black in both workspace themes. These roles mirror
+       the canonical package's chrome interior palette, rather than borrowing
+       light-workspace text colors for the operator masthead. */
+    --topbar-text: var(--ws-masthead-fg);
+    --topbar-text-muted: #B8B3AA;
+    --topbar-text-faint: #9B958A;
+    --topbar-sep: #453F36;
+    --topbar-border: #2E2A24;
+    --topbar-field-bg: #13120F;
+    --topbar-field-border: #36312A;
+    --topbar-field-border-hover: #474037;
+    --chrome-info: #9089B5;
+    --chrome-paper: #D98A64;
+    --scrim: rgba(20, 18, 15, 0.5);
     /* Type faces as tokens. Thirteen call sites name these and the workstation declared
     none of them, so every one resolved to nothing and inherited instead. Values mirror
     the package's tokens/typography.css. */
@@ -834,7 +845,7 @@
 
   input::placeholder,
   textarea::placeholder {
-    color: #9ca3af;
+    color: var(--ws-text-muted);
   }
 
   body {
@@ -850,7 +861,7 @@
   }
 
   ::selection {
-    background: rgba(168, 84, 54, 0.22);
+    background: color-mix(in srgb, var(--ws-accent) 22%, transparent);
   }
 
   /* Scrollbar refinement */
@@ -863,7 +874,7 @@
   }
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
-    border-radius: 99px;
+    border-radius: var(--radius-button);
   }
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.5);
@@ -963,14 +974,14 @@
     min-width: 0;
     border: 1px solid var(--severity-info-bd);
     border-radius: var(--radius-sm);
-    background: rgba(5, 16, 27, 0.56);
+    background: var(--ws-surface);
     padding: 0.75rem;
   }
 
   .panel-state-title {
     min-width: 0;
     overflow: hidden;
-    color: #FDFAF5;
+    color: var(--ws-text);
     font-size: 0.8125rem;
     font-weight: 750;
     line-height: 1.25;
@@ -984,7 +995,7 @@
        panel variant. (workspace-surface.css currently overrides .panel-state to
        a light surface; this keeps the dark variant AA-legible if it ever wins,
        instead of dark --fg-muted on a dark panel.) */
-    color: rgba(246, 251, 255, 0.72);
+    color: var(--ws-text-secondary);
     font-size: 0.75rem;
     line-height: 1.45;
   }
@@ -1004,7 +1015,7 @@
 
   .panel-action-footer {
     justify-content: space-between;
-    border-top: 1px solid rgba(74, 68, 60, 0.72);
+    border-top: 1px solid var(--ws-border);
     padding-top: 0.625rem;
   }
 
@@ -1024,16 +1035,16 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border: 1px solid rgba(74, 68, 60, 0.78);
+    border: 1px solid var(--ws-border);
     border-radius: var(--radius-sm);
-    background: rgba(6, 18, 31, 0.92);
+    background: var(--ws-surface);
     box-shadow: var(--shadow-soft);
     padding: 0.625rem 0.75rem;
   }
 
   .workspace-section-title {
     margin: 0;
-    color: #FDFAF5;
+    color: var(--ws-text);
     font-size: 0.8125rem;
     font-weight: 780;
     line-height: 1.2;
@@ -1043,7 +1054,7 @@
     margin: 0.125rem 0 0;
     /* Light muted to pair with the near-white .workspace-section-title on this
        dark subheader variant. (See .panel-state-detail note above.) */
-    color: rgba(246, 251, 255, 0.72);
+    color: var(--ws-text-secondary);
     font-size: 0.75rem;
     line-height: 1.35;
   }
@@ -1053,10 +1064,10 @@
     align-items: center;
     gap: 0.375rem;
     min-height: 2rem;
-    border: 1px solid rgba(217, 138, 100, 0.3);
+    border: 1px solid color-mix(in srgb, var(--ws-accent) 30%, transparent);
     border-radius: var(--radius-xs);
-    background: rgba(217, 138, 100, 0.08);
-    color: #E6A585;
+    background: color-mix(in srgb, var(--ws-accent) 8%, transparent);
+    color: var(--ws-accent-pressed);
     padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
     font-weight: 700;
@@ -1088,8 +1099,8 @@
 
   .operator-mode-toggle [aria-pressed="true"],
   .operator-mode-toggle [aria-current="page"] {
-    background: rgba(217, 138, 100, 0.14);
-    color: #FDFAF5;
+    background: color-mix(in srgb, var(--ws-accent) 14%, transparent);
+    color: var(--ws-text);
   }
 
   .development-fixture-notice {
@@ -1138,10 +1149,10 @@
     align-items: center;
     gap: 0.3125rem;
     min-height: 1.75rem;
-    border: 1px solid rgba(214, 158, 56, 0.34);
+    border: 1px solid color-mix(in srgb, var(--orange) 34%, transparent);
     border-radius: var(--radius-sm);
-    background: rgba(20, 18, 15, 0.45);
-    color: #f6e7ba;
+    background: var(--ws-surface);
+    color: var(--state-warn-fg);
     padding: 0 0.5rem;
     text-decoration: none;
     white-space: nowrap;
@@ -1149,15 +1160,15 @@
   }
 
   .development-fixture-path-link:hover {
-    border-color: rgba(242, 201, 76, 0.68);
-    background: rgba(214, 158, 56, 0.16);
-    color: #fff5d0;
+    border-color: color-mix(in srgb, var(--orange) 68%, transparent);
+    background: color-mix(in srgb, var(--orange) 16%, transparent);
+    color: var(--state-warn-fg);
   }
 
   .development-fixture-path-link-active {
-    border-color: rgba(242, 201, 76, 0.78);
-    background: rgba(214, 158, 56, 0.24);
-    color: #fff8db;
+    border-color: color-mix(in srgb, var(--orange) 78%, transparent);
+    background: color-mix(in srgb, var(--orange) 24%, transparent);
+    color: var(--state-warn-fg);
   }
 
   .development-fixture-path-step {
@@ -1167,7 +1178,7 @@
     width: 1rem;
     height: 1rem;
     border-radius: var(--radius-xs);
-    background: rgba(242, 201, 76, 0.18);
+    background: color-mix(in srgb, var(--orange) 18%, transparent);
     font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     font-weight: 600;
@@ -1258,9 +1269,9 @@
   .workspace-header-card {
     min-width: 0;
     padding: 0.75rem 0.875rem;
-    border: 1px solid rgba(74, 68, 60, 0.95);
+    border: 1px solid var(--ws-border);
     border-radius: var(--radius-lg);
-    background: rgba(20, 18, 15, 0.62);
+    background: var(--ws-surface);
     box-shadow: var(--shadow-panel);
     transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
   }
@@ -1273,7 +1284,7 @@
 
   .workspace-header-card-value {
     margin-top: 0.5rem;
-    color: #FDFAF5;
+    color: var(--ws-text);
     font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
@@ -1295,13 +1306,9 @@
   }
 
   .plottool-chart-shell {
-    --foreground: 210 24% 92%;
-    --muted-foreground: 212 11% 70%;
-    --border: 211 14% 32%;
-    --secondary: 212 18% 17%;
-    border: 1px solid rgba(74, 68, 60, 0.95);
+    border: 1px solid var(--ws-border);
     border-radius: var(--radius-xl);
-    background: #14120F;
+    background: var(--ws-surface);
     padding: 0.875rem;
     box-shadow: var(--shadow-panel);
   }
@@ -1318,7 +1325,7 @@
     gap: 0.25rem;
     height: 14rem;
     padding: 1rem 0.75rem;
-    border: 1px solid rgba(74, 68, 60, 0.95);
+    border: 1px solid var(--ws-border);
     border-radius: var(--radius-lg);
     background: var(--surface-topbar);
   }

@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WorksheetGrid</title>
   <link rel="stylesheet" href="../../styles.css" />
-  <script src="../../_ds_bundle.js"></script>
+<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EC); font-family: var(--font-body);">
   <div style="max-width: 852px; margin: 0 auto;">
@@ -56,7 +57,7 @@
       });
       return <WorksheetGrid columns={columns} rows={7} cells={data} defaultActiveCell="D2" editable onCellCommit={onCommit} />;
     }
-    ReactDOM.render(<Demo />, document.getElementById("demo"));
+    ReactDOM.createRoot(document.getElementById("demo")).render(<Demo />);
   </script>
 </body>
 </html>

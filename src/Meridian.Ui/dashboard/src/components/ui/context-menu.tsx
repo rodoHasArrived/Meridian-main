@@ -87,7 +87,7 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
         role="menu"
         aria-label={label}
         className={cn(
-          "fixed z-[60] min-w-44 overflow-hidden rounded-[2px] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
+          "fixed z-[60] min-w-44 overflow-hidden rounded-[2px] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-float",
           className
         )}
         onKeyDown={handleMenuKeyDown}

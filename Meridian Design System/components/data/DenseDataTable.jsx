@@ -19,6 +19,7 @@ function inject() {
   injected = true;
   const css = `
 .dds-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);}
+.dds-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .dds{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .dds thead{position:sticky;top:0;z-index:1;background:var(--bg-medium,#EDEAE4);}
@@ -102,6 +103,8 @@ export function DenseDataTable({
   virtualizeThreshold = 500,
   rowHeight, // px — defaults to the density token --theme-row-height (32 compact · 40 cozy · 48 spacious)
   maxHeight = 560,
+  "aria-label": ariaLabel = "Data table",
+  "aria-labelledby": ariaLabelledBy,
 }) {
   inject();
   const effRow = useThemeRowHeight(rowHeight);
@@ -151,10 +154,14 @@ export function DenseDataTable({
   return (
     <div
       className="dds-wrap"
+      tabIndex={0}
+      role="region"
+      aria-label={ariaLabelledBy ? undefined : ariaLabel}
+      aria-labelledby={ariaLabelledBy}
       style={shouldVirtualize ? { maxHeight, overflowY: "auto" } : undefined}
       onScroll={shouldVirtualize ? (e) => setScrollTop(e.currentTarget.scrollTop) : undefined}
     >
-      <table className="dds">
+      <table className="dds" aria-label={ariaLabelledBy ? undefined : ariaLabel} aria-labelledby={ariaLabelledBy}>
         <thead>
           <tr>
             {selectable && (

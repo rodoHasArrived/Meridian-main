@@ -6,7 +6,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-chk-wrap{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.mds-chk-wrap{display:inline-flex;min-height:24px;align-items:center;gap:8px;cursor:pointer;user-select:none;}
 .mds-chk-wrap--disabled{opacity:.5;cursor:not-allowed;}
 .mds-chk-box{width:16px;height:16px;flex-shrink:0;border:1.5px solid var(--border,#E4E3DE);
   background:var(--bg-light,#FBFAF8);display:flex;align-items:center;justify-content:center;}
@@ -16,12 +16,13 @@ function inject() {
 .mds-chk-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#22252A);}
 .mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#5E666F);margin-top:1px;}
 
-.mds-tog-wrap{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.mds-tog-wrap{display:inline-flex;min-height:24px;padding:0;border:none;background:transparent;align-items:center;gap:10px;cursor:pointer;user-select:none;}
 .mds-tog-wrap--disabled{opacity:.5;cursor:not-allowed;}
+.mds-tog-wrap:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-tog-track{width:36px;height:20px;background:var(--border,#E4E3DE);position:relative;flex-shrink:0;}
 .mds-tog-track--on{background:var(--accent,#A85436);}
-.mds-tog-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:white;}
-.mds-tog-track--on .mds-tog-thumb{left:18px;}
+.mds-tog-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:var(--text-primary,#22252A);}
+.mds-tog-track--on .mds-tog-thumb{left:18px;background:var(--text-on-accent,#fff);}
 .mds-tog-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#22252A);}
 `;
   const el = document.createElement("style");
@@ -30,12 +31,12 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function Checkbox({ checked = false, onChange, label, hint, disabled = false }) {
+export function Checkbox({ checked = false, onChange, label, hint, disabled = false, id, "aria-label": ariaLabel, "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-invalid": ariaInvalid }) {
   inject();
   return (
     <label className={`mds-chk-wrap${disabled ? " mds-chk-wrap--disabled" : ""}`}>
       <div className={`mds-chk-box${checked ? " mds-chk-box--checked" : ""}`}>
-        <input type="checkbox" checked={checked} onChange={e => onChange?.(e.target.checked)}
+        <input id={id} type="checkbox" aria-label={ariaLabel} aria-labelledby={ariaLabelledBy} aria-describedby={ariaDescribedBy} aria-invalid={ariaInvalid} checked={checked} onChange={e => onChange?.(e.target.checked)}
           disabled={disabled} style={{ position:"absolute", opacity:0, width:0, height:0 }} />
         {checked && <span className="mds-chk-check">✓</span>}
       </div>
@@ -49,15 +50,16 @@ export function Checkbox({ checked = false, onChange, label, hint, disabled = fa
   );
 }
 
-export function Toggle({ checked = false, onChange, label, disabled = false }) {
+export function Toggle({ checked = false, onChange, label, disabled = false, id, "aria-label": ariaLabel, "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-invalid": ariaInvalid }) {
   inject();
   return (
-    <label className={`mds-tog-wrap${disabled ? " mds-tog-wrap--disabled" : ""}`}
-      onClick={() => !disabled && onChange?.(!checked)}>
-      <div className={`mds-tog-track${checked ? " mds-tog-track--on" : ""}`}>
-        <div className="mds-tog-thumb" />
-      </div>
+    <button id={id} type="button" role="switch" aria-checked={checked} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy} aria-describedby={ariaDescribedBy} aria-invalid={ariaInvalid}
+      disabled={disabled} className={`mds-tog-wrap${disabled ? " mds-tog-wrap--disabled" : ""}`}
+      onClick={() => onChange?.(!checked)}>
+      <span aria-hidden="true" className={`mds-tog-track${checked ? " mds-tog-track--on" : ""}`}>
+        <span className="mds-tog-thumb" />
+      </span>
       {label && <span className="mds-tog-label">{label}</span>}
-    </label>
+    </button>
   );
 }

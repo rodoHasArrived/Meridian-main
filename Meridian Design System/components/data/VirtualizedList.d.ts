@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface VirtualizedListProps<T = any> {
+export interface VirtualizedListProps<T = any> extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   /** Full data set — only the visible slice is rendered */
   items: T[];
   /** Fixed row height in px (required for scroll math). @default 34 */

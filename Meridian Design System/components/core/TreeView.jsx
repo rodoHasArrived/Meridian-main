@@ -14,6 +14,7 @@ function inject() {
   border-left:2px solid transparent;}
 .mds-tree-row:hover{background:var(--bg-hover,#F0EEE9);}
 .mds-tree-row--sel{background:var(--bg-active,#F2E3DB);border-left-color:var(--accent,#A85436);}
+.mds-tree-row--sel .mds-tree-meta{color:var(--text-secondary,#4E5258);}
 .mds-tree-row:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-tree-caret{width:14px;display:inline-flex;align-items:center;justify-content:center;
   color:var(--text-muted,#5E666F);font-size:10px;flex:0 0 auto;}

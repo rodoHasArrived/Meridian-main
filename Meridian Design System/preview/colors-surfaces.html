@@ -10,42 +10,44 @@
   body { margin: 0; padding: 24px; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
   .wrap { max-width: 1180px; margin: 0 auto; }
   .head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); }
-  .title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: #FFF; letter-spacing: -0.01em; }
+  .title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
   .sub   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.14em; }
 
   /* ----- stacked diagram ----- */
-  .stack { position: relative; height: 260px; margin-bottom: 28px; border-radius: 6px; overflow: hidden;
-           border: 1px solid var(--border-color); background: #100E0C; }
+  .stack { position: relative; height: 260px; margin-bottom: 28px; border-radius: var(--radius-card); overflow: hidden;
+           border: 1px solid var(--border-color); background: var(--bg-medium); }
   .layer { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between;
-           padding: 0 18px; font-family: var(--font-mono); font-size: 11px; color: #EFEBE4; }
+           padding: 0 18px; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); }
   .layer .lbl { display: flex; align-items: center; gap: 10px; }
   .layer .tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
   .layer .hex { color: var(--fg-muted); font-variant-numeric: tabular-nums; }
 
-  .l-bg    { top: 0;   height: 44px; background: #14120F; }
-  .l-card  { top: 44px; height: 44px; background: #201D19; box-shadow: inset 0 1px 0 #2E2A24; }
-  .l-panel { top: 88px; height: 44px; background: #252119; box-shadow: inset 0 1px 0 #302B25; }
-  .l-soft  { top:132px; height: 44px; background: #292520; box-shadow: inset 0 1px 0 #3A2E26; }
-  .l-raise { top:176px; height: 44px; background: #2E2A24; box-shadow: inset 0 1px 0 #3A342C; }
-  .l-bord  { top:220px; height: 40px; background: #4A443C; box-shadow: inset 0 1px 0 #443D34; }
+  .l-bg    { top: 0;   height: 44px; background: var(--bg); }
+  .l-card  { top: 44px; height: 44px; background: var(--bg-light); box-shadow: inset 0 1px 0 var(--bg-hover); }
+  .l-panel { top: 88px; height: 44px; background: var(--card-surface-raised); box-shadow: inset 0 1px 0 var(--chart-grid); }
+  .l-soft  { top:132px; height: 44px; background: var(--bg-medium); box-shadow: inset 0 1px 0 var(--bg-active); }
+  .l-raise { top:176px; height: 44px; background: var(--bg-hover); box-shadow: inset 0 1px 0 var(--border-hover); }
+  .l-bord  { top:220px; height: 40px; background: var(--border); box-shadow: inset 0 1px 0 var(--border-strong); }
+
+  .l-bord .tag, .l-bord .hex { color:var(--text-primary); }
 
   /* ----- grid ----- */
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .swatch { border-radius: 6px; border: 1px solid var(--border-color); padding: 14px 16px 14px; min-height: 128px;
+  .swatch { border-radius: var(--radius-card); border: 1px solid var(--border-color); padding: 14px 16px 14px; min-height: 128px;
             display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
   .swatch .row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .swatch .name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: #FFF; }
-  .swatch .hex  { font-family: var(--font-mono); font-size: 11px; color: #B5AEA4; font-variant-numeric: tabular-nums; }
-  .swatch .hsl  { font-family: var(--font-mono); font-size: 10px; color: #9A9289; margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .swatch .desc { font-size: 11px; line-height: 1.45; color: #D4CEC5; margin-top: 6px; max-width: 260px; }
+  .swatch .name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-primary); }
+  .swatch .hex  { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  .swatch .hsl  { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .swatch .desc { font-size: 11px; line-height: 1.45; color: var(--text-secondary); margin-top: 6px; max-width: 260px; }
   .swatch .meta { display: flex; gap: 10px; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); }
-  .swatch .meta .token { color: #D98A64; }
+  .swatch .meta .token { color: var(--accent-dim); }
   .swatch .depth { position: absolute; right: 10px; top: 10px; display: flex; gap: 2px; }
-  .swatch .depth i { width: 5px; height: 5px; border-radius: 1px; background: #4A443C; }
-  .swatch .depth i.on { background: #D98A64; }
+  .swatch .depth i { width: 5px; height: 5px; border-radius: 1px; background: var(--border); }
+  .swatch .depth i.on { background: var(--accent); }
 
   /* sample block inside each swatch */
-  .sample { margin-top: 10px; padding: 8px 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 10px; color: #EFEBE4;
+  .sample { margin-top: 10px; padding: 8px 10px; border-radius: var(--radius-card); font-family: var(--font-mono); font-size: 10px; color: var(--text-primary);
             display: flex; align-items: center; justify-content: space-between; font-variant-numeric: tabular-nums; }
   .sample .k { color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 9px; }
 
@@ -61,115 +63,115 @@
   <div class="head">
     <div>
       <div class="sub">Design tokens · color · surfaces</div>
-      <div class="title">Surface scale — depth from app root to elevated card</div>
+      <div class="title">Surface scale — structure from canvas to panel</div>
     </div>
-    <div class="sub">6 tiers · deep navy · WCAG AA with <span style="color:#D98A64;">#EFEBE4</span> foreground</div>
+    <div class="sub">6 roles · theme-aware material · measured text contrast</div>
   </div>
 
   <!-- stacked elevation -->
   <div class="stack" aria-hidden="true">
     <div class="layer l-bg">
       <div class="lbl"><span class="tag">01 · base</span><span>background</span></div>
-      <span class="hex">#14120F · 215 42% 6%</span>
+      <span class="hex">Resolved from the active theme</span>
     </div>
     <div class="layer l-card">
       <div class="lbl"><span class="tag">02 · card</span><span>card</span></div>
-      <span class="hex">#201D19 · 215 34% 9%</span>
+      <span class="hex">Resolved from the active theme</span>
     </div>
     <div class="layer l-panel">
       <div class="lbl"><span class="tag">03 · panel</span><span>panel-strong</span></div>
-      <span class="hex">#252119 · 213 48% 12%</span>
+      <span class="hex">Resolved from the active theme</span>
     </div>
     <div class="layer l-soft">
       <div class="lbl"><span class="tag">04 · soft</span><span>panel-soft</span></div>
-      <span class="hex">#292520 · 213 36% 15%</span>
+      <span class="hex">Resolved from the active theme</span>
     </div>
     <div class="layer l-raise">
       <div class="lbl"><span class="tag">05 · raise</span><span>surface-raise</span></div>
-      <span class="hex">#2E2A24 · 213 40% 18%</span>
+      <span class="hex">Resolved from the active theme</span>
     </div>
     <div class="layer l-bord">
       <div class="lbl"><span class="tag">06 · border</span><span>border</span></div>
-      <span class="hex">#4A443C · 208 38% 22%</span>
+      <span class="hex">Resolved from the active theme</span>
     </div>
   </div>
 
   <!-- detailed swatches -->
   <div class="grid">
 
-    <div class="swatch" style="background:#14120F;">
+    <div class="swatch" style="background:var(--bg);">
       <div class="depth"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
       <div>
-        <div class="row1"><span class="name">background</span><span class="hex">#14120F</span></div>
+        <div class="row1"><span class="name">background</span><span class="hex">Resolved from the active theme</span></div>
         <div class="hsl">hsl 215 42% 6%</div>
         <div class="desc">App root canvas. Use for the body behind all windows and the letterbox in fixed-size views.</div>
       </div>
       <div class="meta"><span class="token">--background</span><span>.bg-app</span></div>
     </div>
 
-    <div class="swatch" style="background:#201D19;">
+    <div class="swatch" style="background:var(--bg-light);">
       <div class="depth"><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
       <div>
-        <div class="row1"><span class="name">card</span><span class="hex">#201D19</span></div>
+        <div class="row1"><span class="name">card</span><span class="hex">Resolved from the active theme</span></div>
         <div class="hsl">hsl 215 34% 9%</div>
         <div class="desc">Primary content container: tables, chart cards, form surfaces. Sits directly on background.</div>
       </div>
       <div class="meta"><span class="token">--card</span><span>.bg-card · .panel-surface</span></div>
     </div>
 
-    <div class="swatch" style="background:#252119;">
+    <div class="swatch" style="background:var(--card-surface-raised);">
       <div class="depth"><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
       <div>
-        <div class="row1"><span class="name">panel-strong</span><span class="hex">#252119</span></div>
+        <div class="row1"><span class="name">panel-strong</span><span class="hex">Resolved from the active theme</span></div>
         <div class="hsl">hsl 213 48% 12%</div>
         <div class="desc">Heavy panels: sidebar, toolbars, chrome. One step up from card with a touch more saturation.</div>
       </div>
       <div class="meta"><span class="token">--panel-strong</span><span>.bg-panel</span></div>
     </div>
 
-    <div class="swatch" style="background:#292520;">
+    <div class="swatch" style="background:var(--bg-medium);">
       <div class="depth"><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div>
       <div>
-        <div class="row1"><span class="name">panel-soft</span><span class="hex">#292520</span></div>
+        <div class="row1"><span class="name">panel-soft</span><span class="hex">Resolved from the active theme</span></div>
         <div class="hsl">hsl 213 36% 15%</div>
         <div class="desc">Section fills inside cards: KPI inserts, code blocks, quiet emphasis. Hover state for rows.</div>
       </div>
-      <div class="sample" style="background:#292520; border: 1px solid #4A443C;">
+      <div class="sample" style="background:var(--bg-medium); border: 1px solid var(--border);">
         <span class="k">row · hover</span>
-        <span>187.42 <span style="color:#5FA37C;">+1.74%</span></span>
+        <span>187.42 <span style="color:var(--green-dim);">+1.74%</span></span>
       </div>
     </div>
 
-    <div class="swatch" style="background:#2E2A24;">
+    <div class="swatch" style="background:var(--bg-hover);">
       <div class="depth"><i></i><i></i><i></i><i></i><i class="on"></i><i></i></div>
       <div>
-        <div class="row1"><span class="name">surface-raise</span><span class="hex">#2E2A24</span></div>
+        <div class="row1"><span class="name">surface-raise</span><span class="hex">Resolved from the active theme</span></div>
         <div class="hsl">hsl 213 40% 18%</div>
         <div class="desc">Buttons, chips, popovers, tooltips, selected states. Highest reachable tier before borders.</div>
       </div>
-      <div class="sample" style="background:#2E2A24; border: 1px solid #736B60;">
+      <div class="sample" style="background:var(--bg-hover); border: 1px solid var(--border-strong);">
         <span class="k">chip · active</span>
-        <span style="color:#D98A64;">DAILY MAX ▾</span>
+        <span style="color:var(--accent-dim);">DAILY MAX ▾</span>
       </div>
     </div>
 
-    <div class="swatch" style="background:#201D19;">
+    <div class="swatch" style="background:var(--bg-light);">
       <div class="depth"><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
       <div>
-        <div class="row1"><span class="name">border</span><span class="hex">#4A443C</span></div>
+        <div class="row1"><span class="name">border</span><span class="hex">Resolved from the active theme</span></div>
         <div class="hsl">hsl 208 38% 22%</div>
-        <div class="desc">Default 1 px hairline. Use <code style="color:#D98A64;">#736B60</code> for higher-contrast emphasis borders.</div>
+        <div class="desc">Default 1 px hairline. Use <code style="color:var(--accent-dim);">#736B60</code> for higher-contrast emphasis borders.</div>
       </div>
-      <div class="sample" style="background:#201D19; border: 1px solid #4A443C;">
+      <div class="sample" style="background:var(--bg-light); border: 1px solid var(--border);">
         <span class="k">border · default</span>
-        <span style="color:#B5AEA4;">1px · #4A443C</span>
+        <span style="color:var(--text-secondary);">1px · #4A443C</span>
       </div>
     </div>
   </div>
 
   <div class="foot">
     <span>Tokens resolve from HSL via Tailwind config</span>
-    <span>Foreground #EFEBE4 on #14120F → <span style="color:#5FA37C;">13.2 : 1</span> · AAA</span>
+    <span>Foreground #EFEBE4 on #14120F → <span style="color:var(--green-dim);">13.2 : 1</span> · AAA</span>
   </div>
 </div>
 </main>
