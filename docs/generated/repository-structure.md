@@ -11593,6 +11593,14 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Core.UnitTests.csproj
 │   │   └── README.md
+│   ├── Meridian.Demo.Tests
+│   │   ├── Demo
+│   │   │   ├── DemoWorkspaceGuardTests.cs
+│   │   │   ├── DemoWorkspaceSeederTests.cs
+│   │   │   ├── DemoWorkspaceSmokeTests.cs
+│   │   │   └── DemoWorkstationAssetTreeTests.cs
+│   │   ├── GlobalUsings.cs
+│   │   └── Meridian.Demo.Tests.csproj
 │   ├── Meridian.DesignModules.Tests
 │   │   ├── DesignModulePhysicalConformanceTests.cs
 │   │   └── Meridian.DesignModules.Tests.csproj
@@ -12286,11 +12294,6 @@ Meridian-main
 │   │   │   │       └── SequenceErrorTrackerTests.cs
 │   │   │   ├── CredentialStoreExtensionsTests.cs
 │   │   │   └── MarketEventFilterTests.cs
-│   │   ├── Demo
-│   │   │   ├── DemoWorkspaceGuardTests.cs
-│   │   │   ├── DemoWorkspaceSeederTests.cs
-│   │   │   ├── DemoWorkspaceSmokeTests.cs
-│   │   │   └── DemoWorkstationAssetTreeTests.cs
 │   │   ├── Deposits
 │   │   │   └── DepositProjectionServiceTests.cs
 │   │   ├── Derivatives
@@ -14384,6 +14387,7 @@ Meridian-main
 │   │   ├── test_consumer_certification_processes.py
 │   │   ├── test_consumer_predecessor.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_demo_smoke_workflow.py
 │   │   ├── test_dependency_maintenance.py
 │   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
