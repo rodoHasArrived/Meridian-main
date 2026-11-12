@@ -1,12 +1,11 @@
-import { useEffect, useMemo } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import {
   CompareSheet,
   CompareTray,
   SelectionCompareProvider,
-  useSelectionCompare
+  useSelectionCompare,
+  type CompareSheetColumn
 } from "@/components/charts/SelectionCompare";
-import type { CompareSheetColumn } from "@/components/charts/SelectionCompare";
 import { useStrategyEquityPathCompare } from "@/screens/strategy-screen.equity-paths.view-model";
 import type { StrategyRunRecord } from "@/types";
 

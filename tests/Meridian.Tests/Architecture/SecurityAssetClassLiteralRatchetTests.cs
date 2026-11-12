@@ -38,6 +38,9 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // mutation table must cover exactly the ledgered codes.
     private static readonly string[] KnownDispatchSites =
     [
+        // Generated from the binding table; SecurityFlatCodecGenerationTests holds its class list to
+        // the table and the table to the catalog.
+        "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.GeneratedDecode.cs",
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
         "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
         "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
@@ -45,6 +48,9 @@ public sealed class SecurityAssetClassLiteralRatchetTests
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
+        // The flat-codec binding table: SecurityFlatCodecGenerationTests requires every class it
+        // lists to be a declared catalog class and its rows to write exactly the schema's keys.
+        "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs",
         "src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs",

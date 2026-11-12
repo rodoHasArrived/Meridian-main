@@ -1333,6 +1333,7 @@ Meridian-main
 │   │   │   ├── identity_access.json
 │   │   │   ├── ledger.json
 │   │   │   ├── money_market.json
+│   │   │   ├── operator_triage.json
 │   │   │   ├── public.json
 │   │   │   ├── reporting.json
 │   │   │   └── security_master.json
@@ -1907,6 +1908,7 @@ Meridian-main
 │   │   │   │   ├── identity_access.mmd
 │   │   │   │   ├── ledger.mmd
 │   │   │   │   ├── money_market.mmd
+│   │   │   │   ├── operator_triage.mmd
 │   │   │   │   ├── public.mmd
 │   │   │   │   ├── reporting.mmd
 │   │   │   │   └── security_master.mmd
@@ -1918,6 +1920,7 @@ Meridian-main
 │   │   │   │   ├── identity_access.md
 │   │   │   │   ├── ledger.md
 │   │   │   │   ├── money_market.md
+│   │   │   │   ├── operator_triage.md
 │   │   │   │   ├── public.md
 │   │   │   │   ├── reporting.md
 │   │   │   │   └── security_master.md
@@ -5107,6 +5110,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterMapping.EquityCapital.cs
+│   │   │   ├── SecurityMasterMapping.GeneratedDecode.cs
 │   │   │   ├── SecurityMasterMapping.ReferenceHomes.cs
 │   │   │   ├── SecurityMasterMapping.SchemaBound.cs
 │   │   │   ├── SecurityMasterOperationalReadinessService.cs
@@ -5698,6 +5702,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.EquityCapital.cs
 │   │   │   ├── SecurityAssetTermFormModel.cs
+│   │   │   ├── SecurityAssetTermsCodecBindings.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
 │   │   │   ├── SecurityCanonicalAssetHomes.cs
@@ -6527,6 +6532,7 @@ Meridian-main
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.fs
 │   │   ├── Interop.SecurityMaster.fs
+│   │   ├── Interop.SecurityMaster.GeneratedWriter.fs
 │   │   ├── Interop.SecurityStructures.fs
 │   │   ├── Meridian.FSharp.fsproj
 │   │   └── README.md
@@ -9399,6 +9405,7 @@ Meridian-main
 │   │   │   │   ├── startup-appearance.test.ts
 │   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.assets.test.ts
 │   │   │   │   ├── vite-config.font-licenses.test.ts
 │   │   │   │   ├── vite-config.scenarios.test.ts
 │   │   │   │   ├── vite-config.test.ts
@@ -12690,6 +12697,8 @@ Meridian-main
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityEquityCapitalContractionTests.cs
 │   │   │   ├── SecurityExactRateScalarContractionReplayTests.cs
+│   │   │   ├── SecurityFlatCodecGenerationTests.cs
+│   │   │   ├── SecurityFlatCodecGenerator.cs
 │   │   │   ├── SecurityGovernancePayloadContractTests.cs
 │   │   │   ├── SecurityGovernancePayloadPostgresTests.cs
 │   │   │   ├── SecurityIdentifierHistoryPostgresTests.cs
@@ -13407,6 +13416,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
+│   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewEndpointTests.cs
 │   │   │   ├── WorkstationMaintenanceTableExportTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationPersonalTableViewStoreTests.cs

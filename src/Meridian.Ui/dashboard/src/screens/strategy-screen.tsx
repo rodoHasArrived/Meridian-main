@@ -17,7 +17,6 @@ import { formatNumber } from "@/lib/format";
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
-import { buildStrategyEquityPathCompareItem } from "@/screens/strategy-screen.equity-paths.view-model";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
-import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
+import {
+  buildStrategyEquityPathCompareItem,
+  useStrategyRunLibraryViewModel
+} from "@/screens/strategy-screen.view-model";
 import type {
   StrategyComparisonTableRow,
   StrategyDiffChangeRow,

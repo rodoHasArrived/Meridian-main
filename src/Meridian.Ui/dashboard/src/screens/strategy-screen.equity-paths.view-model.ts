@@ -3,10 +3,10 @@ import * as workstationApi from "@/lib/api";
 import { describeApiError, isApiError } from "@/lib/api-errors";
 import { rebaseToFirst, sampleEvenly } from "@/components/charts/compare-series";
 import type { CompareItem, CompareSeriesState } from "@/components/charts/SelectionCompare";
-import { formatMoney, formatSignedPercent, formatText } from "@/screens/strategy-screen.formatters";
 import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
-import type { EquityCurveSummary, StrategyRunRecord } from "@/types";
+import { formatMoney, formatSignedPercent, formatText } from "@/screens/strategy-screen.formatters";
 import type { StrategyRunLibraryServices } from "@/screens/strategy-screen.view-model";
+import type { EquityCurveSummary, StrategyRunRecord } from "@/types";
 
 // The existing equity-curve client (already used by the Portfolio drill-in); no new endpoint.
 export function defaultGetRunEquityCurve(runId: string): Promise<EquityCurveSummary> {

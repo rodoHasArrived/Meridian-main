@@ -40,16 +40,6 @@ import type {
 import { formatCount as formatCountValue } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
-export {
-  STRATEGY_EQUITY_PATH_COMPARE_MAX, STRATEGY_EQUITY_PATH_POINT_COUNT,
-  STRATEGY_EQUITY_PATH_CATEGORIES, STRATEGY_EQUITY_PATH_CATEGORY_LABELS, STRATEGY_EQUITY_PATH_BASIS_TEXT,
-  buildStrategyEquityPathCompareItem, buildStrategyEquityPathView,
-  describeStrategyEquityPathFailureCause, describeStrategyEquityPathFailure, withStrategyEquityPathRunStatus,
-  strategyEquityPathIndexFractionDigits, formatStrategyEquityPathIndex, formatStrategyEquityPathTotalReturn,
-  useStrategyEquityPathCompare
-} from "@/screens/strategy-screen.equity-paths.view-model";
-export type { StrategyEquityPathLoadState, StrategyEquityPathView } from "@/screens/strategy-screen.equity-paths.view-model";
-
 export type StrategyCommand = "compare" | "diff" | "history";
 export type StrategyPlotToolView = "workspace" | "statistics";
 
@@ -1143,6 +1133,8 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledgement: updatePromotionAcknowledgement
   };
 }
+
+export * from "@/screens/strategy-screen.equity-paths.view-model";
 
 export function buildStrategyRunLibraryState({
   runs,
