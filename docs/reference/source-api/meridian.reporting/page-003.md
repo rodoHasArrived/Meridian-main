@@ -655,7 +655,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingReconciliationBreakEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:13](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L13).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:14](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L14).
 
 Exact break evidence retained at the reconciliation/reporting boundary. Missing source measures remain explicit through ReconciliationBreakMeasureDto.UnavailableReason.
 
@@ -667,7 +667,7 @@ public sealed record ReportingReconciliationBreakEvidence(string BreakId, Immuta
 
 Qualified name: <code>Meridian.Reporting.ReportingReconciliationCompletionEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:161](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L161).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:162](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L162).
 
 Immutable result emitted by a server-owned close/reconciliation workflow. The reporting retention command binds this result to a fresh authoritative source checkpoint.
 
@@ -679,14 +679,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingReconciliationCompletionEvidence(string CompletionCheckpointId, string CompletionCheckpointHash, DateTimeOffset CompletedAtUtc, bool HasOpenBreaks, ImmutableArray&lt;string&gt; EvidenceIds, ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence) : this(CompletionCheckpointId, CompletionCheckpointHash, CompletedAtUtc, HasOpenBreaks, EvidenceIds, BreakEvidence, CloseWorkflowCompletion : null);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:174](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L174) | Binary-compatibility constructor for consumers compiled before committed-close evidence became part of reconciliation completion. |
-| <code>public void Deconstruct(out string CompletionCheckpointId, out string CompletionCheckpointHash, out DateTimeOffset CompletedAtUtc, out bool HasOpenBreaks, out ImmutableArray&lt;string&gt; EvidenceIds, out ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:192](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L192) |  |
+| <code>public ReportingReconciliationCompletionEvidence(string CompletionCheckpointId, string CompletionCheckpointHash, DateTimeOffset CompletedAtUtc, bool HasOpenBreaks, ImmutableArray&lt;string&gt; EvidenceIds, ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence) : this(CompletionCheckpointId, CompletionCheckpointHash, CompletedAtUtc, HasOpenBreaks, EvidenceIds, BreakEvidence, CloseWorkflowCompletion : null);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:175](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L175) | Binary-compatibility constructor for consumers compiled before committed-close evidence became part of reconciliation completion. |
+| <code>public void Deconstruct(out string CompletionCheckpointId, out string CompletionCheckpointHash, out DateTimeOffset CompletedAtUtc, out bool HasOpenBreaks, out ImmutableArray&lt;string&gt; EvidenceIds, out ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:193](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L193) |  |
 
 ## ReportingReconciliationEvidenceReceipt
 
 Qualified name: <code>Meridian.Reporting.ReportingReconciliationEvidenceReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:49](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L49).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:50](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L50).
 
 Durable result of a reconciliation/close process. Reporting can consume only an exact retained receipt bound to the same authoritative source checkpoint; it must never synthesize one.
 
@@ -698,14 +698,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceReceipt(string TenantId, string OrganizationId, string? CompanyId, string FundId, string LedgerBookId, string AccountingPeriodId, string AccountingBasis, DateOnly AsOfDate, string SourceCheckpointId, string SourceCheckpointHash, string ReconciliationCheckpointId, string ReconciliationCheckpointHash, DateTimeOffset ReconciledAtUtc, bool HasOpenBreaks, ImmutableArray&lt;string&gt; EvidenceIds, string? CompletionCheckpointId = null, string? CompletionCheckpointHash = null, ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence = default) : this(TenantId, OrganizationId, CompanyId, FundId, LedgerBookId, AccountingPeriodId, AccountingBasis, AsOfDate, SourceCheckpointId, SourceCheckpointHash, ReconciliationCheckpointId, ReconciliationCheckpointHash, ReconciledAtUtc, HasOpenBreaks, EvidenceIds, CompletionCheckpointId, CompletionCheckpointHash, BreakEvidence, CloseWorkflowCompletion : null);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:74](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L74) | Binary-compatibility constructor for consumers compiled before committed-close evidence became part of the retained receipt. |
-| <code>public void Deconstruct(out string TenantId, out string OrganizationId, out string? CompanyId, out string FundId, out string LedgerBookId, out string AccountingPeriodId, out string AccountingBasis, out DateOnly AsOfDate, out string SourceCheckpointId, out string SourceCheckpointHash, out string ReconciliationCheckpointId, out string ReconciliationCheckpointHash, out DateTimeOffset ReconciledAtUtc, out bool HasOpenBreaks, out ImmutableArray&lt;string&gt; EvidenceIds, out string? CompletionCheckpointId, out string? CompletionCheckpointHash, out ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:116](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L116) |  |
+| <code>public ReportingReconciliationEvidenceReceipt(string TenantId, string OrganizationId, string? CompanyId, string FundId, string LedgerBookId, string AccountingPeriodId, string AccountingBasis, DateOnly AsOfDate, string SourceCheckpointId, string SourceCheckpointHash, string ReconciliationCheckpointId, string ReconciliationCheckpointHash, DateTimeOffset ReconciledAtUtc, bool HasOpenBreaks, ImmutableArray&lt;string&gt; EvidenceIds, string? CompletionCheckpointId = null, string? CompletionCheckpointHash = null, ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence = default) : this(TenantId, OrganizationId, CompanyId, FundId, LedgerBookId, AccountingPeriodId, AccountingBasis, AsOfDate, SourceCheckpointId, SourceCheckpointHash, ReconciliationCheckpointId, ReconciliationCheckpointHash, ReconciledAtUtc, HasOpenBreaks, EvidenceIds, CompletionCheckpointId, CompletionCheckpointHash, BreakEvidence, CloseWorkflowCompletion : null);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:75](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L75) | Binary-compatibility constructor for consumers compiled before committed-close evidence became part of the retained receipt. |
+| <code>public void Deconstruct(out string TenantId, out string OrganizationId, out string? CompanyId, out string FundId, out string LedgerBookId, out string AccountingPeriodId, out string AccountingBasis, out DateOnly AsOfDate, out string SourceCheckpointId, out string SourceCheckpointHash, out string ReconciliationCheckpointId, out string ReconciliationCheckpointHash, out DateTimeOffset ReconciledAtUtc, out bool HasOpenBreaks, out ImmutableArray&lt;string&gt; EvidenceIds, out string? CompletionCheckpointId, out string? CompletionCheckpointHash, out ImmutableArray&lt;ReportingReconciliationBreakEvidence&gt; BreakEvidence);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:117](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L117) |  |
 
 ## ReportingReconciliationEvidenceRecoveryRequiredException
 
 Qualified name: <code>Meridian.Reporting.ReportingReconciliationEvidenceRecoveryRequiredException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:234](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L234).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:235](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L235).
 
 The retained evidence is authentic legacy data but cannot certify current reporting without a new governed reconciliation/close receipt. Adapters throw this instead of misclassifying a verified upgrade condition as corruption or silently synthesizing missing item evidence.
 
@@ -717,13 +717,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceRecoveryRequiredException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:236](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L236) |  |
+| <code>public ReportingReconciliationEvidenceRecoveryRequiredException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:237](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L237) |  |
 
 ## ReportingReconciliationEvidenceValidation
 
 Qualified name: <code>Meridian.Reporting.ReportingReconciliationEvidenceValidation</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:254](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L254).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:255](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L255).
 
 Canonical receipt construction and validation shared by application, development, and durable storage adapters. Validation fails closed on malformed scope, hashes, timestamps, or evidence.
 
@@ -735,15 +735,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ReportingReconciliationEvidenceReceipt CreateReceipt(ReportingAuthoritativeSourceCheckpoint source, ReportingReconciliationCompletionEvidence completion);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:256](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L256) |  |
-| <code>public static void ValidateCompletion(ReportingReconciliationCompletionEvidence completion);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:327](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L327) |  |
-| <code>public static void Validate(ReportingReconciliationEvidenceReceipt receipt);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:353](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L353) |  |
-| <code>public static ReportingCloseWorkflowCompletionEvidence RequireCommittedCloseWorkflow(ReportingReconciliationEvidenceReceipt receipt);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:440](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L440) | Requires the retained close receipt to prove that the exact scoped Operations Continuity workflow committed its approval, checklist, close package, and hash-chained close audit. |
-| <code>public static bool HasSameKey(ReportingReconciliationEvidenceReceipt left, ReportingReconciliationEvidenceReceipt right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:453](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L453) |  |
-| <code>public static bool MatchesKey(ReportingReconciliationEvidenceReceipt receipt, string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:469](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L469) |  |
-| <code>public static bool SameReceipt(ReportingReconciliationEvidenceReceipt left, ReportingReconciliationEvidenceReceipt right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:492](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L492) |  |
-| <code>public static ReportingReconciliationBreakEvidence CreateBreakEvidence(ReconciliationBreakQueueItem item, IReadOnlyList&lt;string&gt;? blockedOutputs = null);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:507](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L507) |  |
-| <code>public static bool IsLowercaseSha256(string? value) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:545](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L545) |  |
+| <code>public static ReportingReconciliationEvidenceReceipt CreateReceipt(ReportingAuthoritativeSourceCheckpoint source, ReportingReconciliationCompletionEvidence completion);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:257](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L257) |  |
+| <code>public static void ValidateCompletion(ReportingReconciliationCompletionEvidence completion);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:337](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L337) |  |
+| <code>public static void Validate(ReportingReconciliationEvidenceReceipt receipt);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:363](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L363) |  |
+| <code>public static ReportingCloseWorkflowCompletionEvidence RequireCommittedCloseWorkflow(ReportingReconciliationEvidenceReceipt receipt);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:450](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L450) | Requires the retained close receipt to prove that the exact scoped Operations Continuity workflow committed its approval, checklist, close package, and hash-chained close audit. |
+| <code>public static bool HasSameKey(ReportingReconciliationEvidenceReceipt left, ReportingReconciliationEvidenceReceipt right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:463](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L463) |  |
+| <code>public static bool MatchesKey(ReportingReconciliationEvidenceReceipt receipt, string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:479](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L479) |  |
+| <code>public static bool SameReceipt(ReportingReconciliationEvidenceReceipt left, ReportingReconciliationEvidenceReceipt right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:502](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L502) |  |
+| <code>public static ReportingReconciliationBreakEvidence CreateBreakEvidence(ReconciliationBreakQueueItem item, IReadOnlyList&lt;string&gt;? blockedOutputs = null);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:517](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L517) |  |
+| <code>public static bool IsLowercaseSha256(string? value) =&gt; …;</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:555](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L555) |  |
 
 ## ReportingReleaseAuthorizationResult
 

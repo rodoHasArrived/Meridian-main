@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.BondProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L27).
+
+```csharp
+public sealed record BondProjectionRow(Guid SecurityId, string DisplayName, string Currency, string PrimaryIdentifierValue, string? IssuerName, string? Seniority, DateOnly? MaturityDate, string? LifecycleStat, DateOnly? IssueDate, DateOnly? CallDate, bool? IsCallable, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version, string? Subclass = null, decimal? Par = null, string? PaymentFrequency = null, DateOnly? LegalFinalMaturity = null, DateOnly? PreRefundDate = null, DateOnly? MandatoryPutDate = null, JsonElement? CanonicalTerms = null, DateOnly? EffectiveTo = null);
+```
+
+## CertificateOfDepositProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CertificateOfDepositProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record CertificateOfDepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string IssuerName, DateOnly Maturity, decimal? CouponRate, DateOnly? CallableDate, string? DayCount, string PrimaryIdentifierValue, long Version);
+```
+
+## CommodityProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CommodityProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string CommodityType, string? Denomination, decimal? ContractSize, string? ExchangeCode, string? DeliveryCountry, string PrimaryIdentifierValue, long Version);
+```
+
 ## ConnectionLease
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
@@ -25,6 +55,32 @@ Declared public members:
 | <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
 | <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
+
+## CorporateActionCashDividendPostingLease
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:13](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L13).
+
+Server-created, invocation-bound authority for one exact native candidate. Its internal constructor and sealed type prevent HTTP inputs from manufacturing a posting capability.
+
+```csharp
+public sealed class CorporateActionCashDividendPostingLease
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionCashDividendAttestationDto Attestation { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:41](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L41) |  |
+| <code>public CorporateActionCaseAccountingProjectionDto Projection { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:42](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L42) |  |
+| <code>public CashDividendAttestationDeclarationDto Declaration { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:43](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L43) |  |
+| <code>public async Task EnsureCurrentAsync(string actor, Guid ledgerBookId, Guid periodId, string draftedCandidateFingerprint, string postingIntentHash, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:46](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L46) | Checks the exact candidate and rereads native authority within the held transaction. |
+| <code>public Task EnsureCanonicalInstrumentAsync(string? symbol, Guid securityId, long expectedSecurityVersion, DateTimeOffset accountingTimestamp, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:61](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L61) |  |
+| <code>public async Task AppendJournalAsync(ITransactionalLedgerJournalStore store, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:73](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L73) |  |
+| <code>public async Task&lt;LedgerJournalEntryRecord?&gt; GetJournalAsync(ITransactionalLedgerJournalStore store, Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:82](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L82) |  |
+| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:94](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L94) |  |
+| <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:107](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L107) |  |
 
 ## CorporateActionInboxExportSource
 
@@ -243,6 +299,34 @@ Declared public members:
 | <code>Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L8) |  |
 | <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L9) |  |
 | <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L10) |  |
+
+## ICorporateActionCashDividendAccountingStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ICorporateActionCashDividendAccountingStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L9).
+
+Native economic attestation authority. Reservations commit before journal effects and never disappear on an uncertain or failed posting; a current lease serializes posting with withdrawal.
+
+```csharp
+public interface ICorporateActionCashDividendAccountingStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CashDividendAttestationDeclarationDto?&gt; GetCashDividendDeclarationAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L11) |  |
+| <code>Task&lt;CashDividendAttestationDeclarationStateDto&gt; GetCashDividendDeclarationStateAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L14) |  |
+| <code>Task&lt;CashDividendAttestationDeclarationResultDto&gt; ChangeCashDividendDeclarationAsync(ChangeCashDividendAttestationDeclarationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L17) |  |
+| <code>Task&lt;CashDividendAttestationDeclarationResultDto?&gt; GetCashDividendDeclarationReceiptAsync(ChangeCashDividendAttestationDeclarationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L20) |  |
+| <code>Task&lt;CorporateActionCashDividendAttestationDto?&gt; GetCashDividendAttestationAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L23) |  |
+| <code>Task&lt;CorporateActionCashDividendPostingDto?&gt; GetCashDividendPostingAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:26](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L26) |  |
+| <code>Task&lt;CorporateActionCashDividendPostedProofDto?&gt; GetCashDividendPostedProofAsync(Guid journalEntryId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L29) |  |
+| <code>Task&lt;CorporateActionCashDividendAttestationResultDto?&gt; GetCashDividendAttestationReceiptAsync(Guid caseId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L32) |  |
+| <code>Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CorporateActionCashDividendAttestationDto attestation, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L35) |  |
+| <code>Task&lt;CorporateActionCashDividendPostingResultDto&gt; ExecuteAttestedCashDividendPostingAsync(PostAttestedCorporateActionCashDividendRequestDto request, Func&lt;CorporateActionCashDividendPostingLease, CancellationToken, Task&lt;CorporateActionCashDividendPostingDto&gt;&gt; post, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:42](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L42) |  |
+| <code>Task&lt;CorporateActionCashDividendCaseFactsDto&gt; GetCashDividendCaseFactsAsync(Guid caseId, string tenantId, string companyId, long expectedCaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionCashDividendAccountingStore.cs#L48) |  |
 
 ## ICorporateActionOperationsStore
 
@@ -838,83 +922,3 @@ Declared public members:
 | <code>Task&lt;SwapProjectionRow?&gt; GetSwapAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L8) |  |
 | <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetBySwapTypeAsync(string swapType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L9) |  |
 | <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L10) |  |
-
-## MoneyMarketFundProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.MoneyMarketFundProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record MoneyMarketFundProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifierValue, long Version);
-```
-
-## OperatorOverrideCanonicalVersionConflictException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideCanonicalVersionConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L101).
-
-Thrown when an overlay patch was submitted for a canonical Security Master version that no longer matches the stream version observed while the patch transaction held the stream lock.
-
-```csharp
-public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L103) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L111) |  |
-| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:112](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L112) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:113](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L113) |  |
-
-## OperatorOverrideDecision
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L38).
-
-Internal store command for an operator-override approval decision. Unlike the public OperatorOverrideDecisionRequest, it carries the Reviewer identity that the API layer derives from the authenticated principal before calling the store.
-
-```csharp
-public sealed record OperatorOverrideDecision(SecurityOverrideApprovalStatusDto Decision, string Reviewer, string? Comment = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RestoresPriorDecision { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L49) | True only when the decision re-records a decision an independent reviewer already made (a compensating revert or a discard restored the overlay to values that reviewer decided). Restorations are exempt from the self-approval rule because they assert no new review; the governance log records the flag. API callers never set it. |
-
-## OperatorOverrideReviewRules
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideReviewRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L53).
-
-The independent-review rule for operator-override decisions.
-
-```csharp
-public static class OperatorOverrideReviewRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsSelfApproval(string? stagedBy, string? reviewer) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L59) | Whether reviewer is the actor who staged the overlay&#x27;s current values. Actor identities compare case-insensitively after trimming. |
-| <code>public static void EnsureIndependentReview(Guid securityId, OperatorOverridesDto overlay, OperatorOverrideDecision decision);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L69) | Fails when decision approves values the reviewer staged themselves. A rejection (withdrawing one&#x27;s own staged values) and a restoration of a prior independent decision are allowed. |
-
-## OperatorOverridesDecisionPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
-
-OperatorOverrides / Approved or Rejected: a recorded review decision.
-
-```csharp
-public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
-```

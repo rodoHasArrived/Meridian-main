@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAccountingPostingCandidatePostService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:21](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L21).
+
+Defines posting of reviewed accounting candidates through the governed ledger boundary.
+
+```csharp
+public interface IAccountingPostingCandidatePostService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostCandidateAsync(PostPostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L23) |  |
+
 ## IAccountingPostingCandidateService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidateService</code>. Kind: `interface`.
@@ -929,21 +947,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowStartAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:65](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L65) |  |
-
-## IOperationsStatusDerivationService
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.IOperationsStatusDerivationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:9](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L9).
-
-Derives workflow status from operations continuity state and control evidence.
-
-```csharp
-public interface IOperationsStatusDerivationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:11](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L11) |  |

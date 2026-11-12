@@ -470,7 +470,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.IReportingReconciliationEvidenceRetentionStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:243](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L243).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:244](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L244).
 
 Append-only retention boundary used by the governed reconciliation completion path.
 
@@ -482,13 +482,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:245](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L245) |  |
+| <code>ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:246](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L246) |  |
 
 ## IReportingReconciliationEvidenceStore
 
 Qualified name: <code>Meridian.Reporting.IReportingReconciliationEvidenceStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:213](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L213).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:214](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L214).
 
 Durable evidence read boundary. Implementations must return only an exact retained receipt for the complete scope and source key.
 
@@ -500,7 +500,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:215](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L215) |  |
+| <code>ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default);</code> | [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:216](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L216) |  |
 
 ## IReportingReleaseAuthorizationVerifier
 

@@ -6,6 +6,158 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationIntakeAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:75](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L75).
+
+Connects retained statement intake to the existing Operations Continuity and governed casework authorities. It creates no parallel lifecycle: posting, close, report certification, approval, release, distribution, and receipt retention remain owned by their existing services.
+
+```csharp
+public sealed partial class StatementReconciliationIntakeAuthority : IStatementReconciliationIntakeAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementReconciliationIntakeAuthority(IAccountQueryService? accounts, IFundProfileTenancyRegistry? tenancy, ILedgerBookService? ledgerBooks, IOperationsContinuityWorkflowService? operations, IStatementRunWorkflowService? statementRuns, IReconciliationApiService? reconciliation, IReconciliationBreakQueueRepository? breakQueue, Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore? canonicalStatements = null, Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null, IStatementRunRecoveryRepository? runRecovery = null);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:88](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L88) |  |
+| <code>public async Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:112](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L112) |  |
+| <code>public async Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:231](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L231) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs:10](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs#L10).
+
+```csharp
+public sealed partial class StatementReconciliationIntakeAuthority
+```
+
+## StatementReconciliationIntakeAuthorityException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeAuthorityException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:62](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L62).
+
+Carries a coded failure from statement reconciliation intake authorization or publication.
+
+```csharp
+public sealed class StatementReconciliationIntakeAuthorityException(string code, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:67](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L67) |  |
+
+## StatementReconciliationIntakeReceipt
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:32](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L32).
+
+```csharp
+public sealed record StatementReconciliationIntakeReceipt(StatementAccountingScope AccountingScope, Guid OperationsWorkflowId, int PublishedCaseCount, IReadOnlyList<string> EvidenceReferences);
+```
+
+## StatementReconciliationIntakeScopeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeScopeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L14).
+
+```csharp
+public sealed record StatementReconciliationIntakeScopeRequest(string TenantId, string CompanyId, string FundAccountId, string ExternalAccountId, string SourceInstitution, DateOnly PeriodStart, DateOnly PeriodEnd, StatementAccountingScope? RequestedScope = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool AllowClosedPeriodForRetainedWorkflow { get; init; }</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:29](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L29) | Allows an already-retained workflow to revalidate its immutable account, tenant, company, book, and period binding after close. New intake and any pre-publication resume must leave this false. |
+
+## StorageAssuranceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StorageAssuranceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:17](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L17).
+
+Builds storage assurance snapshots and coordinates previewed, idempotent maintenance actions.
+
+```csharp
+public sealed class StorageAssuranceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageAssuranceService(StorageOptions options, IEvidenceArtifactStore evidence, IDataQualityService? quality = null, ITierMigrationService? tiers = null);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:27](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L27) |  |
+| <code>public async Task&lt;StorageAssuranceSnapshotDto&gt; GetSnapshotAsync(StorageAssurancePermissionsDto permissions, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:39](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L39) |  |
+| <code>public async Task&lt;StorageMaintenancePreviewDto&gt; PreviewAsync(StorageMaintenancePreviewRequestDto request, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:84](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L84) |  |
+| <code>public async Task&lt;StorageMaintenanceResultDto&gt; ExecuteAsync(StorageMaintenanceCommandRequestDto request, string actor, string tenantId, string companyId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:125](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L125) |  |
+| <code>public StorageMaintenanceActionDto? GetExecuteAction(string previewId, string idempotencyKey);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:180](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L180) |  |
+
+## StpTransitionResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StpTransitionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:77](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L77).
+
+```csharp
+public sealed record StpTransitionResult(string EntityId, string State, string? ExceptionReason, bool RoutedToBreakQueue);
+```
+
+## StrategyRunReviewPacketService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunReviewPacketService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L13).
+
+Builds a single review packet for Strategy, Trading, and Accounting to inspect the same run, portfolio, ledger, reconciliation, brokerage, and coverage evidence.
+
+```csharp
+public sealed class StrategyRunReviewPacketService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunReviewPacketService(StrategyRunReadService runReadService, StrategyRunContinuityService continuityService, IServiceProvider services, ILogger&lt;StrategyRunReviewPacketService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:20](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L20) |  |
+| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L32) |  |
+| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, StrategyRunReadScope scope, Guid? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:38](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L38) |  |
+
+## SyncAccountSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncAccountSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L12).
+
+```csharp
+public sealed record SyncAccountSnapshot(string AccountId, string Counterparty, string Currency, decimal ClosingBalance, decimal NetDelta, DateOnly BusinessDate, bool IsComplete);
+```
+
+## SyncValidationIssue
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:21](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L21).
+
+```csharp
+public sealed record SyncValidationIssue(string Code, string Message, string Severity);
+```
+
+## SyncValidationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L23).
+
+```csharp
+public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
+```
+
 ## ThresholdBreach
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
@@ -142,7 +294,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1404](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1404) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1407](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1407) |  |
 
 ## WorkstationWorkflowReadScope
 

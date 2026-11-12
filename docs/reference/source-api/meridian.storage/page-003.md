@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportVerifier
+
+Qualified name: <code>Meridian.Storage.Export.ExportVerifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportVerificationReport.cs:14](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L14).
+
+Verifies the integrity of a completed export by re-reading the lineage_manifest.json and checking each exported file against the checksums and record counts recorded at export time.
+
+```csharp
+public sealed class ExportVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ExportVerificationResult&gt; VerifyExportAsync(string exportDirectory, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:29](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L29) | Verifies all files in exportDirectory against the lineage_manifest.json written there during export. |
+
 ## FeatureSettings
 
 Qualified name: <code>Meridian.Storage.Export.FeatureSettings</code>. Kind: `class`.
@@ -932,22 +950,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>IReadOnlyList&lt;IntercompanyAgreementStoreState&gt; Agreements { get; }</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:20](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L20) |  |
 | <code>Task&lt;LegalEntitySummaryDto?&gt; GetLegalEntityAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:21](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L21) |  |
-
-## IIntercompanyAgreementStore
-
-Qualified name: <code>Meridian.Storage.FundStructure.IIntercompanyAgreementStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:24](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L24).
-
-```csharp
-public interface IIntercompanyAgreementStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;T&gt; ExecuteAsync&lt;T&gt;(string tenantId, Guid agreementId, Func&lt;IIntercompanyAgreementStoreTransaction, CancellationToken, Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:26](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L26) |  |
-| <code>Task&lt;IntercompanyAgreementStoreState?&gt; GetAsync(string tenantId, Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L28) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementStoreState&gt;&gt; ListAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:29](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L29) |  |
-| <code>Task&lt;IIntercompanyAgreementPostingLease&gt; AcquirePostingLeaseAsync(string tenantId, IReadOnlyList&lt;Guid&gt; agreementIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:30](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L30) |  |

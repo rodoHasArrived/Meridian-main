@@ -386,6 +386,12 @@ public sealed record SecureReportingGrantRevocationResponse(string GrantId, bool
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterEndpoints</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs#L14).
 
 ```csharp

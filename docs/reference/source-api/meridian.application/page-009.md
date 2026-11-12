@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterConflictAuthorityPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictAuthorityPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L18).
+
+Deterministic conflict-authority policy. Selects the default winner from the precedence ladder: golden-copy source (the configured authority) wins outright; otherwise the higher-ranked source in SourcePrecedence wins; otherwise (equal rank) the fresher source (by FreshnessAsOf) wins; otherwise the higher confidence score wins. Bulk eligibility is derived from the structured Recommendation: equivalent dismissals stay eligible regardless of winner, while accept-winner/accept-challenger recommendations stay eligible only when the policy winner matches the recommended source (otherwise they fall back to per-row review).
+
+```csharp
+public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConflictAuthorityPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterConflictAuthorityPolicy() : this(new SecurityMasterWorkbenchOptions());</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L24) | Creates the policy with default options (used by tests and minimal hosts). |
+| <code>public SecurityMasterConflictAuthorityPolicy(SecurityMasterWorkbenchOptions options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L30) | Creates the policy with a fixed options snapshot. |
+| <code>public SecurityMasterConflictAuthorityPolicy(IOptionsMonitor&lt;SecurityMasterWorkbenchOptions&gt; options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:36](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L36) | Creates the policy with hot-reloadable options (DI registration). |
+| <code>public SecurityMasterConflictAuthorityDecision Evaluate(SecurityMasterConflictAssessmentDto assessment, IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; providerConfidence);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:44](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L44) |  |
+
 ## SecurityMasterConflictService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictService</code>. Kind: `class`.
@@ -1042,25 +1063,3 @@ Declared public members:
 | <code>public long TotalCount =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:24](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L24) |  |
 | <code>public void Report(SymbolResolutionMismatch mismatch);</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:26](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L26) |  |
 | <code>public IReadOnlyList&lt;SymbolResolutionMismatch&gt; GetRecent();</code> | [src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs:39](../../../../src/Meridian.Application/SecurityMaster/SymbolResolutionMismatchTracker.cs#L39) |  |
-
-## AssetClassValidatorRegistry
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L24).
-
-Indexes asset-class validators and resolves the validator for a requested asset class.
-
-```csharp
-public sealed class AssetClassValidatorRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AssetClassValidatorRegistry(IEnumerable&lt;ISecurityAssetClassValidator&gt; validators);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:28](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L28) |  |
-| <code>public IReadOnlyCollection&lt;string&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:38](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L38) |  |
-| <code>public bool TryGetValidator(string assetClass, out ISecurityAssetClassValidator validator) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:40](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L40) |  |
-| <code>public static AssetClassValidatorRegistry CreateDefault() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:43](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L43) |  |
-| <code>public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L50) | The default registry: every class&#x27;s hand-written semantic rules composed with the rules generated from its term schema (SchemaTermsAssetClassValidator). |

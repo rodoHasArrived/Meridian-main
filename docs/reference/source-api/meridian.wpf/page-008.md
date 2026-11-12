@@ -6,6 +6,85 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityAssetProfileWorkflowClient
+
+Qualified name: <code>Meridian.Wpf.Services.ISecurityAssetProfileWorkflowClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:10](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L10).
+
+Defines asset-profile discovery, lineage, draft, approval, rollback, and security-creation operations.
+
+```csharp
+public interface ISecurityAssetProfileWorkflowClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt;&gt; GetProfilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:12](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L12) |  |
+| <code>Task&lt;SecurityAssetProfileLineageDto?&gt; GetLineageAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:14](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L14) |  |
+| <code>Task&lt;ApiResponse&lt;SecurityAssetProfileGovernanceResultDto&gt;&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:16](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L16) |  |
+| <code>Task&lt;ApiResponse&lt;SecurityAssetProfileGovernanceResultDto&gt;&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:20](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L20) |  |
+| <code>Task&lt;ApiResponse&lt;SecurityAssetProfileGovernanceResultDto&gt;&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:24](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L24) |  |
+| <code>Task&lt;ApiResponse&lt;SecurityDetailDto&gt;&gt; CreateSecurityAsync(CreateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:28](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L28) |  |
+
+## ISecurityMasterOperatorWorkflowClient
+
+Qualified name: <code>Meridian.Wpf.Services.ISecurityMasterOperatorWorkflowClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:10](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L10).
+
+Defines security-master ingestion status and conflict discovery and resolution for desktop operators.
+
+```csharp
+public interface ISecurityMasterOperatorWorkflowClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterIngestStatusResponse?&gt; GetIngestStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:12](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L12) |  |
+| <code>Task&lt;IReadOnlyList&lt;SecurityMasterConflict&gt;&gt; GetOpenConflictsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:14](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L14) |  |
+| <code>Task&lt;SecurityMasterConflict?&gt; ResolveConflictAsync(Guid conflictId, string resolution, string resolvedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:16](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L16) |  |
+
+## ISetupWizardLinkLauncher
+
+Qualified name: <code>Meridian.Wpf.Services.ISetupWizardLinkLauncher</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/SetupWizardStateService.cs:86](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L86).
+
+Abstracts opening external links from the setup wizard.
+
+```csharp
+public interface ISetupWizardLinkLauncher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void Open(string url);</code> | [src/Meridian.Wpf/Services/SetupWizardStateService.cs:88](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L88) |  |
+
+## ISetupWizardNavigator
+
+Qualified name: <code>Meridian.Wpf.Services.ISetupWizardNavigator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/SetupWizardStateService.cs:78](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L78).
+
+Abstracts page-tag navigation for the setup wizard.
+
+```csharp
+public interface ISetupWizardNavigator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void NavigateTo(string pageTag);</code> | [src/Meridian.Wpf/Services/SetupWizardStateService.cs:80](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L80) |  |
+
 ## ISetupWizardNotificationSink
 
 Qualified name: <code>Meridian.Wpf.Services.ISetupWizardNotificationSink</code>. Kind: `interface`.
@@ -237,7 +316,7 @@ Source: [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs:11
 Contractual cash-flow scenario preview and retained runs for securities and loans over the shared routes. Previews are hypothetical and never post; retained runs are complete replay packets.
 
 ```csharp
-public interface IWorkstationContractualCashFlowApiClient
+public interface IWorkstationContractualCashFlowApiClient : IPreparerDraftCheckApiClient
 ```
 
 Declared public members:
@@ -331,7 +410,7 @@ Source: [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs:12](../
 Defines security trust and passport queries and governed override, conflict, and field-edit operations.
 
 ```csharp
-public interface IWorkstationSecurityMasterApiClient
+public interface IWorkstationSecurityMasterApiClient : ICashDividendAttestationApiClient
 ```
 
 Declared public members:
@@ -988,82 +1067,3 @@ Declared public members:
 | <code>public Task&lt;string&gt; ExportAuditReportAsync(RetentionAuditReport report, string format = &quot;json&quot;);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:746](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L746) | Exports audit report to file. |
 | <code>public event EventHandler&lt;LegalHoldEventArgs&gt;? LegalHoldCreated;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:792](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L792) | Event raised when a legal hold is created. |
 | <code>public event EventHandler&lt;LegalHoldEventArgs&gt;? LegalHoldReleased;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:797](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L797) | Event raised when a legal hold is released. |
-
-## RunMatExecutionRequest
-
-Qualified name: <code>Meridian.Wpf.Services.RunMatExecutionRequest</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/RunMatService.cs:46](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L46).
-
-Specifies script content and paths, process arguments, and persistence options for a RunMat execution.
-
-```csharp
-public sealed class RunMatExecutionRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ScriptName { get; init; } = &quot;scratch.m&quot;;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:48](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L48) |  |
-| <code>public string ScriptSource { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:49](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L49) |  |
-| <code>public string? ScriptPath { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:50](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L50) |  |
-| <code>public string? ExecutablePath { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:51](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L51) |  |
-| <code>public string? WorkingDirectory { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:52](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L52) |  |
-| <code>public string AdditionalArguments { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:53](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L53) |  |
-| <code>public bool PersistScript { get; init; } = true;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:54](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L54) |  |
-
-## RunMatExecutionResult
-
-Qualified name: <code>Meridian.Wpf.Services.RunMatExecutionResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/RunMatService.cs:60](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L60).
-
-Reports RunMat completion, cancellation, exit code, paths, duration, and captured output.
-
-```csharp
-public sealed class RunMatExecutionResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:62](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L62) |  |
-| <code>public bool WasCancelled { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:63](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L63) |  |
-| <code>public int? ExitCode { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:64](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L64) |  |
-| <code>public string ScriptPath { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:65](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L65) |  |
-| <code>public string? ExecutablePath { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:66](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L66) |  |
-| <code>public string WorkingDirectory { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:67](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L67) |  |
-| <code>public TimeSpan Duration { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:68](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L68) |  |
-| <code>public string ErrorMessage { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:69](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L69) |  |
-| <code>public IReadOnlyList&lt;RunMatOutputLine&gt; Output { get; init; } = Array.Empty&lt;RunMatOutputLine&gt;();</code> | [src/Meridian.Wpf/Services/RunMatService.cs:70](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L70) |  |
-| <code>public static RunMatExecutionResult Failure(string message, string scriptPath, string workingDirectory, string? executablePath = null) =&gt; …;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:72](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L72) |  |
-
-## RunMatOutputKind
-
-Qualified name: <code>Meridian.Wpf.Services.RunMatOutputKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Services/RunMatService.cs:13](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L13).
-
-```csharp
-public enum RunMatOutputKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>StdOut</code> | [src/Meridian.Wpf/Services/RunMatService.cs:15](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L15) |  |
-| <code>StdErr</code> | [src/Meridian.Wpf/Services/RunMatService.cs:16](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L16) |  |
-| <code>Status</code> | [src/Meridian.Wpf/Services/RunMatService.cs:17](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L17) |  |
-
-## RunMatOutputLine
-
-Qualified name: <code>Meridian.Wpf.Services.RunMatOutputLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/RunMatService.cs:20](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L20).
-
-```csharp
-public sealed record RunMatOutputLine(DateTime TimestampUtc, RunMatOutputKind Kind, string Text);
-```

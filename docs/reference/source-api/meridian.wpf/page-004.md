@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GapAnalysisItem
+
+Qualified name: <code>Meridian.Wpf.Models.GapAnalysisItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/BackfillModels.cs:43](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L43).
+
+Gap analysis item for the gap preview.
+
+```csharp
+public sealed class GapAnalysisItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:45](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L45) |  |
+| <code>public int CoveragePercent { get; set; }</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:46](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L46) |  |
+| <code>public string CoverageText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:47](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L47) |  |
+| <code>public int GapDays { get; set; }</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:48](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L48) |  |
+| <code>public string GapDaysText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:49](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L49) |  |
+| <code>public SolidColorBrush CoverageBrush { get; set; } = new (Color.FromRgb(63, 185, 80));</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:50](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L50) |  |
+| <code>public double CoverageWidth { get; set; }</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:51](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L51) |  |
+
+## GapModel
+
+Qualified name: <code>Meridian.Wpf.Models.GapModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/DataQualityModels.cs:40](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L40).
+
+Model for gap display.
+
+```csharp
+public sealed class GapModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string GapId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:42](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L42) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:43](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L43) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:44](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L44) |  |
+| <code>public string Duration { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:45](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L45) |  |
+| <code>public string DashboardVersion { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:46](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L46) |  |
+| <code>public string? Provider { get; set; }</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:47](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L47) |  |
+| <code>public bool CanRepair { get; set; }</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:48](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L48) |  |
+| <code>public string? DisabledReason { get; set; }</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:49](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L49) |  |
+
 ## IntegrityEventItem
 
 Qualified name: <code>Meridian.Wpf.Models.IntegrityEventItem</code>. Kind: `class`.
@@ -1020,41 +1069,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string MetaLine { get; }</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:79](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L79) |  |
-
-## ShellNavigationTextStyleGuide
-
-Qualified name: <code>Meridian.Wpf.Models.ShellNavigationTextStyleGuide</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:6](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L6).
-
-Defines preferred task verbs, prohibited jargon, and length limits for desktop navigation copy.
-
-```csharp
-public static class ShellNavigationTextStyleGuide
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; PreferredTaskVerbs { get; } = [&quot;monitor&quot;, &quot;reconcile&quot;, &quot;export&quot;, &quot;review&quot;, &quot;configure&quot;];</code> | [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:15](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L15) | Navigation text style guide: 1) Use sentence case for titles and subtitles. 2) Prefer concrete user tasks (monitor, reconcile, export, review, configure). 3) Avoid metaphor-heavy or abstract jargon. 4) Keep subtitles concise to preserve scanability in the shell and command palette. |
-| <code>public static IReadOnlyList&lt;string&gt; BannedJargonTerms { get; } = [&quot;cockpit&quot;, &quot;workbench&quot;, &quot;rails&quot;, &quot;posture&quot;, &quot;control surface&quot;, &quot;control tower&quot;];</code> | [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:24](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L24) |  |
-| <code>public const int SubtitleMaxLength = 88;</code> | [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:34](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L34) |  |
-
-## ShellNavigationVisibilityTier
-
-Qualified name: <code>Meridian.Wpf.Models.ShellNavigationVisibilityTier</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:5](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L5).
-
-```csharp
-public enum ShellNavigationVisibilityTier
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Primary</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:7](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L7) |  |
-| <code>Secondary</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:8](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L8) |  |
-| <code>Overflow</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:9](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L9) |  |

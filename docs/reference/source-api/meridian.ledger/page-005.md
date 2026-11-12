@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalFundEventApprovalState
+
+Qualified name: <code>Meridian.Ledger.PrivateCapitalFundEventApprovalState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:10](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L10).
+
+Approval state reconstructed from journal-entry metadata attached to a private-capital posting.
+
+```csharp
+public enum PrivateCapitalFundEventApprovalState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Missing</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:12](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L12) |  |
+| <code>Submitted</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:13](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L13) |  |
+| <code>Approved</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:14](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L14) |  |
+| <code>Rejected</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:15](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L15) |  |
+| <code>Posted</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:16](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L16) |  |
+
 ## PrivateCapitalFundEventCapitalAccountImpact
 
 Qualified name: <code>Meridian.Ledger.PrivateCapitalFundEventCapitalAccountImpact</code>. Kind: `record`.
@@ -899,15 +921,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static WashSaleReplacementLookup Empty { get; } = new ([], []);</code> | [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:45](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L45) | Nothing found; relief proceeds exactly as if wash-sale matching were disabled. |
 | <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:48](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L48) | True when neither a replacement nor a prior deferral affects this disposal. |
-
-## WashSaleReplacementQuery
-
-Qualified name: <code>Meridian.Ledger.WashSaleReplacementQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:17](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L17).
-
-The question a wash-sale replacement search answers: for this loss-generating disposal, which acquisitions of the same security fall inside the policy window, and which prior deferrals have already been capitalized into the lots being relieved?
-
-```csharp
-public sealed record WashSaleReplacementQuery(Guid LedgerBookId, LedgerAccount DisposingAccount, Guid SecurityId, DateOnly SaleDate, WashSalePolicy Policy, IReadOnlyList<string> RelievedLotIds);
-```

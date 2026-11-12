@@ -6,6 +6,188 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerStripWindow
+
+Qualified name: <code>Meridian.Wpf.Views.TickerStripWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/TickerStripWindow.xaml.cs:14](../../../../src/Meridian.Wpf/Views/TickerStripWindow.xaml.cs#L14).
+
+Always-on-top borderless ticker strip docked to the bottom of the primary screen. Renders bid/ask/last for watchlist symbols in a slim bar over all other applications. Auto-collapses to a 4px hairline when the mouse leaves; expands to 28px on hover.
+
+```csharp
+public partial class TickerStripWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TickerStripWindow(TickerStripViewModel viewModel);</code> | [src/Meridian.Wpf/Views/TickerStripWindow.xaml.cs:18](../../../../src/Meridian.Wpf/Views/TickerStripWindow.xaml.cs#L18) |  |
+
+## TimeSeriesAlignmentPage
+
+Qualified name: <code>Meridian.Wpf.Views.TimeSeriesAlignmentPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:39](../../../../src/Meridian.Wpf/Views/Pages.cs#L39).
+
+```csharp
+public partial class TimeSeriesAlignmentPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/TimeSeriesAlignmentPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/TimeSeriesAlignmentPage.xaml.cs#L9).
+
+Hosts time-series alignment configuration and export.
+
+```csharp
+public partial class TimeSeriesAlignmentPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSeriesAlignmentPage() : this(new TimeSeriesAlignmentViewModel());</code> | [src/Meridian.Wpf/Views/TimeSeriesAlignmentPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/TimeSeriesAlignmentPage.xaml.cs#L11) |  |
+
+## TradingHoursPage
+
+Qualified name: <code>Meridian.Wpf.Views.TradingHoursPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:45](../../../../src/Meridian.Wpf/Views/Pages.cs#L45).
+
+```csharp
+public partial class TradingHoursPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/TradingHoursPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/TradingHoursPage.xaml.cs#L13).
+
+Trading hours page — thin code-behind. All market-status logic, timezone handling, and holiday data loading live in TradingHoursViewModel.
+
+```csharp
+public partial class TradingHoursPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingHoursPage();</code> | [src/Meridian.Wpf/Views/TradingHoursPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/TradingHoursPage.xaml.cs#L17) |  |
+
+## TradingWorkspaceShellPage
+
+Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml.cs:15](../../../../src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml.cs#L15).
+
+Trading cockpit shell - landing page for the Trading workspace. Hosts the Trading shell view model and keeps code-behind limited to WPF lifecycle, visual-resource tone application, and dock/navigation forwarding.
+
+```csharp
+public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingWorkspaceShellPage(NavigationService navigationService, TradingWorkspaceShellStateProvider stateProvider, TradingWorkspaceShellViewModel viewModel, FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService = null) : base(navigationService, stateProvider, viewModel);</code> | [src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml.cs:21](../../../../src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml.cs#L21) |  |
+
+## TradingWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:296](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L296).
+
+Binds derived pages to the trading workspace shell definition.
+
+```csharp
+public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorkspaceShellStateProvider, TradingWorkspaceShellViewModel>
+```
+
+## WatchlistPage
+
+Qualified name: <code>Meridian.Wpf.Views.WatchlistPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:7](../../../../src/Meridian.Wpf/Views/Pages.cs#L7).
+
+```csharp
+public partial class WatchlistPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L11).
+
+Watchlist management page — thin code-behind. All state, business logic, and commands live in WatchlistViewModel.
+
+```csharp
+public partial class WatchlistPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WatchlistPage(WatchlistViewModel viewModel);</code> | [src/Meridian.Wpf/Views/WatchlistPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/WatchlistPage.xaml.cs#L15) |  |
+
+## WelcomePage
+
+Qualified name: <code>Meridian.Wpf.Views.WelcomePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:100](../../../../src/Meridian.Wpf/Views/Pages.cs#L100).
+
+```csharp
+public partial class WelcomePage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L14).
+
+Welcome page — thin code-behind. All state management, data loading, and commands live in WelcomePageViewModel.
+
+```csharp
+public partial class WelcomePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WelcomePage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.ConfigService configService, ILogger&lt;WelcomePageViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L18) |  |
+
+## WorkflowLibraryPage
+
+Qualified name: <code>Meridian.Wpf.Views.WorkflowLibraryPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs#L9).
+
+Hosts discoverable workflows and their navigation actions.
+
+```csharp
+public partial class WorkflowLibraryPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowLibraryPage(WorkflowLibraryViewModel viewModel);</code> | [src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs#L11) |  |
+
+## WorkspaceCapabilityHomePage
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceCapabilityHomePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:21](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L21).
+
+Displays the capability overview for the workspace selected by its shell page tag.
+
+```csharp
+public sealed class WorkspaceCapabilityHomePage : Page, IWorkspaceShellPageContextAware
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceCapabilityHomePage() : this(null);</code> | [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:26](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L26) |  |
+| <code>public WorkspaceCapabilityHomePage(Meridian.Wpf.Services.NavigationService? navigationService);</code> | [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L31) |  |
+| <code>public void ApplyWorkspaceShellPageTag(string pageTag);</code> | [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:38](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L38) |  |
+
 ## WorkspaceCommandBarControl
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceCommandBarControl</code>. Kind: `class`.
@@ -920,139 +1102,4 @@ Provides a content host for dockable workstation panels.
 
 ```csharp
 public sealed class DockablePanelHostControl : ContentControl
-```
-
-## InspectorPanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.InspectorPanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:45](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L45).
-
-Hosts inspector content with separate header and footer content slots.
-
-```csharp
-public sealed class InspectorPanelControl : ContentControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty HeaderContentProperty = DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(InspectorPanelControl));</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:47](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L47) |  |
-| <code>public static readonly DependencyProperty FooterContentProperty = DependencyProperty.Register(nameof(FooterContent), typeof(object), typeof(InspectorPanelControl));</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:50](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L50) |  |
-| <code>public object? HeaderContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:53](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L53) |  |
-| <code>public object? FooterContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:59](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L59) |  |
-
-## SplitPaneLayoutControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.SplitPaneLayoutControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:9](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L9).
-
-Provides a content host styled as a split-pane workstation layout.
-
-```csharp
-public sealed class SplitPaneLayoutControl : ContentControl
-```
-
-## WorkflowTabHostControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.WorkflowTabHostControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:23](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L23).
-
-Provides a tabbed host for workstation workflows.
-
-```csharp
-public sealed class WorkflowTabHostControl : TabControl
-```
-
-## AuditTimelineEntryModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineEntryModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:366](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L366).
-
-```csharp
-public sealed record AuditTimelineEntryModel(string Title, string Detail, string TimeText, string Tone = WorkspaceTone.Neutral);
-```
-
-## AuditTimelineModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.AuditTimelineModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:357](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L357).
-
-Carries an observable audit timeline with heading and empty-state copy.
-
-```csharp
-public sealed class AuditTimelineModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = &quot;Activity&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:359](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L359) |  |
-| <code>public string EmptyText { get; init; } = &quot;No activity recorded.&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:361](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L361) |  |
-| <code>public ObservableCollection&lt;AuditTimelineEntryModel&gt; Entries { get; } = new ();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:363](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L363) |  |
-
-## DataQualitySummaryModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.DataQualitySummaryModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:375](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L375).
-
-Carries a data-quality heading, explanatory detail, and supporting facts.
-
-```csharp
-public sealed class DataQualitySummaryModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = &quot;Data quality&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:377](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L377) |  |
-| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:379](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L379) |  |
-| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:381](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L381) |  |
-
-## DiagnosticsChecklistItemModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.DiagnosticsChecklistItemModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:348](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L348).
-
-```csharp
-public sealed record DiagnosticsChecklistItemModel(string Label, string StatusText, string Detail, string Tone = WorkspaceTone.Neutral);
-```
-
-## DiagnosticsChecklistModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.DiagnosticsChecklistModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:339](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L339).
-
-Carries a diagnostics heading, explanatory detail, and checklist items.
-
-```csharp
-public sealed class DiagnosticsChecklistModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = &quot;Diagnostics&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:341](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L341) |  |
-| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:343](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L343) |  |
-| <code>public IReadOnlyList&lt;DiagnosticsChecklistItemModel&gt; Items { get; init; } = Array.Empty&lt;DiagnosticsChecklistItemModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:345](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L345) |  |
-
-## EvidenceLineageRowModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceLineageRowModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:59](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L59).
-
-```csharp
-public sealed record EvidenceLineageRowModel(string EdgeId, string FromId, string RelationshipText, string ToId, string Reason);
 ```

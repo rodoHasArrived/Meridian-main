@@ -328,6 +328,9 @@ Enum declarations:
 | <code>ReviewCorporateActionTax = 1L&lt;&lt;37</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:143](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L143) | Finalize corporate-action tax classification and tax-basis treatment. |
 | <code>OverrideCorporateActionPolicy = 1L&lt;&lt;38</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:146](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L146) | Apply an authorized, reasoned exception to corporate-action policy. |
 | <code>ReopenCorporateActionCase = 1L&lt;&lt;39</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:149](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L149) | Reopen a closed corporate-action case or initiate correction/restatement. |
+| <code>ManageSinglePrincipalDeclarations = 1L&lt;&lt;40</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:152](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L152) | Administer a reasoned, scoped single-principal declaration; confers no domain approval authority. |
+| <code>RecordPreparerAttestations = 1L&lt;&lt;41</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:155](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L155) | Record non-posting preparer assertions with the existing target-modification permission. |
+| <code>ViewPreparerAttestations = 1L&lt;&lt;42</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:158](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L158) | Read scoped preparer-assertion receipts, declaration history and audit evidence. |
 
 ## UserRole
 

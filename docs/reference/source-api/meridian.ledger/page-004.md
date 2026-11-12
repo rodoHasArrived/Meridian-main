@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerViewKind
+
+Qualified name: <code>Meridian.Ledger.LedgerViewKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerViewKind.cs:8](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L8).
+
+High-level purpose or valuation basis for a ledger within a project. This allows one project to hold parallel ledgers for actuals, historical replay, parameterized P&amp;L scenarios, security-master contractual projections, and future views.
+
+```csharp
+public enum LedgerViewKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Actual</code> | [src/Meridian.Ledger/LedgerViewKind.cs:10](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L10) |  |
+| <code>Historical</code> | [src/Meridian.Ledger/LedgerViewKind.cs:11](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L11) |  |
+| <code>ParameterizedPnL</code> | [src/Meridian.Ledger/LedgerViewKind.cs:12](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L12) |  |
+| <code>SecurityMaster</code> | [src/Meridian.Ledger/LedgerViewKind.cs:13](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L13) |  |
+| <code>Other</code> | [src/Meridian.Ledger/LedgerViewKind.cs:14](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L14) |  |
+
 ## LockedAccountingPeriod
 
 Qualified name: <code>Meridian.Ledger.LockedAccountingPeriod</code>. Kind: `record`.
@@ -944,25 +966,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string Compute(PrivateCapitalCallDto call);</code> | [src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs:10](../../../../src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs#L10) |  |
-
-## PrivateCapitalFundEventApprovalState
-
-Qualified name: <code>Meridian.Ledger.PrivateCapitalFundEventApprovalState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:10](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L10).
-
-Approval state reconstructed from journal-entry metadata attached to a private-capital posting.
-
-```csharp
-public enum PrivateCapitalFundEventApprovalState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Missing</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:12](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L12) |  |
-| <code>Submitted</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:13](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L13) |  |
-| <code>Approved</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:14](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L14) |  |
-| <code>Rejected</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:15](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L15) |  |
-| <code>Posted</code> | [src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs:16](../../../../src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs#L16) |  |

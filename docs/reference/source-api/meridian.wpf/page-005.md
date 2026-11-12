@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellNavigationTextStyleGuide
+
+Qualified name: <code>Meridian.Wpf.Models.ShellNavigationTextStyleGuide</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:6](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L6).
+
+Defines preferred task verbs, prohibited jargon, and length limits for desktop navigation copy.
+
+```csharp
+public static class ShellNavigationTextStyleGuide
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; PreferredTaskVerbs { get; } = [&quot;monitor&quot;, &quot;reconcile&quot;, &quot;export&quot;, &quot;review&quot;, &quot;configure&quot;];</code> | [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:15](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L15) | Navigation text style guide: 1) Use sentence case for titles and subtitles. 2) Prefer concrete user tasks (monitor, reconcile, export, review, configure). 3) Avoid metaphor-heavy or abstract jargon. 4) Keep subtitles concise to preserve scanability in the shell and command palette. |
+| <code>public static IReadOnlyList&lt;string&gt; BannedJargonTerms { get; } = [&quot;cockpit&quot;, &quot;workbench&quot;, &quot;rails&quot;, &quot;posture&quot;, &quot;control surface&quot;, &quot;control tower&quot;];</code> | [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:24](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L24) |  |
+| <code>public const int SubtitleMaxLength = 88;</code> | [src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs:34](../../../../src/Meridian.Wpf/Models/ShellNavigationTextStyleGuide.cs#L34) |  |
+
+## ShellNavigationVisibilityTier
+
+Qualified name: <code>Meridian.Wpf.Models.ShellNavigationVisibilityTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:5](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L5).
+
+```csharp
+public enum ShellNavigationVisibilityTier
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Primary</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:7](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L7) |  |
+| <code>Secondary</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:8](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L8) |  |
+| <code>Overflow</code> | [src/Meridian.Wpf/Models/ShellNavigationModels.cs:9](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L9) |  |
+
 ## ShellPageDescriptor
 
 Qualified name: <code>Meridian.Wpf.Models.ShellPageDescriptor</code>. Kind: `record`.
@@ -915,34 +953,3 @@ Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:35](../../../../s
 ```csharp
 public sealed record WorkspaceShellSlotContributionRequest(string WorkspaceId, string PageTag, string? FundAccountId = null, string? ActiveWorkItemId = null);
 ```
-
-## WorkspaceShellState
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellState</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:91](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L91).
-
-```csharp
-public sealed record WorkspaceShellState(string WorkspaceId, string LayoutId, string DisplayName, string? LayoutScopeKey, BoundedWindowMode WindowMode, string? LayoutPresetId = null, bool HasPrimaryContext = true, string? ActiveRunId = null);
-```
-
-## WorkspaceStateRestoreResult
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceStateRestoreResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:116](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L116).
-
-Returns the restored workspace token together with its validation outcome.
-
-```csharp
-public sealed class WorkspaceStateRestoreResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceStateRestoreResult(WorkspaceStateToken token, bool isRecoveryState, string? recoveryReason);</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:118](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L118) |  |
-| <code>public WorkspaceStateToken Token { get; }</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:125](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L125) |  |
-| <code>public bool IsRecoveryState { get; }</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:127](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L127) |  |
-| <code>public string? RecoveryReason { get; }</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:129](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L129) |  |

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterConflictAuthorityPolicy
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterConflictAuthorityPolicy</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs:10](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs#L10).
+
+Computes the deterministic default winner for a Security Master source conflict. Operators may override the policy winner, but only by acknowledging the deviation — the deviation between the policy winner and the operator&#x27;s choice is the audited artifact.
+
+```csharp
+public interface ISecurityMasterConflictAuthorityPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SecurityMasterConflictAuthorityDecision Evaluate(SecurityMasterConflictAssessmentDto assessment, IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; providerConfidence);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs:17](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs#L17) | Evaluates the conflict using the precedence ladder: golden-copy source → freshness (AsOf) → confidence score. The decision is bulk-eligible only when it matches the assessment&#x27;s recommended winner and the assessment was already flagged bulk-eligible. |
+
 ## ISecurityMasterConflictService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterConflictService</code>. Kind: `interface`.
@@ -857,7 +875,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityAssetProfileGovernanceService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L38).
+Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:39](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L39).
 
 Maintains versioned asset profiles and their governance lifecycle.
 
@@ -869,19 +887,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityAssetProfileGovernanceService();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:75](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L75) |  |
-| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L79) |  |
-| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions, ISecurityMasterGovernanceRequirements governanceRequirements) : this(storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:93](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L93) | The composed constructor: an approval by an actor who drafted the version is refused while the independent-approver requirement is in force, which is when SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover is on (off by default) or the Institutional governance profile applies. The effective value is read from ISecurityMasterGovernanceRequirements at approval time so the setting hot-reloads. The other constructors keep self-approval allowed. |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L109) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles(DateOnly effectiveAt) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:116](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L116) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:125](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L125) |  |
-| <code>public bool TryGetProfile(string profileId, int version, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:128](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L128) |  |
-| <code>public bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:136](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L136) |  |
-| <code>public SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:146](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L146) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:162](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L162) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:170](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L170) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:242](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L242) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:311](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L311) |  |
+| <code>public SecurityAssetProfileGovernanceService();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L76) |  |
+| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:80](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L80) |  |
+| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions, ISecurityMasterGovernanceRequirements governanceRequirements) : this(storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:94](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L94) | The composed constructor: an approval by an actor who drafted the version is refused while the independent-approver requirement is in force, which is when SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover is on (off by default) or the Institutional governance profile applies. The effective value is read from ISecurityMasterGovernanceRequirements at approval time so the setting hot-reloads. The other constructors keep self-approval allowed. |
+| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:110](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L110) |  |
+| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles(DateOnly effectiveAt) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:117](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L117) |  |
+| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:126](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L126) |  |
+| <code>public bool TryGetProfile(string profileId, int version, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:129](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L129) |  |
+| <code>public bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:137](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L137) |  |
+| <code>public SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:147](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L147) |  |
+| <code>public IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:163](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L163) |  |
+| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:171](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L171) |  |
+| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:243](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L243) |  |
+| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:313](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L313) |  |
 
 ## SecurityAssetTermsFieldSnapshot
 
@@ -1040,24 +1058,3 @@ Declared public members:
 | <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs#L18) |  |
 | <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs#L20) |  |
 | <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConcurrencyException.cs#L22) |  |
-
-## SecurityMasterConflictAuthorityPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterConflictAuthorityPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L18).
-
-Deterministic conflict-authority policy. Selects the default winner from the precedence ladder: golden-copy source (the configured authority) wins outright; otherwise the higher-ranked source in SourcePrecedence wins; otherwise (equal rank) the fresher source (by FreshnessAsOf) wins; otherwise the higher confidence score wins. Bulk eligibility is derived from the structured Recommendation: equivalent dismissals stay eligible regardless of winner, while accept-winner/accept-challenger recommendations stay eligible only when the policy winner matches the recommended source (otherwise they fall back to per-row review).
-
-```csharp
-public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConflictAuthorityPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterConflictAuthorityPolicy() : this(new SecurityMasterWorkbenchOptions());</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L24) | Creates the policy with default options (used by tests and minimal hosts). |
-| <code>public SecurityMasterConflictAuthorityPolicy(SecurityMasterWorkbenchOptions options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L30) | Creates the policy with a fixed options snapshot. |
-| <code>public SecurityMasterConflictAuthorityPolicy(IOptionsMonitor&lt;SecurityMasterWorkbenchOptions&gt; options);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:36](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L36) | Creates the policy with hot-reloadable options (DI registration). |
-| <code>public SecurityMasterConflictAuthorityDecision Evaluate(SecurityMasterConflictAssessmentDto assessment, IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; providerConfidence);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs:44](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictAuthorityPolicy.cs#L44) |  |

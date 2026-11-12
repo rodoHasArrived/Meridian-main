@@ -6,6 +6,187 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:33](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L33).
+
+Batch of automated economic events (dividends, interest, fees, withholding) to admit into the manual journal workbench queue for the named fund profile.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalEvent> Events, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null);
+```
+
+## AutomatedJournalDraftIntakeResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:97](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L97).
+
+Outcome of an automated journal intake run. Created drafts land in the workbench queue as ManualJournalEntryStatusDto.Draft (or NeedsFix when validation flags them) awaiting human submit/approve; skips are reported, never silent.
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeResult(IReadOnlyList<ManualJournalEntryDraftDto> Created, IReadOnlyList<AutomatedJournalDraftIntakeSkip> Skipped)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int NeedsFixCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:102](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L102) | Created drafts that need account-mapping or other fixes before submission. |
+
+## AutomatedJournalDraftIntakeService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:113](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L113).
+
+Admits automated journal events into the close-cockpit approval queue: projects each event through AutomatedJournalDraftProjector, maps ledger accounts onto the fund&#x27;s chart of accounts, and saves the balanced result through the manual journal workbench so it inherits validation, audit, and the human submit/approve lifecycle. Intake is idempotent per event: the draft id derives from the event idempotency key, and events whose draft already exists are skipped rather than duplicated or overwritten.
+
+```csharp
+public sealed class AutomatedJournalDraftIntakeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AutomatedJournalDraftIntakeService(IManualJournalEntryWorkbenchService workbench, IManualJournalEntryDraftStore draftStore, IAccountingConfigurationService configurationService);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L119) |  |
+| <code>public async Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeAsync(AutomatedJournalDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:129](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L129) |  |
+| <code>public Task&lt;AutomatedJournalDraftIntakeResult&gt; IntakeDraftsAsync(AutomatedJournalPreparedDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:177](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L177) | Admits prebuilt drafts (for example period-close closing entries) into the workbench queue with the same idempotent dedup, chart mapping, and human approve lifecycle as event-projected drafts. |
+
+## AutomatedJournalDraftIntakeSkip
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeSkip</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:79](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L79).
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeSkip(Guid JournalEntryId, string IdempotencyKey, string Reason, AutomatedJournalDraftIntakeDisposition Disposition = AutomatedJournalDraftIntakeDisposition.ProjectionFailed, ManualJournalEntryStatusDto? ExistingStatus = null, AutomatedJournalEvidenceAssessmentDto? ExistingEvidenceAssessment = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReadyDuplicate =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:87](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L87) |  |
+
+## AutomatedJournalEventProduction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProduction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L17).
+
+Events produced for automated journal intake plus the skips that need attention.
+
+```csharp
+public sealed record AutomatedJournalEventProduction(IReadOnlyList<AutomatedJournalEvent> Events, IReadOnlyList<AutomatedJournalEventProductionSkip> Skipped, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:22](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L22) |  |
+
+## AutomatedJournalEventProductionSkip
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProductionSkip</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L12).
+
+One position an automated producer could not turn into an event, with the reason.
+
+```csharp
+public sealed record AutomatedJournalEventProductionSkip(string Subject, string Reason);
+```
+
+## AutomatedJournalEvidencePolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEvidencePolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:11](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L11).
+
+Server-owned bounds for evidence that can support an automated accounting draft. Request thresholds may strengthen these controls, but cannot weaken the confidence floor or variance cap selected by the host.
+
+```csharp
+public sealed record AutomatedJournalEvidencePolicy(decimal MinimumCapitalAccountConfidence, decimal MaximumCapitalAccountVarianceTolerance)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AutomatedJournalEvidencePolicy Default { get; } = new (MinimumCapitalAccountConfidence : 0.90m, MaximumCapitalAccountVarianceTolerance : 0.01m);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L15) |  |
+| <code>public decimal ResolveMinimumCapitalAccountConfidence(decimal requestedMinimum);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:19](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L19) |  |
+| <code>public decimal ResolveMaximumCapitalAccountVarianceTolerance(decimal retainedTolerance);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L37) |  |
+
+## AutomatedJournalIntakeReadiness
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeReadiness</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:102](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L102).
+
+Outcome of one automated intake run: producer-side skips plus the intake result (created drafts and intake-side skips). Empty productions return an empty intake rather than an error.
+
+```csharp
+public enum AutomatedJournalIntakeReadiness
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:104](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L104) |  |
+| <code>NeedsInvestigation = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L105) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:106](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L106) |  |
+
+## AutomatedJournalIntakeRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:140](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L140).
+
+Wires the automated event producers to AutomatedJournalDraftIntakeService: corporate-action dividends and fee-schedule accruals become governed drafts in the close cockpit&#x27;s approval queue. The dividend lane requires the Security Master query service; when it is not configured the run fails loudly instead of producing nothing.
+
+```csharp
+public sealed partial class AutomatedJournalIntakeRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AutomatedJournalIntakeRunner(AutomatedJournalDraftIntakeService intake, FeeScheduleAccrualEventProducer feeProducer, CorporateActionDividendEventProducer? dividendProducer = null, ILedgerBookService? ledgerBookService = null, DailyMarkToMarketService? dailyMarkToMarketService = null, DailyValuationPositionService? dailyValuationPositionService = null, AutomatedJournalEvidencePolicy? evidencePolicy = null, IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null, TimeProvider? timeProvider = null, IManualJournalEntryWorkbenchService? manualJournalWorkbench = null, IPrivateCapitalStore? privateCapitalStore = null, Meridian.Contracts.Banking.IBankTransactionSource? bankTransactionSource = null, Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:158](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L158) |  |
+| <code>public bool CanRunDailyMarkToMarket =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:189](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L189) | Whether this process can execute the provider-backed daily valuation lane. |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunDividendIntakeAsync(RunDividendDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:192](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L192) |  |
+| <code>public async Task&lt;DailyMarkToMarketIntakeRunResult&gt; RunDailyMarkToMarketIntakeAsync(RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:239](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L239) | Resolves policy-qualified closing marks and admits the resulting fair-value draft into the existing human approval queue. Posting remains exclusively available via the workbench lifecycle and its governed durable posting target. |
+| <code>public async Task&lt;ValuationFreshnessPreviewDto&gt; PreviewDailyMarkToMarketAsync(RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:314](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L314) |  |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunPeriodCloseIntakeAsync(RunPeriodCloseDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:346](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L346) | Projects closing entries from a closed period&#x27;s trial balance and admits the resulting draft into the workbench queue. Mutating intake is allowed only while the period is soft-closed; hard-closed periods remain available through the read-only preview path but cannot acquire new drafts. A period with no temporary-account balances returns an empty intake — a correct outcome, not a gap. |
+| <code>public Task&lt;AutomatedJournalIntakeRunResult&gt; RunFeeAccrualIntakeAsync(RunFeeAccrualDraftIntakeRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:478](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L478) |  |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallIssuanceIntakeAsync(RunCapitalCallIssuanceDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:590](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L590) | Plans a fund-level capital call over approved commitment authority and admits the per-LP issuance drafts into the human approval queue. The called-to-date basis is recomputed server-side from exact commitment posting receipts before planning; runs whose evidence or capacity cannot be corroborated return Blocked with reasons instead of drafts. Posting remains exclusively available via the governed workbench lifecycle. |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallFundingIntakeAsync(RunCapitalCallFundingDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:689](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L689) | Records LP cash receipts against an issued capital call and admits the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) into the human approval queue. The fundable ceiling is recomputed server-side from the call&#x27;s posted ledger activity — issuance debits minus funding credits on each LP&#x27;s receivable — before drafting; runs that name an unissued call, exceed the open receivable, or carry no retained funding evidence return Blocked with reasons instead of drafts. Partial funding drafts the funded portion and leaves the receivable balance open. Posting remains exclusively available via the governed workbench lifecycle. |
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs:7](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs#L7).
+
+```csharp
+public sealed partial class AutomatedJournalIntakeRunner
+```
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:6](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L6).
+
+```csharp
+public sealed partial class AutomatedJournalIntakeRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallDefaultInterestIntakeAsync(RunCapitalCallDefaultInterestDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L15) | Admits default-interest drafts for the unfunded part of a posted capital call into the approval queue. Nothing is posted; a blocked run admits nothing. |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunDistributionDeclarationIntakeAsync(RunDistributionDeclarationDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:49](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L49) | Admits one distribution draft per investor into the approval queue and retains each declaration&#x27;s waterfall tiers so the investor&#x27;s next distribution continues from them. |
+
 ## AutomatedJournalIntakeRunResult
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeRunResult</code>. Kind: `record`.
@@ -758,184 +939,3 @@ Declared public members:
 | <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
 | <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
 | <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |
-
-## CollateralIngestionBuffer
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestionBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:296](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L296).
-
-Buffers bounded collateral input batches separately for each tenant and company scope.
-
-```csharp
-public sealed class CollateralIngestionBuffer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxBufferedRows = 20_000;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:303](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L303) | How many rows one tenant&#x27;s buffer retains. Public because the ingest route quotes it when it refuses an observation for exceeding it, and a message naming a different number than the rule enforces would send the producer looking for the wrong thing. |
-| <code>public int BufferedCount(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:311](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L311) | Rows currently held for one tenant scope. Scoped rather than global because a count spanning tenants would be a number no operator can act on. |
-| <code>public CollateralIngestOutcome IngestBatch(CollateralTenantScope scope, IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:338](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L338) | Applies one delivery: rows restating a buffered exposure replace it, the rest are added. The row cap remains as a backstop against a producer that invents unbounded identities; steady state is the number of distinct exposures, not the number of messages. Ingestion does not refuse for being at capacity — refusing past capacity would freeze exposure at whatever a deployment saw first, and with non-consuming reads nothing would ever drain it. Eviction of older observations is what makes room. It does refuse one thing, because eviction cannot absorb it: a single observation larger than the whole window. Observations are evicted whole, so one that cannot fit makes itself the eviction candidate and takes every row it owns with it — a counterparty disappearing from the exposure read while every request that built it was acknowledged. The delivery that would cross that line is refused instead, leaving what is already held untouched, so the producer learns at the point the observation outgrew the window rather than discovering the counterparty missing later. |
-| <code>public IReadOnlyList&lt;CollateralInputRow&gt; SnapshotCurrent(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:616](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L616) | The whole current picture, without consuming it. Every retained row is a live exposure, and CollateralExposureService.BuildSnapshots treats what it is handed as the complete set, so there is no honest read limit: any subset silently drops counterparties out of net exposure, coverage, and breach evaluation with nothing to signal it. The window cap is what bounds this — retention and reporting are the same number by construction rather than two limits that can drift apart. Reading must also leave the buffer intact. Draining on read made each snapshot cover only the rows arriving since the previous reader, so two operators looking at the same moment saw different exposure and the second frequently saw none. |
-
-## CollateralIngestOutcome
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:279](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L279).
-
-What the buffer did with one delivery.
-
-```csharp
-public enum CollateralIngestOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Retained</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:282](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L282) | Every row the delivery carried is retained, and older observations were evicted to fit. |
-| <code>ObservationExceedsWindow</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:290](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L290) | The delivery would have left one observation — a single identity at a single AsOf — holding more rows than the whole retention window. Nothing from the delivery was retained and what was already held is unchanged, because such an observation is evicted whole and would take every row it owns with it. |
-
-## CollateralInputRow
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralInputRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:49](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L49).
-
-One position within a collateral observation. ChunkId is optional and exists to settle a question the other fields cannot: an observation with more rows than the ingest route accepts in a single request arrives in pieces, and a second request at the same AsOf is then either another piece or a retry of one already sent. Naming the piece makes that decidable -- a chunk redelivered under the same name replaces itself, a chunk under a new name is added -- so two genuinely identical positions in different chunks both survive. Producers that do not split observations can leave it null and get the best-effort matching described on CollateralIngestionBuffer.
-
-```csharp
-public sealed record CollateralInputRow(DateTimeOffset AsOf, string Counterparty, string ProductType, decimal PositionNotional, decimal MarkToMarket, decimal CollateralBalance, string CollateralType, decimal InitialMargin, decimal VariationMargin, string? ChunkId = null);
-```
-
-## CollateralTenantScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralTenantScope</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:255](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L255).
-
-Holds the current collateral picture: one row per distinct exposure, replaced when a producer reports that exposure again. Why current state and not a log. CollateralExposureService.BuildSnapshots sums mark-to-market, collateral balance, and margin across every row it is handed. That is correct for a set of simultaneous positions and wrong for a history of observations: a producer posting periodic refreshes for the same exposure would have its numbers added together, so two identical refreshes reported twice the exposure and the figure kept climbing until eviction happened to change it. Reads used to drain the buffer, which hid this; once reads stopped consuming, the retained history became the reported total. Exposure identity is counterparty, product type, and collateral type — the same three fields BuildSnapshots groups and resolves haircuts by. A delivery replaces every buffered row whose identity it restates and keeps the rest, so a producer may refresh one counterparty without erasing the others. Simultaneous positions are never collapsed. Rows sharing an identity and an AsOf are two positions observed at one moment and are summed. Rows sharing an identity at different times are a restatement and a straggler, and only the newest observation survives — whether the straggler arrives in a later delivery or in the same one. That is why the API takes a batch: calling it once per row would make a delivery overwrite itself and silently under-report. An observation may arrive in pieces. The ingest route caps a single request, so an observation with more rows than that cap has to be split across requests. A later delivery at the same AsOf therefore continues the observation already held rather than replacing it, and a producer that names the piece it is sending (CollateralInputRow.ChunkId) has that chunk replaced exactly, so two identical positions in different chunks both survive. Without a chunk id the incoming rows are matched by count against what is held, which keeps a redelivered chunk from double-counting at the cost of reading an identical position in a later chunk as one. Only a strictly newer AsOf replaces the observation. State is partitioned by tenant scope. The buffer is a process-wide singleton, so without a scope key one tenant&#x27;s ingest would appear in another&#x27;s exposure and a same-identity restatement from either would overwrite the other&#x27;s current reading. The scope is resolved server-side from the request, never from the payload. A deployment with no tenancy resolves one empty scope and behaves exactly as before.
-
-```csharp
-public readonly record struct CollateralTenantScope(string TenantId, string CompanyId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly CollateralTenantScope Unscoped = new (string.Empty, string.Empty);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:257](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L257) |  |
-| <code>public static CollateralTenantScope For(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:259](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L259) |  |
-| <code>public static CollateralTenantScope ForRequest(HttpContext context);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:267](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L267) | Resolves the scope from the request, mirroring WorkstationWorkflowReadScope.ForRequest. The tenant comes from what the server resolved for the caller, never from the ingest payload -- a payload-supplied tenant would let a producer write into another tenant&#x27;s exposure. |
-
-## ConfigStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:12](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L12).
-
-ConfigStore for web dashboard hosting. Delegates all operations to the core CoreConfigStore and only provides a web-specific default config path (4 directories up from BaseDirectory).
-
-```csharp
-public sealed class ConfigStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConfigStore() : this(GetWebDefaultPath());</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L16) |  |
-| <code>public ConfigStore(string? configPath);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:18](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L18) |  |
-| <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:23](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L23) |  |
-| <code>public static Meridian.Core.Config.AppConfig LoadConfig(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:25](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L25) |  |
-| <code>public Meridian.Core.Config.AppConfig Load() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:28](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L28) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L30) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L33) |  |
-| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L39) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L45) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:50](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L50) |  |
-| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L53) |  |
-| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:55](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L55) |  |
-| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L58) |  |
-| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:61](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L61) |  |
-
-## ConfigStoreExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L71).
-
-Configures the core ConfigStore default path resolver for web dashboard hosting.
-
-```csharp
-public static class ConfigStoreExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:73](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L73) |  |
-
-## ConfiguredReportingHttpRelayClient
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ConfiguredReportingHttpRelayClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayClient.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayClient.cs#L18).
-
-Concrete outbound relay adapter. It intentionally does not log request or response bodies because the request contains the one-time fragment bearer delivered to the recipient.
-
-```csharp
-public sealed class ConfiguredReportingHttpRelayClient : IReportingHttpRelayClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConfiguredReportingHttpRelayClient(IHttpClientFactory httpClientFactory, ReportingHttpRelayClientOptions options);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayClient.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayClient.cs#L26) |  |
-| <code>public async Task&lt;ReportingHttpRelayResult&gt; SendAsync(ReportingHttpRelayMessage message, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayClient.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayClient.cs#L34) |  |
-
-## ConfiguredReportingRecipientDestinationResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ConfiguredReportingRecipientDestinationResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:182](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L182).
-
-Exact-scope production resolver populated from deployment-owned configuration. No tenant, company, principal, or transport fallback is allowed, and duplicate keys fail at startup.
-
-```csharp
-public sealed class ConfiguredReportingRecipientDestinationResolver : IReportingRecipientDestinationResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConfiguredReportingRecipientDestinationResolver(IEnumerable&lt;ReportingRecipientDestinationBinding&gt; bindings);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:187](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L187) |  |
-| <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:235](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L235) |  |
-| <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:237](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L237) |  |
-| <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L239) |  |
-
-## ConsolidationWorkbenchService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ConsolidationWorkbenchService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs#L8).
-
-Shared browser/desktop projection and intake into the existing journal approval queue.
-
-```csharp
-public sealed class ConsolidationWorkbenchService(ConsolidationService consolidation, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IAccountingConfigurationService configuration)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ConsolidationViewDto&gt; GetAsync(ConsolidationRequestDto request, string? tenant, string? company, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs#L12) |  |
-| <code>public async Task&lt;ConsolidationViewDto&gt; CreateDraftAsync(ConsolidationRequestDto request, string actor, string? tenant, string? company, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs:21](../../../../src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs#L21) |  |
-| <code>public static ConsolidationViewDto Project(ConsolidationCalculation calculation, IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; retained);</code> | [src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs:74](../../../../src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs#L74) |  |

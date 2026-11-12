@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DatePartition
+
+Qualified name: <code>Meridian.Storage.DatePartition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:181](../../../../src/Meridian.Storage/StorageOptions.cs#L181).
+
+Date-based file partitioning strategy.
+
+```csharp
+public enum DatePartition : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Storage/StorageOptions.cs:187](../../../../src/Meridian.Storage/StorageOptions.cs#L187) | No date partitioning - all data in single file per symbol/type. File name: {symbol}_{type}.jsonl |
+| <code>Daily</code> | [src/Meridian.Storage/StorageOptions.cs:192](../../../../src/Meridian.Storage/StorageOptions.cs#L192) | Partition by day: {date:yyyy-MM-dd} |
+| <code>Hourly</code> | [src/Meridian.Storage/StorageOptions.cs:198](../../../../src/Meridian.Storage/StorageOptions.cs#L198) | Partition by hour: {date:yyyy-MM-dd_HH} Good for high-volume data. |
+| <code>Monthly</code> | [src/Meridian.Storage/StorageOptions.cs:204](../../../../src/Meridian.Storage/StorageOptions.cs#L204) | Partition by month: {date:yyyy-MM} Good for long-term storage with less granularity. |
+
 ## DirectLendingCashTransactionWrite
 
 Qualified name: <code>Meridian.Storage.DirectLending.DirectLendingCashTransactionWrite</code>. Kind: `record`.
@@ -1189,21 +1210,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;string&gt; Issues { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:235](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L235) | Human-readable descriptions of every issue found. |
 | <code>[JsonPropertyName(&quot;fileResults&quot;)] public IReadOnlyList&lt;ExportFileVerificationResult&gt; FileResults { get; init; } = Array.Empty&lt;ExportFileVerificationResult&gt;();</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:241](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L241) | Per-file verification details. |
 | <code>public static ExportVerificationResult Failure(string reason) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:247](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L247) | Creates a result that represents a top-level failure (e.g. missing manifest). |
-
-## ExportVerifier
-
-Qualified name: <code>Meridian.Storage.Export.ExportVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Export/ExportVerificationReport.cs:14](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L14).
-
-Verifies the integrity of a completed export by re-reading the lineage_manifest.json and checking each exported file against the checksums and record counts recorded at export time.
-
-```csharp
-public sealed class ExportVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ExportVerificationResult&gt; VerifyExportAsync(string exportDirectory, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:29](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L29) | Verifies all files in exportDirectory against the lineage_manifest.json written there during export. |

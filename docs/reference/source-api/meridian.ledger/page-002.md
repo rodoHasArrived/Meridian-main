@@ -693,8 +693,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Ledger/JournalEntryMetadata.cs:33](../../../../src/Meridian.Ledger/JournalEntryMetadata.cs#L33) |  |
-| <code>public JournalEntryMetadata Normalize();</code> | [src/Meridian.Ledger/JournalEntryMetadata.cs:39](../../../../src/Meridian.Ledger/JournalEntryMetadata.cs#L39) | Returns a normalized copy suitable for durable comparisons and filters. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto? PreparerAttestation { get; init; }</code> | [src/Meridian.Ledger/JournalEntryMetadata.cs:35](../../../../src/Meridian.Ledger/JournalEntryMetadata.cs#L35) | Immutable native preparer decision; never ordinary approval or independent review. |
+| <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Ledger/JournalEntryMetadata.cs:37](../../../../src/Meridian.Ledger/JournalEntryMetadata.cs#L37) |  |
+| <code>public JournalEntryMetadata Normalize();</code> | [src/Meridian.Ledger/JournalEntryMetadata.cs:43](../../../../src/Meridian.Ledger/JournalEntryMetadata.cs#L43) | Returns a normalized copy suitable for durable comparisons and filters. |
 
 ## JournalEvidenceReference
 

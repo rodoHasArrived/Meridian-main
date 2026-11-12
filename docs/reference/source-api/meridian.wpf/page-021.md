@@ -6,6 +6,193 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationMetricModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationMetricModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:244](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L244).
+
+```csharp
+public sealed record WorkstationMetricModel(string Label, string Value, string Detail = "", string Glyph = "", string Tone = WorkspaceTone.Neutral, Brush? AccentBrush = null);
+```
+
+## WorkstationReadinessTone
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationReadinessTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:18](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L18).
+
+```csharp
+public enum WorkstationReadinessTone
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Neutral</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:20](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L20) |  |
+| <code>Ready</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:21](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L21) |  |
+| <code>Warning</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:22](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L22) |  |
+| <code>Blocked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:23](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L23) |  |
+| <code>Stale</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:24](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L24) |  |
+| <code>Recovery</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:25](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L25) |  |
+| <code>SignoffRequired</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:26](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L26) |  |
+| <code>EvidenceLinked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:27](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L27) |  |
+
+## WorkstationRecoveryActionModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationRecoveryActionModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:36](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L36).
+
+```csharp
+public sealed record WorkstationRecoveryActionModel(string Label, string Detail, string Target = "", string Tone = WorkspaceTone.Info);
+```
+
+## WorkstationSignoffRequirementModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationSignoffRequirementModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:42](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L42).
+
+```csharp
+public sealed record WorkstationSignoffRequirementModel(string Role, string Status, string Detail = "", string Tone = WorkspaceTone.Warning);
+```
+
+## WorkstationStateKind
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationStateKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L8).
+
+```csharp
+public enum WorkstationStateKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:10](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L10) |  |
+| <code>Loading</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:11](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L11) |  |
+| <code>Empty</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L12) |  |
+| <code>Error</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:13](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L13) |  |
+| <code>Stale</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:14](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L14) |  |
+| <code>Blocked</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:15](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L15) |  |
+
+## WorkstationStateModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationStateModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:56](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L56).
+
+```csharp
+public sealed record WorkstationStateModel(WorkstationStateKind Kind, string Title, string Detail, string ActionText = "", string TargetText = "", string EvidenceText = "", string Glyph = "", string Tone = WorkspaceTone.Neutral, WorkstationReadinessTone ReadinessTone = WorkstationReadinessTone.Neutral, WorkstationActionPostureModel? ActionPosture = null, IReadOnlyList<WorkstationEvidenceLinkModel>? EvidenceLinks = null, IReadOnlyList<WorkstationRecoveryActionModel>? RecoveryActions = null, WorkstationSignoffRequirementModel? SignoffRequirement = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt; VisibleEvidenceLinks =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:71](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L71) |  |
+| <code>public IReadOnlyList&lt;WorkstationRecoveryActionModel&gt; VisibleRecoveryActions =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:73](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L73) |  |
+| <code>public bool HasActionPosture =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:75](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L75) |  |
+| <code>public bool HasSignoffRequirement =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:77](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L77) |  |
+| <code>public static WorkstationStateModel Ready(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string evidenceText = &quot;&quot;, string glyph = &quot;\uE73E&quot;, string tone = WorkspaceTone.Success) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:79](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L79) |  |
+| <code>public static WorkstationStateModel Loading(string title, string detail, string glyph = &quot;\uE72C&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:89](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L89) |  |
+| <code>public static WorkstationStateModel Empty(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string glyph = &quot;\uE946&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:92](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L92) |  |
+| <code>public static WorkstationStateModel Error(string title, string detail, string actionText = &quot;&quot;, string targetText = &quot;&quot;, string evidenceText = &quot;&quot;, string glyph = &quot;\uE783&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:100](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L100) |  |
+| <code>public static WorkstationStateModel Blocked(string title, string detail, WorkstationActionPostureModel actionPosture, IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt;? evidenceLinks = null, IReadOnlyList&lt;WorkstationRecoveryActionModel&gt;? recoveryActions = null, WorkstationSignoffRequirementModel? signoffRequirement = null, string evidenceText = &quot;&quot;, string glyph = &quot;\uE783&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:109](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L109) |  |
+| <code>public static WorkstationStateModel Recovery(string title, string detail, WorkstationActionPostureModel actionPosture, IReadOnlyList&lt;WorkstationEvidenceLinkModel&gt;? evidenceLinks = null, IReadOnlyList&lt;WorkstationRecoveryActionModel&gt;? recoveryActions = null, WorkstationSignoffRequirementModel? signoffRequirement = null, string evidenceText = &quot;&quot;, string glyph = &quot;\uE930&quot;) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:133](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L133) |  |
+
+## WorkstationTableColumnModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableColumnModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:252](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L252).
+
+```csharp
+public sealed record WorkstationTableColumnModel(string Header, string BindingPath, double Width = 120, string StringFormat = "");
+```
+
+## WorkstationTableModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:261](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L261).
+
+Carries table column definitions, rows, title, and empty-state copy for workstation grids.
+
+```csharp
+public class WorkstationTableModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:263](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L263) |  |
+| <code>public string EmptyTitle { get; init; } = &quot;No rows&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:265](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L265) |  |
+| <code>public string EmptyDetail { get; init; } = &quot;No records are available.&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:267](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L267) |  |
+| <code>public IReadOnlyList&lt;WorkstationTableColumnModel&gt; Columns { get; init; } = Array.Empty&lt;WorkstationTableColumnModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:269](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L269) |  |
+| <code>public IEnumerable Rows { get; init; } = Array.Empty&lt;object&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:271](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L271) |  |
+
+## WorkstationTableModel (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:277](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L277).
+
+Adds strongly typed row enumeration to the workstation table presentation model.
+
+```csharp
+public sealed class WorkstationTableModel<TRecord>: WorkstationTableModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public new IEnumerable&lt;TRecord&gt; Rows { get; init; } = Array.Empty&lt;TRecord&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:279](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L279) |  |
+| <code>public WorkstationTableModel();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:281](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L281) |  |
+| <code>public WorkstationTableModel(IEnumerable&lt;TRecord&gt; rows, IReadOnlyList&lt;WorkstationTableColumnModel&gt; columns, string title = &quot;&quot;, string emptyTitle = &quot;No rows&quot;, string emptyDetail = &quot;No records are available.&quot;);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:286](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L286) |  |
+
+## ConnectionStatusIndicatorControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ConnectionStatusIndicatorControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:110](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L110).
+
+Provides a content surface for connection-status presentation.
+
+```csharp
+public sealed class ConnectionStatusIndicatorControl : ContentControl
+```
+
+## EmptyStatePanelControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.EmptyStatePanelControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:124](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L124).
+
+Provides a content surface for an empty-state explanation and action.
+
+```csharp
+public sealed class EmptyStatePanelControl : ContentControl
+```
+
+## ErrorStatePanelControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ErrorStatePanelControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:131](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L131).
+
+Provides a content surface for an error explanation and recovery action.
+
+```csharp
+public sealed class ErrorStatePanelControl : ContentControl
+```
+
 ## HealthBadgeControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Primitives.HealthBadgeControl</code>. Kind: `class`.

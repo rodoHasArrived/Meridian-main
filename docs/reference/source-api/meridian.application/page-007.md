@@ -107,22 +107,54 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionCaseAccountingService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:22](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L22).
-
-Governed corporate-action accounting lane. Attaches the durable exact-version projection binding from the retained Asset Accounting Event Spine Drafted candidate, records maker-checker approval, and executes posting through the spine&#x27;s posting authority — the only route to immutable journals and posted lot effects. Every command fails closed with a typed problem code when scope, policy coverage, period posture, balanced journals, lot resolution, retained evidence, or the required maker-checker approval is missing, and a failed attempt leaves the case recoverable in its prior state.
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs:13](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs#L13).
 
 ```csharp
-public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
+public sealed partial class CorporateActionCaseAccountingService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionCaseAccountingService(ICorporateActionOperationsStore store, IAssetAccountingEventProjectionStore? spineStore = null, IAccountingPostingCandidatePostService? postingService = null, ILedgerBookService? ledgerBookService = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:32](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L32) |  |
-| <code>public async Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:44](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L44) |  |
-| <code>public async Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:102](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L102) |  |
-| <code>public async Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:156](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L156) |  |
+| <code>public async Task&lt;CorporateActionCashDividendPreviewDto&gt; PreviewCashDividendAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs:15](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs#L15) |  |
+| <code>public async Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs:30](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs#L30) |  |
+| <code>public async Task&lt;CorporateActionCashDividendPostingResultDto&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs:96](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs#L96) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:23](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L23).
+
+Governed corporate-action accounting lane. Attaches the durable exact-version projection binding from the retained Asset Accounting Event Spine Drafted candidate, records maker-checker approval, and executes posting through the spine&#x27;s posting authority — the only route to immutable journals and posted lot effects. Every command fails closed with a typed problem code when scope, policy coverage, period posture, balanced journals, lot resolution, retained evidence, or the required maker-checker approval is missing, and a failed attempt leaves the case recoverable in its prior state.
+
+```csharp
+public sealed partial class CorporateActionCaseAccountingService : ICorporateActionCaseAccountingService, ICorporateActionCashDividendAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionCaseAccountingService(ICorporateActionOperationsStore store, IAssetAccountingEventProjectionStore? spineStore = null, IAccountingPostingCandidatePostService? postingService = null, ILedgerBookService? ledgerBookService = null, ICorporateActionCashDividendAccountingStore? cashDividendStore = null, ICorporateActionCashDividendEligibilityResolver? cashDividendEligibility = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:36](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L36) |  |
+| <code>public async Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:52](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L52) |  |
+| <code>public async Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:110](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L110) |  |
+| <code>public async Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs:167](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.cs#L167) |  |
+
+## CorporateActionCashDividendEligibilityResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionCashDividendEligibilityResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs:18](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs#L18).
+
+Resolves the owner&#x27;s bounded cash-dividend class from canonical whole-book holdings, not a processing-case quantity. This is eligibility composition over existing source/lot/rule authority, never a second accounting engine or an assertion of external completeness.
+
+```csharp
+public sealed class CorporateActionCashDividendEligibilityResolver(ILedgerSecurityEntitlementInventory? inventory, IInstrumentPositionProjectionStore? positions, ISecurityMasterStore? securities, ICorporateActionOperationsStore? operations, IAccountingConfigurationService? accountingConfiguration = null, ICorporateActionCashDividendReconciliationSupport? reconciliation = null, ISecurityCorporateActionsQueryService? corporateActions = null, ICorporateActionCashDividendAccountingStore? caseFacts = null, TimeProvider? timeProvider = null) : ICorporateActionCashDividendEligibilityResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;CorporateActionCashDividendEligibilityDto&gt; ResolveAsync(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, AssetAccountingEventSpineDto spine, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs#L31) |  |
 
 ## CorporateActionCommandService
 
@@ -862,7 +894,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityAssetProfileGovernanceService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L13).
+Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L14).
 
 Defines asset-profile lineage, drafting, approval, and promotion operations.
 
@@ -874,12 +906,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L15) |  |
-| <code>SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:16](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L16) |  |
-| <code>IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L17) |  |
-| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L19) |  |
-| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L24) |  |
-| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L29) |  |
+| <code>IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:16](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L16) |  |
+| <code>SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L17) |  |
+| <code>IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L18) |  |
+| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L20) |  |
+| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L25) |  |
+| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L30) |  |
 
 ## ISecurityMasterAmortizationLedgerBridge
 
@@ -916,21 +948,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs#L12) | Returns and forgets the outcome recorded for revisionId, or null. |
-
-## ISecurityMasterConflictAuthorityPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterConflictAuthorityPolicy</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs:10](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs#L10).
-
-Computes the deterministic default winner for a Security Master source conflict. Operators may override the policy winner, but only by acknowledging the deviation — the deviation between the policy winner and the operator&#x27;s choice is the audited artifact.
-
-```csharp
-public interface ISecurityMasterConflictAuthorityPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityMasterConflictAuthorityDecision Evaluate(SecurityMasterConflictAssessmentDto assessment, IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; providerConfidence);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs:17](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterConflictAuthorityPolicy.cs#L17) | Evaluates the conflict using the precedence ladder: golden-copy source → freshness (AsOf) → confidence score. The decision is bulk-eligible only when it matches the assessment&#x27;s recommended winner and the assessment was already flagged bulk-eligible. |

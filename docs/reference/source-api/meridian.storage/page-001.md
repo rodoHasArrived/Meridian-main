@@ -617,7 +617,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:25](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L25).
+Source: [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:26](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L26).
 
 Reads instrument position snapshots and maintains security and book position projections.
 
@@ -629,10 +629,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;InstrumentPositionProjectionSnapshot&gt; GetSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:27](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L27) |  |
-| <code>Task&lt;InstrumentPositionProjectionSnapshot&gt; GetAsOfAsync(Guid securityId, Guid ledgerBookId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:31](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L31) |  |
-| <code>Task&lt;BookPositionDto?&gt; GetBookPositionAsync(Guid positionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:37](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L37) |  |
-| <code>Task&lt;BookPositionDto&gt; UpsertAsync(InstrumentRoleDto role, BookPositionDto position, PositionEconomicStateDto? economicState, long expectedVersion, AssetOperationsWriteApprovalDto approval, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:41](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L41) |  |
+| <code>Task&lt;InstrumentPositionProjectionSnapshot&gt; GetSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:28](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L28) |  |
+| <code>Task&lt;InstrumentPositionProjectionSnapshot&gt; GetAsOfAsync(Guid securityId, Guid ledgerBookId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:32](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L32) |  |
+| <code>Task&lt;BookPositionDto?&gt; GetBookPositionAsync(Guid positionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:38](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L38) |  |
+| <code>Task&lt;BookPositionDto&gt; UpsertAsync(InstrumentRoleDto role, BookPositionDto position, PositionEconomicStateDto? economicState, long expectedVersion, AssetOperationsWriteApprovalDto approval, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:42](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L42) |  |
 
 ## InMemoryAssetOperationsProjectionStore
 
@@ -687,7 +687,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.AssetOperations.InstrumentPositionProjectionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:10](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L10).
+Source: [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:11](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L11).
 
 Durable, rebuildable role and book-position projection state. This is not a ledger balance or an accounting source of truth.
 
@@ -699,8 +699,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid? LedgerBookId { get; init; }</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:17](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L17) |  |
-| <code>public DateOnly? AsOfDate { get; init; }</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:19](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L19) |  |
+| <code>public Guid? LedgerBookId { get; init; }</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:18](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L18) |  |
+| <code>public DateOnly? AsOfDate { get; init; }</code> | [src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs:20](../../../../src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs#L20) |  |
+
+## ITransactionalAssetAccountingEventProjectionStore
+
+Qualified name: <code>Meridian.Storage.AssetOperations.ITransactionalAssetAccountingEventProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:47](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L47).
+
+Native cash-dividend lifecycle appends sharing the journal and case transaction.
+
+```csharp
+public interface ITransactionalAssetAccountingEventProjectionStore : IAssetAccountingEventProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Npgsql.NpgsqlConnection connection, Npgsql.NpgsqlTransaction transaction, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:49](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L49) |  |
+| <code>Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(Npgsql.NpgsqlConnection connection, Npgsql.NpgsqlTransaction transaction, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs:52](../../../../src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs#L52) |  |
 
 ## PostgresAssetOperationsProjectionStore
 
@@ -720,12 +739,25 @@ Declared public members:
 | <code>public async Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:31](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L31) |  |
 | <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs:47](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs#L47) |  |
 
+Source: [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs:9](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs#L9).
+
+```csharp
+public sealed partial class PostgresAssetOperationsProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs:11](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs#L11) |  |
+| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedBookPositionVersion, CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs:19](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs#L19) |  |
+
 Source: [src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.cs:12](../../../../src/Meridian.Storage/AssetOperations/PostgresAssetOperationsProjectionStore.cs#L12).
 
 Persists asset operations, accounting event, and instrument position projections in PostgreSQL.
 
 ```csharp
-public sealed partial class PostgresAssetOperationsProjectionStore : IAssetOperationsProjectionStore, IInstrumentPositionProjectionStore, IAssetAccountingEventProjectionStore
+public sealed partial class PostgresAssetOperationsProjectionStore : IAssetOperationsProjectionStore, IInstrumentPositionProjectionStore, ITransactionalAssetAccountingEventProjectionStore
 ```
 
 Declared public members:
@@ -1119,24 +1151,3 @@ Enum declarations:
 | <code>Standard</code> | [src/Meridian.Storage/StorageOptions.cs:232](../../../../src/Meridian.Storage/StorageOptions.cs#L232) | Standard data - normal retention policies apply. |
 | <code>Transient</code> | [src/Meridian.Storage/StorageOptions.cs:234](../../../../src/Meridian.Storage/StorageOptions.cs#L234) | Transient data - short-lived, deletable quickly. |
 | <code>Derived</code> | [src/Meridian.Storage/StorageOptions.cs:236](../../../../src/Meridian.Storage/StorageOptions.cs#L236) | Derived data - can be regenerated, aggressive cleanup. |
-
-## DatePartition
-
-Qualified name: <code>Meridian.Storage.DatePartition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:181](../../../../src/Meridian.Storage/StorageOptions.cs#L181).
-
-Date-based file partitioning strategy.
-
-```csharp
-public enum DatePartition : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Storage/StorageOptions.cs:187](../../../../src/Meridian.Storage/StorageOptions.cs#L187) | No date partitioning - all data in single file per symbol/type. File name: {symbol}_{type}.jsonl |
-| <code>Daily</code> | [src/Meridian.Storage/StorageOptions.cs:192](../../../../src/Meridian.Storage/StorageOptions.cs#L192) | Partition by day: {date:yyyy-MM-dd} |
-| <code>Hourly</code> | [src/Meridian.Storage/StorageOptions.cs:198](../../../../src/Meridian.Storage/StorageOptions.cs#L198) | Partition by hour: {date:yyyy-MM-dd_HH} Good for high-volume data. |
-| <code>Monthly</code> | [src/Meridian.Storage/StorageOptions.cs:204](../../../../src/Meridian.Storage/StorageOptions.cs#L204) | Partition by month: {date:yyyy-MM} Good for long-term storage with less granularity. |

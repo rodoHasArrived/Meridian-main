@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WashSaleReplacementQuery
+
+Qualified name: <code>Meridian.Ledger.WashSaleReplacementQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:17](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L17).
+
+The question a wash-sale replacement search answers: for this loss-generating disposal, which acquisitions of the same security fall inside the policy window, and which prior deferrals have already been capitalized into the lots being relieved?
+
+```csharp
+public sealed record WashSaleReplacementQuery(Guid LedgerBookId, LedgerAccount DisposingAccount, Guid SecurityId, DateOnly SaleDate, WashSalePolicy Policy, IReadOnlyList<string> RelievedLotIds);
+```
+
 ## WashSaleReplacementScope
 
 Qualified name: <code>Meridian.Ledger.WashSaleReplacementScope</code>. Kind: `enum`.

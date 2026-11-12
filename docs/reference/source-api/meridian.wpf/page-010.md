@@ -6,6 +6,100 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WatchlistChangeType
+
+Qualified name: <code>Meridian.Wpf.Services.WatchlistChangeType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:670](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L670).
+
+Type of watchlist change.
+
+```csharp
+public enum WatchlistChangeType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Created</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:672](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L672) |  |
+| <code>Updated</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:673](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L673) |  |
+| <code>Deleted</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:674](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L674) |  |
+| <code>Reordered</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:675](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L675) |  |
+| <code>Synced</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:676](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L676) |  |
+
+## WatchlistsChangedEventArgs
+
+Qualified name: <code>Meridian.Wpf.Services.WatchlistsChangedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:652](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L652).
+
+Event arguments for watchlist changes.
+
+```csharp
+public sealed class WatchlistsChangedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WatchlistChangeType ChangeType { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:655](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L655) | Type of change that occurred. |
+| <code>public Watchlist? Watchlist { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:658](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L658) | The affected watchlist (may be null for bulk operations). |
+| <code>public WatchlistsChangedEventArgs(WatchlistChangeType changeType, Watchlist? watchlist);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:660](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L660) |  |
+
+## WatchlistService
+
+Qualified name: <code>Meridian.Wpf.Services.WatchlistService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:28](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L28).
+
+Service for managing symbol watchlists in the WPF application. Provides local persistence and optional synchronization with the backend API. Implements the shared IWatchlistService seam so shared UI services can read this host&#x27;s watchlists instead of the in-memory default.
+
+```csharp
+public sealed class WatchlistService : IWatchlistReader, IWatchlistService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WatchlistService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:43](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L43) | Gets the singleton instance of the WatchlistService. |
+| <code>public string BaseUrl { get; set; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:48](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L48) | Gets or sets the base URL for the API. |
+| <code>public event EventHandler&lt;WatchlistsChangedEventArgs&gt;? WatchlistsChanged;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:57](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L57) | Occurs when watchlists are updated. |
+| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetAllWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:80](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L80) | Gets all watchlists. |
+| <code>public async Task&lt;Watchlist?&gt; GetWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:95](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L95) | Gets a specific watchlist by ID. |
+| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(string name, IEnumerable&lt;string&gt;? symbols = null, string? color = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:112](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L112) | Creates a new watchlist. |
+| <code>public async Task&lt;Watchlist?&gt; UpdateWatchlistAsync(string watchlistId, string? name = null, string? color = null, bool? isPinned = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:152](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L152) | Updates an existing watchlist. |
+| <code>public async Task&lt;bool&gt; DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:199](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L199) | Deletes a watchlist. |
+| <code>public async Task&lt;int&gt; AddSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:231](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L231) | Adds symbols to a watchlist. |
+| <code>public async Task&lt;int&gt; RemoveSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:286](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L286) | Removes symbols from a watchlist. |
+| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:337](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L337) | Gets all watchlists that contain a specific symbol. |
+| <code>public async Task&lt;string?&gt; ExportWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:352](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L352) | Exports a watchlist to JSON. |
+| <code>public async Task&lt;Watchlist?&gt; ImportWatchlistAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:367](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L367) | Imports a watchlist from JSON. |
+| <code>public async Task&lt;bool&gt; SyncWithBackendAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:393](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L393) | Syncs local watchlists with the backend API. |
+| <code>public async Task ReorderWatchlistsAsync(IEnumerable&lt;string&gt; watchlistIds, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:435](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L435) | Reorders watchlists. |
+| <code>public async Task&lt;bool&gt; CreateOrUpdateWatchlistAsync(string name, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:478](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L478) | Creates a new watchlist or updates an existing one with the given name. If a watchlist with the name exists, symbols are added to it. Otherwise, a new watchlist is created. |
+
+## WindowStartupRecovery
+
+Qualified name: <code>Meridian.Wpf.Services.WindowStartupRecovery</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WindowStartupRecovery.cs:9](../../../../src/Meridian.Wpf/Services/WindowStartupRecovery.cs#L9).
+
+Normalizes startup window state when Meridian is launched from shells that provide hidden or tiny initial window metrics.
+
+```csharp
+public static class WindowStartupRecovery
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool NeedsRecovery(bool isVisible, bool showInTaskbar, WindowState windowState, double nativeWidth, double nativeHeight, double minWidth, double minHeight);</code> | [src/Meridian.Wpf/Services/WindowStartupRecovery.cs:11](../../../../src/Meridian.Wpf/Services/WindowStartupRecovery.cs#L11) |  |
+| <code>public static Rect ResolveBounds(Rect? persistedBounds, Rect nativeBounds, double minWidth, double minHeight, double fallbackWidth, double fallbackHeight);</code> | [src/Meridian.Wpf/Services/WindowStartupRecovery.cs:27](../../../../src/Meridian.Wpf/Services/WindowStartupRecovery.cs#L27) |  |
+
 ## WorkflowStepStatus
 
 Qualified name: <code>Meridian.Wpf.Services.WorkflowStepStatus</code>. Kind: `class`.
@@ -246,7 +340,7 @@ Qualified name: <code>Meridian.Wpf.Services.WorkstationContractualCashFlowApiCli
 Source: [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs:21](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs#L21).
 
 ```csharp
-public sealed class WorkstationContractualCashFlowApiClient : IWorkstationContractualCashFlowApiClient
+public sealed partial class WorkstationContractualCashFlowApiClient : IWorkstationContractualCashFlowApiClient
 ```
 
 Declared public members:
@@ -258,6 +352,21 @@ Declared public members:
 | <code>public Task&lt;ApiResponse&lt;ContractualCashFlowRun&gt;&gt; RetainRunAsync(string subjectKind, Guid subjectId, CreateContractualCashFlowRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs:37](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs#L37) |  |
 | <code>public Task&lt;ApiResponse&lt;ContractualCashFlowRun&gt;&gt; GetRunAsync(string subjectKind, Guid subjectId, Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs:44](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs#L44) |  |
 | <code>public Task&lt;ApiResponse&lt;ContractualCashFlowRunComparison&gt;&gt; CompareRunsAsync(string subjectKind, Guid subjectId, Guid runId, Guid otherRunId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs:50](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.cs#L50) |  |
+
+Source: [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:18](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L18).
+
+```csharp
+public sealed partial class WorkstationContractualCashFlowApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;ApiResponse&lt;SinglePrincipalAttestationWorkspaceDto&gt;&gt; GetDraftCheckWorkspaceAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:20](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L20) |  |
+| <code>public Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; InspectDraftCheckAsync(Guid securityId, Guid runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:22](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L22) |  |
+| <code>public Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordDraftCheckAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:25](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L25) |  |
+| <code>public Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeDraftCheckAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:27](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L27) |  |
 
 ## WorkstationOperatingContextService
 
@@ -409,12 +518,28 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.WorkstationSecurityMasterApiClient</code>. Kind: `class`.
 
+Source: [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:21](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L21).
+
+```csharp
+public sealed partial class WorkstationSecurityMasterApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;ApiResponse&lt;CorporateActionProcessingCaseDto[]&gt;&gt; ListCashDividendCasesAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:24](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L24) |  |
+| <code>public Task&lt;ApiResponse&lt;CorporateActionCashDividendWorkspaceDto&gt;&gt; GetCashDividendWorkspaceAsync(Guid caseId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:27](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L27) |  |
+| <code>public Task&lt;ApiResponse&lt;CashDividendAttestationDeclarationResultDto&gt;&gt; ChangeCashDividendDeclarationAsync(Guid caseId, ChangeCashDividendAttestationDeclarationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:29](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L29) |  |
+| <code>public Task&lt;ApiResponse&lt;CorporateActionCashDividendAttestationResultDto&gt;&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:31](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L31) |  |
+| <code>public Task&lt;ApiResponse&lt;CorporateActionCashDividendPostingResultDto&gt;&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:33](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L33) |  |
+
 Source: [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs:86](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs#L86).
 
 Adapts shared security-master trust, passport, override, conflict, and field-edit APIs for desktop workflows.
 
 ```csharp
-public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
+public sealed partial class WorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
 ```
 
 Declared public members:
@@ -1043,448 +1168,3 @@ Declared public members:
 | <code>public void Apply(IReadOnlyCollection&lt;WorkspaceWorkflowSummary&gt; summaries, string currentWorkspace);</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:85](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L85) |  |
 | <code>public void UpdatePrimary(string currentWorkspace);</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:91](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L91) |  |
 | <code>public void ToggleSecondarySummaries();</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:115](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L115) |  |
-
-## AccountingClosePostingBalanceRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.AccountingClosePostingBalanceRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.EvidenceRequests.cs:406](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.EvidenceRequests.cs#L406).
-
-```csharp
-public sealed record AccountingClosePostingBalanceRow(string AccountName, string AccountType, string Balance, string Scope, string FinancialAccountId);
-```
-
-## AccountingCloseViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.AccountingCloseViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:6](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L6).
-
-```csharp
-public sealed partial class AccountingCloseViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string CloseScopeFundProfileId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:14](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L14) |  |
-| <code>public string CloseScopeLedgerBookIdText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:20](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L20) |  |
-| <code>public string CloseScopeFundAccountIdText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:26](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L26) |  |
-| <code>public string CloseScopeEntityId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:32](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L32) |  |
-| <code>public string CloseScopePeriodId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:38](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L38) |  |
-| <code>public string CloseScopeStatusText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:44](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L44) |  |
-| <code>public void ApplyCloseScope(CloseReadinessScopeDto scope);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs:49](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.CloseScope.cs#L49) | Receives the operator&#x27;s explicit subject selection from navigation or the scope inputs. |
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:16](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L16).
-
-Exposes bindable state and commands to edit close plans, dependencies, sign-offs, adjustments, evidence, blockers, and locks.
-
-```csharp
-public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingCloseViewModel(IAccountingProjectionQueryService queryService, IAccountingCloseManagementService? closeManagementService = null, DesktopAuthenticationSession? authenticationSession = null);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L69) |  |
-| <code>public ObservableCollection&lt;TrialBalanceLine&gt; TrialBalance { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L87) |  |
-| <code>public ObservableCollection&lt;RollForwardLine&gt; RollForward { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L88) |  |
-| <code>public ObservableCollection&lt;SourceLinkedAuditLine&gt; AuditTrail { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L89) |  |
-| <code>public ObservableCollection&lt;CloseApprovalHistoryEntry&gt; ApprovalHistory { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L90) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseMaterialityRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L91) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseTaskRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L92) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseDependencyRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L93) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseSignOffMatrixRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L94) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseLateAdjustmentRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L95) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseEvidenceReviewRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L96) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ClosePeriodLockIssueRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L97) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CloseOperatingCoverageRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L98) |  |
-| <code>public ObservableCollection&lt;AccountingClosePostingBalanceRow&gt; ClosingEntryBalanceRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L99) |  |
-| <code>public ObservableCollection&lt;CloseWorkflowStep&gt; CloseWorkflowSteps { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L100) |  |
-| <code>public ObservableCollection&lt;CloseSetupTaskOption&gt; CloseSetupTaskOptions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L101) |  |
-| <code>public IReadOnlyList&lt;string&gt; CloseTaskSignOffDecisionOptions { get; } = [ManualJournalEntryStatusDto.Approved.ToString(), ManualJournalEntryStatusDto.Rejected.ToString()];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L102) |  |
-| <code>public IReadOnlyList&lt;string&gt; CloseReviewDecisionOptions { get; } = [ManualJournalEntryStatusDto.Approved.ToString(), ManualJournalEntryStatusDto.Rejected.ToString()];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L108) |  |
-| <code>public IAsyncRelayCommand LoadClosePlanCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L114) |  |
-| <code>public IAsyncRelayCommand ConfigureClosePlanCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L115) |  |
-| <code>public IAsyncRelayCommand SignOffCloseTaskCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L116) |  |
-| <code>public IAsyncRelayCommand RequestLateAdjustmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L117) |  |
-| <code>public IAsyncRelayCommand ReviewLateAdjustmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L118) |  |
-| <code>public IAsyncRelayCommand ReviewCloseEvidenceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L119) |  |
-| <code>public IAsyncRelayCommand QueueClosingEntriesCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L120) |  |
-| <code>public IAsyncRelayCommand LockClosePeriodCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L121) |  |
-| <code>public string CloseWorkflowIdText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L123) |  |
-| <code>public decimal CloseSetupAmountThreshold { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L136) |  |
-| <code>public decimal CloseSetupPercentThreshold { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L148) |  |
-| <code>public string CloseSetupCurrency { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:160](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L160) |  |
-| <code>public string CloseSetupReviewRole { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L172) |  |
-| <code>public bool CloseSetupRequiresLateAdjustmentApproval { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L184) |  |
-| <code>public string CloseSetupTaskId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L196) |  |
-| <code>public string CloseSetupTaskDisplayName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:208](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L208) |  |
-| <code>public string CloseSetupTaskOwner { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L220) |  |
-| <code>public string CloseSetupTaskDueDateText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L232) |  |
-| <code>public int CloseSetupTaskRequiredApprovalCount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L244) |  |
-| <code>public string CloseSetupTaskRequiredApprovalRole { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L256) |  |
-| <code>public string CloseSetupTaskRequiredEvidence { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L268) |  |
-| <code>public string CloseSetupTaskSignOffRequirementsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L280) |  |
-| <code>public string CloseSetupTaskDependsOnTaskIdsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L292) |  |
-| <code>public string CloseSetupTaskDependencyReason { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L304) |  |
-| <code>public string SelectedCloseSetupTaskId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:316](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L316) |  |
-| <code>public string CloseTaskSignOffTaskId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:332](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L332) |  |
-| <code>public string CloseTaskSignOffRole { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:344](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L344) |  |
-| <code>public string CloseTaskSignOffDecision { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:356](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L356) |  |
-| <code>public string CloseTaskSignOffNotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:368](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L368) |  |
-| <code>public string LateAdjustmentJournalEntryIdText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:380](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L380) |  |
-| <code>public string LateAdjustmentAmountText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:392](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L392) |  |
-| <code>public string LateAdjustmentCurrency { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L404) |  |
-| <code>public string LateAdjustmentReason { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:416](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L416) |  |
-| <code>public string LateAdjustmentReviewRequestId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:428](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L428) |  |
-| <code>public string LateAdjustmentReviewDecision { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:440](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L440) |  |
-| <code>public string LateAdjustmentReviewNotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:452](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L452) |  |
-| <code>public string CloseEvidenceReviewIssueCode { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:464](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L464) |  |
-| <code>public string CloseEvidenceReviewTargetId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:476](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L476) |  |
-| <code>public string CloseEvidenceReviewNotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:488](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L488) |  |
-| <code>public ClosePeriodState CloseState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:500](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L500) |  |
-| <code>public string CloseStateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:515](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L515) |  |
-| <code>public string TrialBalanceStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L530) |  |
-| <code>public string EvidencePackageStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:545](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L545) |  |
-| <code>public string ClosePlanSetupStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:560](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L560) |  |
-| <code>public string ClosePeriodLockStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:575](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L575) |  |
-| <code>public string CloseTaskSignOffStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:590](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L590) |  |
-| <code>public string LateAdjustmentRequestStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:605](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L605) |  |
-| <code>public string LateAdjustmentReviewStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:620](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L620) |  |
-| <code>public string CloseEvidenceReviewStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:635](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L635) |  |
-| <code>public ClosePostingGateDto? ClosingEntriesGate { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:650](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L650) |  |
-| <code>public string ClosingEntriesGateStatusText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:671](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L671) |  |
-| <code>public string ClosingEntriesNetIncomeRollText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:676](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L676) |  |
-| <code>public string ClosingEntriesBalanceCountText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L685) |  |
-| <code>public string ClosingEntriesLockPostureText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:690](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L690) |  |
-| <code>public string ClosingEntriesDetailText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:697](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L697) |  |
-| <code>public string ClosingEntriesJournalEvidenceText { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:701](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L701) |  |
-| <code>public SourceLinkedAuditLine? SelectedAuditLine { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:723](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L723) |  |
-| <code>public string SelectedAuditDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:741](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L741) |  |
-| <code>public void Load(string ledgerId);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:756](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L756) |  |
-| <code>public void ApplyCloseProjection(AccountingCloseProjection projection);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:781](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L781) |  |
-| <code>public void SetCloseState(ClosePeriodState state);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs:800](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs#L800) |  |
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.DraftParsing.cs:7](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.DraftParsing.cs#L7).
-
-```csharp
-public sealed partial class AccountingCloseViewModel
-```
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.Drafts.cs:7](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.Drafts.cs#L7).
-
-```csharp
-public sealed partial class AccountingCloseViewModel
-```
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.EvidenceRequests.cs:8](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.EvidenceRequests.cs#L8).
-
-```csharp
-public sealed partial class AccountingCloseViewModel
-```
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.MutationAuthority.cs:5](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.MutationAuthority.cs#L5).
-
-```csharp
-public sealed partial class AccountingCloseViewModel
-```
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs:5](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs#L5).
-
-```csharp
-public sealed partial class AccountingCloseViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void ApplyClosePlan(ClosePeriodPlanDto closePlan);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs:9](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs#L9) |  |
-| <code>public void ApplyClosePlan(Guid workflowId, ClosePeriodPlanDto closePlan) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs:17](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs#L17) |  |
-| <code>public void ApplyClosePlan(Guid workflowId, long workflowVersion, ClosePeriodPlanDto closePlan);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs:20](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.WorkflowSelection.cs#L20) |  |
-
-## AccountingConfigureViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.AccountingConfigureViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:5](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L5).
-
-```csharp
-public sealed partial class AccountingConfigureViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool CanEditManualJournalDraft =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:9](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L9) |  |
-| <code>public bool IsAssetAccountingDraft =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:10](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L10) |  |
-| <code>public string ManualJournalEntryHeadingText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:11](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L11) |  |
-| <code>public string AssetAccountingDraftRestrictionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:12](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L12) |  |
-| <code>public IReadOnlyList&lt;ManualJournalEntryLineDto&gt; AssetAccountingDraftLines =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:15](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L15) |  |
-| <code>public AccountingWorkbenchRow? SelectedManualJournalDraftRow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs:17](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.AssetDrafts.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L19).
-
-Exposes bindable state and commands to review books, chart, rules, manual journals, GL evidence, validation, audit readiness.
-
-```csharp
-public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingConfigureViewModel(FundContextService fundContextService, IWorkstationAccountingApiClient configurationService, IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService, IAccountingConfigurationStore? configurationStore = null, IManualJournalEntryDraftStore? manualJournalEntryDraftStore = null, AccountingSystemIntegrationService? accountingSystemIntegrationService = null, FundOperationsWorkspaceReadService? fundOperationsWorkspaceReadService = null, IAccountingPolicyService? accountingPolicyService = null, ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null, IAccountingPostingCandidateService? accountingPostingCandidateService = null, IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null, ILedgerBookService? ledgerBookService = null, AccountingProductionReadinessService? accountingProductionReadinessService = null, IAccountingProductionCertificationProfileStore? productionCertificationProfileStore = null, AccountingProductionCertificationCommandService? productionCertificationCommandService = null, IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null, IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null, DesktopAuthenticationSession? authenticationSession = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IAccountingAuditIntegrityApiClient? auditIntegrityClient = null, IFactorPaydownApiClient? factorPaydownClient = null);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L307) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:402](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L402) |  |
-| <code>public IAsyncRelayCommand SeedBaselineConfigurationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L403) |  |
-| <code>public IAsyncRelayCommand ActivateConfigurationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L404) |  |
-| <code>public IAsyncRelayCommand SaveManualJournalDraftCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L405) |  |
-| <code>public IAsyncRelayCommand ValidateManualJournalDraftCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L406) |  |
-| <code>public IAsyncRelayCommand SubmitManualJournalDraftCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L407) |  |
-| <code>public IAsyncRelayCommand RefreshExternalGlCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:408](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L408) |  |
-| <code>public IAsyncRelayCommand SaveChartAccountCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L409) |  |
-| <code>public IAsyncRelayCommand SavePostingRuleDraftCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:410](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L410) |  |
-| <code>public IAsyncRelayCommand SaveExternalGlMappingProfileCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L411) |  |
-| <code>public IAsyncRelayCommand CreateFundScopedPolicyCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:412](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L412) |  |
-| <code>public IAsyncRelayCommand BuildPostingCandidateCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:413](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L413) |  |
-| <code>public IAsyncRelayCommand ExecuteRulesStudioTestsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:414](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L414) |  |
-| <code>public IAsyncRelayCommand ApproveRulesStudioPromotionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:415](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L415) |  |
-| <code>public IAsyncRelayCommand CreateLedgerBookSetupCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:416](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L416) |  |
-| <code>public IAsyncRelayCommand SaveProductionCertificationProfileCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L417) |  |
-| <code>public IAsyncRelayCommand SaveTenantAdministrationProfileCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:418](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L418) |  |
-| <code>public IAsyncRelayCommand RetainImplementationSandboxProofCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:419](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L419) |  |
-| <code>public IAsyncRelayCommand ApproveManualJournalCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:420](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L420) |  |
-| <code>public IAsyncRelayCommand PostManualJournalCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:421](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L421) |  |
-| <code>public IAsyncRelayCommand ReverseManualJournalCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:422](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L422) |  |
-| <code>public IAsyncRelayCommand RebookManualJournalCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L423) |  |
-| <code>public IAsyncRelayCommand LockManualJournalAfterCloseCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L424) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ValidationRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L426) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ChartRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:427](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L427) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; TemplateRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:428](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L428) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; PostingRuleRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:429](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L429) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; RulesStudioRuleRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:430](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L430) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; RulesStudioPromotionRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:431](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L431) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; RulesStudioActionRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:432](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L432) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; SetupReadinessRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:433](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L433) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; LedgerBookRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:434](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L434) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; AuditRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:435](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L435) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProviderRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:436](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L436) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ExternalGlMappingProfileRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:437](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L437) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ExternalGlEvidencePackageRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L438) |  |
-| <code>public ObservableCollection&lt;ExternalGlEvidenceRow&gt; ExternalGlRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L439) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalDraftRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:440](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L440) |  |
-| <code>public RecurringJournalQueueViewModel RecurringJournalQueue { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:442](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L442) |  |
-| <code>public ObservableCollection&lt;string&gt; RecurringJournalEntityOptions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:446](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L446) | On-demand audit-chain verification, matching the browser Configuration panel. |
-| <code>public string? SelectedRecurringJournalEntityId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:448](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L448) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalFundEventLedgerRecordRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:457](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L457) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalCapitalAccountRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:458](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L458) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalCapitalAccountSubledgerRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:459](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L459) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalPaymentIntentRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:460](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L460) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalFundEventRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:461](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L461) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalLedgerImpactRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:462](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L462) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalReportOutputRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:463](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L463) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalEntryTypeRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:464](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L464) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CapitalAccountInvestorRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:465](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L465) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CapitalAccountAllocationRuleRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:466](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L466) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CapitalAccountStatementLineageRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:467](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L467) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CapitalAccountAuditDrillThroughRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:468](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L468) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; CapitalAccountCapabilityRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:469](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L469) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; EvidenceRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:470](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L470) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ReconciliationRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:471](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L471) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; PolicyRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:472](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L472) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; PostingCandidateRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:473](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L473) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ManualJournalLifecycleRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L474) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessComponentRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:475](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L475) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessIssueRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:476](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L476) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessWorkflowRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:477](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L477) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessDimensionalControlRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:478](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L478) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessGapRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:479](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L479) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessMigrationPlanRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:480](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L480) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessMigrationArtifactRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:481](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L481) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; ProductionReadinessMigrationWorkerPlanRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:482](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L482) |  |
-| <code>public ObservableCollection&lt;AccountingWorkbenchRow&gt; TenantAdministrationControlRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:483](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L483) |  |
-| <code>public ObservableCollection&lt;string&gt; ReconciliationViewOptions { get; } = [&quot;Open breaks&quot;, &quot;Awaiting evidence&quot;, &quot;Critical or SLA&quot;, &quot;All&quot;];</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:484](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L484) |  |
-| <code>public ObservableCollection&lt;AccountingBasisKindDto&gt; AccountingBasisOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:491](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L491) |  |
-| <code>public ObservableCollection&lt;ManualJournalEntryTypeDto&gt; ManualJournalEntryTypeOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:492](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L492) |  |
-| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:494](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L494) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:500](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L500) |  |
-| <code>public string ActiveFundText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:506](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L506) |  |
-| <code>public string StoragePostureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:512](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L512) |  |
-| <code>public string ConfigurationStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:518](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L518) |  |
-| <code>public string ConfigurationDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:524](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L524) |  |
-| <code>public string RulesStudioStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L530) |  |
-| <code>public string RulesStudioDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:536](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L536) |  |
-| <code>public string RulesStudioActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:542](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L542) |  |
-| <code>public string ManualJournalStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:548](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L548) |  |
-| <code>public string CapitalAccountWorkbenchStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:554](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L554) |  |
-| <code>public string ExternalGlStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:560](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L560) |  |
-| <code>public string PostingPostureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:566](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L566) |  |
-| <code>public string ChartAccountSetupStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:572](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L572) |  |
-| <code>public string ChartAccountNodeId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:578](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L578) |  |
-| <code>public string ChartAccountPath { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:590](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L590) |  |
-| <code>public string ChartAccountName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:602](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L602) |  |
-| <code>public string ChartAccountType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:614](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L614) |  |
-| <code>public string ChartAccountParentPath { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:626](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L626) |  |
-| <code>public string ChartAccountFinancialAccountId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:632](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L632) |  |
-| <code>public string ChartAccountEvidenceText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:638](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L638) |  |
-| <code>public bool CanSaveChartAccount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:650](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L650) |  |
-| <code>public string PostingRuleDraftStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:658](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L658) |  |
-| <code>public string PostingRuleDraftRuleId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:664](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L664) |  |
-| <code>public string PostingRuleDraftDisplayName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:676](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L676) |  |
-| <code>public string PostingRuleDraftSourceEventType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:688](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L688) |  |
-| <code>public string PostingRuleDraftTemplateId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:700](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L700) |  |
-| <code>public string PostingRuleDraftDescription { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:712](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L712) |  |
-| <code>public int PostingRuleDraftPriority { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:718](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L718) |  |
-| <code>public string PostingRuleDraftEvidenceText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:724](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L724) |  |
-| <code>public bool CanSavePostingRuleDraft =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:736](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L736) |  |
-| <code>public string ExternalGlMappingProfileStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:744](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L744) |  |
-| <code>public string ExternalGlMappingProviderId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:750](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L750) |  |
-| <code>public string ExternalGlMappingProfileId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:762](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L762) |  |
-| <code>public string ExternalGlMappingDisplayName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:774](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L774) |  |
-| <code>public string ExternalGlMappingAccountMappingsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:786](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L786) |  |
-| <code>public string ExternalGlMappingMeridianDimensionsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:798](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L798) |  |
-| <code>public string ExternalGlMappingExternalDimensionsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:804](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L804) |  |
-| <code>public string ExternalGlMappingEvidenceText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:810](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L810) |  |
-| <code>public bool ExternalGlMappingProfileCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:822](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L822) |  |
-| <code>public bool CanSaveExternalGlMappingProfile =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:828](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L828) |  |
-| <code>public string CloseReadinessText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:837](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L837) |  |
-| <code>public string CloseDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:843](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L843) |  |
-| <code>public string EvidencePostureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:849](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L849) |  |
-| <code>public string ReconciliationPostureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:855](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L855) |  |
-| <code>public string PolicyPostureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:861](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L861) |  |
-| <code>public string PostingCandidateStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:867](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L867) |  |
-| <code>public string PostingCandidateDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:873](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L873) |  |
-| <code>public string ManualJournalLifecycleStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:879](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L879) |  |
-| <code>public string LedgerBookSetupStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:885](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L885) |  |
-| <code>public string LedgerBookAdministrationText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:891](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L891) |  |
-| <code>public string ProductionReadinessStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:897](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L897) |  |
-| <code>public string ProductionReadinessDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:903](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L903) |  |
-| <code>public string ProductionReadinessScoreText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:909](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L909) |  |
-| <code>public string ProductionReadinessLedgerBookText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:915](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L915) |  |
-| <code>public string ProductionReadinessExternalGlText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:921](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L921) |  |
-| <code>public string ProductionReadinessDimensionalReportingText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:927](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L927) |  |
-| <code>public string ProductionReadinessTenantAdminText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:933](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L933) |  |
-| <code>public string ProductionCertificationProfileStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:939](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L939) |  |
-| <code>public string ProductionCertificationProfileScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:945](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L945) |  |
-| <code>public string ProductionCertificationProfileUpdatedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:951](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L951) |  |
-| <code>public string ProductionCertificationEvidenceText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:957](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L957) |  |
-| <code>public bool PostingRulesLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:969](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L969) |  |
-| <code>public bool JournalLifecycleLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:975](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L975) |  |
-| <code>public bool CloseReportingLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:981](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L981) |  |
-| <code>public bool ClosePlanConfigurationLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:987](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L987) |  |
-| <code>public bool ExternalGlLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:993](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L993) |  |
-| <code>public bool ReconciliationLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:999](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L999) |  |
-| <code>public bool DirectLendingLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1005](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1005) |  |
-| <code>public bool StrategyLedgerReadLedgerBookNativeCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1011](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1011) |  |
-| <code>public bool PeriodReportDimensionQueriesCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1017](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1017) |  |
-| <code>public bool CrossPeriodReportDimensionQueriesCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1023](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1023) |  |
-| <code>public bool JournalQueryDimensionFiltersCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1029](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1029) |  |
-| <code>public bool ExternalExportDimensionMappingCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1035](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1035) |  |
-| <code>public bool LedgerLineDimensionsPersistedCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1041](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1041) |  |
-| <code>public bool TrialBalanceDimensionFiltersCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1047](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1047) |  |
-| <code>public bool ReportPackageDimensionProvenanceCertified { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1053](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1053) |  |
-| <code>public bool CanSaveProductionCertificationProfile =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1059](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1059) |  |
-| <code>public string TenantAdministrationProfileStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1064](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1064) |  |
-| <code>public string TenantAdministrationProfileScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1070](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1070) |  |
-| <code>public string TenantAdministrationProfileUpdatedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1076](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1076) |  |
-| <code>public string TenantAdministrationEvidenceText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1082](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1082) |  |
-| <code>public string ImplementationSandboxProofStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1094](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1094) |  |
-| <code>public bool TenantScopeConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1100](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1100) |  |
-| <code>public bool AdminRoleProfileConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1106](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1106) |  |
-| <code>public bool ScopedAccessPoliciesConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1112](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1112) |  |
-| <code>public bool ReportingGroupsConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1118](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1118) |  |
-| <code>public bool AccountingAdminSurfaceConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1124](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1124) |  |
-| <code>public bool WpfAccountingAdminSurfaceConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1130](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1130) |  |
-| <code>public bool ChartAdministrationStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1136](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1136) |  |
-| <code>public bool RuleTestPromotionStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1142](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1142) |  |
-| <code>public bool CloseSetupStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1148](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1148) |  |
-| <code>public bool ProviderMappingStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1154](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1154) |  |
-| <code>public bool TenantCompanyReportGroupSetupStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1160](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1160) |  |
-| <code>public bool AuditReviewToolingConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1166](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1166) |  |
-| <code>public bool BulkImportExportSafeguardsConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1172](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1172) |  |
-| <code>public bool PerformanceValidationConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1178](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1178) |  |
-| <code>public bool DisasterRecoveryRunbookConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1184](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1184) |  |
-| <code>public bool LedgerBookAdministrationStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1190](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1190) |  |
-| <code>public bool PostingRuleAuthoringStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1196](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1196) |  |
-| <code>public bool ApprovalQueueStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1202](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1202) |  |
-| <code>public string ApprovalQueueId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1214](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1214) |  |
-| <code>public string ApprovalQueueDisplayName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1226](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1226) |  |
-| <code>public string ApprovalQueueWorkflowKind { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1238](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1238) |  |
-| <code>public string ApprovalQueueRequiredApprovalRole { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1250](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1250) |  |
-| <code>public int ApprovalQueueRequiredApprovalCount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1262](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1262) |  |
-| <code>public string ApprovalQueueSegregationPolicy { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1274](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1274) |  |
-| <code>public string ApprovalQueueEvidenceRequirement { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1286](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1286) |  |
-| <code>public bool DimensionMappingStudioConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1298](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1298) |  |
-| <code>public string DimensionMappingId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1310](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1310) |  |
-| <code>public string DimensionMappingDisplayName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1322](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1322) |  |
-| <code>public string DimensionMappingProviderId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1334](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1334) |  |
-| <code>public string DimensionMappingMeridianDimensionsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1346](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1346) |  |
-| <code>public string DimensionMappingProviderDimensionsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1358](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1358) |  |
-| <code>public string DimensionMappingEvidenceRequirement { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1370](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1370) |  |
-| <code>public bool ImplementationSandboxConfigured { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1382](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1382) |  |
-| <code>public bool CanSaveTenantAdministrationProfile =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1388](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1388) |  |
-| <code>public bool CanRetainImplementationSandboxProof =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1395](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1395) |  |
-| <code>public string SelectedReconciliationView { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1400](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1400) |  |
-| <code>public string BatchReconciliationActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1412](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1412) |  |
-| <code>public string DraftMemo { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1418](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1418) |  |
-| <code>public string DraftCurrency { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1424](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1424) |  |
-| <code>public decimal DraftAmount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1437](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1437) |  |
-| <code>public string DraftDebitAccountPath { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1450](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1450) |  |
-| <code>public string DraftCreditAccountPath { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1456](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1456) |  |
-| <code>public string DraftEvidenceLink { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1462](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1462) |  |
-| <code>public ManualJournalEntryTypeDto SelectedEntryType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1468](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1468) |  |
-| <code>public AccountingBasisKindDto SelectedAccountingBasis { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1480](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1480) |  |
-| <code>public bool CanSubmitManualJournal =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1486](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1486) |  |
-| <code>public string ManualJournalDraftReferenceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1488](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1488) |  |
-| <code>public string ManualJournalDraftDateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1491](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1491) |  |
-| <code>public string ManualJournalDraftPeriodText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1494](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1494) |  |
-| <code>public string ManualJournalDraftBalanceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1501](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1501) |  |
-| <code>public string ManualJournalDraftBalanceBadgeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1506](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1506) |  |
-| <code>public async Task LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1511](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1511) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1514](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1514) |  |
-| <code>public async Task SeedBaselineConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1564](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1564) |  |
-| <code>public async Task ActivateConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1687](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1687) |  |
-| <code>public async Task CreateLedgerBookSetupAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1716](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1716) |  |
-| <code>public async Task SaveTenantAdministrationProfileAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1777](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1777) |  |
-| <code>public async Task RetainImplementationSandboxProofAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1878](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1878) |  |
-| <code>public async Task SaveProductionCertificationProfileAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:1979](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L1979) |  |
-| <code>public async Task SaveManualJournalDraftAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2053](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2053) |  |
-| <code>public async Task ValidateManualJournalDraftAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2084](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2084) |  |
-| <code>public async Task SubmitManualJournalDraftAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2110](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2110) |  |
-| <code>public async Task ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2143](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2143) |  |
-| <code>public async Task SaveExternalGlMappingProfileAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2190](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2190) |  |
-| <code>public async Task SaveChartAccountAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2270](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2270) |  |
-| <code>public async Task SavePostingRuleDraftAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2330](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2330) |  |
-| <code>public async Task RefreshExternalGlAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2407](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2407) |  |
-| <code>public async Task CreateFundScopedPolicyAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2512](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2512) |  |
-| <code>public async Task ExecuteRulesStudioTestsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2549](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2549) |  |
-| <code>public async Task ApproveRulesStudioPromotionAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2587](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2587) |  |
-| <code>public async Task BuildPostingCandidateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:2698](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L2698) |  |
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.GovernedQueues.cs:3](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.GovernedQueues.cs#L3).
-
-```csharp
-public sealed partial class AccountingConfigureViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AuditChainIntegrityViewModel AuditChainIntegrity { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.GovernedQueues.cs:5](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.GovernedQueues.cs#L5) |  |
-| <code>public FactorPaydownViewModel FactorPaydown { get; }</code> | [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.GovernedQueues.cs:6](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.GovernedQueues.cs#L6) |  |
-
-## AccountingWorkbenchRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.AccountingWorkbenchRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:5316](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L5316).
-
-```csharp
-public sealed record AccountingWorkbenchRow(string Name, string Status, string Detail, string Evidence, string Key = "");
-```

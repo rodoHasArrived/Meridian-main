@@ -234,6 +234,22 @@ A Border whose automation peer reports no children, preventing Windows UI Automa
 public sealed class AutomationLeafBorder : Border
 ```
 
+## CashDividendAttestationPanel
+
+Qualified name: <code>Meridian.Wpf.Controls.CashDividendAttestationPanel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Controls/CashDividendAttestationPanel.xaml.cs:5](../../../../src/Meridian.Wpf/Controls/CashDividendAttestationPanel.xaml.cs#L5).
+
+```csharp
+public partial class CashDividendAttestationPanel : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CashDividendAttestationPanel() =&gt; …;</code> | [src/Meridian.Wpf/Controls/CashDividendAttestationPanel.xaml.cs:7](../../../../src/Meridian.Wpf/Controls/CashDividendAttestationPanel.xaml.cs#L7) |  |
+
 ## DataConfidenceExplanationButton
 
 Qualified name: <code>Meridian.Wpf.Controls.DataConfidenceExplanationButton</code>. Kind: `class`.
@@ -631,6 +647,22 @@ Declared public members:
 | <code>public string ValueAutomationId { get; set; }</code> | [src/Meridian.Wpf/Controls/MetricCard.xaml.cs:104](../../../../src/Meridian.Wpf/Controls/MetricCard.xaml.cs#L104) |  |
 | <code>public string SubTextAutomationId { get; set; }</code> | [src/Meridian.Wpf/Controls/MetricCard.xaml.cs:110](../../../../src/Meridian.Wpf/Controls/MetricCard.xaml.cs#L110) |  |
 | <code>public string IconAutomationId { get; set; }</code> | [src/Meridian.Wpf/Controls/MetricCard.xaml.cs:116](../../../../src/Meridian.Wpf/Controls/MetricCard.xaml.cs#L116) |  |
+
+## PreparerDraftCheckPanel
+
+Qualified name: <code>Meridian.Wpf.Controls.PreparerDraftCheckPanel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Controls/PreparerDraftCheckPanel.xaml.cs:5](../../../../src/Meridian.Wpf/Controls/PreparerDraftCheckPanel.xaml.cs#L5).
+
+```csharp
+public partial class PreparerDraftCheckPanel : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PreparerDraftCheckPanel() =&gt; …;</code> | [src/Meridian.Wpf/Controls/PreparerDraftCheckPanel.xaml.cs:7](../../../../src/Meridian.Wpf/Controls/PreparerDraftCheckPanel.xaml.cs#L7) |  |
 
 ## SectionHeaderBar
 
@@ -1221,42 +1253,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:157](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L157) |  |
 | <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:159](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L159) |  |
 | <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:162](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L162) |  |
-
-## DataWorkspaceShellActionKind
-
-Qualified name: <code>Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellActionKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:8](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L8).
-
-```csharp
-public enum DataWorkspaceShellActionKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Navigate</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:10](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L10) |  |
-| <code>OpenPane</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:11](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L11) |  |
-| <code>SwitchContext</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:12](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L12) |  |
-
-## DataWorkspaceShellActionRequestedEventArgs
-
-Qualified name: <code>Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellActionRequestedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:18](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L18).
-
-Carries a data workspace action request, including its action kind, identity, and optional dock action.
-
-```csharp
-public sealed class DataWorkspaceShellActionRequestedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataWorkspaceShellActionRequestedEventArgs(DataWorkspaceShellActionKind kind, string actionId, PaneDropAction dockAction = PaneDropAction.OpenTab);</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:20](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L20) |  |
-| <code>public DataWorkspaceShellActionKind Kind { get; }</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:30](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L30) |  |
-| <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:31](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L31) |  |
-| <code>public PaneDropAction DockAction { get; }</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:32](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L32) |  |

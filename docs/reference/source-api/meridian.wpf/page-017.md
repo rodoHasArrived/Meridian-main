@@ -6,6 +6,211 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BacktestPage
+
+Qualified name: <code>Meridian.Wpf.Views.BacktestPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/BacktestPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/BacktestPage.xaml.cs#L12).
+
+Backtesting page — three-panel layout with configuration, equity curve, and results tabs.
+
+```csharp
+public partial class BacktestPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BacktestPage(BacktestViewModel viewModel);</code> | [src/Meridian.Wpf/Views/BacktestPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/BacktestPage.xaml.cs#L17) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:65](../../../../src/Meridian.Wpf/Views/Pages.cs#L65).
+
+```csharp
+public partial class BacktestPage : Page
+```
+
+## BatchBacktestPage
+
+Qualified name: <code>Meridian.Wpf.Views.BatchBacktestPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs#L9).
+
+Batch backtest page code-behind. Provides minimal initialization; all logic is in the ViewModel.
+
+```csharp
+public partial class BatchBacktestPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BatchBacktestPage();</code> | [src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs#L11) |  |
+| <code>public BatchBacktestPage(BatchBacktestViewModel viewModel) : this();</code> | [src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs#L16) |  |
+
+## ChartingPage
+
+Qualified name: <code>Meridian.Wpf.Views.ChartingPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ChartingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ChartingPage.xaml.cs#L10).
+
+Provides the desktop page to review price and signal charts for selected strategies.
+
+```csharp
+public partial class ChartingPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChartingPage(ChartingPageViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ChartingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ChartingPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:49](../../../../src/Meridian.Wpf/Views/Pages.cs#L49).
+
+```csharp
+public partial class ChartingPage : Page
+```
+
+## ClusterStatusPage
+
+Qualified name: <code>Meridian.Wpf.Views.ClusterStatusPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs#L8).
+
+ClusterStatusPage displays the current state of the multi-instance collector mesh.
+
+```csharp
+public partial class ClusterStatusPage : System.Windows.Controls.UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ClusterStatusPage();</code> | [src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs#L10) |  |
+| <code>public ClusterStatusPage(ClusterStatusViewModel viewModel) : this();</code> | [src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs#L15) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:31](../../../../src/Meridian.Wpf/Views/Pages.cs#L31).
+
+```csharp
+public partial class ClusterStatusPage : UserControl
+```
+
+## CollectionSessionPage
+
+Qualified name: <code>Meridian.Wpf.Views.CollectionSessionPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs#L12).
+
+Hosts collection-session monitoring and session lifecycle commands.
+
+```csharp
+public partial class CollectionSessionPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CollectionSessionPage(CollectionSessionViewModel viewModel);</code> | [src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs#L16) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:29](../../../../src/Meridian.Wpf/Views/Pages.cs#L29).
+
+```csharp
+public partial class CollectionSessionPage : Page
+```
+
+## CommandPaletteWindow
+
+Qualified name: <code>Meridian.Wpf.Views.CommandPaletteWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:14](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L14).
+
+Command palette window providing quick navigation and action execution via Ctrl+K. Supports fuzzy search across all registered pages and actions.
+
+```csharp
+public partial class CommandPaletteWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? SelectedActionId { get; private set; }</code> | [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:21](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L21) | Gets the selected command&#x27;s action ID after the dialog closes. |
+| <code>public PaletteCommandCategory SelectedCategory { get; private set; }</code> | [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:26](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L26) | Gets the selected command&#x27;s category. |
+| <code>public CommandPaletteWindow(CommandPaletteService paletteService);</code> | [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:28](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L28) |  |
+
+## CreateWatchlistDialog
+
+Qualified name: <code>Meridian.Wpf.Views.CreateWatchlistDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:10](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L10).
+
+Dialog for creating a new watchlist.
+
+```csharp
+public sealed class CreateWatchlistDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:16](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L16) |  |
+| <code>public string InitialSymbols =&gt; …;</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:17](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L17) |  |
+| <code>public string? SelectedColor =&gt; …;</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:18](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L18) |  |
+| <code>public CreateWatchlistDialog();</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:32](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L32) |  |
+
+## CredentialManagementPage
+
+Qualified name: <code>Meridian.Wpf.Views.CredentialManagementPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs#L12).
+
+Credential Management page: lists all provider API credentials, supports add/edit/remove/test flows. All logic lives in CredentialManagementViewModel.
+
+```csharp
+public partial class CredentialManagementPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CredentialManagementPage(CredentialManagementViewModel viewModel, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs#L17) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:102](../../../../src/Meridian.Wpf/Views/Pages.cs#L102).
+
+```csharp
+public partial class CredentialManagementPage : Page
+```
+
+## DashboardPage
+
+Qualified name: <code>Meridian.Wpf.Views.DashboardPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DashboardPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DashboardPage.xaml.cs#L13).
+
+Dashboard page — thin code-behind. All state, business logic, and timer management live in DashboardViewModel.
+
+```csharp
+public partial class DashboardPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DashboardPage(WpfServices.NavigationService navigationService, WpfServices.ConnectionService connectionService, WpfServices.StatusService statusService, WpfServices.MessagingService messagingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/DashboardPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/DashboardPage.xaml.cs#L17) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:6](../../../../src/Meridian.Wpf/Views/Pages.cs#L6).
+
+```csharp
+public partial class DashboardPage : Page
+```
+
 ## DataBrowserPage
 
 Qualified name: <code>Meridian.Wpf.Views.DataBrowserPage</code>. Kind: `class`.
@@ -886,197 +1091,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public OperatorReadinessConsolePage(OperatorReadinessConsoleViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs#L15) |  |
-
-## OptionsPage
-
-Qualified name: <code>Meridian.Wpf.Views.OptionsPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OptionsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/OptionsPage.xaml.cs#L14).
-
-Options chain page for viewing option expirations, strikes, greeks, and chain data for tracked underlying symbols.
-
-```csharp
-public partial class OptionsPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OptionsPage() : this(ApiClientService.Instance);</code> | [src/Meridian.Wpf/Views/OptionsPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/OptionsPage.xaml.cs#L18) |  |
-| <code>public OptionsPage(ApiClientService apiClientService);</code> | [src/Meridian.Wpf/Views/OptionsPage.xaml.cs:23](../../../../src/Meridian.Wpf/Views/OptionsPage.xaml.cs#L23) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:23](../../../../src/Meridian.Wpf/Views/Pages.cs#L23).
-
-```csharp
-public partial class OptionsPage : Page
-```
-
-## OrderBookHeatmapControl
-
-Qualified name: <code>Meridian.Wpf.Views.OrderBookHeatmapControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OrderBookHeatmapControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/OrderBookHeatmapControl.xaml.cs#L24).
-
-Code-behind for the L2 order-book depth heatmap. Architecture notes: • WriteableBitmap is created once (and recreated only on resize) — no GC pressure. • _pixelBuffer (int&#91;&#93;) is reused every frame; filled by OrderBookHeatmapViewModel.RenderFrame and then bulk-copied to the BackBuffer via Marshal.Copy. • The render loop runs at a modest cadence on the UI thread via DispatcherTimer and only redraws when the view-model render version changes, so idle ticks avoid bitmap work. • Business logic lives entirely in OrderBookHeatmapViewModel; this file is limited to lifecycle + bitmap plumbing.
-
-```csharp
-public partial class OrderBookHeatmapControl : System.Windows.Controls.UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderBookHeatmapControl();</code> | [src/Meridian.Wpf/Views/OrderBookHeatmapControl.xaml.cs:32](../../../../src/Meridian.Wpf/Views/OrderBookHeatmapControl.xaml.cs#L32) |  |
-
-## OrderBookPage
-
-Qualified name: <code>Meridian.Wpf.Views.OrderBookPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OrderBookPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OrderBookPage.xaml.cs#L15).
-
-Order book page — thin code-behind. All state, HTTP polling, and connection-status tracking live in OrderBookViewModel. The PropertyChanged relay for BidBarColumn/AskBarColumn is kept here because ColumnDefinition.Width does not support data binding in WPF.
-
-```csharp
-public partial class OrderBookPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderBookPage(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService);</code> | [src/Meridian.Wpf/Views/OrderBookPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/OrderBookPage.xaml.cs#L19) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:50](../../../../src/Meridian.Wpf/Views/Pages.cs#L50).
-
-```csharp
-public partial class OrderBookPage : Page
-```
-
-## PackageManagerPage
-
-Qualified name: <code>Meridian.Wpf.Views.PackageManagerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/PackageManagerPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/PackageManagerPage.xaml.cs#L13).
-
-Package manager page — thin code-behind. All create/validate/import/list logic lives in PackageManagerViewModel.
-
-```csharp
-public partial class PackageManagerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PackageManagerPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/PackageManagerPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/PackageManagerPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:44](../../../../src/Meridian.Wpf/Views/Pages.cs#L44).
-
-```csharp
-public partial class PackageManagerPage : Page
-```
-
-## PageActionBarControl
-
-Qualified name: <code>Meridian.Wpf.Views.PageActionBarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs#L7).
-
-Code-behind for PageActionBarControl. Minimal: only InitializeComponent() — no business logic.
-
-```csharp
-public partial class PageActionBarControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PageActionBarControl();</code> | [src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PageActionBarControl.xaml.cs#L9) |  |
-
-## PluginManagementPage
-
-Qualified name: <code>Meridian.Wpf.Views.PluginManagementPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:111](../../../../src/Meridian.Wpf/Views/Pages.cs#L111).
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L10).
-
-Code-behind for PluginManagementPage. Thin shell — all business logic is in PluginManagementViewModel.
-
-```csharp
-public partial class PluginManagementPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PluginManagementPage(PluginManagementViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PluginManagementPage.xaml.cs#L12) |  |
-
-## PortfolioImportPage
-
-Qualified name: <code>Meridian.Wpf.Views.PortfolioImportPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:21](../../../../src/Meridian.Wpf/Views/Pages.cs#L21).
-
-```csharp
-public partial class PortfolioImportPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L9).
-
-Provides the desktop page to import external portfolio snapshots for reconciliation.
-
-```csharp
-public partial class PortfolioImportPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioImportPage();</code> | [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L13) |  |
-
-## PortfolioWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:352](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L352).
-
-Binds derived pages to the portfolio workspace shell definition.
-
-```csharp
-public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
-```
-
-## PositionBlotterPage
-
-Qualified name: <code>Meridian.Wpf.Views.PositionBlotterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:76](../../../../src/Meridian.Wpf/Views/Pages.cs#L76).
-
-```csharp
-public partial class PositionBlotterPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L12).
-
-Hosts position review and position-related drilldowns.
-
-```csharp
-public partial class PositionBlotterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PositionBlotterPage() : this(TryResolveOperatingContextService());</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L16) |  |
-| <code>public PositionBlotterPage(WorkstationOperatingContextService? operatingContextService);</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L21) |  |

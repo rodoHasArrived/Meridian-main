@@ -6,6 +6,249 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolStorageViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L14).
+
+ViewModel for the Symbol Storage page. Owns analytics loading, metric formatting, empty/error state, and refresh command state so the page remains declarative.
+
+```csharp
+public sealed class SymbolStorageViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolStorageViewModel() : this((forceRefresh, ct) =&gt; StorageAnalyticsService.Instance.GetAnalyticsAsync(forceRefresh, ct));</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L33) |  |
+| <code>public ObservableCollection&lt;SymbolStorageItem&gt; Symbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L46) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L48) |  |
+| <code>public string TotalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L50) |  |
+| <code>public string TotalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L56) |  |
+| <code>public string SymbolCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L62) |  |
+| <code>public string DailyGrowthText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L68) |  |
+| <code>public string TradeSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L74) |  |
+| <code>public string TradeFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L80) |  |
+| <code>public string DepthSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L86) |  |
+| <code>public string DepthFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L92) |  |
+| <code>public string HistoricalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L98) |  |
+| <code>public string HistoricalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L104) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L110) |  |
+| <code>public string ErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L116) |  |
+| <code>public string ProjectionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L129) |  |
+| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L135) |  |
+| <code>public bool HasSymbols =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L149) |  |
+| <code>public bool IsSymbolListEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L151) |  |
+| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L153) |  |
+| <code>public bool HasProjection { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L155) |  |
+| <code>public bool CanRefresh =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L161) |  |
+| <code>public async Task LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L163) |  |
+
+## SymbolYieldVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SymbolYieldVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:562](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L562).
+
+View model row for a per-symbol annual yield override in the carry trade configuration panel.
+
+```csharp
+public sealed class SymbolYieldVm(string symbol, double yield) : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; } = symbol;</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:564](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L564) |  |
+| <code>public double Yield { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:568](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L568) | Annual yield as a decimal (e.g. 0.035 = 3.5 %). |
+| <code>public string YieldDisplay =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:571](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L571) | Display-friendly percentage string. |
+
+## SystemHealthEmptyState
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SystemHealthEmptyState</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:988](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L988).
+
+```csharp
+public sealed record SystemHealthEmptyState(string Title, string Detail);
+```
+
+## SystemHealthTriageState
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SystemHealthTriageState</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:977](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L977).
+
+```csharp
+public sealed record SystemHealthTriageState(SystemHealthTriageTone Tone, string Title, string Detail, string ActionText, string TargetText, string EvidenceText, string ProviderSummaryText, string StorageSummaryText, string EventSummaryText);
+```
+
+## SystemHealthTriageTone
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SystemHealthTriageTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:969](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L969).
+
+```csharp
+public enum SystemHealthTriageTone
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Waiting</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:971](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L971) |  |
+| <code>Ready</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:972](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L972) |  |
+| <code>Warning</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:973](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L973) |  |
+| <code>Critical</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:974](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L974) |  |
+
+## SystemHealthViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SystemHealthViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L23).
+
+ViewModel for the System Health page. Owns the auto-refresh timer, all async data-load logic, and display state so that the code-behind is thinned to lifecycle wiring only.
+
+```csharp
+public sealed class SystemHealthViewModel : BindableBase, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;ProviderHealthItem&gt; Providers { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L50) |  |
+| <code>public ObservableCollection&lt;SystemEventItem&gt; Events { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L51) |  |
+| <code>public WorkstationTableModel&lt;ProviderHealthItem&gt; ProvidersTable { get; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L53) |  |
+| <code>public WorkstationTableModel&lt;SystemEventItem&gt; EventsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L54) |  |
+| <code>public string CpuText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L71) |  |
+| <code>public Brush CpuForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L74) |  |
+| <code>public string MemoryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L77) |  |
+| <code>public string ThreadsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L80) |  |
+| <code>public string UptimeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L83) |  |
+| <code>public string OverallStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L87) |  |
+| <code>public Brush OverallStatusBackground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L90) |  |
+| <code>public string SystemTriageTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L94) |  |
+| <code>public string SystemTriageDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L97) |  |
+| <code>public string SystemTriageActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L100) |  |
+| <code>public string SystemTriageTargetText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L103) |  |
+| <code>public string SystemTriageEvidenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L106) |  |
+| <code>public string SystemTriageProviderSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L109) |  |
+| <code>public string SystemTriageStorageSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L112) |  |
+| <code>public string SystemTriageEventSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L115) |  |
+| <code>public string SystemTriageIcon { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L118) |  |
+| <code>public Brush SystemTriageAccentBrush { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L121) |  |
+| <code>public string ProviderEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L124) |  |
+| <code>public string ProviderEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L127) |  |
+| <code>public string EventEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L130) |  |
+| <code>public string EventEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L133) |  |
+| <code>public bool HasProviders { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L137) |  |
+| <code>public bool HasNoProviders { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L140) |  |
+| <code>public ProviderHealthItem? SelectedProvider { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L142) |  |
+| <code>public bool HasSelectedProvider =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L157) |  |
+| <code>public InspectorPanelModel SelectedProviderInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L159) |  |
+| <code>public string StorageTotalText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L167) |  |
+| <code>public string StorageFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L170) |  |
+| <code>public string DiskUsageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:173](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L173) |  |
+| <code>public double DiskUsageValue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L176) |  |
+| <code>public Brush DiskUsageForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L179) |  |
+| <code>public bool HasEvents { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L183) |  |
+| <code>public bool HasNoEvents { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L186) |  |
+| <code>public SystemEventItem? SelectedEvent { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L188) |  |
+| <code>public bool HasSelectedEvent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L203) |  |
+| <code>public InspectorPanelModel SelectedEventInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L205) |  |
+| <code>public InspectorPanelModel SystemTriageInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L211) |  |
+| <code>public bool IsRefreshEnabled { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L219) |  |
+| <code>public bool IsDiagnosticsEnabled { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L235) |  |
+| <code>public string RefreshTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L250) |  |
+| <code>public string DiagnosticsTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L254) |  |
+| <code>public string HealthActionStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:258](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L258) |  |
+| <code>public string HealthActionStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:261](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L261) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:267](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L267) |  |
+| <code>public IAsyncRelayCommand GenerateDiagnosticsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L268) |  |
+| <code>public SystemHealthViewModel(SystemHealthService healthService, WpfServices.LoggingService loggingService);</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:270](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L270) |  |
+| <code>public async Task StartAsync();</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:310](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L310) |  |
+| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:316](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L316) |  |
+| <code>public async Task RefreshAsync();</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L320) |  |
+| <code>public async Task GenerateDiagnosticsAsync();</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:328](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L328) |  |
+| <code>public static SystemHealthEmptyState BuildProviderEmptyState(bool hasProviderSnapshot) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:646](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L646) |  |
+| <code>public static SystemHealthEmptyState BuildEventEmptyState(bool hasEventSnapshot) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:655](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L655) |  |
+| <code>public static SystemHealthTriageState BuildSystemTriage(int providerCount, int unhealthyProviderCount, bool hasProviderSnapshot, bool hasStorageSnapshot, double diskUsagePercent, int storageIssueCount, int storageCorruptedFiles, int storageOrphanedFiles, int eventCount, int errorEventCount, int warningEventCount, bool hasEventSnapshot);</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:664](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L664) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:835](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L835) |  |
+
+## ProviderHealthItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SystemHealthViewModel.ProviderHealthItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:947](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L947).
+
+Presents a provider&#x27;s health status, latency, and event activity.
+
+```csharp
+public sealed class ProviderHealthItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:949](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L949) |  |
+| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:950](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L950) |  |
+| <code>public Brush StatusColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:951](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L951) |  |
+| <code>public string LatencyText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:952](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L952) |  |
+| <code>public string EventsText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:953](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L953) |  |
+
+## SystemEventItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SystemHealthViewModel.SystemEventItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:959](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L959).
+
+Presents a system event&#x27;s source, severity, message, and timestamp.
+
+```csharp
+public sealed class SystemEventItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Source { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:961](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L961) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:962](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L962) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:963](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L963) |  |
+| <code>public Brush SeverityColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:964](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L964) |  |
+| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs:965](../../../../src/Meridian.Wpf/ViewModels/SystemHealthViewModel.cs#L965) |  |
+
+## TickerItemViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TickerItemViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L20).
+
+Represents a single ticker item in the always-on-top ticker strip. Tracks bid/ask/last price display and a brief flash on new trades.
+
+```csharp
+public sealed class TickerItemViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TickerItemViewModel();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L45) |  |
+| <code>public string Symbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L55) |  |
+| <code>public string BidText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L56) |  |
+| <code>public string AskText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L57) |  |
+| <code>public string LastText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L58) |  |
+| <code>public SolidColorBrush PriceColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L59) |  |
+| <code>public bool IsFlashing { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L62) | Briefly true on each new trade tick; auto-resets after 500 ms. |
+| <code>public void Update(decimal bid, decimal ask, decimal last, bool uptick);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L65) | Updates displayed prices and triggers a 500 ms flash. |
+
 ## TickerStripViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.TickerStripViewModel</code>. Kind: `class`.
@@ -1084,209 +1327,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:20](../../../../src/Meridian.Wpf/Views/
 
 ```csharp
 public partial class BackfillPage : Page
-```
-
-## BacktestPage
-
-Qualified name: <code>Meridian.Wpf.Views.BacktestPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/BacktestPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/BacktestPage.xaml.cs#L12).
-
-Backtesting page — three-panel layout with configuration, equity curve, and results tabs.
-
-```csharp
-public partial class BacktestPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BacktestPage(BacktestViewModel viewModel);</code> | [src/Meridian.Wpf/Views/BacktestPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/BacktestPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:65](../../../../src/Meridian.Wpf/Views/Pages.cs#L65).
-
-```csharp
-public partial class BacktestPage : Page
-```
-
-## BatchBacktestPage
-
-Qualified name: <code>Meridian.Wpf.Views.BatchBacktestPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs#L9).
-
-Batch backtest page code-behind. Provides minimal initialization; all logic is in the ViewModel.
-
-```csharp
-public partial class BatchBacktestPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BatchBacktestPage();</code> | [src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs#L11) |  |
-| <code>public BatchBacktestPage(BatchBacktestViewModel viewModel) : this();</code> | [src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/BatchBacktestPage.xaml.cs#L16) |  |
-
-## ChartingPage
-
-Qualified name: <code>Meridian.Wpf.Views.ChartingPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ChartingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ChartingPage.xaml.cs#L10).
-
-Provides the desktop page to review price and signal charts for selected strategies.
-
-```csharp
-public partial class ChartingPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChartingPage(ChartingPageViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ChartingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ChartingPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:49](../../../../src/Meridian.Wpf/Views/Pages.cs#L49).
-
-```csharp
-public partial class ChartingPage : Page
-```
-
-## ClusterStatusPage
-
-Qualified name: <code>Meridian.Wpf.Views.ClusterStatusPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs#L8).
-
-ClusterStatusPage displays the current state of the multi-instance collector mesh.
-
-```csharp
-public partial class ClusterStatusPage : System.Windows.Controls.UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ClusterStatusPage();</code> | [src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs#L10) |  |
-| <code>public ClusterStatusPage(ClusterStatusViewModel viewModel) : this();</code> | [src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ClusterStatusPage.xaml.cs#L15) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:31](../../../../src/Meridian.Wpf/Views/Pages.cs#L31).
-
-```csharp
-public partial class ClusterStatusPage : UserControl
-```
-
-## CollectionSessionPage
-
-Qualified name: <code>Meridian.Wpf.Views.CollectionSessionPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs#L12).
-
-Hosts collection-session monitoring and session lifecycle commands.
-
-```csharp
-public partial class CollectionSessionPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CollectionSessionPage(CollectionSessionViewModel viewModel);</code> | [src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/CollectionSessionPage.xaml.cs#L16) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:29](../../../../src/Meridian.Wpf/Views/Pages.cs#L29).
-
-```csharp
-public partial class CollectionSessionPage : Page
-```
-
-## CommandPaletteWindow
-
-Qualified name: <code>Meridian.Wpf.Views.CommandPaletteWindow</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:14](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L14).
-
-Command palette window providing quick navigation and action execution via Ctrl+K. Supports fuzzy search across all registered pages and actions.
-
-```csharp
-public partial class CommandPaletteWindow : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? SelectedActionId { get; private set; }</code> | [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:21](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L21) | Gets the selected command&#x27;s action ID after the dialog closes. |
-| <code>public PaletteCommandCategory SelectedCategory { get; private set; }</code> | [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:26](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L26) | Gets the selected command&#x27;s category. |
-| <code>public CommandPaletteWindow(CommandPaletteService paletteService);</code> | [src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs:28](../../../../src/Meridian.Wpf/Views/CommandPaletteWindow.xaml.cs#L28) |  |
-
-## CreateWatchlistDialog
-
-Qualified name: <code>Meridian.Wpf.Views.CreateWatchlistDialog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:10](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L10).
-
-Dialog for creating a new watchlist.
-
-```csharp
-public sealed class CreateWatchlistDialog : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:16](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L16) |  |
-| <code>public string InitialSymbols =&gt; …;</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:17](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L17) |  |
-| <code>public string? SelectedColor =&gt; …;</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:18](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L18) |  |
-| <code>public CreateWatchlistDialog();</code> | [src/Meridian.Wpf/Views/CreateWatchlistDialog.cs:32](../../../../src/Meridian.Wpf/Views/CreateWatchlistDialog.cs#L32) |  |
-
-## CredentialManagementPage
-
-Qualified name: <code>Meridian.Wpf.Views.CredentialManagementPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs#L12).
-
-Credential Management page: lists all provider API credentials, supports add/edit/remove/test flows. All logic lives in CredentialManagementViewModel.
-
-```csharp
-public partial class CredentialManagementPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CredentialManagementPage(CredentialManagementViewModel viewModel, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/CredentialManagementPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:102](../../../../src/Meridian.Wpf/Views/Pages.cs#L102).
-
-```csharp
-public partial class CredentialManagementPage : Page
-```
-
-## DashboardPage
-
-Qualified name: <code>Meridian.Wpf.Views.DashboardPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DashboardPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DashboardPage.xaml.cs#L13).
-
-Dashboard page — thin code-behind. All state, business logic, and timer management live in DashboardViewModel.
-
-```csharp
-public partial class DashboardPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DashboardPage(WpfServices.NavigationService navigationService, WpfServices.ConnectionService connectionService, WpfServices.StatusService statusService, WpfServices.MessagingService messagingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/DashboardPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/DashboardPage.xaml.cs#L17) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:6](../../../../src/Meridian.Wpf/Views/Pages.cs#L6).
-
-```csharp
-public partial class DashboardPage : Page
 ```

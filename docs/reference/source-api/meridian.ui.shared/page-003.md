@@ -576,7 +576,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:18](../../../../s
 Serves retained evidence artifacts and maps evidence workflow operations with subject-scope authorization.
 
 ```csharp
-public static class EvidenceEndpoints
+public static partial class EvidenceEndpoints
 ```
 
 Declared public members:
@@ -584,6 +584,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static WebApplication MapEvidenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L20) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L13).
+
+```csharp
+public static partial class EvidenceEndpoints
+```
 
 ## ExecuteMaintenanceRequest
 

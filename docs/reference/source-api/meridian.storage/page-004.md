@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIntercompanyAgreementStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.IIntercompanyAgreementStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:24](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L24).
+
+```csharp
+public interface IIntercompanyAgreementStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;T&gt; ExecuteAsync&lt;T&gt;(string tenantId, Guid agreementId, Func&lt;IIntercompanyAgreementStoreTransaction, CancellationToken, Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:26](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L26) |  |
+| <code>Task&lt;IntercompanyAgreementStoreState?&gt; GetAsync(string tenantId, Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L28) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementStoreState&gt;&gt; ListAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:29](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L29) |  |
+| <code>Task&lt;IIntercompanyAgreementPostingLease&gt; AcquirePostingLeaseAsync(string tenantId, IReadOnlyList&lt;Guid&gt; agreementIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:30](../../../../src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs#L30) |  |
+
 ## IIntercompanyAgreementStoreTransaction
 
 Qualified name: <code>Meridian.Storage.FundStructure.IIntercompanyAgreementStoreTransaction</code>. Kind: `interface`.
@@ -688,8 +707,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
-| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:645](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L645) | Unversioned legacy metadata never supplies command actor attribution. |
+| <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false, bool allowPreparerAttestation = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
+| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:706](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L706) | Unversioned legacy metadata never supplies command actor attribution. |
 
 ## AtomicLotReferenceVersions
 
@@ -1055,39 +1074,20 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;LedgerReportingSnapshot&gt; CaptureReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid? accountingPeriodId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:15](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L15) | Captures the optional report period independently of the journal query&#x27;s period filter, so all-history balance queries can retain the reporting period&#x27;s status and version atomically. The requested period must belong to the query&#x27;s exact ledger book. |
 
-## ILedgerTaxLotDisposalHistory
+## ILedgerSecurityEntitlementInventory
 
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerTaxLotDisposalHistory</code>. Kind: `interface`.
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerSecurityEntitlementInventory</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:55](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L55).
+Source: [src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs:10](../../../../src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs#L10).
 
-Reads retained tax-lot disposal history so realized-gain reporting can be rebuilt from the durable record instead of requiring the original in-memory projection to have been kept.
+Complete, unpaged canonical lot population for one security in a tenant-owned ledger book. The reader must inspect the whole book for unidentified legacy lots and reconstruct held quantities from retained journal-effective mutation history, including lots disposed later. Missing ownership, identity or historical quantity facts must throw; a case/account subset must never be represented as this inventory.
 
 ```csharp
-public interface ILedgerTaxLotDisposalHistory
+public interface ILedgerSecurityEntitlementInventory
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotDisposalHistoryRecord&gt;&gt; GetTaxLotDisposalHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:61](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L61) | Returns the disposals recorded against journalEntryIds, one entry per atomic tax-lot batch, ordered by batch. Journal ids that produced no disposal are absent. |
-
-## IntercompanyAgreementPostingGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.IntercompanyAgreementPostingGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:8](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L8).
-
-Non-bypassable shape and source-economics checks for explicit agreement provenance.
-
-```csharp
-public static class IntercompanyAgreementPostingGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool HasReferences(JournalEntry entry) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:10](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L10) |  |
-| <code>public static void ValidateShape(JournalEntry entry);</code> | [src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs:14](../../../../src/Meridian.Storage/Ledger/IntercompanyAgreementPostingGuard.cs#L14) |  |
+| <code>Task&lt;LedgerSecurityEntitlementInventorySnapshot&gt; ReadSecurityEntitlementInventoryAsync(string tenantId, string companyId, Guid ledgerBookId, Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs:12](../../../../src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs#L12) |  |

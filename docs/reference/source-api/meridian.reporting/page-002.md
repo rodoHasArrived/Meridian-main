@@ -417,7 +417,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingCloseWorkflowCompletionEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:30](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L30).
+Source: [src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs:31](../../../../src/Meridian.Reporting/ReportingReconciliationEvidenceContracts.cs#L31).
 
 Immutable proof that the accounting-close workflow committed after the ledger hard close. Final reporting must not treat a hard-close-only receipt as completed close authority.
 

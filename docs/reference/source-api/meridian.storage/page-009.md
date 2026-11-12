@@ -6,6 +6,86 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MoneyMarketFundProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.MoneyMarketFundProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record MoneyMarketFundProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifierValue, long Version);
+```
+
+## OperatorOverrideCanonicalVersionConflictException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideCanonicalVersionConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L101).
+
+Thrown when an overlay patch was submitted for a canonical Security Master version that no longer matches the stream version observed while the patch transaction held the stream lock.
+
+```csharp
+public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L103) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L111) |  |
+| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:112](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L112) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:113](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L113) |  |
+
+## OperatorOverrideDecision
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L38).
+
+Internal store command for an operator-override approval decision. Unlike the public OperatorOverrideDecisionRequest, it carries the Reviewer identity that the API layer derives from the authenticated principal before calling the store.
+
+```csharp
+public sealed record OperatorOverrideDecision(SecurityOverrideApprovalStatusDto Decision, string Reviewer, string? Comment = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RestoresPriorDecision { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L49) | True only when the decision re-records a decision an independent reviewer already made (a compensating revert or a discard restored the overlay to values that reviewer decided). Restorations are exempt from the self-approval rule because they assert no new review; the governance log records the flag. API callers never set it. |
+
+## OperatorOverrideReviewRules
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideReviewRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L53).
+
+The independent-review rule for operator-override decisions.
+
+```csharp
+public static class OperatorOverrideReviewRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsSelfApproval(string? stagedBy, string? reviewer) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L59) | Whether reviewer is the actor who staged the overlay&#x27;s current values. Actor identities compare case-insensitively after trimming. |
+| <code>public static void EnsureIndependentReview(Guid securityId, OperatorOverridesDto overlay, OperatorOverrideDecision decision);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L69) | Fails when decision approves values the reviewer staged themselves. A rejection (withdrawing one&#x27;s own staged values) and a restoration of a prior independent decision are allowed. |
+
+## OperatorOverridesDecisionPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
+
+OperatorOverrides / Approved or Rejected: a recorded review decision.
+
+```csharp
+public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
+```
+
 ## OperatorOverrideSelfApprovalException
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideSelfApprovalException</code>. Kind: `class`.
@@ -235,7 +315,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCorporateActionOperationsStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:15](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L15).
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:16](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L16).
 
 Durable corporate-action accounting lane: exact-version projection bindings, maker-checker approvals, and immutable posting records. Every mutation shares the case command mechanics — serializable transaction, advisory locks, receipt-first replay, optimistic version bump, and an actor-attributed audit transition — so a failed attempt always leaves the case recoverable in its prior state.
 
@@ -247,12 +327,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;CorporateActionCaseAccountingProjectionDto?&gt; GetAccountingProjectionAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:21](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L21) |  |
-| <code>public async Task&lt;CorporateActionCaseAccountingApprovalDto?&gt; GetAccountingApprovalAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:33](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L33) |  |
-| <code>public async Task&lt;CorporateActionAccountingPostingResultDto?&gt; GetAccountingPostingReceiptAsync(Guid caseId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:45](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L45) |  |
-| <code>public async Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachAccountingProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CorporateActionCaseAccountingProjectionDto projection, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:65](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L65) |  |
-| <code>public async Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAccountingAsync(ApproveCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingApprovalDto approval, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:139](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L139) |  |
-| <code>public async Task&lt;CorporateActionAccountingPostingResultDto&gt; RecordAccountingPostingAsync(PostCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingPostingDto posting, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:239](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L239) |  |
+| <code>public async Task&lt;CorporateActionCaseAccountingProjectionDto?&gt; GetAccountingProjectionAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:22](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L22) |  |
+| <code>public async Task&lt;CorporateActionCaseAccountingApprovalDto?&gt; GetAccountingApprovalAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:34](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L34) |  |
+| <code>public async Task&lt;CorporateActionAccountingPostingResultDto?&gt; GetAccountingPostingReceiptAsync(Guid caseId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:46](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L46) |  |
+| <code>public async Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachAccountingProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CorporateActionCaseAccountingProjectionDto projection, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:66](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L66) |  |
+| <code>public async Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAccountingAsync(ApproveCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingApprovalDto approval, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:140](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L140) |  |
+| <code>public async Task&lt;CorporateActionAccountingPostingResultDto&gt; RecordAccountingPostingAsync(PostCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingPostingDto posting, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs:245](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Accounting.cs#L245) |  |
 
 Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Cases.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Cases.cs#L9).
 
@@ -274,6 +354,67 @@ Declared public members:
 | <code>public async Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, Guid optionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Cases.cs:468](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Cases.cs#L468) |  |
 | <code>public async Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Cases.cs:567](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Cases.cs#L567) |  |
 
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs:11](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs#L11).
+
+```csharp
+public sealed partial class PostgresCorporateActionOperationsStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;CorporateActionCashDividendAttestationDto?&gt; GetCashDividendAttestationAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs:13](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs#L13) |  |
+| <code>public Task&lt;CorporateActionCashDividendAttestationResultDto?&gt; GetCashDividendAttestationReceiptAsync(Guid caseId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs:22](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs#L22) |  |
+| <code>public Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CorporateActionCashDividendAttestationDto attestation, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs:31](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs#L31) |  |
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendCaseFacts.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendCaseFacts.cs#L8).
+
+```csharp
+public sealed partial class PostgresCorporateActionOperationsStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionCashDividendCaseFactsDto&gt; GetCashDividendCaseFactsAsync(Guid caseId, string tenantId, string companyId, long expectedCaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendCaseFacts.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendCaseFacts.cs#L10) |  |
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs#L10).
+
+```csharp
+public sealed partial class PostgresCorporateActionOperationsStore : ICorporateActionCashDividendAccountingStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CashDividendAttestationDeclarationResultDto?&gt; GetCashDividendDeclarationReceiptAsync(ChangeCashDividendAttestationDeclarationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs:16](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs#L16) |  |
+| <code>public async Task&lt;CashDividendAttestationDeclarationDto?&gt; GetCashDividendDeclarationAsync(string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs:31](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs#L31) |  |
+| <code>public async Task&lt;CashDividendAttestationDeclarationStateDto&gt; GetCashDividendDeclarationStateAsync(string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs:40](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs#L40) |  |
+| <code>public Task&lt;CashDividendAttestationDeclarationResultDto&gt; ChangeCashDividendDeclarationAsync(ChangeCashDividendAttestationDeclarationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs:72](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs#L72) |  |
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs#L8).
+
+```csharp
+public sealed partial class PostgresCorporateActionOperationsStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionCashDividendPostingResultDto&gt; ExecuteAttestedCashDividendPostingAsync(PostAttestedCorporateActionCashDividendRequestDto request, Func&lt;CorporateActionCashDividendPostingLease, CancellationToken, Task&lt;CorporateActionCashDividendPostingDto&gt;&gt; post, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs#L10) |  |
+| <code>public async Task&lt;CorporateActionCashDividendPostingDto?&gt; GetCashDividendPostingAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs:132](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs#L132) |  |
+| <code>public async Task&lt;CorporateActionCashDividendPostedProofDto?&gt; GetCashDividendPostedProofAsync(Guid journalEntryId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs:148](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendPostings.cs#L148) |  |
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendSecurityAuthority.cs:6](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendSecurityAuthority.cs#L6).
+
+```csharp
+public sealed partial class PostgresCorporateActionOperationsStore
+```
+
 Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L15).
 
 PostgreSQL authority for corporate-action observations and scoped processing cases. Proposal acceptance is a single serializable transaction that appends the canonical Security Master action, creates the initial case/transition, records the decision, and writes its replay receipt.
@@ -286,14 +427,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresCorporateActionOperationsStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L28) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(CorporateActionSourceProposalDto proposal, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:33](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L33) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:169](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L169) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:179](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L179) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L216) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalAcceptanceResultDto?&gt; GetAcceptanceReceiptAsync(Guid proposalId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:250](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L250) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, Guid corporateActionId, Guid caseId, Guid transitionId, SecurityMasterCorporateActionRestatementDto? restatement, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:270](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L270) |  |
-| <code>public async Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:691](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L691) |  |
+| <code>public PostgresCorporateActionOperationsStore(SecurityMasterOptions options, Meridian.Storage.Ledger.ITransactionalLedgerJournalStore? cashDividendLedgerStore = null);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L29) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(CorporateActionSourceProposalDto proposal, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:36](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L36) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:172](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L172) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:182](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L182) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:219](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L219) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalAcceptanceResultDto?&gt; GetAcceptanceReceiptAsync(Guid proposalId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:253](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L253) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, Guid corporateActionId, Guid caseId, Guid transitionId, SecurityMasterCorporateActionRestatementDto? restatement, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:273](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L273) |  |
+| <code>public async Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs:694](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.cs#L694) |  |
 
 Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Export.cs:6](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Export.cs#L6).
 
@@ -1046,80 +1187,3 @@ Declared public members:
 | <code>public Task&lt;SwapProjectionRow?&gt; GetSwapAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L20) |  |
 | <code>public Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetBySwapTypeAsync(string swapType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L27) |  |
 | <code>public Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresSwapReferenceProjectionStore.cs#L38) |  |
-
-## ProjectionBatchRebuiltPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:40](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L40).
-
-ProjectionRebuild / ProjectionBatchRebuilt: one persisted rebuild batch.
-
-```csharp
-public sealed record ProjectionBatchRebuiltPayload(string ProjectionName, long LastGlobalSequence, IReadOnlyList<ProjectionBatchRebuiltRecord> Records) : ISecurityGovernancePayload;
-```
-
-## ProjectionBatchRebuiltRecord
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
-
-A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
-
-```csharp
-public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
-```
-
-## SecurityGovernanceEvent
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:30](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L30).
-
-One recorded governance event. Payload is the stored JSON as written; ReadPayload{TPayload} reads it through the declared contract for Stream/EventType, dispatching on PayloadVersion.
-
-```csharp
-public sealed record SecurityGovernanceEvent(long GlobalSequence, Guid? SecurityId, string Stream, string EventType, string Actor, DateTimeOffset OccurredAt, JsonElement Payload, int PayloadVersion)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TPayload ReadPayload&lt;TPayload&gt;() where TPayload : class, ISecurityGovernancePayload =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L46) | The payload as its declared type. Throws SecurityGovernancePayloadContractException when the event type has no contract on this node, SecurityGovernancePayloadVersionException when PayloadVersion has no reader, and InvalidOperationException when TPayload is not the declared type. |
-| <code>public bool TryReadPayload&lt;TPayload&gt;([NotNullWhen(true)] out TPayload? payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L55) | Reads the payload when this node declares a contract and a reader for its version and TPayload is the declared type; otherwise returns false and leaves the raw Payload as the only reading. Malformed JSON for a declared version still throws. |
-
-## SecurityGovernanceJsonContext
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:231](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L231).
-
-Source-generated metadata for every governance payload version. The camelCase policy and the default encoder and null handling reproduce the reflective JsonSerializer.Serialize(object) output the version-1 writers produced; dictionary keys are written as stored.
-
-```csharp
-public sealed partial class SecurityGovernanceJsonContext : JsonSerializerContext;
-```
-
-## SecurityGovernancePayloadContract
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContract</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:237](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L237).
-
-The declared payload contract of one governance stream/event type: its payload type, the version new writes carry, and a reader for every version that may be stored.
-
-```csharp
-public sealed class SecurityGovernancePayloadContract
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Stream { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:258](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L258) |  |
-| <code>public string EventType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:259](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L259) |  |
-| <code>public Type PayloadType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:260](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L260) |  |
-| <code>public int CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:263](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L263) | The payload_version new writes record. |
-| <code>public IReadOnlyList&lt;int&gt; ReadableVersions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:266](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L266) | The stored versions this node can read, ascending. |

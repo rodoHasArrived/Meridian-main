@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataWorkspaceShellActionKind
+
+Qualified name: <code>Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellActionKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:8](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L8).
+
+```csharp
+public enum DataWorkspaceShellActionKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Navigate</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:10](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L10) |  |
+| <code>OpenPane</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:11](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L11) |  |
+| <code>SwitchContext</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:12](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L12) |  |
+
+## DataWorkspaceShellActionRequestedEventArgs
+
+Qualified name: <code>Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellActionRequestedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:18](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L18).
+
+Carries a data workspace action request, including its action kind, identity, and optional dock action.
+
+```csharp
+public sealed class DataWorkspaceShellActionRequestedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataWorkspaceShellActionRequestedEventArgs(DataWorkspaceShellActionKind kind, string actionId, PaneDropAction dockAction = PaneDropAction.OpenTab);</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:20](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L20) |  |
+| <code>public DataWorkspaceShellActionKind Kind { get; }</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:30](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L30) |  |
+| <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:31](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L31) |  |
+| <code>public PaneDropAction DockAction { get; }</code> | [src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs:32](../../../../src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellViewModel.cs#L32) |  |
+
 ## DataWorkspaceShellPage
 
 Qualified name: <code>Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage</code>. Kind: `class`.
@@ -1150,54 +1189,3 @@ Declared public members:
 | <code>public string DateText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:9](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L9) |  |
 | <code>public string ReturnText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:10](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L10) |  |
 | <code>public Brush ReturnBrush { get; set; } = Brushes.White;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:11](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L11) |  |
-
-## BlotterEntry
-
-Qualified name: <code>Meridian.Wpf.Models.BlotterEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/BlotterModels.cs:12](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L12).
-
-Represents a single trade/position row in the Position Blotter grid.
-
-```csharp
-public sealed class BlotterEntry : INotifyPropertyChanged
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event PropertyChangedEventHandler? PropertyChanged;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:19](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L19) |  |
-| <code>public string Group { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:24](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L24) | Underlying asset group (e.g., &quot;AAPL&quot;, &quot;SPY&quot;). |
-| <code>public string ProductDescription { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:27](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L27) | Human-readable product description (e.g., &quot;AAPL 150 Call 17Sep25&quot;). |
-| <code>public string TradeId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:30](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L30) | Unique trade/order identifier. |
-| <code>public string PositionKey { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:33](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L33) | Stable key used for broker-aware position actions. |
-| <code>public decimal UnitPrice { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:36](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L36) | Executed unit price of the position. |
-| <code>public string UnitPriceText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:39](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L39) | Formatted unit price string for display. |
-| <code>public decimal Quantity { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:42](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L42) | Signed quantity (positive = long, negative = short). |
-| <code>public string QuantityText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:45](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L45) | Formatted quantity for display. |
-| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:48](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L48) | Side of the trade (&quot;Buy&quot; or &quot;Sell&quot;). |
-| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:51](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L51) | Current order/position status. |
-| <code>public DateOnly? Expiry { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:54](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L54) | Expiry date for options positions. |
-| <code>public string AssetClass { get; set; } = &quot;equity&quot;;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:57](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L57) | Asset class reported by the execution source. |
-| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:60](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L60) | Provider-specific metadata required for broker-side actions. |
-| <code>public bool SupportsClose { get; set; } = true;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:63](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L63) | Whether the entry supports close / flatten actions. |
-| <code>public bool SupportsUpsize { get; set; } = true;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:66](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L66) | Whether the entry supports add / upsize actions. |
-| <code>public string ExpiryText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:69](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L69) | Formatted expiry for display (e.g., &quot;17Sep25&quot;). |
-| <code>public TimeOnly? MarketTime { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:72](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L72) | Market time of last update. |
-| <code>public decimal UnrealisedPnl { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:75](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L75) | Unrealised P&amp;L for this position. |
-| <code>public string UnrealisedPnlText =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:78](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L78) | Formatted unrealised P&amp;L for display. |
-| <code>public SolidColorBrush PnlBrush =&gt; …;</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:81](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L81) | Brush applied to the unrealised P&amp;L cell. |
-| <code>public bool IsSelected { get; set; }</code> | [src/Meridian.Wpf/Models/BlotterModels.cs:84](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L84) | Whether the row is currently selected (checkbox). |
-
-## BlotterFilterChip
-
-Qualified name: <code>Meridian.Wpf.Models.BlotterFilterChip</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/BlotterModels.cs:187](../../../../src/Meridian.Wpf/Models/BlotterModels.cs#L187).
-
-An active filter chip displayed in the filter bar.
-
-```csharp
-public sealed record BlotterFilterChip(string Label, string Value);
-```

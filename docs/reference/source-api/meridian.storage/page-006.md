@@ -6,6 +6,88 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ArchiveMaintenanceScheduleConcurrencyException
+
+Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleConcurrencyException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1137](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1137).
+
+Raised when a revision-aware caller attempts to replace a newer retained schedule.
+
+```csharp
+public sealed class ArchiveMaintenanceScheduleConcurrencyException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ArchiveMaintenanceScheduleConcurrencyException(string scheduleId, long expectedRevision, long actualRevision) : base($&quot;Schedule &#x27;{scheduleId}&#x27; changed concurrently (expected revision {expectedRevision}, actual revision {actualRevision}). Refresh and retry.&quot;);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1139](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1139) |  |
+| <code>public string ScheduleId { get; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1151](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1151) |  |
+| <code>public long ExpectedRevision { get; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1152](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1152) |  |
+| <code>public long ActualRevision { get; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1153](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1153) |  |
+
+## ArchiveMaintenanceScheduleManager
+
+Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:13](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L13).
+
+Manages archive maintenance schedules with file-based persistence. Thread-safe implementation for concurrent access.
+
+```csharp
+public sealed class ArchiveMaintenanceScheduleManager : IArchiveMaintenanceScheduleManager
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;ArchiveMaintenanceSchedule&gt;? ScheduleCreated;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:29](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L29) |  |
+| <code>public event EventHandler&lt;ArchiveMaintenanceSchedule&gt;? ScheduleUpdated;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:30](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L30) |  |
+| <code>public event EventHandler&lt;string&gt;? ScheduleDeleted;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:31](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L31) |  |
+| <code>public MaintenanceExecutionHistory ExecutionHistory =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:33](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L33) |  |
+| <code>public ArchiveMaintenanceScheduleManager(ILogger&lt;ArchiveMaintenanceScheduleManager&gt; logger, string dataRoot, MaintenanceExecutionHistory? executionHistory = null);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:35](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L35) |  |
+| <code>public IReadOnlyList&lt;ArchiveMaintenanceSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:49](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L49) |  |
+| <code>public ArchiveMaintenanceSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:57](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L57) |  |
+| <code>public async Task&lt;ArchiveMaintenanceSchedule&gt; CreateScheduleAsync(ArchiveMaintenanceSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:64](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L64) |  |
+| <code>public async Task&lt;ArchiveMaintenanceSchedule&gt; CreateFromPresetAsync(string presetName, string name, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:102](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L102) |  |
+| <code>public async Task&lt;ArchiveMaintenanceSchedule&gt; UpdateScheduleAsync(ArchiveMaintenanceSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:120](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L120) |  |
+| <code>public async Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:167](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L167) |  |
+| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:198](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L198) |  |
+| <code>public IReadOnlyList&lt;ArchiveMaintenanceSchedule&gt; GetDueSchedules(DateTimeOffset asOf);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:237](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L237) |  |
+| <code>public MaintenanceScheduleSummary GetStatusSummary();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:542](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L542) |  |
+| <code>public async Task UpdateScheduleAfterExecutionAsync(string scheduleId, MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:564](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L564) |  |
+
+## IArchiveMaintenanceScheduleManager
+
+Qualified name: <code>Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:6](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L6).
+
+Interface for managing archive maintenance schedules.
+
+```csharp
+public interface IArchiveMaintenanceScheduleManager
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ArchiveMaintenanceSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:11](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L11) | Get all maintenance schedules. |
+| <code>ArchiveMaintenanceSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:16](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L16) | Get a specific schedule by ID. |
+| <code>Task&lt;ArchiveMaintenanceSchedule&gt; CreateScheduleAsync(ArchiveMaintenanceSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:21](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L21) | Create a new maintenance schedule. |
+| <code>Task&lt;ArchiveMaintenanceSchedule&gt; CreateFromPresetAsync(string presetName, string name, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:26](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L26) | Create a schedule from a preset. |
+| <code>Task&lt;ArchiveMaintenanceSchedule&gt; UpdateScheduleAsync(ArchiveMaintenanceSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:31](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L31) | Update an existing schedule. |
+| <code>Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:36](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L36) | Delete a schedule. |
+| <code>Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:41](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L41) | Enable or disable a schedule. |
+| <code>IReadOnlyList&lt;ArchiveMaintenanceSchedule&gt; GetDueSchedules(DateTimeOffset asOf);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:46](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L46) | Get schedules that are due for execution. |
+| <code>MaintenanceScheduleSummary GetStatusSummary();</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:51](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L51) | Get an overview of all schedules. |
+| <code>event EventHandler&lt;ArchiveMaintenanceSchedule&gt;? ScheduleCreated;</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:56](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L56) | Event raised when a schedule is created. |
+| <code>event EventHandler&lt;ArchiveMaintenanceSchedule&gt;? ScheduleUpdated;</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:61](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L61) | Event raised when a schedule is updated. |
+| <code>event EventHandler&lt;string&gt;? ScheduleDeleted;</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs:66](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs#L66) | Event raised when a schedule is deleted. |
+
 ## IArchiveMaintenanceService
 
 Qualified name: <code>Meridian.Storage.Maintenance.IArchiveMaintenanceService</code>. Kind: `interface`.
@@ -1211,48 +1293,3 @@ Enum declarations:
 | <code>Source</code> | [src/Meridian.Storage/StorageOptions.cs:319](../../../../src/Meridian.Storage/StorageOptions.cs#L319) | Partition by data source. |
 | <code>AssetClass</code> | [src/Meridian.Storage/StorageOptions.cs:321](../../../../src/Meridian.Storage/StorageOptions.cs#L321) | Partition by asset class. |
 | <code>Exchange</code> | [src/Meridian.Storage/StorageOptions.cs:323](../../../../src/Meridian.Storage/StorageOptions.cs#L323) | Partition by exchange. |
-
-## PartitionStrategy
-
-Qualified name: <code>Meridian.Storage.PartitionStrategy</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:329](../../../../src/Meridian.Storage/StorageOptions.cs#L329).
-
-Multi-dimensional partition strategy.
-
-```csharp
-public sealed record PartitionStrategy(PartitionDimension Primary, PartitionDimension? Secondary = null, PartitionDimension? Tertiary = null, DatePartition DateGranularity = DatePartition.Daily);
-```
-
-## JsonlStoragePolicy
-
-Qualified name: <code>Meridian.Storage.Policies.JsonlStoragePolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:12](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L12).
-
-Storage policy that generates file paths based on configurable naming conventions. Supports multiple directory structures and date partitioning strategies.
-
-```csharp
-public sealed class JsonlStoragePolicy : IStoragePolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonlStoragePolicy(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:18](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L18) |  |
-| <code>public string GetPath(MarketEvent evt);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:28](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L28) | Generates the file path for a market event based on configured naming convention. |
-| <code>public string GetPathPreview();</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:59](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L59) | Gets a preview of the file path pattern for display purposes. |
-| <code>public ParsedPathMetadata? TryParsePath(string filePath);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:231](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L231) | Attempts to parse metadata from a file path based on the configured naming convention. This is the inverse of GetPath() and provides a centralized parser for storage search/indexing. |
-
-## ParsedPathMetadata
-
-Qualified name: <code>Meridian.Storage.Policies.ParsedPathMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:554](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L554).
-
-Metadata extracted from a storage file path.
-
-```csharp
-public sealed record ParsedPathMetadata(string Symbol, string EventType, string Source, DateTimeOffset? Date);
-```

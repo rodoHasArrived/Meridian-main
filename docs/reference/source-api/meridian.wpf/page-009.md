@@ -6,6 +6,85 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunMatExecutionRequest
+
+Qualified name: <code>Meridian.Wpf.Services.RunMatExecutionRequest</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/RunMatService.cs:46](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L46).
+
+Specifies script content and paths, process arguments, and persistence options for a RunMat execution.
+
+```csharp
+public sealed class RunMatExecutionRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScriptName { get; init; } = &quot;scratch.m&quot;;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:48](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L48) |  |
+| <code>public string ScriptSource { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:49](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L49) |  |
+| <code>public string? ScriptPath { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:50](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L50) |  |
+| <code>public string? ExecutablePath { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:51](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L51) |  |
+| <code>public string? WorkingDirectory { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:52](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L52) |  |
+| <code>public string AdditionalArguments { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:53](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L53) |  |
+| <code>public bool PersistScript { get; init; } = true;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:54](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L54) |  |
+
+## RunMatExecutionResult
+
+Qualified name: <code>Meridian.Wpf.Services.RunMatExecutionResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/RunMatService.cs:60](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L60).
+
+Reports RunMat completion, cancellation, exit code, paths, duration, and captured output.
+
+```csharp
+public sealed class RunMatExecutionResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:62](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L62) |  |
+| <code>public bool WasCancelled { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:63](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L63) |  |
+| <code>public int? ExitCode { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:64](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L64) |  |
+| <code>public string ScriptPath { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:65](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L65) |  |
+| <code>public string? ExecutablePath { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:66](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L66) |  |
+| <code>public string WorkingDirectory { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:67](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L67) |  |
+| <code>public TimeSpan Duration { get; init; }</code> | [src/Meridian.Wpf/Services/RunMatService.cs:68](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L68) |  |
+| <code>public string ErrorMessage { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:69](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L69) |  |
+| <code>public IReadOnlyList&lt;RunMatOutputLine&gt; Output { get; init; } = Array.Empty&lt;RunMatOutputLine&gt;();</code> | [src/Meridian.Wpf/Services/RunMatService.cs:70](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L70) |  |
+| <code>public static RunMatExecutionResult Failure(string message, string scriptPath, string workingDirectory, string? executablePath = null) =&gt; …;</code> | [src/Meridian.Wpf/Services/RunMatService.cs:72](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L72) |  |
+
+## RunMatOutputKind
+
+Qualified name: <code>Meridian.Wpf.Services.RunMatOutputKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Services/RunMatService.cs:13](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L13).
+
+```csharp
+public enum RunMatOutputKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StdOut</code> | [src/Meridian.Wpf/Services/RunMatService.cs:15](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L15) |  |
+| <code>StdErr</code> | [src/Meridian.Wpf/Services/RunMatService.cs:16](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L16) |  |
+| <code>Status</code> | [src/Meridian.Wpf/Services/RunMatService.cs:17](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L17) |  |
+
+## RunMatOutputLine
+
+Qualified name: <code>Meridian.Wpf.Services.RunMatOutputLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Services/RunMatService.cs:20](../../../../src/Meridian.Wpf/Services/RunMatService.cs#L20).
+
+```csharp
+public sealed record RunMatOutputLine(DateTime TimestampUtc, RunMatOutputKind Kind, string Text);
+```
+
 ## RunMatScriptDocument
 
 Qualified name: <code>Meridian.Wpf.Services.RunMatScriptDocument</code>. Kind: `class`.
@@ -974,97 +1053,3 @@ Declared public members:
 | <code>public bool IsActive { get; init; } = true;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:640](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L640) | Whether subscriptions are active for this watchlist. |
 | <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:643](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L643) | When the watchlist was created. |
 | <code>public DateTimeOffset ModifiedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:646](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L646) | When the watchlist was last modified. |
-
-## WatchlistChangeType
-
-Qualified name: <code>Meridian.Wpf.Services.WatchlistChangeType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:670](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L670).
-
-Type of watchlist change.
-
-```csharp
-public enum WatchlistChangeType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Created</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:672](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L672) |  |
-| <code>Updated</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:673](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L673) |  |
-| <code>Deleted</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:674](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L674) |  |
-| <code>Reordered</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:675](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L675) |  |
-| <code>Synced</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:676](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L676) |  |
-
-## WatchlistsChangedEventArgs
-
-Qualified name: <code>Meridian.Wpf.Services.WatchlistsChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:652](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L652).
-
-Event arguments for watchlist changes.
-
-```csharp
-public sealed class WatchlistsChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WatchlistChangeType ChangeType { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:655](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L655) | Type of change that occurred. |
-| <code>public Watchlist? Watchlist { get; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:658](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L658) | The affected watchlist (may be null for bulk operations). |
-| <code>public WatchlistsChangedEventArgs(WatchlistChangeType changeType, Watchlist? watchlist);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:660](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L660) |  |
-
-## WatchlistService
-
-Qualified name: <code>Meridian.Wpf.Services.WatchlistService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:28](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L28).
-
-Service for managing symbol watchlists in the WPF application. Provides local persistence and optional synchronization with the backend API. Implements the shared IWatchlistService seam so shared UI services can read this host&#x27;s watchlists instead of the in-memory default.
-
-```csharp
-public sealed class WatchlistService : IWatchlistReader, IWatchlistService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WatchlistService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:43](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L43) | Gets the singleton instance of the WatchlistService. |
-| <code>public string BaseUrl { get; set; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:48](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L48) | Gets or sets the base URL for the API. |
-| <code>public event EventHandler&lt;WatchlistsChangedEventArgs&gt;? WatchlistsChanged;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:57](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L57) | Occurs when watchlists are updated. |
-| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetAllWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:80](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L80) | Gets all watchlists. |
-| <code>public async Task&lt;Watchlist?&gt; GetWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:95](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L95) | Gets a specific watchlist by ID. |
-| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(string name, IEnumerable&lt;string&gt;? symbols = null, string? color = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:112](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L112) | Creates a new watchlist. |
-| <code>public async Task&lt;Watchlist?&gt; UpdateWatchlistAsync(string watchlistId, string? name = null, string? color = null, bool? isPinned = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:152](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L152) | Updates an existing watchlist. |
-| <code>public async Task&lt;bool&gt; DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:199](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L199) | Deletes a watchlist. |
-| <code>public async Task&lt;int&gt; AddSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:231](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L231) | Adds symbols to a watchlist. |
-| <code>public async Task&lt;int&gt; RemoveSymbolsAsync(string watchlistId, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:286](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L286) | Removes symbols from a watchlist. |
-| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:337](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L337) | Gets all watchlists that contain a specific symbol. |
-| <code>public async Task&lt;string?&gt; ExportWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:352](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L352) | Exports a watchlist to JSON. |
-| <code>public async Task&lt;Watchlist?&gt; ImportWatchlistAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:367](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L367) | Imports a watchlist from JSON. |
-| <code>public async Task&lt;bool&gt; SyncWithBackendAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:393](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L393) | Syncs local watchlists with the backend API. |
-| <code>public async Task ReorderWatchlistsAsync(IEnumerable&lt;string&gt; watchlistIds, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:435](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L435) | Reorders watchlists. |
-| <code>public async Task&lt;bool&gt; CreateOrUpdateWatchlistAsync(string name, IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:478](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L478) | Creates a new watchlist or updates an existing one with the given name. If a watchlist with the name exists, symbols are added to it. Otherwise, a new watchlist is created. |
-
-## WindowStartupRecovery
-
-Qualified name: <code>Meridian.Wpf.Services.WindowStartupRecovery</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WindowStartupRecovery.cs:9](../../../../src/Meridian.Wpf/Services/WindowStartupRecovery.cs#L9).
-
-Normalizes startup window state when Meridian is launched from shells that provide hidden or tiny initial window metrics.
-
-```csharp
-public static class WindowStartupRecovery
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool NeedsRecovery(bool isVisible, bool showInTaskbar, WindowState windowState, double nativeWidth, double nativeHeight, double minWidth, double minHeight);</code> | [src/Meridian.Wpf/Services/WindowStartupRecovery.cs:11](../../../../src/Meridian.Wpf/Services/WindowStartupRecovery.cs#L11) |  |
-| <code>public static Rect ResolveBounds(Rect? persistedBounds, Rect nativeBounds, double minWidth, double minHeight, double fallbackWidth, double fallbackHeight);</code> | [src/Meridian.Wpf/Services/WindowStartupRecovery.cs:27](../../../../src/Meridian.Wpf/Services/WindowStartupRecovery.cs#L27) |  |

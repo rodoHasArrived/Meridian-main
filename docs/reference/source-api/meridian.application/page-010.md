@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetClassValidatorRegistry
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.AssetClassValidatorRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L24).
+
+Indexes asset-class validators and resolves the validator for a requested asset class.
+
+```csharp
+public sealed class AssetClassValidatorRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AssetClassValidatorRegistry(IEnumerable&lt;ISecurityAssetClassValidator&gt; validators);</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:28](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L28) |  |
+| <code>public IReadOnlyCollection&lt;string&gt; SupportedAssetClasses =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:38](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L38) |  |
+| <code>public bool TryGetValidator(string assetClass, out ISecurityAssetClassValidator validator) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:40](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L40) |  |
+| <code>public static AssetClassValidatorRegistry CreateDefault() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:43](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L43) |  |
+| <code>public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L50) | The default registry: every class&#x27;s hand-written semantic rules composed with the rules generated from its term schema (SchemaTermsAssetClassValidator). |
+
 ## FileSecurityValidationSnapshotStore
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.FileSecurityValidationSnapshotStore</code>. Kind: `class`.
@@ -954,21 +976,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PreflightResult Result { get; }</code> | [src/Meridian.Application/Services/PreflightChecker.cs:830](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L830) |  |
 | <code>public PreflightException(string message, PreflightResult result) : base(message);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:832](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L832) |  |
-
-## PreflightResult
-
-Qualified name: <code>Meridian.Application.Services.PreflightResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:773](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L773).
-
-Result of all pre-flight checks.
-
-```csharp
-public readonly record struct PreflightResult(bool AllChecksPassed, bool HasWarnings, IReadOnlyList<PreflightCheckResult> Checks, double TotalDurationMs, DateTimeOffset CheckedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string GetSummary();</code> | [src/Meridian.Application/Services/PreflightChecker.cs:784](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L784) | Gets a summary string of the pre-flight results. |

@@ -536,18 +536,36 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidatePostService</code>. Kind: `class`.
 
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ApprovalBoundary.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.ApprovalBoundary.cs#L7).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
 Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CapitalReturn.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CapitalReturn.cs#L8).
 
 ```csharp
 public sealed partial class AccountingPostingCandidatePostService
 ```
 
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L23).
+
+```csharp
+public sealed partial class AccountingPostingCandidatePostService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostAttestedCashDividendCandidateAsync(PostAttestedCashDividendPostingCandidateRequestDto request, CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:25](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L25) |  |
+
 Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L31).
 
 Posts reviewed accounting candidates while checking approval, reference, and ledger authority.
 
 ```csharp
-public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService, IAccountingCashDividendAttestedPostService
 ```
 
 Declared public members:
@@ -597,7 +615,7 @@ Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateServi
 public sealed partial class AccountingPostingCandidateService
 ```
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:68](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L68).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:69](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L69).
 
 Builds reviewable journal candidates and candidate writes from accounting-event evidence.
 
@@ -609,16 +627,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingPostingCandidateService(IAccountingConfigurationService configurationService, IAccountingJournalDraftService journalDraftService, ILedgerBookService? ledgerBookService = null, IAccountingPolicyService? accountingPolicyService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IFactorPaydownProjectionService? factorPaydownProjector = null, ILedgerJournalStore? taxLotStore = null);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:81](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L81) |  |
-| <code>public async Task&lt;PostingRuleJournalCandidateResultDto&gt; BuildCandidateAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:99](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L99) |  |
-| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:104](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L104) |  |
-| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:109](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L109) |  |
+| <code>public AccountingPostingCandidateService(IAccountingConfigurationService configurationService, IAccountingJournalDraftService journalDraftService, ILedgerBookService? ledgerBookService = null, IAccountingPolicyService? accountingPolicyService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IFactorPaydownProjectionService? factorPaydownProjector = null, ILedgerJournalStore? taxLotStore = null);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:82](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L82) |  |
+| <code>public async Task&lt;PostingRuleJournalCandidateResultDto&gt; BuildCandidateAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:100](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L100) |  |
+| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:105](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L105) |  |
+| <code>public async Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:110](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L110) |  |
 
 ## AccountingPostingCandidateWriteResult
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidateWriteResult</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:61](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L61).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:62](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L62).
 
 ```csharp
 public sealed record AccountingPostingCandidateWriteResult(PostingRuleJournalCandidateResultDto Candidate, LedgerJournalEntryWrite? Write);
@@ -631,7 +649,7 @@ Qualified name: <code>Meridian.FinancialOperations.Ledger.AssetAccountingCandida
 Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:44](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L44).
 
 ```csharp
-public sealed record AssetAccountingCandidateAuthorityContext(Guid EventId, long EventVersion, long SourceSpineVersion, long DraftSpineVersion, string SourceProjectionFingerprint, AssetAccountingEventKindDto EventKind, Guid SecurityId, Guid BookPositionId, long ExpectedBookPositionVersion, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string RulePackId, string RulePackVersion, long SecurityVersion = 0);
+public sealed record AssetAccountingCandidateAuthorityContext(Guid EventId, long EventVersion, long SourceSpineVersion, long DraftSpineVersion, string SourceProjectionFingerprint, AssetAccountingEventKindDto EventKind, Guid SecurityId, Guid BookPositionId, long ExpectedBookPositionVersion, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string RulePackId, string RulePackVersion, long SecurityVersion = 0, string? CanonicalInstrumentSymbol = null);
 ```
 
 ## AssetAccountingEventSpineService
@@ -829,6 +847,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L11) |  |
 
+## IAccountingCashDividendAttestedPostService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingCashDividendAttestedPostService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:15](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L15).
+
+Posts only producer-leased native cash-dividend preparer decisions, never ordinary approval.
+
+```csharp
+public interface IAccountingCashDividendAttestedPostService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostAttestedCashDividendCandidateAsync(PostAttestedCashDividendPostingCandidateRequestDto request, CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L17) |  |
+
 ## IAccountingJournalDraftService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingJournalDraftService</code>. Kind: `interface`.
@@ -885,21 +921,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:38](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L38) |  |
-
-## IAccountingPostingCandidatePostService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:21](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L21).
-
-Defines posting of reviewed accounting candidates through the governed ledger boundary.
-
-```csharp
-public interface IAccountingPostingCandidatePostService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostCandidateAsync(PostPostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs#L23) |  |

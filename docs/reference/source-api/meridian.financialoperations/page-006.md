@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMappingProfileSnapshot
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L48).
+
+Persisted snapshot shape for the file-backed profile store.
+
+```csharp
+public sealed record StatementMappingProfileSnapshot(int Version, IReadOnlyList<StatementMappingProfileDocument> Profiles);
+```
+
 ## StatementParseIssue
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementParseIssue</code>. Kind: `record`.
@@ -859,21 +871,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L17) |  |
 | <code>bool TryResolveRate(string fromCurrency, string toCurrency, DateOnly asOf, out ReconciliationFxRateResolution resolution);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L24) | Resolves the rate together with the evidence a posting needs: the date of the quote that was used, how it was derived and where it came from. A provider that cannot state those reports no resolution, so a posting never rests on a rate of unknown age or origin. |
-
-## IReconciliationIngestionScheduler
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationIngestionScheduler</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L18).
-
-Captures source snapshots across the requested reconciliation ingestion work.
-
-```csharp
-public interface IReconciliationIngestionScheduler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;DataSourceSnapshot&gt;&gt; CaptureAsync(IReadOnlyList&lt;IReconciliationSourceAdapter&gt; adapters, ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L20) |  |

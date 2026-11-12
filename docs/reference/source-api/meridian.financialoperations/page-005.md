@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalReconciliationRecordKind
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CanonicalReconciliationRecordKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L10).
+
+```csharp
+public enum CanonicalReconciliationRecordKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L12) |  |
+| <code>Cash</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L13) |  |
+| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L14) |  |
+
 ## CanonicalReconciliationSourceKind
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.CanonicalReconciliationSourceKind</code>. Kind: `enum`.
@@ -906,15 +924,3 @@ Declared public members:
 | <code>public static IReadOnlyList&lt;string&gt; Validate(StatementMappingProfileDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L19) |  |
 | <code>public static StatementMappingProfile ToRuntimeProfile(StatementMappingProfileDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:125](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L125) | Materializes the document into the runtime profile the existing reconciliation paths consume. Aliases, culture, and CSV options are connector-level concerns and are not carried into the runtime shape. |
 | <code>public static StatementFieldMapping? FindDocumentField(StatementMappingProfileDocument document, StatementCanonicalField canonicalField);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs:151](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileLoader.cs#L151) |  |
-
-## StatementMappingProfileSnapshot
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementMappingProfileSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L48).
-
-Persisted snapshot shape for the file-backed profile store.
-
-```csharp
-public sealed record StatementMappingProfileSnapshot(int Version, IReadOnlyList<StatementMappingProfileDocument> Profiles);
-```

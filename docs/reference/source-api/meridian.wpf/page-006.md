@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellState
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellState</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/ShellNavigationModels.cs:91](../../../../src/Meridian.Wpf/Models/ShellNavigationModels.cs#L91).
+
+```csharp
+public sealed record WorkspaceShellState(string WorkspaceId, string LayoutId, string DisplayName, string? LayoutScopeKey, BoundedWindowMode WindowMode, string? LayoutPresetId = null, bool HasPrimaryContext = true, string? ActiveRunId = null);
+```
+
+## WorkspaceStateRestoreResult
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceStateRestoreResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:116](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L116).
+
+Returns the restored workspace token together with its validation outcome.
+
+```csharp
+public sealed class WorkspaceStateRestoreResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceStateRestoreResult(WorkspaceStateToken token, bool isRecoveryState, string? recoveryReason);</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:118](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L118) |  |
+| <code>public WorkspaceStateToken Token { get; }</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:125](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L125) |  |
+| <code>public bool IsRecoveryState { get; }</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:127](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L127) |  |
+| <code>public string? RecoveryReason { get; }</code> | [src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs:129](../../../../src/Meridian.Wpf/Models/WorkspaceStateTokenModels.cs#L129) |  |
+
 ## WorkspaceStateRestoreValidation
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceStateRestoreValidation</code>. Kind: `class`.
@@ -1193,57 +1224,3 @@ Source: [src/Meridian.Wpf/Services/DemoTourService.cs:88](../../../../src/Meridi
 ```csharp
 public sealed record DemoTourStep(int Sequence, string Title, string PageTag, string Description);
 ```
-
-## DesktopAuthenticationSession
-
-Qualified name: <code>Meridian.Wpf.Services.DesktopAuthenticationSession</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:40](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L40).
-
-Holds the authenticated desktop operator for the current WPF process. Credentials stay hash-backed through UserProfileRegistry.
-
-```csharp
-public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopAuthorizationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event EventHandler? SignedOut;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:45](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L45) |  |
-| <code>public event EventHandler? SignedIn;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:54](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L54) | Raised after a successful credentialed sign-in or after the explicit anonymous local-development session is established. Surfaces that gate on the session (command enablement, authorization badges) re-evaluate on both transitions: a journal-restored page that observed SignedOut would otherwise stay disabled for the newly authorized operator, because signing in raises no other signal. |
-| <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:56](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L56) |  |
-| <code>public bool CanContinueWithoutCredentials =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:58](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L58) |  |
-| <code>public bool IsAuthenticationRequired =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:61](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L61) |  |
-| <code>public bool IsAuthenticated =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:64](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L64) |  |
-| <code>public bool IsAnonymousDevelopmentSession { get; private set; }</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:68](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L68) |  |
-| <code>public UserProfile? CurrentUser =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:70](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L70) |  |
-| <code>public string CurrentActor =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:75](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L75) |  |
-| <code>public bool TryGetAuthenticatedActor(out string actor);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:97](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L97) | Resolves the actor to record as the author of a governed write, or returns false when this process has nobody it can honestly name. |
-| <code>public UserRole? CurrentRole =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:115](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L115) |  |
-| <code>public UserPermission? CurrentPermissions =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:117](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L117) |  |
-| <code>public bool HasPermission(UserPermission permission);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:126](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L126) | Client-side defense-in-depth permission check for the desktop shell. Fails closed: unless the environment explicitly permits continuing without credentials (unconfigured local development), a resolved operator profile that grants permission is required. This prevents an unauthenticated Production session from being treated as fully privileged. Server-side authorization remains authoritative in all cases. |
-| <code>public bool TryAuthorize(UserPermission permission, out string actor);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:161](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L161) |  |
-| <code>public DesktopSignInResult SignIn(string username, string password);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:172](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L172) |  |
-| <code>public DesktopSignInResult ContinueWithoutCredentials();</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:204](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L204) |  |
-| <code>public void SignOut();</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:217](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L217) |  |
-
-## DesktopConfigurationRecoveryResult
-
-Qualified name: <code>Meridian.Wpf.Services.DesktopConfigurationRecoveryResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:17](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L17).
-
-Result of the desktop configuration preflight. Recovery artifacts are retained beside the configuration so an operator can inspect exactly what was displaced and why.
-
-```csharp
-public sealed record DesktopConfigurationRecoveryResult(ConfigurationProvisioningResult Outcome, string ConfigPath, string? RestoredFromPath, string? InvalidConfigurationPath, string? RecoveryReceiptPath, string? FailureReason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Recovered =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:25](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L25) |  |
-| <code>public IReadOnlyList&lt;string&gt; RetainedArtifacts { get; }</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:28](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L28) |  |
-| <code>public string OperatorMessage =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:41](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L41) |  |

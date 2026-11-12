@@ -240,12 +240,13 @@ Declared public members:
 | <code>public LedgerReportPackLifecycleStatus Status { get; init; } = LedgerReportPackLifecycleStatus.Draft;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:14](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L14) |  |
 | <code>public IReadOnlyList&lt;LedgerReportPackLifecycleEvent&gt; LifecycleEvents { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:16](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L16) |  |
 | <code>public IReadOnlyList&lt;LedgerReportLineProvenance&gt; LineProvenance { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:18](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L18) |  |
-| <code>public IReadOnlyList&lt;LedgerReportPackRestatement&gt; Restatements { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:20](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L20) |  |
-| <code>public LedgerFinancialReportPack Validate(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:22](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L22) |  |
-| <code>public LedgerFinancialReportPack Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:25](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L25) |  |
-| <code>public LedgerFinancialReportPack Publish(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:28](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L28) |  |
-| <code>public LedgerFinancialReportPack Archive(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:31](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L31) |  |
-| <code>public LedgerFinancialReportPack Restate(string restatementId, string reason, string approvedBy, DateTimeOffset approvedAtUtc, IReadOnlyList&lt;string&gt; changedLineKeys, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:34](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L34) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LedgerReportPreparerAttestation&gt;? PreparerAttestations { get; init; }</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:21](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L21) |  |
+| <code>public IReadOnlyList&lt;LedgerReportPackRestatement&gt; Restatements { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:23](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L23) |  |
+| <code>public LedgerFinancialReportPack Validate(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:25](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L25) |  |
+| <code>public LedgerFinancialReportPack Approve(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:28](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L28) |  |
+| <code>public LedgerFinancialReportPack Publish(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:31](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L31) |  |
+| <code>public LedgerFinancialReportPack Archive(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList&lt;string&gt; evidenceLinks) =&gt; …;</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:34](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L34) |  |
+| <code>public LedgerFinancialReportPack Restate(string restatementId, string reason, string approvedBy, DateTimeOffset approvedAtUtc, IReadOnlyList&lt;string&gt; changedLineKeys, IReadOnlyList&lt;string&gt; evidenceLinks);</code> | [src/Meridian.Ledger/LedgerFinancialReportPack.cs:37](../../../../src/Meridian.Ledger/LedgerFinancialReportPack.cs#L37) |  |
 
 ## LedgerFinancialStatementBuilder
 
@@ -554,6 +555,24 @@ One period-bounded reporting window produced by LedgerReportSchedulePlanner.
 ```csharp
 public readonly record struct LedgerReportPeriod(string PeriodId, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly NextPeriodStart);
 ```
+
+## LedgerReportPreparerAttestation
+
+Qualified name: <code>Meridian.Ledger.LedgerReportPreparerAttestation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerReportPreparerAttestation.cs:10](../../../../src/Meridian.Ledger/LedgerReportPreparerAttestation.cs#L10).
+
+Compact immutable financial-export disclosure; it grants no independent approval.
+
+```csharp
+public sealed record LedgerReportPreparerAttestation(Guid JournalEntryId, string Classification, string Disclosure, string? ReceiptReference, Guid? AttestationId, Guid? CaseId, Guid? LedgerBookId, Guid? SourcePeriodId, Guid? DeclarationId, long? DeclarationRevision, string? PolicyVersion, string? PolicyHash, string? Actor, DateTimeOffset? RecordedAtUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IndependentApprovalSatisfied =&gt; …;</code> | [src/Meridian.Ledger/LedgerReportPreparerAttestation.cs:26](../../../../src/Meridian.Ledger/LedgerReportPreparerAttestation.cs#L26) |  |
 
 ## LedgerReportPresentation
 
@@ -968,25 +987,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerValidationException(string message) : base(message);</code> | [src/Meridian.Ledger/LedgerValidationException.cs:11](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L11) |  |
 | <code>public LedgerValidationException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Ledger/LedgerValidationException.cs:14](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L14) |  |
-
-## LedgerViewKind
-
-Qualified name: <code>Meridian.Ledger.LedgerViewKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/LedgerViewKind.cs:8](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L8).
-
-High-level purpose or valuation basis for a ledger within a project. This allows one project to hold parallel ledgers for actuals, historical replay, parameterized P&amp;L scenarios, security-master contractual projections, and future views.
-
-```csharp
-public enum LedgerViewKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Actual</code> | [src/Meridian.Ledger/LedgerViewKind.cs:10](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L10) |  |
-| <code>Historical</code> | [src/Meridian.Ledger/LedgerViewKind.cs:11](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L11) |  |
-| <code>ParameterizedPnL</code> | [src/Meridian.Ledger/LedgerViewKind.cs:12](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L12) |  |
-| <code>SecurityMaster</code> | [src/Meridian.Ledger/LedgerViewKind.cs:13](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L13) |  |
-| <code>Other</code> | [src/Meridian.Ledger/LedgerViewKind.cs:14](../../../../src/Meridian.Ledger/LedgerViewKind.cs#L14) |  |

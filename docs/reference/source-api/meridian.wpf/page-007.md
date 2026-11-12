@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DesktopAuthenticationSession
+
+Qualified name: <code>Meridian.Wpf.Services.DesktopAuthenticationSession</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:40](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L40).
+
+Holds the authenticated desktop operator for the current WPF process. Credentials stay hash-backed through UserProfileRegistry.
+
+```csharp
+public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopAuthorizationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler? SignedOut;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:45](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L45) |  |
+| <code>public event EventHandler? SignedIn;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:54](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L54) | Raised after a successful credentialed sign-in or after the explicit anonymous local-development session is established. Surfaces that gate on the session (command enablement, authorization badges) re-evaluate on both transitions: a journal-restored page that observed SignedOut would otherwise stay disabled for the newly authorized operator, because signing in raises no other signal. |
+| <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:56](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L56) |  |
+| <code>public bool CanContinueWithoutCredentials =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:58](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L58) |  |
+| <code>public bool IsAuthenticationRequired =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:61](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L61) |  |
+| <code>public bool IsAuthenticated =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:64](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L64) |  |
+| <code>public bool IsAnonymousDevelopmentSession { get; private set; }</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:68](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L68) |  |
+| <code>public UserProfile? CurrentUser =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:70](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L70) |  |
+| <code>public string CurrentActor =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:75](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L75) |  |
+| <code>public bool TryGetAuthenticatedActor(out string actor);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:97](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L97) | Resolves the actor to record as the author of a governed write, or returns false when this process has nobody it can honestly name. |
+| <code>public UserRole? CurrentRole =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:115](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L115) |  |
+| <code>public UserPermission? CurrentPermissions =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:117](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L117) |  |
+| <code>public bool HasPermission(UserPermission permission);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:126](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L126) | Client-side defense-in-depth permission check for the desktop shell. Fails closed: unless the environment explicitly permits continuing without credentials (unconfigured local development), a resolved operator profile that grants permission is required. This prevents an unauthenticated Production session from being treated as fully privileged. Server-side authorization remains authoritative in all cases. |
+| <code>public bool TryAuthorize(UserPermission permission, out string actor);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:161](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L161) |  |
+| <code>public DesktopSignInResult SignIn(string username, string password);</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:172](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L172) |  |
+| <code>public DesktopSignInResult ContinueWithoutCredentials();</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:204](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L204) |  |
+| <code>public void SignOut();</code> | [src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs:217](../../../../src/Meridian.Wpf/Services/DesktopAuthenticationSession.cs#L217) |  |
+
+## DesktopConfigurationRecoveryResult
+
+Qualified name: <code>Meridian.Wpf.Services.DesktopConfigurationRecoveryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:17](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L17).
+
+Result of the desktop configuration preflight. Recovery artifacts are retained beside the configuration so an operator can inspect exactly what was displaced and why.
+
+```csharp
+public sealed record DesktopConfigurationRecoveryResult(ConfigurationProvisioningResult Outcome, string ConfigPath, string? RestoredFromPath, string? InvalidConfigurationPath, string? RecoveryReceiptPath, string? FailureReason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Recovered =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:25](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L25) |  |
+| <code>public IReadOnlyList&lt;string&gt; RetainedArtifacts { get; }</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:28](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L28) |  |
+| <code>public string OperatorMessage =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:41](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L41) |  |
+
 ## DesktopConfigurationRecoveryService
 
 Qualified name: <code>Meridian.Wpf.Services.DesktopConfigurationRecoveryService</code>. Kind: `class`.
@@ -210,7 +264,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.EvidenceWorkbenchApiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:51](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L51).
+Source: [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:75](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L75).
 
 Adapts shared evidence subject, packet, validation, document, and request-list APIs for the desktop workbench.
 
@@ -222,13 +276,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EvidenceWorkbenchApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:55](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L55) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidenceSubjectDto[]&gt;&gt; ListSubjectsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:60](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L60) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetPacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:63](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L63) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidenceCompletenessDto&gt;&gt; ValidatePacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:72](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L72) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidencePacketExportResponse&gt;&gt; ExportManifestAsync(string subjectKind, string subjectId, EvidencePacketExportRequest request, Guid? ledgerBookId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:82](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L82) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidenceVaultRequestListEntryDto[]&gt;&gt; ListOpenRequestListsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:93](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L93) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidenceVaultDocumentEntryDto[]&gt;&gt; ListDocumentsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:104](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L104) |  |
+| <code>public EvidenceWorkbenchApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:79](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L79) |  |
+| <code>public Task&lt;ApiResponse&lt;SinglePrincipalAttestationWorkspaceDto&gt;&gt; GetAttestationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:84](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L84) |  |
+| <code>public Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; GetAttestationSubjectAsync(string vaultId, string documentId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:88](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L88) |  |
+| <code>public async Task&lt;ApiResponse&lt;string&gt;&gt; ReadAttestationProofExportAsync(Guid receiptId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:94](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L94) |  |
+| <code>public Task&lt;ApiResponse&lt;SinglePrincipalDeclarationDto&gt;&gt; ChangeAttestationDeclarationAsync(ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:106](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L106) |  |
+| <code>public Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordAttestationAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:111](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L111) |  |
+| <code>public Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeAttestationAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:116](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L116) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidenceSubjectDto[]&gt;&gt; ListSubjectsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:121](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L121) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetPacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:124](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L124) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidenceCompletenessDto&gt;&gt; ValidatePacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:133](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L133) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidencePacketExportResponse&gt;&gt; ExportManifestAsync(string subjectKind, string subjectId, EvidencePacketExportRequest request, Guid? ledgerBookId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:143](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L143) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidenceVaultRequestListEntryDto[]&gt;&gt; ListOpenRequestListsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:154](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L154) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidenceVaultDocumentEntryDto[]&gt;&gt; ListDocumentsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:165](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L165) |  |
 
 ## ExecutionSafetyControlClient
 
@@ -614,6 +674,28 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AuditIntegrityCheckResult&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/AccountingAuditIntegrityApiClient.cs:38](../../../../src/Meridian.Wpf/Services/AccountingAuditIntegrityApiClient.cs#L38) |  |
 
+## ICashDividendAttestationApiClient
+
+Qualified name: <code>Meridian.Wpf.Services.ICashDividendAttestationApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:7](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L7).
+
+Thin native access to the server-owned, bounded W14 cash-dividend treatment.
+
+```csharp
+public interface ICashDividendAttestationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;CorporateActionProcessingCaseDto[]&gt;&gt; ListCashDividendCasesAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:9](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L9) |  |
+| <code>Task&lt;ApiResponse&lt;CorporateActionCashDividendWorkspaceDto&gt;&gt; GetCashDividendWorkspaceAsync(Guid caseId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:11](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L11) |  |
+| <code>Task&lt;ApiResponse&lt;CashDividendAttestationDeclarationResultDto&gt;&gt; ChangeCashDividendDeclarationAsync(Guid caseId, ChangeCashDividendAttestationDeclarationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:13](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L13) |  |
+| <code>Task&lt;ApiResponse&lt;CorporateActionCashDividendAttestationResultDto&gt;&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:15](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L15) |  |
+| <code>Task&lt;ApiResponse&lt;CorporateActionCashDividendPostingResultDto&gt;&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs:17](../../../../src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.CashDividends.cs#L17) |  |
+
 ## ICommandContextProvider
 
 Qualified name: <code>Meridian.Wpf.Services.ICommandContextProvider</code>. Kind: `interface`.
@@ -705,12 +787,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ApiResponse&lt;EvidenceSubjectDto[]&gt;&gt; ListSubjectsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:14](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L14) |  |
-| <code>Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetPacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:16](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L16) |  |
-| <code>Task&lt;ApiResponse&lt;EvidenceCompletenessDto&gt;&gt; ValidatePacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:22](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L22) |  |
-| <code>Task&lt;ApiResponse&lt;EvidencePacketExportResponse&gt;&gt; ExportManifestAsync(string subjectKind, string subjectId, EvidencePacketExportRequest request, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:28](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L28) |  |
-| <code>Task&lt;ApiResponse&lt;EvidenceVaultRequestListEntryDto[]&gt;&gt; ListOpenRequestListsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:35](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L35) |  |
-| <code>Task&lt;ApiResponse&lt;EvidenceVaultDocumentEntryDto[]&gt;&gt; ListDocumentsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:41](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L41) |  |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationWorkspaceDto&gt;&gt; GetAttestationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:15](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L15) | Scope-level preparer assertions, separate from evidence readiness and approval. |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; GetAttestationSubjectAsync(string vaultId, string documentId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:19](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L19) |  |
+| <code>Task&lt;ApiResponse&lt;string&gt;&gt; ReadAttestationProofExportAsync(Guid receiptId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:23](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L23) |  |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalDeclarationDto&gt;&gt; ChangeAttestationDeclarationAsync(ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:26](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L26) |  |
+| <code>Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordAttestationAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:30](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L30) |  |
+| <code>Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeAttestationAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:34](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L34) |  |
+| <code>Task&lt;ApiResponse&lt;EvidenceSubjectDto[]&gt;&gt; ListSubjectsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:38](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L38) |  |
+| <code>Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetPacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:40](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L40) |  |
+| <code>Task&lt;ApiResponse&lt;EvidenceCompletenessDto&gt;&gt; ValidatePacketAsync(string subjectKind, string subjectId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:46](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L46) |  |
+| <code>Task&lt;ApiResponse&lt;EvidencePacketExportResponse&gt;&gt; ExportManifestAsync(string subjectKind, string subjectId, EvidencePacketExportRequest request, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:52](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L52) |  |
+| <code>Task&lt;ApiResponse&lt;EvidenceVaultRequestListEntryDto[]&gt;&gt; ListOpenRequestListsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:59](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L59) |  |
+| <code>Task&lt;ApiResponse&lt;EvidenceVaultDocumentEntryDto[]&gt;&gt; ListDocumentsAsync(string? subjectKind, string? subjectId, int maxResults, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs:65](../../../../src/Meridian.Wpf/Services/EvidenceWorkbenchApiClient.cs#L65) |  |
 
 ## IExecutionSafetyControlClient
 
@@ -977,6 +1065,25 @@ Declared public members:
 | <code>Task&lt;OperationsContinuityWorkflowDto?&gt; GetWorkflowAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:27](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L27) | Returns the continuity workflow detail, or null when the workflow does not exist or the workstation API call failed. |
 | <code>Task&lt;FinancialOperationsCommandCenterDto?&gt; GetCloseReadinessAsync(CloseReadinessScopeDto scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:29](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L29) |  |
 
+## IPreparerDraftCheckApiClient
+
+Qualified name: <code>Meridian.Wpf.Services.IPreparerDraftCheckApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:6](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L6).
+
+```csharp
+public interface IPreparerDraftCheckApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationWorkspaceDto&gt;&gt; GetDraftCheckWorkspaceAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:8](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L8) |  |
+| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; InspectDraftCheckAsync(Guid securityId, Guid runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:10](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L10) |  |
+| <code>Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordDraftCheckAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:12](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L12) |  |
+| <code>Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeDraftCheckAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:14](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L14) |  |
+
 ## IQuantScriptLayoutService
 
 Qualified name: <code>Meridian.Wpf.Services.IQuantScriptLayoutService</code>. Kind: `interface`.
@@ -997,82 +1104,3 @@ Declared public members:
 | <code>void SaveRowHeights(double chartHeight, double editorHeight);</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:9](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L9) |  |
 | <code>int LoadLastActiveTab();</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:10](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L10) |  |
 | <code>void SaveLastActiveTab(int tabIndex);</code> | [src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs:11](../../../../src/Meridian.Wpf/Services/IQuantScriptLayoutService.cs#L11) |  |
-
-## ISecurityAssetProfileWorkflowClient
-
-Qualified name: <code>Meridian.Wpf.Services.ISecurityAssetProfileWorkflowClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:10](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L10).
-
-Defines asset-profile discovery, lineage, draft, approval, rollback, and security-creation operations.
-
-```csharp
-public interface ISecurityAssetProfileWorkflowClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt;&gt; GetProfilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:12](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L12) |  |
-| <code>Task&lt;SecurityAssetProfileLineageDto?&gt; GetLineageAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:14](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L14) |  |
-| <code>Task&lt;ApiResponse&lt;SecurityAssetProfileGovernanceResultDto&gt;&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:16](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L16) |  |
-| <code>Task&lt;ApiResponse&lt;SecurityAssetProfileGovernanceResultDto&gt;&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:20](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L20) |  |
-| <code>Task&lt;ApiResponse&lt;SecurityAssetProfileGovernanceResultDto&gt;&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:24](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L24) |  |
-| <code>Task&lt;ApiResponse&lt;SecurityDetailDto&gt;&gt; CreateSecurityAsync(CreateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs:28](../../../../src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs#L28) |  |
-
-## ISecurityMasterOperatorWorkflowClient
-
-Qualified name: <code>Meridian.Wpf.Services.ISecurityMasterOperatorWorkflowClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:10](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L10).
-
-Defines security-master ingestion status and conflict discovery and resolution for desktop operators.
-
-```csharp
-public interface ISecurityMasterOperatorWorkflowClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterIngestStatusResponse?&gt; GetIngestStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:12](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L12) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityMasterConflict&gt;&gt; GetOpenConflictsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:14](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L14) |  |
-| <code>Task&lt;SecurityMasterConflict?&gt; ResolveConflictAsync(Guid conflictId, string resolution, string resolvedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs:16](../../../../src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs#L16) |  |
-
-## ISetupWizardLinkLauncher
-
-Qualified name: <code>Meridian.Wpf.Services.ISetupWizardLinkLauncher</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/SetupWizardStateService.cs:86](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L86).
-
-Abstracts opening external links from the setup wizard.
-
-```csharp
-public interface ISetupWizardLinkLauncher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Open(string url);</code> | [src/Meridian.Wpf/Services/SetupWizardStateService.cs:88](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L88) |  |
-
-## ISetupWizardNavigator
-
-Qualified name: <code>Meridian.Wpf.Services.ISetupWizardNavigator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/SetupWizardStateService.cs:78](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L78).
-
-Abstracts page-tag navigation for the setup wizard.
-
-```csharp
-public interface ISetupWizardNavigator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void NavigateTo(string pageTag);</code> | [src/Meridian.Wpf/Services/SetupWizardStateService.cs:80](../../../../src/Meridian.Wpf/Services/SetupWizardStateService.cs#L80) |  |

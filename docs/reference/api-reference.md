@@ -904,7 +904,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**393 declarations** from **38 source files**.
+**400 declarations** from **39 source files**.
 
 
 ### HostAdapters
@@ -1093,6 +1093,20 @@ Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs](../../src/Meridi
 | --- | --- | --- | --- | --- | --- |
 | `/workstation/evidence/{subjectKind}/{subjectId}/{fileName}` | GET | `async (string subjectKind, string subjectId, string fileName, HttpContext context) => …` | `Produces(200, contentType : "application/json")`; `Produces<EvidenceEndpointErrorDto>(404)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.NotFound`; `Results.StatusCode`; `Results.File` | `WithName("GetWorkstationEvidenceManifest")` | [L24](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L24) |
 | `/workstation/evidence/vault/{vaultId}` | GET | `async (string vaultId, HttpContext context) => …` | `Produces(200, contentType : "application/json")`; `Produces<EvidenceEndpointErrorDto>(404)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.StatusCode`; `Results.Conflict`; `Results.NotFound`; `Results.File` | `WithName("GetWorkstationEvidenceVaultManifest")` | [L82](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L82) |
+
+### EvidenceEndpoints.SinglePrincipalAttestation
+
+Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/attestations/receipts/{receiptId}/export` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations/receipts/{receiptId}/export` | GET | `(Guid receiptId, HttpContext context) => …` | `Produces(StatusCodes.Status200OK, contentType : "application/json")`; `Produces(StatusCodes.Status404NotFound)`; `Results.NotFound`; `Results.File` | `WithName("ExportPreparerAttestationProof")` | [L17](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L17) |
+| `/attestations` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations` | GET | `async Task<IResult>(HttpContext context) => …` | `Produces<SinglePrincipalAttestationWorkspaceDto>()`; `Results.Json` | `WithName("GetSinglePrincipalAttestationWorkspace")` | [L38](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L38) |
+| `/attestations/subjects` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations/subjects` | GET | `(string vaultId, string documentId, HttpContext context) => …` | `Produces<SinglePrincipalAttestationSubjectSnapshotDto>()`; `Results.NotFound`; `Results.Json` | `WithName("GetPreparerAttestationSubject")` | [L51](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L51) |
+| `/attestations/drafts/{securityId}/{runId}` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations/drafts/{securityId}/{runId}` | GET | `(Guid securityId, Guid runId, HttpContext context) => …` | `Produces<SinglePrincipalAttestationSubjectSnapshotDto>()`; `Produces(StatusCodes.Status404NotFound)`; `Results.NotFound`; `Results.Json` | `WithName("GetPreparerDraftCheckSubject")` | [L66](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L66) |
+| `/attestations/declaration` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations/declaration` | POST | `(ChangeSinglePrincipalDeclarationRequestDto request, HttpContext context) => …` | `Produces<SinglePrincipalDeclarationDto>()`; `Results.Json` | `WithName("ChangeSinglePrincipalDeclaration")` | [L84](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L84) |
+| `/attestations/receipts` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations/receipts` | POST | `(RecordPreparerAttestationRequestDto request, HttpContext context) => …` | `Produces<PreparerAttestationReceiptDto>()`; `Results.NotFound`; `Results.Json` | `WithName("RecordPreparerAttestation")` | [L99](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L99) |
+| `/attestations/revocations` (relative declaration on `group`)<br>Caller-derived mounts: `/api/workstation/evidence/attestations/revocations` | POST | `(RevokePreparerAttestationRequestDto request, HttpContext context) => …` | `Produces<PreparerAttestationRevocationDto>()`; `Results.NotFound`; `Results.Json` | `WithName("RevokePreparerAttestation")` | [L123](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L123) |
 
 ### ExecutionEndpoints
 
