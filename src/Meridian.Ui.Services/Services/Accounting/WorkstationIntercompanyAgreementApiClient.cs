@@ -18,12 +18,18 @@ public sealed class WorkstationIntercompanyAgreementApiClient(ApiClientService a
     public Task<ApiResponse<IntercompanyAgreementListDto>> ListAsync(IntercompanyAgreementQueryDto query, CancellationToken ct = default)
     {
         var parameters = new List<string> { $"pageSize={query.PageSize}" };
-        if (query.EntityId is { } entity) parameters.Add($"entityId={entity:D}");
-        if (query.AgreementType is { } type) parameters.Add($"agreementType={type}");
-        if (query.Status is { } status) parameters.Add($"status={status}");
-        if (query.AsOf is { } date) parameters.Add($"asOf={date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
-        if (query.KnownAtUtc is { } known) parameters.Add($"knownAtUtc={Uri.EscapeDataString(known.ToString("O", CultureInfo.InvariantCulture))}");
-        if (query.Cursor is { Length: > 0 } cursor) parameters.Add($"cursor={Uri.EscapeDataString(cursor)}");
+        if (query.EntityId is { } entity)
+            parameters.Add($"entityId={entity:D}");
+        if (query.AgreementType is { } type)
+            parameters.Add($"agreementType={type}");
+        if (query.Status is { } status)
+            parameters.Add($"status={status}");
+        if (query.AsOf is { } date)
+            parameters.Add($"asOf={date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        if (query.KnownAtUtc is { } known)
+            parameters.Add($"knownAtUtc={Uri.EscapeDataString(known.ToString("O", CultureInfo.InvariantCulture))}");
+        if (query.Cursor is { Length: > 0 } cursor)
+            parameters.Add($"cursor={Uri.EscapeDataString(cursor)}");
         return apiClient.GetWithResponseAsync<IntercompanyAgreementListDto>(UiApiRoutes.IntercompanyAgreements + "?" + string.Join("&", parameters), ct);
     }
 
@@ -48,9 +54,12 @@ public sealed class WorkstationIntercompanyAgreementApiClient(ApiClientService a
     {
         var route = UiApiRoutes.IntercompanyAgreements;
         ApiResponse<IntercompanyAgreementCommandResultDto> response;
-        if (action == "create") response = await apiClient.PostWithResponseAsync<IntercompanyAgreementCommandResultDto>(route, command, ct).ConfigureAwait(false);
-        else if (action == "propose") response = await apiClient.PostWithResponseAsync<IntercompanyAgreementCommandResultDto>($"{route}/{command.AgreementId:D}/proposals", command, ct).ConfigureAwait(false);
-        else if (action == "save") response = await apiClient.PutWithResponseAsync<IntercompanyAgreementCommandResultDto>($"{route}/{command.AgreementId:D}/proposals/{command.ProposalId:D}", command, ct).ConfigureAwait(false);
+        if (action == "create")
+            response = await apiClient.PostWithResponseAsync<IntercompanyAgreementCommandResultDto>(route, command, ct).ConfigureAwait(false);
+        else if (action == "propose")
+            response = await apiClient.PostWithResponseAsync<IntercompanyAgreementCommandResultDto>($"{route}/{command.AgreementId:D}/proposals", command, ct).ConfigureAwait(false);
+        else if (action == "save")
+            response = await apiClient.PutWithResponseAsync<IntercompanyAgreementCommandResultDto>($"{route}/{command.AgreementId:D}/proposals/{command.ProposalId:D}", command, ct).ConfigureAwait(false);
         else if (action is "submit" or "approve" or "reject" or "withdraw")
             response = await apiClient.PostWithResponseAsync<IntercompanyAgreementCommandResultDto>($"{route}/{command.AgreementId:D}/proposals/{command.ProposalId:D}/{action}", command, ct).ConfigureAwait(false);
         else

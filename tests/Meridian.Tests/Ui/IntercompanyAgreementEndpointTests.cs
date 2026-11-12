@@ -196,7 +196,8 @@ public sealed class IntercompanyAgreementEndpointTests
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
-        if (service is not null) builder.Services.AddSingleton(service);
+        if (service is not null)
+            builder.Services.AddSingleton(service);
         configure?.Invoke(builder.Services);
         var app = builder.Build();
         app.Use(async (http, next) =>
@@ -208,7 +209,8 @@ public sealed class IntercompanyAgreementEndpointTests
                 http.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-a";
                 http.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-a";
             }
-            if (apiKey) http.Items["CurrentUserIsApiKey"] = true;
+            if (apiKey)
+                http.Items["CurrentUserIsApiKey"] = true;
             await next(http);
         });
         app.MapIntercompanyAgreementEndpoints(JsonOptions);

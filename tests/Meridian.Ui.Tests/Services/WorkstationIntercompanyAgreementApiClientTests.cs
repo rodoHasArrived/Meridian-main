@@ -94,7 +94,9 @@ public sealed class WorkstationIntercompanyAgreementApiClientTests
     [Fact]
     public async Task JournalDrillThroughRetainsExactAmountsAndScope()
     {
-        var agreement = Guid.NewGuid(); var book = Guid.NewGuid(); var date = new DateOnly(2026, 2, 1);
+        var agreement = Guid.NewGuid();
+        var book = Guid.NewGuid();
+        var date = new DateOnly(2026, 2, 1);
         var line = new IntercompanyAgreementJournalLineDto(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 37, date,
             Guid.NewGuid(), Guid.NewGuid(), "Intercompany receivable", "Loan", "USD", "12345678901234567890.1234567890", "0",
             "USD", "12345678901234567890.1234567890", "0", agreement, 2, "Covered", null, "retained-source");
@@ -113,7 +115,8 @@ public sealed class WorkstationIntercompanyAgreementApiClientTests
     [Fact]
     public async Task JournalFromAnotherBookIsRefused()
     {
-        var agreement = Guid.NewGuid(); var date = new DateOnly(2026, 2, 1);
+        var agreement = Guid.NewGuid();
+        var date = new DateOnly(2026, 2, 1);
         using var api = new ApiClientService(new Factory((_, _) => Task.FromResult(Response(
             new IntercompanyAgreementJournalLinesDto(agreement, Guid.NewGuid(), date, "Covered", [], null)))));
         var response = await new WorkstationIntercompanyAgreementApiClient(api).GetJournalLinesAsync(agreement, Guid.NewGuid(), date);

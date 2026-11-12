@@ -10,9 +10,12 @@ public sealed partial class IntercompanyAgreementService
     {
         ValidateContext(context);
         var state = await store.GetAsync(context.TenantId, agreementId, ct).ConfigureAwait(false);
-        if (state is null) return null;
-        if (knownAtUtc.HasValue && !state.History.Any(h => h.RecordedAtUtc <= knownAtUtc.Value)) return null;
-        if (!await access.CanAccessEntitiesAsync(context, DisclosedParties(state), ct).ConfigureAwait(false)) return null;
+        if (state is null)
+            return null;
+        if (knownAtUtc.HasValue && !state.History.Any(h => h.RecordedAtUtc <= knownAtUtc.Value))
+            return null;
+        if (!await access.CanAccessEntitiesAsync(context, DisclosedParties(state), ct).ConfigureAwait(false))
+            return null;
         return Project(state, context, asOf ?? Today(), knownAtUtc);
     }
 
@@ -20,29 +23,39 @@ public sealed partial class IntercompanyAgreementService
         IntercompanyAgreementQueryDto query, CancellationToken ct = default)
     {
         ValidateContext(context);
-        if (query.PageSize is < 1 or > 100) throw new IntercompanyAgreementValidationException("PageSize must be between 1 and 100.");
+        if (query.PageSize is < 1 or > 100)
+            throw new IntercompanyAgreementValidationException("PageSize must be between 1 and 100.");
         Guid? after = null;
         if (query.Cursor is not null)
         {
-            if (!Guid.TryParseExact(query.Cursor, "N", out var cursor)) throw new IntercompanyAgreementValidationException("Cursor is invalid.");
+            if (!Guid.TryParseExact(query.Cursor, "N", out var cursor))
+                throw new IntercompanyAgreementValidationException("Cursor is invalid.");
             after = cursor;
         }
         var results = new List<IntercompanyAgreementDetailDto>();
         foreach (var state in (await store.ListAsync(context.TenantId, ct).ConfigureAwait(false)).OrderBy(s => s.AgreementId))
         {
-            if (query.KnownAtUtc.HasValue && !state.History.Any(h => h.RecordedAtUtc <= query.KnownAtUtc.Value)) continue;
-            if (after.HasValue && state.AgreementId.CompareTo(after.Value) <= 0) continue;
+            if (query.KnownAtUtc.HasValue && !state.History.Any(h => h.RecordedAtUtc <= query.KnownAtUtc.Value))
+                continue;
+            if (after.HasValue && state.AgreementId.CompareTo(after.Value) <= 0)
+                continue;
             var identity = Identity(state);
-            if (query.EntityId.HasValue && identity.PartyOneId != query.EntityId && identity.PartyTwoId != query.EntityId) continue;
-            if (!await access.CanAccessEntitiesAsync(context, DisclosedParties(state), ct).ConfigureAwait(false)) continue;
+            if (query.EntityId.HasValue && identity.PartyOneId != query.EntityId && identity.PartyTwoId != query.EntityId)
+                continue;
+            if (!await access.CanAccessEntitiesAsync(context, DisclosedParties(state), ct).ConfigureAwait(false))
+                continue;
             var detail = Project(state, context, query.AsOf ?? Today(), query.KnownAtUtc);
-            if (query.AgreementType.HasValue && detail.AgreementType != query.AgreementType) continue;
-            if (query.Status.HasValue && detail.EffectiveStatus != query.Status) continue;
+            if (query.AgreementType.HasValue && detail.AgreementType != query.AgreementType)
+                continue;
+            if (query.Status.HasValue && detail.EffectiveStatus != query.Status)
+                continue;
             results.Add(detail);
-            if (results.Count > query.PageSize) break;
+            if (results.Count > query.PageSize)
+                break;
         }
         var hasMore = results.Count > query.PageSize;
-        if (hasMore) results.RemoveAt(results.Count - 1);
+        if (hasMore)
+            results.RemoveAt(results.Count - 1);
         return new(results, hasMore ? results[^1].AgreementId.ToString("N") : null);
     }
 

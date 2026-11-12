@@ -118,17 +118,28 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
 
     private void Edit(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
     {
-        if (SetProperty(ref field, value ?? "", property) && IsEditing) IsDirty = true;
+        if (SetProperty(ref field, value ?? "", property) && IsEditing)
+            IsDirty = true;
     }
 
     private void ChangeScope(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
     {
-        if (IsDirty) { StatusText = "Save or discard local edits before changing the agreement scope."; OnPropertyChanged(property); return; }
-        if (!SetProperty(ref field, value ?? "", property)) return;
-        _cursor = null; _canCreate = false; Agreements.Clear(); SelectedRow = null; Detail = null;
-        _agreementId = Guid.Empty; _proposalId = Guid.Empty;
-        _conflictDetail = null; OnPropertyChanged(nameof(ConflictSummary));
-        IsEditing = false; ResetJournalLines(); SelectedRevision = null;
+        if (IsDirty)
+        { StatusText = "Save or discard local edits before changing the agreement scope."; OnPropertyChanged(property); return; }
+        if (!SetProperty(ref field, value ?? "", property))
+            return;
+        _cursor = null;
+        _canCreate = false;
+        Agreements.Clear();
+        SelectedRow = null;
+        Detail = null;
+        _agreementId = Guid.Empty;
+        _proposalId = Guid.Empty;
+        _conflictDetail = null;
+        OnPropertyChanged(nameof(ConflictSummary));
+        IsEditing = false;
+        ResetJournalLines();
+        SelectedRevision = null;
         StatusText = "Scope changed. Load agreements for this entity and date.";
         NotifyCommands();
     }
@@ -142,8 +153,10 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
             var response = await _client.ListAsync(new(EntityId: entity, AsOf: Date(AsOf, "As-of date"), Cursor: more ? _cursor : null), token);
             token.ThrowIfCancellationRequested();
             var list = Require(response);
-            if (!more) Agreements.Clear();
-            foreach (var item in list.Items) Agreements.Add(item);
+            if (!more)
+                Agreements.Clear();
+            foreach (var item in list.Items)
+                Agreements.Add(item);
             _cursor = list.NextCursor;
             _canCreate = list.CanCreate;
             StatusText = Agreements.Count == 0 ? "No agreements match this scope and date." : $"{Agreements.Count} agreement(s) loaded; select one and open its retained detail.";
@@ -152,7 +165,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
 
     private async Task LoadJournalLinesAsync(bool more)
     {
-        if (Detail is not { } detail) return;
+        if (Detail is not { } detail)
+            return;
         await RunAsync(async token =>
         {
             try
@@ -160,14 +174,17 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
                 var response = await _client.GetJournalLinesAsync(detail.AgreementId, ParseId(LedgerBook, "Ledger book"), Date(AsOf, "As-of date"), more ? _journalCursor : null, token);
                 token.ThrowIfCancellationRequested();
                 var result = Require(response);
-                if (!more) JournalLines.Clear();
-                foreach (var line in result.Lines) JournalLines.Add(line);
+                if (!more)
+                    JournalLines.Clear();
+                foreach (var line in result.Lines)
+                    JournalLines.Add(line);
                 _journalCursor = result.NextCursor;
                 JournalStatus = $"{result.CoverageState}: {JournalLines.Count} source line(s). Coverage is advisory; it is not a settlement or elimination result.";
             }
             catch
             {
-                if (!token.IsCancellationRequested) JournalStatus = "Coverage unknown: source journal lines could not be refreshed. Any retained rows are from the previous successful read.";
+                if (!token.IsCancellationRequested)
+                    JournalStatus = "Coverage unknown: source journal lines could not be refreshed. Any retained rows are from the previous successful read.";
                 throw;
             }
         });
@@ -175,14 +192,16 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
 
     private void ResetJournalLines()
     {
-        JournalLines.Clear(); _journalCursor = null;
+        JournalLines.Clear();
+        _journalCursor = null;
         JournalStatus = "Choose a ledger book to inspect source journal lines.";
         NotifyCommands();
     }
 
     private async Task OpenAsync()
     {
-        if (SelectedRow is not { } row) return;
+        if (SelectedRow is not { } row)
+            return;
         await RunAsync(async token =>
         {
             var response = await _client.GetAsync(row.AgreementId, Date(AsOf, "As-of date"), token);
@@ -203,14 +222,17 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     private void New()
     {
         Detail = null;
-        _conflictDetail = null; OnPropertyChanged(nameof(ConflictSummary));
-        ResetJournalLines(); SelectedRevision = null;
+        _conflictDetail = null;
+        OnPropertyChanged(nameof(ConflictSummary));
+        ResetJournalLines();
+        SelectedRevision = null;
         _agreementId = Guid.NewGuid();
         _proposalId = Guid.NewGuid();
         _action = IntercompanyAgreementActionDto.Activate;
         Rationale = "";
         Fill(new("", "", Guid.Empty, "Lender", Guid.Empty, "Borrower", IntercompanyAgreementTypeDto.Loan, "", DateOnly.FromDateTime(DateTime.UtcNow)));
-        if (Guid.TryParse(EntityFilter, out var entity)) PartyOne = entity.ToString("D");
+        if (Guid.TryParse(EntityFilter, out var entity))
+            PartyOne = entity.ToString("D");
         IsEditing = IsDirty = true;
         StatusText = "New local draft. Save to retain it; evidence and independent review are required before activation.";
         OnPropertyChanged(nameof(EditorAction));
@@ -218,11 +240,13 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
 
     private void BeginProposal(IntercompanyAgreementActionDto action)
     {
-        if (Detail is not { } detail) return;
+        if (Detail is not { } detail)
+            return;
         var basis = detail.ApplicableRevision ?? detail.Revisions
             .Where(r => r.Action != IntercompanyAgreementActionDto.Terminate)
             .OrderBy(r => r.Terms.EffectiveFrom).ThenBy(r => r.AgreementVersion).LastOrDefault();
-        if (basis is null) return;
+        if (basis is null)
+            return;
         _proposalId = Guid.NewGuid();
         _action = action;
         Rationale = "";
@@ -237,19 +261,25 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     private void ReplaceProposal()
     {
         var previous = Detail?.Proposals.LastOrDefault();
-        if (previous is null) return;
-        _proposalId = Guid.NewGuid(); _action = IntercompanyAgreementActionDto.Activate;
+        if (previous is null)
+            return;
+        _proposalId = Guid.NewGuid();
+        _action = IntercompanyAgreementActionDto.Activate;
         Fill(previous.Draft with { Action = IntercompanyAgreementActionDto.Activate });
-        Rationale = ""; IsEditing = IsDirty = true;
+        Rationale = "";
+        IsEditing = IsDirty = true;
         StatusText = "Replacement activation proposal. The rejected or withdrawn proposal remains in history.";
         OnPropertyChanged(nameof(EditorAction));
     }
 
     private void Discard()
     {
-        if (_conflictDetail is { } latest) Apply(latest);
-        else if (Detail is { } detail) Apply(detail);
-        else { IsEditing = false; IsDirty = false; }
+        if (_conflictDetail is { } latest)
+            Apply(latest);
+        else if (Detail is { } detail)
+            Apply(detail);
+        else
+        { IsEditing = false; IsDirty = false; }
         StatusText = "Local edits discarded; retained records are unchanged.";
     }
 
@@ -272,14 +302,17 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         var command = new IntercompanyAgreementCommandDto(Guid.Empty, _agreementId, Detail?.AggregateVersion ?? 0,
             draft is null ? proposal?.ProposalId ?? _proposalId : _proposalId, draft, Rationale, proposal?.SubmittedHash);
         var key = action + JsonSerializer.Serialize(command);
-        if (key != _retryKey) { _retryKey = key; _retryId = Guid.NewGuid(); }
+        if (key != _retryKey)
+        { _retryKey = key; _retryId = Guid.NewGuid(); }
         var response = await _client.ExecuteAsync(action, command with { CommandId = _retryId }, token);
         token.ThrowIfCancellationRequested();
         var result = Require(response);
         Apply(result.Detail);
         var old = Agreements.FirstOrDefault(a => a.AgreementId == result.Detail.AgreementId);
-        if (old is not null) Agreements[Agreements.IndexOf(old)] = result.Detail;
-        else Agreements.Add(result.Detail);
+        if (old is not null)
+            Agreements[Agreements.IndexOf(old)] = result.Detail;
+        else
+            Agreements.Add(result.Detail);
         StatusText = $"{result.Receipt.Action} retained at version {result.Detail.AggregateVersion}.";
     }
 
@@ -290,7 +323,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         int? days = string.IsNullOrWhiteSpace(SettlementDays) ? null : int.TryParse(SettlementDays, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedDays)
             ? parsedDays : throw new InvalidOperationException("Settlement days must be a nonnegative whole number.");
         var evidence = new List<IntercompanyAgreementEvidenceDto>(_additionalEvidence);
-        if (!string.IsNullOrWhiteSpace(EvidenceReference)) evidence.Insert(0, new(EvidenceReference.Trim(), string.IsNullOrWhiteSpace(EvidenceArtifact) ? null : EvidenceArtifact.Trim()));
+        if (!string.IsNullOrWhiteSpace(EvidenceReference))
+            evidence.Insert(0, new(EvidenceReference.Trim(), string.IsNullOrWhiteSpace(EvidenceArtifact) ? null : EvidenceArtifact.Trim()));
         return new(Code, Name, ParseId(PartyOne, "First party"), PartyOneRole, ParseId(PartyTwo, "Second party"), PartyTwoRole,
             AgreementType, Currency, Date(EffectiveFrom, "Effective start"), OptionalDate(EffectiveTo, "Effective end"),
             new(rate, RateDescription, Schedule, Allocation, days, Notes), evidence, _action,
@@ -300,7 +334,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     private void Apply(IntercompanyAgreementDetailDto detail)
     {
         Detail = detail;
-        _conflictDetail = null; OnPropertyChanged(nameof(ConflictSummary));
+        _conflictDetail = null;
+        OnPropertyChanged(nameof(ConflictSummary));
         ResetJournalLines();
         SelectedRevision = detail.ApplicableRevision ?? detail.Revisions.LastOrDefault();
         _agreementId = detail.AgreementId;
@@ -308,7 +343,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
         var draft = pending?.Draft ?? detail.ApplicableRevision?.Terms ?? detail.Revisions.LastOrDefault()?.Terms;
         IsEditing = false;
         Rationale = pending?.Rationale ?? "";
-        if (draft is not null) Fill(draft);
+        if (draft is not null)
+            Fill(draft);
         _proposalId = pending?.ProposalId ?? Guid.Empty;
         _action = pending?.Action ?? IntercompanyAgreementActionDto.Amend;
         IsEditing = pending?.State == IntercompanyAgreementProposalStateDto.Draft && detail.Capabilities.CanEdit;
@@ -321,28 +357,40 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     {
         var wasEditing = IsEditing;
         IsEditing = false;
-        Code = draft.Code; Name = draft.Name; PartyOne = draft.PartyOneId == Guid.Empty ? "" : draft.PartyOneId.ToString("D");
+        Code = draft.Code;
+        Name = draft.Name;
+        PartyOne = draft.PartyOneId == Guid.Empty ? "" : draft.PartyOneId.ToString("D");
         PartyTwo = draft.PartyTwoId == Guid.Empty ? "" : draft.PartyTwoId.ToString("D");
-        PartyOneRole = draft.PartyOneRole; PartyTwoRole = draft.PartyTwoRole; Currency = draft.Currency; AgreementType = draft.AgreementType;
+        PartyOneRole = draft.PartyOneRole;
+        PartyTwoRole = draft.PartyTwoRole;
+        Currency = draft.Currency;
+        AgreementType = draft.AgreementType;
         EffectiveFrom = draft.EffectiveFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         EffectiveTo = draft.EffectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
         TerminationDate = draft.TerminationEffectiveDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? AsOf;
         FixedAnnualRate = draft.Terms?.FixedAnnualRate?.ToString(CultureInfo.InvariantCulture) ?? "";
-        RateDescription = draft.Terms?.RateDescription ?? ""; Schedule = draft.Terms?.ScheduleDescription ?? "";
-        Allocation = draft.Terms?.AllocationDescription ?? ""; SettlementDays = draft.Terms?.SettlementDays?.ToString(CultureInfo.InvariantCulture) ?? "";
-        Notes = draft.Terms?.Notes ?? ""; Purpose = draft.Purpose ?? "";
-        var first = draft.Evidence?.FirstOrDefault(); EvidenceReference = first?.Reference ?? ""; EvidenceArtifact = first?.ArtifactId ?? "";
+        RateDescription = draft.Terms?.RateDescription ?? "";
+        Schedule = draft.Terms?.ScheduleDescription ?? "";
+        Allocation = draft.Terms?.AllocationDescription ?? "";
+        SettlementDays = draft.Terms?.SettlementDays?.ToString(CultureInfo.InvariantCulture) ?? "";
+        Notes = draft.Terms?.Notes ?? "";
+        Purpose = draft.Purpose ?? "";
+        var first = draft.Evidence?.FirstOrDefault();
+        EvidenceReference = first?.Reference ?? "";
+        EvidenceArtifact = first?.ArtifactId ?? "";
         _additionalEvidence = draft.Evidence?.Skip(1).ToArray() ?? [];
         IsEditing = wasEditing;
     }
 
     private async Task RunAsync(Func<CancellationToken, Task> operation)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         var generation = _sessionGeneration;
         var token = _sessionCancellation.Token;
         IsBusy = true;
-        try { await operation(token); }
+        try
+        { await operation(token); }
         catch (Exception ex)
         {
             if (generation == _sessionGeneration && !token.IsCancellationRequested)
@@ -354,27 +402,37 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     /// <summary>Clear prior-session evidence and invalidate every outstanding response on account changes.</summary>
     public void ResetSession()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _sessionGeneration++;
         _sessionCancellation.Cancel();
         _sessionCancellation.Dispose();
         _sessionCancellation = new CancellationTokenSource();
-        IsEditing = false; IsDirty = false; _canCreate = false;
-        Agreements.Clear(); SelectedRow = null; Detail = null; SelectedRevision = null;
+        IsEditing = false;
+        IsDirty = false;
+        _canCreate = false;
+        Agreements.Clear();
+        SelectedRow = null;
+        Detail = null;
+        SelectedRevision = null;
         _agreementId = _proposalId = _retryId = Guid.Empty;
-        _cursor = _retryKey = null; _conflictDetail = null;
+        _cursor = _retryKey = null;
+        _conflictDetail = null;
         OnPropertyChanged(nameof(ConflictSummary));
         SetProperty(ref _entity, "", nameof(EntityFilter));
         LedgerBook = "";
         Fill(new("", "", Guid.Empty, "", Guid.Empty, "", IntercompanyAgreementTypeDto.Loan, "", DateOnly.FromDateTime(DateTime.UtcNow)));
-        Rationale = ""; ResetJournalLines(); IsBusy = false;
+        Rationale = "";
+        ResetJournalLines();
+        IsBusy = false;
         StatusText = "Session changed. Load agreements for the signed-in account.";
         NotifyCommands();
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         ResetSession();
         _disposed = true;
         _sessionCancellation.Cancel();
@@ -392,7 +450,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     private static DateOnly? OptionalDate(string value, string label) => string.IsNullOrWhiteSpace(value) ? null : Date(value, label);
     private static string RevisionSummary(IntercompanyAgreementRevisionDto? revision)
     {
-        if (revision is null) return "No retained revision selected.";
+        if (revision is null)
+            return "No retained revision selected.";
         return $"Version {revision.AgreementVersion} — {revision.Action}\n" + DraftSummary(revision.Terms)
             + $"\nApproved UTC: {revision.ApprovedAtUtc:O}\nApprover: {revision.Approver}\nRationale: {revision.Rationale}";
     }
@@ -408,11 +467,21 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
             + string.Join("\n", (draft.Evidence ?? []).Select(e => $"Evidence: {e.Reference}; artifact {e.ArtifactId}; hash {e.ContentHash}"));
     private void NotifyCommands()
     {
-        LoadCommand?.NotifyCanExecuteChanged(); MoreCommand?.NotifyCanExecuteChanged(); OpenCommand?.NotifyCanExecuteChanged();
+        LoadCommand?.NotifyCanExecuteChanged();
+        MoreCommand?.NotifyCanExecuteChanged();
+        OpenCommand?.NotifyCanExecuteChanged();
         CompareLatestCommand?.NotifyCanExecuteChanged();
-        NewCommand?.NotifyCanExecuteChanged(); AmendCommand?.NotifyCanExecuteChanged(); TerminateCommand?.NotifyCanExecuteChanged();
-        ReplaceProposalCommand?.NotifyCanExecuteChanged(); LoadJournalLinesCommand?.NotifyCanExecuteChanged(); MoreJournalLinesCommand?.NotifyCanExecuteChanged();
-        DiscardCommand?.NotifyCanExecuteChanged(); SaveCommand?.NotifyCanExecuteChanged(); SubmitCommand?.NotifyCanExecuteChanged();
-        ApproveCommand?.NotifyCanExecuteChanged(); RejectCommand?.NotifyCanExecuteChanged(); WithdrawCommand?.NotifyCanExecuteChanged();
+        NewCommand?.NotifyCanExecuteChanged();
+        AmendCommand?.NotifyCanExecuteChanged();
+        TerminateCommand?.NotifyCanExecuteChanged();
+        ReplaceProposalCommand?.NotifyCanExecuteChanged();
+        LoadJournalLinesCommand?.NotifyCanExecuteChanged();
+        MoreJournalLinesCommand?.NotifyCanExecuteChanged();
+        DiscardCommand?.NotifyCanExecuteChanged();
+        SaveCommand?.NotifyCanExecuteChanged();
+        SubmitCommand?.NotifyCanExecuteChanged();
+        ApproveCommand?.NotifyCanExecuteChanged();
+        RejectCommand?.NotifyCanExecuteChanged();
+        WithdrawCommand?.NotifyCanExecuteChanged();
     }
 }

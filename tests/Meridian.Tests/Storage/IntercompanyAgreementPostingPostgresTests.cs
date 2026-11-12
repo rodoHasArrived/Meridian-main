@@ -44,10 +44,13 @@ public sealed class IntercompanyAgreementPostingPostgresTests
         await database.JournalStore.AppendAsync(write, ct);
         (await database.JournalStore.QueryAsync(new(JournalEntryId: write.Entry.JournalEntryId), ct)).Should().ContainSingle();
         var changedLine = write.Entry.Lines[0];
-        var changed = write with { Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+        var changed = write with
+        {
+            Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
             [new(changedLine.EntryId, changedLine.JournalEntryId, changedLine.Timestamp, changedLine.Account,
                 changedLine.Debit, changedLine.Credit, changedLine.Description,
-                changedLine.Dimensions! with { IntercompanyAgreementVersion = 2 }), write.Entry.Lines[1]], write.Entry.Metadata) };
+                changedLine.Dimensions! with { IntercompanyAgreementVersion = 2 }), write.Entry.Lines[1]], write.Entry.Metadata)
+        };
         var conflict = () => database.JournalStore.AppendAsync(changed, ct);
         await conflict.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
     }

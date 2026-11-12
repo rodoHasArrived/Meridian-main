@@ -28,8 +28,11 @@ public sealed class IntercompanyAgreementServiceTests
         var first = Revision(f, 1, January);
         var second = Revision(f, 2, new(2026, 4, 1)) with { Terms = f.Draft with { EffectiveFrom = new(2026, 4, 1), EffectiveTo = new(2026, 5, 1) } };
         Assert.Equal(IntercompanyAgreementStatusDto.Expired, IntercompanyAgreementTimeline.Resolve([first, second], new(2026, 5, 1)).Status);
-        var terminate = Revision(f, 3, January) with { Action = IntercompanyAgreementActionDto.Terminate,
-            Terms = f.Draft with { Action = IntercompanyAgreementActionDto.Terminate, TerminationEffectiveDate = new(2026, 3, 1) } };
+        var terminate = Revision(f, 3, January) with
+        {
+            Action = IntercompanyAgreementActionDto.Terminate,
+            Terms = f.Draft with { Action = IntercompanyAgreementActionDto.Terminate, TerminationEffectiveDate = new(2026, 3, 1) }
+        };
         Assert.Equal(IntercompanyAgreementStatusDto.Terminated, IntercompanyAgreementTimeline.Resolve([first, second, terminate], new(2026, 4, 1)).Status);
     }
 
@@ -110,7 +113,8 @@ public sealed class IntercompanyAgreementServiceTests
         Assert.Equal(2, f.Store.State!.AggregateVersion);
         async Task<bool> Run(IntercompanyAgreementCommandDto command)
         {
-            try { await f.Service.SaveDraftAsync(f.Author, command); return true; }
+            try
+            { await f.Service.SaveDraftAsync(f.Author, command); return true; }
             catch (IntercompanyAgreementConflictException) { return false; }
         }
     }
@@ -162,7 +166,8 @@ public sealed class IntercompanyAgreementServiceTests
         var f = new Fixture();
         var create = f.Command(f.Draft);
         await f.Service.CreateAsync(f.Author, create);
-        var third = Guid.NewGuid(); var fourth = Guid.NewGuid();
+        var third = Guid.NewGuid();
+        var fourth = Guid.NewGuid();
         f.Store.Entities[third] = f.Store.Entities[f.Draft.PartyOneId] with { EntityId = third };
         f.Store.Entities[fourth] = f.Store.Entities[f.Draft.PartyTwoId] with { EntityId = fourth };
         var save = f.Command(f.Draft with { PartyOneId = third, PartyTwoId = fourth }, create.ProposalId);
@@ -215,10 +220,12 @@ public sealed class IntercompanyAgreementServiceTests
         public IntercompanyAgreementService Service { get; }
         public Fixture()
         {
-            var first = Guid.NewGuid(); var second = Guid.NewGuid();
+            var first = Guid.NewGuid();
+            var second = Guid.NewGuid();
             Draft = new("IC-001", "Synthetic loan", first, "Lender", second, "Borrower", IntercompanyAgreementTypeDto.Loan,
                 "USD", January, Terms: new(FixedAnnualRate: 0.05m), Evidence: [new("vault:agreement")]);
-            Store.Entities[first] = Entity(first); Store.Entities[second] = Entity(second);
+            Store.Entities[first] = Entity(first);
+            Store.Entities[second] = Entity(second);
             Service = new(Store, Access, Evidence, new Clock());
         }
         public IntercompanyAgreementCommandDto Command(IntercompanyAgreementDraftDto? draft = null, Guid? proposalId = null) =>
@@ -226,8 +233,10 @@ public sealed class IntercompanyAgreementServiceTests
         public async Task<IntercompanyAgreementCommandDto> ApproveAsync(IntercompanyAgreementDraftDto draft)
         {
             var create = Command(draft);
-            if (Store.State is null) await Service.CreateAsync(Author, create);
-            else await Service.CreateProposalAsync(Author, create);
+            if (Store.State is null)
+                await Service.CreateAsync(Author, create);
+            else
+                await Service.CreateProposalAsync(Author, create);
             var submitted = await Service.SubmitAsync(Author, Command(proposalId: create.ProposalId));
             var approve = Command(proposalId: create.ProposalId) with { SubmittedHash = submitted.Detail.Proposals[^1].SubmittedHash };
             await Service.ApproveAsync(Reviewer, approve);

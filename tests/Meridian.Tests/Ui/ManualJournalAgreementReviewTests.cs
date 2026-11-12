@@ -59,8 +59,10 @@ public sealed class ManualJournalAgreementReviewTests
         var periodId = Guid.NewGuid();
         var domain = IntercompanyAgreementPostingGuardTests.Dimensions();
         var dimensions = new LedgerDimensionSetDto(EntityId: domain.EntityId, CounterpartyId: domain.CounterpartyId)
-        { IntercompanyAgreementId = referenced ? domain.IntercompanyAgreementId : null,
-            IntercompanyAgreementVersion = referenced ? 1 : null };
+        {
+            IntercompanyAgreementId = referenced ? domain.IntercompanyAgreementId : null,
+            IntercompanyAgreementVersion = referenced ? 1 : null
+        };
         var now = DateTimeOffset.UtcNow;
         var draft = new ManualJournalEntryDraftDto(Guid.NewGuid(), ManualJournalEntryStatusDto.Draft, book.FundProfileId,
             book.LedgerBookId, AccountingBasisKindDto.Primary, new(2026, 5, 15), periodId.ToString("D"),

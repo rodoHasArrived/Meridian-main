@@ -52,8 +52,11 @@ public sealed class IntercompanyAgreementPostingGuardTests
         {
             [$"lineDimensions.{write.Entry.Lines[0].EntryId:N}.intercompanyAgreementId"] = Agreement.ToString("D")
         };
-        write = write with { Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
-            write.Entry.Lines, write.Entry.Metadata with { Tags = tags }) };
+        write = write with
+        {
+            Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+            write.Entry.Lines, write.Entry.Metadata with { Tags = tags })
+        };
         var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
         validate.Should().Throw<LedgerValidationException>().WithMessage("*supplied together*");
     }
@@ -62,12 +65,18 @@ public sealed class IntercompanyAgreementPostingGuardTests
     public void OrphanReservedReferenceTags_CannotBeSilentlyDiscarded()
     {
         var write = Write(new(EntityId: Entity.ToString("D")));
-        write = write with { Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
-            write.Entry.Lines, write.Entry.Metadata with { Tags = new Dictionary<string, string>
+        write = write with
+        {
+            Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+            write.Entry.Lines, write.Entry.Metadata with
             {
-                [$"lineDimensions.{Guid.NewGuid():N}.intercompanyAgreementId"] = Agreement.ToString("D"),
-                [$"lineDimensions.{Guid.NewGuid():N}.intercompanyAgreementVersion"] = "1"
-            } }) };
+                Tags = new Dictionary<string, string>
+                {
+                    [$"lineDimensions.{Guid.NewGuid():N}.intercompanyAgreementId"] = Agreement.ToString("D"),
+                    [$"lineDimensions.{Guid.NewGuid():N}.intercompanyAgreementVersion"] = "1"
+                }
+            })
+        };
         var validate = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
         validate.Should().Throw<LedgerValidationException>().WithMessage("*existing journal line*");
     }
@@ -174,7 +183,12 @@ public sealed class IntercompanyAgreementPostingGuardTests
             Intent: change == "not-reversal" ? AccountingPostingIntentDto.Adjustment : AccountingPostingIntentDto.Reversal,
             SourceJournalEntryId: source.Entry.JournalEntryId, ApprovalState: AccountingPostingApprovalStateDto.Approved,
             ApprovalId: "reviewed-reversal", OperatorRationale: "Reverse the immutable source", LedgerBookId: source.LedgerBookId);
-        return source with { Entry = new(id, source.Entry.Timestamp, "Reversal", lines, new(EffectiveDate: new(2026, 5, 31))),
-            CommandId = command.CommandId, SourceJournalEntryId = source.Entry.JournalEntryId, PostingCommand = command };
+        return source with
+        {
+            Entry = new(id, source.Entry.Timestamp, "Reversal", lines, new(EffectiveDate: new(2026, 5, 31))),
+            CommandId = command.CommandId,
+            SourceJournalEntryId = source.Entry.JournalEntryId,
+            PostingCommand = command
+        };
     }
 }

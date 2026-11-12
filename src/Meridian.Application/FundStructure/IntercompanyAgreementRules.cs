@@ -9,14 +9,18 @@ public static class IntercompanyAgreementRules
 {
     public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) => draft with
     {
-        Code = draft.Code?.Trim() ?? string.Empty, Name = draft.Name?.Trim() ?? string.Empty,
+        Code = draft.Code?.Trim() ?? string.Empty,
+        Name = draft.Name?.Trim() ?? string.Empty,
         Currency = draft.Currency?.Trim().ToUpperInvariant() ?? string.Empty,
-        PartyOneRole = draft.PartyOneRole?.Trim() ?? string.Empty, PartyTwoRole = draft.PartyTwoRole?.Trim() ?? string.Empty,
+        PartyOneRole = draft.PartyOneRole?.Trim() ?? string.Empty,
+        PartyTwoRole = draft.PartyTwoRole?.Trim() ?? string.Empty,
         Purpose = Clean(draft.Purpose),
         Terms = draft.Terms is null ? null : draft.Terms with
         {
-            RateDescription = Clean(draft.Terms.RateDescription), ScheduleDescription = Clean(draft.Terms.ScheduleDescription),
-            AllocationDescription = Clean(draft.Terms.AllocationDescription), Notes = Clean(draft.Terms.Notes)
+            RateDescription = Clean(draft.Terms.RateDescription),
+            ScheduleDescription = Clean(draft.Terms.ScheduleDescription),
+            AllocationDescription = Clean(draft.Terms.AllocationDescription),
+            Notes = Clean(draft.Terms.Notes)
         },
         Evidence = draft.Evidence?.Select(e => e is null ? throw new IntercompanyAgreementValidationException("Evidence reference is required.")
             : e with { Reference = e.Reference?.Trim() ?? string.Empty }).ToArray() ?? []
@@ -26,8 +30,10 @@ public static class IntercompanyAgreementRules
     {
         if (draft.PartyOneId == Guid.Empty || draft.PartyTwoId == Guid.Empty || draft.PartyOneId == draft.PartyTwoId)
             Fail("Two different legal entities are required.");
-        if (!Enum.IsDefined(draft.Action) || !Enum.IsDefined(draft.AgreementType)) Fail("Agreement type or action is invalid.");
-        if (draft.Terms?.SettlementDays < 0) Fail("Settlement days cannot be negative.");
+        if (!Enum.IsDefined(draft.Action) || !Enum.IsDefined(draft.AgreementType))
+            Fail("Agreement type or action is invalid.");
+        if (draft.Terms?.SettlementDays < 0)
+            Fail("Settlement days cannot be negative.");
         if (draft.Action != IntercompanyAgreementActionDto.Terminate && draft.EffectiveTo is { } end && end <= draft.EffectiveFrom)
             Fail("EffectiveTo must be later than EffectiveFrom.");
         if (draft.Action == IntercompanyAgreementActionDto.Terminate && draft.TerminationEffectiveDate is null)
@@ -37,8 +43,10 @@ public static class IntercompanyAgreementRules
     public static void ValidateComplete(IntercompanyAgreementDraftDto draft)
     {
         ValidateShape(draft);
-        if (string.IsNullOrWhiteSpace(draft.Code) || string.IsNullOrWhiteSpace(draft.Name)) Fail("Code and name are required.");
-        if (draft.Currency.Length != 3 || draft.Currency.Any(c => c is < 'A' or > 'Z')) Fail("A three-letter currency is required.");
+        if (string.IsNullOrWhiteSpace(draft.Code) || string.IsNullOrWhiteSpace(draft.Name))
+            Fail("Code and name are required.");
+        if (draft.Currency.Length != 3 || draft.Currency.Any(c => c is < 'A' or > 'Z'))
+            Fail("A three-letter currency is required.");
         var expected = draft.AgreementType switch
         {
             IntercompanyAgreementTypeDto.Loan => ("Lender", "Borrower"),
@@ -52,7 +60,8 @@ public static class IntercompanyAgreementRules
             || (RoleEquals(draft.PartyOneRole, expected.Item2) && RoleEquals(draft.PartyTwoRole, expected.Item1));
         if (string.IsNullOrWhiteSpace(draft.PartyOneRole) || string.IsNullOrWhiteSpace(draft.PartyTwoRole) || !rolesMatch)
             Fail("Party roles are incompatible with the agreement type.");
-        if (draft.Action == IntercompanyAgreementActionDto.Terminate) return;
+        if (draft.Action == IntercompanyAgreementActionDto.Terminate)
+            return;
         var t = draft.Terms;
         if (t is null || (t.FixedAnnualRate is null && t.SettlementDays is null
             && t.RateDescription is null && t.ScheduleDescription is null && t.AllocationDescription is null && t.Notes is null))
@@ -77,27 +86,35 @@ public static class IntercompanyAgreementRules
         if (draft.Action == IntercompanyAgreementActionDto.Terminate)
         {
             var cutoff = draft.TerminationEffectiveDate!.Value;
-            if (revisions.Any(r => r.Action == IntercompanyAgreementActionDto.Terminate)) Fail("Termination is final and cannot be replaced.");
+            if (revisions.Any(r => r.Action == IntercompanyAgreementActionDto.Terminate))
+                Fail("Termination is final and cannot be replaced.");
             var terms = revisions.Where(r => r.Action != IntercompanyAgreementActionDto.Terminate)
                 .GroupBy(r => r.Terms.EffectiveFrom).Select(g => g.MaxBy(r => r.AgreementVersion)!)
                 .OrderBy(r => r.Terms.EffectiveFrom).ToArray();
             for (var i = 0; i < terms.Length; i++)
             {
                 var start = terms[i].Terms.EffectiveFrom;
-                if (start >= cutoff) continue;
+                if (start >= cutoff)
+                    continue;
                 var end = terms[i].Terms.EffectiveTo;
-                if (!end.HasValue || cutoff < end) end = cutoff;
-                if (i + 1 < terms.Length && terms[i + 1].Terms.EffectiveFrom < end) end = terms[i + 1].Terms.EffectiveFrom;
-                Contains(first, start, end); Contains(second, start, end);
+                if (!end.HasValue || cutoff < end)
+                    end = cutoff;
+                if (i + 1 < terms.Length && terms[i + 1].Terms.EffectiveFrom < end)
+                    end = terms[i + 1].Terms.EffectiveFrom;
+                Contains(first, start, end);
+                Contains(second, start, end);
             }
             return;
         }
         var termination = revisions.Where(r => r.Action == IntercompanyAgreementActionDto.Terminate)
             .Select(r => r.Terms.TerminationEffectiveDate).Where(d => d.HasValue).Min();
-        if (termination.HasValue && draft.EffectiveFrom >= termination.Value) Fail("Amendment cannot reactivate a terminated agreement.");
+        if (termination.HasValue && draft.EffectiveFrom >= termination.Value)
+            Fail("Amendment cannot reactivate a terminated agreement.");
         var effectiveEnd = draft.EffectiveTo;
-        if (termination.HasValue && (!effectiveEnd.HasValue || termination < effectiveEnd)) effectiveEnd = termination;
-        Contains(first, draft.EffectiveFrom, effectiveEnd); Contains(second, draft.EffectiveFrom, effectiveEnd);
+        if (termination.HasValue && (!effectiveEnd.HasValue || termination < effectiveEnd))
+            effectiveEnd = termination;
+        Contains(first, draft.EffectiveFrom, effectiveEnd);
+        Contains(second, draft.EffectiveFrom, effectiveEnd);
     }
 
     private static void Contains(LegalEntitySummaryDto entity, DateOnly from, DateOnly? to)

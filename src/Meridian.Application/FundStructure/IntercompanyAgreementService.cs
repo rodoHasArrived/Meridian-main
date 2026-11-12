@@ -48,10 +48,12 @@ public sealed partial class IntercompanyAgreementService(
                 }
                 await RequireAccessAsync(context, DisclosedParties(current), token).ConfigureAwait(false);
             }
-            else if (action != "Create") throw new IntercompanyAgreementNotFoundException();
+            else if (action != "Create")
+                throw new IntercompanyAgreementNotFoundException();
             if (command.ExpectedAggregateVersion != (current?.AggregateVersion ?? 0))
                 throw new IntercompanyAgreementConflictException("Agreement changed; compare the current version and submit again.");
-            if (action == "Create" && current is not null) throw new IntercompanyAgreementConflictException("Agreement already exists.");
+            if (action == "Create" && current is not null)
+                throw new IntercompanyAgreementConflictException("Agreement already exists.");
             var state = current ?? new IntercompanyAgreementStoreState(command.AgreementId, 0, [], [], [], []);
             var now = _clock.GetUtcNow();
             var updated = await ApplyAsync(tx, context, state, command, action, now, token).ConfigureAwait(false);
@@ -79,11 +81,13 @@ public sealed partial class IntercompanyAgreementService(
         {
             if (state.Proposals.Any(p => p.State is IntercompanyAgreementProposalStateDto.Draft or IntercompanyAgreementProposalStateDto.Submitted))
                 throw new IntercompanyAgreementConflictException("Only one open proposal is permitted.");
-            if (state.Proposals.Any(p => p.ProposalId == command.ProposalId)) throw new IntercompanyAgreementConflictException("Proposal identity already exists.");
+            if (state.Proposals.Any(p => p.ProposalId == command.ProposalId))
+                throw new IntercompanyAgreementConflictException("Proposal identity already exists.");
             var draft = IntercompanyAgreementRules.Normalize(command.Draft ?? throw new IntercompanyAgreementValidationException("Draft is required."));
             if ((initial is null) != (draft.Action == IntercompanyAgreementActionDto.Activate))
                 throw new IntercompanyAgreementValidationException("Unapproved agreements require activation; approved agreements accept amendment or termination proposals.");
-            if (initial is not null) IntercompanyAgreementRules.ValidateImmutableParties(initial.Terms, draft);
+            if (initial is not null)
+                IntercompanyAgreementRules.ValidateImmutableParties(initial.Terms, draft);
             IntercompanyAgreementRules.ValidateShape(draft);
             await RequirePartiesAsync(tx, context, draft, ct).ConfigureAwait(false);
             var proposal = new IntercompanyAgreementProposalDto(command.ProposalId, draft.Action, IntercompanyAgreementProposalStateDto.Draft,
@@ -97,26 +101,42 @@ public sealed partial class IntercompanyAgreementService(
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Draft);
             var draft = IntercompanyAgreementRules.Normalize(command.Draft ?? throw new IntercompanyAgreementValidationException("Draft is required."));
-            if (draft.Action != existing.Action) throw new IntercompanyAgreementValidationException("Proposal action cannot change.");
-            if (initial is not null) IntercompanyAgreementRules.ValidateImmutableParties(initial.Terms, draft);
+            if (draft.Action != existing.Action)
+                throw new IntercompanyAgreementValidationException("Proposal action cannot change.");
+            if (initial is not null)
+                IntercompanyAgreementRules.ValidateImmutableParties(initial.Terms, draft);
             IntercompanyAgreementRules.ValidateShape(draft);
             await RequirePartiesAsync(tx, context, draft, ct).ConfigureAwait(false);
-            proposalUpdate = existing with { Draft = draft, BaseAgreementVersion = IntercompanyAgreementTimeline.SemanticBase(state.Revisions, draft),
-                Authors = existing.Authors.Append(context.Actor).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), UpdatedAtUtc = now, Rationale = command.Rationale };
+            proposalUpdate = existing with
+            {
+                Draft = draft,
+                BaseAgreementVersion = IntercompanyAgreementTimeline.SemanticBase(state.Revisions, draft),
+                Authors = existing.Authors.Append(context.Actor).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                UpdatedAtUtc = now,
+                Rationale = command.Rationale
+            };
         }
         else if (action == "Submit")
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Draft);
             var canonical = await ValidateReviewAsync(tx, context, state, existing, command.Rationale ?? existing.Rationale, ct).ConfigureAwait(false);
-            proposalUpdate = existing with { Draft = canonical, State = IntercompanyAgreementProposalStateDto.Submitted,
-                Submitter = context.Actor, SubmittedAtUtc = now, UpdatedAtUtc = now, Rationale = command.Rationale ?? existing.Rationale };
+            proposalUpdate = existing with
+            {
+                Draft = canonical,
+                State = IntercompanyAgreementProposalStateDto.Submitted,
+                Submitter = context.Actor,
+                SubmittedAtUtc = now,
+                UpdatedAtUtc = now,
+                Rationale = command.Rationale ?? existing.Rationale
+            };
             proposalUpdate = proposalUpdate with { SubmittedHash = ReviewHash(state, proposalUpdate) };
         }
         else if (action == "Approve")
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Submitted);
             RequireIndependent(existing, context.Actor);
-            if (string.IsNullOrWhiteSpace(command.Rationale)) throw new IntercompanyAgreementValidationException("Approval rationale is required.");
+            if (string.IsNullOrWhiteSpace(command.Rationale))
+                throw new IntercompanyAgreementValidationException("Approval rationale is required.");
             if (command.SubmittedHash != existing.SubmittedHash || ReviewHash(state, existing) != existing.SubmittedHash)
                 throw new IntercompanyAgreementConflictException("Approval must bind the exact submitted hash.");
             var canonical = await ValidateReviewAsync(tx, context, state, existing, existing.Rationale, ct).ConfigureAwait(false);
@@ -133,7 +153,8 @@ public sealed partial class IntercompanyAgreementService(
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Submitted);
             RequireIndependent(existing, context.Actor);
-            if (string.IsNullOrWhiteSpace(command.Rationale)) throw new IntercompanyAgreementValidationException("Rejection rationale is required.");
+            if (string.IsNullOrWhiteSpace(command.Rationale))
+                throw new IntercompanyAgreementValidationException("Rejection rationale is required.");
             proposalUpdate = existing with { State = IntercompanyAgreementProposalStateDto.Rejected, UpdatedAtUtc = now };
         }
         else if (action == "Withdraw")
@@ -143,10 +164,12 @@ public sealed partial class IntercompanyAgreementService(
             if (!existing.Authors.Any(a => IntercompanyAgreementRules.SameActor(a, context.Actor))
                 && !IntercompanyAgreementRules.SameActor(existing.Submitter, context.Actor))
                 throw new IntercompanyAgreementForbiddenException("An authorized proposal author or submitter must withdraw it.");
-            if (string.IsNullOrWhiteSpace(command.Rationale)) throw new IntercompanyAgreementValidationException("Withdrawal rationale is required.");
+            if (string.IsNullOrWhiteSpace(command.Rationale))
+                throw new IntercompanyAgreementValidationException("Withdrawal rationale is required.");
             proposalUpdate = existing with { State = IntercompanyAgreementProposalStateDto.Withdrawn, UpdatedAtUtc = now };
         }
-        else throw new IntercompanyAgreementValidationException("Unknown agreement command.");
+        else
+            throw new IntercompanyAgreementValidationException("Unknown agreement command.");
         return state with { Proposals = state.Proposals.Select(p => p.ProposalId == existing.ProposalId ? proposalUpdate : p).ToArray() };
     }
 
@@ -175,7 +198,8 @@ public sealed partial class IntercompanyAgreementService(
         await RequireAccessAsync(context, draft.PartyOneId, draft.PartyTwoId, ct).ConfigureAwait(false);
         var first = await tx.GetLegalEntityAsync(draft.PartyOneId, ct).ConfigureAwait(false);
         var second = await tx.GetLegalEntityAsync(draft.PartyTwoId, ct).ConfigureAwait(false);
-        if (first is null || second is null) throw new IntercompanyAgreementNotFoundException();
+        if (first is null || second is null)
+            throw new IntercompanyAgreementNotFoundException();
         return (first, second);
     }
     private async Task RequireAccessAsync(IntercompanyAgreementCallContext context, Guid first, Guid second, CancellationToken ct)
@@ -187,7 +211,8 @@ public sealed partial class IntercompanyAgreementService(
     }
     private static void RequireState(IntercompanyAgreementProposalDto proposal, IntercompanyAgreementProposalStateDto expected)
     {
-        if (proposal.State != expected) throw new IntercompanyAgreementConflictException($"Proposal must be {expected}.");
+        if (proposal.State != expected)
+            throw new IntercompanyAgreementConflictException($"Proposal must be {expected}.");
     }
     private static void RequireIndependent(IntercompanyAgreementProposalDto proposal, string actor)
     {

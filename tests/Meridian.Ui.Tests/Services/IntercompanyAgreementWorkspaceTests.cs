@@ -196,7 +196,8 @@ public sealed class IntercompanyAgreementWorkspaceTests
 
     private static IntercompanyAgreementDetailDto RejectedDetail()
     {
-        var id = Guid.NewGuid(); var now = DateTimeOffset.UtcNow;
+        var id = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
         var draft = new IntercompanyAgreementDraftDto("IC-1", "Rejected terms", Guid.NewGuid(), "Lender", Guid.NewGuid(), "Borrower",
             IntercompanyAgreementTypeDto.Loan, "USD", new DateOnly(2026, 1, 1), Terms: new(Notes: "Retained source terms"));
         var proposal = new IntercompanyAgreementProposalDto(Guid.NewGuid(), IntercompanyAgreementActionDto.Activate,
@@ -211,9 +212,12 @@ public sealed class IntercompanyAgreementWorkspaceTests
         var view = new IntercompanyAgreementWorkspace(client);
         await view.LoadCommand.ExecuteAsync(null);
         view.NewCommand.Execute(null);
-        view.Code = "IC-1"; view.Name = "Treasury loan";
-        view.PartyOne = Guid.NewGuid().ToString("D"); view.PartyTwo = Guid.NewGuid().ToString("D");
-        view.Currency = "USD"; view.Notes = "Loan terms supported by retained evidence";
+        view.Code = "IC-1";
+        view.Name = "Treasury loan";
+        view.PartyOne = Guid.NewGuid().ToString("D");
+        view.PartyTwo = Guid.NewGuid().ToString("D");
+        view.Currency = "USD";
+        view.Notes = "Loan terms supported by retained evidence";
         return view;
     }
 

@@ -45,13 +45,15 @@ public sealed class IntercompanyAgreementFeaturePostgresTests
         LedgerJournalEntryWrite NewWrite(int version) => IntercompanyAgreementPostingGuardTests.Write(
             IntercompanyAgreementPostingGuardTests.Dimensions() with
             { IntercompanyAgreementId = data.AgreementId, IntercompanyAgreementVersion = version })
-            with { LedgerBookId = book.LedgerBookId, PeriodId = period.PeriodId };
+            with
+        { LedgerBookId = book.LedgerBookId, PeriodId = period.PeriodId };
         var source = NewWrite(1);
         await ledger.AppendAsync(source, ct);
 
         await data.ApproveAsync(data.Draft with
         {
-            Action = IntercompanyAgreementActionDto.Amend, EffectiveFrom = new(2026, 2, 1),
+            Action = IntercompanyAgreementActionDto.Amend,
+            EffectiveFrom = new(2026, 2, 1),
             Terms = new(FixedAnnualRate: 0.075m, Notes: "Reviewed retrospective synthetic amendment")
         }, ct);
         var amended = await data.Service.GetAsync(data.Author, data.AgreementId, new(2026, 5, 15), ct: ct);
@@ -69,7 +71,8 @@ public sealed class IntercompanyAgreementFeaturePostgresTests
 
         await data.ApproveAsync(data.Draft with
         {
-            Action = IntercompanyAgreementActionDto.Terminate, TerminationEffectiveDate = new(2026, 5, 20)
+            Action = IntercompanyAgreementActionDto.Terminate,
+            TerminationEffectiveDate = new(2026, 5, 20)
         }, ct);
         var terminated = await data.Service.GetAsync(data.Author, data.AgreementId, new(2026, 5, 31), ct: ct);
         Assert.Equal(IntercompanyAgreementStatusDto.Terminated, terminated!.EffectiveStatus);
@@ -160,8 +163,10 @@ public sealed class IntercompanyAgreementFeaturePostgresTests
         public async Task ApproveAsync(IntercompanyAgreementDraftDto draft, CancellationToken ct)
         {
             var create = await CommandAsync(draft);
-            if (create.ExpectedAggregateVersion == 0) await Service.CreateAsync(Author, create, ct);
-            else await Service.CreateProposalAsync(Author, create, ct);
+            if (create.ExpectedAggregateVersion == 0)
+                await Service.CreateAsync(Author, create, ct);
+            else
+                await Service.CreateProposalAsync(Author, create, ct);
             var submitted = await Service.SubmitAsync(Author, await CommandAsync(proposalId: create.ProposalId), ct);
             var approve = await CommandAsync(proposalId: create.ProposalId);
             await Service.ApproveAsync(Reviewer, approve with { SubmittedHash = submitted.Detail.Proposals[^1].SubmittedHash }, ct);

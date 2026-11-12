@@ -23,7 +23,8 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         // Feature migrations use unquoted identifiers, which PostgreSQL folds to lower case.
         _options = new FundStructureStoreOptions
         {
-            ConnectionString = options.ConnectionString, Schema = options.Schema.ToLowerInvariant()
+            ConnectionString = options.ConnectionString,
+            Schema = options.Schema.ToLowerInvariant()
         };
     }
 
@@ -75,7 +76,8 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         if (unit.PendingState is { } next)
         {
             ValidateAppend(original, next, agreementId);
-            try { await PersistAsync(connection, transaction, tenant, original, next, ct).ConfigureAwait(false); }
+            try
+            { await PersistAsync(connection, transaction, tenant, original, next, ct).ConfigureAwait(false); }
             catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
             {
                 throw new IntercompanyAgreementConflictException("The command identity or approved version is already retained.");
@@ -259,7 +261,8 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
-            try { await transaction.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await transaction.DisposeAsync().ConfigureAwait(false); }
             finally { await connection.DisposeAsync().ConfigureAwait(false); }
         }
     }

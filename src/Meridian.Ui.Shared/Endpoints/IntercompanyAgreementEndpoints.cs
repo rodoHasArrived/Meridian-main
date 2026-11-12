@@ -98,7 +98,8 @@ public static class IntercompanyAgreementEndpoints
                 return Results.Problem("Authoritative ledger coverage is unavailable.", statusCode: 503);
             var date = asOf ?? DateOnly.FromDateTime(DateTime.UtcNow);
             var detail = await Service(http).GetAsync(Context(http), id, date, ct: http.RequestAborted).ConfigureAwait(false);
-            if (detail is null) return Results.NotFound();
+            if (detail is null)
+                return Results.NotFound();
             var book = await ledger.GetLedgerBookAsync(ledgerBookId, http.RequestAborted).ConfigureAwait(false);
             if (book is null || book.FundStructureNodeKind != FundStructureNodeKindDto.Entity
                 || book.FundStructureNodeId != detail.PartyOneId && book.FundStructureNodeId != detail.PartyTwoId)

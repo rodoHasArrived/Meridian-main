@@ -29,7 +29,8 @@ public static class IntercompanyAgreementJournalProjection
         foreach (var record in records)
         {
             var date = record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime);
-            if (date > asOf) continue;
+            if (date > asOf)
+                continue;
             foreach (var line in record.Entry.Lines)
             {
                 var dimensions = line.Dimensions;
@@ -46,9 +47,11 @@ public static class IntercompanyAgreementJournalProjection
                 supportedAccount &= line.Account.Symbol is null && line.Account.FinancialAccountId is null;
                 var missingReference = dimensions?.IntercompanyAgreementId is null
                     && dimensions?.IntercompanyAgreementVersion is null;
-                if (!exactReference && !(missingReference && reciprocal && supportedAccount)) continue;
+                if (!exactReference && !(missingReference && reciprocal && supportedAccount))
+                    continue;
                 if (record.GlobalSequence < cursorSequence
-                    || record.GlobalSequence == cursorSequence && line.EntryId.CompareTo(cursorLine) <= 0) continue;
+                    || record.GlobalSequence == cursorSequence && line.EntryId.CompareTo(cursorLine) <= 0)
+                    continue;
                 var state = "MissingAgreement";
                 string? warning = "This posted intercompany line has no agreement reference.";
                 if (exactReference)

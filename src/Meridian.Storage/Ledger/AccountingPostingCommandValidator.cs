@@ -50,8 +50,11 @@ public static class AccountingPostingCommandValidator
                     || key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) == true)
             {
                 var lines = NormalizeLineDimensions(write.Entry.Lines, write.Entry.Metadata.Tags, null, null, null);
-                write = write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
-                    write.Entry.Description, lines, write.Entry.Metadata) };
+                write = write with
+                {
+                    Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
+                    write.Entry.Description, lines, write.Entry.Metadata)
+                };
             }
             IntercompanyAgreementPostingGuard.ValidateShape(write.Entry);
             return write;
@@ -861,13 +864,15 @@ public static class AccountingPostingCommandValidator
 
     private static Guid? ReadAgreementId(IReadOnlyDictionary<string, string> tags, string prefix)
     {
-        try { return LedgerAgreementDimensions.ReadId(tags, prefix); }
+        try
+        { return LedgerAgreementDimensions.ReadId(tags, prefix); }
         catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message, exception); }
     }
 
     private static int? ReadAgreementVersion(IReadOnlyDictionary<string, string> tags, string prefix)
     {
-        try { return LedgerAgreementDimensions.ReadVersion(tags, prefix); }
+        try
+        { return LedgerAgreementDimensions.ReadVersion(tags, prefix); }
         catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message, exception); }
     }
 

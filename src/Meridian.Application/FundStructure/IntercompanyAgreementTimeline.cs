@@ -28,7 +28,8 @@ public static class IntercompanyAgreementTimeline
 
     public static int? SemanticBase(IReadOnlyList<IntercompanyAgreementRevisionDto> revisions, IntercompanyAgreementDraftDto draft)
     {
-        if (draft.Action == IntercompanyAgreementActionDto.Activate) return null;
+        if (draft.Action == IntercompanyAgreementActionDto.Activate)
+            return null;
         var date = draft.Action == IntercompanyAgreementActionDto.Terminate
             ? draft.TerminationEffectiveDate ?? throw new IntercompanyAgreementValidationException("Termination date is required.")
             : draft.EffectiveFrom;

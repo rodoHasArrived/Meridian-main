@@ -129,7 +129,8 @@ public sealed class IntercompanyAgreementAuthorityTests
         return new EvidenceVaultIdentityDto(VaultId, "agreement", "source-a", "manifest.json", "/manifest", date,
             ContentHash, 1, "file-manifest")
         {
-            TenantId = Call.TenantId, Scope = "company-a",
+            TenantId = Call.TenantId,
+            Scope = "company-a",
             Artifacts = [new("artifact-a", "document", "source.pdf", ContentHash, 10, date, null, null, "agreement", "source-a") { Document = document }]
         };
     }

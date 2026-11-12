@@ -43,7 +43,8 @@ public sealed class IntercompanyAgreementStorePostgresTests
         var candidates = new[] { Next(first), Next(first) };
         var outcomes = await Task.WhenAll(candidates.Select(async candidate =>
         {
-            try { await SaveAsync(data.Store, candidate); return true; }
+            try
+            { await SaveAsync(data.Store, candidate); return true; }
             catch (IntercompanyAgreementConflictException) { return false; }
         }));
 
@@ -223,7 +224,8 @@ public sealed class IntercompanyAgreementStorePostgresTests
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING");
             var options = new FundStructureStoreOptions
             {
-                ConnectionString = server.ConnectionString, Schema = server.CreateSchemaName("ic_registry")
+                ConnectionString = server.ConnectionString,
+                Schema = server.CreateSchemaName("ic_registry")
             };
             try
             {
