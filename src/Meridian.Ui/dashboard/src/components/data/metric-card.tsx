@@ -7,26 +7,28 @@ import { memo, type ReactNode } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
-.mds-metric{background:var(--card-surface-raised,#F6F4F0);
-  border:1px solid var(--border,#E4E3DE);border-left-width:3px;
+/* Resolve the workstation's active scope before the standalone package roles.
+   The dashboard's --border is an HSL channel list, not a CSS color. */
+.mds-metric{background:var(--ws-surface-raised,var(--card-surface-raised,#FCFBF8));
+  border:1px solid var(--ws-border,var(--border-color,#D2CDC3));border-left-width:3px;
   border-radius:var(--radius-card,2px);padding:18px;}
-.mds-metric--neutral{border-left-color:var(--border-strong,#AFABA1);}
-.mds-metric--info{border-left-color:var(--accent,#A85436);}
-.mds-metric--success{border-left-color:var(--severity-ready-fg,#2C5C40);}
-.mds-metric--warning{border-left-color:var(--severity-action-fg,#68450E);}
-.mds-metric--danger{border-left-color:var(--severity-blocked-fg,#7E332D);}
+.mds-metric--neutral{border-left-color:var(--border-strong,#AAA49A);}
+.mds-metric--info{border-left-color:var(--semantic-info,#2F648A);}
+.mds-metric--success{border-left-color:var(--severity-ready-fg,#225840);}
+.mds-metric--warning{border-left-color:var(--severity-action-fg,#724D11);}
+.mds-metric--danger{border-left-color:var(--severity-blocked-fg,#883832);}
 .mds-metric__label{font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin:0;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin:0;}
 .mds-metric__value{margin:8px 0 0;font-family:var(--font-data,monospace);font-size:24px;font-weight:600;
-  line-height:1;font-variant-numeric:tabular-nums;color:var(--text-primary,#22252A);}
+  line-height:1;font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B);}
 .mds-metric__delta{font-family:var(--font-data,monospace);font-size:11px;margin-top:6px;
   font-variant-numeric:tabular-nums;}
-.mds-delta--up{color:var(--severity-ready-fg,#2C5C40);}
-.mds-delta--down{color:var(--severity-blocked-fg,#7E332D);}
-.mds-delta--flat{color:var(--text-muted,#5E666F);}
-.mds-metric--degraded .mds-metric__value{color:var(--text-muted,#5E666F);}
+.mds-delta--up{color:var(--severity-ready-fg,#225840);}
+.mds-delta--down{color:var(--severity-blocked-fg,#883832);}
+.mds-delta--flat{color:var(--text-muted,#606870);}
+.mds-metric--degraded .mds-metric__value{color:var(--text-muted,#606870);}
 .mds-metric__trust{font-family:var(--font-body);font-size:12px;line-height:1.35;margin-top:6px;
-  color:var(--text-muted,#5E666F);}
+  color:var(--text-muted,#606870);}
 `;
 
 export type MetricCardTone = "neutral" | "info" | "success" | "warning" | "danger";
@@ -53,6 +55,8 @@ export interface MetricCardProps {
   freshnessLabel?: string;
   /** Where the figure comes from, e.g. "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC". */
   provenance?: string;
+  /** Declared calculation/population basis; omit only for non-financial decorative samples. */
+  basis?: ReactNode;
 }
 
 const TONE_STATUS: Record<MetricCardTone, string> = {
@@ -70,7 +74,7 @@ const TONE_STATUS: Record<MetricCardTone, string> = {
  * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
  * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
  */
-function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel, freshnessLabel, provenance }: MetricCardProps) {
+function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel, freshnessLabel, provenance, basis }: MetricCardProps) {
   injectStyle("metric", CSS);
   const t =
     trend ??
@@ -97,6 +101,7 @@ function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ari
     >
       <p className="mds-metric__label">{label}</p>
       <p className="mds-metric__value">{value}</p>
+      {basis ? <p className="mt-2 text-xs text-muted-foreground">{basis}</p> : null}
       {delta && (
         <div className={`mds-metric__delta mds-delta--${t}`} aria-label={deltaAriaLabel}>
           {delta}

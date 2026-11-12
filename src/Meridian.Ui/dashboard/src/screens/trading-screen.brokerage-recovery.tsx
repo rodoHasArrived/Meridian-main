@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBanner } from "@/components/ui/status-banner";
 import { EmptyState } from "@/components/data/empty-state";
 import { useOpenScopePicker } from "@/lib/operating-scope/scope-picker-context";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatCurrency } from "@/lib/format";
 import type { TradingBrokerageRecoveryRun, TradingExecutionReconciliationBreak, TradingOperatorReadiness } from "@/types";
 
@@ -82,7 +83,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
         <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-danger" aria-hidden="true" />
         {/* Same status text and live region as the full panel, so the blocked state is announced
             identically wherever it is shown. */}
-        <p role="status" aria-live="polite" className="min-w-0 flex-1">
+        <p role="status" aria-label="Brokerage recovery readiness" aria-live="polite" className="min-w-0 flex-1">
           <span className="font-semibold text-danger">Live trading blocked — recovery required</span>
           <span className="text-muted-foreground"> · {blockedDetail}</span>
         </p>
@@ -118,7 +119,7 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <StatusBanner tone={blocked ? "danger" : "success"} role="status" aria-live="polite"
+        <StatusBanner tone={blocked ? "danger" : "success"} role="status" aria-label="Brokerage recovery readiness" aria-live="polite"
           title={blocked ? "Live trading blocked — recovery required" : "Brokerage evidence reconciled"}
           detail={blockedDetail} />
         {reasons.length > 0 ? <ul aria-label="Recovery blockers" className="list-disc space-y-1 pl-5 text-xs text-danger">{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul> : null}
@@ -151,13 +152,20 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, busy, error, 
 
         <div>
           <h4 className="mb-2 text-xs font-semibold">Local orders versus broker state</h4>
-          <DenseDataTable columns={discrepancyColumns} rows={discrepancies} getRowId={(row) => row.rowId}
+          <TableWorkbench<RecoveryBreak> workbenchId="trading-broker-order-discrepancies" sourceKey={`${fundAccountId}:${reconciliation?.reconciledAt ?? "unavailable"}`}
+            sourceDescription="All local/broker order discrepancies in the selected account reconciliation. An empty list does not establish recovery."
+            completePopulation={Boolean(reconciliation) && scopeMatches && !busy && !error}
+            getSearchText={(row) => `${row.symbol ?? ""} ${row.description} ${row.localOrderId ?? ""} ${row.brokerOrderId ?? ""}`}
+            columns={discrepancyColumns.map((column) => ({ ...column, exportValue: (row: RecoveryBreak) => column.id === "symbol" ? `${row.symbol ?? "Account"}: ${row.description}` : column.id === "order" ? [row.localOrderId, row.brokerOrderId, row.clientOrderId].filter(Boolean).join(" | ") : column.id === "local" ? row.localValue : row.brokerValue }))} rows={discrepancies} getRowId={(row) => row.rowId}
             ariaLabel="Local and broker order discrepancies"
             emptyText={reconciliation?.status === "Ready" && !blocked ? "No unresolved order discrepancies." : "Order comparison is not verified. An empty result does not establish recovery."} />
         </div>
         <div>
           <h4 className="mb-2 text-xs font-semibold">Affected strategy runs</h4>
-          <DenseDataTable columns={runColumns} rows={recovery?.affectedRuns ?? []} getRowId={(row) => row.runId}
+          <TableWorkbench<TradingBrokerageRecoveryRun> workbenchId="trading-broker-affected-runs" sourceKey={`${fundAccountId}:${reconciliation?.reconciledAt ?? "unavailable"}`}
+            sourceDescription="All affected strategy runs in the selected account's retained brokerage recovery snapshot."
+            completePopulation={Boolean(recovery) && scopeMatches && !busy && !error} getSearchText={(row) => `${row.runId} ${row.strategyId} ${row.status} ${row.detail}`}
+            columns={runColumns.map((column) => ({ ...column, exportValue: (row: TradingBrokerageRecoveryRun) => column.id === "run" ? row.runId : column.id === "strategy" ? row.strategyId : column.id === "status" ? row.status : row.detail }))} rows={recovery?.affectedRuns ?? []} getRowId={(row) => row.runId}
             ariaLabel="Affected strategy runs" emptyText={recovery ? "No retained strategy runs reported for this account." : "Affected runs unavailable until account evidence is loaded."} />
         </div>
         <p className="text-xs text-muted-foreground">Synchronization checks broker truth and retained orders. It does not resubmit orders or resume strategy runs. Live operation also requires all trading readiness gates.</p>

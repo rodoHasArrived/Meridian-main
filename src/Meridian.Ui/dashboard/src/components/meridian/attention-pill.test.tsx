@@ -37,8 +37,9 @@ describe("AttentionPill", () => {
     }));
 
     const pill = screen.getByRole("link", {
-      name: "Workstation attention: Blocked. Cash variance needs review. 2 more issues. Open Today."
+      name: "Blocked Cash variance needs review +2"
     });
+    expect(pill).toHaveAccessibleDescription("Workstation attention: Blocked. Cash variance needs review. 2 more issues. Open Today.");
     expect(pill).toHaveAttribute("href", "/");
     expect(pill).toHaveClass("masthead-status-pill-blocked");
     expect(pill).toHaveTextContent("Blocked");
@@ -50,7 +51,8 @@ describe("AttentionPill", () => {
   it("reads all clear, with no issue title, when nothing is open", () => {
     renderPill(attention());
 
-    const pill = screen.getByRole("link", { name: "Workstation attention: All clear. No open issues. Open Today." });
+    const pill = screen.getByRole("link", { name: "All clear" });
+    expect(pill).toHaveAccessibleDescription("Workstation attention: All clear. No open issues. Open Today.");
     expect(pill).toHaveClass("masthead-status-pill-ready");
     expect(pill).toHaveTextContent(/^All clear$/);
     expect(pill).toHaveAttribute("href", "/");

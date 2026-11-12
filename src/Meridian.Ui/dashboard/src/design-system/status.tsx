@@ -48,6 +48,19 @@ export function normalizeDesignSystemSeverity(status: string | null | undefined)
   return SEVERITY_ALIASES[key] ?? "action";
 }
 
+const SEVERITY_RANK: Record<DesignSystemSeverity, number> = {
+  ready: 0, info: 1, review: 2, action: 3, blocked: 4
+};
+
+/** Roll up presentation severity without rewriting any source's domain status text. */
+export function worstDesignSystemSeverity(statuses: readonly (string | null | undefined)[]): DesignSystemSeverity {
+  if (statuses.length === 0) return "info";
+  return statuses.reduce<DesignSystemSeverity>((overall, status) => {
+    const severity = normalizeDesignSystemSeverity(status);
+    return SEVERITY_RANK[severity] > SEVERITY_RANK[overall] ? severity : overall;
+  }, "ready");
+}
+
 const SEVERITY_DEFAULT_LABEL: Record<DesignSystemSeverity, string> = {
   ready: "Ready",
   review: "Review",

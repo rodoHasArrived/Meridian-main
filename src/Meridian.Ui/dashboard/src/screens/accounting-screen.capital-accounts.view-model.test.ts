@@ -6,6 +6,10 @@ import {
 import type {
   CapitalAccountWorkbenchServices,
 } from "@/screens/accounting-screen.view-model";
+import {
+  CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON,
+  buildCapitalAccountRollforward
+} from "@/screens/accounting-screen.capital-accounts.view-model";
 import type {
   CapitalAccountWorkbench,
   PrivateCapitalFundEventLedgerRecord,
@@ -566,5 +570,175 @@ describe("accounting capital account view model", () => {
     expect(result.current.statusLabel).toBe("Review required");
     expect(result.current.statusTone).toBe("warning");
     expect(result.current.statusReason).toContain("no investor capital accounts matched this scope");
+  });
+});
+
+describe("capital account rollforward proof", () => {
+  type InvestorAccount = CapitalAccountWorkbench["investorAccounts"][number];
+  type SubledgerEntry = InvestorAccount["subledgerEntries"][number];
+
+  function investorAccount(overrides: Partial<InvestorAccount> = {}): InvestorAccount {
+    return { ...createCapitalAccountWorkbench([]).investorAccounts[0], ...overrides };
+  }
+
+  function subledgerEntry(
+    subledgerEntryId: string,
+    fundEventType: string,
+    effectiveDate: string,
+    netCapitalActivity: number,
+    runningNetActivity: number,
+    overrides: Partial<SubledgerEntry> = {}
+  ): SubledgerEntry {
+    return {
+      subledgerEntryId,
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1",
+      currency: "USD",
+      fundEventId: `fund-event:${subledgerEntryId}`,
+      fundEventType,
+      entryType: "CapitalCall",
+      approvalState: "Posted",
+      journalEntryId: `je-${subledgerEntryId}`,
+      effectiveDate,
+      grossAmount: Math.abs(netCapitalActivity),
+      netCapitalActivity,
+      runningNetActivity,
+      memo: "",
+      evidenceLinks: [],
+      validationIssues: [],
+      updatedAtUtc: "2026-06-30T00:00:00Z",
+      isPosted: true,
+      ...overrides
+    };
+  }
+
+  it("uses one net capital activity movement when no subledger entries are loaded, and does not call it a proof", () => {
+    const rollforward = buildCapitalAccountRollforward(investorAccount());
+
+    expect(rollforward).toMatchObject({
+      openingLabel: "Opening net activity",
+      closingLabel: "Ending net activity",
+      opening: 0,
+      closing: 125,
+      currency: "USD",
+      verdict: "unsupported",
+      verdictLabel: "Not itemised",
+      unsupportedReason: CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON
+    });
+    expect(rollforward.movements).toEqual([{
+      id: "capital-account:fund-alpha:lp-1|investor:lp-1|USD:net-capital-activity",
+      label: "Net capital activity",
+      value: 125
+    }]);
+    expect(rollforward.unsupportedReason).toContain("no subledger entries are loaded");
+    expect(rollforward.openingDerivation).toContain("no subledger entries behind it");
+    expect(rollforward.openingDerivation).toContain("not a separately stated opening balance");
+  });
+
+  it("never reports a tie for an account with no subledger entries, whatever the net", () => {
+    // The projection reports a zero opening and one number as both the net and the ending when
+    // there are no entries, so these figures agree for every value.
+    for (const net of [0, 125, -9_999_999.99, 0.1 + 0.2, 1e12 + 0.01]) {
+      for (const subledgerEntries of [[], undefined as unknown as SubledgerEntry[]]) {
+        const rollforward = buildCapitalAccountRollforward(investorAccount({
+          openingNetActivity: 0,
+          netCapitalActivity: net,
+          endingNetActivity: net,
+          subledgerEntries
+        }));
+
+        expect(rollforward.verdict).toBe("unsupported");
+        expect(rollforward.verdictLabel).toBe("Not itemised");
+      }
+    }
+  });
+
+  it("still reports an out-by or an unusable amount for an account with no subledger entries", () => {
+    const out = buildCapitalAccountRollforward(investorAccount({
+      openingNetActivity: 0,
+      netCapitalActivity: 125,
+      endingNetActivity: 200
+    }));
+    expect(out.verdict).toBe("out");
+    expect(out.verdictLabel).toBe("Out by $75.00");
+
+    const unusable = buildCapitalAccountRollforward(investorAccount({
+      openingNetActivity: 0,
+      netCapitalActivity: Number.NaN,
+      endingNetActivity: 125
+    }));
+    expect(unusable.verdict).toBe("indeterminate");
+    expect(unusable.verdictLabel).toBe("Not provable");
+  });
+
+  it("builds movements from subledger entry net capital activity, never from the activity buckets", () => {
+    const rollforward = buildCapitalAccountRollforward(investorAccount({
+      openingNetActivity: 100,
+      endingNetActivity: 180,
+      netCapitalActivity: 80,
+      // Buckets whose signs do not sum to the net: they must not reach the proof.
+      contributions: 125,
+      distributions: 45,
+      subscriptions: 7,
+      redemptions: 3,
+      managementFees: 9,
+      subledgerEntries: [
+        subledgerEntry("entry-1", "CapitalCall", "2026-06-10", 125, 225),
+        subledgerEntry("entry-2", "Distribution", "2026-06-20", -45, 180, { isPosted: false })
+      ]
+    }));
+
+    expect(rollforward.movements).toEqual([
+      { id: "entry-1", label: "CapitalCall", value: 125, note: "2026-06-10" },
+      { id: "entry-2", label: "Distribution", value: -45, note: "2026-06-20 · not posted" }
+    ]);
+    expect(rollforward.opening).toBe(100);
+    expect(rollforward.closing).toBe(180);
+    expect(rollforward.verdict).toBe("tied");
+    expect(rollforward.verdictLabel).toBe("Ties");
+    expect(rollforward.unsupportedReason).toBeUndefined();
+    expect(rollforward.openingDerivation).toContain("derived by the capital-account projection");
+  });
+
+  it("reports the out-by amount when the stated ending is not explained by the movements", () => {
+    const rollforward = buildCapitalAccountRollforward(investorAccount({
+      openingNetActivity: 100,
+      endingNetActivity: 200,
+      subledgerEntries: [
+        subledgerEntry("entry-1", "CapitalCall", "2026-06-10", 125, 225),
+        subledgerEntry("entry-2", "Distribution", "2026-06-20", -45, 180)
+      ]
+    }));
+
+    expect(rollforward.verdict).toBe("out");
+    expect(rollforward.verdictLabel).toBe("Out by $20.00");
+  });
+
+  it("does not read an unusable amount as zero", () => {
+    const rollforward = buildCapitalAccountRollforward(investorAccount({
+      openingNetActivity: 0,
+      endingNetActivity: Number.NaN,
+      netCapitalActivity: 125
+    }));
+
+    expect(rollforward.closing).toBeNull();
+    expect(rollforward.verdict).toBe("indeterminate");
+    expect(rollforward.verdictLabel).toBe("Not provable");
+  });
+
+  it("carries the rollforward on every investor row and keeps the existing roll-forward and activity text", async () => {
+    const workbench = createCapitalAccountWorkbench([]);
+    const request = Promise.resolve(workbench);
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockReturnValue(request)
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
+
+    await settleWorkbenchRequest(request);
+    const row = result.current.investorAccounts[0];
+    expect(row.rollForwardLabel).toBe("$0 USD opening -> +$125.00 USD ending");
+    expect(row.activityMixLabel).toBe("Contributions $125 USD / Distributions $0 USD / Subscriptions $0 USD / Redemptions $0 USD / Fees $0 USD");
+    expect(row.rollforward).toEqual(buildCapitalAccountRollforward(workbench.investorAccounts[0]));
   });
 });

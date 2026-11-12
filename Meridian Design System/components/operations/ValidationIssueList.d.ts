@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Validation issue list — the recurring Meridian `{ code, severity, message }` shape
  * (ExtensibilityValidationIssue, EvidenceValidationIssue, AccountingConfigurationValidationIssue,
@@ -30,4 +31,4 @@ export interface ValidationIssueListProps {
   emptyLabel?: React.ReactNode;
   className?: string;
 }
-export declare function ValidationIssueList(props: ValidationIssueListProps): JSX.Element;
+export declare function ValidationIssueList(props: ValidationIssueListProps): React.JSX.Element;

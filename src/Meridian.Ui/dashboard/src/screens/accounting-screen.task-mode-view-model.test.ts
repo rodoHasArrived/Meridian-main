@@ -83,12 +83,20 @@ describe("buildAccountingSectionVisibility", () => {
     const visibility = visibilityFor("/accounting", "#accounting-reporting");
     expect(visibility.showReporting).toBe(true);
     expect(visibility.showCloseCockpitLanding).toBe(false);
-    expect(visibility.showWorkflowDetails).toBe(true);
+    expect(visibility.showWorkflowDetails).toBe(false);
   });
 
   it("keeps existing hash overrides working", () => {
     const visibility = visibilityFor("/accounting", "#accounting-exceptions");
     expect(visibility.showReconciliation).toBe(true);
     expect(visibility.showCloseCockpitLanding).toBe(false);
+  });
+
+  it("does not stack a foreign route's workflow underneath a legacy hash target", () => {
+    const visibility = visibilityFor("/accounting/configure", "#accounting-reporting");
+    expect(visibility.showReporting).toBe(true);
+    expect(visibility.showConfiguration).toBe(false);
+    expect(visibility.showWorkflowDetails).toBe(false);
+    expect(visibility.showExternalGl).toBe(false);
   });
 });

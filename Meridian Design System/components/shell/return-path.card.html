@@ -1,0 +1,104 @@
+<!-- @dsCard group="Shell" viewport="1180x760" name="ReturnPath" subtitle="The way back out of an object — the return half of a handoff, declared in the app map" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shell — ReturnPath</title>
+<link rel="stylesheet" href="../../styles.css">
+
+
+<style>
+body{margin:0;padding:22px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+a{color:var(--interaction-link,#2A5F96)}a:hover{color:var(--text-primary)}
+.wrap{max-width:1120px;display:grid;gap:16px}
+.head{display:grid;gap:6px;border-bottom:1px solid var(--border-strong,#AAA49A);padding-bottom:11px}
+.eyebrow{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);display:flex;align-items:center;gap:7px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent,#C56343)}
+h1{font-size:17px;font-weight:650;margin:0;letter-spacing:-.01em}
+.lede{font-size:12.5px;line-height:1.55;color:var(--text-secondary);max-width:96ch;margin:0}
+.lede b{color:var(--text-primary);font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.demo{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:13px;display:grid;gap:10px}
+.demo h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0}
+.demo p{margin:0;font-size:11.5px;line-height:1.45;color:var(--text-secondary)}
+.stage{border:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);padding:12px;min-height:44px;display:flex;align-items:center}
+.stage--rail{max-width:280px;align-items:flex-start}
+pre{margin:0;font-family:var(--font-data);font-size:10.5px;line-height:1.6;color:var(--text-secondary);background:var(--surface-well,#FCFBF8);border:1px solid var(--border);padding:10px;overflow-x:auto;white-space:pre-wrap}
+.rule{border:1px solid var(--border);border-left:3px solid var(--accent,#C56343);background:var(--bg-light);padding:11px 13px;display:grid;gap:5px}
+.rule b{font-size:12px;font-weight:650}
+.rule span{font-size:11.5px;line-height:1.5;color:var(--text-secondary)}
+</style>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body class="meridian">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Shell · suite chrome · 4.4</div>
+    <h1>ReturnPath</h1>
+    <p class="lede">Meridian's handoffs were one-way. Reconciliation opened accounting and close opened the tie-out, but <b>the returns were never built</b> — a journal entry could not open the break that caused it, and an account sheet could not open its own reconciliation. Operators work in loops, not chains. This renders the loops <code>templates/_scaffold/app-map.js</code> declares for an object type.</p>
+  </div>
+
+  <div class="rule">
+    <b>A loop appears only when the object carries the link.</b>
+    <span><code>MeridianAppMap.loops("break", brk)</code> reads the record in hand: an <em>unresolved</em> break offers no “entry that resolved this”, because there isn't one. The affordance is never a dead promise — which is the whole difference between this and a “View related” menu.</span>
+  </div>
+
+  <div class="grid">
+    <div class="demo">
+      <h2>Inline — a context bar or an inspector header</h2>
+      <p>A posted entry that came from a break, on an account, in a close period.</p>
+      <div class="stage" id="s1"></div>
+      <pre>&lt;ReturnPath loops={MeridianAppMap.loops("entry", entry)} /&gt;</pre>
+    </div>
+
+    <div class="demo">
+      <h2>Stacked — an evidence rail</h2>
+      <p>Same data, one per line, for a narrow column.</p>
+      <div class="stage stage--rail" id="s2"></div>
+      <pre>&lt;ReturnPath loops={loops} layout="stack" label="Related" /&gt;</pre>
+    </div>
+
+    <div class="demo">
+      <h2>One loop, no lead-in</h2>
+      <p><code>label=""</code> when the surrounding heading already says it.</p>
+      <div class="stage" id="s3"></div>
+      <pre>&lt;ReturnPath loops={one} label="" /&gt;</pre>
+    </div>
+
+    <div class="demo">
+      <h2>Nothing to return to</h2>
+      <p>Renders <code>null</code> by default — an object with no way back shows no control, not an empty row. <code>emptyText</code> only when the absence is worth stating.</p>
+      <div class="stage" id="s4"></div>
+      <pre>&lt;ReturnPath loops={[]} emptyText="No upstream object — posted directly." /&gt;</pre>
+    </div>
+  </div>
+
+  <div class="rule">
+    <b>Declared centrally, rendered locally.</b>
+    <span>The relations live in one place (<code>app-map.js</code> › <code>LOOPS</code>): entry ⇄ break, break ⇄ account, task ⇄ tie-out, position → security, run → strategy. Add a relation there and every screen holding that object type gains the return. <code>MeridianAppMap.loopActions(type, obj)</code> gives the same loops as palette rows, so a return is also reachable from <code>Ctrl K</code>.</span>
+  </div>
+</div>
+<script>
+(function boot() {
+  var ns = window.MeridianDesignSystem_205d17, R = window.React, RD = window.ReactDOM;
+  if (!ns || !ns.ReturnPath || !R || !RD) return setTimeout(boot, 60);
+  var mk = function (to, id, verb) { return { to: to, id: id, verb: verb, open: function () {} }; };
+  var full = [
+    mk("break", "CASE-4181", "Open the break that caused this"),
+    mk("account", "1100", "Open the account sheet"),
+    mk("task", "CL-07-12", "Open the close task"),
+  ];
+  var mount = function (el, props) {
+    var node = document.getElementById(el);
+    var r = R.createElement(ns.ReturnPath, props);
+    RD.createRoot ? RD.createRoot(node).render(r) : RD.render(r, node);
+  };
+  mount("s1", { loops: full });
+  mount("s2", { loops: full, layout: "stack", label: "Related" });
+  mount("s3", { loops: [mk("entry", "JE-1042", "Open the entry that resolved this")], label: "" });
+  mount("s4", { loops: [], emptyText: "No upstream object — posted directly." });
+})();
+</script>
+</body>
+</html>

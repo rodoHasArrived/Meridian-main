@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
@@ -24,6 +24,13 @@ vi.mock("@/hooks/use-report-run-stream", () => ({
 vi.mock("@/lib/reporting-income-comparison-api", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/reporting-income-comparison-api")>(),
   getIncomeComparisonCandidates: vi.fn(async () => [])
+}));
+
+// Personal-view reads are covered by the workbench suite. Keep export command
+// response ordering independent of that separate background preferences read.
+vi.mock("@/lib/table-workbench", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/table-workbench")>(),
+  loadTableViews: vi.fn(async () => [])
 }));
 
 function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
@@ -2364,11 +2371,17 @@ describe("ReportingScreen", () => {
     let formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
     expect(formulaTokenLabels[1]).toContain("pnl");
-    await user.click(within(formulas).getByRole("button", { name: "Move pnl left" }));
+    const moveLeft = within(formulas).getByRole("button", { name: "Move pnl left" });
+    expect(within(formulas).getByRole("button", { name: "Move pnl right" })).toHaveAttribute("title", "This token is already last in the list.");
+    moveLeft.focus();
+    await user.keyboard("{Enter}");
+    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toBeDisabled();
+    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toHaveAttribute("title", "This token is already first in the list.");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("pnl");
     expect(formulaTokenLabels[1]).toContain("Return %");
-    await user.click(within(formulas).getByRole("button", { name: "Move pnl right" }));
+    within(formulas).getByRole("button", { name: "Move pnl right" }).focus();
+    await user.keyboard(" ");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
     expect(formulaTokenLabels[1]).toContain("pnl");
@@ -5783,5 +5796,84 @@ describe("ReportingScreen", () => {
     // channel attaches to a run the endpoint can resolve instead of 404-looping.
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
+  });
+  it("moves run-status keyboard selection with j/k while leaving governed actions explicit", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const second = within(queue).getByRole("listitem", { name: "Review run keyboard-run-b" });
+    expect(first).toHaveAttribute("tabindex", "0");
+    first.focus();
+    await user.keyboard("j");
+    await waitFor(() => expect(second).toHaveFocus());
+    expect(second).toHaveAttribute("aria-current", "true");
+    await user.keyboard("ard");
+    expect(second).toHaveFocus();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("k");
+    await waitFor(() => expect(first).toHaveFocus());
+    expect(screen.getByText(/j\/k select a run/)).toBeInTheDocument();
+  });
+
+  it("keeps reporting queue shortcuts out of audit controls and modifier commands", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const audit = within(first).getByRole("button", { name: /Audit, lineage, and artifacts/ });
+    audit.focus();
+    await user.keyboard("jk");
+    expect(audit).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+    first.focus();
+    await user.keyboard("{Control>}j{/Control}");
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+  });
+
+});
+
+describe.each([
+  { zone: "America/New_York", now: "2026-07-01T02:30:00Z", localDay: "2026-06-30" },
+  { zone: "Asia/Tokyo", now: "2026-06-30T22:30:00Z", localDay: "2026-07-01" }
+])("ReportingScreen blank as-of default for an operator in $zone", ({ zone, now, localDay }) => {
+  const originalTimeZone = process.env.TZ;
+  const utcDay = now.substring(0, 10);
+
+  beforeEach(() => {
+    process.env.TZ = zone;
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(now));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (originalTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTimeZone;
+    }
+  });
+
+  it("starts a new schedule on the UTC calendar day, with its due time on that same UTC day", () => {
+    // The operator's own calendar reads a different day at this instant; the default stays UTC.
+    const operatorNow = new Date();
+    expect(`${operatorNow.getFullYear()}-${String(operatorNow.getMonth() + 1).padStart(2, "0")}-${String(operatorNow.getDate()).padStart(2, "0")}`).toBe(localDay);
+    expect(localDay).not.toBe(utcDay);
+
+    const rendered = renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
+    try {
+      expect(screen.getByLabelText("Reporting schedule next report period end")).toHaveValue(utcDay);
+      expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue(`${utcDay}T20:00:00Z`);
+    } finally {
+      rendered.unmount();
+    }
   });
 });

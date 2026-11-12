@@ -8,6 +8,7 @@ import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
+import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,6 +243,7 @@ export function TrialBalanceScreen() {
       contextScrollLabel="Scroll account detail for ledger lines and supporting documents"
       onContextClose={() => postedLedger.selectTrialBalanceRow(null)}
     >
+      <AccountingPeriodComparison bookId={postedLedger.selectedBook?.ledgerBookId} periodId={selectedPeriodId} expectedBasis={postedLedger.view.trialBalance.selectedBasis} enabled={postedLedger.periodsSettled} periodOptions={periodOptions} />
       <OperationalTrustSummary
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}

@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Accessibility</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 20px 22px; background: var(--bg); font-family: var(--font-body);
     color: var(--text-primary); -webkit-font-smoothing: antialiased; }
@@ -29,7 +31,7 @@
   .pass { display: inline-block; font-family: var(--font-data); font-size: 9px; font-weight: 700;
     padding: 1px 5px; border: 1px solid; white-space: nowrap; letter-spacing: .02em; }
   .aaa { color: var(--green-dim); border-color: var(--green); background: var(--green-a10); }
-  .aa  { color: var(--accent-dim); border-color: var(--accent); background: var(--blue-a10); }
+  .aa  { color: var(--interaction-link); border-color: var(--brand-signal,#C56343); background: var(--blue-a10); }
   .warn{ color: var(--orange-dim); border-color: var(--orange); background: var(--orange-a10); }
   .panel { border: 1px solid var(--border); background: var(--bg-light); padding: 11px 13px;
     margin-bottom: 11px; }
@@ -48,7 +50,7 @@
   .note { font-size: 10px; color: var(--text-muted); margin: 9px 2px 0; line-height: 1.5; }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="head">
     <h1>Accessibility — guarantees, measured</h1>
     <span class="target">WCAG 2.2 · Level AA</span>
@@ -63,52 +65,52 @@
         </thead>
         <tbody>
           <tr>
-            <td class="tok"><span class="sw" style="background:#22252A"></span>text-primary</td>
+            <td class="tok"><span class="sw" style="background:#20252B"></span>text-primary</td>
             <td class="tok">panel</td><td class="ratio">15.0</td>
             <td><span class="pass aaa">AAA</span></td>
           </tr>
           <tr>
-            <td class="tok"><span class="sw" style="background:#4E5258"></span>text-secondary</td>
+            <td class="tok"><span class="sw" style="background:#535C65"></span>text-secondary</td>
             <td class="tok">panel</td><td class="ratio">7.1</td>
             <td><span class="pass aaa">AAA</span></td>
           </tr>
           <tr>
-            <td class="tok"><span class="sw" style="background:#5E666F"></span>text-muted</td>
-            <td class="tok">panel</td><td class="ratio">6.1</td>
-            <td><span class="pass aa">AA</span></td>
-          </tr>
-          <tr>
-            <td class="tok"><span class="sw" style="background:#5E666F"></span>text-muted</td>
-            <td class="tok">canvas</td><td class="ratio">4.7</td>
-            <td><span class="pass aa">AA</span></td>
-          </tr>
-          <tr>
-            <td class="tok"><span class="sw" style="background:#A85436"></span>accent</td>
-            <td class="tok">panel</td><td class="ratio">5.5</td>
-            <td><span class="pass aa">AA</span></td>
-          </tr>
-          <tr>
-            <td class="tok"><span class="sw" style="background:#FFFFFF"></span>white</td>
-            <td class="tok">accent btn</td><td class="ratio">5.5</td>
-            <td><span class="pass aa">AA</span></td>
-          </tr>
-          <tr>
-            <td class="tok"><span class="sw" style="background:#A8443C"></span>red</td>
+            <td class="tok"><span class="sw" style="background:#606870"></span>text-muted</td>
             <td class="tok">panel</td><td class="ratio">5.3</td>
             <td><span class="pass aa">AA</span></td>
           </tr>
           <tr>
-            <td class="tok"><span class="sw" style="background:#8A5C12"></span>orange</td>
+            <td class="tok"><span class="sw" style="background:#606870"></span>text-muted</td>
+            <td class="tok">canvas</td><td class="ratio">5.0</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#C56343"></span>accent</td>
+            <td class="tok">panel</td><td class="ratio">5.5</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#F5F3EE"></span>inverse ink</td>
+            <td class="tok">graphite action</td><td class="ratio">11.8</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#B54B42"></span>red</td>
+            <td class="tok">panel</td><td class="ratio">5.3</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#986717"></span>orange</td>
             <td class="tok">panel</td><td class="ratio">6.4</td>
             <td><span class="pass aa">AA</span></td>
           </tr>
           <tr>
-            <td class="tok"><span class="sw" style="background:#5D5486"></span>purple</td>
+            <td class="tok"><span class="sw" style="background:#2F648A"></span>purple</td>
             <td class="tok">panel</td><td class="ratio">5.6</td>
             <td><span class="pass aa">AA</span></td>
           </tr>
           <tr>
-            <td class="tok"><span class="sw" style="background:#3A7A56"></span>green&nbsp;(raw)</td>
+            <td class="tok"><span class="sw" style="background:#2E7655"></span>green&nbsp;(raw)</td>
             <td class="tok">panel</td><td class="ratio">4.45</td>
             <td><span class="pass warn">USE -dim</span></td>
           </tr>
@@ -117,7 +119,7 @@
       <p class="note">Raw <span class="tok" style="font-size:10.5px">--green</span> is the one hue
         that lands marginally under 4.5:1 as body text — which is exactly why semantic labels
         render in the darker <span class="tok" style="font-size:10.5px">-dim</span> variant. Focus
-        ring (accent on panel) is 5.5:1, well over the 3:1 non-text minimum.</p>
+        ring (interaction blue on panel) is 4.9:1, well over the 3:1 non-text minimum.</p>
     </div>
 
     <div>
@@ -131,7 +133,7 @@
         <h2>Keyboard</h2>
         <p class="kv"><b><kbd>Tab</kbd></b> follows DOM order — no positive tabindex anywhere.</p>
         <p class="kv"><b><kbd>Ctrl/⌘ K</kbd></b> opens the command palette from anywhere.</p>
-        <p class="kv"><b><kbd>Esc</kbd></b> closes every overlay — Dialog, Drawer, <b>Modal</b>,
+        <p class="kv"><b><kbd>Esc</kbd></b> closes every overlay — Dialog, Drawer, command
           palette — and focus returns to the trigger.</p>
         <p class="kv"><b>Arrows</b> rove within Select, Tree, Tabs, Radio, Menu; container is one
           tab stop.</p>

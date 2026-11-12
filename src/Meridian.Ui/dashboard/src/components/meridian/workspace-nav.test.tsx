@@ -3,12 +3,32 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { useNavigate } from "react-router-dom";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { meridianWorkspaceIconAssets } from "@/design-system/assets";
 import { renderWithRouter } from "@/test/render";
 
 /** Workspace rows only: the pinned "Today" entry shares the item styling but is not a workspace. */
 const WORKSPACE_ITEM = ".operator-nav-item:not(.operator-nav-today)";
 
 describe("WorkspaceNav", () => {
+  it("renders decorative canonical workspace icons as masks that inherit navigation colors", () => {
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const workspaces = document.querySelectorAll<HTMLAnchorElement>(WORKSPACE_ITEM);
+    expect(workspaces).toHaveLength(7);
+    for (const [workspace, asset] of Object.entries(meridianWorkspaceIconAssets)) {
+      const link = [...workspaces].find((item) => item.getAttribute("href") === `/${workspace}`);
+      expect(link, `${workspace} workspace`).toBeDefined();
+      const icon = link!.querySelector<HTMLElement>(".operator-nav-item__asset");
+      expect(icon).toHaveAttribute("aria-hidden", "true");
+      expect(icon!.style.maskImage).toContain(asset);
+      expect(link!.querySelector("img")).toBeNull();
+      expect(link).toHaveAccessibleName(new RegExp(workspace, "i"));
+    }
+    // Decorative icons add neither image announcements nor keyboard stops.
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(document.querySelectorAll(".operator-nav-item__asset[tabindex]")).toHaveLength(0);
+  });
+
   it("keeps the Daily Control Tower outside the seven-workspace active state", () => {
     renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/"] });
 

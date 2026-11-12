@@ -1,36 +1,29 @@
 /**
  * ChartTooltip — floating readout for the chart interaction layer. Renders label/value rows
- * in a small card that follows the crosshair index (auto-flips near the right edge). Pairs
- * with `useChartCrosshair` / `useSyncedCursor` from `useChartCrosshair.js`. Place it inside
- * the crosshair-bound wrapper (which is `position:relative` via the hook's `bind`).
- *
- * @example
- * const cx = useSyncedCursor(bars.length);
- * <div {...cx.bind}>
- *   <CandleChart bars={bars} crosshairIndex={cx.index} />
- *   <ChartTooltip index={cx.index} count={bars.length}
- *     title={bars[cx.index]?.t}
- *     rows={cx.index != null ? [
- *       { label: "O", value: bars[cx.index].o.toFixed(2) },
- *       { label: "C", value: bars[cx.index].c.toFixed(2), color: "var(--green-dim)" },
- *     ] : []} />
- * </div>
+ * in a small card that follows the crosshair index (auto-flips left of center). Position it
+ * inside the crosshair-bound wrapper (position:relative — useChartCrosshair's bind supplies
+ * it). Pixel-based: pass the SAME padLeft/rail the chart uses (ChartFrame defaults 10/62).
  */
-export interface ChartTooltipRow {
-  label: React.ReactNode;
-  value: React.ReactNode;
-  /** Optional value color (e.g. green/red for up/down). */
+import * as React from "react";
+
+export interface TooltipRow {
+  label: string;
+  value: string;
+  /** CSS color for the value (token var). */
   color?: string;
 }
+
 export interface ChartTooltipProps {
-  /** Current crosshair index, or null when the cursor is outside the plot. */
+  /** Crosshair index; null renders nothing. */
   index: number | null;
-  /** Total data points, for horizontal positioning. */
+  /** Number of x positions in the paired chart. */
   count: number;
+  /** Small-caps header line. */
   title?: React.ReactNode;
-  rows?: ChartTooltipRow[];
-  /** Plot inset fractions — match the chart. @default 0.05 / 0.93 */
-  plotLeft?: number;
-  plotRight?: number;
+  rows: TooltipRow[];
+  /** Chart's left inset in px. @default 10 */
+  padLeft?: number;
+  /** Chart's value-rail width in px. @default 62 */
+  rail?: number;
 }
-export declare function ChartTooltip(props: ChartTooltipProps): JSX.Element | null;
+export declare function ChartTooltip(props: ChartTooltipProps): React.JSX.Element;

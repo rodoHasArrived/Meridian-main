@@ -72,6 +72,8 @@ classDiagram
         +DateOnly? AccrualStart
         +decimal Factor
         +decimal InterestAmount
+        +DateOnly? InterestMeasuredFrom
+        +DateOnly? InterestMeasuredTo
         +DateTimeOffset PeriodDate
         +decimal PrincipalAmount
         +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence

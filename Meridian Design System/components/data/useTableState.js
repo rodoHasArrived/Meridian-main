@@ -1,5 +1,5 @@
 // Meridian useTableState — lightweight query/sort/filter state for data tables.
-// Syncs across the screen: one hook manages filter, sort, search; passed to FilteredDataTable.
+// Syncs across the screen: one hook manages filter, sort, search; passed to DataGrid.
 // Persists to localStorage under a key you provide. Sort supports a multi-column stack:
 // shift-toggleSort appends a secondary/tertiary key instead of replacing.
 import React from "react";
@@ -10,30 +10,34 @@ export function useTableState(initialData = [], localStorageKey = null) {
   const [sortBy, setSortBy] = React.useState(null); // { column, direction } — primary (compat)
   const [sortStack, setSortStack] = React.useState([]); // [{ column, direction }, ...] full multi-sort
   const [filters, setFilters] = React.useState({}); // { columnName: [values] }
+  const [groupBy, setGroupBy] = React.useState(null); // string | string[] | null — feeds DataGrid groupBy
+  const [restoredKey, setRestoredKey] = React.useState(null);
 
   // Persist state to localStorage if key provided
   React.useEffect(() => {
-    if (!localStorageKey) return;
-    const state = { query, sortStack, filters };
-    localStorage.setItem(localStorageKey, JSON.stringify(state));
-  }, [query, sortStack, filters, localStorageKey]);
+    if (!localStorageKey || restoredKey !== localStorageKey) return;
+    const state = { query, sortStack, filters, groupBy };
+    try { localStorage.setItem(localStorageKey, JSON.stringify(state)); }
+    catch { /* A blocked/quota-limited store must not disable local table controls. */ }
+  }, [query, sortStack, filters, groupBy, localStorageKey, restoredKey]);
 
   // Restore from localStorage on mount
   React.useEffect(() => {
     if (!localStorageKey) return;
-    const saved = localStorage.getItem(localStorageKey);
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem(localStorageKey);
+      if (saved) {
         const parsed = JSON.parse(saved);
-        setQuery(parsed.query || "");
-        const stack = parsed.sortStack || (parsed.sortBy ? [parsed.sortBy] : []);
+        setQuery(typeof parsed.query === "string" ? parsed.query : "");
+        const rawStack = parsed.sortStack || (parsed.sortBy ? [parsed.sortBy] : []);
+        const stack = Array.isArray(rawStack) ? rawStack.filter((entry) => entry && typeof entry.column === "string" && ["asc", "desc"].includes(entry.direction)) : [];
         setSortStack(stack);
         setSortBy(stack[0] || null);
-        setFilters(parsed.filters || {});
-      } catch (e) {
-        // ignore parse errors
+        setFilters(Object.fromEntries(Object.entries(parsed.filters && typeof parsed.filters === "object" ? parsed.filters : {}).filter(([, values]) => Array.isArray(values))));
+        setGroupBy(typeof parsed.groupBy === "string" || Array.isArray(parsed.groupBy) && parsed.groupBy.every((key) => typeof key === "string") ? parsed.groupBy : null);
       }
-    }
+    } catch { /* Ignore unavailable or malformed retained view state. */ }
+    setRestoredKey(localStorageKey);
   }, [localStorageKey]);
 
   // Filter data by active filters (multi-select per column)
@@ -120,29 +124,34 @@ export function useTableState(initialData = [], localStorageKey = null) {
     setSortBy(null);
     setSortStack([]);
     setFilters({});
+    setGroupBy(null);
   };
 
   // View snapshot in/out — what SavedViews captures and re-applies.
-  const getViewState = () => ({ query, sortStack, filters });
+  const getViewState = () => ({ query, sortStack, filters, groupBy });
   const applyViewState = (state = {}) => {
     setQuery(state.query || "");
     const stack = state.sortStack || [];
     setSortStack(stack);
     setSortBy(stack[0] || null);
     setFilters(state.filters || {});
+    setGroupBy(state.groupBy || null);
   };
 
   const exportCSV = (filename = "data.csv") => {
     if (sorted.length === 0) return;
     const headers = Object.keys(sorted[0]);
+    const csvCell = (value) => {
+      if (value == null) return "";
+      const text = String(value);
+      return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    };
     const csv = [
-      headers.join(","),
+      headers.map(csvCell).join(","),
       ...sorted.map((row) =>
         headers.map((h) => {
           const v = row[h];
-          if (v === null || v === undefined) return "";
-          const str = String(v);
-          return str.includes(",") ? `"${str}"` : str;
+          return csvCell(v);
         }).join(",")
       ),
     ].join("\n");
@@ -168,6 +177,8 @@ export function useTableState(initialData = [], localStorageKey = null) {
     filters,
     toggleFilter,
     setFilters,
+    groupBy,
+    setGroupBy,
     getViewState,
     applyViewState,
     clearAllFilters,

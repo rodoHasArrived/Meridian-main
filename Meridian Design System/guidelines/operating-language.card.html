@@ -1,0 +1,74 @@
+<!-- @dsCard group="Documentation" viewport="1180x760" name="The operating language" subtitle="Six primitives, the operator question each answers, the rule of use, and which archetypes adopt which" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Meridian — The operating language</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
+<style>
+body{margin:0;padding:16px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+.panel{background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:12px 14px;margin-bottom:12px}
+.h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-secondary);border-bottom:1px solid var(--border-divider);padding-bottom:6px;margin-bottom:8px}
+.vocab{width:100%;border-collapse:collapse;font-size:11px}
+.vocab th{text-align:left;font-size:9px;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);font-weight:600;padding:0 6px 5px;border-bottom:1px solid var(--border-strong)}
+.vocab td{border-top:1px solid var(--border-divider);padding:6px;vertical-align:top;color:var(--text-secondary)}
+.vocab td:first-child{color:var(--text-primary);font-weight:600;width:27%}
+.vocab td:nth-child(2){font-family:var(--font-data);font-size:10px;color:var(--text-primary);width:25%}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rule{border:1px solid var(--border);border-radius:2px;padding:8px 10px;background:var(--bg-light)}
+.rule .rn{font-family:var(--font-data);font-size:10.5px;font-weight:600;color:var(--text-primary)}
+.rule .rr{font-size:10px;color:var(--text-secondary);margin-top:4px;line-height:1.55}
+.rule .rx{font-size:10px;color:var(--red-dim,#883832);margin-top:5px;line-height:1.5}
+.matrix{width:100%;border-collapse:collapse;font-size:10.5px}
+.matrix th{text-align:center;font-size:9px;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);font-weight:600;padding:0 4px 5px;border-bottom:1px solid var(--border-strong)}
+.matrix th:first-child{text-align:left}
+.matrix td{border-top:1px solid var(--border-divider);padding:5px 4px;text-align:center;color:var(--text-muted);font-family:var(--font-data);font-size:10px}
+.matrix td:first-child{text-align:left;font-family:var(--font-body);font-size:10.5px;color:var(--text-primary);font-weight:600}
+.y{color:var(--green-dim,#225840);font-weight:600}
+.o{color:var(--text-secondary)}
+.restraint{font-size:11px;color:var(--text-secondary);line-height:1.6;padding:8px 10px;background:var(--brand-signal-a10,rgba(197,99,67,.08));border:1px solid var(--border);border-radius:2px;margin-top:8px}
+.foot{margin:0;font-size:11px;color:var(--text-secondary)}
+code{font-family:var(--font-data);font-size:10px;color:var(--text-primary)}
+</style>
+</head>
+<body class="mds-specimen">
+<div class="panel">
+<div class="h">The vocabulary — every Meridian screen is spoken in some subset of these six</div>
+<table class="vocab">
+<tr><th>The operator's question</th><th>Primitive</th><th>What it replaces</th></tr>
+<tr><td>Where am I working?</td><td>WorkspaceContextBar</td><td>Per-panel period, currency, and basis pickers that silently disagree</td></tr>
+<tr><td>What is the one thing I mean?</td><td>LinkedSelectionProvider</td><td>A <code>selectedIndex</code> in each screen's local state</td></tr>
+<tr><td>What is this measured against?</td><td>Datum</td><td>An axis the reader must interpolate against by eye</td></tr>
+<tr><td>Is this evidence current?</td><td>ContinuityFrame</td><td>Spinners, blanked panels, and staleness nobody declares</td></tr>
+<tr><td>Is this figure complete?</td><td>AnalyticalFigure</td><td>A plot with a title and no unit, source, or condition</td></tr>
+<tr><td>What is a workspace module?</td><td>Capsule</td><td>Ad-hoc panels of arbitrary height and inconsistent anatomy</td></tr>
+</table>
+</div>
+<div class="panel">
+<div class="h">Rule of use · and the anti-pattern it retires</div>
+<div class="rules">
+<div class="rule"><div class="rn">WorkspaceContextBar</div><div class="rr">Scope is declared once, under the chrome. Every panel below inherits it from the provider.</div><div class="rx">Never: a period picker in a card header.</div></div>
+<div class="rule"><div class="rn">LinkedSelectionProvider</div><div class="rr">Hover previews locally; click, Enter, Space commit; Escape clears. Name the provider with <code>scope</code> when a screen has more than one group.</div><div class="rx">Never: hover changing a chart.</div></div>
+<div class="rule"><div class="rn">Datum</div><div class="rr">Anything judged against a threshold carries that reference inside the plot. Use <code>svg</code> in-plot, <code>to</code> for spans, <code>DatumGroup</code> when labels crowd.</div><div class="rx">Never: terracotta as a default datum.</div></div>
+<div class="rule"><div class="rn">ContinuityFrame</div><div class="rr">Retained evidence stays visible, named, aged, dimmed, and locked. Pass <code>since</code> and it runs its own clock.</div><div class="rx">Never: a skeleton where a number was.</div></div>
+<div class="rule"><div class="rn">AnalyticalFigure</div><div class="rr">Question, unit, as-of, source, condition, readout, method, fallback — or it is a decoration. Tile with <code>AnalyticalFigureGrid</code> under a declared shared scale.</div><div class="rx">Never: essential values only on hover.</div></div>
+<div class="rule"><div class="rn">Capsule</div><div class="rr">Fixed anatomy, honest state, heights from the xs / sm / md / lg ladder so a grid aligns without hand-tuning.</div><div class="rx">Never: <code>movable</code>/<code>resizable</code> — not yet wired.</div></div>
+</div>
+</div>
+<div class="panel">
+<div class="h">Adoption by archetype — nearly always ● · often ○ · rarely ·</div>
+<table class="matrix">
+<tr><th>Archetype</th><th>Context bar</th><th>Linked selection</th><th>Datum</th><th>Continuity</th><th>Figure</th><th>Capsule</th></tr>
+<tr><td>Start</td><td>·</td><td>·</td><td>·</td><td class="o">○</td><td>·</td><td>·</td></tr>
+<tr><td>Monitor</td><td class="y">●</td><td class="o">○</td><td class="o">○</td><td class="y">●</td><td>·</td><td class="y">●</td></tr>
+<tr><td>Investigate</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td></tr>
+<tr><td>Compose</td><td class="y">●</td><td class="y">●</td><td class="o">○</td><td>·</td><td>·</td><td class="y">●</td></tr>
+<tr><td>Report</td><td>·</td><td>·</td><td class="o">○</td><td>·</td><td class="y">●</td><td>·</td></tr>
+<tr><td>Admin</td><td>·</td><td>·</td><td>·</td><td class="o">○</td><td>·</td><td class="o">○</td></tr>
+</table>
+<p class="restraint"><b>Restraint over coverage.</b> A screen adopts the primitives its job needs and no more. Six-for-six everywhere would be consistency theater — a sign-in gate has no analytical scope to declare and a report pack has nothing to select. A primitive used once, gaining nothing from the shared model, is a dependency rather than a language: take it out.</p>
+</div>
+<p class="foot">Full law, including the rule / test / anti-pattern blocks and the seven-point screen checklist: <code>guidelines/OPERATING_LANGUAGE.md</code> · reference compositions: <code>docs/COORDINATED_COMPONENTS.md</code> · what 3.2.0 hardened: <code>docs/RELEASE_NOTES_3.2.0.md</code></p>
+</body>
+</html>

@@ -10,3 +10,9 @@ Two-sided statement-vs-ledger comparison with its own filter/search toolbar and 
 ```
 
 Matched rows carry a green rail, unmatched an amber wash — the same trio pattern as `SeverityBadge`, just applied per-row.
+
+Pass `onToggleItem(id, matched)` to enable exact row match changes and
+`onToggleAll(side, matched)` for all loaded items on that side. These callbacks
+receive booleans, not DOM events. Filtering does not change the all-items scope.
+Without mutation callbacks the match controls stay disabled; the panel still
+supports read-only filtering and summaries. Stable item IDs are required to edit.

@@ -9,34 +9,34 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-tf{display:inline-flex;align-items:stretch;padding:2px;gap:2px;background:var(--bg-medium,#EDEAE4);
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-button,2px);
-  font-family:var(--font-data,'Cascadia Mono',monospace);}
+.mds-tf{display:inline-flex;align-items:stretch;padding:2px;gap:2px;background:var(--bg-medium,#EBE8E1);
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,2px);
+  font-family:var(--font-data,'IBM Plex Mono',monospace);}
 .mds-tf__btn{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;cursor:pointer;
   font-family:inherit;font-size:11px;font-weight:600;line-height:1.3;white-space:nowrap;
-  color:var(--text-secondary,#4E5258);background:transparent;border:none;border-radius:var(--radius-button,2px);}
-.mds-tf__btn:hover:not(.mds-tf__btn--active){color:var(--text-primary,#22252A);background:var(--bg-hover,#F0EEE9);}
-.mds-tf__btn--active{color:var(--text-primary,#22252A);background:var(--bg-light,#FBFAF8);
-  box-shadow:inset 0 0 0 1px var(--accent,#A85436);}
+  color:var(--text-secondary,#535C65);background:transparent;border:none;border-radius:var(--radius-button,2px);}
+.mds-tf__btn:hover:not(.mds-tf__btn--active){color:var(--text-primary,#20252B);background:var(--bg-hover,#EDEFF0);}
+.mds-tf__btn--active{color:var(--text-primary,#20252B);background:var(--bg-light,#F8F7F3);
+  box-shadow:inset 0 0 0 1px var(--brand-signal,#C56343);}
 .mds-tf__btn:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-tf--md .mds-tf__btn{padding:5px 11px;font-size:12px;}
 .mds-asof{display:inline-flex;align-items:center;gap:8px;height:26px;box-sizing:border-box;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);
-  padding:0 4px 0 9px;font-family:var(--font-data,'Cascadia Mono',monospace);font-size:11.5px;
-  color:var(--text-primary,#22252A);white-space:nowrap;}
-.mds-asof--frozen{border-color:var(--orange,#8A5C12);background:var(--orange-a10,rgba(138,92,18,.08));}
-.mds-asof__dot{width:7px;height:7px;border-radius:50%;background:var(--green,#3A7A56);flex:0 0 auto;}
-.mds-asof__label{font-weight:700;font-size:10px;letter-spacing:.05em;color:var(--green-dim,#2C5C40);}
-.mds-asof--frozen .mds-asof__label{color:var(--orange-dim,#68450E);}
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);
+  padding:0 4px 0 9px;font-family:var(--font-data,'IBM Plex Mono',monospace);font-size:11.5px;
+  color:var(--text-primary,#20252B);white-space:nowrap;}
+.mds-asof--frozen{border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.08));}
+.mds-asof__dot{width:7px;height:7px;border-radius:50%;background:var(--green,#2E7655);flex:0 0 auto;}
+.mds-asof__label{font-weight:700;font-size:10px;letter-spacing:.05em;color:var(--green-dim,#225840);}
+.mds-asof--frozen .mds-asof__label{color:var(--orange-dim,#724D11);}
 .mds-asof__time{font-variant-numeric:tabular-nums;}
-.mds-asof__input{height:20px;box-sizing:border-box;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-input,2px);background:var(--bg-light,#FBFAF8);color:var(--text-primary,#22252A);
+.mds-asof__input{height:20px;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-input,2px);background:var(--bg-light,#F8F7F3);color:var(--text-primary,#20252B);
   font-family:inherit;font-size:10.5px;padding:0 4px;}
 .mds-asof__input:focus-visible{outline:var(--focus-ring);outline-offset:-1px;}
 .mds-asof__btn{height:20px;box-sizing:border-box;display:inline-flex;align-items:center;cursor:pointer;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-button,2px);background:transparent;
-  font-family:var(--font-body);font-size:10px;font-weight:600;padding:0 7px;color:var(--text-secondary,#4E5258);}
-.mds-asof__btn:hover{border-color:var(--border-hover,#C6C3BB);background:var(--bg-hover,#F0EEE9);color:var(--text-primary,#22252A);}
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,2px);background:transparent;
+  font-family:var(--font-body);font-size:10px;font-weight:600;padding:0 7px;color:var(--text-secondary,#535C65);}
+.mds-asof__btn:hover{border-color:var(--border-hover,#BEB8AD);background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B);}
 .mds-asof__btn:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 `;
   const el = document.createElement("style");
@@ -69,7 +69,20 @@ export function TimeframeSwitcher({
   const opts = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   const isControlled = value != null;
   const [internal, setInternal] = React.useState(defaultValue != null ? defaultValue : (opts[0] || {}).value);
-  const current = isControlled ? value : internal;
+  const requested = isControlled ? value : internal;
+  const current = opts.some(option => option.value === requested) ? requested : opts[0]?.value;
+  const refs = React.useRef([]);
+  const move = (event, index) => {
+    let next;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % opts.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + opts.length) % opts.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = opts.length - 1;
+    else return;
+    event.preventDefault();
+    refs.current[next]?.focus();
+    select(opts[next].value);
+  };
   const select = (v) => {
     if (!isControlled) setInternal(v);
     onChange && onChange(v);
@@ -77,8 +90,9 @@ export function TimeframeSwitcher({
   return (
     <div role="radiogroup" aria-label="Timeframe"
       className={`mds-tf mds-tf--${size}${className ? " " + className : ""}`} {...rest}>
-      {opts.map((o) => (
+      {opts.map((o, index) => (
         <button key={o.value} type="button" role="radio" aria-checked={o.value === current}
+          ref={node => { refs.current[index] = node; }} tabIndex={o.value === current ? 0 : -1} onKeyDown={event => move(event, index)}
           className={`mds-tf__btn${o.value === current ? " mds-tf__btn--active" : ""}`}
           onClick={() => select(o.value)}>
           {o.label}
@@ -114,10 +128,11 @@ export function AsOfControl({
     if (asOf != null) setFrozen(new Date(asOf));
   }, [asOf]);
 
+  const displayedFrozen=asOf!=null?new Date(asOf):frozen;
   const set = (nextMode, nextAsOf) => {
     if (!isControlled) setInternalMode(nextMode);
-    if (nextAsOf) setFrozen(nextAsOf);
-    onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? (nextAsOf || frozen) : null });
+    if (nextAsOf&&asOf==null) setFrozen(nextAsOf);
+    onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? (nextAsOf || displayedFrozen) : null });
   };
 
   const live = mode === "live";
@@ -136,12 +151,12 @@ export function AsOfControl({
         <React.Fragment>
           <span className="mds-asof__label">AS-OF</span>
           <input type="datetime-local" className="mds-asof__input" aria-label="As-of time (UTC)"
-            value={toLocalInput(frozen)}
+            value={toLocalInput(displayedFrozen)}
             onChange={(e) => {
               const d = new Date(e.target.value + "Z");
               if (!isNaN(d.getTime())) set("asof", d);
             }} />
-          <span className="mds-asof__time" title={utcStamp(frozen, true)}>UTC</span>
+          <span className="mds-asof__time" title={utcStamp(displayedFrozen, true)}>UTC</span>
           <button type="button" className="mds-asof__btn" onClick={() => set("live")}>Return to live</button>
         </React.Fragment>
       )}

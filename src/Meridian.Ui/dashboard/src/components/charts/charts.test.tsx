@@ -60,7 +60,7 @@ describe("EquityCurve", () => {
   it("renders a legend and a series path", () => {
     const { container } = render(
       <EquityCurve
-        series={[{ label: "Strategy", color: "var(--chart-equity, #3A7A56)", points: [100, 110, 105, 120] }]}
+        series={[{ label: "Strategy", color: "var(--chart-equity, #2E7655)", points: [100, 110, 105, 120] }]}
         labels={["Jan", "Feb", "Mar", "Apr"]}
       />
     );
@@ -86,7 +86,7 @@ describe("EquityCurve", () => {
       />
     );
     const drawdownPath = Array.from(container.querySelectorAll("path")).find((p) =>
-      p.getAttribute("stroke") === "var(--chart-drawdown, #A8443C)"
+      p.getAttribute("stroke") === "var(--chart-drawdown, #B54B42)"
     );
     expect(drawdownPath?.getAttribute("d")).toContain("432.0");
   });

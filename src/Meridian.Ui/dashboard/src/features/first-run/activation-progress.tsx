@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Circle, ListChecks, MonitorUp } from "lucide-react";
+import { ArrowRight, Check, Circle, FlaskConical, ListChecks, MonitorUp } from "lucide-react";
 import { apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -104,6 +104,12 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
             </div>
           </SheetHeader>
           <SheetBody>
+            {liveStatus.workspace.isSample ? (
+              <section aria-label="Workspace safety context" className="mb-4 space-y-2 border border-border p-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold"><FlaskConical size={14} aria-hidden="true" />{liveStatus.workspace.badge}</h3>
+                <p className="text-sm text-muted-foreground">{liveStatus.workspace.safetyMessage}</p>
+              </section>
+            ) : null}
             <ol className="space-y-2">
               {model.steps.map((step) => (
                 <li key={step.key}>
