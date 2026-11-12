@@ -102,7 +102,9 @@ the full aggregate `bash scripts/ci.sh` was not run. Hosted required checks rema
 
 ## Delivery limits
 
-Changes are local to `codex/correct-review-findings`; no push, pull request, merge or live activation.
+The original remediation validation was local to `codex/correct-review-findings`; it did not
+include publication or live activation. The owner subsequently authorized publication and merge
+when ready; the synchronization evidence below records that preparation.
 Rebuild host and plugin consumers together: Risk constructor parameter contracts changed even
 though relocated type identities are forwarded. LFS objects are present locally and must be uploaded
 when publishing; no historical Git rewrite was performed. The large orchestration services still
@@ -141,7 +143,7 @@ replace hosted checks on the eventual pull-request head, and browser slices may 
 | QuantScript worker boundary slice | 18 passed |
 | CI test-roster Python tests | 50 passed; three environment skips |
 
-Local synchronization is validated. Publication is blocked by the managed network policy rejecting
+Local synchronization is validated. At this validation point, publication was blocked by the managed network policy rejecting
 the Git LFS verification host `lfs.github.com` (HTTP CONNECT 403). No LFS hook or repository rule
 was bypassed; uploading and clean-checkout verification remain prerequisites to publication.
 

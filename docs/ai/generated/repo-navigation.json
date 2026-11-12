@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T16:37:24Z",
+  "generatedAt": "2026-11-12T17:22:14Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-merge",
   "subsystems": [
@@ -2431,12 +2431,12 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 14
+      "touches": 78
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
@@ -2444,7 +2444,15 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 9
+      "touches": 65
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 54
     },
     {
       "path": "src/Meridian.Wpf/README.md",
@@ -2452,23 +2460,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 3
+      "touches": 31
     },
     {
       "path": "src/Meridian.Storage/README.md",
@@ -2476,18 +2468,226 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 3
+      "touches": 27
     },
     {
-      "path": "src/Meridian.Ui/dashboard/README.md",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 22
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 20
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 17
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 16
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Risk/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Backtesting/FillModels/MarketImpactFillModel.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/App.xaml.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Backtesting/Engine/BacktestEngine.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "path": "src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Mcp/Services/RepoPathService.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Sinks/CompositeSink.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
@@ -2500,15 +2700,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 2
+      "touches": 3
     },
     {
       "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
@@ -2516,47 +2708,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/GlobalUsings.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Meridian.Application.csproj",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/DetailedHealthCheck.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/StatusWriter.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
+      "touches": 3
     },
     {
       "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
@@ -2564,15 +2716,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
+      "touches": 2
     },
     {
       "path": "src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs",
@@ -2580,39 +2724,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting.Sdk/BacktestResult.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting.Sdk/Order.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/Engine/BacktestEngine.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
+      "touches": 2
     },
     {
       "path": "src/Meridian.Backtesting/FillModels/BarMidpointFillModel.cs",
@@ -2620,39 +2732,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/FillModels/MarketImpactFillModel.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/FillModels/OrderBookFillModel.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/Portfolio/ICommissionModel.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
+      "touches": 2
     },
     {
       "path": "src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs",
@@ -2660,15 +2740,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
+      "touches": 2
     },
     {
       "path": "src/Meridian.Backtesting/WalkForward/WalkForwardService.cs",
@@ -2676,79 +2748,7 @@
       "lastModified": "2026-11-12T16:06:18Z",
       "lastCommit": "01649c7a44",
       "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/GlobalUsings.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/GlobalUsings.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/BrokerStatementNormalizer.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/ReconciliationCaseInfrastructure.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/StatementDurabilityInfrastructure.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/StatementDurabilityJsonContext.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Reconciliation/StatementExecutedMappingEvidence.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-12T16:06:18Z",
-      "lastCommit": "01649c7a44",
-      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
-      "touches": 1
+      "touches": 2
     }
   ],
   "recentChangesWindowDays": 14,
