@@ -13399,6 +13399,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
+│   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewEndpointTests.cs
 │   │   │   ├── WorkstationMaintenanceTableExportTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationPersonalTableViewStoreTests.cs
