@@ -313,6 +313,7 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
     [InlineData("source-evidence")]
     [InlineData("candidate-source-evidence")]
     [InlineData("lot-authority")]
+    [InlineData("redemption-disposal")]
     public async Task CashDividendEligibility_NativeAuthorityCannotBeReplacedByMatchingNumbers(string problem)
     {
         var fixture = await EntitlementFixture.CreateAsync();
@@ -331,6 +332,8 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
             fixture.Spine = fixture.Spine with { DraftedCandidate = request, DraftedCandidateFingerprint = fingerprint };
             fixture.Projection = fixture.Projection with { DraftedCandidateFingerprint = fingerprint };
         }
+        else if (problem == "redemption-disposal")
+            fixture.Spine = fixture.Spine with { Disposal = new(AssetLotMutationIntentDto.Dispose) };
         else
             fixture.Projection = fixture.Projection with { HasAuthoritativeLotResolution = false };
         await ExcludedAsync(fixture);

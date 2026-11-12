@@ -50,6 +50,11 @@ controlled workflow or granting approval/posting authority. This B assertion rem
 from the separate native C cash-dividend lane. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
 for the bounded default-off scope and outstanding W14 acceptance.
 
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
+structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
+certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
+Disposal instructions compare selections by retained ordinal while keeping every field exact.
+
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in
 `SecurityAssetTermsSchema`. Regenerate both arms together rather than editing generated codecs.
@@ -71,6 +76,11 @@ for floating v3 analytics. Its null omission preserves legacy context serializat
 `BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
 fraction, original typed provider observation, recording actor/time, review justification and hash.
 Observed reset evidence is distinct from a forward curve or forecast assumption.
+
+`StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
+interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
+row schema for historical receipts. The catalog declares StructuredNote valuation as fair value
+through profit or loss, independently of eligibility for coupon-accrual accounting.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

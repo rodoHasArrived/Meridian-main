@@ -30,6 +30,12 @@ Operations Continuity refuses reserved W14 preparer-assertion references when di
 or reopening a controlled workflow. These refusals preserve the current workflow state and its
 ordinary approval requirements; legacy opaque references still do not prove independent review.
 
+The asset-accounting event spine freezes an optional canonical redemption disposal instruction
+at projection and requires the same instruction at drafting. Selections are compared by their
+retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
+existing atomic disposal authority to relieve full quantities and bases together with their
+journal. Historical events omit the optional member and preserve their retained fingerprints.
+
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when

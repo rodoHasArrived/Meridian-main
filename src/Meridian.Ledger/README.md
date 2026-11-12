@@ -17,6 +17,11 @@ The absent property is omitted from JSON so historical journal hashes remain unc
 classification establishes preparer attestation only; source verification, independent approval
 and financial coverage remain separate.
 
+`StructuredNoteAccountingTemplate` recognizes dated fair-value gains and losses in profit or loss
+through the existing governed daily-valuation drafts. It converts face quantities and raw percentage
+quotes through the shared lot model, applies currency minor units, and retains template/convention
+evidence with its retry identity. Structured notes do not enter the bond coupon-accrual route.
+
 `LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
 
 Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
@@ -285,9 +290,14 @@ restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — 
 splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
 before relief, keeping the ledger engine free of Security Master contracts while relieving basis
 against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
-the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
-matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
-entries so cash flow projections are booked instead of remaining display-only.
+the master and produces those adjustments. The separate `SecurityMasterAmortizationLedgerBridge`
+remains available to the recurring `FixedIncomeAccrualCalculation`, which invokes it on a scratch
+ledger and retains coupon-accrual and premium-amortization/discount-accretion lines in a governed
+draft. This recurring route requires explicit Bond accrual admission, measured coupon intervals,
+dated holdings and matching book currency; real posting follows the ordinary approval lifecycle.
+Projected principal paydowns are excluded from that draft and arrive through cash activity.
+The retired `StructuredCashFlowLedgerBridge` and `BuildLedgerPostingsAsync` facade do not provide
+an alternate whole-coupon posting path.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
@@ -298,10 +308,9 @@ ledger journal entry.
 `LedgerJournalReversal` is the general correction primitive: it books a balanced reversing entry
 for any posted journal by swapping every line's debit and credit under a new journal id, linking
 back to the original via a `reversal.of` tag — so corrections stay immutable (reverse/rebook) rather
-than mutating posted history. The Application-layer `SecurityMasterLedgerBridge` uses it (opt-in via
-`CorporateActionLedgerPostingContext.AutoReverseSupersededPostings`) to automatically reverse a
-previously-posted corporate action when it is cancelled, and to reverse-then-rebook when it is
-amended.
+than mutating posted history. The retired direct corporate-action poster is retained only as a
+historical test fixture. Current corporate actions use governed accounting candidates and their
+canonical lot instructions.
 `IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
 projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
 while durable implementations can append the same approved projection to the governed journal

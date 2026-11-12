@@ -16,8 +16,12 @@ dotnet test tests/Meridian.Backtesting.Tests -c Release /p:EnableWindowsTargetin
 | ID | Location | Current behavior (pinned) | Target behavior | Fixing lane | Fixture |
 |----|----------|---------------------------|-----------------|-------------|---------|
 | CA-DEF-001 | `src/Meridian.Backtesting/CorporateActionAdjustmentService.cs` (`BuildDividendFactors`) | Dividend factor silently skipped when no prior-close bar exists before an ex-date; series returned unadjusted with no signal | Explicit degradation: warning + machine-readable adjustment report | Idea #2 remainder (factor engine) | `dividend-missing-prior-bar.json` |
-| CA-DEF-002 | `src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs` (`PostNonCashLifecycleMemo`) | Spinoffs, mergers, and distributions post symbolic 1-unit memos; no basis allocation, lot conversion, or new position | Entitlement-driven position transformation with basis conservation | Idea #3 (entitlement engine) | `t-wbd-spinoff-2022.json`, `cash-stock-merger-2018.json` |
-| CA-DEF-006 | `src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs` (dividend branch) | All dividends skipped with a warning when `CorporateActionLedgerPostingContext.PositionQuantity` is not supplied (defaults to 0) | Record-date holdings seam supplies the position quantity | Idea #3 | `dividend-no-position-context.json` |
+| CA-DEF-002 | `tests/Meridian.Tests/SecurityMaster/HistoricalCorporateActionLedgerFixture.cs` (`PostNonCashLifecycleMemo`) | Spinoffs, mergers, and distributions post symbolic 1-unit memos; no basis allocation, lot conversion, or new position | Entitlement-driven position transformation with basis conservation | Idea #3 (entitlement engine) | `t-wbd-spinoff-2022.json`, `cash-stock-merger-2018.json` |
+| CA-DEF-006 | `tests/Meridian.Tests/SecurityMaster/HistoricalCorporateActionLedgerFixture.cs` (dividend branch) | All dividends skipped with a warning when `HistoricalCorporateActionPostingContext.PositionQuantity` is not supplied (defaults to 0) | Record-date holdings seam supplies the position quantity | Idea #3 | `dividend-no-position-context.json` |
+
+The two ledger-side defects above now describe the retired direct poster retained only as a
+test fixture. Production corporate-action accounting uses governed case projections and approved
+lot mutations; the historical fixture is never registered or shipped in an application assembly.
 
 ## Fixture schema
 

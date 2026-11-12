@@ -74,7 +74,7 @@ public sealed partial class AccountingPostingCandidatePostService
             || drafted.DraftedCandidateFingerprint != projection.DraftedCandidateFingerprint
             || drafted.Correction is not null || drafted.Direction != Meridian.Contracts.Accounting.Lots.OpenLotDirection.Long
             || drafted.DraftedLotMutation is not null || drafted.CorporateAction is not null
-            || drafted.CapitalReturn is not null || drafted.FactorPaydown is not null)
+            || drafted.CapitalReturn is not null || drafted.FactorPaydown is not null || drafted.Disposal is not null)
             throw new InvalidOperationException("The retained Drafted event is not the exact non-lot cash-dividend projection.");
         await lease.EnsureCanonicalInstrumentAsync(drafted.DraftedCandidate!.InstrumentSymbol,
             drafted.Scope.SecurityId, drafted.Scope.ExpectedSecurityVersion,

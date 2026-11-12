@@ -82,6 +82,7 @@ public sealed class CorporateActionCashDividendEligibilityResolver(
             && CorporateActionEvidenceKinds.IsTrustedReference(provider.EvidenceReference),
             "A versioned acceptance-eligible provider identity and retained source hash are required.");
         Require(spine.Correction is null && spine.CorporateAction is null && spine.CapitalReturn is null && spine.FactorPaydown is null
+            && spine.Disposal is null
             && spine.Direction == OpenLotDirection.Long && spine.DraftedLotMutation is null
             && spine.DraftedCandidate?.PostingKind == LedgerPostingKindDto.Originating
             && spine.DraftedCandidate.AdjustmentApproval is null && spine.DraftedCandidate.SourceJournalEntryId is null
