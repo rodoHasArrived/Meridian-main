@@ -1140,6 +1140,7 @@ Resolved personal views apply their search and filters once, without asking the 
 reader to resolve the personal ID again. Responses retain that authenticated personal view as active;
 requests without a view preserve the exact run selected by the reader. Missing or foreign personal
 IDs remain fail-closed and cannot expose another operator or tenant's rows or view metadata.
+Save responses use the persisted view metadata so storage normalization remains authoritative.
 The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view. Missing projections return empty or blocked DTO state with disabled actions and
 reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
