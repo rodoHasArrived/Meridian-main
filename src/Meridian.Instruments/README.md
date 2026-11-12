@@ -6,10 +6,23 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Instruments
+
+`BondMarketDataService` imports and reads typed source revisions within an explicit authenticated
+tenant, retaining the first identity on exact retry and refusing conflicting revisions atomically.
+Exact-date queries never substitute a prior fixing, and future observed values require forecast
+curves. `BondMarketWorkflowObservationSource` supplies eligible retained inputs and exact quote
+identities to the workflow model; fixing and inflation roles remain distinct even when a series name
+matches, and conflicting source values require explicit review. Performance attribution first
+reconciles model settlement cash and index ratios to the accepted mark.
+
+`BondWorkflowService` prices the explicit signed fixed/floating/overnight/indexed model and preserves
+legacy dispatch. Account planning, collection monitoring, risk and sequential performance consume
+accepted holdings and retained inputs; accounting amortization is excluded from market attribution.
+See [bond operations and limits](../../docs/operators/bond-workflows.md).
 
 Floating analytics v3 returns each projected coupon's resolved fixing evidence without repricing
 in either workstation. Observed fixings and forecasts retain their distinct source and reset date;

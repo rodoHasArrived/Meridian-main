@@ -338,7 +338,8 @@ public static class AccountingPostingCommandValidator
                 item.EffectiveDate!.Value, item.EvidenceVersion!.Value, item.RetainedAtUtc, item.RetainedBy,
                 item.SubjectType!, item.SubjectId!),
             command.LotAmortization, requireInstruction: true, corporateAction: command.LotCorporateAction,
-            capitalReturn: command.LotCapitalReturn, factorPaydown: command.LotFactorPaydown))))
+            capitalReturn: command.LotCapitalReturn, factorPaydown: command.LotFactorPaydown,
+            couponRecognition: command.BondCouponRecognition))))
         {
             throw new LedgerValidationException(
                 "Asset accounting posting evidence effective date must match the economic event effective date.");

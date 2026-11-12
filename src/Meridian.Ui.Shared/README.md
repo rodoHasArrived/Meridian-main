@@ -6,10 +6,28 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Shared
+
+`BondWorkflowConnectionReadinessService` joins exact tenant-owned connections, credential status
+and applicable input-specific entitlements. It reports identifier, terms, holdings, quote, fixing,
+inflation, factor, rating, curve and execution coverage separately. Connection verification never
+promotes a workflow to `LiveVerified`; deterministic imports and live provider evidence remain
+distinct. Brokerage position projections preserve accrued interest and cost-derived mark labels.
+
+The shared bond account endpoints bind account-owned book/tenant/company scope, retain plans and
+comparisons, project collection exceptions into governed casework, and keep preview/preparation apart
+from posting. Performance imports read exact accepted vault documents; current cash/FX authority is
+reverified before consumption. See [routes, typed source JSON and book policy](../../docs/operators/bond-workflows.md).
+
+`BondProviderIntakeService` connects operator-triggered bond ISIN/CUSIP discovery to OpenFIGI without
+resolving ambiguous candidates, and typed FRED intake to the retained market-input service. Exact
+independently reviewed provider-trust binding bytes supply the series/index/unit mapping; source
+review is rechecked after fetching. The service archives and reopens exact provider-response JSON
+through a tenant/company-scoped content-addressed store. API responses keep the separate
+`LiveUntested` evidence status.
 
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review

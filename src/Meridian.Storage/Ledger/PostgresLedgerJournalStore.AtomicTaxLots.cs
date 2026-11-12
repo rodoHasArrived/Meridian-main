@@ -57,6 +57,7 @@ public sealed partial class PostgresLedgerJournalStore
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
 
+        await LockCouponHistoryBoundaryAsync(connection, transaction, ct).ConfigureAwait(false);
         // Take this table lock before the first MVCC read so a preceding deferral writer is
         // visible in this serializable snapshot. Replay still precedes carry validation below.
         if (command.MutationKind == AtomicTaxLotMutationKind.CorporateAction)

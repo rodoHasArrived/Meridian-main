@@ -117,7 +117,7 @@ public static class SecurityAssetClassCatalog
             // Version 2 adds the optional scheduleConventions block and version 3 the optional
             // callSchedule and putSchedule arrays. The contract-step writer admits through version 3;
             // S2 retains floor 1 for documents that declare no schedules.
-            TermsVersion: 3,
+            TermsVersion: 5,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -126,9 +126,10 @@ public static class SecurityAssetClassCatalog
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds explicit overnight and inflation workflow conventions without changing earlier terms; historical calculations retain their versions.")
             ],
-            ReadableTermsVersion: 4) { StampFloor = 1 },
+            ReadableTermsVersion: 5) { StampFloor = 1 },
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],

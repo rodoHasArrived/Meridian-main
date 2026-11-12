@@ -80,7 +80,8 @@ module internal SecurityTermsWriteVersion =
             match kind with
             | SecurityKind.Bond terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
-                  holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
+                  holdsSchedules terms.CallPutSchedules, schedulesSince kind
+                  terms.WorkflowJson.IsSome, fieldSince "Bond" "bondWorkflow" ]
             | SecurityKind.CertificateOfDeposit terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
                   holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
@@ -741,13 +742,20 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
             | SecurityKind.CapFloor terms -> terms.RateUnit
             | SecurityKind.StructuredNote terms -> terms.RateUnit
             | _ -> None
-        match unit with
-        | None -> baseAssetSpecificTermsJson
-        | Some token ->
-            let document = System.Text.Json.Nodes.JsonNode.Parse(baseAssetSpecificTermsJson).AsObject()
-            document["rateUnit"] <- System.Text.Json.Nodes.JsonValue.Create(token)
-            let version = SecurityAssetTermsSchema.Field(assetClass, "rateUnit").SinceTermsVersion
-            SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, max version termsVersion)
+        let withRate =
+            match unit with
+            | None -> baseAssetSpecificTermsJson
+            | Some token ->
+                let document = System.Text.Json.Nodes.JsonNode.Parse(baseAssetSpecificTermsJson).AsObject()
+                document["rateUnit"] <- System.Text.Json.Nodes.JsonValue.Create(token)
+                let version = SecurityAssetTermsSchema.Field(assetClass, "rateUnit").SinceTermsVersion
+                SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, max version termsVersion)
+        match record.Kind with
+        | SecurityKind.Bond terms when terms.WorkflowJson.IsSome ->
+            let document = System.Text.Json.Nodes.JsonNode.Parse(withRate).AsObject()
+            document["bondWorkflow"] <- System.Text.Json.Nodes.JsonNode.Parse(terms.WorkflowJson.Value)
+            SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, termsVersion)
+        | _ -> withRate
 
     let commonTermsJson =
         JsonSerializer.Serialize(

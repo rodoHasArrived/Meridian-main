@@ -6,10 +6,17 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.FinancialOperations
+
+`BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
+preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,
+coupon income, premium/discount and observed indexation remain separate. Coupon recognition prepares
+signed receivable/payable and source-verified cash clearing through the canonical event spine and
+atomic posting boundary. Raw model economics remain separate from versioned ten-decimal booked
+targets and their retained rounding residuals. Native cash retains its currency minor units. See [policy adoption and review](../../docs/operators/bond-workflows.md).
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 

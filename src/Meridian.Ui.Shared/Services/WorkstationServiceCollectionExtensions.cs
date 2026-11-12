@@ -1002,14 +1002,17 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IAccountingConfigurationService>(),
                 sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
                 sp.GetService<ILedgerJournalStore>(),
-                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>())!);
+                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>(),
+                bondIncomeService: sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+                couponRecognitionAuthority: () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IAtomicTaxLotJournalStore>(),
                 sp.GetService<IAssetAccountingEventProjectionStore>(),
-                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()));
+                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>(),
+                instrumentPositions: sp.GetService<IInstrumentPositionProjectionStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
@@ -1339,6 +1342,7 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<QuoteStreamOptions>()));
         services.TryAddSingleton<IReportingRunNotifier>(sp => sp.GetRequiredService<ReportRunStreamBroadcaster>());
 
+        services.AddBondWorkflowServices();
         return services;
     }
 

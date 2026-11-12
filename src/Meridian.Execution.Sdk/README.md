@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-05
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Execution.Sdk
@@ -18,6 +18,8 @@ then compares absolute quantity, original date, identity and exact basis. Matchi
 bind; opposite directions cannot net. Symbols remain display evidence and binding grants no
 posting authority or tax character.
 
+
+Brokerage position snapshots preserve supplied accrued interest and distinguish provider-reported, cost-derived, and unavailable valuation bases. Cost basis is not evidence of a current bond quote.
 
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection

@@ -18,7 +18,8 @@ public sealed class ProviderIntegrationTemplateCatalogTests
                 "template-manual-csv-upload-v1",
                 "template-custodian-positions-v1",
                 "template-brokerage-transactions-v1",
-                "template-fixed-income-security-master-v1"
+                "template-fixed-income-security-master-v1",
+                "template-fixed-income-security-master-v2"
             ]);
         entries.Single(entry => entry.ManifestId == "template-manual-csv-upload-v1")
             .Capabilities.Should().Contain(ProviderCapabilityKindDto.Positions);
@@ -26,6 +27,23 @@ public sealed class ProviderIntegrationTemplateCatalogTests
             .RequiresCredentials.Should().BeTrue();
         entries.Single(entry => entry.ManifestId == "template-fixed-income-security-master-v1")
             .IntegrationType.Should().Be(IntegrationTypeDto.SftpFile);
+    }
+
+    [Fact]
+    public void FixedIncomeV2RetainsV1AndRequiresExplicitCurrencyAndBondConventions()
+    {
+        var catalog = new ProviderIntegrationTemplateCatalog();
+        var legacy = catalog.GetManifest("template-fixed-income-security-master-v1")!;
+        var current = catalog.GetManifest("template-fixed-income-security-master-v2")!;
+        legacy.ManifestVersion.Should().Be(1);
+        legacy.FieldMappings.Single(m => m.TargetField == "security.currency").DefaultValue.Should().Be("USD");
+        current.ManifestVersion.Should().Be(2);
+        current.FieldMappings.Where(m => m.TargetField.EndsWith("currency", StringComparison.OrdinalIgnoreCase))
+            .Should().OnlyContain(m => m.DefaultValue == null);
+        current.FieldMappings.Select(m => m.TargetField).Should().Contain([
+            "security.scheduleConventions", "security.bondWorkflow", "security.principalSchedule",
+            "security.callSchedule", "bond.originalFace", "bond.currentFace", "bond.principalFactor",
+            "bond.inflationRatio", "bond.quoteBasis", "bond.quoteIsDirty"]);
     }
 
     [Fact]

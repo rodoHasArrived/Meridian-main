@@ -79,6 +79,8 @@ public sealed record AccountingPostingCommandDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     Guid? LedgerBookId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     /// <summary>
     /// The actual posting actor, supplied by the validated command boundary. Null retains an
     /// explicitly unattributed legacy command; it never means that an approver posted it.

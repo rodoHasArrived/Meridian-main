@@ -6,10 +6,16 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Application
+
+`BondHoldingImportService` bridges tenant-scoped raw/mapped integration evidence and retained
+reconciliation handoffs into the account statement authority. It rejects omitted unreviewed rows,
+unresolved identities, mismatched dates/currencies and cost-derived marks. The versioned fixed-income
+workflow template adds explicit terms and nested bond holdings without changing retained v1 manifests.
+See [bond import and account workflows](../../docs/operators/bond-workflows.md).
 
 The governed Security Master field-edit lifecycle accepts `assetSpecificTerms.rateUnit` on scalar-rate
 classes without schedule anchors. Publishing the approved edit promotes only its declaration,

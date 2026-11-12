@@ -6,10 +6,12 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui
+
+The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
 
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`

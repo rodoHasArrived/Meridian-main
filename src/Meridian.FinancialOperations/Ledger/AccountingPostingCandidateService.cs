@@ -1,3 +1,4 @@
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -77,6 +78,7 @@ public sealed partial class AccountingPostingCandidateService :
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
     private readonly IFactorPaydownProjectionService? _factorPaydownProjector;
     private readonly ILedgerJournalStore? _taxLotStore;
+    private readonly Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore? _instrumentPositions;
 
     public AccountingPostingCandidateService(
         IAccountingConfigurationService configurationService,
@@ -85,7 +87,8 @@ public sealed partial class AccountingPostingCandidateService :
         IAccountingPolicyService? accountingPolicyService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
         IFactorPaydownProjectionService? factorPaydownProjector = null,
-        ILedgerJournalStore? taxLotStore = null)
+        ILedgerJournalStore? taxLotStore = null,
+        Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore? instrumentPositions = null)
     {
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _journalDraftService = journalDraftService ?? throw new ArgumentNullException(nameof(journalDraftService));
@@ -94,6 +97,7 @@ public sealed partial class AccountingPostingCandidateService :
         _assetOperationsQueryService = assetOperationsQueryService;
         _factorPaydownProjector = factorPaydownProjector;
         _taxLotStore = taxLotStore;
+        _instrumentPositions = instrumentPositions;
     }
 
     public async Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
@@ -120,11 +124,17 @@ public sealed partial class AccountingPostingCandidateService :
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
 
+        if (request.BondCouponRecognition is not null && (authority is null
+            || request.SourceEventType != AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Income)
+            || request.AssetLotMutation is not null))
+            throw new InvalidOperationException("Coupon posting lines require canonical Income-event authority without a lot mutation.");
+
         var authorityIssues = ValidateAssetAccountingAuthority(request, authority);
         if (authorityIssues.Any(static issue => issue.BlocksCandidate))
         {
             return BuildPreDryRunBlockedResult(request, authorityIssues);
         }
+        var adoptedOwner = await ResolveAdoptedAcquisitionOwnerAsync(request, authority, ct).ConfigureAwait(false);
 
         var typedProjectionIssues = new List<PostingRuleJournalCandidateIssueDto>();
         var authoritativeEventAmount = await ResolveTypedInstrumentProjectionAsync(
@@ -157,6 +167,17 @@ public sealed partial class AccountingPostingCandidateService :
                 ct)
             .ConfigureAwait(false);
 
+        if (adoptedOwner is { } owner && request.AssetLotMutation?.Acquisition is { } adopted)
+            dryRun = dryRun with
+            {
+                GeneratedPostingLines = dryRun.GeneratedPostingLines.Select(line => line with
+                {
+                    Dimensions = Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionOwnership.StampDimensions(
+                line.Dimensions, owner, request.LedgerBookId!.Value, authority!.SecurityId,
+                authority.BookPositionId, adopted.LotId)
+                }).ToArray()
+            };
+
         var issues = dryRun.ValidationIssues
             .Select(ToCandidateIssue)
             .ToList();
@@ -168,6 +189,13 @@ public sealed partial class AccountingPostingCandidateService :
             .Select(static match => match.RuleVersion)
             .FirstOrDefault();
 
+        if (request.BondCouponRecognition is { } couponRecognition)
+            dryRun = dryRun with
+            {
+                GeneratedPostingLines = couponRecognition.Lines.Select((line, index) => new GeneratedPostingLineDto(
+                $"bond-coupon-{index}", line.AccountId, line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+                "bond-coupon-recognition-v1", line.Debit + line.Credit, line.Currency, line.Dimensions, line.Description)).ToArray()
+            };
         await ValidateBookContextAsync(request, dryRun, issues, ct).ConfigureAwait(false);
         ValidateEconomicEvent(request, issues);
         ValidateProjectionLineage(request, issues);
@@ -331,7 +359,13 @@ public sealed partial class AccountingPostingCandidateService :
             }
 
             var amount = Math.Abs(line.Amount);
+            if (adoptedOwner is not null)
+                BondIncomeBookedPrecision.RequireRepresentable(amount);
             var account = new LedgerAccount(chartNode.AccountName, accountType);
+            if (adoptedOwner is { } acquisitionOwner)
+                account = account with { FinancialAccountId = acquisitionOwner.ToString("D") };
+            if (request.BondCouponRecognition is { } coupon)
+                account = account with { FinancialAccountId = coupon.Scope.AccountId };
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
             {
                 if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)
@@ -391,6 +425,8 @@ public sealed partial class AccountingPostingCandidateService :
                 ct)
             .ConfigureAwait(false);
 
+        if (adoptedOwner is not null && draft.Write is { } adoptedWrite)
+            BondIncomeAcquisitionJournalPrecision.RequireRepresentable(adoptedWrite.Entry);
         issues.AddRange(draft.ValidationIssues.Select(ToCandidateIssue));
 
         var postingCommand = draft.Write?.PostingCommand is { } command
@@ -403,6 +439,7 @@ public sealed partial class AccountingPostingCandidateService :
                 EconomicEvent = request.EconomicEvent,
                 ProjectionLineage = request.ProjectionLineage,
                 RulePackReference = request.RulePackReference,
+                BondCouponRecognition = request.BondCouponRecognition,
                 LotAmortization = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.Amortize }
                     ? request.AssetLotMutation.Amortization : null,
                 LotCorporateAction = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction }

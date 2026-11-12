@@ -32,6 +32,8 @@ public sealed partial class PostgresLedgerJournalStore :
     private readonly Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? _backfillSecurityMaster;
     private readonly Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? _backfillPositions;
     private readonly Func<IConsolidationPostingAuthority?>? _consolidationAuthority;
+    private readonly Func<Meridian.Contracts.Accounting.Lots.IBondIncomeService?>? _bondIncomeAuthority;
+    private readonly Func<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?>? _couponRecognitionAuthority;
 
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
@@ -39,7 +41,9 @@ public sealed partial class PostgresLedgerJournalStore :
         TenantScopeEnforcementOptions? tenantScope = null,
         Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? backfillSecurityMaster = null,
         Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null,
-        Func<IConsolidationPostingAuthority?>? consolidationAuthority = null)
+        Func<IConsolidationPostingAuthority?>? consolidationAuthority = null,
+        Func<Meridian.Contracts.Accounting.Lots.IBondIncomeService?>? bondIncomeAuthority = null,
+        Func<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?>? couponRecognitionAuthority = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
@@ -48,6 +52,8 @@ public sealed partial class PostgresLedgerJournalStore :
         _backfillSecurityMaster = backfillSecurityMaster;
         _backfillPositions = backfillPositions;
         _consolidationAuthority = consolidationAuthority;
+        _bondIncomeAuthority = bondIncomeAuthority;
+        _couponRecognitionAuthority = couponRecognitionAuthority;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
@@ -82,6 +88,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        await LockCouponHistoryBoundaryAsync(connection, transaction, ct).ConfigureAwait(false);
         await using var authority = await AcquireConsolidationAuthorityAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendCoreAsync(connection, transaction, entry, ct).ConfigureAwait(false);
 
@@ -102,6 +109,8 @@ public sealed partial class PostgresLedgerJournalStore :
 
     private static void RejectJournalOnlySuccessorPosting(LedgerJournalEntryWrite entry)
     {
+        if (entry.PostingCommand?.LotAmortization?.BondIncome is not null)
+            throw new LedgerValidationException("Bond income carrying-value journals require the atomic journal/lot posting boundary.");
         if (entry.PostingCommand?.LotCapitalReturn is not null
             || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.JournalFingerprintTag) == true)
             throw new LedgerValidationException("Capital-return journals require the atomic journal/lot posting boundary.");
@@ -160,6 +169,7 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
+        await LockCouponHistoryBoundaryAsync(connection, transaction, ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(
                 connection,
@@ -185,6 +195,7 @@ public sealed partial class PostgresLedgerJournalStore :
         else
             LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
+        await ValidateAndRecordCouponRecognitionAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);

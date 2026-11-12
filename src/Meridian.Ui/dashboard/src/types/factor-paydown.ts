@@ -21,6 +21,7 @@ export interface FactorPaydownRequest {
   carryingAccountPath: string;
   realizedGainAccountPath: string;
   realizedLossAccountPath: string;
+  scheduledPrincipal?: boolean;
 }
 
 export interface FactorPaydownScope { ledgerBookId: string; periodId: string; fundProfileId: string; securityId: string; bookPositionId: string; accountingBasis: AccountingBasisKind }
@@ -33,7 +34,7 @@ export interface FactorPaydownPreview {
     priorFactor: string;
     newFactor: string;
     principalPaydown: string;
-    lots: { expectedLot: { lotId: string }; principal: string; transactionBasisAfter: string; functionalBasisAfter: string }[];
+    lots: { expectedLot: { lotId: string; acquisition?: { bondIncome?: Record<string, unknown> | null } | null }; principal: string; transactionBasisAfter: string; functionalBasisAfter: string }[];
   };
   components: Record<string, string>;
 }

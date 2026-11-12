@@ -47,6 +47,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Retained data blocks tenant enforcement | [Fund Structure Tenant Backfill](fund-structure-tenant-backfill.md) | inventory, attribution, quarantine, and strict-startup checks |
 | Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | exact accounting scope, Operations Continuity and canonical-queue handoff, JSON/CSV verification, and recovery |
 | Durable account oversight | [Bounded Account Oversight](account-oversight.md) | cash-balance continuity, immutable reviewed price sets and source-backed cash forecasts |
+| Bond holdings, income, collections and risk | [Bond Workflows](bond-workflows.md) | scoped imports, signed/floating/indexed models, reviewed cash, performance and explicit book-policy adoption |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Security Master cross-instance edit rollout | [Governed Edit Rollout](security-master-governed-edit-rollout.md) | independent schema/Storage review, old-writer drain, migration and operator-acceptance receipts |

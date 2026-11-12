@@ -84,13 +84,13 @@ public sealed partial class PostgresLedgerJournalStore
             || currency.TransactionDebit != Math.Max(projection.TransactionMovement, 0m)
             || currency.TransactionCredit != Math.Max(-projection.TransactionMovement, 0m))
             throw new LedgerValidationException("Amortization asset journal currency, acquisition FX and transaction movement must exactly match the retained canonical lot.");
-        // Cumulative functional and transaction targets are rounded independently at 12 places;
+        // Legacy cumulative targets retain 12 places; the adopted income version uses 10.
         // subtracting consecutive rounded targets can differ from multiplying their delta by FX
-        // by at most one storage quantum. The broad legacy 0.01 leg tolerance is insufficient here.
-        const decimal storageQuantum = 0.000000000001m;
+        // by at most one versioned quantum. The broad legacy 0.01 leg tolerance is insufficient here.
+        var storageQuantum = inputs.BondIncome is null ? 0.000000000001m : BondIncomeBookedPrecision.Quantum;
         if (Math.Abs(asset.Debit - currency.TransactionDebit * currency.FxRateToFunctional) > storageQuantum
             || Math.Abs(asset.Credit - currency.TransactionCredit * currency.FxRateToFunctional) > storageQuantum)
-            throw new LedgerValidationException("Amortization asset journal functional movement must reconcile to retained acquisition FX at the 12-decimal journal boundary.");
+            throw new LedgerValidationException("Amortization asset journal functional movement must reconcile to retained acquisition FX at its versioned booked-target boundary.");
     }
 
     private async Task<LedgerTaxLotRecord> LockAmortizationAuthorityAsync(
@@ -118,6 +118,16 @@ public sealed partial class PostgresLedgerJournalStore
             || position.BookContext.FundStructureNodeKind != book.FundStructureNodeKind
             || position.EffectiveFrom > instruction.AsOfDate || (position.EffectiveTo is { } end && end < instruction.AsOfDate))
             throw new LedgerValidationException("Amortization book-position version or accounting scope is missing or stale.");
+        if (instruction.BondIncome is { } income && instruction.Reversal is null
+            && (book.AccountingBasis != AccountingBasisKindDto.Gaap
+                || income.LedgerBookId != book.LedgerBookId
+                || income.AccountingPolicyId != book.AccountingPolicyId
+                || income.AccountingPolicyVersion != book.AccountingPolicyVersion
+                || position.BookContext.AccountingPolicyId != book.AccountingPolicyId
+                || position.BookContext.AccountingPolicyVersion != book.AccountingPolicyVersion
+                || command.Journal.AccountingPolicyId != book.AccountingPolicyId
+                || command.Journal.AccountingPolicyVersion != book.AccountingPolicyVersion))
+            throw new LedgerValidationException("Bond income requires the locked authoritative US GAAP book and policy version.");
         var lots = await LoadTaxLotsForUpdateAsync(connection, transaction, command.LedgerBookId,
             [instruction.ExpectedLot.TaxLotRecordId], ct).ConfigureAwait(false);
         var before = lots.SingleOrDefault()
@@ -126,6 +136,19 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Amortization requires an asset carrying account.");
         if (!OpenLotAmortization.SameLot(before.ToOpenLot(), instruction.ExpectedLot))
             throw new LedgerValidationException("Amortization lot version or carrying basis changed; rebuild and review the projection.");
+        if (instruction.BondIncome is { } retainedIncome && instruction.Reversal is null)
+        {
+            var authority = _bondIncomeAuthority?.Invoke()
+                ?? throw new LedgerValidationException("Bond income posting requires authoritative retained-input recomputation.");
+            var rebuilt = await authority.PreviewAsync(new(command.LedgerBookId,
+                before.TaxLotRecordId, instruction.AsOfDate, retainedIncome.KnownAt, retainedIncome.AccountId), ct).ConfigureAwait(false);
+            if (!OpenLotAmortization.SameInstruction(rebuilt.Instruction, instruction))
+                throw new LedgerValidationException("Bond income retained inputs or book policy changed after review.");
+            await authority.VerifyPreparedSourceAsync(instruction,
+                command.Journal.PostingCommand?.EconomicEvent
+                    ?? throw new LedgerValidationException("Prepared income source identity is missing."),
+                command.Journal.PeriodId, command.RetainedEvidence, ct).ConfigureAwait(false);
+        }
         if (instruction.Continuation is not null)
         {
             var continuation = await SuccessorAmortizationEvidence.ResolveAsync(before,

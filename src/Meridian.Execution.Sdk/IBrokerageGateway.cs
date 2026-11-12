@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Execution.Sdk;
 
 /// <summary>
@@ -252,6 +254,10 @@ public sealed record BrokerPosition
     /// Null for non-fixed-income positions.
     /// </summary>
     public decimal? AccruedInterest { get; init; }
+
+    /// <summary>Cost-derived amounts do not establish an observed market valuation.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public BrokeragePositionValuationBasis ValuationBasis { get; init; } = BrokeragePositionValuationBasis.Unavailable;
 }
 
 /// <summary>

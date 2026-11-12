@@ -100,7 +100,8 @@ type BondTerms = {
     Principal: PrincipalScheduleTerms
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
     DeclaredSchedule: DeclaredScheduleTerms
-    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    /// Validated, retained v5 overnight/indexed conventions; absent on every historical record.
+    WorkflowJson: string option
 
 } with
     member this.ScheduleConventions = this.DeclaredSchedule.Conventions
@@ -129,7 +130,8 @@ module BondTerms =
           DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = None }
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
-          DeclaredSchedule = DeclaredScheduleTerms.empty }
+          DeclaredSchedule = DeclaredScheduleTerms.empty
+          WorkflowJson = None }
 
     let floatingRate maturity index spreadBps issuerName =
         { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.Floating(index, spreadBps, None, None, None); PaymentFrequency = None }
@@ -137,7 +139,8 @@ module BondTerms =
           DebtClassification = { Subclass = BondSubclass.FloatingRate; Seniority = None }
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
-          DeclaredSchedule = DeclaredScheduleTerms.empty }
+          DeclaredSchedule = DeclaredScheduleTerms.empty
+          WorkflowJson = None }
 
     let zeroCoupon maturity issuerName =
         { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.ZeroCoupon; PaymentFrequency = None }
@@ -145,7 +148,8 @@ module BondTerms =
           DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = None }
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
-          DeclaredSchedule = DeclaredScheduleTerms.empty }
+          DeclaredSchedule = DeclaredScheduleTerms.empty
+          WorkflowJson = None }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with

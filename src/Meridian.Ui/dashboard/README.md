@@ -6,10 +6,39 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui/dashboard
+
+Bond details retain the existing analytics panel and add original-face purchase previews,
+all-model cash flows, retained quote selection, separate provider and Meridian yields,
+partial metric coverage, rate/spread shocks and account-owned saved comparisons. All amounts
+come from the shared workflow API; decimal input text is preserved, and edits abort stale
+calculations. Combined bond screening uses bounded server pages and agency-specific ratings;
+reference knowledge-time limitations remain visible. Retained market observations can be
+inspected or imported with source evidence, and capability checks separate configuration,
+entitlement and verification evidence.
+Portfolio Cash Ladder adds account/book/date income planning, separate native-currency ladders,
+collection/watch history, reviewed-staging holdings acceptance and portfolio risk coverage.
+Missing opening cash and FX remain explicit. US GAAP income previews read the server-owned
+lot and book election; previews, imports and saved comparisons create no journals or payments.
+Receipt corrections retain the original plan and prior snapshot with new immutable identities.
+Historical performance keeps observed mark/cash changes, model attribution and accounting
+income separate, with missing transaction coverage and unexplained residuals visible.
+Coupon recognition keeps retry-stable requests and reviewed fingerprints; preparing a canonical
+Income source continues through governed review without posting a journal or initiating payment.
+Contractual scheduled-principal treatment is offered only after an authoritative GAAP preview
+confirms adopted bond-income facts on every lot, and requires a new preparation after selection.
+Retained risk scenarios can be reopened with their original calculation context. Performance
+transaction imports accept reviewed source identifiers only; coverage is resolved by the server.
+Coupon reversals name the posted receipt and correction rationale and follow the same preview
+and governed preparation flow, preserving the original journal and receipt.
+The retained market-input panel exposes bond-specific OpenFIGI discovery and typed FRED intake
+through the shared APIs. Discovery keeps ambiguous candidates unresolved and does not amend
+identity; FRED intake derives series units from an independently accepted provider binding and
+keeps missing observations and live verification status explicit.
+Focused coverage is in the `bond-workflow`, `account-bond-planning` and `bond-income` tests.
 
 The main order ticket retains local quantity and limit/stop-price text while the existing numeric
 model drives preview, validation and submission. Typing `188.0` followed by `5` preserves `188.05`.

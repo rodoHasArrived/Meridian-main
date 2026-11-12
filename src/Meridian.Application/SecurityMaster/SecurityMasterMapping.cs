@@ -386,7 +386,8 @@ internal static partial class SecurityMasterMapping
                 mode,
                 economicSchedules!,
                 new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
-                ReadCallPutSchedules(json, assetClass, versionedTerms)))),
+                ReadCallPutSchedules(json, assetClass, versionedTerms)),
+                ReadBondWorkflowJson(json, versionedTerms, mode))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 new CurrencyPairTerms(FSharpOption<string>.Some(bound.RequiredString("baseCurrency")), FSharpOption<string>.Some(bound.RequiredString("quoteCurrency")), null, null))),
             "Deposit" => SecurityKind.NewDeposit(new DepositTerms(
@@ -870,7 +871,8 @@ internal static partial class SecurityMasterMapping
         SchemaBoundTerms terms,
         SecurityKindMappingMode mode,
         SecurityEconomicScheduleValidation economicSchedules,
-        DeclaredScheduleTerms declaredSchedule)
+        DeclaredScheduleTerms declaredSchedule,
+        FSharpOption<string> workflowJson)
     {
         var couponType = terms.OptionalString("couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -919,7 +921,21 @@ internal static partial class SecurityMasterMapping
                     ToOption(terms.OptionalDateOnly("mandatoryPutDate"))),
                 new PrincipalScheduleTerms(ToFSharpList(economicSchedules.PrincipalSchedule.SourceEntries.Select(static entry =>
                 new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount)))),
-                declaredSchedule);
+                declaredSchedule, workflowJson);
+    }
+
+    private static FSharpOption<string> ReadBondWorkflowJson(JsonElement payload,
+        SecurityVersionedTermDecoding decoding, SecurityKindMappingMode mode)
+    {
+        var field = SecurityAssetTermsSchema.Field("Bond", "bondWorkflow");
+        if (field is null || !decoding.Decodes(field) || !payload.TryGetProperty("bondWorkflow", out var workflow)
+            || !SecurityAssetTermsSchema.IsPopulatedTermValue(workflow))
+            return FSharpOption<string>.None;
+        if (mode == SecurityKindMappingMode.Write
+            && !SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.bondWorkflow",
+                workflow.GetRawText(), out _, out var reason))
+            throw new InvalidOperationException(reason);
+        return FSharpOption<string>.Some(workflow.GetRawText());
     }
 
     private const string ScheduleConventionsKey = SecurityVersionedTerms.ScheduleConventionsKey;

@@ -6,10 +6,16 @@ module_id: SRC-DESIGN-PORTFOLIO-RECORDS
 path: src/Meridian.PortfolioRecords
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.PortfolioRecords
+
+Accepted full custodian snapshots retain immutable content, source/review identity and explicit
+revision/supersession. `AccountBondHoldingsSource` selects account/date/knowledge-eligible authority;
+empty accepted populations mean flat holdings, while conflicts or missing history block. Explicit
+face/factor/inflation/quote units survive both account stores without creating lots or journals.
+See [reviewed bond imports](../../docs/operators/bond-workflows.md).
 
 Account reconciliation run summaries total only cash-denominated variances (Cash and Continuity checks) in `BreakAmountTotal`; the position-count check's line-count variance still counts as a break but no longer enters the monetary total.
 

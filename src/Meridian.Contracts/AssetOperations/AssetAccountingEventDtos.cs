@@ -208,6 +208,8 @@ public sealed record AssetAccountingEventSpineDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     // Keep the populated recovery payload's original order for retained canonical fingerprints.
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
@@ -247,6 +249,8 @@ public sealed record ProjectAssetAccountingEventRequestDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public OpenLotDirection Direction { get; init; }
 
@@ -318,6 +322,9 @@ public sealed record AssetAcquisitionLotDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto? SettlementConsideration = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto? BondIncome { get; init; }
+
     /// <summary>
     /// True when the instruction states the acquisition-time par conventions of a face-denominated
     /// lot: the face amount, the pool factor that face was booked at, and the basis its price was
@@ -552,7 +559,8 @@ public static class AssetAccountingEventSpineValidator
                     corporateAction: spine.CorporateAction ?? spine.DraftedLotMutation?.CorporateAction,
                     allowRetainedAmortizationCorrection: spine.Correction?.TaxLotMutationBatchId is { } batchId && batchId != Guid.Empty,
                     capitalReturn: spine.CapitalReturn ?? spine.DraftedLotMutation?.CapitalReturn,
-                    factorPaydown: spine.FactorPaydown ?? spine.DraftedLotMutation?.FactorPaydown))
+                    factorPaydown: spine.FactorPaydown ?? spine.DraftedLotMutation?.FactorPaydown,
+                    couponRecognition: spine.BondCouponRecognition))
                     issues.Add("Retained evidence effective date must match the asset accounting event.");
             }
 

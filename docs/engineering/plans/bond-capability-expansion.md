@@ -1,17 +1,57 @@
 # Bond Capability Expansion
 
+**Status:** active
 **Owner:** Instruments / Accounting and Ledger
-**Reviewed:** 2026-11-01
-**Direction:** user-approved staged expansion, including a reviewed full active-bond cutover
+**Reviewed:** 2026-11-12
+**Direction:** three-stage browser/shared-service expansion, preserving retained model history and reviewed activation boundaries
 
 ## Outcome and boundaries
 
 One explicit set of retained bond economics must explain reference data, expected payments,
 valuation, settlement and accounting support. Security Master remains the identity and terms
 authority. Instruments owns interpretation; Financial Operations owns governed posting candidates;
-Ledger remains the immutable journal authority. Browser integration extends existing Security Master
-details and the WPF passport editor. Overnight compounding, inflation-index forecasts, continuous exercise models,
-OAS, convertibles and structured-credit accounting are outside this increment.
+Ledger remains the immutable journal authority. The current increment extends the browser workstation
+and shared APIs. Existing WPF analytics and cutover panels remain available; this increment changes
+no WPF screens and adds no mobile lane. Continuous exercise/OAS, convertibles and structured-credit
+accounting remain outside the new bond workflow model.
+
+## Current three-stage increment
+
+The [operator workflow](../../operators/bond-workflows.md) documents the concrete routes, input
+formats, book-policy adoption and recovery paths. Implemented behavior is separate from test results,
+live-provider verification and deployment activation; obtain those results from the change's actual
+validation record rather than inferring them from this plan.
+
+| Outcome | Implemented seams and behavior | Required evidence or limitations |
+| --- | --- | --- |
+| Import holdings and compare reliably | Versioned fixed-income workflow template; reviewed integration handoff to accepted account statements; bounded issuer/maturity/currency/coupon/call-protection/agency-rating screening; retained quote selection; position-sized clean/accrued/dirty cash and settlement comparison | Original/current face, principal factor and inflation ratio stay distinct. Cost-derived broker placeholders cannot establish observed marks. Historical reference/rating gaps remain visible. |
+| Plan and collect income | Account/book-scoped planning, native-currency ladders, dated retained FX, exact reset observations, expected/actual allocations, gross/net/tax/fee explanations, revised receipt dates and durable collection casework | Opening cash and actual amounts need retained reviewed source bytes. Overdue/unexplained cash stays visible. A clearer source observation does not automatically resolve or sign off a case. |
+| Manage exposure and explain results | Retained comparisons and risk runs; security/issuer/currency/maturity buckets; parallel/pillar rate and spread scenarios; sequential performance explanation; distinct US GAAP income and coupon-recognition workflows | Missing model, trade, mark, fixing or FX inputs produce partial coverage. Accounting income is never added again as market return. Preparation creates reviewable canonical input, not posted cash or journals. |
+
+`bond-workflow-v1` uses the new signed cash/pricing model for fixed, zero, simple floating,
+compounded-overnight and capital-indexed bonds, including explicit principal schedules and reconciled
+factor history. Negative coupons remain signed obligations; no implicit zero floor is added. Yield
+is withheld when a globally unique admissible root is not established. Rate DV01 reprojects future
+floating coupons; CS01 changes discount spread. Indexed forecast-cash-flow yield is labelled
+separately from real yield. Overnight contracts require retained fixing-calendar, lookback,
+observation-weighting and lockout conventions; midperiod overnight principal changes remain refused.
+Inflation requires an explicit base index, lag, interpolation and any contractual floor.
+
+Curve definitions opt into `SignedRates` through immutable `rate_policy`; omitted policy retains
+`LegacyNonNegative` admission and legacy serialized receipts. Signed discount factors remain strictly
+positive and may exceed one or rise between pillars. The existing PostgreSQL curve authority remains
+canonical. Typed FRED observations retain units/vintage dates separately from synthetic OHLC;
+benchmark yields are not automatically discount factors. Newly expanded provider workflows remain
+`live-untested` until their particular workflow has real retained evidence; synthetic fixtures establish Meridian
+contract behavior only.
+
+`bond-income-us-gaap-v1` is an explicit book-policy election for supported performing long face lots.
+It separates clean cost, purchased accrued interest, eligible direct acquisition costs, expense/tax
+items, premium/discount income and observed indexation. Floating policy explicitly chooses acquisition
+index or prospective reset treatment. `bond-coupon-recognition-v1` separately prepares signed
+receivable/payable accrual and retained cash clearing through the canonical accounting event spine,
+period locks and atomic posting boundary. Preview/review fingerprints are revalidated before
+preparation or posting. Deployment does not adopt a book policy or execute customer transactions.
 
 ## Delivery and acceptance
 
@@ -103,8 +143,9 @@ is `1/3` per 100, rounded at the service's decimal boundary. The first fixing is
 three future resets are forecasts. Removing the historical fixing yields `MissingFixing`; removing
 the curve yields `ForwardCurveRequired`. Each refusal exposes its code/reason and withholds metrics
 and cash flows. Editing the model or any input clears prior results and invalidates delayed replies.
-This synthetic verification requires no live account or provider. Independent Accounting review
-remains required before merge; AI review and automated tests do not supply that approval.
+This synthetic example requires no live account or provider. Apply the repository's Level 2
+financial-change verification and separate-agent review; the owner retains merge and activation
+decisions under the enforced repository rules.
 
 ## Migration procedure
 
@@ -172,7 +213,9 @@ the supported accrual-start reset exactly. A scalar current index requires the s
 source and cannot override an explicitly declared missing fixing schedule. Future resets require
 retained forward inputs. Ladder shocks reuse these inputs, preserve observed coupons, and shift
 future index rates before applying spread and cap/floor. Zero-rate forecasts can reprice; absent
-contractual floors never imply a zero floor. Unsupported negative cash blocks the scenario.
+contractual floors never imply a zero floor. Unsupported negative cash blocks the retained ladder
+scenario. Signed coupons are first-class in the explicit new bond workflow and account planning
+model; legacy engine dispatch is unchanged.
 
 Independent fixtures in `tests/fixtures/fixed-income/bond-consistency.json` state hand-verifiable
 formulas and expected cash amounts. `BondConsistencyTests` compares analytics, cash-flow projection,

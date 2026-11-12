@@ -6,10 +6,26 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Storage
+
+`FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
+partitions with process-wide file leases, atomic publication, content validation and immutable
+source revision identity. This store does not publish prices or post journals. Signed curves use
+the existing PostgreSQL curve authority: each definition's immutable `rate_policy` is included in
+identity comparisons and governance evidence; legacy definitions retain their default policy.
+
+`FileBondProviderResponseStore` archives exact provider JSON text as UTF-8, addressed by its SHA-256
+inside hashed tenant/company partitions. Immutable atomic publication supports concurrent retries;
+scoped reads verify original content and metadata hashes and refuse corruption. Typed FRED inputs
+pin their first retained response while later overlapping fetches retain their own response evidence.
+
+Fixed-income stores retain scoped monitoring, saved runs and reviewed performance transaction
+populations. Account revision authority and curve-policy migrations preserve earlier rows; coupon
+recognition receipts participate in the existing governed journal/lot transaction. Restore retained
+evidence on corruption rather than recreating empty history. See [bond operations](../../docs/operators/bond-workflows.md).
 
 Security Master migration 062 now checks its apply conditions in the runner without changing
 the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,

@@ -197,7 +197,9 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = "The accounting basis, open period, date or expected period version is no longer valid." });
             if (request.OccurredAtUtc == default || request.OccurredAtUtc.Offset != TimeSpan.Zero || request.OccurredAtUtc > DateTimeOffset.UtcNow)
                 return Results.BadRequest(new { error = "Factor observation time must be a non-future UTC timestamp." });
-            var prepared = await prepare.PrepareAsync(new FactorPaydownPreparationRequest(
+            Func<FactorPaydownPreparationRequest, string, DateTimeOffset, CancellationToken, Task<FactorPaydownPreparation>> prepareMethod =
+                request.ScheduledPrincipal ? prepare.PrepareScheduledAsync : prepare.PrepareAsync;
+            var prepared = await prepareMethod(new FactorPaydownPreparationRequest(
                 request.LedgerBookId, request.SecurityId, request.BookPositionId, request.PeriodId,
                 request.ExpectedPeriodVersion, request.AccountingBasis, book.FundProfileId, request.EffectiveDate,
                 request.PriorFactor, request.NewFactor, request.SourceDomain, request.SourceEntityId, request.SourceContentHash,

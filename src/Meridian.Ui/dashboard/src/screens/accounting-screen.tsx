@@ -28,6 +28,8 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
+import { BondWorkflowPanel } from "@/components/meridian/bond-workflow-panel";
+import { BondIncomePanel } from "@/components/meridian/bond-income-panel";
 import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
@@ -3232,6 +3234,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                     ) ? (
                       <>
                         <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId} />
+                        <BondWorkflowPanel securityId={securityMaster.selectedSecurityId} />
+                        <BondIncomePanel key={`income-${securityMaster.selectedSecurityId}`} />
                         <BondMigrationPreviewPanel
                           key={`migration-${securityMaster.selectedSecurityId}`}
                           securityId={securityMaster.selectedSecurityId}

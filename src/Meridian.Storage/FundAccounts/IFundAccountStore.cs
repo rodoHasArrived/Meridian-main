@@ -50,6 +50,9 @@ public interface IFundAccountStore
     Task InsertBankStatementBatchAsync(BankStatementBatchDto batch, IReadOnlyList<BankStatementLineDto> lines, CancellationToken ct = default);
     Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default);
     Task<IReadOnlyList<CustodianStatementBatchDto>> GetCustodianStatementBatchesAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default);
+    Task<CustodianHoldingSnapshotDto?> GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf,
+        DateTimeOffset? knownAt = null, CancellationToken ct = default)
+        => Task.FromException<CustodianHoldingSnapshotDto?>(new NotSupportedException("Accepted custodian snapshots are unavailable."));
     Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default);
 
     // Reconciliation

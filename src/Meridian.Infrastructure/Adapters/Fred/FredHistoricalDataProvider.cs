@@ -26,7 +26,7 @@ namespace Meridian.Infrastructure.Adapters.Fred;
     EnvironmentVariables = new[] { "FRED_API_KEY", "FRED__APIKEY" },
     DisplayName = "API Key",
     Description = "FRED API key from https://fred.stlouisfed.org/docs/api/api_key.html")]
-public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
+public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string ApiBaseUrl = "https://api.stlouisfed.org/fred";
     private readonly string? _apiKey;

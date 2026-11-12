@@ -397,6 +397,57 @@ public abstract class FundAccountServiceContractTests
             .Should().HaveCount(2, "a replayed statement must not duplicate positions");
     }
 
+    protected async Task ReconcileAccountAsync_AcceptedFullRevisionDoesNotUnionRetainedHoldings_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeCustodyRequest());
+        var date = Today();
+        var original = MakeCustodianStatementRequest(account.AccountId, date, 2) with
+        { Authority = new(1, "reviewed-original", new string('a', 64)) };
+        await service.IngestCustodianStatementAsync(original);
+        var revised = MakeCustodianStatementRequest(account.AccountId, date, 1) with
+        { Authority = new(2, "reviewed-correction", new string('b', 64), SupersedesBatchId: original.BatchId) };
+        await service.IngestCustodianStatementAsync(revised);
+        (await service.GetCustodianPositionsAsync(account.AccountId, date)).Should().HaveCount(3,
+            "both immutable statement populations remain observations");
+
+        var run = await service.ReconcileAccountAsync(new(account.AccountId, date, "reviewer"));
+        var position = (await service.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single(row => row.Category == "Positions");
+        position.Status.Should().Be("Matched");
+        position.ExpectedAmount.Should().Be(1m);
+        position.ActualAmount.Should().Be(1m, "the superseded population cannot be counted as current holdings");
+
+        var flat = MakeCustodianStatementRequest(account.AccountId, date, 0) with
+        { Authority = new(3, "reviewed-flat-account", new string('c', 64), SupersedesBatchId: revised.BatchId) };
+        await service.IngestCustodianStatementAsync(flat);
+        var flatRun = await service.ReconcileAccountAsync(new(account.AccountId, date, "reviewer"));
+        var flatPosition = (await service.GetReconciliationResultsAsync(flatRun.ReconciliationRunId)).Single(row => row.Category == "Positions");
+        flatPosition.Status.Should().Be("Matched");
+        flatPosition.ExpectedAmount.Should().Be(0m);
+        flatPosition.ActualAmount.Should().Be(0m, "an accepted empty full state replaces the prior population");
+    }
+
+    protected async Task ReconcileAccountAsync_InvalidCanonicalFullStateCannotFallbackToLegacyHoldings_Core()
+    {
+        foreach (var accepted in new[] { false, true })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest());
+            var date = Today();
+            await service.IngestCustodianStatementAsync(MakeCustodianStatementRequest(account.AccountId, date, 1));
+            var canonical = MakeCustodianStatementRequest(account.AccountId, date, 1) with
+            { Authority = new(1, "canonical-full-source", new string('a', 64), IsAccepted: accepted) };
+            await service.IngestCustodianStatementAsync(canonical);
+            if (accepted)
+                await service.IngestCustodianStatementAsync(MakeCustodianStatementRequest(account.AccountId, date, 1) with
+                { Authority = new(1, "competing-full-source", new string('b', 64)) });
+            await service.Invoking(value => value.ReconcileAccountAsync(new(account.AccountId, date, "reviewer")))
+                .Should().ThrowAsync<InvalidOperationException>();
+            (await service.GetReconciliationRunsAsync(account.AccountId)).Should().BeEmpty(
+                "unaccepted or competing canonical states cannot produce a run from legacy observations");
+        }
+    }
+
     protected async Task IngestCustodianStatementAsync_SuspendedAccount_IsAllowed_Core()
     {
         var service = CreateService();

@@ -6,10 +6,20 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+`BondMarketDataContracts` distinguishes retained fixings, inflation levels, principal factors,
+agency ratings and categorized clean/dirty quotes with settlement basis and provider yields.
+Source revisions retain economic/publication/knowledge dates and content identities; importing a
+quote does not select a golden copy. `SecurityCurveRatePolicy.SignedRates` is an explicit immutable
+curve-definition opt-in; omitted policy retains legacy nonnegative admission and receipt JSON.
+
+`BondWorkflow*`, `BondPerformance*`, `BondIncome*` and coupon-recognition contracts keep signed
+analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
+See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

@@ -687,7 +687,11 @@ public sealed class BrokeragePortfolioSyncService
                 Security: position.Security,
                 Description: position.Description,
                 PositionId: position.PositionId,
-                Currency: position.Currency)))
+                Currency: position.Currency)
+            {
+                AccruedInterest = position.AccruedInterest,
+                ValuationBasis = position.ValuationBasis
+            }))
             .OrderBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var currency = accounts.Select(static account => account.Currency).FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value)) ?? "USD";
@@ -858,7 +862,11 @@ public sealed class BrokeragePortfolioSyncService
                 Security: security,
                 Description: position.Description,
                 PositionId: position.PositionId,
-                Currency: position.Currency));
+                Currency: position.Currency)
+            {
+                AccruedInterest = position.AccruedInterest,
+                ValuationBasis = position.ValuationBasis.ToString()
+            });
         }
 
         var statusWarnings = new List<string>(warnings);
@@ -1389,7 +1397,8 @@ public sealed class BrokeragePortfolioSyncService
                 Currency: projection.Balance.Currency,
                 CashBalance: projection.Balance.Cash,
                 SecuritiesMarketValue: projection.Balance.Equity - projection.Balance.Cash,
-                AccruedInterest: 0m,
+                AccruedInterest: projection.Positions.All(static position => position.AccruedInterest.HasValue)
+                    ? projection.Positions.Sum(static position => position.AccruedInterest!.Value) : null,
                 PendingSettlement: 0m,
                 Source: source,
                 RecordedBy: projection.Link.LinkedBy ?? "brokerage-sync",

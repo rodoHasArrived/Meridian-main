@@ -6,10 +6,18 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Infrastructure
+
+Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
+longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker
+resolution keeps its existing scope. FRED's `GetEconomicObservationsAsync` is a separate typed,
+vintage-bound path for explicitly mapped rate/index series; synthetic OHLC compatibility remains.
+Missing observations remain missing, malformed/truncated populations refuse, and source evidence
+never includes credentials. Broker snapshots retain accrued interest and valuation basis; IB's
+average-cost placeholders are `CostDerived`, while Alpaca marks are `ProviderReported`.
 
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 

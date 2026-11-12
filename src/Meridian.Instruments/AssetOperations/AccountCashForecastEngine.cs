@@ -6,11 +6,26 @@ using Meridian.Contracts.Integrity;
 namespace Meridian.Instruments.AssetOperations;
 
 /// <summary>Source-backed account cash reconciliation using the existing shared cash ladder.</summary>
-public static class AccountCashForecastEngine
+public static partial class AccountCashForecastEngine
 {
     public const string EngineVersion = "account-cash-forecast-v1";
 
     public static AccountCashForecastSnapshotDto Build(AccountCashForecastRequestDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.CalculationVersion is null or EngineVersion
+            && (request.NativeOpeningBalances is not null || request.NativeClosingBalances is not null
+                || request.PaymentAllocations is not null || request.ReceiptRevisions is not null))
+            throw new ArgumentException("Native cash and receipt allocations require explicit account-cash-forecast-v2 selection.", nameof(request));
+        return request.CalculationVersion switch
+        {
+            null or EngineVersion => BuildV1(request),
+            NativeEngineVersion => BuildV2Checked(request),
+            _ => throw new ArgumentException("The requested account cash forecast engine is not retained.", nameof(request))
+        };
+    }
+
+    private static AccountCashForecastSnapshotDto BuildV1(AccountCashForecastRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
         var inputs = Canonicalize(request);
@@ -240,12 +255,21 @@ public static class AccountCashForecastEngine
             || copy.OpeningCash is { Provenance: null } || copy.OpeningCash?.Provenance is { Evidence: null }
             || copy.ClosingCash is { Provenance: null } || copy.ClosingCash?.Provenance is { Evidence: null })
             throw new ArgumentException("Forecast inputs and source provenance collections must be complete.", nameof(request));
+        if (copy.NativeOpeningBalances?.Any(static row => row is null || row.Provenance?.Evidence is null) == true
+            || copy.NativeClosingBalances?.Any(static row => row is null || row.Provenance?.Evidence is null) == true
+            || copy.PaymentAllocations?.Any(static row => row is null) == true
+            || copy.ReceiptRevisions?.Any(static row => row is null || row.Evidence?.Evidence is null) == true)
+            throw new ArgumentException("Native balance, allocation and receipt-revision collections must be complete.", nameof(request));
         return copy with
         {
             Flows = copy.Flows.OrderBy(static row => row.FlowId, StringComparer.Ordinal).ThenBy(static row => row.Status)
                 .ThenBy(static row => row.VersionId, StringComparer.Ordinal).ToArray(),
             FxConversions = copy.FxConversions.OrderBy(static row => row.Currency, StringComparer.Ordinal)
-                .ThenBy(static row => row.BaseCurrency, StringComparer.Ordinal).ThenBy(static row => row.ConversionDate).ToArray()
+                .ThenBy(static row => row.BaseCurrency, StringComparer.Ordinal).ThenBy(static row => row.ConversionDate).ToArray(),
+            NativeOpeningBalances = copy.NativeOpeningBalances?.OrderBy(static row => row.Currency, StringComparer.Ordinal).ToArray(),
+            NativeClosingBalances = copy.NativeClosingBalances?.OrderBy(static row => row.Currency, StringComparer.Ordinal).ToArray(),
+            PaymentAllocations = copy.PaymentAllocations?.OrderBy(static row => row.AllocationId, StringComparer.Ordinal).ToArray(),
+            ReceiptRevisions = copy.ReceiptRevisions?.OrderBy(static row => row.ExpectedFlowId, StringComparer.Ordinal).ToArray()
         };
     }
 

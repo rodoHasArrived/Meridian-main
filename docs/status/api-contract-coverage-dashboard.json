@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 19.7,
-  "endpoint_coverage_percent": 30.3,
+  "score_percent": 19.2,
+  "endpoint_coverage_percent": 29.4,
   "contract_coverage_percent": 3.9,
   "summary": {
-    "endpoint_count": 748,
+    "endpoint_count": 772,
     "documented_endpoint_count": 227,
-    "undocumented_endpoint_count": 521,
+    "undocumented_endpoint_count": 545,
     "workstation_contract_count": 1009,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 970
@@ -792,6 +792,60 @@
       "method": "GET",
       "path": "/api/reference-data/bonds/maturity-ladder/page",
       "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:26",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/reference-data/bonds/{securityId:guid}/workflow",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:24",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/reference-data/bonds/market-observations",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:36",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/reference-data/bonds/market-observations",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:53",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/reference-data/bonds/connection-readiness",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:65",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/reference-data/bonds/screen",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:71",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/reference-data/bonds/identifier-discovery",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:77",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/reference-data/bonds/fred-observations/import",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:82",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/reference-data/bonds/provider-responses/{contentSha256}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:94",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/reference-data/bonds/comparisons/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:104",
       "documented": false
     },
     {
@@ -2157,6 +2211,96 @@
       "documented": true
     },
     {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-workflows/{securityId:guid}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:24",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-income/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:33",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:53",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:60",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:92",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk/{runId}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:106",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:115",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons/{runId}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:131",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:140",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance/transactions/import",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:148",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-holdings/import",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:158",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:169",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/prepare",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:181",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:197",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-prepare",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:207",
+      "documented": false
+    },
+    {
       "method": "GET",
       "path": "/api/ledger/close-management/templates",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs:19",
@@ -2201,229 +2345,229 @@
     {
       "method": "GET",
       "path": "/api/ledger/books",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:35",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:36",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:64",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:65",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:87",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:88",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/rollout-assessment",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:119",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:159",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:160",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/periods",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:197",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:198",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/periods/{periodId:guid}/close",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:229",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:230",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/journal-entries",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:282",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:283",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/aggregates/{aggregateId:guid}/journal-entries",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:328",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:329",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/trial-balance",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:377",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:378",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/trial-balance-report",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:402",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:403",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/pnl-summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:427",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:428",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/trial-balance",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:452",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:453",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/pnl-summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:511",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:512",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/close-management/period-plan/{workflowId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:573",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:574",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/period-plan/configuration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:604",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:605",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/late-adjustments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:666",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:667",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/late-adjustments/review",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:728",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:729",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/task-signoffs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:799",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:800",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/evidence-review",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:861",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:862",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/period-lock",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:923",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:924",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/period-reopen",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:936",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:937",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/reports/accounting-package",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1008",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1009",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/reports/accounting-package/certification",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1059",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1060",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/accounting-packages",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1119",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1160",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1161",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/journal-entry-workbench",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1211",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1212",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/activity",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1237",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1238",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/fund-event-record",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1269",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1270",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/fund-event-command-center",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1312",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1313",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/capital-account-subledger",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1353",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1354",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/report-output",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1414",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1415",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/capital-account-workbench",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1485",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1486",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/drafts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1532",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1533",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1591",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1592",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/submit-approval",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1637",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1638",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/evidence",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1684",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1685",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1728",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1729",
       "documented": true
     },
     {
@@ -4631,152 +4775,152 @@
     },
     {
       "name": "BrokerageHouseholdPortfolioDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:189",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:196",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageBalanceSnapshotDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:200",
-      "documented": false
-    },
-    {
-      "name": "FundAccountBrokeragePositionDto",
       "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:207",
       "documented": false
     },
     {
-      "name": "FundAccountBrokerageOrderDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:221",
+      "name": "FundAccountBrokeragePositionDto",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:214",
       "documented": false
     },
     {
-      "name": "FundAccountBrokerageFillDto",
+      "name": "FundAccountBrokerageOrderDto",
       "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:235",
       "documented": false
     },
     {
+      "name": "FundAccountBrokerageFillDto",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:249",
+      "documented": false
+    },
+    {
       "name": "FundAccountBrokerageCashTransactionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:247",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:261",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageCorporateActionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:256",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:270",
       "documented": false
     },
     {
       "name": "FundAccountBrokerageSyncActivityDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:268",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:282",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:284",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:298",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationCheckStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:292",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:306",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationBreakSignOffStateDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:300",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:314",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterPassportStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:308",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:322",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:315",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:329",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationCheckDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:324",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:338",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationBreakDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:337",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:351",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:361",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:375",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterPassportDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:381",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:395",
       "documented": false
     },
     {
       "name": "ProviderShadowBookComparisonLineDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:404",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:418",
       "documented": false
     },
     {
       "name": "ProviderShadowBookComparisonDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:415",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:429",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionReadinessLineDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:425",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:439",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionEvidenceCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:434",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:448",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionLedgerEffectDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:452",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:466",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterScheduleFeedDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:469",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:483",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:493",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:507",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationDetailDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:525",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:539",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:538",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:552",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessComponentDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:544",
-      "documented": false
-    },
-    {
-      "name": "FundAccountCloseReadinessBlockerDto",
       "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:558",
       "documented": false
     },
     {
+      "name": "FundAccountCloseReadinessBlockerDto",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:572",
+      "documented": false
+    },
+    {
       "name": "FundAccountCloseReadinessActionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:566",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:580",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:572",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:586",
       "documented": false
     },
     {

@@ -1,5 +1,8 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
+using System.Text.Json;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Integrations;
 
 namespace Meridian.Application.Integrations;
@@ -73,6 +76,30 @@ internal static class ProviderIntegrationMappedRecordValidation
     {
         if (capability is not ProviderCapabilityKindDto.Positions and not ProviderCapabilityKindDto.Holdings)
         {
+            return;
+        }
+
+        var assetClass = ReadString(mappedRecord, "assetClass");
+        if (mappedRecord["bond"] is not null || string.Equals(assetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "FixedIncome", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var bond = mappedRecord["bond"]?.Deserialize<BondHoldingEconomicsDto>(new JsonSerializerOptions(JsonSerializerDefaults.Web))
+                    ?? throw new ArgumentException("Bond holdings require explicit face, factor and quotation basis in bond economics.");
+                var currency = (mappedRecord["marketValue"] as JsonObject is { } money ? ReadString(money, "currency") : null)
+                    ?? ReadString(mappedRecord, "currency")
+                    ?? throw new ArgumentException("Bond holdings require explicit currency.");
+                var normalized = BondHoldingNormalization.Calculate(bond, currency);
+                if (ReadDecimal(mappedRecord, "marketValue.amount") is { } observed
+                    && LedgerCurrencyRounding.RoundCurrency(observed, currency) != LedgerCurrencyRounding.RoundCurrency(normalized.Dirty, currency))
+                    throw new ArgumentException("Reported bond market value must reconcile to dirty value using explicit face and units.");
+            }
+            catch (Exception exception) when (exception is ArgumentException or JsonException or OverflowException)
+            {
+                issues.Add(new("bond.normalization.blocked", ProviderIntegrationIssueSeverityDto.Critical,
+                    exception.Message, "bond", "Map explicit face, principal factor, inflation ratio, quotation basis, accrued interest and currency."));
+            }
             return;
         }
 

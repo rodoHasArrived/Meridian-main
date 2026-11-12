@@ -64,6 +64,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
     private readonly ISecurityMasterStore? _securityMasterStore;
     private readonly Meridian.Contracts.FixedIncome.IBondCalculationPolicy? _bondCalculationPolicy;
     private readonly Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? _bondSettlementConsiderationService;
+    private readonly IBondIncomeService? _bondIncomeService;
+    private readonly Func<IBondCouponRecognitionService?>? _couponRecognitionAuthority;
 
     /// <summary>
     /// Creates the governed spine only when every authority and durable-ledger dependency exists.
@@ -81,7 +83,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         ILedgerJournalStore? journalStore,
         ISecurityMasterStore? securityMasterStore = null,
         Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
-        Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
+        Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null,
+        IBondIncomeService? bondIncomeService = null,
+        Func<IBondCouponRecognitionService?>? couponRecognitionAuthority = null)
     {
         if (eventStore is null ||
             positionStore is null ||
@@ -106,7 +110,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             journalStore,
             securityMasterStore,
             bondCalculationPolicy,
-            bondSettlementConsiderationService);
+            bondSettlementConsiderationService,
+            bondIncomeService, couponRecognitionAuthority);
     }
 
     public AssetAccountingEventSpineService(
@@ -120,7 +125,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         ILedgerJournalStore journalStore,
         ISecurityMasterStore? securityMasterStore = null,
         Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
-        Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
+        Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null,
+        IBondIncomeService? bondIncomeService = null,
+        Func<IBondCouponRecognitionService?>? couponRecognitionAuthority = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _positionStore = positionStore ?? throw new ArgumentNullException(nameof(positionStore));
@@ -133,6 +140,8 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         _securityMasterStore = securityMasterStore;
         _bondCalculationPolicy = bondCalculationPolicy;
         _bondSettlementConsiderationService = bondSettlementConsiderationService;
+        _bondIncomeService = bondIncomeService;
+        _couponRecognitionAuthority = couponRecognitionAuthority;
     }
 
     public async Task<AssetAccountingEventSpineDto?> GetLatestAsync(
@@ -194,7 +203,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             TaxLotMutationBatchId: null,
             Correction: request.Correction,
             CorporateAction: request.CorporateAction, CapitalReturn: request.CapitalReturn, FactorPaydown: request.FactorPaydown)
-        { Direction = request.Direction };
+        { Direction = request.Direction, BondCouponRecognition = request.BondCouponRecognition };
         var projectedSpine = expectedSpine with
         {
             SpineVersion = 2,
@@ -255,6 +264,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
                 $"Authoritative book position '{projectedSpine.Scope.BookPositionId:D}' was not found.");
+        await ValidateCouponRecognitionSourceAsync(projectedSpine, ct).ConfigureAwait(false);
         ValidatePosition(projectedSpine, position);
 
         var book = await _ledgerBookService
@@ -432,6 +442,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
                 $"Authoritative book position '{source.Scope.BookPositionId:D}' was not found.");
+        await ValidateCouponRecognitionSourceAsync(source, ct).ConfigureAwait(false);
         ValidatePosition(source, position, request.LotMutation?.Direction ?? OpenLotDirection.Long);
 
         var book = await _ledgerBookService
@@ -560,6 +571,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             ProjectionLineage = source.ProjectionLineage,
             RulePackReference = rulePackReference,
             AssetLotMutation = authoritativeLotMutation,
+            BondCouponRecognition = source.BondCouponRecognition,
             ExpectedPeriodVersion = period.Version
         };
         var authority = new AssetAccountingCandidateAuthorityContext(
@@ -885,6 +897,12 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         OpenLotSuccessorInstructionDto? corporateAction = null,
         bool allowRetainedAmortizationCorrection = false)
     {
+        if (source.BondCouponRecognition?.ReversalTarget is not null)
+        {
+            // Exact inverse of an immutable posted coupon receipt does not reinterpret today's terms.
+            await ValidateCouponRecognitionSourceAsync(source, ct).ConfigureAwait(false);
+            return;
+        }
         var security = await _securityMasterQueryService
             .GetRecordedByIdAsOfAsync(source.Scope.SecurityId, accountingAsOfUtc, ct)
             .ConfigureAwait(false)
@@ -1022,6 +1040,13 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         {
             var acquisition = requested?.Acquisition
                 ?? throw new InvalidOperationException("Acquisition requires a retained lot instruction.");
+            if (acquisition.BondIncome is { } acquisitionIncome)
+            {
+                var authority = _bondIncomeService
+                    ?? throw new InvalidOperationException("Adopted bond acquisition requires authoritative book income policy.");
+                await authority.RequireAcquisitionPolicyAsync(book.LedgerBookId, acquisition.AcquiredDate,
+                    acquisitionIncome, acquisition.Quantity * acquisition.UnitCost, ct).ConfigureAwait(false);
+            }
             var acquisitionAssetLines = source.ProjectedEffect!.Lines
                 .Where(line => string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal))
                 .ToArray();
@@ -1038,6 +1063,26 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
                 ?? throw new InvalidOperationException("Canonical lot amortization requires retained reviewed inputs.");
             if (amortization.Reversal is null)
                 await BondAmortizationPolicyGuard.RequireAsync(_bondCalculationPolicy, amortization.Security, ct).ConfigureAwait(false);
+            if (amortization.BondIncome is { } income && amortization.Reversal is null)
+            {
+                var incomeAuthority = _bondIncomeService
+                    ?? throw new InvalidOperationException("Bond income candidates require the authoritative retained-input preparation service.");
+                var rebuilt = await incomeAuthority.PreviewAsync(new(book.LedgerBookId,
+                    amortization.ExpectedLot.TaxLotRecordId, amortization.AsOfDate, income.KnownAt, income.AccountId), ct).ConfigureAwait(false);
+                RequireAssertion(OpenLotAmortization.SameInstruction(rebuilt.Instruction, amortization),
+                    "Bond income instruction differs from authoritative book, lot or retained calculation inputs.");
+                await incomeAuthority.VerifyPreparedSourceAsync(amortization, source.EconomicEvent, source.Scope.PeriodId,
+                    source.RetainedEvidence, ct).ConfigureAwait(false);
+                var currentPolicy = await _accountingPolicyService.ResolvePolicyAsync(new(book.AccountingBasis,
+                    amortization.AsOfDate, book.AccountingPolicyId, book.FundProfileId, book.FundStructureNodeId,
+                    PolicyVersion: book.AccountingPolicyVersion), ct).ConfigureAwait(false);
+                RequireAssertion(book.AccountingBasis == AccountingBasisKindDto.Gaap
+                    && income.LedgerBookId == book.LedgerBookId
+                    && income.AccountingPolicyId == book.AccountingPolicyId
+                    && income.AccountingPolicyVersion == book.AccountingPolicyVersion
+                    && income.Policy == BondIncomeCalculator.ReadPolicy(currentPolicy),
+                    "Bond income policy must match the authoritative book and adopted policy version.");
+            }
             var projection = OpenLotAmortization.Project(amortization);
             RequireAssertion(amortization.ExpectedLot.SecurityId == source.Scope.SecurityId
                 && amortization.ExpectedLot.BookPositionId == source.Scope.BookPositionId
@@ -1097,6 +1142,19 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         if (source.EventKind == AssetAccountingEventKindDto.CorporateAction && requested?.FactorPaydown is { } factorPaydown)
         {
             OpenLotFactorPaydown.Project(factorPaydown);
+            if (factorPaydown.ScheduledPrincipal is { } scheduled)
+            {
+                var authority = _bondIncomeService
+                    ?? throw new InvalidOperationException("Scheduled principal requires authoritative bond-income preparation.");
+                foreach (var inputs in scheduled.IncomeInstructions)
+                {
+                    var retainedIncome = inputs.BondIncome!;
+                    var rebuilt = await authority.PreviewAsync(new(book.LedgerBookId, inputs.ExpectedLot.TaxLotRecordId,
+                        inputs.AsOfDate, retainedIncome.KnownAt, retainedIncome.AccountId), ct).ConfigureAwait(false);
+                    RequireAssertion(OpenLotAmortization.SameInstruction(inputs, rebuilt.Instruction),
+                        "Scheduled principal instruction differs from current book, lot or retained income inputs.");
+                }
+            }
             RequireAssertion(!string.IsNullOrWhiteSpace(requested.AssetAccountId)
                 && factorPaydown.Scope.SecurityId == source.Scope.SecurityId
                 && factorPaydown.Scope.BookPositionId == position.PositionId
@@ -1394,10 +1452,10 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         RequireAssertion(position.SecurityId == source.Scope.SecurityId, "Resolved book-position security does not match the Projected snapshot.");
         RequireAssertion(position.Version == source.Scope.ExpectedBookPositionVersion, "Resolved book-position version is stale relative to the Projected snapshot.");
         RequireAssertion(position.BookContext.LedgerBookId == source.Scope.LedgerBookId, "Resolved book position belongs to a different ledger book.");
-        RequireAssertion(position.EffectiveFrom <= source.EffectiveDate &&
+        RequireAssertion(source.BondCouponRecognition?.ReversalTarget is not null || position.EffectiveFrom <= source.EffectiveDate &&
                          (position.EffectiveTo is null || source.EffectiveDate <= position.EffectiveTo.Value),
             "Resolved book position is not effective on the asset accounting event date.");
-        RequireAssertion(string.Equals(position.Status, "Active", StringComparison.OrdinalIgnoreCase), "Resolved book position is not active.");
+        RequireAssertion(source.BondCouponRecognition?.ReversalTarget is not null || string.Equals(position.Status, "Active", StringComparison.OrdinalIgnoreCase), "Resolved book position is not active.");
         var authoritativeEvents = new EconomicEventReferenceDto?[]
         {
             position.OriginEvent,
@@ -1405,7 +1463,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             position.ProjectionLineage?.TriggerEvent,
             position.CurrentEconomicState?.ProjectionLineage?.TriggerEvent
         };
-        RequireAssertion(authoritativeEvents.Any(candidate =>
+        RequireAssertion(source.BondCouponRecognition is not null || authoritativeEvents.Any(candidate =>
                 candidate is not null && PayloadEquals(candidate, source.EconomicEvent)),
             "Resolved book position does not retain the exact authoritative economic-event identity, version, source, hash, dates, security, and position.");
 
@@ -1424,7 +1482,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
                 authoritativeEvidence.AddRange(stateLineage.RetainedEvidence);
         }
 
-        RequireAssertion(source.RetainedEvidence.All(sourceEvidence =>
+        RequireAssertion(source.BondCouponRecognition is not null || source.RetainedEvidence.All(sourceEvidence =>
                 authoritativeEvidence.Any(positionEvidence =>
                     EvidenceIdentityMatches(positionEvidence, sourceEvidence))),
             "Resolved book position does not retain every exact evidence identity, URI, hash, source, review, effective date, version, retention record, and typed subject asserted by the Projected snapshot.");
