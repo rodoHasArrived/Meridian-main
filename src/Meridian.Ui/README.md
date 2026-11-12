@@ -112,6 +112,20 @@ slug-shaped identifier, an unexplained disabled primary button, or a status bar 
 the page. No shared contract changed; routes whose read models name records only by key are listed
 with reasons in `scripts/dev/web-screenshot-routes.json`.
 
+It also carries the Phase 3 trust fixes from the same plan:
+- Data overview shows a provider's "Latency" only as a reported duration or "Latency not
+  reported"; the "Trust / last good" column keeps the last response time.
+- Today lists the finance queue that the sidebar badges count, above the operator inbox, and each
+  count names its unit (for example "+5 more issues" in the status bar).
+- Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
+  account is in scope in a non-live brokerage environment; live, unknown and failed states still
+  block.
+- A metric basis the source does not declare reads "Not declared by source" once per strip.
+- The screenshot harness fails a route that shows a time under "Latency" or a "Basis unavailable"
+  or "Saved views unavailable" placeholder.
+
+No shared contract changed.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
