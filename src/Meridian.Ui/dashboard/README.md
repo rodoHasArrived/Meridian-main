@@ -11,6 +11,23 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui/dashboard
 
+Floating analytics distinguishes `Select observed fixing` for already-reset coupons from `Select
+forward curve` for future resets. The observed-fixing panel verifies and retains exact-date source
+evidence, then explicitly selects its immutable receipt for the mounted calculation. Returning keeps
+the model, dates, quote receipt or manual amount and cutoff. Existing receipts remain selectable if
+the provider is unavailable; a cutoff preceding retention still blocks until deliberately reviewed.
+
+Bond ladder selection loads authoritative Security Master detail even outside current search results
+and opens the existing Evidence tab. Return to bond ladder preserves its query, loaded rows and
+scroll position. Analytics offers Use retained observation with source, time, freshness, quote status,
+clean/dirty quotation and settlement evidence. Calculation submits the immutable receipt identity,
+not a copied quote. Blocker actions focus convention review, source selection or rates/fixings while
+retaining calculation inputs. Decimal text stays exact through parsing and formatting.
+
+Integration dry-runs show provider market value, normalized bond consideration and variance together,
+with an explicit sample-payment preview for fixed-income conventions. Retained source and derived
+normalization remain inspectable side by side.
+
 The main order ticket retains local quantity and limit/stop-price text while the existing numeric
 model drives preview, validation and submission. Typing `188.0` followed by `5` preserves `188.05`.
 Instrument, order-type, account-scope and close/reset transitions discard stale editor text;
@@ -62,6 +79,12 @@ request and opaque fingerprints; displayed financial projections are never round
 command. The server recomputes the preview before creating a governed draft. Stale or uncertain
 outcomes require inspection and refresh; approval and publishing remain in the existing workflow.
 Focused coverage: `bond-analytics.api.test.ts` and `bond-analytics-panel.test.tsx`.
+
+Settings provider runtime evidence includes a side-by-side identifier matching table. Conflicting
+CUSIP, ISIN, provider, ticker and internal identifiers require an explicit active security choice
+and resolution reason. The server retains the authenticated operator and exact matching hash;
+changed evidence requires review again. Source records and all conflicting matches stay visible.
+Focused coverage: `provider-identity-evidence.test.tsx`.
 
 The Calculation version selector defaults to v2 and retains explicit v1 replay. Choose v3 for a
 typed Floating bond with a named index; the shared service verifies eligibility. V3 shows projected

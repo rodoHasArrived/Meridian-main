@@ -54,6 +54,7 @@ import {
   useCorporateActionInboxPanel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import { CorporateActionInboxRegion } from "@/screens/data-screen.corporate-action-inbox";
+import { FixedIncomeCapabilityReadiness } from "@/screens/data-screen.fixed-income-capabilities";
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
@@ -2029,6 +2030,7 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
             <p className="text-sm text-muted-foreground" role="status">Loading capability matrix…</p>
           ) : (
             <div className="grid gap-4">
+              <FixedIncomeCapabilityReadiness rows={panel.model.rows} />
               <div className="overflow-x-auto">
                 <TableWorkbench workbenchId="data-provider-capabilities" sourceKey={panel.model.rows.map((row) => row.providerId).join("|")}
                   sourceDescription="Loaded declared provider capability matrix; discovery failures are listed below."

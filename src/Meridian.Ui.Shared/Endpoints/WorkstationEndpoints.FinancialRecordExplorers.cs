@@ -161,6 +161,8 @@ public static partial class WorkstationEndpoints
                 var store = context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>();
                 if (store is null)
                     return Results.Problem("Personal view persistence is unavailable.", statusCode: 501);
+                if (request.Filters?.Count > 50 || request.ColumnIds?.Count > 100)
+                    return Results.BadRequest(new { error = "Saved-view presentation settings must remain within supported limits." });
                 request = NormalizeExplorerSavedViewRequest(request);
                 if (request.Filters.Any(filter => string.IsNullOrWhiteSpace(filter.FilterId)))
                     return Results.BadRequest(new { error = "Saved-view filters require an identity." });

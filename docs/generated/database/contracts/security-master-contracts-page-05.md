@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 514. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 527. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileRollbackRequestDto["SecurityAssetProfileRollbackRequestDto"] {
+        +string ApprovalReference
+        +string? CorrelationId
+        +DateOnly EffectiveFrom
+        +string ProfileId
+        +string Rationale
+        +string? RequestedBy
+        +int TargetVersion
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto["SecurityAssetProfileStatusDto"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto["SecurityAssetProfileTermsDto"] {
         +string CustomProfileId
         +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
@@ -175,6 +186,7 @@ classDiagram
         +decimal? PctDiffFromGoldenCopy
         +decimal Price
         +DateTimeOffset PriceAsOf
+        +SecurityPriceQuotationEvidence? Quotation
         +string SourceId
         +SecurityPriceUnit Unit
     }
@@ -202,6 +214,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurvePointDto["SecurityCurvePointDto"] {
         +DateOnly Date
+        +SecurityRatePointEvidenceDto? RateEvidence
         +string? Tenor
         +decimal Value
     }
@@ -409,22 +422,6 @@ classDiagram
         +SecurityLotUnitKind UnitKind
     }
     class Meridian_Contracts_SecurityMaster_SecurityLotUnitKind["SecurityLotUnitKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterClosePricesJsonContext["SecurityMasterClosePricesJsonContext"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflict["SecurityMasterConflict"] {
-        +Guid ConflictId
-        +string ConflictKind
-        +DateTimeOffset DetectedAt
-        +string FieldPath
-        +string ProviderA
-        +string ProviderB
-        +DateTimeOffset? ResolvedAt
-        +string? ResolvedBy
-        +string? ResolvedReason
-        +string? ResolvedWinnerSource
-        +Guid SecurityId
-        +string Status
     }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
