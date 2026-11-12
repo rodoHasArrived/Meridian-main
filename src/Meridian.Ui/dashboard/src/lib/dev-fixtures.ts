@@ -6135,6 +6135,12 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   {
     pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/export-manifest"),
     resolve: () => fixtureAccountingRecordExportResponse
+  },
+  {
+    // Saved table views: an empty personal list, so captures show the normal state rather than the
+    // failure notice. Writes never match: resolveScenarioResponse returns early for non-GET.
+    pattern: apiRoutePattern("/api/workstation/tables", "/[^/]+/views"),
+    resolve: () => []
   }
 ];
 
