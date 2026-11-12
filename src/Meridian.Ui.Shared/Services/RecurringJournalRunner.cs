@@ -62,19 +62,23 @@ public sealed class RecurringJournalRunner(
                     results.Add(Result(stale, instant, ex.Message));
                     continue;
                 }
-                // A calculated occurrence that had nothing to post is complete; recomputing it
-                // later could draft an amount for a window that was already settled as empty.
-                if (claim.State == RecurringOccurrenceState.NoDraftRequired)
-                {
-                    results.Add(Result(claim, instant, null));
-                    continue;
-                }
                 using var authority = FundScopeTenantAuthority.Enter(definition.Scope.TenantId,
                     $"recurring-journal:{schedule.ScheduleId}");
                 // Kept once resolved so a blocked occurrence still names its period for close readiness.
                 string? resolvedPeriodId = null;
                 try
                 {
+                    // An empty window stays settled. An older runner might have retried it after
+                    // definition restoration and saved a draft before recording Drafted.
+                    if (claim.State == RecurringOccurrenceState.NoDraftRequired)
+                    {
+                        if (HasRetriedNoDraftOutcome(claim) && await drafts.GetAsync(definition.Scope.FundProfileId,
+                                claim.DraftId, ct, definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false) is not null)
+                            claim = claim with { State = RecurringOccurrenceState.Drafted };
+                        results.Add(Result(claim, instant, null));
+                        continue;
+                    }
+
                     var sourceIssue = RecurringJournalEvidenceGuard.ValidateSources(claim.ScheduleDefinition.Evidence);
                     if (sourceIssue is not null)
                         throw new InvalidOperationException(sourceIssue);
@@ -154,8 +158,10 @@ public sealed class RecurringJournalRunner(
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                 catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException or DbException)
                 {
-                    claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.Blocked,
-                        ex.Message, claim.PeriodId ?? resolvedPeriodId, claim.LockOwner, claim.ReopenPath, now, ct).ConfigureAwait(false);
+                    claim = claim.State == RecurringOccurrenceState.NoDraftRequired
+                        ? claim with { State = RecurringOccurrenceState.Blocked }
+                        : await session.SetOutcomeAsync(key, RecurringOccurrenceState.Blocked,
+                            ex.Message, claim.PeriodId ?? resolvedPeriodId, claim.LockOwner, claim.ReopenPath, now, ct).ConfigureAwait(false);
                     results.Add(Result(claim, instant, ex.Message));
                 }
             }
@@ -172,12 +178,13 @@ public sealed class RecurringJournalRunner(
     {
         var previousKey = RecurringJournalIdentity.OccurrenceKey(definition.ScheduleId, previousDate);
         var previous = session.Occurrences.SingleOrDefault(item => item.OccurrenceKey == previousKey);
-        if (previous?.State == RecurringOccurrenceState.NoDraftRequired)
+        var settledWithoutDraft = previous?.FindNoDraftOutcome() is not null;
+        if (settledWithoutDraft && !HasRetriedNoDraftOutcome(previous!))
             return;
         string status;
         // A posted occurrence is marked Blocked once its period closes, so the retained draft's
         // own status decides, not the occurrence's current state.
-        if (previous is null || (previous.State != RecurringOccurrenceState.Drafted &&
+        if (previous is null || (!settledWithoutDraft && previous.State != RecurringOccurrenceState.Drafted &&
                                  !previous.History.Any(static item => item.State == RecurringOccurrenceState.Drafted)))
         {
             status = previous is null ? "not yet processed" : previous.State.ToString();
@@ -186,6 +193,8 @@ public sealed class RecurringJournalRunner(
         {
             var draft = await drafts.GetAsync(definition.Scope.FundProfileId, previous.DraftId, ct,
                 definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
+            if (draft is null && settledWithoutDraft)
+                return;
             if (draft?.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked
                 or ManualJournalEntryStatusDto.Rejected)
                 return;
@@ -319,9 +328,19 @@ public sealed class RecurringJournalRunner(
                      Same(o.ScheduleDefinition.Scope.TenantId, tenantId) && Same(o.ScheduleDefinition.Scope.CompanyId, companyId)))
         {
             var draft = await drafts.GetAsync(fundProfileId, item.DraftId, ct, tenantId, companyId).ConfigureAwait(false);
+            var settled = item.FindNoDraftOutcome();
+            var state = item.State;
+            var reason = item.Reason;
+            var periodId = item.PeriodId;
+            if (settled is not null)
+            {
+                state = draft is null ? RecurringOccurrenceState.NoDraftRequired : RecurringOccurrenceState.Drafted;
+                reason = draft is null ? settled.Reason : null;
+                periodId = draft?.PeriodId ?? settled.PeriodId ?? item.PeriodId;
+            }
             var reasons = new List<string>();
-            if (item.Reason is not null)
-                reasons.Add(item.Reason);
+            if (reason is not null)
+                reasons.Add(reason);
             if (draft is null && item.History.Any(h => h.State == RecurringOccurrenceState.Drafted))
                 reasons.Add("Retained draft state is unavailable; restore it before continuing.");
             // A reversed or rebooked occurrence is settled only once its correction is posted.
@@ -333,13 +352,18 @@ public sealed class RecurringJournalRunner(
             }
             rows.Add(new(item.OccurrenceKey, item.ScheduleDefinition.ScheduleId, item.ScheduleDefinition.Version,
                 item.TemplateDefinition.TemplateId, item.TemplateDefinition.Version, item.EffectiveDate,
-                fundProfileId, ledgerBookId, entityId, item.PeriodId,
-                reasons.Count > 0 && item.State == RecurringOccurrenceState.Drafted ? "Blocked" : item.State.ToString(),
+                fundProfileId, ledgerBookId, entityId, periodId,
+                reasons.Count > 0 && state == RecurringOccurrenceState.Drafted ? "Blocked" : state.ToString(),
                 draft?.JournalEntryId, draft?.Status.ToString(), reasons,
                 item.ScheduleDefinition.Evidence.Select(e => e.Uri).ToArray(), item.LockOwner, item.ReopenPath));
         }
         return new(fundProfileId, ledgerBookId, entityId, rows.OrderByDescending(r => r.EffectiveDate).ToArray());
     }
+
+    private static bool HasRetriedNoDraftOutcome(RecurringOccurrenceRecord occurrence)
+        => occurrence.History.SkipWhile(static item => item.State != RecurringOccurrenceState.NoDraftRequired)
+            .Any(static item => item.State is RecurringOccurrenceState.Claimed or RecurringOccurrenceState.Blocked
+                or RecurringOccurrenceState.DefinitionChanged);
 
     private static LedgerLineDimensionSet? WithScheduleDimensions(LedgerLineDimensionSet? line, LedgerLineDimensionSet? schedule)
     {

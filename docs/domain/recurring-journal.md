@@ -85,7 +85,8 @@ Rules that keep an amount from being drafted twice:
 - **One accrual window per occurrence.** The window ends on the effective date and starts the day
   after the previous occurrence; the first window starts at the covering period's start date.
 - **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
-  nothing to post is recorded as `NoDraftRequired` with its reason and is not retried.
+  nothing to post is recorded as `NoDraftRequired` with its reason. It stays settled when the
+  schedule or template version changes.
 - **Performance fee is cumulative.** The fee above the high-water mark and hurdle is compared with
   the performance fee already payable, and only the difference is drafted (a reversal when it has
   fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
@@ -100,6 +101,8 @@ Rules that keep an amount from being drafted twice:
   retirement. Assets are registered through `/api/ledger/fixed-assets`. A registered asset's cost,
   salvage value, life, method, currency and in-service date cannot be changed, because periods
   already depreciated are not recomputed; retire it and register the revised asset under a new id.
+  Depreciation requires a retained register. A missing or invalid snapshot blocks the occurrence
+  until the register is restored. A retained empty register confirms that there is nothing to post.
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
@@ -126,11 +129,12 @@ is older than `maxRateAgeDays` blocks the occurrence with its reason.
 quote date, whether it was direct, inverse or triangulated, and the rate table with its content
 digest. A triangulated rate is dated by its older leg.
 
-**Period close.** Close readiness has a "Recurring and calculated journals" lane whenever the
-period has recurring occurrences. It is ready only when each one is posted or recorded as
-needing no draft; an unreadable queue is not ready. An occurrence the scheduled worker has not
-yet claimed is not visible to the lane. Run the worker after the effective day ends and before
-closing the period.
+**Period close.** Close readiness matches recurring occurrences by their retained period ID
+or, for an unresolved claim, by the close period's authoritative date bounds. The lane is ready
+when all matching occurrences are posted, need no draft, or have a posted correction. A recurring
+store that has never been provisioned adds no lane. Unavailable retained state blocks readiness.
+Run the worker after the effective day ends and before closing the period so due occurrences
+are visible to the lane.
 
 Current limits. Projected principal paydowns are not drafted. The FX rate table
 (`reconciliation/fx-rates.json`) is read once at startup and is operator-maintained; it is not a
@@ -160,10 +164,13 @@ intakes that admit approval drafts the same way:
   default-interest draft still awaiting approval blocks a further accrual, a posted reversal of
   an earlier accrual is netted off what counts as posted, a call with a correction journal
   against its receivable (such as a reversed receipt) is blocked, posted interest that exceeds
-  what is now owed blocks with the excess to reverse, and requests are
-  handled one at a time on a host.
+  what is now owed blocks with the excess to reverse, and requests are handled one at a time on
+  a host. If a final accrual's identity is already held by a terminal draft and interest remains
+  due, the intake reports the retained journal and requires a governed correction.
 - **Distribution waterfall** (`/api/ledger/journal-automation/distribution-intake`). Each
-  investor's distribution is split by the European waterfall. The tiers already paid come from
+  investor's distribution is split by the European waterfall. A new declaration uses the open
+  primary ledger period covering its effective date. Intake resolves the covering period when the
+  request omits its ID. The tiers already paid come from
   the distribution register for posted distributions, so return of capital, preferred return and
   GP catch-up are each paid once. An earlier pending distribution blocks the next. Rejected
   distributions and distributions with a posted reversal consume no tiers. A posted distribution

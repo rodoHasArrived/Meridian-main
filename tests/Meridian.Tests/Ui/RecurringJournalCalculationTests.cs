@@ -178,6 +178,81 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         row.Blockers.Should().ContainSingle().Which.Should().Contain("needs no further accrual");
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task PerformanceFee_DefinitionChangePreservesSettledAndRetainedOccurrences(bool legacyOverwroteState, bool retainedDraft)
+    {
+        Capitalize(10_000_000m);
+        var terms = new Dictionary<string, decimal>
+        {
+            ["performanceFeeRate"] = 0.20m,
+            ["highWaterMark"] = 10_000_000m,
+            ["hurdleAmount"] = 0m,
+            ["crystallize"] = 0m
+        };
+        await SeedAsync(PerformanceFeeAccrualCalculation.CalculationKind, terms);
+        var fixture = await CreateFixtureAsync();
+        if (retainedDraft)
+            Post(JanuaryEnd, (LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 1_000_000m));
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
+
+        var store = new FileRecurringJournalStore(Path.Combine(_root, "recurring"));
+        await using (var session = await store.OpenSessionAsync())
+        {
+            var january = session.Occurrences.Should().ContainSingle().Subject;
+            if (retainedDraft)
+            {
+                // Reproduce the legacy conflict between no-draft history and a durable draft
+                // whose intake succeeded before the runner could retain its final outcome.
+                await session.SetOutcomeAsync(january.OccurrenceKey, RecurringOccurrenceState.NoDraftRequired,
+                    "The original run needed no draft.", january.PeriodId, null, null, Due(JanuaryEnd));
+            }
+            else
+            {
+                january.State.Should().Be(RecurringOccurrenceState.NoDraftRequired);
+            }
+            if (legacyOverwroteState)
+            {
+                await session.SetOutcomeAsync(january.OccurrenceKey, RecurringOccurrenceState.Blocked,
+                    "Legacy retry overwrote the terminal state.", january.PeriodId, null, null, Due(JanuaryEnd).AddHours(1));
+            }
+
+            var current = session.GetCurrentSchedule(ScheduleId);
+            var revised = current.Schedule with { Parameters = new Dictionary<string, decimal>(terms) { ["performanceFeeRate"] = 0.25m } };
+            await session.RegisterScheduleAsync(revised.ToSchedule(), current.Scope, current.Evidence,
+                "controller", current.Version, Due(JanuaryEnd).AddHours(2));
+        }
+
+        var queue = await fixture.Runner.GetQueueAsync(Fund, Book, Entity, tenantId: Tenant, companyId: Company);
+        queue.Occurrences.Should().ContainSingle().Which.State.Should().Be(retainedDraft
+            ? nameof(RecurringOccurrenceState.Drafted)
+            : nameof(RecurringOccurrenceState.NoDraftRequired));
+        if (!retainedDraft)
+            Post(JanuaryEnd, (LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 1_000_000m));
+
+        var results = await fixture.Runner.RunDueAsync(Due(FebruaryEnd));
+
+        if (retainedDraft)
+        {
+            results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, JanuaryEnd))
+                .State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+            results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
+                .Blockers.Should().ContainSingle().Which.Should().Contain("post or reject it first");
+            _ledgerReads.Should().Be(1, "the retained January draft blocks February and neither calculation reruns");
+            (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Which.AccountingDate.Should().Be(JanuaryEnd);
+            return;
+        }
+
+        results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, JanuaryEnd))
+            .State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
+        _ledgerReads.Should().Be(2, "the January calculation must not run again");
+        var february = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        february.AccountingDate.Should().Be(FebruaryEnd);
+        february.TotalDebits.Should().Be(250_000m);
+    }
+
     [Fact]
     public async Task ExpenseAccrual_DraftsStraightLineAmountForTheWindow()
     {
@@ -641,6 +716,39 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("could not complete");
         File.ReadAllText(Path.Combine(_root, "registers", "fixed-asset-register.json")).Should().Be("{ not json");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("""{"assets":[null]}""")]
+    [InlineData("""{"assets":[{"asset":null}]}""")]
+    public async Task Depreciation_MissingOrInvalidRegister_BlocksUntilTheOriginalRegisterIsRestored(string? damagedSnapshot)
+    {
+        var directory = Path.Combine(_root, "registers");
+        var path = Path.Combine(directory, "fixed-asset-register.json");
+        var register = new FileFixedAssetRegister(directory);
+        await register.UpsertAsync(Asset(Guid.NewGuid(), "Server", 36_000m, 36, new(2026, 1, 1)));
+        var retainedSnapshot = await File.ReadAllTextAsync(path);
+        if (damagedSnapshot is null)
+            File.Delete(path);
+        else
+            await File.WriteAllTextAsync(path, damagedSnapshot);
+        await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new(), endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync(assets: register);
+
+        var blocked = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        blocked.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        blocked.Blockers.Should().ContainSingle().Which.Should().Contain("fixed-asset register");
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+
+        await File.WriteAllTextAsync(path, retainedSnapshot);
+        var retried = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd).AddHours(1))).Should().ContainSingle().Subject;
+
+        retried.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Which.TotalDebits.Should().Be(1_000m);
     }
 
     [Fact]

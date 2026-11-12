@@ -1223,7 +1223,15 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>(),
-                sp.GetService<IRecurringJournalQueueSource>()));
+                sp.GetService<IRecurringJournalQueueSource>(),
+                async (bookId, periodId, ct) =>
+                {
+                    var books = sp.GetService<ILedgerBookService>();
+                    if (books is null)
+                        return null;
+                    var periods = await books.ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: bookId), ct).ConfigureAwait(false);
+                    return periods.SingleOrDefault(period => period.PeriodId == periodId && period.LedgerBookId == bookId);
+                }));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(

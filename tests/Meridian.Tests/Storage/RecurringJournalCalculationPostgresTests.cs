@@ -31,6 +31,51 @@ public sealed class RecurringJournalCalculationPostgresTests
     private static readonly LedgerAccount EuroCash = LedgerAccounts.CashAccount("EUR-OPERATING");
 
     [LedgerDatabaseFact]
+    public async Task DistributionWithoutPeriod_ResolvesAndPostsToTheAuthoritativePeriod()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        var ct = timeout.Token;
+        var root = Path.Combine(Path.GetTempPath(), "meridian-distribution-posting-" + Guid.NewGuid().ToString("N"));
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        try
+        {
+            using var tenant = FundScopeTenantAuthority.Enter(Tenant, "distribution-fixture");
+            var store = database.JournalStore;
+            var book = new LedgerBookRecord(Guid.NewGuid(), Fund, Guid.NewGuid(), FundStructureNodeKindDto.Fund,
+                "Golden fund book", "USD", Registered, Registered);
+            await store.SaveLedgerBookAsync(book, ct);
+            var january = await SavePeriodAsync(store, book, 2026, 1, ct);
+            var recurring = new FileRecurringJournalStore(Path.Combine(root, "recurring"));
+            await recurring.InitializeAsync(ct);
+            var fixture = await CreateFixtureAsync(root, database, book, recurring);
+            var register = new FileDistributionRegister(Path.Combine(root, "registers"));
+            var runner = new AutomatedJournalIntakeRunner(fixture.Intake, new FeeScheduleAccrualEventProducer(),
+                ledgerBookService: new PostgresLedgerBookService(store), manualJournalWorkbench: fixture.Workbench,
+                distributionRegister: register);
+
+            var result = await runner.RunDistributionDeclarationIntakeAsync(new RunDistributionDeclarationDraftIntakeRequest(
+                Fund, "USD", "fund-accountant", "dist-1", JanuaryEnd, 0.20m, 1m,
+                [new DistributionInvestorInput("lp-1", "capital-lp-1", 1_000_000m, 0m, 600_000m, ["evidence://distribution/dist-1"])],
+                LedgerBookId: book.LedgerBookId, EntityId: Entity, TenantId: Tenant, CompanyId: Company), ct);
+
+            result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+            var draft = result.Intake.Created.Should().ContainSingle().Subject;
+            draft.PeriodId.Should().Be(january.PeriodId.ToString("D"));
+            (await store.GetByPeriodAsync(january.PeriodId, ct)).Should().BeEmpty();
+
+            await ApproveAndPostAsync(fixture.Workbench, draft, book.LedgerBookId, ct);
+
+            (await store.GetByPeriodAsync(january.PeriodId, ct)).Should().ContainSingle().Which.Entry.JournalEntryId
+                .Should().Be(draft.JournalEntryId);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [LedgerDatabaseFact]
     public async Task TwoPeriods_DraftApproveAndPost_MatchTheGoldenFileWithoutPostingAnythingTwice()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
@@ -244,6 +289,8 @@ public sealed class RecurringJournalCalculationPostgresTests
              new("mgmt-payable", "Liabilities:Management Fee Payable", "Management Fee Payable", "Liability"),
              new("perf-expense", "Expenses:Performance Fee Expense", "Performance Fee Expense", "Expense"),
              new("perf-payable", "Liabilities:Performance Fee Payable", "Performance Fee Payable", "Liability"),
+             new("investor-capital", "Equity:Investor Capital", "Investor Capital", "Equity"),
+             new("distribution-payable", "Liabilities:Fund Distribution Payable", "Fund Distribution Payable", "Liability"),
              new("eur-cash", "Assets:Cash EUR", EuroCash.Name, "Asset", FinancialAccountId: EuroCash.FinancialAccountId),
              new("fx-gain", "Revenue:Unrealized FX Gain", LedgerAccounts.UnrealizedFxGain.Name, "Revenue"),
              new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense"),
@@ -276,7 +323,7 @@ public sealed class RecurringJournalCalculationPostgresTests
                 new ReconciliationFxQuote("EUR", "USD", 1.09m, FebruaryEnd)
             ], source: "golden-rates rev-1"))
         ]);
-        return new(runner, drafts, workbench);
+        return new(runner, drafts, workbench, intake);
     }
 
     private static async Task RegisterAsync(IRecurringJournalSession session, RecurringJournalScope scope, string id,
@@ -319,7 +366,7 @@ public sealed class RecurringJournalCalculationPostgresTests
     private sealed record GoldenDraft(string Memo, string Status, GoldenLine[] Lines);
 
     private sealed record Fixture(RecurringJournalRunner Runner, FileManualJournalEntryDraftStore Drafts,
-        ManualJournalEntryWorkbenchService Workbench);
+        ManualJournalEntryWorkbenchService Workbench, AutomatedJournalDraftIntakeService Intake);
 
     private sealed class FixedClock(DateTimeOffset now) : TimeProvider
     {
