@@ -1102,7 +1102,11 @@ workstation data root. Browser-created views use snapshot v2 ownership keyed by 
 workstation tenant, operator and table/explorer identity. Ownerless v1 views remain read-only
 legacy tenant views with an explicit personal-copy action. All read/write paths validate table
 access; atomic snapshot publication and a cross-host writer lease preserve concurrent updates.
-The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view. Missing projections return empty or blocked DTO state with disabled actions and
+The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view.
+A requested personal view reaches `FinancialRecordExplorerReadService` as its search text and filters
+only, never as a view id the service would not recognize; a view is marked active only when one was
+requested; and saving a personal view applies the explorer's own filter and column normalization
+(identity-less filters dropped, values trimmed, duplicate columns removed). Missing projections return empty or blocked DTO state with disabled actions and
 reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
