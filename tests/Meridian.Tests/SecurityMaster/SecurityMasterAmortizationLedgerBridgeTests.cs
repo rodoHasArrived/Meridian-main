@@ -437,91 +437,99 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-1.54m);
     }
 
-    [Fact]
-    public async Task PostProjectedCashFlowsAsync_ReadsLotFaceFromTheSharedLotShape()
+    [Theory]
+    [InlineData(SecurityLotUnitKind.FaceValue, 1, 1000, 100)]
+    [InlineData(SecurityLotUnitKind.FaceValue, 100, 10, 100)]
+    [InlineData(SecurityLotUnitKind.CurrencyAmount, 1, 1000, 1)]
+    [InlineData(SecurityLotUnitKind.Notional, 1, 1000, 1)]
+    public async Task AccrualWindow_ScalesCouponBySharedLotExposure(
+        SecurityLotUnitKind unit, int multiplier, int quantity, int unitCost)
     {
-        // The same 1,000,000 face at a 2-point premium, booked once as a bond (10,000 units of 100
-        // of par at 102) and once one unit per currency unit of face (as a loan, deposit or CD
-        // would be, at 1.02). Both must earn the same coupon share and amortize the same premium.
-        var period = Period(2026, 6, 30, interest: 1_810m) with
+        var period = Period(2026, 2, 1, interest: 310m) with
         {
-            AccrualStart = new DateOnly(2025, 12, 31),
-            AccrualEnd = new DateOnly(2026, 6, 30)
+            InterestMeasuredFrom = new DateOnly(2026, 1, 1),
+            InterestMeasuredTo = new DateOnly(2026, 2, 1),
         };
-        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(maturity: new DateOnly(2026, 6, 30)), period)));
-        var perHundred = Lot(quantity: 10_000m, unitCost: 102m, year: 2025, month: 12, day: 31);
-        var perUnit = new LedgerTaxLot("lot-1", new DateOnly(2025, 12, 31), 1_000_000m, 1.02m, SecurityId)
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(new DateOnly(2026, 2, 1)), period)));
+        var ledger = new DomainLedger();
+        var lot = new LedgerTaxLot("held", new DateOnly(2026, 1, 1), quantity, unitCost, SecurityId)
+        {
+            UnitKind = unit,
+            Multiplier = multiplier,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [lot], CouponPrincipalBasis: 10_000m,
+            AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
+
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(31m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+        ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AccrualWindow_UsesRemainingFaceAndAcquisitionDateExactlyOnce()
+    {
+        var period = Period(2026, 2, 1, interest: 310m) with
+        {
+            InterestMeasuredFrom = new DateOnly(2026, 1, 1),
+            InterestMeasuredTo = new DateOnly(2026, 2, 1),
+            Factor = 0.5m,
+        };
+        var ledger = new DomainLedger();
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(period)));
+        // The shared lot already holds 500 of remaining face after its paydown.
+        var lot = new LedgerTaxLot("pool", new DateOnly(2026, 1, 16), 500m, 100m, SecurityId)
         {
             UnitKind = SecurityLotUnitKind.FaceValue,
-            Multiplier = 1m
+            Multiplier = 1m,
         };
 
-        async Task<DomainLedger> PostAsync(LedgerTaxLot lot)
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [lot], CouponPrincipalBasis: 10_000m,
+            AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
+
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(8m);
+    }
+
+    [Theory]
+    [InlineData(SecurityQuoteConvention.PercentOfPar, 102)]
+    [InlineData(SecurityQuoteConvention.PerUnit, 1.02)]
+    public async Task Amortization_UsesSharedFaceAndDeclaredQuote(
+        SecurityQuoteConvention quote, double price)
+    {
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(
+            TermsWith(new DateOnly(2026, 2, 1)), Period(2026, 2, 1, interest: 0m))));
+        var ledger = new DomainLedger();
+        var lot = new LedgerTaxLot("canonical", new DateOnly(2026, 1, 1), 1000m, (decimal)price, SecurityId)
         {
-            var ledger = new DomainLedger();
-            await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
-                OpenLots: [lot],
-                AccrualWindow: new AmortizationAccrualWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31)),
-                CouponPrincipalBasis: 2_000_000m));
-            return ledger;
-        }
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
+        };
 
-        var bond = await PostAsync(perHundred);
-        var loan = await PostAsync(perUnit);
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
+            new AmortizationLedgerPostingContext(OpenLots: [lot], QuoteConvention: quote));
 
-        // Half the security's face is held, so January earns half of 310.
-        bond.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(155m);
-        loan.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(155m);
-        loan.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(bond.GetBalance(LedgerAccounts.Securities(Ticker)));
-        bond.GetBalance(LedgerAccounts.Securities(Ticker)).Should().BeNegative();
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
     }
 
     [Fact]
-    public async Task PostProjectedCashFlowsAsync_RefusesALotThatIsNotFaceDenominated()
+    public async Task EmptyBlockedProjection_ReportsTheBlockBeforeNothingToPost()
     {
-        var period = Period(2026, 6, 30, interest: 1_810m) with
-        {
-            AccrualStart = new DateOnly(2025, 12, 31),
-            AccrualEnd = new DateOnly(2026, 6, 30)
-        };
-        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(maturity: new DateOnly(2026, 6, 30)), period)));
-        var units = new LedgerTaxLot("lot-1", new DateOnly(2025, 12, 31), 100m, 10m, SecurityId)
-        {
-            UnitKind = SecurityLotUnitKind.Units,
-            Multiplier = 1m
-        };
+        const string reason = "Negative interest is unsupported.";
+        var logger = Substitute.For<ILogger<SecurityMasterAmortizationLedgerBridge>>();
+        var bridge = new SecurityMasterAmortizationLedgerBridge(
+            CashFlowServiceWith(Projection() with { BlockedReason = reason }), logger);
+        var ledger = new DomainLedger();
 
-        var act = () => bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, new DomainLedger(), new AmortizationLedgerPostingContext(
-            OpenLots: [units],
-            AccrualWindow: new AmortizationAccrualWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31)),
-            CouponPrincipalBasis: 1_000_000m));
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(0);
 
-        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*not face value*");
-    }
-
-    [Fact]
-    public async Task PostProjectedCashFlowsAsync_BlockedProjectionWithNoRows_IsReportedAsBlocked()
-    {
-        var blocked = Projection() with { BlockedReason = "Negative coupon rate." };
-        var logger = new RecordingLogger();
-        var bridge = new SecurityMasterAmortizationLedgerBridge(CashFlowServiceWith(blocked), logger);
-
-        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, new DomainLedger());
-
-        posted.Should().Be(0);
-        logger.Entries.Should().ContainSingle(entry =>
-            entry.Level == LogLevel.Warning && entry.Message.Contains("Negative coupon rate.", StringComparison.Ordinal));
-    }
-
-    private sealed class RecordingLogger : ILogger<SecurityMasterAmortizationLedgerBridge>
-    {
-        public List<(LogLevel Level, string Message)> Entries { get; } = [];
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            => Entries.Add((logLevel, formatter(state, exception)));
+        ledger.Journal.Should().BeEmpty();
+        logger.ReceivedCalls().Should().Contain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Warning
+            && call.GetArguments()[2]!.ToString()!.Contains(reason));
+        logger.ReceivedCalls().Should().NotContain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Debug);
     }
 }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -672,7 +673,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     }
 
     [Fact]
-    public async Task BuildLedgerPostingsAsync_FreshBaseProjection_ShouldProduceBalancedCouponAccruals()
+    public async Task FreshBaseProjection_ExposesTheExpectedCouponEconomics()
     {
         var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
         var asOf = WholePeriodIssueDate();
@@ -700,21 +701,16 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 })));
         var service = BuildService(store, query);
 
-        var result = await service.BuildLedgerPostingsAsync(securityId);
+        var result = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
 
-        result.IsPostable.Should().BeTrue();
-        result.BlockedReason.Should().BeNull();
-        result.Postings.Should().HaveCount(2);
-        result.Postings.Should().OnlyContain(posting =>
-            posting.IsBalanced && posting.TotalDebits == 3m && posting.TotalCredits == 3m);
-        result.Postings[0].Lines.Should().Contain(line =>
-            line.Account == "Accrued Interest Receivable" && line.Debit == 3m && line.Credit == 0m);
-        result.Postings[0].Lines.Should().Contain(line =>
-            line.Account == "Coupon Income" && line.Credit == 3m && line.Debit == 0m);
+        result.Should().NotBeNull();
+        StructuredCashFlowLedgerGate.IsPostable(result!).Should().BeTrue();
+        result!.Schedule.Should().HaveCount(2);
+        result.Schedule.Should().OnlyContain(period => period.InterestAmount == 3m);
     }
 
     [Fact]
-    public async Task BuildLedgerPostingsAsync_StaleSource_ShouldBlockPostingAsAGate()
+    public async Task StaleSource_BlocksAtTheSharedPostingGate()
     {
         var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
         var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
@@ -742,11 +738,10 @@ public sealed partial class SecurityMasterCashFlowServiceTests
                 })));
         var service = BuildService(store, query);
 
-        var result = await service.BuildLedgerPostingsAsync(securityId);
+        var result = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
 
-        result.IsPostable.Should().BeFalse();
-        result.BlockedReason.Should().Contain("stale");
-        result.Postings.Should().BeEmpty();
+        result.Should().NotBeNull();
+        StructuredCashFlowLedgerGate.EvaluateBlockReason(result!).Should().Contain("stale");
     }
 
     [Fact]
@@ -931,9 +926,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var missing = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
         missing!.Schedule.Should().BeEmpty();
         missing.BlockedReason.Should().Contain("coupon rate is missing");
-        var posting = await service.BuildLedgerPostingsAsync(securityId);
-        posting.IsPostable.Should().BeFalse();
-        posting.BlockedReason.Should().Contain("coupon rate is missing");
+        StructuredCashFlowLedgerGate.EvaluateBlockReason(missing).Should().Contain("coupon rate is missing");
 
         query.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity(securityId,
             JsonSerializer.SerializeToElement(new { issueDate = issue, maturityDate = issue.AddYears(1), par = 100m, couponRate = 0m })));
@@ -1002,7 +995,7 @@ public sealed partial class SecurityMasterCashFlowServiceTests
         var projection = await service.GetProjectionAsync(id, StructuredCashFlowScenario.Base);
         projection!.IsNormalizedPer100.Should().BeTrue();
         projection.BlockedReason.Should().Contain("principal");
-        (await service.BuildLedgerPostingsAsync(id)).IsPostable.Should().BeFalse();
+        StructuredCashFlowLedgerGate.IsPostable(projection).Should().BeFalse();
     }
 
     private static DateOnly WholePeriodIssueDate()

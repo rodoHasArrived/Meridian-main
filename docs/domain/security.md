@@ -190,3 +190,19 @@ while canonical aliases are shared through the asset catalog. MBS, ABS, CLO and 
 only to StructuredCredit. Profile metadata, including nested fields, cannot contradict the registered
 profile's canonical class. Custom profile documents still require explicit typed-term integration to
 produce contractual schedules; a readiness row alone does not supply that integration.
+
+## Structured-note valuation accounting
+
+StructuredNote uses fair value through profit or loss, as decided on 2026-11-11. Its catalog
+declaration selects `structured-note-fvtpl-v1` in the existing daily valuation route. Quantity is
+face value; raw cost and market quotes use the class's percentage-of-par convention through
+`LotQuantity`, so 1,000 face at 101 is worth 1,010. The journal recognizes only the change from
+the retained monetary carrying value, with unrealized gain in revenue or unrealized loss in
+expense. It does not repeat cumulative gains on subsequent valuation dates.
+
+The existing valuation freshness policy, canonical Security Master identity, retained mark and
+carrying-value evidence, period controls, draft submission, independent approval and posting
+lifecycle remain authoritative. The draft retains its template version and treatment; retries
+use the same mark fingerprint and corrected marks produce a new reviewable draft. Missing or
+stale marks cannot produce a draft. StructuredNote remains outside the coupon/accrual accounting
+event slice, so its FixedIncome taxonomy cannot authorize bond accruals or amortization.

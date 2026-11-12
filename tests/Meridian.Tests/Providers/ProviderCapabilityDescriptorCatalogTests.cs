@@ -117,17 +117,17 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         services.Should().HaveCount(3);
         services.Select(service => service.ServiceType).Should().BeEquivalentTo(
             descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
-            "historical, search, and typed rate observation contracts must have module-owned factories");
+            "historical and search implementations and the observed-rate alias must have module-owned factories");
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
             "the module must own concrete factory construction and container lifetime");
 
-        using var httpClient = new HttpClient();
-        using var historical = new FredHistoricalDataProvider(apiKey: "synthetic-fred-key", httpClient: httpClient);
-        using var provider = new ServiceCollection().AddSingleton(historical).BuildServiceProvider();
-        var rateRegistration = services.Single(service => service.ServiceType == typeof(ISecurityRateObservationProvider));
-        rateRegistration.ImplementationFactory!(provider).Should().BeSameAs(historical,
-            "typed rate observations must reuse the container-owned historical provider");
+        using var client = new HttpClient();
+        var historical = new FredHistoricalDataProvider("synthetic-key", client);
+        services.AddSingleton(historical);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(historical,
+            "rate observations must reuse the same late-gated historical implementation");
     }
 
     [Fact]

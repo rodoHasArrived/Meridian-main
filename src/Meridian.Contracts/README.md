@@ -6,10 +6,15 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
+structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
+certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
+Disposal instructions compare selections by retained ordinal while keeping every field exact.
 
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in
@@ -32,6 +37,11 @@ for floating v3 analytics. Its null omission preserves legacy context serializat
 `BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
 fraction, original typed provider observation, recording actor/time, review justification and hash.
 Observed reset evidence is distinct from a forward curve or forecast assumption.
+
+`StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
+interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
+row schema for historical receipts. The catalog declares StructuredNote valuation as fair value
+through profit or loss, independently of eligibility for coupon-accrual accounting.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
@@ -62,9 +72,9 @@ or create a payment. The retained source hash and document identity explain the 
 unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
 negative fixings and spreads can still produce a supported positive coupon after contractual floors.
 
-`StructuredCashFlowScheduleEntry` equality follows its serialized members while excluding measured
-accrual intervals that are never serialized. A reflection regression enumerates writable members
-so adding a serialized member without updating equality fails verification.
+`StructuredCashFlowScheduleEntry` equality compares persisted row state, including `RowVersion`
+and the measured accrual interval on current rows. A reflection regression enumerates writable
+members so adding persisted state without matching equality fails verification.
 
 Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
 underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share

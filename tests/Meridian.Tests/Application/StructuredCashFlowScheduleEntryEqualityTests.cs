@@ -8,11 +8,9 @@ using Xunit;
 namespace Meridian.Tests.Application;
 
 /// <summary>
-/// Guards the hand-written equality on <see cref="StructuredCashFlowScheduleEntry"/>. The row
-/// compares only its serialized members so that retained calculation receipts still replay, which
-/// means a member added later must be added to <c>Equals</c> by hand. These tests enumerate the
-/// row's members by reflection, so a serialized member the comparison ignores, or an unserialized
-/// member it compares, fails here instead of silently weakening replay comparison.
+/// Guards persisted row equality on <see cref="StructuredCashFlowScheduleEntry"/>. Every writable
+/// serialized member must affect equality; any always-ignored working state must not. Reflection
+/// keeps new persisted members, including the versioned interest interval, in this regression.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class StructuredCashFlowScheduleEntryEqualityTests
@@ -28,14 +26,6 @@ public sealed class StructuredCashFlowScheduleEntryEqualityTests
         return data;
     }
 
-    public static TheoryData<string> UnserializedMembers()
-    {
-        var data = new TheoryData<string>();
-        foreach (var property in WritableMembers().Where(IsNeverSerialized))
-            data.Add(property.Name);
-        return data;
-    }
-
     [Theory]
     [MemberData(nameof(SerializedMembers))]
     public void Equals_DistinguishesRowsThatDifferInASerializedMember(string member)
@@ -46,15 +36,16 @@ public sealed class StructuredCashFlowScheduleEntryEqualityTests
             $"'{member}' is serialized into retained receipts, so StructuredCashFlowScheduleEntry.Equals must compare it");
     }
 
-    [Theory]
-    [MemberData(nameof(UnserializedMembers))]
-    public void Equals_IgnoresWorkingDataThatIsNeverSerialized(string member)
+    [Fact]
+    public void Equals_IgnoresWorkingDataThatIsNeverSerialized()
     {
-        var changed = WithChanged(member);
-
-        changed.Equals(Baseline).Should().BeTrue(
-            $"'{member}' is never serialized, so a replayed row must equal the retained row whatever it holds");
-        changed.GetHashCode().Should().Be(Baseline.GetHashCode());
+        foreach (var property in WritableMembers().Where(IsNeverSerialized))
+        {
+            var changed = WithChanged(property.Name);
+            changed.Equals(Baseline).Should().BeTrue(
+                $"'{property.Name}' is never serialized, so a replayed row must equal the retained row whatever it holds");
+            changed.GetHashCode().Should().Be(Baseline.GetHashCode());
+        }
     }
 
     [Fact]
@@ -92,6 +83,8 @@ public sealed class StructuredCashFlowScheduleEntryEqualityTests
             return new DateTimeOffset(2031, 1, 2, 0, 0, 0, TimeSpan.Zero);
         if (underlying == typeof(DateOnly))
             return new DateOnly(2031, 1, 2);
+        if (underlying == typeof(int))
+            return 1;
         if (underlying == typeof(decimal))
             return 12.34m;
         if (underlying == typeof(BondFloatingRateEvidence))
