@@ -677,6 +677,14 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       style={{ flexShrink: 0 }}
     >
       <EquityCurveChart
+        ariaLabel="Covered-call strategy versus underlying equity curve"
+        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${fmtMoney(
+          finalStrategy
+        )}, underlying buy-and-hold ${fmtMoney(finalUnderlying)}.`}
+        accessibleData={{
+          columns: ["Date", "Strategy", "Underlying"],
+          rows: points.map((p) => [p.date, fmtMoney(p.strategyEquity), fmtMoney(p.underlyingEquity)])
+        }}
         series={[
           { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
           { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }

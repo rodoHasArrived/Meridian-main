@@ -1,9 +1,10 @@
 // Meridian DrawdownChart — the underwater plot. Drawdown (peak-to-trough decline, always ≤ 0)
 // hangs below a 0% waterline as a filled curve, with an optional dashed limit rule and a marker
 // on the maximum drawdown. Pairs beside an EquityCurve in backtest / strategy reporting.
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 import { niceTicks } from "./ticks";
 
-export interface DrawdownChartProps {
+export interface DrawdownChartProps extends ChartA11yProps {
   /** Drawdown series in percent — 0 or negative values (e.g. -12.4). */
   series: number[];
   /** Time-axis labels, parallel to `series`. */
@@ -34,7 +35,10 @@ export function DrawdownChart({
   valueFmt = (v) => `${v.toFixed(0)}%`,
   markMax = true,
   valueTicks = 5,
-  timeTicks = 7
+  timeTicks = 7,
+  ariaLabel = "Drawdown underwater chart",
+  ariaDescription,
+  accessibleData
 }: DrawdownChartProps) {
   const W = 960;
   const H = 360;
@@ -65,12 +69,12 @@ export function DrawdownChart({
   for (let i = 1; i < n; i++) if (dd[i] < dd[maxIdx]) maxIdx = i;
 
   return (
-    <svg
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Drawdown underwater chart"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {vTicks.map((v, k) => (
@@ -118,7 +122,7 @@ export function DrawdownChart({
         </g>
       )}
       <line x1={plotR} x2={plotR} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
-    </svg>
+    </ChartSvg>
   );
 }
 
