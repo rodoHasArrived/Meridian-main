@@ -7,8 +7,9 @@ namespace Meridian.Application.SecurityMaster;
 
 public sealed partial class SecurityMasterCashFlowService
 {
-    public const string ContextCalculationVersion = "bond-cash-flow-context-v4";
-    public const string PreviousContextCalculationVersion = "bond-cash-flow-context-v3";
+    public const string ContextCalculationVersion = "bond-cash-flow-context-v5";
+    public const string PreviousContextCalculationVersion = "bond-cash-flow-context-v4";
+    public const string NegativeInterestContextCalculationVersion = "bond-cash-flow-context-v3";
     public const string UnifiedEconomicsContextCalculationVersion = "bond-cash-flow-context-v2";
     public const string LegacyContextCalculationVersion = "bond-cash-flow-context-v1";
 
@@ -136,9 +137,10 @@ public sealed partial class SecurityMasterCashFlowService
     {
         ct.ThrowIfCancellationRequested();
         StructuredCashFlowProjectionDto Refused(string reason) => receipt.Projection with { Schedule = [], LegSchedules = null, BlockedReason = reason };
-        if (receipt.ModelVersion is not (ContextCalculationVersion or PreviousContextCalculationVersion or UnifiedEconomicsContextCalculationVersion or LegacyContextCalculationVersion) || !string.Equals(receipt.ContentSha256, ReceiptHash(receipt), StringComparison.Ordinal))
+        var rowVersion = RowVersionForModel(receipt.ModelVersion);
+        if (rowVersion < 0 || !string.Equals(receipt.ContentSha256, ReceiptHash(receipt), StringComparison.Ordinal))
             return Refused("The retained calculation receipt has an unsupported model or its content digest does not match.");
-        if (!SecurityCashFlowScheduleRowCodec.HasSupportedRows(receipt.Projection, receipt.ModelVersion == ContextCalculationVersion))
+        if (!SecurityCashFlowScheduleRowCodec.HasSupportedRows(receipt.Projection, rowVersion))
             return Refused("The retained calculation receipt has an unsupported schedule row contract.");
         if (receipt.Projection.BlockedReason is not null)
             return receipt.Projection;
@@ -158,8 +160,8 @@ public sealed partial class SecurityMasterCashFlowService
                 { CurrentIndexResetDate = null, CurrentIndexRateSource = null }).ToArray()
             };
         var replay = CalculateCaptured(receipt.Security, receipt.Source, receipt.Scenario, receipt.Context, terms, curves, receipt.Projection.Staleness, receipt.ModelVersion != LegacyContextCalculationVersion,
-            receipt.ModelVersion is ContextCalculationVersion or PreviousContextCalculationVersion,
-            currentRows: receipt.ModelVersion == ContextCalculationVersion)
+            receipt.ModelVersion is ContextCalculationVersion or PreviousContextCalculationVersion or NegativeInterestContextCalculationVersion,
+            rowVersion, factorAwareEconomics: receipt.ModelVersion == ContextCalculationVersion)
             with
         { InputManifest = receipt.Projection.InputManifest };
         if (JsonSerializer.Serialize(replay, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto) != JsonSerializer.Serialize(receipt.Projection, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto))
@@ -169,15 +171,17 @@ public sealed partial class SecurityMasterCashFlowService
 
     private StructuredCashFlowProjectionDto CalculateCaptured(SecurityDetailDto security, SecurityCashFlowSourceDto source,
         StructuredCashFlowScenario scenario, BondCalculationContext context, StructuredCashFlowTerms terms,
-        IReadOnlyDictionary<string, SecurityForwardCurve> curves, StructuredCashFlowStaleness? retainedFreshness = null, bool unifiedEconomics = true, bool rejectNegativeInterest = true, bool currentRows = true)
+        IReadOnlyDictionary<string, SecurityForwardCurve> curves, StructuredCashFlowStaleness? retainedFreshness = null,
+        bool unifiedEconomics = true, bool rejectNegativeInterest = true,
+        int rowVersion = SecurityCashFlowScheduleRowCodec.CurrentVersion, bool factorAwareEconomics = true)
     {
         var assessmentTime = context.KnownAt ?? _clock.GetUtcNow();
         var freshness = retainedFreshness ?? (source.LastUpdatedUtc is not { } updated ? StructuredCashFlowStaleness.Unknown
             : assessmentTime - updated > StalenessThreshold ? StructuredCashFlowStaleness.Stale : StructuredCashFlowStaleness.Fresh);
         var projection = BuildCalculatedProjectionCore(security, source.SourceKind, scenario, freshness,
-            source.LastUpdatedUtc, context.AsOf, _calendars, curves, terms, unifiedEconomics, rejectNegativeInterest);
-        projection = currentRows ? SecurityCashFlowScheduleRowCodec.Current(projection)
-            : SecurityCashFlowScheduleRowCodec.Legacy(projection);
+            source.LastUpdatedUtc, context.AsOf, _calendars, curves, terms, unifiedEconomics, rejectNegativeInterest,
+            factorAwareEconomics);
+        projection = SecurityCashFlowScheduleRowCodec.ForVersion(projection, rowVersion);
         var normalized = terms.PrincipalFace is not > 0m && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
         return normalized ? projection with
         {
@@ -185,6 +189,14 @@ public sealed partial class SecurityMasterCashFlowService
             BlockedReason = projection.BlockedReason ?? "Schedule is normalized per 100 units; retained principal or leg notional is required before ledger posting."
         } : projection;
     }
+
+    private static int RowVersionForModel(string modelVersion) => modelVersion switch
+    {
+        ContextCalculationVersion => SecurityCashFlowScheduleRowCodec.CurrentVersion,
+        PreviousContextCalculationVersion => 1,
+        NegativeInterestContextCalculationVersion or UnifiedEconomicsContextCalculationVersion or LegacyContextCalculationVersion => 0,
+        _ => -1
+    };
 
     private static IReadOnlyList<BondCalculationInput> BuildInputManifest(SecurityDetailDto security,
         SecurityCashFlowSourceDto source, StructuredCashFlowProjectionDto projection, IEnumerable<SecurityForwardCurve> curves)

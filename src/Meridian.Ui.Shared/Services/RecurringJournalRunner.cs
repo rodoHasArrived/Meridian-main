@@ -242,11 +242,15 @@ public sealed class RecurringJournalRunner(
         var scope = definition.Scope;
         var schedule = definition.Schedule.ToSchedule();
         var instant = new DateTimeOffset(claim.EffectiveDate.ToDateTime(schedule.PostingTime), TimeSpan.Zero);
+        // Calculations may retain additional immutable inputs, such as a cash-flow receipt.
+        // Freeze those references in the same recurring provenance document as the schedule's
+        // source evidence so they survive intake, restart, review and posting.
+        var sourceEvidence = definition.Evidence.Concat(calculated?.Metadata.EvidenceReferences ?? []).Distinct().ToArray();
         var evidence = new RecurringJournalEvidence(claim.OccurrenceKey, claim.DraftId,
             definition.ScheduleId, definition.Version, claim.TemplateDefinition.TemplateId, claim.TemplateDefinition.Version,
             RecurringJournalIdentity.SerializeSchedule(definition), RecurringJournalIdentity.SerializeTemplate(claim.TemplateDefinition),
             scope.FundProfileId, scope.LedgerBookId, scope.EntityId, scope.TenantId, scope.CompanyId,
-            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, definition.Evidence);
+            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, sourceEvidence);
         var json = RecurringJournalEvidenceGuard.Serialize(evidence);
         var key = $"recurring|{claim.OccurrenceKey}";
         var recurringTags = new Dictionary<string, string>
@@ -255,7 +259,7 @@ public sealed class RecurringJournalRunner(
             [RecurringJournalEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(json)
         };
         var metadata = new JournalEntryMetadata(ActivityType: "RecurringJournal", LedgerBook: schedule.LedgerKey.LedgerBook,
-            EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: definition.Evidence,
+            EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: sourceEvidence,
             Tags: recurringTags);
         if (claim.TemplateDefinition.Template.Calculation is { } calculation)
         {
@@ -273,7 +277,7 @@ public sealed class RecurringJournalRunner(
                 LedgerBook = schedule.LedgerKey.LedgerBook,
                 EffectiveDate = claim.EffectiveDate,
                 IdempotencyKey = key,
-                EvidenceReferences = definition.Evidence,
+                EvidenceReferences = sourceEvidence,
                 Tags = tags
             };
             var calculatedEvent = (calculated?.Event ?? new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate,
@@ -284,7 +288,7 @@ public sealed class RecurringJournalRunner(
                 SourceEventId = claim.OccurrenceKey,
                 EffectiveDate = claim.EffectiveDate,
                 IdempotencyKey = key,
-                EvidenceReferences = definition.Evidence
+                EvidenceReferences = sourceEvidence
             };
             return new(scope.FundProfileId, scope.Currency,
                 // The schedule's dimensions fill whatever the calculation left unset on a line.

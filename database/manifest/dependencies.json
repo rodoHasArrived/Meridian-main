@@ -12376,6 +12376,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot"
     },
     {
@@ -14507,6 +14513,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment"
     },
     {
       "kind": "contract-set-member",
@@ -27688,6 +27700,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot"
     },
     {
@@ -29819,6 +29837,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment"
     },
     {
       "kind": "contract-set-member",
@@ -43179,6 +43203,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot",
       "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
     },
@@ -44975,6 +45005,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry",
       "target": "contract:Meridian.Contracts.FixedIncome.BondFloatingRateEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment"
     },
     {
       "kind": "contract-reference",
@@ -62748,7 +62784,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "7e00a9a29d079f6f3e868d2bcf490f6e16a57d20cac9aece3406e36f125f2ddd",
+  "fingerprint": "1ebc9fdbe4fc5f3310d2ac7a7de208a1889529269320b9eac849d72eed60fc0d",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -75175,6 +75211,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.FaceValueLot"
@@ -77308,6 +77350,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment"
     },
     {
       "classification": "record",
@@ -91944,11 +91992,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3989,
-    "contract_set_memberships": 5002,
-    "edges": 10425,
+    "contract_references": 3991,
+    "contract_set_memberships": 5006,
+    "edges": 10431,
     "foreign_keys": 181,
     "logical_references": 6,
-    "nodes": 5064
+    "nodes": 5066
   }
 }

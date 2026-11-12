@@ -9,6 +9,30 @@ namespace Meridian.FinancialOperations.Ledger;
 
 public sealed partial class AccountingPostingCandidateService
 {
+    private static decimal PrepareBondPostingAmount(decimal lineAmount, Guid? adoptedAcquisitionOwner)
+    {
+        var amount = Math.Abs(lineAmount);
+        if (adoptedAcquisitionOwner is not null)
+            BondIncomeBookedPrecision.RequireRepresentable(amount);
+        return amount;
+    }
+
+    private static LedgerAccount BindBondAccountingAccount(LedgerAccount account,
+        PostingRuleJournalCandidateRequestDto request, string accountPath, decimal amount,
+        Guid? adoptedAcquisitionOwner, LedgerTaxLotRecord? adoptedIncomeLot)
+    {
+        if (adoptedAcquisitionOwner is { } acquisitionOwner)
+            account = account with { FinancialAccountId = acquisitionOwner.ToString("D") };
+        if (request.BondCouponRecognition is { } coupon)
+            account = account with { FinancialAccountId = coupon.Scope.AccountId };
+        if (adoptedIncomeLot is not null)
+        {
+            BondIncomeBookedPrecision.RequireRepresentable(amount);
+            account = BindAdoptedIncomeAccount(account, accountPath, request.AssetLotMutation!.AssetAccountId!, adoptedIncomeLot);
+        }
+        return account;
+    }
+
     private async Task<LedgerTaxLotRecord?> ResolveAdoptedIncomeLotAsync(PostingRuleJournalCandidateRequestDto request,
         AssetAccountingCandidateAuthorityContext? authority, CancellationToken ct)
     {

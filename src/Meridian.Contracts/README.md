@@ -73,10 +73,15 @@ properties travel together; their conditional signature suffix preserves legacy 
 `FundStructureContractsJsonContext` registers the shared registry wire types. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
-The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
-structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
-certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
-Disposal instructions compare selections by retained ordinal while keeping every field exact.
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond and
+StructuredCredit; coupon structure, lot units and valuation treatment do not imply recurring
+admission or bypass missing-rate-unit and schedule-posting gates. `FaceValueAccrualHolding` retains
+a lot's acquisition facts, daily open share and interest-before-paydown factor. Schedule row
+contract 2 retains measured interest segments, their actual reference principal, and unrounded
+interest under cash-flow calculation context v5. Older contexts keep their frozen row contracts,
+JSON shapes and arithmetic. Shared lot validation certifies the twelve-decimal quote derived from
+a governed unit successor's exact allocated basis. Disposal instructions compare selections by
+retained ordinal while keeping every field exact.
 
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in

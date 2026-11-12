@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 553. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 555. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -50,6 +50,14 @@ classDiagram
         +decimal? ExchangeRatio
         +bool? IsVoluntary
         +Guid? SuccessorSecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding["FaceValueAccrualHolding"] {
+        +decimal AccrualFactor
+        +DateOnly Date
+        +FaceValueLot Lot
+        +decimal OpenShare
+        +Guid? TaxLotRecordId
+        +long? Version
     }
     class Meridian_Contracts_SecurityMaster_FaceValueLot["FaceValueLot"] {
         +DateOnly AcquiredDate
@@ -383,8 +391,7 @@ classDiagram
         +string Currency
         +DateTimeOffset? KnowledgeAsOf
     }
-    class Meridian_Contracts_SecurityMaster_OtcContractsJsonContext["OtcContractsJsonContext"] {
-    }
+    Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot

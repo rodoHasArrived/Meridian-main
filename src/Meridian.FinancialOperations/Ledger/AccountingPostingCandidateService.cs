@@ -370,9 +370,7 @@ public sealed partial class AccountingPostingCandidateService :
                 continue;
             }
 
-            var amount = Math.Abs(line.Amount);
-            if (adoptedOwner is not null)
-                BondIncomeBookedPrecision.RequireRepresentable(amount);
+            var amount = PrepareBondPostingAmount(line.Amount, adoptedOwner);
             var account = new LedgerAccount(chartNode.AccountName, accountType);
             if (authority?.CanonicalInstrumentSymbol is { } canonicalSymbol)
             {
@@ -388,15 +386,7 @@ public sealed partial class AccountingPostingCandidateService :
                 account = new LedgerAccount(chartNode.AccountName, accountType, canonicalSymbol,
                     line.Dimensions?.AccountId);
             }
-            if (adoptedOwner is { } acquisitionOwner)
-                account = account with { FinancialAccountId = acquisitionOwner.ToString("D") };
-            if (request.BondCouponRecognition is { } coupon)
-                account = account with { FinancialAccountId = coupon.Scope.AccountId };
-            if (adoptedIncomeLot is not null)
-            {
-                BondIncomeBookedPrecision.RequireRepresentable(amount);
-                account = BindAdoptedIncomeAccount(account, line.AccountPath, request.AssetLotMutation!.AssetAccountId!, adoptedIncomeLot);
-            }
+            account = BindBondAccountingAccount(account, request, line.AccountPath, amount, adoptedOwner, adoptedIncomeLot);
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
             {
                 if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)

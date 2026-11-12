@@ -437,6 +437,7 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity)
         {
             StampFloor = 2,
+            SupportsRecurringFixedIncomeAccrual = true,
             ReclassifyingProfileIds = ["structured-credit-io-po"]
         },
         new(

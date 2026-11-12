@@ -2,11 +2,16 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 553. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 555. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
+        +IReadOnlyList~string~ AssetClasses
+        +IReadOnlyList~string~ AssetOperationsCapableAssetClasses
+        +IReadOnlyList~string~ IdentifierOnlyImportableAssetClasses
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition["SecurityAssetClassDefinition"] {
         +string AssetClass
         +SecurityAssetClassDescriptor Descriptor
@@ -477,12 +482,6 @@ classDiagram
         +IReadOnlyList~string~ ModulesAddedAfterIdentityGate
         +IReadOnlyList~string~ ShapeRuleModules
     }
-    class Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto["SecurityEvidenceLinkDto"] {
-        +string EvidenceId
-        +string EvidenceKind
-        +string? Route
-        +string? Summary
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint
@@ -511,7 +510,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalMetadataDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType

@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 7 of 7
 
-Objects 481-553 of 553. References crossing pages remain available in the dependency manifest.
+Objects 481-555 of 555. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecuritySchedulePresence["SecuritySchedulePresence"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException["SecurityScheduleValidationException"] {
         +IReadOnlyList~SecurityScheduleDiagnostic~ Diagnostics
     }
@@ -214,6 +216,16 @@ classDiagram
         +DateOnly FirstDate
         +DateOnly LastDate
     }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment["StructuredCashFlowInterestSegment"] {
+        +DateOnly End
+        +decimal Factor
+        +decimal? FactorAfter
+        +DateOnly PeriodEnd
+        +DateOnly PeriodStart
+        +decimal ReferencePrincipal
+        +DateOnly Start
+        +decimal UnroundedInterestAmount
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
         +decimal? CapRate
         +decimal? CurrentIndexRate
@@ -266,12 +278,12 @@ classDiagram
         +decimal InterestAmount
         +DateOnly? InterestMeasuredFrom
         +DateOnly? InterestMeasuredTo
+        +IReadOnlyList~StructuredCashFlowInterestSegment~? InterestSegments
         +DateTimeOffset PeriodDate
         +decimal PrincipalAmount
         +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
         +int RowVersion
         +DateOnly? UnadjustedEnd
-        +DateOnly? UnadjustedStart
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence["StructuredCashFlowScheduleEvidence"] {
         +IReadOnlyList~StructuredCashFlowCalendarEvidence~ Calendars
@@ -523,6 +535,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry --> Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCoverageGap
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
