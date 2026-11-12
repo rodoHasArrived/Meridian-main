@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Core.Config;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
@@ -113,12 +114,51 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         module.Register(services, new DataSourceRegistry());
 
-        services.Should().HaveCount(2);
-        services.Select(service => service.ServiceType).Should().BeEquivalentTo(descriptor.Implementations(),
-            "both historical and search capability implementations must have module-owned factories");
+        descriptor.Implementations().Should().BeEquivalentTo(
+            [typeof(FredHistoricalDataProvider), typeof(FredSymbolSearchProvider)],
+            "the rates bridge reuses historical ingestion without adding a descriptor fallback capability");
+        services.Select(service => service.ServiceType).Should().BeEquivalentTo(
+            descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
+            "the module owns exactly its two inventory implementations and the typed-rate bridge");
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
             "the module must own concrete factory construction and container lifetime");
+
+        var factoryConstructions = 0;
+        services.AddSingleton<ProviderFactory>(_ =>
+        {
+            factoryConstructions++;
+            return new ProviderFactory(new AppConfig(Backfill: new BackfillConfig(
+                Providers: new BackfillProvidersConfig(Fred: new FredConfig(Enabled: true, ApiKey: "synthetic-fred-key")))),
+                new EnvironmentCredentialResolver());
+        });
+        using var provider = services.BuildServiceProvider();
+        factoryConstructions.Should().Be(0, "registration and container creation must leave factories lazy");
+
+        var rates = provider.GetRequiredService<ISecurityRateObservationProvider>();
+        rates.Should().BeSameAs(provider.GetRequiredService<FredHistoricalDataProvider>(),
+            "typed rates must use the configured module-owned historical singleton");
+        provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(rates);
+        var search = provider.GetRequiredService<FredSymbolSearchProvider>();
+        provider.GetRequiredService<FredSymbolSearchProvider>().Should().BeSameAs(search);
+        factoryConstructions.Should().Be(1);
+    }
+
+    [Fact]
+    public void Fred_rate_bridge_preserves_the_historical_configuration_gate()
+    {
+        var services = new ServiceCollection();
+        new FredProviderModule().Register(services, new DataSourceRegistry());
+        services.AddSingleton(new ProviderFactory(new AppConfig(Backfill: new BackfillConfig(
+            Providers: new BackfillProvidersConfig(Fred: new FredConfig(Enabled: false, ApiKey: "synthetic-fred-key")))),
+            new EnvironmentCredentialResolver()));
+        using var provider = services.BuildServiceProvider();
+
+        var resolveRates = () => provider.GetRequiredService<ISecurityRateObservationProvider>();
+        resolveRates.Should().Throw<InvalidOperationException>()
+            .WithMessage("*no configured historical capability*");
+        FredProviderModule.Descriptor.Registrations().Should().BeEmpty(
+            "a disabled module-owned historical capability cannot be recreated through descriptor fallback");
     }
 
     [Fact]

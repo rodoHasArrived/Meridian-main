@@ -37,7 +37,7 @@ internal static class ProviderIntegrationFixedIncomeTermsValidation
             Refuse("currency", "An explicit three-letter currency is required; USD is not assumed.");
         var paymentCalendars = Array(security, "paymentCalendars", Refuse);
         var settlementCalendars = Array(security, "settlementCalendars", Refuse);
-        var calls = Array(security, "callSchedule", Refuse);
+        var calls = Array(security, SecurityVersionedTerms.CallScheduleKey, Refuse);
         var factors = Array(security, "factorHistory", Refuse);
         if (paymentCalendars is null || settlementCalendars is null || calls is null || factors is null)
             return;
@@ -80,9 +80,9 @@ internal static class ProviderIntegrationFixedIncomeTermsValidation
             ["dayCount"] = Text(security, "dayCount"),
             ["paymentFrequency"] = Text(security, "paymentFrequency"),
             ["isCallable"] = calls.Count > 0,
-            ["callSchedule"] = calls.DeepClone(),
+            [SecurityVersionedTerms.CallScheduleKey] = calls.DeepClone(),
             ["factorScheduleEntries"] = factors.DeepClone(),
-            ["scheduleConventions"] = new JsonObject
+            [SecurityVersionedTerms.ScheduleConventionsKey] = new JsonObject
             {
                 ["couponRateUnit"] = Text(security, "couponRateUnit"),
                 ["couponCashBasis"] = Text(security, "couponCashBasis"),
@@ -196,7 +196,7 @@ internal static class ProviderIntegrationFixedIncomeTermsValidation
         }
         catch (InvalidOperationException exception)
         {
-            Refuse("scheduleConventions", exception.Message);
+            Refuse(SecurityVersionedTerms.ScheduleConventionsKey, exception.Message);
         }
         catch (OverflowException)
         {
