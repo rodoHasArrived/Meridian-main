@@ -12,7 +12,8 @@ import type { LedgerAmountProof, LedgerAmountSelection } from "@/types/ledger-am
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSelectedRecordDto,
-  FinancialRecordExplorerTone
+  FinancialRecordExplorerTone,
+  PreparerAttestationEvidenceProjection
 } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
@@ -30,7 +31,8 @@ export function LedgerAmountProofDrawer({ selection, onClose }: {
 
 function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelection }) {
   const selectionKey = JSON.stringify(selection);
-  const [result, setResult] = useState<{ key: string; proof: LedgerAmountProof | null; error: string | null } | null>(null);
+  const [result, setResult] = useState<{ key: string; proof: LedgerAmountProof | null; error: string | null;
+    preparerAttestations?: PreparerAttestationEvidenceProjection | null } | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -64,7 +66,7 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
       } else if (proof.evidence.some((item) => item.kind !== "ledger-record" && isCurrentRetainedEvidence(item) && !hasExactRetainedSource(packet, proof, item))) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: supporting evidence does not identify this exact retained amount, scope and content digest." });
       } else {
-        setResult({ key: selectionKey, proof, error: null });
+        setResult({ key: selectionKey, proof, error: null, preparerAttestations: packet.preparerAttestations });
       }
     }).catch(() => {
       if (current) setResult({ key: selectionKey, proof: null, error: "Blocked: retained evidence for this amount is unavailable. Review the selected book and period." });
@@ -104,7 +106,8 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
           </article>
         ))}
       </section>
-      <NumberPassport proof={{ ...proof, status: blocked ? "Blocked" : ready ? "Ready" : "ReviewRequired" }} title={selection.label} />
+      <NumberPassport proof={{ ...proof, status: blocked ? "Blocked" : ready ? "Ready" : "ReviewRequired" }} title={selection.label}
+        preparerAttestations={result.preparerAttestations} sourceJournalEntryIds={selection.journalEntryIds} />
     </div>
   );
 }
