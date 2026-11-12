@@ -8156,6 +8156,7 @@ Meridian-main
 │   │   │   │   │   ├── charts
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
+│   │   │   │   │   │   ├── chart-a11y.tsx
 │   │   │   │   │   │   ├── chart-interaction.test.ts
 │   │   │   │   │   │   ├── chart-interaction.tsx
 │   │   │   │   │   │   ├── chart-sync.test.tsx
