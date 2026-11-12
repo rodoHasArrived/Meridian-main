@@ -61,6 +61,7 @@
     "docs/diagrams/uml/Timing Diagram - Event Processing Timeline.svg",
     "docs/diagrams/uml/Use Case Diagram - Meridian.png",
     "docs/diagrams/uml/Use Case Diagram - Meridian.svg",
+    "docs/generated/configuration-schema.md",
     "docs/generated/repository-structure.md",
     "docs/generated/workflow-command-reference.md",
     "docs/generated/workflows-overview.md",
@@ -104,7 +105,8 @@
     "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts"
   ],
   "whole_trees": [
-    "src/Meridian.Ui/wwwroot/workstation"
+    "src/Meridian.Ui/wwwroot/workstation",
+    "docs/reference/source-api"
   ],
   "protected_suffixes": {
     "docs/status/coverage-report.md": "<!-- auto-sync:coverage -->"
@@ -120,6 +122,12 @@
       [
         "<!-- BEGIN AUTO-GENERATED: WORKFLOW-MANIFEST-DEV -->",
         "<!-- END AUTO-GENERATED: WORKFLOW-MANIFEST-DEV -->"
+      ]
+    ],
+    "docs/reference/api-reference.md": [
+      [
+        "<!-- BEGIN GENERATED HTTP DECLARATION REFERENCE -->",
+        "<!-- END GENERATED HTTP DECLARATION REFERENCE -->"
       ]
     ]
   },
@@ -333,12 +341,26 @@
         "strategy": "regenerate",
         "generator": "build/scripts/generate-workspace-catalog-ts.py",
         "required": true
+      },
+      "docs/generated/configuration-schema.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/generate-configuration-reference.py",
+        "required": true
+      },
+      "docs/reference/api-reference.md": {
+        "strategy": "manual",
+        "reason": "Resolve handwritten API guidance before regenerating the declared HTTP reference block."
       }
     },
     "trees": {
       "src/Meridian.Ui/wwwroot/workstation": {
         "strategy": "regenerate",
         "generator": "src/Meridian.Ui/dashboard/package.json#scripts.build",
+        "required": true
+      },
+      "docs/reference/source-api": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-public-type-reference.py",
         "required": true
       }
     }

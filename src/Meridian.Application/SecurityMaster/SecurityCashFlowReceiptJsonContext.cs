@@ -10,6 +10,7 @@ namespace Meridian.Application.SecurityMaster;
 [JsonSerializable(typeof(SecurityForwardCurve))]
 [JsonSerializable(typeof(StructuredCashFlowProjectionDto))]
 [JsonSerializable(typeof(LegacyStructuredCashFlowScheduleEntry))]
+[JsonSerializable(typeof(VersionOneStructuredCashFlowScheduleEntry))]
 [JsonSerializable(typeof(StructuredCashFlowScheduleEntry))]
 internal sealed partial class SecurityCashFlowReceiptJsonContext : JsonSerializerContext;
 

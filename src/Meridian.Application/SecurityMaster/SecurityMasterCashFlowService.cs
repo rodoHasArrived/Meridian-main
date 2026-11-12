@@ -260,7 +260,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
         StructuredCashFlowTerms? resolvedTerms = null)
         => BuildCalculatedProjectionCore(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false, rejectNegativeInterest: false);
+            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false, rejectNegativeInterest: false,
+            factorAwareEconomics: false);
 
     private static StructuredCashFlowProjectionDto BuildCalculatedProjectionCore(
         SecurityDetailDto security,
@@ -271,7 +272,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateTimeOffset asOf,
         IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
-        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true, bool rejectNegativeInterest = true)
+        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true, bool rejectNegativeInterest = true,
+        bool factorAwareEconomics = true)
     {
         var terms = resolvedTerms ?? StructuredCashFlowTermsResolver.Resolve(security);
         if (!unifiedEconomics && terms.Legs is not null)
@@ -388,6 +390,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         if (periods.Length == 0)
         {
             return Empty();
+        }
+
+        if (factorAwareEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass is "Bond" or "StructuredCredit")
+        {
+            return BuildFactorAwareFixedProjection(security, sourceKind, scenario, staleness,
+                sourceLastUpdatedUtc, asOf, asOfDate, terms, periods, principalBasis,
+                annualRate, hasAssertedPrincipalSchedule, contractualPrincipal);
         }
 
         if (contractualPrincipal.Length > 0)
