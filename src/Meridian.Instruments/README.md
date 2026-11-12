@@ -25,7 +25,7 @@ and keep their golden outputs. See the [bond capability plan](../../docs/enginee
 
 Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay, selected only by the exact `portfolio-cash-ladder-v1` engine version on the shared cash-ladder query and never by fallback; both engines are pinned by the `portfolio-cash-ladder-versions` golden fixture. Current undeclared rate scenarios block unsupported negative interest with a typed blocker; explicit v1 ladder replay keeps its original arithmetic. The workstation notice-date watch (`BondExerciseNoticeWatch` in Contracts) uses the same scenario resolution, so its exercise and notice dates match analytics and the cash ladder.
 
-Both analytics versions return a blocked result when shared economic-schedule validation fails,
+All supported analytics versions return a blocked result when shared economic-schedule validation fails,
 retaining its source and row diagnostics and exposing no partial metrics. Unrelated query or storage
 failures remain errors.
 
