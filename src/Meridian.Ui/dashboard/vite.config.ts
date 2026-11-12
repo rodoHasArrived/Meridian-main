@@ -285,11 +285,8 @@ const { version: appVersion } = JSON.parse(
   readFileSync(path.resolve(__dirname, "package.json"), "utf8")
 ) as { version: string };
 
-// Assets that index.html links (the favicon) are always emitted as files for the HTML. When
-// application code imports the same file, Vite reuses whichever URL it produced first, so the
-// importing chunk got a file URL on one machine and a data URI on another, and the committed
-// bundle stopped matching a fresh build. Never inlining these keeps every reference on the
-// emitted file whatever the processing order.
+// HTML-linked assets are emitted as files. Keep imports of the same asset on that URL too,
+// regardless of whether the HTML or JavaScript pipeline processes the asset first.
 const htmlLinkedAssets = new Set(
   Array.from(
     readFileSync(path.resolve(__dirname, "index.html"), "utf8").matchAll(/\shref="\/(src\/[^"?#]+)"/g),
@@ -297,7 +294,7 @@ const htmlLinkedAssets = new Set(
   )
 );
 
-/** Keeps assets that index.html links out of inlining; defers to Vite's size limit otherwise. */
+/** Defers to Vite's size limit except for assets already linked by the entry HTML. */
 export function meridianAssetsInlineLimit(filePath: string): boolean | undefined {
   return htmlLinkedAssets.has(path.resolve(filePath)) ? false : undefined;
 }

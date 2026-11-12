@@ -790,6 +790,10 @@ tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/` until the
 
 ## Chart accessibility contract
 
+Strategy equity-path comparison is composed by `strategy-screen.equity-paths.tsx` and
+`strategy-screen.equity-paths.view-model.ts`; the run-library view model retains its existing
+exports. The chart set remains separate from Compare, Diff and Promote selection.
+
 The SVG charts in `src/components/charts/` (`CandleChart`, `EquityCurve`, `DrawdownChart`,
 `Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx` and
 accept three optional props:
@@ -2113,10 +2117,10 @@ mode stays pure Node while `npm run design-system:sync` reconverts changed fonts
 pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
 marks, lockups, the identity sheet, and module icons use the canonical copied
 assets in `src/assets/` and the typed asset bridge. Vite bundles these local
-assets for hosted and offline-capable deployments. An asset that `index.html` links (the favicon
-mark) is never inlined (`meridianAssetsInlineLimit` in `vite.config.ts`): Vite reuses whichever URL
-it produced first for a file the HTML and the asset bridge both reference, so without the rule the
-tracked bundle could differ between machines.
+assets for hosted and offline-capable deployments. Assets linked by `index.html`, including
+the favicon, remain emitted files when JavaScript imports them too; the URL does not depend
+on which build pipeline processes the shared asset first. Other assets retain Vite's size-based
+inlining behavior. `src/vite-config.assets.test.ts` covers the JavaScript-first case.
 
 Asset drift is checked before dev/build and by Vite's build hook. Run
 `npm run design-system:check` to verify the copied bytes,
