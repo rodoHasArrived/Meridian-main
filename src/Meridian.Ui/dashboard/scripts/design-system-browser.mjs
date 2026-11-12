@@ -275,6 +275,13 @@ export async function runCase(browser, target, settings) {
   page.on('response', (response) => {
     if (response.status() >= 400 && !new URL(response.url()).pathname.startsWith('/api/')) assetFailures.push({ url: response.url(), status: response.status() });
   });
+  page.on('requestfailed', (request) => {
+    // Registered fixture APIs intentionally exercise failure/abort states. Static
+    // assets must load even when the connection fails before an HTTP response.
+    if (!new URL(request.url()).pathname.startsWith('/api/')) {
+      assetFailures.push({ url: request.url(), error: request.failure()?.errorText ?? 'Network request failed', resourceType: request.resourceType() });
+    }
+  });
   await context.route('https://**/*', async (route) => {
     const bytes = settings.assets.get(route.request().url());
     if (bytes) return route.fulfill({ status: 200, contentType: 'text/javascript', headers: { 'Access-Control-Allow-Origin': '*' }, body: bytes });

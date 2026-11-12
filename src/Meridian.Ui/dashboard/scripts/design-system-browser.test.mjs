@@ -120,4 +120,15 @@ test('loaded imported styles retain contrast auditing and real missing styles st
   const missing = await runCase(browser, { id: 'missing-css-fixture', kind: 'reference', file: 'preview/missing.html' }, settings);
   assert.equal(missing.status, 'failed');
   assert.ok(missing.assetFailures.some((failure) => failure.status === 404 && failure.url.endsWith('/missing.css')), 'A real missing stylesheet must fail acceptance');
+  await fs.writeFile(path.join(root, 'preview/reset.html'), document('../reset.css', '<p>This document requests assets whose connections reset.</p><script src="../reset.js"></script>'));
+  const resetBrowser = { newContext: async (options) => {
+    const context = await browser.newContext(options);
+    await context.route('**/reset.{css,js}', (route) => route.abort('connectionreset'));
+    return context;
+  } };
+  const reset = await runCase(resetBrowser, { id: 'reset-assets-fixture', kind: 'reference', file: 'preview/reset.html' }, settings);
+  assert.equal(reset.status, 'failed');
+  for (const extension of ['css', 'js']) {
+    assert.ok(reset.assetFailures.some((failure) => failure.url.endsWith(`/reset.${extension}`) && /ERR_CONNECTION_RESET/.test(failure.error)), `A ${extension} connection reset without an HTTP response must fail acceptance`);
+  }
 });
