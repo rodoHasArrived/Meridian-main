@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcNettingSetViewDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:138](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L138).
+
+A netting set with the agreements it sits under and the contracts it holds.
+
+```csharp
+public sealed record OtcNettingSetViewDto(OtcNettingSetDto NettingSet, OtcMasterAgreementDto MasterAgreement, OtcCollateralAgreementDto? CollateralAgreement, IReadOnlyList<OtcContractDto> Contracts);
+```
+
 ## OtcNovationData
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNovationData</code>. Kind: `record`.
@@ -817,40 +829,3 @@ Enum declarations:
 | <code>Short</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L36) | The remainder becomes a short stub. |
 | <code>Long</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L39) | The remainder is merged into the adjacent regular period, giving a long stub. |
 | <code>RequireRegular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L42) | A remainder is refused with ScheduleFailureCode.DoesNotFitRegularGrid. |
-
-## ScheduleTenor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor</code>. Kind: `struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L35).
-
-The length of one regular schedule period, such as 3M, 1Y, 2W, 1D, or T for a single term period.
-
-```csharp
-public readonly struct ScheduleTenor : IEquatable<ScheduleTenor>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ScheduleTenor(int count, ScheduleTenorUnit unit);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L41) | Creates a tenor of count units. A ScheduleTenorUnit.Term tenor&#x27;s count is fixed at 1. |
-| <code>public int Count { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L64) | The number of units per period; 1 for a term tenor and 0 only for default. |
-| <code>public ScheduleTenorUnit Unit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L67) | The unit the tenor counts in. |
-| <code>public static ScheduleTenor Days(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L70) | A tenor of count days. |
-| <code>public static ScheduleTenor Weeks(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L73) | A tenor of count weeks. |
-| <code>public static ScheduleTenor Months(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L76) | A tenor of count months. |
-| <code>public static ScheduleTenor Years(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L79) | A tenor of count years. |
-| <code>public static ScheduleTenor Term { get; } = new (1, ScheduleTenorUnit.Term);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L82) | The single-period tenor: one period from effective date to termination. |
-| <code>public bool IsMonthBased =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L85) | Whether the tenor steps in calendar months (a month or year tenor). |
-| <code>public int? MonthsPerPeriod =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:88](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L88) | Months per period: Count for months, twelve times it for years, otherwise null. |
-| <code>public int? PeriodsPerYear =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L100) | Regular periods per year when the tenor divides a year evenly by market convention: 12/n for an n-month tenor that divides twelve, 1 for one year, 52 and 26 for one and two weeks, 365 for one day; otherwise null. |
-| <code>public DateOnly Advance(DateOnly date, int periods);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L116) | date moved by periods tenors (negative moves back). Month steps clamp the day to the target month&#x27;s length, as DateOnly.AddMonths does. |
-| <code>public bool TryAdvance(DateOnly date, int periods, out DateOnly result);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L132) | Non-throwing Advance: false when the result falls outside the DateOnly range, or when the tenor is a term tenor (or default). |
-| <code>public static bool TryFromPaymentFrequency(SecurityPaymentFrequency frequency, out ScheduleTenor tenor);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L181) | Maps a Security Master payment frequency to its tenor: Daily 1D, Weekly 1W, BiWeekly 2W, Monthly 1M, BiMonthly 2M, Quarterly 3M, SemiAnnual 6M, Annual 12M and AtMaturity the term tenor. Irregular has no tenor and returns false. |
-| <code>public bool Equals(ScheduleTenor other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:202](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L202) |  |
-| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L205) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L208) |  |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:211](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L211) | The tenor in market shorthand: 3M, 1Y, 2W, 1D, or T for a term tenor. |
-| <code>public static bool operator == (ScheduleTenor left, ScheduleTenor right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:221](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L221) | Whether two tenors have the same count and unit. |
-| <code>public static bool operator != (ScheduleTenor left, ScheduleTenor right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:224](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L224) | Whether two tenors differ in count or unit. |

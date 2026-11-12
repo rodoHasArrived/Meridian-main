@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 11898 |
-| Valid | 11398 |
+| Total code blocks | 11903 |
+| Valid | 11403 |
 | Invalid | 0 |
 | Skipped | 500 |
 
@@ -20,7 +20,7 @@
 | `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 270 | 270 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11026 | 11026 | 0 | 0 |
+| `csharp` | 11031 | 11031 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 69 | 69 | 0 | 0 |
@@ -175,7 +175,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.application/page-005.md` | 51 |
 | `docs/reference/source-api/meridian.application/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-007.md` | 51 |
-| `docs/reference/source-api/meridian.application/page-008.md` | 53 |
+| `docs/reference/source-api/meridian.application/page-008.md` | 55 |
 | `docs/reference/source-api/meridian.application/page-009.md` | 63 |
 | `docs/reference/source-api/meridian.application/page-010.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-011.md` | 50 |
@@ -252,7 +252,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-066.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-067.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-068.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-069.md` | 1 |
+| `docs/reference/source-api/meridian.contracts/page-069.md` | 3 |
 | `docs/reference/source-api/meridian.core/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |
@@ -324,7 +324,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.storage/page-002.md` | 61 |
 | `docs/reference/source-api/meridian.storage/page-003.md` | 50 |
 | `docs/reference/source-api/meridian.storage/page-004.md` | 55 |
-| `docs/reference/source-api/meridian.storage/page-005.md` | 80 |
+| `docs/reference/source-api/meridian.storage/page-005.md` | 81 |
 | `docs/reference/source-api/meridian.storage/page-006.md` | 55 |
 | `docs/reference/source-api/meridian.storage/page-007.md` | 51 |
 | `docs/reference/source-api/meridian.storage/page-008.md` | 50 |

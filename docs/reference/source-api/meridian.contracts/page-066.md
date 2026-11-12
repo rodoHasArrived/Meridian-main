@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredReportingExportDataDictionaryFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDataDictionaryFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L392).
+
+```csharp
+public sealed record StructuredReportingExportDataDictionaryFieldDto(string Name, string DataType, string? Description, int Ordinal, bool Required = true);
+```
+
+## StructuredReportingExportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:360](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L360).
+
+Structured export descriptor for governed downstream reporting consumers.
+
+```csharp
+public sealed record StructuredReportingExportDto(string ExportId, string Label, StructuredReportingExportPurposeDto Purpose, GovernanceReportArtifactFormatDto Format, string Dataset, string Consumer, int SchemaVersion, int RowCount, int FieldCount, int SourceCount, string Currency, DateTimeOffset AsOf, bool IsReady, string RetainedPath, string Route, string? DataDictionaryRoute = null, string? ValidationSummary = null, string? EvidenceRoute = null, string? VersionStamp = null, IReadOnlyList<string>? Tags = null, IReadOnlyList<string>? ReadinessBlockers = null, string? RetainedManifestPath = null, string? IntegrityHashSha256 = null, string? IntegritySummary = null, int? RowLineageCount = null);
+```
+
 ## StructuredReportingExportPayloadDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportPayloadDto</code>. Kind: `record`.
@@ -582,26 +604,4 @@ Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/
 
 ```csharp
 public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
-```
-
-## WorkspaceWorkflowSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceWorkflowSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L20).
-
-Workflow posture for one top-level workstation workspace.
-
-```csharp
-public sealed record WorkspaceWorkflowSummary(string WorkspaceId, string WorkspaceTitle, string StatusLabel, string StatusDetail, string StatusTone, WorkflowNextAction NextAction, WorkflowBlockerSummary PrimaryBlocker, IReadOnlyList<WorkflowEvidenceBadge> Evidence);
-```
-
-## WorkstationAccountingAgingBucketPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingAgingBucketPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:835](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L835).
-
-```csharp
-public sealed record WorkstationAccountingAgingBucketPayload(string Bucket, int Count);
 ```

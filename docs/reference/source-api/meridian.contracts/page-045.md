@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityProjectionRecordExtensions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L3).
+
+```csharp
+public static class SecurityProjectionRecordExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityDetailDto ToDetail(this SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L10) | The retained projection row viewed as the detail contract that terms resolvers, schedule factories and calculation policies consume. Identity, terms, version and effective window are carried unchanged; provenance and primary identifier are projection-only facts. |
+
 ## SecurityQuotationConvention
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityQuotationConvention</code>. Kind: `enum`.
@@ -842,7 +858,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1395](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1395).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1396](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1396).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -854,8 +870,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1397](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1397) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1398](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1398) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1398](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1398) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1399](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1399) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -879,16 +895,4 @@ A curve the caller pins for a role; Role is Discount in this increment.
 
 ```csharp
 public sealed record SecurityValuationCurveInput(string Role, Guid CurveId, Guid? CurveVersionId = null);
-```
-
-## SecurityValuationInputDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationInputDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L54).
-
-One retained input a value was built from, so the value can be rebuilt from the same evidence.
-
-```csharp
-public sealed record SecurityValuationInputDto(string Kind, string Reference, Guid? Id = null, long? Version = null, string? ContentSha256 = null, DateTimeOffset? AsOf = null, DateTimeOffset? RecordedAt = null);
 ```
