@@ -5,9 +5,9 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `asset_operations`.
-Catalogued objects: 130.
+Catalogued objects: 132.
 
 The catalog is split into 2 reviewable diagrams; no objects are omitted.
 
 - [Page 1: objects 1-80](asset-operations-contracts-page-01.md)
-- [Page 2: objects 81-130](asset-operations-contracts-page-02.md)
+- [Page 2: objects 81-132](asset-operations-contracts-page-02.md)

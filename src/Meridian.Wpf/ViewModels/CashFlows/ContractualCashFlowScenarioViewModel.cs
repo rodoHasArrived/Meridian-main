@@ -120,6 +120,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             "No projected events",
             "Preview a scenario to list the projected contractual events.");
         _client = client ?? throw new ArgumentNullException(nameof(client));
+        DraftCheck = new PreparerDraftCheckViewModel(client);
         if (!ContractualCashFlowSubjectKinds.IsSupported(subjectKind)) throw new ArgumentException("Unsupported contractual cash-flow subject kind.", nameof(subjectKind));
         if (subjectId == Guid.Empty) throw new ArgumentException("A subject identity is required.", nameof(subjectId));
         SubjectKind = subjectKind;
@@ -133,6 +134,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
     }
 
     public string SubjectKind { get; }
+    public PreparerDraftCheckViewModel DraftCheck { get; }
     public Guid SubjectId { get; }
     public string SubjectLabel { get; }
     public IReadOnlyList<string> RateScenarios { get; } = Enum.GetNames<StructuredCashFlowScenario>();
@@ -229,6 +231,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
 
     private async Task PreviewAsync()
     {
+        DraftCheck.SetRetainedTarget(null, null);
         var request = TryBuildRequest(out var refusal);
         if (request is null) { StatusText = refusal!; return; }
         var token = Begin("Previewing scenario…");
@@ -250,6 +253,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
 
     private async Task RetainRunAsync()
     {
+        DraftCheck.SetRetainedTarget(null, null);
         var request = TryBuildRequest(out var refusal);
         if (request is null) { StatusText = refusal!; return; }
         var token = Begin("Retaining run…");
@@ -260,8 +264,11 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             if (!response.Success || response.Data is null) { StatusText = Refused("Cash-flow run could not be retained", response.StatusCode, response.ErrorMessage); return; }
             if (response.Data.RunId == Guid.Empty || response.Data.Result is null)
             { StatusText = "The projection became blocked before it could be retained; preview again and review the blockers."; return; }
-            if (response.Data.SubjectId != SubjectId) throw new InvalidOperationException("The retained run names another subject. Refresh the selected record.");
+            if (response.Data.SubjectId != SubjectId || response.Data.SubjectKind != SubjectKind || response.Data.RunId != _runId)
+                throw new InvalidOperationException("The retained run does not match the exact requested subject and run identity. Refresh the selected record.");
             _run = response.Data;
+            DraftCheck.SetRetainedTarget(SubjectKind == ContractualCashFlowSubjectKinds.Security ? SubjectId : null,
+                SubjectKind == ContractualCashFlowSubjectKinds.Security ? response.Data.RunId : null);
             Apply(response.Data.Result, rebuildExercises: false);
             RaisePropertyChanged(nameof(Run));
             RaisePropertyChanged(nameof(RunText));
@@ -274,6 +281,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
 
     private async Task LoadRunAsync()
     {
+        DraftCheck.SetRetainedTarget(null, null);
         if (!Guid.TryParse(RunIdText, out var runId)) { StatusText = "Enter a retained run identity."; return; }
         ClearComparison();
         var token = Begin("Loading retained run…");
@@ -282,7 +290,11 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
             var response = await _client.GetRunAsync(SubjectKind, SubjectId, runId, token).ConfigureAwait(true);
             if (token.IsCancellationRequested) return;
             if (!response.Success || response.Data is null) { StatusText = Refused("Retained cash-flow run could not be loaded", response.StatusCode, response.ErrorMessage); return; }
+            if (response.Data.SubjectId != SubjectId || response.Data.SubjectKind != SubjectKind || response.Data.RunId != runId)
+                throw new InvalidOperationException("The retained run does not match the exact selected subject and run identity.");
             _loadedRun = response.Data;
+            DraftCheck.SetRetainedTarget(SubjectKind == ContractualCashFlowSubjectKinds.Security ? SubjectId : null,
+                SubjectKind == ContractualCashFlowSubjectKinds.Security ? response.Data.RunId : null);
             ReplayStatusText = string.Empty;
             RaisePropertyChanged(nameof(LoadedRun));
             RaisePropertyChanged(nameof(LoadedRunText));
@@ -393,6 +405,7 @@ public sealed class ContractualCashFlowScenarioViewModel : BindableBase
 
     private void Invalidate()
     {
+        DraftCheck.SetRetainedTarget(null, null);
         _operation?.Cancel();
         _operation = null;
         _busy = false;
