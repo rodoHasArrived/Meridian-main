@@ -39,8 +39,11 @@ public sealed class PaperGatewayLiveFeedPricingTests
         await using var gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance, liveFeed: cache);
         var report = await gateway.SubmitOrderAsync(new OrderRequest
         {
-            Symbol = "SPY", Side = OrderSide.Buy, Type = OrderType.Market,
-            Quantity = 1m, LimitPrice = callerPrice
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            LimitPrice = callerPrice
         });
 
         report.OrderStatus.Should().Be(OrderStatus.Filled);
@@ -53,8 +56,11 @@ public sealed class PaperGatewayLiveFeedPricingTests
         await using var gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
         var report = await gateway.SubmitOrderAsync(new OrderRequest
         {
-            Symbol = "SPY", Side = OrderSide.Buy, Type = OrderType.Market,
-            Quantity = 1m, LimitPrice = 1m
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            LimitPrice = 1m
         });
 
         report.OrderStatus.Should().Be(OrderStatus.Rejected);

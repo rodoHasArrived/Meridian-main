@@ -520,8 +520,11 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         var paths = await WriteFragmentsAsync($"{prefix}SPY_trade_{date}_provider-2000-01-01");
         var options = new StorageOptions
         {
-            RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat,
-            IncludeProvider = true, FilePrefix = prefix, DatePartition = partition
+            RootPath = TestDataRoot,
+            NamingConvention = FileNamingConvention.Flat,
+            IncludeProvider = true,
+            FilePrefix = prefix,
+            DatePartition = partition
         };
 
         var result = await new FileMaintenanceService(options).DefragmentAsync(new DefragOptions());
@@ -594,7 +597,8 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
 
     private FileMaintenanceService FlatMaintenance() => new(new StorageOptions
     {
-        RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat
+        RootPath = TestDataRoot,
+        NamingConvention = FileNamingConvention.Flat
     });
 
     private async Task<string[]> WriteFragmentsAsync(string partition)

@@ -192,7 +192,8 @@ public sealed class WriteAheadLogCorruptionModeTests : TempDirectoryAsyncTestBas
         var retainedBytes = await File.ReadAllBytesAsync(source);
         await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
-            SyncMode = WalSyncMode.NoSync, CorruptionMode = mode
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = mode
         });
         var alerts = 0;
         wal.CorruptionDetected += _ => alerts++;
@@ -217,7 +218,8 @@ public sealed class WriteAheadLogCorruptionModeTests : TempDirectoryAsyncTestBas
         await File.WriteAllTextAsync(source, text);
         await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
-            SyncMode = WalSyncMode.NoSync, CorruptionMode = WalCorruptionMode.Halt
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Halt
         });
 
         await wal.InitializeAsync();
