@@ -19,7 +19,7 @@ test coverage, documentation, and CI duplication. Use synthetic fixtures. No liv
 Working snapshot: `codex/correct-review-findings`, based on `86a1689f20`; clean before work.
 The supplied findings are hypotheses until checked against source and targeted tests.
 The root lane installed .NET SDK 10.0.100 locally because the environment initially had no
-`dotnet` on PATH. Exact validation outcomes are recorded below after integration.
+`dotnet` on PATH. After environment resumption, validation used SDK 10.0.404.
 
 Shared-file coordination: storage safety owns JSONL fencing, storage sinks owns buffer lifecycle;
 coordinate before edits. Structure owns project and solution files; leave test sources in place
@@ -91,7 +91,8 @@ CI changes are designated for **human governance review** before merge, as requi
 | Windows-targeted desktop compilation | Passed; WPF runtime execution requires Windows |
 | CI runner Python tests | 53 passed; three environment skips |
 | Main integration and boundary slice | 1,027 passed; zero failures/skips; actual HTTP credential masking, timing hotspots, reporting readers and assembly boundaries |
-| Documentation CI lane | Generators converged with zero failures; final committed-output check pending local commit |
+| Connection-service and API-client regressions | 40 passed; zero failures/skips |
+| Documentation CI lane | `bash scripts/ci.sh --lane verify-docs` passed, including convergence, committed-output drift checks and 83 adapter-readiness automation tests |
 
 Main test evidence is retained in the integration run's TRX output. Focused commands use
 `dotnet test <test-project> --no-build --no-restore --filter <owning-test-class>` after compiling
