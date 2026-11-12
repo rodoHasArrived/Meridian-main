@@ -66,6 +66,8 @@ approved versions/evidence and retain local input across conflicts. Journal sour
 keeps transaction and functional amounts separate and labels agreement coverage as advisory.
 Selected-line agreement authoring requires the server's explicit compatible-writer capability;
 historical agreement/version references remain visible when that capability is unavailable.
+The new-draft control explains registry loading, an open draft, unavailable authority and access
+restrictions through the shared button's accessible disabled reason.
 Focused coverage: `accounting-screen.intercompany-agreements.test.tsx`, `intercompany-agreement-editor.test.tsx`,
 `intercompany-journal-reference.test.tsx`, `intercompany-agreement-journals.test.tsx` and
 `intercompany-agreements.api.test.ts`.

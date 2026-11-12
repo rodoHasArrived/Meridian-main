@@ -366,7 +366,15 @@
       ],
       "waitForTexts": [
         "Account balances from the fund's posted journal, scoped by ledger period.",
-        "Trial balance scope"
+        "Trial balance scope",
+        "3 trial balance lines loaded for the posted journal for period June 2026.",
+        "Cash contributes $120,500 across 3 ledger entries for the posted journal for period June 2026.",
+        "Cash sweep",
+        "Capital contribution"
+      ],
+      "waitForAbsentTexts": [
+        "Loading trial balance for the posted journal for period June 2026.",
+        "Loading posted journal entries for this period."
       ]
     },
     {
@@ -490,7 +498,14 @@
         "Search by account, amount, journal ID, source, security, entity",
         "Ledger book",
         "Ledger period",
-        "Ledger search results"
+        "Ledger search results",
+        "Cash sweep receipt",
+        "Investor contribution recorded"
+      ],
+      "waitForAbsentTexts": [
+        "Loading ledger books.",
+        "Loading ledger periods.",
+        "Loading posted journal entries for this period."
       ]
     },
     {
@@ -1145,7 +1160,12 @@
       ],
       "waitForTexts": [
         "Backfill queue",
-        "Selected Backfill"
+        "Selected Backfill",
+        "Remediation history unavailable",
+        "Backfill remediation history is unavailable."
+      ],
+      "waitForAbsentTexts": [
+        "Loading durable remediation history…"
       ]
     },
     {
@@ -1268,7 +1288,11 @@
       "waitForTexts": [
         "Storage & Data Assurance",
         "Assurance signals",
-        "Guarded maintenance"
+        "Guarded maintenance",
+        "meridian-data",
+        "Quality watch unavailable",
+        "Maintenance read needs attention",
+        "No maintenance executions recorded."
       ]
     },
     {
