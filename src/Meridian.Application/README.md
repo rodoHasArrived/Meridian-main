@@ -75,10 +75,14 @@ fixings, factors and lifecycle notices. A configured connection or general certi
 establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
 IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
 
-Cash-flow context v4 persists schedule row version 1, including measured accrual dates. A frozen
-v0 serializer keeps v1–v3 receipt hashes and replay arithmetic stable; unsupported row versions
-refuse replay. Accrual posting reads held face from shared lot quantity and multiplier and converts
-acquisition prices using the declared quote convention. Blocked empty schedules report their blocker.
+Cash-flow context v5 persists schedule row version 2 with piecewise interest-principal evidence.
+Frozen row-0 and row-1 serializers preserve context v1–v3 and v4 receipt hashes and arithmetic.
+Unsupported model/row combinations refuse replay. Fixed-rate pool accrual reconciles dated source
+factors with typed daily lot history and earns interest through a paydown date before reducing face.
+Consecutive windows subtract cumulative owned coupon targets, including earlier holdings in the
+same coupon. Acquisition quotes retain their explicit par basis; cost-basis relief instead uses
+monetary cost per recorded quantity. Non-face amortization lots are refused, and face-unit deltas
+retain decimal precision until monetary relief. Blocked empty schedules report their blocker.
 The unused whole-coupon posting helper and direct corporate-action poster have been retired;
 historical corporate-action characterizations live only in test fixtures.
 
@@ -107,7 +111,7 @@ Its banking schema follows `BankingStartup.SchemaVariable`; funding requires ret
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v4`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1–v3 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+Bond cash-flow context receipts now use `bond-cash-flow-context-v5`, retaining fixed-rate interest-principal segments alongside existing declared/floating evidence. Replay dispatches v1–v4 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no
 schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject

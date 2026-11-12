@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageState
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageState</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L43).
+
+Metadata only: never a copy of the source work item or financial workflow.
+
+```csharp
+public sealed record OperatorTriageState(long Version, string? AssigneeId, IReadOnlyList<OperatorTriagePersonalState> Personal, IReadOnlyList<OperatorTriageActivity> Activity, IReadOnlyList<OperatorTriageReceipt> Receipts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49) |  |
+
+## OperatorWorkflowHomeSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorWorkflowHomeSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L6).
+
+Shared home-summary projection for operator workflow guidance across the workstation shell.
+
+```csharp
+public sealed record OperatorWorkflowHomeSummary(DateTimeOffset GeneratedAt, bool HasOperatingContext, string OperatingContextLabel, string FundDisplayName, IReadOnlyList<WorkspaceWorkflowSummary> Workspaces)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MeridianAssuranceScoreDto AssuranceScore { get; init; } = new (100, EvidenceStatusDto.Ready, [], []);</code> | [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L13) |  |
+
 ## OperatorWorkItemDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorWorkItemDto</code>. Kind: `record`.
@@ -695,31 +731,3 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:426](../../../.
 ```csharp
 public sealed record ProviderCorporateActionReadinessLineDto(string Dimension, string Label, ProviderLedgerReconciliationCheckStatusDto Status, string RequiredFeed, string EvidenceSource, int Count, string Reason);
 ```
-
-## ProviderLedgerReconciliationBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:338](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L338).
-
-```csharp
-public sealed record ProviderLedgerReconciliationBreakDto(string BreakId, string CheckId, string Code, ReconciliationBreakCategory Category, ReconciliationBreakSeverity Severity, string ExpectedSource, string ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason, string? Symbol = null, string? EvidenceLink = null, string? BreakKey = null, string? Owner = null, decimal? Tolerance = null, DateTimeOffset? FirstObservedAt = null, DateTimeOffset? LastObservedAt = null, int AgeMinutes = 0, ProviderLedgerReconciliationBreakSignOffStateDto SignOffState = ProviderLedgerReconciliationBreakSignOffStateDto.Open, string? SignedOffBy = null, DateTimeOffset? SignedOffAt = null);
-```
-
-## ProviderLedgerReconciliationBreakSignOffStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationBreakSignOffStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:300](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L300).
-
-```csharp
-public enum ProviderLedgerReconciliationBreakSignOffStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Open = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:302](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L302) |  |
-| <code>Assigned = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:303](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L303) |  |
-| <code>SignedOff = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:304](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L304) |  |

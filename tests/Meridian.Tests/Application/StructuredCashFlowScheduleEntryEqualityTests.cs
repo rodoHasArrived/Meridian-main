@@ -56,6 +56,19 @@ public sealed class StructuredCashFlowScheduleEntryEqualityTests
             SampleFor(property.PropertyType).Should().NotBeNull($"add a sample value for '{property.Name}' ({property.PropertyType})");
     }
 
+    [Fact]
+    public void Equals_ComparesSegmentValuesAcrossSeparateCollections()
+    {
+        var segments = (IReadOnlyList<StructuredCashFlowInterestSegment>)SampleFor(
+            typeof(IReadOnlyList<StructuredCashFlowInterestSegment>))!;
+        var left = Baseline with { InterestSegments = segments };
+        var right = Baseline with { InterestSegments = segments.Select(segment => segment with { }).ToArray() };
+
+        left.Should().Be(right);
+        left.GetHashCode().Should().Be(right.GetHashCode());
+        (right with { InterestSegments = [segments[0] with { FactorAfter = 0.5m }] }).Should().NotBe(left);
+    }
+
     private static IEnumerable<PropertyInfo> WritableMembers()
         => typeof(StructuredCashFlowScheduleEntry)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -87,6 +100,15 @@ public sealed class StructuredCashFlowScheduleEntryEqualityTests
             return 1;
         if (underlying == typeof(decimal))
             return 12.34m;
+        if (underlying == typeof(IReadOnlyList<StructuredCashFlowInterestSegment>))
+        {
+            var start = new DateOnly(2031, 1, 1);
+            var end = start.AddDays(1);
+            return new StructuredCashFlowInterestSegment[]
+            {
+                new(start, end, 100m, 1m, 1m, start, end) { FactorAfter = 0m }
+            };
+        }
         if (underlying == typeof(BondFloatingRateEvidence))
         {
             var constructor = typeof(BondFloatingRateEvidence).GetConstructors().OrderByDescending(static c => c.GetParameters().Length).First();
