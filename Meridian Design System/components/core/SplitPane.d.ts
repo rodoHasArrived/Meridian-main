@@ -50,4 +50,4 @@ export interface SplitPaneProps extends Omit<React.HTMLAttributes<HTMLDivElement
  *   <AlertInspector />
  * </SplitPane>
  */
-export declare function SplitPane(props: SplitPaneProps): JSX.Element;
+export declare function SplitPane(props: SplitPaneProps): React.JSX.Element;

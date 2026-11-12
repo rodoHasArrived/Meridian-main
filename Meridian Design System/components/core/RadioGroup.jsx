@@ -36,7 +36,8 @@ export function RadioGroup({
   disabled = false, className = "", ...rest
 }) {
   inject();
-  const groupName = name || React.useId?.() || "mds-radio";
+  const generatedName = React.useId();
+  const groupName = name || generatedName;
   const items = normalize(options);
   return (
     <div role="radiogroup"

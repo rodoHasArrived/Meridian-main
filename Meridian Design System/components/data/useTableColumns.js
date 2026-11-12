@@ -18,27 +18,26 @@ export function useTableColumns(baseColumns, { persistKey = null, defaultWidth =
       hidden: {},
       pinned: baseColumns.filter((c) => c.pinned).map((c) => c.key),
     };
-    if (persistKey && typeof localStorage !== "undefined") {
-      try {
+    try {
+      if (persistKey && typeof localStorage !== "undefined") {
         const saved = JSON.parse(localStorage.getItem(persistKey));
         // Only adopt saved state whose columns still match the current schema.
         if (saved && [...saved.order].sort().join("|") === [...model.order].sort().join("|")) {
           return { ...model, ...saved };
         }
-      } catch (e) { /* ignore */ }
-    }
+      }
+    } catch (e) { /* unavailable/corrupt storage leaves the declared column model */ }
     return model;
   }, [baseKeys]);
 
   const [model, setModel] = React.useState(initial);
   React.useEffect(() => setModel(initial), [initial]);
   React.useEffect(() => {
-    if (persistKey && typeof localStorage !== "undefined") {
-      localStorage.setItem(persistKey, JSON.stringify(model));
-    }
+    try { if (persistKey && typeof localStorage !== "undefined") localStorage.setItem(persistKey, JSON.stringify(model)); }
+    catch { /* Column changes remain usable without persistence. */ }
   }, [model, persistKey]);
 
-  const byKey = React.useMemo(() => Object.fromEntries(baseColumns.map((c) => [c.key, c])), [baseKeys]);
+  const byKey = React.useMemo(() => Object.fromEntries(baseColumns.map((c) => [c.key, c])), [baseColumns]);
 
   const resize = React.useCallback((key, width) => {
     setModel((m) => ({ ...m, widths: { ...m.widths, [key]: Math.max(48, Math.round(width)) } }));

@@ -58,8 +58,9 @@ export function IncomeSchedule({
   className = "", ...rest
 }) {
   inject();
-  const money = (v) => formatMoney(v, { decimals: 2, parens: true, zeroDash: true });
-  const total = (k) => rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
+  const usable = value => value !== null && value !== undefined && value !== "" && !(typeof value === "string" && value.trim() === "") && Number.isFinite(Number(value));
+  const money = value => usable(value) ? formatMoney(value, { currency, decimals: 2, parens: true, zeroDash: true }) : "Missing";
+  const total = key => rows.every(row => usable(row[key])) ? rows.reduce((sum, row) => sum + Number(row[key]), 0) : null;
   return (
     <div className={`mds-isch__wrap${className ? " " + className : ""}`} style={{ maxHeight }} {...rest}>
       <table className="mds-isch">
@@ -92,7 +93,7 @@ export function IncomeSchedule({
                 <td>{money(r.income)}</td>
                 <td>{money(r.closingBook ?? r.endingBook)}</td>
                 <td style={{ textAlign: "left" }}>
-                  <span className="mds-isch__st" style={{ color: `var(--cond-${st.tone}-fg)` }}>
+                  <span className="mds-isch__st" style={{ color: "var(--text-primary)" }}>
                     <i aria-hidden="true">{st.glyph}</i>{r.stateLabel || st.label}
                   </span>
                 </td>

@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Token reference</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 20px 22px; background: var(--bg); font-family: var(--font-body);
     color: var(--text-primary); -webkit-font-smoothing: antialiased; }
@@ -12,7 +14,7 @@
   h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
   .rule { font-family: var(--font-data); font-size: 11px; color: var(--text-secondary);
     border: 1px solid var(--border); border-left: 3px solid var(--brand-signal,#C56343); padding: 3px 9px; }
-  .rule b { color: var(--brand-signal-ink,#944A32); }
+  .rule b { color: var(--interaction-link); }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
   .lbl { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .05em;
     color: var(--text-muted); margin: 0 0 9px; }
@@ -39,7 +41,7 @@
     font-variant: all-small-caps; letter-spacing: .04em; padding: 1px 5px; margin-left: 6px;
     vertical-align: 1px; }
   .b-over { color: var(--purple-dim); border: 1px solid var(--purple); background: var(--purple-a10); }
-  .b-auth { color: var(--brand-signal-ink,#944A32); border: 1px solid var(--brand-signal,#C56343); background: var(--blue-a10); }
+  .b-auth { color:var(--interaction-link); border: 1px solid var(--brand-signal,#C56343); background: var(--blue-a10); }
   .b-never{ color: var(--text-muted); border: 1px solid var(--border-strong); background: var(--bg-medium); }
 
   table { width: 100%; border-collapse: collapse; }
@@ -66,7 +68,7 @@
   .pair em { font-style: normal; color: var(--text-primary); font-weight: 600; }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="head">
     <h1>Token reference — the three tiers</h1>
     <span class="rule"><b>override</b> Tier 1 · <b>author</b> Tier 2 · never hardcode Tier 3</span>

@@ -429,7 +429,7 @@ public static class LedgerAccounts
     /// is a ticker rather than a currency code, so currency inference must not read the symbol as
     /// a denomination.
     /// </summary>
-    internal static bool UsesInstrumentSymbol(LedgerAccount account)
+    public static bool UsesInstrumentSymbol(LedgerAccount account)
         => account.Symbol is not null && InstrumentSymbolAccountNames.Contains(account.Name);
 
     /// <summary>

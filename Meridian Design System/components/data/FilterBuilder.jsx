@@ -89,8 +89,9 @@ function rowActive(fields, r) {
 function testRow(field, r, raw) {
   const type = (field && field.type) || "text";
   if (type === "number") {
+    if (raw == null || typeof raw === "string" && raw.trim() === "") return false;
     const n = Number(raw), a = Number(r.value), b = Number(r.value2);
-    if (isNaN(n)) return false;
+    if (!Number.isFinite(n) || !Number.isFinite(a) || needsSecond(r.op) && !Number.isFinite(b)) return false;
     switch (r.op) {
       case "eq": return n === a; case "ne": return n !== a;
       case "gt": return n > a; case "gte": return n >= a;
@@ -100,6 +101,7 @@ function testRow(field, r, raw) {
     }
   }
   if (type === "date") {
+    if (raw == null || raw === "") return false;
     const d = new Date(raw), a = new Date(r.value), b = new Date(r.value2);
     if (isNaN(d)) return false;
     switch (r.op) {

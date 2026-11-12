@@ -1,6 +1,7 @@
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { useEffect, useMemo, useRef } from "react";
+import type { ReactNode } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
@@ -15,6 +16,14 @@ import { Sparkline } from "@/components/charts/Sparkline";
 import { exportTableQuery } from "@/lib/table-workbench";
 import { formatNumber } from "@/lib/format";
 import { Histogram } from "@/components/charts";
+import {
+  CompareSheet,
+  CompareToggle,
+  CompareTray,
+  SelectionCompareProvider,
+  useSelectionCompare
+} from "@/components/charts/SelectionCompare";
+import type { CompareSheetColumn } from "@/components/charts/SelectionCompare";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +32,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
-import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
+import {
+  buildStrategyEquityPathCompareItem,
+  useStrategyEquityPathCompare,
+  useStrategyRunLibraryViewModel
+} from "@/screens/strategy-screen.view-model";
 import type {
   StrategyComparisonTableRow,
   StrategyDiffChangeRow,
@@ -41,7 +54,7 @@ import type {
   StrategyRunLibraryState,
   StrategyRunTableRow
 } from "@/screens/strategy-screen.view-model";
-import type { StrategyWorkspaceResponse } from "@/types";
+import type { StrategyRunRecord, StrategyWorkspaceResponse } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface StrategyScreenProps {
@@ -233,6 +246,78 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
   }
 };
 
+/** Drops a run from the equity-path set when the run library no longer lists it. */
+function EquityPathCompareRowSync({ runIds }: { runIds: readonly string[] }) {
+  const { items, remove } = useSelectionCompare();
+  useEffect(() => {
+    for (const item of items) {
+      if (!runIds.includes(item.id)) {
+        remove(item.id);
+      }
+    }
+  }, [items, remove, runIds]);
+  return null;
+}
+
+/**
+ * Equity paths on one scale for the Strategy run library: the design-system SelectionCompare
+ * tray and inline sheet, wired the way the package's strategy-runs template wires them. The set
+ * (up to six runs) is visual only and independent of the two-run compare / diff / promote
+ * selection. Curves are read when the chart is opened, not before.
+ */
+function StrategyRunEquityPathCompare({ runs, children }: { runs: StrategyRunRecord[]; children: ReactNode }) {
+  const equityPaths = useStrategyEquityPathCompare(runs);
+  const runIds = useMemo(() => runs.map((run) => run.id), [runs]);
+  const { viewFor } = equityPaths;
+  const tableColumns = useMemo<CompareSheetColumn[]>(() => [
+    { id: "curve-dates", label: "Curve dates", render: (item) => viewFor(item.id).curveDatesText },
+    { id: "curve-points", label: "Curve points", numeric: true, render: (item) => viewFor(item.id).curvePointsText },
+    { id: "initial-equity", label: "Initial equity (reported)", numeric: true, render: (item) => viewFor(item.id).initialEquityText },
+    { id: "final-equity", label: "Final equity (reported)", numeric: true, render: (item) => viewFor(item.id).finalEquityText }
+  ], [viewFor]);
+
+  return (
+    <SelectionCompareProvider
+      max={equityPaths.maxRuns}
+      categories={equityPaths.categories}
+      format={equityPaths.formatIndex}
+      onChange={equityPaths.onCompareSetChange}
+      onOpenChange={equityPaths.onSheetOpenChange}
+    >
+      <EquityPathCompareRowSync runIds={runIds} />
+      <CompareTray
+        label="runs to compare"
+        emptyLabel={`Tick ▢ Chart on two or more runs to compare their equity paths on one scale (up to ${equityPaths.maxRuns}). This set only draws a chart; it is separate from the two-run selection used by Compare, Diff and Promote.`}
+        regionLabel="Equity path comparison set"
+        compareLabel={(count) => count >= 2 ? `Chart ${count} equity paths` : "Chart equity paths"}
+        compareDisabledReason="Tick ▢ Chart on at least two runs to chart their equity paths."
+        removeLabel={(item) => `Remove ${item.title} from the equity path set`}
+        fullLabel={(max) => `Set is full (${max}). Remove a run to chart another.`}
+      />
+      <CompareSheet
+        mode="inline"
+        title="Equity paths on one scale"
+        footerLabel="Total return"
+        footerValue={equityPaths.totalReturnFor}
+        seriesFor={equityPaths.seriesFor}
+        categoryLabels={equityPaths.categoryLabels}
+        tableColumns={tableColumns}
+        itemColumnLabel="Run"
+        closeLabel="Close equity path chart"
+        basis={(
+          <ul className="list-disc space-y-1 pl-5">
+            <li>{equityPaths.basisText.value}</li>
+            <li>{equityPaths.basisText.category}</li>
+            <li>{equityPaths.basisText.footer}</li>
+            <li>{equityPaths.basisText.asOf}</li>
+          </ul>
+        )}
+      />
+      {children}
+    </SelectionCompareProvider>
+  );
+}
+
 export function StrategyScreen({ data }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
@@ -338,6 +423,24 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
       label: "Updated",
       exportValue: run => run.lastUpdatedText,
       render: (run) => <span className="font-mono text-xs text-muted-foreground">{run.lastUpdatedText}</span>
+    },
+    {
+      // A button with aria-pressed, never a checkbox: this set (up to six runs, chart only) is
+      // separate from the two-run compare / diff selection in the first column. The visible word
+      // stays "Chart" in both states, so the accessible name always contains it (label in name)
+      // and the name of a toggle does not change with its state; the glyph, the pressed styling
+      // and aria-pressed carry the state.
+      id: "equity-path",
+      label: "Equity path",
+      render: (run) => (
+        <CompareToggle
+          item={buildStrategyEquityPathCompareItem(run.raw, vm.runs)}
+          label="Chart"
+          pressedLabel="Chart"
+          actionLabel={(item) => `Chart equity path for ${item.title}`}
+          fullReason={(max) => `Equity path set is full (${max}). Remove a run to chart another.`}
+        />
+      )
     }
   ], [vm]);
 
@@ -773,6 +876,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             <p className="sr-only">{vm.runHistorySummary.engineCoverageText}</p>
             <p className="sr-only">{vm.runHistorySummary.liveAdjacentText}</p>
           </section>
+          <StrategyRunEquityPathCompare runs={vm.runs}>
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
             <TableWorkbench
               workbenchId="strategy-runs"
@@ -844,6 +948,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               </div>
             )}
           </div>
+          </StrategyRunEquityPathCompare>
         </CardContent>
       </Card>
 

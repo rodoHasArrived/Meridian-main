@@ -8,6 +8,11 @@
   <script src="../../_preview_runtime.js"></script>
   <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
+<style>
+.specimen-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.specimen-grid > *{min-width:0}
+@media(max-width:900px){.specimen-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
@@ -17,8 +22,8 @@ const { WaterfallChart, Treemap, BarChart } = window.MeridianDesignSystem_205d17
 function Section({ title, sub, children, span, h = null }) {
   return (
     <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
-      padding:14, gridColumn: span ? `span ${span}` : undefined, display:"flex", flexDirection:"column" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:10 }}>
+      padding:14, minWidth:0, gridColumn: span ? "1 / -1" : undefined, display:"flex", flexDirection:"column" }}>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:6, justifyContent:"space-between", alignItems:"baseline", marginBottom:10 }}>
         <span style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em", color:"var(--text-muted)" }}>{title}</span>
         {sub && <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-secondary)" }}>{sub}</span>}
       </div>
@@ -70,7 +75,7 @@ const STRATEGY_EXP = [12.4, 9.8, 7.2, 4.4, 3.1, 1.9];
 
 function Demo() {
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1120 }}>
+    <div className="specimen-grid" style={{ display:"grid", gap:16, maxWidth:1120 }}>
       <Section title="WaterfallChart · P&L attribution" sub="2026-Q2 · gross \u2192 net · $k" span={2}>
         <WaterfallChart items={ATTRIB} totalLabel="Net P&L" valueFmt={k} height={280} />
       </Section>

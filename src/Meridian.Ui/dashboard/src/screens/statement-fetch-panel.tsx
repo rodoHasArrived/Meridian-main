@@ -309,7 +309,7 @@ function StatementFetchSchedulesTable({
         ) : null}
         {viewModel.schedules.length > 0 ? (
           <div className="overflow-x-auto">
-            <TableWorkbench<(typeof viewModel.schedules)[number]> workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(viewModel.schedules)} rows={viewModel.schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
+            <TableWorkbench<(typeof viewModel.schedules)[number]> tableClassName={"w-full border-collapse text-xs"} maxVisibleRows={null}  workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(viewModel.schedules)} rows={viewModel.schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
                       <div className="font-mono font-semibold">{schedule.scheduleId}</div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         <Badge variant={schedule.enabled ? "success" : "outline"}>{schedule.enabled ? "Enabled" : "Paused"}</Badge>

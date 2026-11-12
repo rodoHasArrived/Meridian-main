@@ -163,8 +163,9 @@
   --viz-band-outline: color-mix(in srgb, var(--series-prior) 70%, var(--dim-mix));
 }
 
+:root { --viz-reflow: var(--motion-slow, 240ms); --viz-trace: var(--motion-slower, 300ms); }
+
 /* Reduced motion: analytical relationships must survive without animation. */
 @media (prefers-reduced-motion: reduce) {
   :root { --viz-reflow: 0ms; --viz-trace: 0ms; }
 }
-:root { --viz-reflow: var(--motion-slow, 240ms); --viz-trace: var(--motion-slower, 300ms); }

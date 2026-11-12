@@ -22,6 +22,7 @@ function inject() {
   font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border,#D2CDC3);}
 .mds-colchz__item{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;
+  appearance:none;border:0;background:transparent;width:100%;text-align:left;
   font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);
   transition:background .08s ease;}
 .mds-colchz__item:hover{background:var(--bg-active,#E7EDF2);}
@@ -46,12 +47,15 @@ export function ColumnChooser({ columns = [], visible, onChange }) {
   inject();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
+  const buttonRef = React.useRef(null);
   const visSet = React.useMemo(() => new Set(visible ?? columns.map(c => c.key)), [visible, columns]);
 
   React.useEffect(() => {
     const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const key = (e) => { if (e.key === "Escape" && ref.current?.contains(e.target)) { e.stopPropagation(); setOpen(false); buttonRef.current?.focus(); } };
     document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    document.addEventListener("keydown", key);
+    return () => { document.removeEventListener("mousedown", h); document.removeEventListener("keydown", key); };
   }, []);
 
   const toggle = (key) => {
@@ -66,7 +70,7 @@ export function ColumnChooser({ columns = [], visible, onChange }) {
 
   return (
     <div ref={ref} className="mds-colchz">
-      <button type="button"
+      <button type="button" ref={buttonRef} aria-expanded={open}
         className={`mds-colchz__btn${hiddenCount > 0 ? " mds-colchz__btn--active" : ""}`}
         onClick={() => setOpen(o => !o)}>
         Columns {hiddenCount > 0 && `· ${hiddenCount} hidden`}
@@ -75,12 +79,12 @@ export function ColumnChooser({ columns = [], visible, onChange }) {
         <div className="mds-colchz__menu">
           <div className="mds-colchz__head">Show / hide columns</div>
           {columns.map(col => (
-            <div key={col.key} className="mds-colchz__item" onClick={() => toggle(col.key)}>
-              <div className={`mds-colchz__ck${visSet.has(col.key) ? " mds-colchz__ck--on" : ""}`}>
+            <button type="button" role="checkbox" aria-checked={visSet.has(col.key)} key={col.key} className="mds-colchz__item" onClick={() => toggle(col.key)}>
+              <span aria-hidden="true" className={`mds-colchz__ck${visSet.has(col.key) ? " mds-colchz__ck--on" : ""}`}>
                 {visSet.has(col.key) && "✓"}
-              </div>
+              </span>
               {col.label}
-            </div>
+            </button>
           ))}
           {hiddenCount > 0 && (
             <div className="mds-colchz__foot">

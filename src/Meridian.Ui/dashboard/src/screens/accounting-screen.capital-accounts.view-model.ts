@@ -32,6 +32,70 @@ import type {
   CapitalAccountWorkbench,
 } from "@/types";
 import { formatCount } from "@/lib/format";
+import { formatMoney } from "@/components/accounting/money";
+import {
+  proveRollforward,
+  rollforwardVerdict,
+  usableAmount,
+  type RollforwardVerdict,
+} from "@/components/accounting/proof-arithmetic";
+
+/** One movement in an investor capital account rollforward; the amount stays numeric. */
+export interface CapitalAccountRollforwardMovementViewModel {
+  id: string;
+  label: string;
+  /** Signed net capital activity. `null` when the wire value is not a usable number. */
+  value: number | null;
+  note?: string;
+}
+
+/**
+ * Numeric rollforward for one investor capital account: opening net activity, the movements
+ * that explain the change, and the stated ending. Amounts are carried as numbers so the
+ * RollforwardTrace can prove the arithmetic instead of re-parsing `rollForwardLabel`.
+ */
+export interface CapitalAccountRollforwardViewModel {
+  openingLabel: string;
+  closingLabel: string;
+  opening: number | null;
+  closing: number | null;
+  currency: string;
+  movements: CapitalAccountRollforwardMovementViewModel[];
+  /** The workbench never supplies an independently stated opening, so the trace says how it arose. */
+  openingDerivation: string;
+  /**
+   * Set when the account has no subledger entries. The one net movement then restates the
+   * ending, so agreement proves nothing and the trace says "Not proved" with this sentence.
+   */
+  unsupportedReason?: string;
+  /**
+   * What the proof says, computed by the same arithmetic the trace renders. `unsupported` is
+   * the no-entry case that agrees: it is never reported as `tied`.
+   */
+  verdict: RollforwardVerdict;
+  /** Short verdict for the disclosure summary, e.g. "Ties", "Not itemised" or "Out by $20.00". */
+  verdictLabel: string;
+}
+
+/** Why an account with no subledger entries cannot be proved. Completes "Not proved — …". */
+export const CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON =
+  "no subledger entries are loaded for this account, so the one net movement restates the ending instead of explaining it.";
+
+const CAPITAL_ACCOUNT_ROLLFORWARD_VERDICT_LABEL: Record<Exclude<RollforwardVerdict, "out">, string> = {
+  tied: "Ties",
+  unsupported: "Not itemised",
+  indeterminate: "Not provable"
+};
+
+export interface CapitalAccountWorkbenchInvestorAccountProofRowViewModel
+  extends CapitalAccountWorkbenchInvestorAccountRowViewModel {
+  rollforward: CapitalAccountRollforwardViewModel;
+}
+
+/** The Capital Account Workbench view model with a numeric rollforward on every investor row. */
+export interface CapitalAccountWorkbenchProofViewModel extends Omit<CapitalAccountWorkbenchViewModel, "investorAccounts"> {
+  investorAccounts: CapitalAccountWorkbenchInvestorAccountProofRowViewModel[];
+}
 
 const defaultCapitalAccountWorkbenchServices: CapitalAccountWorkbenchServices = {
   getWorkbench: (query) => getCapitalAccountWorkbench(query)
@@ -41,7 +105,7 @@ export function useCapitalAccountWorkbenchViewModel(
   active: boolean,
   search = "",
   services: CapitalAccountWorkbenchServices = defaultCapitalAccountWorkbenchServices
-): CapitalAccountWorkbenchViewModel {
+): CapitalAccountWorkbenchProofViewModel {
   const [loadedWorkbench, setLoadedWorkbench] = useState<{
     query: CapitalAccountWorkbenchQuery;
     workbench: CapitalAccountWorkbench;
@@ -106,7 +170,7 @@ function parseCapitalAccountWorkbenchQuery(search: string): CapitalAccountWorkbe
   };
 }
 
-function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | null): Omit<CapitalAccountWorkbenchViewModel, "loading" | "errorText" | "refresh"> {
+function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | null): Omit<CapitalAccountWorkbenchProofViewModel, "loading" | "errorText" | "refresh"> {
   if (!workbench) {
     return {
       title: "Capital Account Workbench",
@@ -235,9 +299,69 @@ function buildCapitalAccountFundEventCommandRows(
   return rows;
 }
 
+/**
+ * Build the numeric rollforward for one investor capital account.
+ *
+ * Movements are the account's subledger entries (one per entry, in wire order), each carrying
+ * its own `netCapitalActivity`. With no entries the trace shows one "Net capital activity"
+ * movement. The contributions / distributions / subscriptions / redemptions / fees buckets are
+ * deliberately not used: their signs are not guaranteed to sum to the net.
+ *
+ * The opening is not an independently stated balance. The private-capital projection derives it
+ * from the first subledger entry's running net activity (zero when there are no entries), so the
+ * trace labels it as derived rather than presenting it as a bare opening balance.
+ *
+ * With no entries the three figures are not independent at all: the projection reports a zero
+ * opening and the same number as both the net activity and the ending, so they agree for every
+ * value. That agreement is reported as `unsupported` ("Not itemised"), never as a passed proof.
+ * An out-by or an unusable amount in that case is still reported as such.
+ */
+export function buildCapitalAccountRollforward(
+  account: CapitalAccountWorkbench["investorAccounts"][number]
+): CapitalAccountRollforwardViewModel {
+  const entries = account.subledgerEntries ?? [];
+  const movements: CapitalAccountRollforwardMovementViewModel[] = entries.length > 0
+    ? entries.map((entry, index) => ({
+      id: entry.subledgerEntryId || `${account.accountKey}:entry:${index}`,
+      label: entry.fundEventType || entry.fundEventId || "Capital movement",
+      value: usableAmount(entry.netCapitalActivity),
+      note: [entry.effectiveDate, entry.isPosted === false ? "not posted" : null].filter(Boolean).join(" · ") || undefined
+    }))
+    : [{
+      id: `${account.accountKey}:net-capital-activity`,
+      label: "Net capital activity",
+      value: usableAmount(account.netCapitalActivity)
+    }];
+  const openingLabel = "Opening net activity";
+  const closingLabel = "Ending net activity";
+  const opening = usableAmount(account.openingNetActivity);
+  // A null ending stays null: the workbench always states one, so a missing value is a gap.
+  const closing = usableAmount(account.endingNetActivity);
+  const itemised = entries.length > 0;
+  const proof = proveRollforward({ openingLabel, opening, movements, closingLabel, closing });
+  const verdict = rollforwardVerdict(proof, { independent: itemised });
+
+  return {
+    openingLabel,
+    closingLabel,
+    opening,
+    closing,
+    currency: account.currency,
+    movements,
+    openingDerivation: itemised
+      ? "Opening is derived by the capital-account projection from the subledger's running net activity; it is not a separately stated opening balance."
+      : "Opening is set by the capital-account projection with no subledger entries behind it; it is not a separately stated opening balance.",
+    ...(itemised ? {} : { unsupportedReason: CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON }),
+    verdict,
+    verdictLabel: verdict === "out"
+      ? `Out by ${formatMoney(Math.abs(proof.difference ?? 0), { currency: account.currency })}`
+      : CAPITAL_ACCOUNT_ROLLFORWARD_VERDICT_LABEL[verdict]
+  };
+}
+
 function buildCapitalAccountInvestorAccountRow(
   account: CapitalAccountWorkbench["investorAccounts"][number]
-): CapitalAccountWorkbenchInvestorAccountRowViewModel {
+): CapitalAccountWorkbenchInvestorAccountProofRowViewModel {
   const paymentEvidence = buildManualJournalPaymentIntentEvidenceView(
     account.paymentIntentEvidence,
     account.evidenceLinks,
@@ -249,6 +373,7 @@ function buildCapitalAccountInvestorAccountRow(
   return {
     id: account.accountKey,
     title: `${formatCapitalAccountPartyLabel(account.investorId)} capital account`,
+    rollforward: buildCapitalAccountRollforward(account),
     subtitle: `${formatCapitalAccountPartyLabel(account.investorId)} / ${account.currency}`,
     statusLabel: paymentEvidence.tone === "success" ? account.readinessLabel || account.readiness : "Cash support review",
     statusTone: paymentEvidence.tone === "success" ? capitalAccountReadinessTone(account.readiness) : "warning",

@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { ObjectRef } from "../core/ObjectModel";
 
 /**
@@ -60,4 +61,4 @@ export interface EvidenceRailProps extends Omit<React.HTMLAttributes<HTMLElement
   dense?: boolean;
 }
 /** Tabs are a real tablist: arrow keys, Home/End, roving tabindex, one focusable tab. */
-export declare function EvidenceRail(props: EvidenceRailProps): JSX.Element;
+export declare function EvidenceRail(props: EvidenceRailProps): React.JSX.Element;

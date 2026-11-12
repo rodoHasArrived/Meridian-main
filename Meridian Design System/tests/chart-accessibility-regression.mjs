@@ -158,15 +158,35 @@ try {
   console.log('PASS ScenarioSelector: printed and empty records do not produce selection requests');
 
   await page.evaluate(() => window.mountChartData());
-  const annotations = page.getByRole('img', { name: /^Chart annotations\./ });
+  // Annotations describe their owning image instead of creating an image inside
+  // an image (whose descendants assistive technology can flatten away).
+  const annotations = page.getByRole('img', { name: 'Modeled price chart', exact: true });
   await annotations.waitFor();
-  const annotationName = await annotations.getAttribute('aria-label');
+  await page.waitForFunction(() => {
+    const svg = document.querySelector('svg[aria-label="Modeled price chart"]');
+    return svg?.getAttribute('aria-describedby')?.split(/\s+/).filter(Boolean).length === 2;
+  });
+  const description = await annotations.evaluate(svg => {
+    const ids = svg.getAttribute('aria-describedby').split(/\s+/).filter(Boolean);
+    return { ids, text: ids.map(id => document.getElementById(id)?.textContent ?? null) };
+  });
+  assert.equal(new Set(description.ids).size, 2, 'The frame and annotation keep separate, deduplicated description references');
+  assert(description.text.every(Boolean), 'Every description reference resolves to actual text');
+  assert(description.text.includes('Synthetic prices in USD; not an execution instruction.'), 'The frame retains its original description');
+  const annotationName = description.text.join(' ');
   for (const content of ['Scenario window', 'positions 2 to 5', 'Event A', 'Policy input', 'information', 'position 4', 'Evidence scenario-inputs-42 <reviewed>', 'Observed threshold', 'value 101']) {
     assert(annotationName.includes(content), `Annotation text exposes ${content}`);
   }
   assert.equal(await annotations.locator('title').textContent(), 'Policy input: Evidence scenario-inputs-42 <reviewed>');
-  const snapshot = await page.locator('body').ariaSnapshot();
-  assert(snapshot.includes('Evidence scenario-inputs-42 <reviewed>'), 'Event detail appears in the actual chart accessibility tree');
+  const session = await page.context().newCDPSession(page);
+  const { nodes } = await session.send('Accessibility.getFullAXTree');
+  const image = nodes.find(node => node.role?.value === 'image' && node.name?.value === 'Modeled price chart');
+  assert(image, 'The chart remains one named image in the actual accessibility tree');
+  assert(image.description?.value.includes('Synthetic prices in USD; not an execution instruction.'), 'The actual image description retains the frame guidance');
+  for (const content of ['Scenario window', 'positions 2 to 5', 'Event A', 'Policy input', 'information', 'position 4', 'Evidence scenario-inputs-42 <reviewed>', 'Observed threshold', 'value 101']) {
+    assert(image.description?.value.includes(content), `The actual image accessibility description exposes ${content}`);
+  }
+  await session.detach();
   assert.equal(await page.locator('svg reviewed').count(), 0, 'Annotation detail remains text');
   const table = page.getByRole('table', { name: 'Peer profile' });
   assert.equal(await table.getByRole('columnheader', { name: 'Peer values', exact: true }).count(), 1);

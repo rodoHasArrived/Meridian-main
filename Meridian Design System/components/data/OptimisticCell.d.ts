@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * OptimisticCell — the write counterpart to `EditableCell` (4.2, UX-depth track B-2).
  *
@@ -7,8 +8,8 @@
  * current selection in one batch (`OptimisticRowBar`) — always with a **stated reason**. A revert
  * is recorded as its own write, never as an erasure of the first.
  *
- * The ledger lives in `OptimisticProvider`; a cell outside one keeps a private ledger and confirms
- * immediately (fixture behaviour). The cell displays the ledger's value while an edit is pending or
+ * The ledger lives in `OptimisticProvider`; a cell outside one keeps a private ledger and rejects
+ * edits with an explicit missing-write-handler reason. The cell displays the ledger's value while an edit is pending or
  * confirmed and falls back to `value` once it is rejected, reverted or dismissed — so the parent
  * model only needs to update on `onSettle({status:"confirmed"})`.
  *
@@ -61,7 +62,7 @@ export interface OptimisticProviderProps {
   onChange?: (entries: OptimisticEdit[]) => void;
   children?: React.ReactNode;
 }
-export declare function OptimisticProvider(props: OptimisticProviderProps): JSX.Element;
+export declare function OptimisticProvider(props: OptimisticProviderProps): React.JSX.Element;
 export declare function useOptimistic(): OptimisticLedger;
 /** Bundle carrier. The compiler exposes only capitalized exports. */
 export declare const OptimisticHooks: { useOptimistic: typeof useOptimistic };
@@ -86,7 +87,7 @@ export interface OptimisticCellProps {
   /** Observe the commit before it reaches the ledger. */
   onCommit?: (edit: Pick<OptimisticEdit, "rowId" | "field" | "prior" | "value">) => void;
 }
-export declare function OptimisticCell(props: OptimisticCellProps): JSX.Element;
+export declare function OptimisticCell(props: OptimisticCellProps): React.JSX.Element;
 
 export interface OptimisticRowBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** One row, the current selection, or omit for the whole ledger. */
@@ -98,4 +99,4 @@ export interface OptimisticRowBarProps extends React.HTMLAttributes<HTMLDivEleme
   children?: React.ReactNode;
 }
 /** Tally of provisional · confirmed · rejected · reverted for the rows, plus one batch `Revert … confirmed…` with a reason. */
-export declare function OptimisticRowBar(props: OptimisticRowBarProps): JSX.Element | null;
+export declare function OptimisticRowBar(props: OptimisticRowBarProps): React.JSX.Element | null;

@@ -16,3 +16,5 @@ const { AllocationEditor } = window.MeridianDesignSystem_205d17;
 ```
 
 Non-obvious: weights are relative — [3,2,1] and [30,20,10] split identically, and they need not sum to 100. Zero-weight lines get a dash and no allocation; an all-zero weight set falls back to an equal split (the allocateAmount contract). `onChange` fires with the exact amounts array — post those, not consumer-side percentages, so the journal ties out.
+
+An unavailable target total cannot prove allocation. No lines disclose the unallocated target rather than an exact-sum claim; zero weights visibly state the documented equal-split fallback.

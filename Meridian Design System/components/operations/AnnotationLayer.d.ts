@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * AnnotationLayer — a note anchored to a grid cell, a series point, a ledger line or an object
  * header (4.2, UX-depth track E-1). Review was attestation-only: an operator could sign a figure but
@@ -55,7 +56,7 @@ export interface AnnotationProviderProps {
   onFocus?: (note: Annotation) => void;
   children?: React.ReactNode;
 }
-export declare function AnnotationProvider(props: AnnotationProviderProps): JSX.Element;
+export declare function AnnotationProvider(props: AnnotationProviderProps): React.JSX.Element;
 
 export interface AnnotationsApi {
   notes: Annotation[];
@@ -71,8 +72,9 @@ export declare function useAnnotations(): AnnotationsApi;
 /** Bundle carrier. The compiler exposes only capitalized exports. */
 export declare const AnnotationHooks: { useAnnotations: typeof useAnnotations };
 
-export interface AnnotationAnchorProps extends React.HTMLAttributes<HTMLSpanElement> {
-  anchor: AnnotationAnchorRef;
+export interface AnnotationAnchorProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, "popover"> {
+  /** Absent while a record loads: children remain visible and note controls are unavailable. */
+  anchor?: AnnotationAnchorRef | null;
   /** Lay out as a block row (ledger line, header) rather than inline (cell, point). @default false */
   block?: boolean;
   /** Which edge the popover hangs from. @default "right" */
@@ -80,13 +82,21 @@ export interface AnnotationAnchorProps extends React.HTMLAttributes<HTMLSpanElem
   readOnly?: boolean;
   children?: React.ReactNode;
 }
-export declare function AnnotationAnchor(props: AnnotationAnchorProps): JSX.Element;
+export declare function AnnotationAnchor(props: AnnotationAnchorProps): React.JSX.Element;
 
-export interface AnnotationPanelProps extends React.HTMLAttributes<HTMLElement> {
+export interface AnnotationPanelProps extends Omit<React.HTMLAttributes<HTMLElement>, "onFocus"> {
   /** @default "Annotations" */
   title?: string;
   onFocus?: (note: Annotation) => void;
   emptyText?: React.ReactNode;
 }
 /** All · Stale · Pinned list of the object's notes; a row calls `onFocus`. */
-export declare function AnnotationPanel(props: AnnotationPanelProps): JSX.Element;
+export declare function AnnotationPanel(props: AnnotationPanelProps): React.JSX.Element;
+
+/** Public carrier for annotation context, surfaces, and the source hook. */
+export declare const AnnotationLayer: {
+  Provider: typeof AnnotationProvider;
+  Anchor: typeof AnnotationAnchor;
+  readonly Panel: typeof AnnotationPanel;
+  useAnnotations: typeof useAnnotations;
+};

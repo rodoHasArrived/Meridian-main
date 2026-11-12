@@ -14,3 +14,5 @@ const { FxRevaluationTable } = window.MeridianDesignSystem_205d17;
 ```
 
 Non-obvious: rates are base units per 1 local unit (EUR→USD 1.0842, JPY→USD 0.0067 — not 149.3). Local balances format at their ISO minor units automatically (JPY shows 0dp). The G/L column is signed P&L-toned; the footer nets it, which is the amount the reval journal posts.
+
+An unavailable rate/balance makes affected translated values and aggregate totals Missing rather than silently dropping that row. Usable current data recovers the normal view.

@@ -55,10 +55,13 @@ export function VersionConflictNotice({
     conflict:r.conflict!==undefined?r.conflict:(String(show(r.proposed))!==String(show(r.base))&&String(show(r.latest))!==String(show(r.base))&&String(show(r.proposed))!==String(show(r.latest))),
   }));
   const conflicts=rows.filter(r=>r.conflict),clean=rows.filter(r=>!r.conflict);
-  const[localChoices,setLocalChoices]=React.useState({});
-  const picked=choices||localChoices;
-  const pick=(key,side)=>{if(!choices)setLocalChoices(c=>({...c,[key]:side}));onFieldChoice?.(key,side)};
-  const[reason,setReason]=React.useState("");
+  const scopeKey=JSON.stringify([String(record??""),baseVer,latestVersion,rows.map(row=>[row.key,show(row.base),show(row.proposed),show(row.latest)])]);
+  const[localChoices,setLocalChoices]=React.useState({scope:scopeKey,value:{}});
+  const picked=choices||(localChoices.scope===scopeKey?localChoices.value:{});
+  const pick=(key,side)=>{if(!choices)setLocalChoices(current=>({scope:scopeKey,value:{...(current.scope===scopeKey?current.value:{}),[key]:side}}));onFieldChoice?.(key,side)};
+  const[reasonState,setReasonState]=React.useState({scope:scopeKey,value:""});
+  const reason=reasonState.scope===scopeKey?reasonState.value:"";
+  const setReason=value=>setReasonState({scope:scopeKey,value});
   const allPicked=conflicts.every(r=>picked[r.key]);
   const keepsMine=conflicts.some(r=>picked[r.key]==="mine");
   const canReapply=(!requireReason||reason.trim().length>0)&&(conflicts.length===0||allPicked);
@@ -77,8 +80,8 @@ export function VersionConflictNotice({
       {conflicts.map(r=><div className="mds-vcn__r" key={r.key}>
         <span className="mds-vcn__field">{r.label||r.key}<span className="mds-vcn__flag">Conflict</span></span>
         <span className="mds-vcn__cell">{show(r.base)}<small>Both edits diverge from this</small></span>
-        <span className="mds-vcn__cell">{show(r.proposed)}{onFieldChoice||!choices?<label className="mds-vcn__pick"><input type="radio" name={`mds-vcn-${r.key}`} checked={picked[r.key]==="mine"} onChange={()=>pick(r.key,"mine")}/>Keep mine</label>:null}</span>
-        <span className="mds-vcn__cell">{show(r.latest)}{onFieldChoice||!choices?<label className="mds-vcn__pick"><input type="radio" name={`mds-vcn-${r.key}`} checked={picked[r.key]==="theirs"} onChange={()=>pick(r.key,"theirs")}/>Keep latest</label>:null}</span>
+        <span className="mds-vcn__cell">{show(r.proposed)}{onFieldChoice||!choices?<label className="mds-vcn__pick"><input type="radio" name={`${uid}-pick-${r.key}`} checked={picked[r.key]==="mine"} onChange={()=>pick(r.key,"mine")}/>Keep mine</label>:null}</span>
+        <span className="mds-vcn__cell">{show(r.latest)}{onFieldChoice||!choices?<label className="mds-vcn__pick"><input type="radio" name={`${uid}-pick-${r.key}`} checked={picked[r.key]==="theirs"} onChange={()=>pick(r.key,"theirs")}/>Keep latest</label>:null}</span>
       </div>)}
       {clean.map(r=><div className="mds-vcn__r mds-vcn__r--clean" key={r.key}>
         <span className="mds-vcn__field">{r.label||r.key}<span className="mds-vcn__flag">Merges</span></span>

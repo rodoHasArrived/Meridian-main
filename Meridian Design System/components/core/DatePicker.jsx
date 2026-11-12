@@ -4,7 +4,7 @@
 // every user west of UTC — a settlement date entered as the 26th posted as the 25th.)
 // The field is typeable; the calendar is a full ARIA grid with the standard keyboard model.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate";
+import { toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -24,7 +24,7 @@ function inject() {
 .mds-date-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;outline:none;
   font-variant-numeric:tabular-nums;}
-.mds-date-input::placeholder{color:var(--text-disabled,#A4ABB2);}
+.mds-date-input::placeholder{color:var(--text-muted,#606870);opacity:1;}
 .mds-date-input:disabled{cursor:not-allowed;}
 .mds-date-open{flex:0 0 auto;height:100%;padding:0 9px;border:0;background:none;margin:0;
   color:var(--text-muted,#606870);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;}
@@ -108,6 +108,7 @@ export function DatePicker({
   const maxD = React.useMemo(() => fromISO(max), [max]);
 
   const [open, setOpen] = React.useState(false);
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
   const [draft, setDraft] = React.useState(value || "");
   const [cursor, setCursor] = React.useState(() => selected || new Date());
   const [placement, setPlacement] = React.useState("");
@@ -157,7 +158,7 @@ export function DatePicker({
   };
 
   const pick = (d) => {
-    if (isBlocked(d)) return;
+    if (disabled || isBlocked(d)) return;
     onChange?.(toISO(d));
     setDraft(toISO(d));
     close();
@@ -178,6 +179,8 @@ export function DatePicker({
   };
 
   const onGridKey = (e) => {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+    if (!e.target.classList.contains("mds-date-day")) return;
     const k = e.key;
     let next = null;
     if (k === "ArrowLeft") next = addDays(cursor, -1);
@@ -188,7 +191,7 @@ export function DatePicker({
     else if (k === "End") next = addDays(cursor, 6 - ((cursor.getDay() - weekStartsOn + 7) % 7));
     else if (k === "PageUp") next = addMonths(cursor, e.shiftKey ? -12 : -1);
     else if (k === "PageDown") next = addMonths(cursor, e.shiftKey ? 12 : 1);
-    else if (k === "Enter" || k === " ") { e.preventDefault(); pick(cursor); return; }
+    else if (k === "Enter" || k === " ") return; // Native day button commits its own date.
     else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
     else if (k === "Tab") { close(); return; }
     if (next) { e.preventDefault(); setCursor(next); }
@@ -275,6 +278,7 @@ export function DatePicker({
                             aria-current={sameDay(d, today) ? "date" : undefined}
                             aria-label={longDate(d)}
                             className={`mds-date-day${other ? " mds-date-day--other" : ""}${isSel ? " mds-date-day--selected" : ""}${sameDay(d, today) && !isSel ? " mds-date-day--today" : ""}`}
+                            onFocus={() => { if (!sameDay(d, cursor)) setCursor(d); }}
                             onClick={() => pick(d)}
                           >{d.getDate()}</button>
                         </td>

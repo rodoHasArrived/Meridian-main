@@ -1152,7 +1152,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<TimeProvider>(),
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IPrivateCapitalStore>(),
-                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>());
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
+                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>());
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when
@@ -1179,6 +1180,31 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
         services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
         services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        // Posting calculations a calculated recurring template can name. Each reads authoritative
+        // inputs and yields one approval draft per occurrence; none submits, approves or posts.
+        services.TryAddSingleton<IRecurringJournalCalculationInputs>(sp =>
+            new LedgerRecurringJournalCalculationInputs(sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(), sp.GetService<TimeProvider>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, ManagementFeeAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, PerformanceFeeAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FundExpenseAccrualCalculation>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IFixedAssetRegister>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileFixedAssetRegister(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "registers")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileDistributionRegister(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "registers")));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedAssetDepreciationCalculation>(sp =>
+            new FixedAssetDepreciationCalculation(sp.GetService<Meridian.FinancialOperations.FundAdministration.IFixedAssetRegister>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedIncomeAccrualCalculation>(sp =>
+            new FixedIncomeAccrualCalculation(
+                sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
+                sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
+            new FxRevaluationCalculation(
+                sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
+                sp.GetService<Meridian.FinancialOperations.Reconciliation.IReconciliationFxRateProvider>())));
         services.TryAddSingleton<RecurringJournalRunner>();
         services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
@@ -1196,7 +1222,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
-                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+                sp.GetService<IAutomatedJournalScheduleStatusSource>(),
+                sp.GetService<IRecurringJournalQueueSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(

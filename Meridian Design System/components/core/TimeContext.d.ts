@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * TimeContext — the temporal contract. Meridian works with twelve kinds of time; a figure is only
  * interpretable when the surface states which ones it is stated in. `TimeContextProvider` declares
@@ -59,7 +60,7 @@ export declare function TimeContextProvider(props: {
   defaultValue?: TimeContextValue;
   onChange?: (value: TimeContextValue) => void;
   children?: React.ReactNode;
-}): JSX.Element;
+}): React.JSX.Element;
 
 export declare function useTimeContext(): {
   time: TimeContextValue;
@@ -88,9 +89,9 @@ export interface TimeRoleProps extends React.HTMLAttributes<HTMLSpanElement> {
   showLabel?: boolean;
 }
 /** One role with its name — for headers, cells, and inspector lines. */
-export declare function TimeRole(props: TimeRoleProps): JSX.Element;
+export declare function TimeRole(props: TimeRoleProps): React.JSX.Element;
 
-export interface TimeContextPanelProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TimeContextPanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   /** Merged over the provider's value. */
   value?: TimeContextValue;
   /** Roles to show, in ledger order. Omit to show every role the context carries. */
@@ -104,7 +105,7 @@ export interface TimeContextPanelProps extends React.HTMLAttributes<HTMLDivEleme
   title?: React.ReactNode;
 }
 /** The screen's temporal declaration, grouped by whose clock each role is. */
-export declare function TimeContextPanel(props: TimeContextPanelProps): JSX.Element;
+export declare function TimeContextPanel(props: TimeContextPanelProps): React.JSX.Element;
 
 /** Module carrier — the whole contract in one reference. */
 export declare const TimeContext: {

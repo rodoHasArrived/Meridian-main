@@ -31,9 +31,10 @@ function inject() {
 .mds-tree-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .mds-tree-meta{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#606870);font-variant-numeric:tabular-nums;flex:0 0 auto;}
 .mds-tree-icon{flex:0 0 auto;color:var(--text-secondary,#535C65);font-size:12px;display:inline-flex;}
-.mds-tree-count{font-family:var(--font-data);font-size:10px;color:var(--text-disabled,#A4ABB2);font-variant-numeric:tabular-nums;flex:0 0 auto;}
+.mds-tree-count{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#606870);font-variant-numeric:tabular-nums;flex:0 0 auto;}
 .mds-tree-empty{padding:12px;font-family:var(--font-body);font-size:13px;color:var(--text-muted,#606870);}
 .mds-tree-loading{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#606870);letter-spacing:.04em;flex:0 0 auto;}
+.mds-tree-row--sel .mds-tree-meta{color:var(--text-secondary,#535C65);}
 @media print{.mds-tree-row{height:auto;min-height:20px;}.mds-tree-row--sel{background:transparent;}}
 `;
   const el = document.createElement("style");

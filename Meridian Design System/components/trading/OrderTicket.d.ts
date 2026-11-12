@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * OrderTicket — order-entry primitive. Side toggle (washed green/red, never solid), qty,
  * market/limit, TIF, live notional estimate, and a hard confirm gate when
@@ -58,4 +59,4 @@ export interface OrderTicketProps {
   /** Fired with the composed order when submit is pressed and valid. The draft clears after. */
   onSubmit?: (order: OrderTicketOrder) => void;
 }
-export declare function OrderTicket(props: OrderTicketProps): JSX.Element;
+export declare function OrderTicket(props: OrderTicketProps): React.JSX.Element;

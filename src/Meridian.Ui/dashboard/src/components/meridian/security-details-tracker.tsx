@@ -30,6 +30,7 @@ import type {
   TradingParameters
 } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { Select } from "@/components/ui/select";
 
 export interface OperatorOverridesService {
   get: (securityId: string) => Promise<OperatorOverridesDto>;
@@ -435,7 +436,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
   if (def.kind === "select" && def.options) {
     return (
       <span className="block space-y-1">
-        <select
+        <Select
           id={editor.id}
           className={baseClass}
           value={value}
@@ -450,7 +451,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
           {def.options.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
-        </select>
+        </Select>
         <FieldSupportText
           helpId={editor.helperId}
           helpText={editor.helperText}

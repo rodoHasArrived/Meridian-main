@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Slot-based workstation frame — composes the chrome (topbar · nav rail · status bar) around a
  * scrolling main area and an optional right rail. Every slot is optional and the layout degrades
@@ -30,4 +31,4 @@ export interface WorkstationShellProps {
   /** Main workspace content. */
   children?: React.ReactNode;
 }
-export declare function WorkstationShell(props: WorkstationShellProps): JSX.Element;
+export declare function WorkstationShell(props: WorkstationShellProps): React.JSX.Element;

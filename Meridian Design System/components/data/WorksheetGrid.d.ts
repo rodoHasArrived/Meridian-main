@@ -58,4 +58,4 @@ export interface WorksheetGridProps {
   label?: string;
 }
 
-export declare function WorksheetGrid(props: WorksheetGridProps): JSX.Element;
+export declare function WorksheetGrid(props: WorksheetGridProps): React.JSX.Element;

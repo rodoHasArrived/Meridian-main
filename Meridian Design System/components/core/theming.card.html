@@ -79,7 +79,7 @@
                 >
                   {renderSwatch ? renderSwatch(o) : null}
                   <span>{o.label}</span>
-                  {o.row ? <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>{o.row}</span> : null}
+                  {o.row ? <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: on ? "var(--text-secondary)" : "var(--text-muted)" }}>{o.row}</span> : null}
                 </button>
               );
             })}

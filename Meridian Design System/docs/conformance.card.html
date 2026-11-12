@@ -1,5 +1,6 @@
 <!-- @dsCard group="Documentation" viewport="1280x900" name="Conformance gate" subtitle="The law, run by a machine — sixteen static rules, card assertions, and counts read from the manifest instead of typed" -->
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conformance gate</title><link rel="stylesheet" href="../styles.css"><script src="../tests/conformance-rules.js"></script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conformance gate</title><link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css"><script src="../tests/conformance-rules.js"></script><style>
 body{margin:0;padding:22px 24px 40px;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px}
 h1{font:600 20px/28px var(--font-display,var(--font-body));color:var(--text-primary);margin:0 0 6px}
 p.lede{margin:0 0 16px;max-width:94ch;text-wrap:pretty}
@@ -32,7 +33,7 @@ ul.a li{margin:0 0 4px;line-height:18px}
 code{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)}
 .note{border-left:3px solid var(--brand-signal);background:var(--bg-medium);padding:11px 14px;margin-top:20px;max-width:94ch;line-height:19px;text-wrap:pretty}
 @media(max-width:900px){.two{grid-template-columns:1fr}}
-</style></head><body>
+</style></head><body class="mds-specimen">
 <h1>Conformance gate</h1>
 <p class="lede">Sixteen static rules, each of which was a shipped defect first; assertions over every specimen card, which until 4.2 were looked at rather than asserted against; and a census read from <code>_ds_manifest.json</code> at load, so the numbers on this page cannot drift from the ones the compiler found. Law: <code>guidelines/CONFORMANCE.md</code>. Runner: <code>tests/conformance.html</code>.</p>
 <div class="tiles" id="tiles"></div>

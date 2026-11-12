@@ -5,10 +5,12 @@
 // Amount and percent are separate modes, never mixed in one reading; the difference column
 // is directly labelled so the comparison never depends on bar length alone.
 import React from "react";
+import { conditionMeta } from "../operations/conditions";
 import { formatCompact } from "../core/format.js";
 
-const COND={confirmed:"●",provisional:"◐",estimated:"○",stale:"◔",overridden:"◆",missing:"■",na:"—",pending:"◇",exception:"▲",reconciled:"✓"};
-const glyph=c=>COND[String(c||"").toLowerCase()]||null;
+const glyph=condition=>condition?conditionMeta(condition).glyph:null;
+const finite=value=>typeof value==="number"&&Number.isFinite(value);
+const unavailable=condition=>condition&&["restricted","missing","na"].includes(conditionMeta(condition).key);
 export const MATURITY_BUCKETS=["0–1 year","1–3 years","3–5 years","5–7 years","7–10 years","10–20 years","20+ years","Unknown"];
 const MODES=[{id:"amount",label:"Amount"},{id:"percent",label:"Percent"}];
 const UNKNOWN=/^unknown|^unscheduled|^perpetual|^no maturity/i;
@@ -79,7 +81,7 @@ export function MaturityLadder({
   const setMode=m=>{if(modeProp===undefined)setOwn(m);if(onModeChange)onModeChange(m)};
 
   // Declared buckets are authoritative: render every one, in order, even at zero.
-  const declared=buckets||(items.length?items.map(x=>x.label):MATURITY_BUCKETS);
+  const declared=buckets||MATURITY_BUCKETS;
   const byLabel=new Map(items.map(x=>[String(x.label),x]));
   const rows=declared.map(label=>{
     const x=byLabel.get(String(label))||{label,primary:0,comparison:0,condition:"na",empty:true};
@@ -97,6 +99,15 @@ export function MaturityLadder({
   const max=Math.max(1,...rows.flatMap(r=>{const v=view(r);return[v.p,v.c]}));
   const Tag=onSelect?"button":"div";
   const unknownRow=rows.find(r=>r.unknown&&(r.p||r.c));
+
+  const hasUnavailableInputs=items.some(item=>unavailable(item.condition)||!finite(item.primary)||!finite(item.comparison));
+  if(hasUnavailableInputs) {
+    const withheld=items.some(item=>item.condition&&conditionMeta(item.condition).key==="restricted");
+    return <div className="mds-exposure-unavailable" role="status" aria-label={description} style={{fontFamily:"var(--font-body)",color:"var(--text-primary)",padding:12,border:"1px solid var(--border)",background:"var(--surface-plate,var(--bg-light))"}}>
+      <strong>{description}</strong>
+      <p>{withheld?"Restricted inputs are withheld. Totals and comparisons are unavailable.":"Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."}</p>
+    </div>;
+  }
 
   return <div className={`mds-ml${showTable?"":" mds-ml--sr"}${className?" "+className:""}`} {...rest}>
     <div className="mds-ml__head">
@@ -139,8 +150,8 @@ export function MaturityLadder({
 
     <div className="mds-ml__totals">
       <span>Total</span><span/>
-      <span>{mode==="percent"?pct(100):valueFormat(totP)}</span>
-      <span>{mode==="percent"?pct(100):valueFormat(totC)}</span>
+      <span>{mode==="percent"?(totP?pct(100):"—"):valueFormat(totP)}</span>
+      <span>{mode==="percent"?(totC?pct(100):"—"):valueFormat(totC)}</span>
       <span>{mode==="percent"?"—":signed(totP-totC,valueFormat)}</span>
     </div>
 
@@ -162,7 +173,7 @@ export function MaturityLadder({
           <td>{signed(r.p-r.c,valueFormat)}</td>
           <td>{r.condition||(r.empty?"na":"confirmed")}</td>
         </tr>)}
-        <tr data-total="true"><th scope="row">Total</th><td>{valueFormat(totP)}</td><td>{pct(100)}</td><td>{valueFormat(totC)}</td><td>{pct(100)}</td><td>{signed(totP-totC,valueFormat)}</td><td>—</td></tr>
+        <tr data-total="true"><th scope="row">Total</th><td>{valueFormat(totP)}</td><td>{totP?pct(100):"—"}</td><td>{valueFormat(totC)}</td><td>{totC?pct(100):"—"}</td><td>{signed(totP-totC,valueFormat)}</td><td>—</td></tr>
       </tbody>
     </table>
   </div>;

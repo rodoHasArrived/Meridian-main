@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Monitor · Ops Wall — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -20,7 +21,7 @@
 .ow-kpis .mds-metric--hero{grid-column:span 2}.ow-kpis .mds-metric--hero .mds-metric__value{font-size:28px}
 [data-ow-dot="error"]{background:var(--red,#B54B42)}[data-ow-dot="warn"]{background:var(--orange,#986717)}[data-ow-dot="info"]{background:var(--color-info,#2F648A)}</style>
 </helmet>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Wall feeds" action-label="Retry" on-action="{{ noop }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Wall feeds" action-label="Retry" on-action="{{ onPreviewRetry }}" hint-size="100%,860px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="monitor" labelled-by="workspace-title" topbar="{{ topbar }}" status-bar="{{ statusBar }}" hint-size="100%,860px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ScreenComposition" screen="{{ screen }}" data-screen-label="Ops wall" hint-size="100%,820px">
 <div data-region="context" style="display:flex;align-items:baseline;gap:12px">
@@ -73,6 +74,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;severityFloor&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;debug&quot;,&quot;options&quot;:[&quot;debug&quot;,&quot;info&quot;,&quot;warn&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Wall&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;terminal&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dark&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  retryPreview = () => this.setState({ previewReady: true });
   // Chrome tweaks — same contract as every template; density DEFAULTS TO TERMINAL:
   // the wall exists to prove the densest token scope on a real screen.
   applyChrome() {
@@ -91,7 +93,7 @@ class Component extends DCLogic {
     }, 60);
   }
   componentWillUnmount() { if (this._t) clearInterval(this._t); this._untick && this._untick(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
 
   // The wallboard clock reads the one shared instant and ticks — a frozen time on a screen
   // people watch from across the room is the loudest possible "this is a mock".
@@ -140,13 +142,15 @@ class Component extends DCLogic {
   ds() { return window.MeridianDesignSystem_205d17 || {}; }
 
   renderVals() {
+    // Retry only the declared synthetic preview, never an application transport.
+
     this.applyChrome();
     const { WorkstationTopbar, StatusBar, ValueEnvelope } = this.ds();
     const el = React.createElement;
     const RANK = { debug: 0, info: 1, warn: 2, error: 3 };
     const floor = RANK[this.props.severityFloor ?? "debug"] ?? 0;
     return {
-      dataState: this.props.dataState ?? "ready",
+      onPreviewRetry: this.retryPreview, dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
       noop: () => {},
       screen: {
         id: "ops-wall", archetype: "monitor",

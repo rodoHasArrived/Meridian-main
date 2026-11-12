@@ -13,7 +13,7 @@ function inject() {
   const css = `
 @property --ochain-row{syntax:"*";inherits:true;}
 .mds-ochain{font-family:var(--font-data);font-size:12px;border:1px solid var(--border,#D2CDC3);
-  background:var(--bg-light,#F8F7F3);display:inline-block;min-width:100%;outline:none;}
+  background:var(--bg-light,#F8F7F3);display:block;width:100%;min-width:0;max-width:100%;overflow:auto;box-sizing:border-box;outline:none;}
 .mds-ochain__grid{display:grid;}
 .mds-ochain__group{padding:5px 8px;text-align:center;font-family:var(--font-body);font-size:10px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-secondary,#535C65);
@@ -101,20 +101,22 @@ export function OptionChainTable({
 
   const [focusIdx, setFocusIdx] = React.useState(atmIdx);
   const interactive = !!onSelect;
+  const currentFocus=Math.max(0,Math.min(focusIdx,sorted.length-1));
 
   const select = (r) => {
+    if (!r) return;
     if (!isControlled) setInternalSel(r.strike);
     if (onSelect) onSelect(r);
   };
 
   const onKeyDown = (e) => {
     if (!interactive || !sorted.length) return;
-    let i = focusIdx;
+    let i = currentFocus;
     if (e.key === "ArrowDown") i = Math.min(sorted.length - 1, i + 1);
     else if (e.key === "ArrowUp") i = Math.max(0, i - 1);
     else if (e.key === "Home") i = 0;
     else if (e.key === "End") i = sorted.length - 1;
-    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sorted[focusIdx]); return; }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sorted[currentFocus]); return; }
     else return;
     e.preventDefault();
     setFocusIdx(i);
@@ -151,14 +153,17 @@ export function OptionChainTable({
     <div
       className={`mds-ochain${interactive ? " mds-ochain--interactive" : ""}${className ? " " + className : ""}`}
       role="grid" aria-label="Option chain"
-      tabIndex={interactive ? 0 : undefined}
+      tabIndex={0}
       onKeyDown={onKeyDown}
       {...rest}
     >
-      <div className="mds-ochain__grid" style={{ gridTemplateColumns: template }}>
-        <span className="mds-ochain__group" style={{ gridColumn: `span ${nC}` }}>Calls</span>
-        <span className="mds-ochain__group mds-ochain__group--strike">Strike</span>
-        <span className="mds-ochain__group" style={{ gridColumn: `span ${nP}` }}>Puts</span>
+      <div className="mds-ochain__grid" role="rowgroup" style={{ gridTemplateColumns: template }}>
+        <div role="row" style={{display:"contents"}}>
+        <span className="mds-ochain__group" role="columnheader" aria-colspan={nC} style={{ gridColumn: `span ${nC}` }}>Calls</span>
+        <span className="mds-ochain__group mds-ochain__group--strike" role="columnheader">Strike</span>
+        <span className="mds-ochain__group" role="columnheader" aria-colspan={nP} style={{ gridColumn: `span ${nP}` }}>Puts</span>
+        </div>
+        <div role="row" style={{display:"contents"}}>
 
         {callCols.map((k) => (
           <span key={"ch" + k} className="mds-ochain__hdr" role="columnheader">{(COLS[k] || { label: k }).label}</span>
@@ -168,11 +173,12 @@ export function OptionChainTable({
           <span key={"ph" + k} className="mds-ochain__hdr" role="columnheader">{(COLS[k] || { label: k }).label}</span>
         ))}
 
+        </div>
         {sorted.map((r, i) => {
           const callItm = underlyingPrice != null && r.strike < underlyingPrice;
           const putItm = underlyingPrice != null && r.strike > underlyingPrice;
           const isSel = selected != null && r.strike === selected;
-          const isFocus = interactive && i === focusIdx;
+          const isFocus = interactive && i === currentFocus;
           return (
             <React.Fragment key={r.strike}>
               <div
@@ -187,13 +193,13 @@ export function OptionChainTable({
                 {cells(r, "put", putCols, putItm)}
               </div>
               {i === spotAfter && (
-                <div className="mds-ochain__spot" role="row" aria-label={`${underlyingLabel} ${underlyingPrice}`}>
+                <div className="mds-ochain__spot" role="row"><span role="gridcell" aria-colspan={nC+nP+1} style={{display:"contents"}}>
                   <span className="mds-ochain__spotrule" aria-hidden="true"></span>
                   <span className="mds-ochain__spotlab">
                     {underlyingPrice.toFixed(priceDecimals)} · {underlyingLabel}
                   </span>
                   <span className="mds-ochain__spotrule" aria-hidden="true"></span>
-                </div>
+                </span></div>
               )}
             </React.Fragment>
           );

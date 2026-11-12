@@ -2936,9 +2936,10 @@ head, not a second slice: one entity, one book and functional currency, one peri
 storage. It composes `W10-BOND-001`, `W10-LOT-002`, `W10-MARK-001`, `W9-PAPER-003`,
 `W9-INGEST-009`, `W12-BOOK-001`, `W12-FINRPT-001`, `W10-PROV-001`, and candidates 25.3.8–25.3.9.
 The 2026-11-01 review found the remaining seams to be mostly activation work: paper settlement cash
-excludes purchased accrued interest (`PaperTradingGateway`); the coupon-accrual posting bridge has
-no production caller (`SecurityMasterAmortizationLedgerBridge`,
-`SecurityMasterCashFlowService.BuildLedgerPostingsAsync`); bond analytics declare amortization and
+excludes purchased accrued interest (`PaperTradingGateway`); the coupon-accrual posting bridge had
+no production caller (`SecurityMasterAmortizationLedgerBridge` is now called by the
+`fixed-income-accrual` recurring-journal calculation, accruing each period's share of a coupon;
+`SecurityMasterCashFlowService.BuildLedgerPostingsAsync` still has none); bond analytics declare amortization and
 posting unsupported (`BondAnalyticsService`); the bond asset class has no basic create workflow;
 and no custodian fixture carries bond accrued interest. Bond backtesting is out of scope because
 the native engine refuses non-share lot units. No live order, live custodian feed, or new asset

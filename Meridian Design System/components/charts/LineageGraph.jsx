@@ -28,6 +28,7 @@ function inject() {
 .mds-lin__node--sel{border-color:var(--viz-select-rail);border-width:2px;background:var(--viz-select-surface);}
 .mds-lin__nl{font-size:12px;font-weight:var(--weight-semibold,600);color:var(--text-primary);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-lin__node--sel .mds-lin__nm{color:var(--text-secondary);}
 .mds-lin__nm{font-family:var(--font-data);font-size:10px;color:var(--text-muted);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-lin__out{display:flex;flex-direction:column;gap:3px;margin:0;padding:0;list-style:none;}
@@ -119,18 +120,19 @@ export function LineageGraph({
           {nodes.map((n) => {
             const p = pos.get(n.id);
             if (!p) return null;
+            const Node=onSelect?"button":"div";
             return (
-              <button
+              <Node
                 key={n.id}
-                type="button"
+                type={onSelect?"button":undefined}
                 className={`mds-lin__node${selectedId === n.id ? " mds-lin__node--sel" : ""}`}
                 style={{ left: p.x, top: p.y, width: nodeWidth, height: nodeHeight }}
-                aria-pressed={selectedId === n.id}
-                onClick={() => onSelect && onSelect(n.id)}
+                aria-pressed={onSelect?selectedId === n.id:undefined}
+                onClick={onSelect?() => onSelect(n.id):undefined}
               >
                 <span className="mds-lin__nl">{n.label}</span>
                 <span className="mds-lin__nm">{n.meta || KIND_LABEL[n.kind] || ""}</span>
-              </button>
+              </Node>
             );
           })}
         </div>

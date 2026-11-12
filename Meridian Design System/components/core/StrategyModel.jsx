@@ -73,6 +73,7 @@ function sha256Hex(input) {
 function get(obj, path) { return String(path).split(".").reduce((o, k) => (o == null ? o : o[k]), obj); }
 function issue(stage, code, severity, message, path) { return { stage, code, severity, message, path: path || null }; }
 const blank = (v) => v == null || (typeof v === "string" && v.trim() === "");
+const finiteNumber = (v) => !blank(v) && (typeof v === "number" || typeof v === "string") && Number.isFinite(Number(v));
 
 /** Recompute one stage's gate from current field values. Returns `{code,severity,message}` issues. */
 function validateStage(draft = {}, stageId) {
@@ -84,6 +85,7 @@ function validateStage(draft = {}, stageId) {
       if (blank(m.benchmark)) out.push(issue(stageId, "benchmark-missing", "warning", "No benchmark declared — benchmark and excess return will be null on every run.", "mandate.benchmark"));
       const band = m.capitalBand || {};
       if (band.min == null || band.max == null) out.push(issue(stageId, "capital-band-missing", "blocking", "Declare the capital band (minimum and maximum).", "mandate.capitalBand"));
+      else if (!finiteNumber(band.min) || !finiteNumber(band.max)) out.push(issue(stageId, "capital-band-invalid", "blocking", "Capital band minimum and maximum must be finite numbers.", "mandate.capitalBand"));
       else if (Number(band.min) > Number(band.max)) out.push(issue(stageId, "capital-band-inverted", "blocking", "Capital band minimum exceeds maximum.", "mandate.capitalBand"));
       if (blank(m.horizon)) out.push(issue(stageId, "horizon-missing", "blocking", "Declare the holding horizon.", "mandate.horizon"));
       break;
@@ -98,14 +100,14 @@ function validateStage(draft = {}, stageId) {
       if (blank(u.datasetId)) out.push(issue(stageId, "dataset-missing", "blocking", "Pick the dataset the universe is drawn from.", "universe.datasetId"));
       if (blank(u.assetClass)) out.push(issue(stageId, "asset-class-missing", "blocking", "Declare the asset class.", "universe.assetClass"));
       if (!Array.isArray(u.filters) || u.filters.length === 0) out.push(issue(stageId, "universe-unfiltered", "warning", "No universe filters — the strategy may trade anything in the dataset.", "universe.filters"));
-      if (u.minAdv != null && !(Number(u.minAdv) >= 0)) out.push(issue(stageId, "min-adv-invalid", "blocking", "Liquidity floor must be zero or positive.", "universe.minAdv"));
+      if (u.minAdv != null && (!finiteNumber(u.minAdv) || !(Number(u.minAdv) >= 0))) out.push(issue(stageId, "min-adv-invalid", "blocking", "Liquidity floor must be finite and zero or positive.", "universe.minAdv"));
       break;
     }
     case "portfolioRules": {
       if (blank(p.entry)) out.push(issue(stageId, "entry-missing", "blocking", "Define the entry rule.", "portfolioRules.entry"));
       if (blank(p.exit)) out.push(issue(stageId, "exit-missing", "blocking", "Define the exit rule.", "portfolioRules.exit"));
       if (blank(p.sizing)) out.push(issue(stageId, "sizing-missing", "blocking", "Define position sizing.", "portfolioRules.sizing"));
-      if (p.maxPositions == null || !(Number(p.maxPositions) >= 1)) out.push(issue(stageId, "max-positions-invalid", "blocking", "Maximum concurrent positions must be at least 1.", "portfolioRules.maxPositions"));
+      if (!finiteNumber(p.maxPositions) || !Number.isInteger(Number(p.maxPositions)) || !(Number(p.maxPositions) >= 1)) out.push(issue(stageId, "max-positions-invalid", "blocking", "Maximum concurrent positions must be a finite integer of at least 1.", "portfolioRules.maxPositions"));
       if (blank(p.rebalance)) out.push(issue(stageId, "rebalance-undeclared", "warning", "No rebalance cadence declared.", "portfolioRules.rebalance"));
       (Array.isArray(p.worksheet) ? p.worksheet : []).forEach((cell) => { if (cell && cell.status === "error") out.push(issue(stageId, "worksheet-error", "blocking", "Worksheet cell " + (cell.ref || "?") + ": " + (cell.message || "does not evaluate."), "portfolioRules.worksheet." + (cell.ref || ""))); });
       break;
@@ -114,7 +116,9 @@ function validateStage(draft = {}, stageId) {
       const dd = Number(r.maxDrawdownPct);
       if (r.maxDrawdownPct == null || !(dd > 0) || dd > 60) out.push(issue(stageId, "drawdown-policy-invalid", "blocking", "Maximum drawdown policy must be between 0 and 60 percent.", "riskGovernance.maxDrawdownPct"));
       if (r.grossExposureMax == null) out.push(issue(stageId, "gross-exposure-missing", "blocking", "Declare the gross exposure limit.", "riskGovernance.grossExposureMax"));
+      else if (!finiteNumber(r.grossExposureMax)) out.push(issue(stageId, "gross-exposure-invalid", "blocking", "Gross exposure limit must be finite.", "riskGovernance.grossExposureMax"));
       if (r.perNameMax == null) out.push(issue(stageId, "per-name-missing", "blocking", "Declare the per-name exposure limit.", "riskGovernance.perNameMax"));
+      else if (!finiteNumber(r.perNameMax)) out.push(issue(stageId, "per-name-invalid", "blocking", "Per-name exposure limit must be finite.", "riskGovernance.perNameMax"));
       if (r.grossExposureMax != null && r.perNameMax != null && Number(r.perNameMax) > Number(r.grossExposureMax)) out.push(issue(stageId, "limits-inverted", "blocking", "Per-name limit exceeds the gross exposure limit.", "riskGovernance.perNameMax"));
       if (blank(r.reviewCadence)) out.push(issue(stageId, "cadence-missing", "blocking", "Declare the governance review cadence.", "riskGovernance.reviewCadence"));
       if (!Array.isArray(r.approvers) || r.approvers.length === 0) out.push(issue(stageId, "approvers-missing", "blocking", "Name at least one approver.", "riskGovernance.approvers"));
@@ -173,7 +177,14 @@ function checkpoint(draft, opts = {}) {
 function acknowledgeReview(draft, opts = {}) {
   return { ...draft, review: { ...(draft.review || {}), acknowledged: true, acknowledgedHash: formationHash(draft), notes: opts.notes ?? (draft.review || {}).notes ?? null, acknowledgedAt: opts.at ?? Date.now(), acknowledgedBy: opts.actor ?? null }, updatedAt: opts.at ?? Date.now() };
 }
-function deepFreeze(v) { if (v && typeof v === "object" && !Object.isFrozen(v)) { Object.freeze(v); Object.keys(v).forEach((k) => deepFreeze(v[k])); } return v; }
+function deepFreeze(v, seen = new WeakSet()) {
+  if (!v || typeof v !== "object" || seen.has(v)) return v;
+  seen.add(v);
+  Object.freeze(v);
+  // An already frozen parent can still contain mutable financial inputs.
+  Object.keys(v).forEach((key) => deepFreeze(v[key], seen));
+  return v;
+}
 
 // ---- lifecycle -------------------------------------------------------------------------------
 function lifecycleMeta(id) { return LC[id] || { id, label: id || "Unknown", severity: "info", next: [] }; }

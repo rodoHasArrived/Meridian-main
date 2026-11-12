@@ -40,7 +40,7 @@ function inject() {
 
 export function ProgressBar({
   value = null, max = 100, target = null, label, showValue = false, variant = "accent",
-  size = "md", className = "", ...rest
+  size = "md", className = "", "aria-label": ariaLabel, ...rest
 }) {
   inject();
   const indeterminate = value === null || value === undefined;
@@ -58,6 +58,7 @@ export function ProgressBar({
       )}
       <div className="mds-prog__bar">
         <div className="mds-prog__track" role="progressbar"
+          aria-label={ariaLabel || label || "Progress"}
           aria-valuenow={indeterminate ? undefined : Math.round(pct)}
           aria-valuemin={0} aria-valuemax={100}
           aria-valuetext={indeterminate || targetPct === null ? undefined

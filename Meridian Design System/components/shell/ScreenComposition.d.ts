@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * ScreenComposition — a screen declared, not forked. `defineScreen()` states an
  * archetype and its regions; `ScreenComposition` lays them out on the 12-column
@@ -58,6 +59,6 @@ export interface ScreenCompositionProps extends React.HTMLAttributes<HTMLDivElem
   /** Label each region with its archetype role — for review and documentation. */
   showRoles?: boolean;
 }
-export declare function ScreenComposition(props: ScreenCompositionProps): JSX.Element;
+export declare function ScreenComposition(props: ScreenCompositionProps): React.JSX.Element;
 
 export declare const ARCHETYPES: Record<ScreenArchetype, { label: string; regions: string[] }>;

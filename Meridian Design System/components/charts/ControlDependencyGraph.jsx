@@ -85,6 +85,7 @@ export function ControlDependencyGraph({
   view:viewProp,defaultView="graph",onViewChange,
   description="Control dependency graph",title,asOf,className="",...rest
 }){
+  const uid=React.useId();
   inject();
   const[own,setOwn]=React.useState(defaultView);
   const view=viewProp||own;
@@ -154,7 +155,7 @@ export function ControlDependencyGraph({
       </div>
     </div>
 
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${description}. ${nodes.length} nodes, ${edges.length} relationships. A numbered relationship outline follows.`}>
+    <svg viewBox={`0 0 ${width} ${height}`} role={onSelect ? "group" : "img"} aria-label={`${description}. ${nodes.length} nodes, ${edges.length} relationships. A numbered relationship outline follows.`}>
       {edges.map((e,i)=>{
         const type=String(e.type||"requires").toLowerCase();
         const blocked=e.blocked||BLOCKING.has(st(byId.get(String(e.from))?.status).key);
@@ -165,22 +166,24 @@ export function ControlDependencyGraph({
           {showEdgeLabels&&p?<text className="mds-cdg__edgelabel" x={p.x+4} y={p.y}>{EDGE[type]||type}</text>:null}
         </g>;
       })}
-      {nodes.map(n=>{
+      {nodes.map((n,nodeIndex)=>{
         const p=pos[String(n.id)];if(!p)return null;
         const s=st(n.status);
         const sel=String(selectedId)===String(n.id);
         const down=impeded.has(String(n.id));
         const cls=`mds-cdg__node mds-cdg__node--${s.tone}${down?" mds-cdg__node--downstream":""}${critical.has(String(n.id))?" mds-cdg__node--critical":""}`;
         return <g key={n.id} transform={`translate(${p.x} ${p.y})`} className={cls}>
-          <g className="mds-cdg__hit" tabIndex={onSelect?0:undefined} role={onSelect?"button":undefined}
-            aria-label={`${n.label}, ${s.label}${n.owner?`, owner ${n.owner}`:""}${down?", impeded by an upstream block":""}`}
+          <g className="mds-cdg__hit" tabIndex={onSelect?0:undefined} role={onSelect?"button":undefined} aria-pressed={onSelect?sel:undefined}
+            aria-labelledby={onSelect?`${uid}-node-${nodeIndex}-label ${uid}-node-${nodeIndex}-state ${uid}-node-${nodeIndex}-owner`:undefined}
+            aria-describedby={onSelect?`${uid}-node-${nodeIndex}-description`:undefined}
             onClick={()=>onSelect?.(n)}
             onKeyDown={e=>{if((e.key==="Enter"||e.key===" ")&&onSelect){e.preventDefault();onSelect(n)}}}>
+            <desc id={`${uid}-node-${nodeIndex}-description`}>{n.label}{down?", impeded by an upstream block":""}</desc>
             <rect width={p.w} height={p.h}/>
             {sel?<rect className="mds-cdg__datum" x="-3" y="-3" width={p.w+6} height={p.h+6}/>:null}
-            <text className="label" x="9" y="18">{s.glyph} {String(n.label).slice(0,24)}</text>
-            <text className="meta" x="9" y="31">{TYPES[String(n.type||"").toLowerCase()]||n.type||"Task"} · {s.label}</text>
-            <text className="meta" x="9" y="42">{[n.owner,n.due].filter(Boolean).join(" · ")||(down?"Impeded upstream":"—")}</text>
+            <text id={`${uid}-node-${nodeIndex}-label`} className="label" x="9" y="18">{s.glyph} {String(n.label).slice(0,24)}{" "}</text>
+            <text id={`${uid}-node-${nodeIndex}-state`} className="meta" x="9" y="31">{TYPES[String(n.type||"").toLowerCase()]||n.type||"Task"} · {s.label}{" "}</text>
+            <text id={`${uid}-node-${nodeIndex}-owner`} className="meta" x="9" y="42">{[n.owner,n.due].filter(Boolean).join(" · ")||(down?"Impeded upstream":"—")}</text>
           </g>
         </g>;
       })}

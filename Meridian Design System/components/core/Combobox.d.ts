@@ -61,4 +61,4 @@ export interface ComboboxProps extends Omit<React.HTMLAttributes<HTMLDivElement>
  *   error={touched && !cp ? "Select a counterparty" : undefined}
  * />
  */
-export declare function Combobox(props: ComboboxProps): JSX.Element;
+export declare function Combobox(props: ComboboxProps): React.JSX.Element;

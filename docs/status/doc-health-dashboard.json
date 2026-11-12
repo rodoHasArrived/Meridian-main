@@ -1,11 +1,11 @@
 {
-  "total_files": 951,
-  "orphaned_count": 391,
-  "no_heading_count": 231,
+  "total_files": 961,
+  "orphaned_count": 398,
+  "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:2af1ecf5c1344438d8ae3d8512998a8129c3ec1b565eb52ccfa4685571a39ae0",
+  "signal_digest": "sha256:70213fd81dd2f526561ee4d47c62970aca215f55c2c7cd678cf599922be2b8fa",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -105,6 +105,8 @@
     "Meridian Design System/components/charts/WatchlistStrip.prompt.md",
     "Meridian Design System/components/charts/WaterfallChart.prompt.md",
     "Meridian Design System/components/charts/YieldCurve.prompt.md",
+    "Meridian Design System/components/charts/useChartCrosshair.prompt.md",
+    "Meridian Design System/components/charts/viz.prompt.md",
     "Meridian Design System/components/core/Accordion.prompt.md",
     "Meridian Design System/components/core/AsyncCombobox.prompt.md",
     "Meridian Design System/components/core/Badge.prompt.md",
@@ -172,7 +174,11 @@
     "Meridian Design System/components/core/Toast.prompt.md",
     "Meridian Design System/components/core/Tooltip.prompt.md",
     "Meridian Design System/components/core/TreeView.prompt.md",
+    "Meridian Design System/components/core/Validators.prompt.md",
     "Meridian Design System/components/core/ValueAuthority.prompt.md",
+    "Meridian Design System/components/core/format.prompt.md",
+    "Meridian Design System/components/core/localDate.js.prompt.md",
+    "Meridian Design System/components/core/useFormState.prompt.md",
     "Meridian Design System/components/data/BulkActionBar.prompt.md",
     "Meridian Design System/components/data/ColumnChooser.prompt.md",
     "Meridian Design System/components/data/ColumnManager.prompt.md",
@@ -194,6 +200,7 @@
     "Meridian Design System/components/data/SelectionCompare.prompt.md",
     "Meridian Design System/components/data/SelectionToolbar.prompt.md",
     "Meridian Design System/components/data/Skeleton.prompt.md",
+    "Meridian Design System/components/data/TableHooks.prompt.md",
     "Meridian Design System/components/data/Toolbar.prompt.md",
     "Meridian Design System/components/data/VirtualizedList.prompt.md",
     "Meridian Design System/components/data/WorksheetGrid.prompt.md",
@@ -489,6 +496,8 @@
     "Meridian Design System/components/charts/TimeframeSwitcher.prompt.md",
     "Meridian Design System/components/charts/TraceChart.prompt.md",
     "Meridian Design System/components/charts/Treemap.prompt.md",
+    "Meridian Design System/components/charts/useChartCrosshair.prompt.md",
+    "Meridian Design System/components/charts/viz.prompt.md",
     "Meridian Design System/components/charts/WatchlistStrip.prompt.md",
     "Meridian Design System/components/charts/WaterfallChart.prompt.md",
     "Meridian Design System/components/charts/YieldCurve.prompt.md",
@@ -5038,6 +5047,20 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/useChartCrosshair.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/viz.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/WatchlistStrip.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -5234,6 +5257,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/format.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/FormatProvider.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -5306,6 +5336,13 @@
     {
       "path": "Meridian Design System/components/core/LinearGauge.prompt.md",
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/localDate.js.prompt.md",
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -5528,6 +5565,20 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/useFormState.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/Validators.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/ValueAuthority.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -5677,6 +5728,13 @@
     {
       "path": "Meridian Design System/components/data/Skeleton.prompt.md",
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/data/TableHooks.prompt.md",
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -6172,6 +6230,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/docs/LOCAL_PATCHES.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/docs/METRICS.md",
       "has_heading": true,
       "todo_count": 0,
@@ -6621,6 +6686,13 @@
     },
     {
       "path": "Meridian Design System/tests/BROWSER_TEST_PLAN.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/FULL_LIBRARY_BROWSER.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -7132,6 +7204,13 @@
     },
     {
       "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/recurring-journal/golden/README.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

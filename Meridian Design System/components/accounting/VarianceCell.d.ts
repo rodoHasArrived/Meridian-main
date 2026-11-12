@@ -1,5 +1,6 @@
+import * as React from "react";
 export type VarianceNotation="currency"|"accounting"|"percent"|"bp"|"quantity"|"count"|"duration"|"number";
 export type VarianceState="within"|"near"|"outside"|"pending"|"not-comparable"|"missing-actual"|"missing-reference";
-export type DataConditionKey="confirmed"|"provisional"|"estimated"|"stale"|"overridden"|"missing"|"na"|"pending"|"exception"|"reconciled";
+export type DataConditionKey="confirmed"|"provisional"|"estimated"|"stale"|"overridden"|"missing"|"na"|"pending"|"exception"|"reconciled"|"restricted";
 export interface VarianceCellProps extends Omit<React.HTMLAttributes<HTMLElement>,"onSelect">{actual?:number|null;expected?:number|null;reference?:number|null;tolerance?:number;tolerancePct?:number;nearFactor?:number;notation?:VarianceNotation;mode?:"analytical"|"accounting";unit?:string;currency?:string;digits?:number;format?:(value:number)=>string;comparisonLabel?:string;condition?:DataConditionKey|string;conditionDetail?:string;explanation?:React.ReactNode;reason?:React.ReactNode;state?:VarianceState;notComparable?:boolean;showRelative?:boolean;showReference?:boolean;layout?:"stacked"|"inline";selected?:boolean;onSelect?:(detail:{actual:number|null;expected:number|null;variance:number|null;relative:number|null;state:VarianceState;tolerance:number})=>void;}
-export declare function VarianceCell(props:VarianceCellProps):JSX.Element;
+export declare function VarianceCell(props:VarianceCellProps):React.JSX.Element;

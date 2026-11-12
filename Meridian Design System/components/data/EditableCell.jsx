@@ -50,6 +50,11 @@ export function EditableCell({
   const [draft, setDraft] = React.useState(String(value ?? ""));
   const [error, setError] = React.useState(null);
   const inputRef = React.useRef(null);
+  const displayRef = React.useRef(null);
+  const returnFocus = React.useRef(false);
+  const hintId = React.useId();
+  React.useEffect(() => { if (!editing) setDraft(String(value ?? "")); }, [value, editing]);
+  const startEdit = () => { if (disabled) return; setDraft(String(value ?? "")); setError(null); setEditing(true); };
 
   const validate = (val) => {
     if (validator) {
@@ -64,9 +69,10 @@ export function EditableCell({
   };
 
   const commit = () => {
-    if (!validate(draft)) return;
+    if (!validate(draft)) return false;
     onCommit?.(draft);
     setEditing(false);
+    return true;
   };
 
   const cancel = () => {
@@ -78,9 +84,10 @@ export function EditableCell({
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      commit();
+      if (commit()) returnFocus.current = true;
     } else if (e.key === "Escape") {
       e.preventDefault();
+      returnFocus.current = true;
       cancel();
     } else if (e.key === "Tab") {
       commit();
@@ -99,18 +106,20 @@ export function EditableCell({
       inputRef.current.focus();
       inputRef.current.select?.();
     }
+    if (!editing && returnFocus.current) { returnFocus.current = false; displayRef.current?.focus(); }
   }, [editing]);
 
   return (
     <div className={`mds-editable ${editing ? "mds-editable--active" : ""} ${className}`}>
       {!editing && (
         <div
+          ref={displayRef}
           className="mds-editable__display"
-          onClick={() => !disabled && setEditing(true)}
+          onClick={startEdit}
           role="button"
           tabIndex={disabled ? -1 : 0}
-          aria-label={`Edit ${value}`}
-          onKeyDown={(e) => e.key === "Enter" && !disabled && setEditing(true)}
+          aria-disabled={disabled || undefined}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startEdit(); } }}
         >
           {children ?? value ?? "—"}
         </div>
@@ -122,6 +131,9 @@ export function EditableCell({
             type={mode === "number" ? "number" : "text"}
             className={`mds-editable__input ${error ? "mds-editable__input--error" : ""}`}
             value={draft}
+            aria-label="Edit value"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error || hint ? hintId : undefined}
             onChange={handleChange}
             onBlur={commit}
             onKeyDown={handleKeyDown}
@@ -129,7 +141,7 @@ export function EditableCell({
             disabled={disabled}
           />
           {(error || hint) && (
-            <div className="mds-editable__hint">
+            <div className="mds-editable__hint" id={hintId}>
               {error || hint}
             </div>
           )}

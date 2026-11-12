@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Lineage graph — directed provenance and dependency with a **layered** layout
  * and orthogonal routing. Meridian's ownership, data-lineage, accounting-flow,
@@ -61,4 +62,4 @@ export interface LineageGraphProps extends Omit<React.HTMLAttributes<HTMLDivElem
   outline?: boolean;
   outlineTitle?: string;
 }
-export declare function LineageGraph(props: LineageGraphProps): JSX.Element;
+export declare function LineageGraph(props: LineageGraphProps): React.JSX.Element;

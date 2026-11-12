@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * PnLCalendar — month-grid daily P&L view. Monday-first, UTC dates. By default cells wash
  * green/red at alpha-10 (alpha-20 past half the month's max magnitude); heat={false} drops
@@ -12,7 +13,8 @@
 export interface PnLCalendarProps {
   /** Month as "YYYY-MM". */
   month: string;
-  /** Map of "YYYY-MM-DD" → signed P&L. Missing days render empty (non-trading). */
+  /** Map of "YYYY-MM-DD" → signed P&L. Only valid dates in the displayed month
+   * contribute to its total and heat scale. Missing days render empty (non-trading). */
   values?: Record<string, number>;
   /** Map of "YYYY-MM-DD" → intraday signed values; renders micro-bars around a dashed midline. */
   bars?: Record<string, number[]> | null;
@@ -26,4 +28,4 @@ export interface PnLCalendarProps {
   showTotal?: boolean;
   style?: React.CSSProperties;
 }
-export declare function PnLCalendar(props: PnLCalendarProps): JSX.Element;
+export declare function PnLCalendar(props: PnLCalendarProps): React.JSX.Element;

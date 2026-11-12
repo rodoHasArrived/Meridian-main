@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Value envelope — the single contract for what is known about a figure:
  * **condition · authority · evidence · clocks · materiality**. One envelope
@@ -57,13 +58,15 @@ export interface ValueEnvelopeProps extends MeridianValueEnvelope, React.HTMLAtt
   /** Open the tier-3 panel (inspector rail, drawer). */
   onInspect?: () => void;
 }
-export declare function ValueEnvelope(props: ValueEnvelopeProps): JSX.Element;
+export declare function ValueEnvelope(props: ValueEnvelopeProps): React.JSX.Element;
+export declare namespace ValueEnvelope { const check: typeof envelopeCheck; }
 
 export interface EnvelopePanelProps extends React.HTMLAttributes<HTMLDivElement> {
   envelope: MeridianValueEnvelope;
   title?: string;
 }
-export declare function EnvelopePanel(props: EnvelopePanelProps): JSX.Element;
+export declare function EnvelopePanel(props: EnvelopePanelProps): React.JSX.Element;
+export declare namespace EnvelopePanel { const check: typeof envelopeCheck; }
 
 export interface EnvelopeMarkProps {
   kind?: "condition" | "authority" | "evidence" | "clock" | "material";
@@ -71,12 +74,12 @@ export interface EnvelopeMarkProps {
   bad?: boolean;
   title?: string;
 }
-export declare function EnvelopeMark(props: EnvelopeMarkProps): JSX.Element;
+export declare function EnvelopeMark(props: EnvelopeMarkProps): React.JSX.Element;
 
 export interface EnvelopeCoherenceProps extends React.HTMLAttributes<HTMLDivElement> {
   envelopes: MeridianValueEnvelope[];
 }
-export declare function EnvelopeCoherence(props: EnvelopeCoherenceProps): JSX.Element;
+export declare function EnvelopeCoherence(props: EnvelopeCoherenceProps): React.JSX.Element;
 
 export interface EnvelopeViolation { rule: string; text: string }
 /** Also reachable as `ValueEnvelope.check` — consumers read it off the carrier. */

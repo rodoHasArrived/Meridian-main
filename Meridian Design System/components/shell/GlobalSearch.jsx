@@ -6,6 +6,7 @@
 // Mounted automatically by templates/_scaffold/ds-base.js — screens write nothing. Mount it by hand
 // only when you want it somewhere other than the masthead.
 import React from "react";
+import { useOverlayFocus, useOverlayEscape } from "../core/useOverlayFocus";
 
 let injected = false;
 function inject() {
@@ -81,8 +82,11 @@ export function GlobalSearch({
   const [active, setActive] = React.useState(0);
   const inputRef = React.useRef(null);
   const listRef = React.useRef(null);
+  const overlayRef = React.useRef(null);
+  useOverlayFocus(overlayRef, open, ".mds-gsearch");
+  useOverlayEscape(open, onClose);
 
-  React.useEffect(() => { if (open) { setQ(""); setActive(0); setTimeout(() => inputRef.current && inputRef.current.focus(), 0); } }, [open]);
+  React.useEffect(() => { if (open) { setQ(""); setActive(0); } }, [open]);
 
   const rows = React.useMemo(() => {
     const out = [];
@@ -108,8 +112,8 @@ export function GlobalSearch({
   }, [onClose]);
 
   const onKeyDown = (e) => {
-    if (e.key === "Escape") { e.preventDefault(); onClose && onClose(); return; }
-    if (e.key === "ArrowDown" || (e.key === "n" && e.ctrlKey)) { e.preventDefault(); setActive((i) => Math.min(rows.length - 1, i + 1)); return; }
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); onClose && onClose(); return; }
+    if (e.key === "ArrowDown" || (e.key === "n" && e.ctrlKey)) { e.preventDefault(); setActive((i) => Math.max(0, Math.min(rows.length - 1, i + 1))); return; }
     if (e.key === "ArrowUp" || (e.key === "p" && e.ctrlKey)) { e.preventDefault(); setActive((i) => Math.max(0, i - 1)); return; }
     if (e.key === "Enter") { e.preventDefault(); run(rows[active]); }
   };
@@ -139,7 +143,7 @@ export function GlobalSearch({
   });
 
   return (
-    <div className="mds-gsearch__scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose && onClose(); }}>
+    <div ref={overlayRef} className="mds-gsearch__scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose && onClose(); }}>
       <div className="mds-gsearch" role="dialog" aria-modal="true" aria-label="Search">
         <div className="mds-gsearch__field">
           <span className="mds-gsearch__glyph" aria-hidden="true">⌕</span>

@@ -4,6 +4,7 @@
 // threshold. Footer rolls up basis, value, and total gain. Light institutional grid.
 import React from "react";
 import { AmountCell } from "./AmountCell";
+import { knownAmount, sumKnown, displayAmount } from "./knownAmounts.js";
 import { toNumber, formatNumber } from "../core/format.js";
 
 let injected = false;
@@ -92,18 +93,18 @@ export function TaxLotTable({
   const gainHead = mode === "realized" ? "Realized P&L" : "Unrealized P&L";
 
   const computed = lots.map((l) => {
-    const basis = toNumber(l.costBasis);
-    const value = toNumber(mode === "realized" ? l.proceeds : l.marketValue);
-    const gain = isFinite(basis) && isFinite(value) ? value - basis : NaN;
-    const pct = isFinite(gain) && basis !== 0 ? (gain / Math.abs(basis)) * 100 : NaN;
+    const basis = knownAmount(l.costBasis);
+    const value = knownAmount(mode === "realized" ? l.proceeds : l.marketValue);
+    const gain = basis!==null&&value!==null ? value-basis : null;
+    const pct = Number.isFinite(gain) && basis !== 0 ? (gain / Math.abs(basis)) * 100 : NaN;
     const held = l.daysHeld != null ? l.daysHeld : daysHeld(l.acquired, asOf);
     const long = l.term ? l.term === "long" : held != null && held >= longTermDays;
     return { ...l, basis, value, gain, pct, held, long };
   });
 
-  const tBasis = computed.reduce((a, r) => a + (isFinite(r.basis) ? r.basis : 0), 0);
-  const tValue = computed.reduce((a, r) => a + (isFinite(r.value) ? r.value : 0), 0);
-  const tGain = tValue - tBasis;
+  const tBasis = sumKnown(computed.map(row=>row.basis));
+  const tValue = sumKnown(computed.map(row=>row.value));
+  const tGain = tValue===null||tBasis===null?null:tValue-tBasis;
   const colCount = 6 + (showSymbol ? 1 : 0);
 
   return (
@@ -145,10 +146,10 @@ export function TaxLotTable({
                 </span>
               </td>
               <td className="tlt--r">{fmtQty(r.quantity)}</td>
-              <td className="tlt--r"><AmountCell value={r.basis} currency={currency} /></td>
-              <td className="tlt--r"><AmountCell value={r.value} currency={currency} /></td>
+              <td className="tlt--r"><AmountCell value={displayAmount(r.basis)} currency={currency} /></td>
+              <td className="tlt--r"><AmountCell value={displayAmount(r.value)} currency={currency} /></td>
               <td className="tlt--r">
-                <AmountCell value={r.gain} currency={currency} mode="pnl" signed zeroDash />
+                <AmountCell value={displayAmount(r.gain)} currency={currency} mode="pnl" signed zeroDash />
                 {isFinite(r.pct) && (
                   <span className="tlt__pct" style={{ color: r.gain < 0 ? "var(--red-dim,#883832)" : r.gain > 0 ? "var(--green-dim,#225840)" : "var(--text-muted,#606870)" }}>
                     {r.gain >= 0 ? "+" : "\u2212"}{Math.abs(r.pct).toFixed(2)}%
@@ -163,9 +164,9 @@ export function TaxLotTable({
             <td className="tlt__foot-lbl" colSpan={showSymbol ? 4 : 3}>
               {computed.length} {computed.length === 1 ? "lot" : "lots"}
             </td>
-            <td className="tlt--r"><AmountCell value={tBasis} currency={currency} strong /></td>
-            <td className="tlt--r"><AmountCell value={tValue} currency={currency} strong /></td>
-            <td className="tlt--r"><AmountCell value={tGain} currency={currency} mode="pnl" signed strong /></td>
+            <td className="tlt--r"><AmountCell value={displayAmount(tBasis)} currency={currency} strong /></td>
+            <td className="tlt--r"><AmountCell value={displayAmount(tValue)} currency={currency} strong /></td>
+            <td className="tlt--r"><AmountCell value={displayAmount(tGain)} currency={currency} mode="pnl" signed strong /></td>
           </tr>
         </tfoot>
       </table>

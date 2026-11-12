@@ -41,7 +41,7 @@ function inject() {
 .mds-sc__rg--action{background:var(--surface-recessed, #EBE8E1);}
 .mds-sc__rg--danger{border-color:var(--red, #B54B42);}
 .mds-sc__empty{font-family:var(--font-body,system-ui);font-size:11px;color:var(--text-muted,#606870);}
-.mds-sc__warn{grid-column:1/-1;font-family:var(--font-body,system-ui);font-size:11px;color:var(--amber, #986717);}`;
+.mds-sc__warn{grid-column:1/-1;font-family:var(--font-body,system-ui);font-size:11px;color:var(--orange-dim, #724D11);}`;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "screen-composition");
   el.textContent = css;

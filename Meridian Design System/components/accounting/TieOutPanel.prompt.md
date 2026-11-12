@@ -21,3 +21,12 @@ never read as successful merely because the net difference is small.
 - Accepting an unexplained residual requires a reason by default (`requireReason`).
 
 **A missing input is not a zero.** A source with no value — or one whose `condition` is `missing`, `pending`, `stale`, `na` or `exception` — makes the panel **indeterminate**: the gross difference and the residual render as `—`, each unusable input is named ("Custodian statement has no value"), and acceptance and resolution are unavailable. A caller-declared `status="tied"` cannot outrank the gap. Only `onInvestigate` / `onLinkEvidence` stay actionable, because closing the gap is the only forward move.
+
+Restricted source amounts/counts and restricted reconciling amounts are withheld.
+They make the proof indeterminate even when a caller declares it tied; no residual
+or acceptance may be inferred from withheld inputs. This presentation safeguard
+does not replace server-side permissions.
+
+Whitespace-only numeric entries are missing, not zero. A restricted reconciling
+item also withholds its supplied label/evidence so those fields cannot echo the
+private amount. Authorized evidence stays available through its separate owner.

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * HandoverBrief — what moved on the operator's objects since the last-seen mark (4.1, track A of
  * session continuity). `EventTimeline` is per object; this is per *person*, and answers the question
@@ -39,7 +40,7 @@ export interface HandoverItem {
   actor?: string;
   action?: { label: React.ReactNode; onClick?: (item: HandoverItem) => void };
 }
-export interface HandoverBriefProps extends React.HTMLAttributes<HTMLElement> {
+export interface HandoverBriefProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   /** The last-seen mark. The window is explicit — "recent" is not a window. */
   since?: string;
   /** @default "now" */
@@ -66,7 +67,7 @@ export interface HandoverBriefProps extends React.HTMLAttributes<HTMLElement> {
   emptyStatement?: React.ReactNode;
   footNote?: React.ReactNode;
 }
-export declare function HandoverBrief(props: HandoverBriefProps): JSX.Element;
+export declare function HandoverBrief(props: HandoverBriefProps): React.JSX.Element;
 
 /** Topbar chip — count plus the mark, for opening the brief. Pairs with `NotificationCenter`. */
 export declare function HandoverBriefChip(props: React.HTMLAttributes<HTMLButtonElement> & {
@@ -74,4 +75,4 @@ export declare function HandoverBriefChip(props: React.HTMLAttributes<HTMLButton
   severity?: "blocked" | "action" | "review" | "info" | "ready";
   since?: string;
   label?: React.ReactNode;
-}): JSX.Element;
+}): React.JSX.Element;

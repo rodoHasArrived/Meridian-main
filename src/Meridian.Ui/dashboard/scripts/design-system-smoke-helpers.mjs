@@ -70,12 +70,13 @@ export function parseDesignSystemOptions(args) {
 }
 
 /**
- * Smoke-only GET support for six exact fixture identities. Personal views are empty;
+ * Smoke-only GET support for exact fixture identities. Personal views are empty;
  * history is unavailable/empty, never reconstructed from current task/provider state.
  */
 export function readOnlySmokeResponse(url, method = "GET") {
   if (method !== "GET") return null;
-  const pathname = new URL(url, "http://meridian.test").pathname;
+  const requestUrl = new URL(url, "http://meridian.test");
+  const pathname = requestUrl.pathname;
   const views = new Set([
     "/api/workstation/tables/close-checklist-progress-data/views",
     "/api/workstation/tables/portfolio-positions/views",
@@ -96,6 +97,9 @@ export function readOnlySmokeResponse(url, method = "GET") {
   } else if (pathname === "/api/workstation/provider-verification-history/provider-alpaca-paper") {
     body = { connectionId: "provider-alpaca-paper", providerId: "alpaca", asOfUtc: "2026-11-11T00:00:00Z", observations: [], isTruncated: false };
     limitation = "Synthetic empty verification history; no provider uptime or live verification claim.";
+  } else if (pathname === "/api/symbols/search" && requestUrl.search === "?query=portfolio") {
+    body = [];
+    limitation = "Synthetic empty symbol search for the exact command-palette keyboard scene; no provider lookup is claimed.";
   } else return null;
   return {
     status: 200, body,

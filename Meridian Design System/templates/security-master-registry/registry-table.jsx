@@ -7,7 +7,7 @@ function RegistryTable(props) {
     { key: "name", label: "Security Name", align: "left", width: 240, pinned: true, cell: (r) => (
       <div>
         <div style={{ fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>{r.name}</div>
-        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{r.shortCode}</div>
+        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{r.shortCode}</div>
       </div>
     ) },
     { key: "cusip", label: "CUSIP", width: 112 },

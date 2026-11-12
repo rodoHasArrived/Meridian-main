@@ -28,7 +28,7 @@ import {
   amortizeStraightLine,
   fxRevalue,
   effectiveYieldSchedule,
-} from "./money";
+} from "./money.js";
 
 export const Money = {
   formatMoney,

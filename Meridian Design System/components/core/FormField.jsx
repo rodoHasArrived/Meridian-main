@@ -9,6 +9,7 @@ import React from "react";
  *   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
  * </FormField>
  */
+
 export function FormField({
   label,
   hint,
@@ -21,10 +22,10 @@ export function FormField({
   const generatedId = React.useId();
   const control = React.isValidElement(children) ? children : null;
   const fieldId = control?.props.id || generatedId;
-  const helpId = `${fieldId}-help`;
+  const messageId = `${fieldId}-message`;
   const describedBy = [...new Set([
     ...(control?.props["aria-describedby"] || "").split(/\s+/).filter(Boolean),
-    ...((hint || error) ? [helpId] : []),
+    ...((hint || error) ? [messageId] : []),
   ])].join(" ");
 
   return (
@@ -56,17 +57,18 @@ export function FormField({
         </label>
       )}
 
-      {/* Keep the visible label and supporting message attached to the control. */}
+      {/* Input (cloned with id and aria attrs) */}
       {control ? React.cloneElement(control, {
         id: fieldId,
-        ...(describedBy ? { "aria-describedby": describedBy } : {}),
-        ...(error ? { "aria-invalid": true } : {}),
-        ...(required ? { "aria-required": true } : {}),
+        "aria-required": required || control.props["aria-required"],
+        "aria-invalid": error ? true : control.props["aria-invalid"],
+        "aria-describedby": describedBy || undefined,
       }) : children}
 
       {/* Hint or error message */}
       {(hint || error) && (
-        <div id={helpId}
+        <div
+          id={messageId}
           style={{
             fontSize: 'var(--type-caption)',
             color: error ? 'var(--red)' : 'var(--text-muted)',

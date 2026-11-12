@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Delta — signed change value with the explicit-sign content rule built in. Mono, tabular,
  * dim semantic tone: positive green-dim, negative red-dim, zero muted "±0.00".
@@ -19,4 +20,4 @@ export interface DeltaProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Override the auto tone (e.g. a drawdown where "up" is bad). */
   tone?: "up" | "down" | "flat";
 }
-export declare function Delta(props: DeltaProps): JSX.Element;
+export declare function Delta(props: DeltaProps): React.JSX.Element;

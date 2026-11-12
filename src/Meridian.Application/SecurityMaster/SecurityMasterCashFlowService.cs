@@ -3,6 +3,7 @@ using Meridian.Contracts.Calendars;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
+using Meridian.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -238,6 +239,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             };
     }
 
+    [PostingCalculationNotYetConnected("Recognizes each coupon whole on its period date. Recurring accruals use the amortization bridge's day-weighted accrual window instead; repoint a caller to that or retire this.")]
     public async Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
         Guid securityId,
         string? financialAccountId = null,
@@ -515,7 +517,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 ToUtcDateTimeOffset(date),
                 RoundCash(principal),
                 interest,
-                principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis)));
+                principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis))
+            {
+                // The interval the interest was measured over, so it can be accrued by day. Kept
+                // off the wire: this row shape is retained in calculation receipts.
+                InterestMeasuredFrom = accrualStart,
+                InterestMeasuredTo = date
+            });
         }
 
         return new StructuredCashFlowProjectionDto(

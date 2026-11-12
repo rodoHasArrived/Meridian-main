@@ -46,7 +46,7 @@ export const Validators = {
     }
 
     // Strip common currency symbols and whitespace
-    let cleaned = value.replace(/[$\s]/g, "").trim();
+    let cleaned = value.trim().replace(/\s/g, "");
 
     // Handle accounting parentheses (1,234.00) = negative
     let isNegative = false;
@@ -55,11 +55,16 @@ export const Validators = {
       cleaned = cleaned.slice(1, -1);
     }
 
-    // Strip commas and parse
+    // A currency prefix is allowed; embedded symbols, partial parses and
+    // contradictory parenthesized signs are never valid monetary instructions.
+    cleaned = cleaned.replace(/^\$/, "").replace(/^(-)\$/, "$1");
+    if ((isNegative && cleaned.startsWith("-")) || !/^-?(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)$/.test(cleaned)) {
+      return "Invalid currency amount";
+    }
     cleaned = cleaned.replace(/,/g, "");
-    const num = parseFloat(cleaned);
+    const num = Number(cleaned);
 
-    if (isNaN(num)) {
+    if (!Number.isFinite(num)) {
       return "Invalid currency amount";
     }
 
@@ -177,7 +182,7 @@ export const Validators = {
    */
   required: (value, opts = {}) => {
     const { fieldName = "This field" } = opts;
-    if (!value || (typeof value === "string" && !value.trim())) {
+    if (value == null || (typeof value === "string" && !value.trim()) || (Array.isArray(value) && value.length === 0)) {
       return `${fieldName} is required`;
     }
     return true;

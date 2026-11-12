@@ -4,6 +4,7 @@ import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "luc
 import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2595,7 +2596,7 @@ export function buildExportsReportRunRequest(
       name: template.templateName,
       version: template.versionNumber
     },
-    asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
+    asOfDate: normalizeDraftText(draft.asOfDate, defaultReportingAsOfDate()),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
     datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
@@ -2645,7 +2646,7 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     ?? null;
   const templateId = normalizeIdentifierToken(schedule?.templateId ?? template?.templateId, "investor-monthly-statement");
   const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
-  const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
+  const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, defaultReportingAsOfDate());
   const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
   const retainedTemplate = schedule?.template
     ?? (template
@@ -2706,7 +2707,7 @@ function buildReportingScheduleUpsertRequest(
 ): ReportingScheduleUpsertRequest {
   const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
   const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
-  const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
+  const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, defaultReportingAsOfDate());
   const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
   const brandingThemeOverride = buildReportBrandingOverride(brandingDraft);
   const parameterValidation = validateAndBuildReportingRunParameters(draft.runParameters, nextAsOfDate);
@@ -2906,6 +2907,16 @@ function buildRenderReportTemplateRequest(
     datasetRows: customDatasetRows ?? buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
     grids: [gridDefinition]
   };
+}
+
+/**
+ * The as-of date used when a report run or schedule draft leaves it blank. Deliberately the UTC
+ * calendar day, not the operator's local day: it is the same day the reporting period switcher
+ * starts from (`todayIsoDate`), and the schedule default built from it is a UTC instant
+ * (`T20:00:00Z`).
+ */
+function defaultReportingAsOfDate(): string {
+  return utcToday();
 }
 
 function formatReportingMoney(value: number, currency: string): string {

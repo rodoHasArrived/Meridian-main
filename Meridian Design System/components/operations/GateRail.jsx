@@ -4,7 +4,7 @@
 // (Passed / InProgress / ReviewRequired / Blocked / NotStarted) and the connector
 // to a node turns green once the preceding gate has Passed.
 import React from "react";
-import { normalizeSeverity, humanizeStatus } from "./status";
+import { normalizeSeverity, humanizeStatus } from "./status.js";
 
 let injected = false;
 function inject() {

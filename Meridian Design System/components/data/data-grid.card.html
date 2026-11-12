@@ -8,6 +8,7 @@
 <script src="../../_preview_runtime.js"></script>
 <script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
+<style>.schema-panels{grid-template-columns:repeat(2,minmax(0,1fr))}.density-panels{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:900px){.schema-panels{grid-template-columns:minmax(0,1fr)}}@media(max-width:700px){.density-panels{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:400px){.density-panels{grid-template-columns:minmax(0,1fr)}}</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
 <div id="root"></div>
@@ -15,7 +16,7 @@
 const { DataGrid, GRID_SCHEMAS, ValueEnvelope, Eyebrow } = window.MeridianDesignSystem_205d17;
 function Panel({ eyebrow, title, note, children, style }) {
   return (
-    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0, ...style }}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
       {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"74ch" }}>{note}</p> : null}
@@ -61,7 +62,7 @@ function Demo() {
         <DataGrid schema="trialBalance" rowKey="code" density="dense"
           rows={TB.map((r) => r.code === "3900" ? { ...r, credit: r.credit - 12.4 } : r)} />
       </Panel>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, alignItems:"start" }}>
+      <div className="schema-panels" style={{ display:"grid", gap:16, alignItems:"start" }}>
         <Panel eyebrow="Schema, not module" title="Domain tables are data"
           note="GRID_SCHEMAS.taxLots supplies the columns and the Σ basis proof. A cell opts into a full value envelope through column.cell — the grid never learns about provenance itself.">
           <DataGrid columns={LOT_COLS} proof={GRID_SCHEMAS.taxLots.proof} rows={LOTS} rowKey="lot" density="standard" />
@@ -74,7 +75,7 @@ function Demo() {
       </div>
       <Panel eyebrow="Density" title="Four row heights, one component"
         note="Terminal 26px · Dense 28px · Standard 36px · Review 44px — resolved from the registry, so compact and spacious spellings land on the same rows.">
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+        <div className="density-panels" style={{ display:"grid", gap:12 }}>
           {["terminal","dense","standard","review"].map((d) => (
             <div key={d}>
               <div style={{ fontSize:10, fontVariant:"all-small-caps", letterSpacing:".06em", color:"var(--text-muted)", marginBottom:5 }}>{d}</div>

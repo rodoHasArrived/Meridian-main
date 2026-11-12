@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Analytical scope — the object a figure is true of, stated on the figure.
  *
@@ -58,7 +59,7 @@ export interface ObjectScopeProviderProps {
 }
 /** Declares the object a region is about. Nest freely — a position drawer inside a
  *  security workspace re-declares scope for its own subtree. */
-export declare function ObjectScopeProvider(props: ObjectScopeProviderProps): JSX.Element;
+export declare function ObjectScopeProvider(props: ObjectScopeProviderProps): React.JSX.Element;
 
 export interface ScopeMarkProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Omit to print the ambient scope. Pass to mark a figure that belongs elsewhere. */
@@ -69,7 +70,7 @@ export interface ScopeMarkProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Precomputed relation, when the caller already has one. */
   relation?: ScopeRelation;
 }
-export declare function ScopeMark(props: ScopeMarkProps): JSX.Element | null;
+export declare function ScopeMark(props: ScopeMarkProps): React.JSX.Element | null;
 
 export interface ScopedValueProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Omit for a figure that belongs to the surface's own object. */
@@ -90,14 +91,14 @@ export interface ScopedValueProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 /** A figure that states its own scope: scope word · label · value. */
-export declare function ScopedValue(props: ScopedValueProps): JSX.Element;
+export declare function ScopedValue(props: ScopedValueProps): React.JSX.Element;
 
-export interface ScopeMismatchProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ScopeMismatchProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title?: React.ReactNode;
 }
 /** Lists the figures in this region that belong to another object. Renders nothing when
  *  every figure is in scope. */
-export declare function ScopeMismatch(props: ScopeMismatchProps): JSX.Element | null;
+export declare function ScopeMismatch(props: ScopeMismatchProps): React.JSX.Element | null;
 
 export declare const ScopeHooks: {
   useScope(): { scope: string | null; object: string | number | null; label: string | null; parent: string | null } | null;
