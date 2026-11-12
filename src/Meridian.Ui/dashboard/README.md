@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui/dashboard
@@ -26,6 +26,23 @@ load results and presentation live in `strategy-screen.equity-paths.view-model.t
 `strategy-screen.equity-paths.tsx`. The existing Strategy
 view-model entrypoint retains its public exports while both screen entrypoints stay within their
 file-size limits. Curve sampling, reported returns and promotion selection behavior are unchanged.
+
+Accounting Configure includes a tenant-scoped Intercompany Agreements registry using shared
+FundStructure contracts. Operators can save proposals, submit for independent review, inspect exact
+approved versions/evidence and retain local input across conflicts. Journal source drill-through
+keeps transaction and functional amounts separate and labels agreement coverage as advisory.
+Selected-line agreement authoring requires the server's explicit compatible-writer capability;
+historical agreement/version references remain visible when that capability is unavailable.
+Focused coverage: `accounting-screen.intercompany-agreements.test.tsx`, `intercompany-agreement-editor.test.tsx`,
+`intercompany-journal-reference.test.tsx`, `intercompany-agreement-journals.test.tsx` and
+`intercompany-agreements.api.test.ts`.
+
+Run the focused checks from the repository root:
+
+```bash
+cd src/Meridian.Ui/dashboard
+npx vitest run src/screens/accounting-screen.intercompany-agreements.test.tsx src/components/accounting/intercompany-agreement-editor.test.tsx src/components/accounting/intercompany-journal-reference.test.tsx src/components/accounting/intercompany-agreement-journals.test.tsx src/lib/api/intercompany-agreements.api.test.ts
+```
 
 Floating analytics distinguishes `Select observed fixing` for already-reset coupons from `Select
 forward curve` for future resets. The observed-fixing panel verifies and retains exact-date source
@@ -614,6 +631,9 @@ shared first-run API remains the source of truth for starter kits, sample safety
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
+The first-run concierge also exposes an accessible error and Retry when it loads status itself;
+retry shows loading progress and leaving the screen cancels the pending read. Accounting money
+helpers preserve statement trailing-minus signs when formatting and balancing amounts.
 
 After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
 every outcome the host tracks and routes to the surface that completes the next one. Completion is

@@ -20,6 +20,18 @@ for other markets can pass `intradaySessionTimeZone` explicitly. A bar ending af
 does not mark the following US trading session as covered. Daily bars retain their declared
 `SessionDate`.
 
+Subscription application trims symbol names and keeps the first declaration when names repeat
+case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
+hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
+
+`IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
+receipts and effective-date selection over the durable agreement store. Retrospective amendments
+preserve posted versions; semantic bases follow effective chronology rather than approval order.
+`PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
+lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+Main composition supplies that authority through a deferred factory, and journal validation and
+transactional writer interfaces resolve to the same durable ledger singleton.
+
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
 uses the shared versioned term keys for call schedules and schedule conventions.

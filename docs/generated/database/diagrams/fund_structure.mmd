@@ -95,6 +95,36 @@ erDiagram
         text resolved_tenant_id
         text resolution_note
     }
+    fund_structure_intercompany_agreement {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        bigint aggregate_version FK
+    }
+    fund_structure_intercompany_agreement_audit {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        integer sequence_number PK
+        jsonb payload
+    }
+    fund_structure_intercompany_agreement_command_receipt {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        uuid command_id PK
+        jsonb payload
+    }
+    fund_structure_intercompany_agreement_revision {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        integer agreement_version PK
+        jsonb payload
+    }
+    fund_structure_intercompany_agreement_snapshot {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        bigint aggregate_version PK
+        jsonb payload
+        timestamp_with_time_zone retained_at_utc
+    }
     fund_structure_investment_portfolio {
         uuid investment_portfolio_id PK
         uuid business_id
@@ -190,3 +220,8 @@ erDiagram
         timestamp_with_time_zone updated_at
         text tenant_id
     }
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_audit : "intercompany_agreement_audit_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_command_receipt : "intercompany_agreement_command_rece_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_revision : "intercompany_agreement_revision_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_snapshot : "intercompany_agreement_snapshot_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement_snapshot ||--o{ fund_structure_intercompany_agreement : "intercompany_agreement_snapshot_pointer"

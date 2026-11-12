@@ -15,6 +15,12 @@ Unreadable operations-close snapshots report the exception type without the work
 identity or exception payload. Reviewed posting candidates require trusted human authority before
 store access; nonhuman and undefined origins cannot append a journal.
 
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Agreement coverage remains advisory and separate from the
+existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
+entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their
 retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the

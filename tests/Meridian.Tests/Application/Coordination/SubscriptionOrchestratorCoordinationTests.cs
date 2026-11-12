@@ -18,6 +18,40 @@ namespace Meridian.Tests.Application.Coordination;
 public sealed class SubscriptionOrchestratorCoordinationTests
 {
     [Fact]
+    public async Task ApplyAsync_NormalizesDuplicateSymbolsAndRetainsFirstDeclarationAcrossReloads()
+    {
+        var publisher = new TestMarketEventPublisher();
+        var client = new TrackingMarketDataClient();
+        var orchestrator = new SubscriptionOrchestrator(new MarketDepthCollector(publisher),
+            new TradeDataCollector(publisher), client, "tracking");
+        var config = new AppConfig(Symbols:
+        [
+            new SymbolConfig(" AAPL ", SubscribeTrades: true, SubscribeDepth: false),
+            new SymbolConfig("aapl", SubscribeTrades: false, SubscribeDepth: true),
+            new SymbolConfig("MSFT", SubscribeDepth: false),
+            new SymbolConfig(" ")
+        ]);
+
+        await orchestrator.ApplyAsync(config);
+        client.TradeSubscriptions.Should().Equal("AAPL", "MSFT");
+        client.DepthSubscriptions.Should().BeEmpty("the first AAPL declaration determines its settings");
+        client.SubscriptionAttempts.Should().Be(2);
+
+        await orchestrator.ApplyAsync(config);
+        client.SubscriptionAttempts.Should().Be(2, "unchanged duplicate configuration must reload without resubscribing");
+
+        await orchestrator.ApplyAsync(config with
+        {
+            Symbols = [new SymbolConfig("aapl ", SubscribeDepth: false), new SymbolConfig(" AAPL")]
+        });
+        client.TradeSubscriptions.Should().ContainSingle().Which.Should().Be("AAPL");
+        client.SubscriptionAttempts.Should().Be(2);
+
+        await orchestrator.ApplyAsync(config with { Symbols = [] });
+        orchestrator.ActiveSubscriptionCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task ApplyAsync_AllowsOnlyOneInstanceToOwnSharedSymbolSubscriptions()
     {
         var tempDir = CreateTempDir();

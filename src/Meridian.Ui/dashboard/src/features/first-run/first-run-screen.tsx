@@ -43,15 +43,22 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
   const [dataChoice, setDataChoice] = useState("sample");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     if (status) return;
     const controller = new AbortController();
-    void apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus, { signal: controller.signal })
-      .then((next) => { if (!controller.signal.aborted) setStatus(next); })
-      .catch((reason) => { if (!controller.signal.aborted) setError(String(reason)); });
+    apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus, { signal: controller.signal })
+      .then((next) => {
+        if (!controller.signal.aborted) setStatus(next);
+      })
+      .catch((reason) => {
+        if (!controller.signal.aborted) {
+          setError(reason instanceof Error ? reason.message : "Meridian could not load workspace setup.");
+        }
+      });
     return () => controller.abort();
-  }, [status]);
+  }, [status, loadAttempt]);
 
   useEffect(() => {
     const recommended = status?.starterKits.find((kit) => kit.goal === goal);
@@ -83,7 +90,15 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
     }
   }
 
-  if (!status) return <div className="min-h-screen bg-slate-950 p-8 text-slate-100">Preparing Meridian…</div>;
+  if (!status) return (
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100" aria-labelledby="first-run-loading-title">
+      <h1 id="first-run-loading-title" className="text-2xl font-semibold">{error ? "Workspace setup could not be loaded" : "Preparing Meridian…"}</h1>
+      {error ? <>
+        <p className="mt-4 text-red-200" role="alert">Meridian could not load the setup status. Try again to continue. Details: {error}</p>
+        <Button className="mt-6" onClick={() => { setError(null); setLoadAttempt((attempt) => attempt + 1); }}>Retry</Button>
+      </> : <p className="mt-4 text-slate-300" role="status">Loading workspace setup…</p>}
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-8 text-slate-100" aria-labelledby="first-run-title">

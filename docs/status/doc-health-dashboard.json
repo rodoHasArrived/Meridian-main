@@ -1,11 +1,11 @@
 {
-  "total_files": 966,
+  "total_files": 969,
   "orphaned_count": 399,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 79,
-  "signal_digest": "sha256:3c0281b012163ff266da33455b3926264fe5ff54d253e3fdad64d3c318389ce2",
+  "signal_digest": "sha256:c5d8f0d1bcb779a4308bd0ab45b92a9d240daadcb8346377ee609b11a387c31f",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2234,6 +2234,13 @@
       "stale": false
     },
     {
+      "path": "docs/domain/intercompany-agreements.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/intercompany-consolidation.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2368,6 +2375,13 @@
     },
     {
       "path": "docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/intercompany-agreement-registry.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2711,6 +2725,13 @@
     },
     {
       "path": "docs/generated/database/contracts/fund-governance-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/fund-governance-contracts-page-03.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

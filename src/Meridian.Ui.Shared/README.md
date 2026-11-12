@@ -29,6 +29,15 @@ into operations-continuity, reconciliation and Security Master read modules, ret
 route order, tenant-scoped group and per-route authorization. These seams preserve public contracts
 and do not create another source of financial or workflow authority.
 
+Intercompany agreement routes under `/api/fund-structure/intercompany-agreements` require resolved
+tenant/company scope and access to every legal entity disclosed in the retained record. The shared
+service binds independent review to frozen terms and accepted, byte-verified Evidence Vault artifacts.
+Missing PostgreSQL registry authority returns unavailable rather than substituting a local store.
+The source-line drill-through additionally requires ledger-report authority and an owned entity book;
+it shows exact posted provenance and advisory coverage without changing consolidation matching.
+`MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED=true` exposes reference-authoring capability only
+when posting authority is registered; validators remain mandatory regardless of this rollout switch.
+
 Observed bond-fixing retention and selection routes require workstation tenant scope and Security
 Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current
 version/index/currency and contractual reset, and retain immutable evidence. They do not amend
@@ -239,6 +248,14 @@ Transaction lineage uses the retained external transaction identity; changed bre
 mapped activity, symbols and currencies remain comparison evidence rather than forking its occurrence.
 
 Provider module status and connection tests select one complete credential record, matching runtime ownership. A retained partial or empty record cannot borrow mapped environment fields; only proven absence allows the separate mapped record. The compatibility vault adapter exposes record presence without exposing additional secrets.
+
+Alignment creation and preview return HTTP 501 until an alignment execution service is available;
+no queued job or output estimate is fabricated. The legacy replay start route performs an
+explicit `event_count` scan with `playbackSupported: false`. Timed playback, pause, resume, seek
+and speed changes return HTTP 501. Start and speed requests reject nonpositive or nonfinite
+multipliers. Scan history is bounded to 64 entries, evicts finished scans at capacity, and refuses
+additional work while every retained scan is active. File listing, previews, scan status and
+scan cancellation remain available.
 
 Replay file previews return an explicit empty JSON error response for malformed persisted events,
 including source file/line evidence, and distinguish active/unavailable captures from corruption.

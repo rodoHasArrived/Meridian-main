@@ -11,6 +11,14 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Infrastructure
 
+Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
+Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
+
+HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
+for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
+failures. Caller cancellation is also excluded from circuit-breaker failures.
+
 FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
 Fixed-income ingestion uses original decimal text, provider units, observation date, publication
 (unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-

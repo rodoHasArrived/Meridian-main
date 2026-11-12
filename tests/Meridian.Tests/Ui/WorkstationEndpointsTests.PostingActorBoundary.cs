@@ -33,10 +33,16 @@ public sealed partial class WorkstationEndpointsTests
             1, at, "retainer", "AssetAcquisitionTermsCompletion", "synthetic-subject");
         var completion = new AssetAcquisitionTermsCompletionDto(Guid.NewGuid(), new string('b', 64),
             BondAmortizationMethod.ConstantYield, 0.05m, evidence);
+        var agreementId = Guid.NewGuid();
         var request = new PostPostingRuleJournalCandidateRequestDto(
             new PostingRuleJournalCandidateRequestDto(
                 "fund-alpha", "CustodianInterestAccrual", 125.44m, "USD", new DateOnly(2026, 5, 31), "client-preparer",
-                Guid.NewGuid(), Guid.NewGuid(), at, "Reviewed interest posting"),
+                Guid.NewGuid(), Guid.NewGuid(), at, "Reviewed interest posting",
+                Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha")
+                {
+                    IntercompanyAgreementId = agreementId,
+                    IntercompanyAgreementVersion = 7
+                }),
             "forged-client-poster", "retained-approval", "independent review", ["evidence://synthetic-review"],
             "synthetic-correlation", declaredOrigin, "forged-tenant", "forged-company")
         { ApprovalEvidence = [evidence], AcquisitionTermsCompletion = completion };
@@ -52,6 +58,8 @@ public sealed partial class WorkstationEndpointsTests
         forwarded.TenantId.Should().Be("tenant-test");
         forwarded.CompanyId.Should().Be("tenant-test");
         forwarded.ActionOrigin.Should().Be(declaredOrigin);
+        forwarded.Candidate.Dimensions!.IntercompanyAgreementId.Should().Be(agreementId);
+        forwarded.Candidate.Dimensions.IntercompanyAgreementVersion.Should().Be(7);
     }
 
     [Fact]

@@ -235,3 +235,17 @@ owner, group or audit changes. The unchanged assertions require another Windows 
 Failure-tail printing also escapes characters unsupported by the destination console encoding;
 raw UTF-8 artifacts, original failure status and later-shard execution are preserved. Its Python
 regressions passed 61 tests with three existing optional PowerShell skips.
+
+The final integration incorporates `dbc7651a05a6f0b591523e4a93e8b40ab181270b`, including the
+governed intercompany agreement registry and the newer assessment repairs. All new persistence
+sources and migration 006 retain single ownership through Storage.Accounting; integration-tagged
+cases remain in the canonical main suite. The intercompany authority is supplied by the deferred
+factory consumed by the journal writer, with validation and transactional interfaces sharing the
+same singleton. Resolution-order and absent-authority regressions cover that registration seam.
+Posting-origin regressions also retain the nested agreement ID/version and existing evidence.
+
+The browser integration preserves all 615 upstream declarations, including the agreement editor,
+versioned journal references and recovery workflow. Its 291 tests, TypeScript build, bundle,
+unchanged style/size gates and Chromium workflow checks passed. WPF retains the new agreement
+view and asynchronously primed configuration snapshots. A local startup run encountered 26
+disk-capacity errors; obsolete ignored build outputs were removed before rerunning those cases.
