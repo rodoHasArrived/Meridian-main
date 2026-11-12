@@ -18,7 +18,7 @@ export interface Candle {
 
 export interface CandleOverlay {
   label: string;
-  /** CSS color (token var), e.g. "var(--accent, #A85436)". */
+  /** CSS color (token var), e.g. "var(--ws-accent, #A85436)". */
   color: string;
   /** Moving-average window in bars. */
   win: number;
@@ -213,7 +213,7 @@ export function CandleChart({
           <text
             x={plotR + axisR / 2}
             y={yP(ch.c) + 5}
-            fill="#fff"
+            fill="var(--text-on-fill, #fff)"
             textAnchor="middle"
             style={{ ...axFont, fontWeight: 600, fontSize: 13 }}
           >

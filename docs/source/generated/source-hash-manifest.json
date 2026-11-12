@@ -59,7 +59,7 @@
       "path": "src/Meridian.Documents",
       "readme": "src/Meridian.Documents/README.md",
       "readme_hash": "a5824fc1bbd5d6a5444aef88ae31683af0fbbdbc8fab8838a2cd14a00a93c4eb",
-      "source_hash": "a9239b38b4946272c8c349d838e1574a6d0a62ed811c0a6dd62c04751b0511c3"
+      "source_hash": "47efcdf880437228ea8b86d5099335763a547ce4b5bb3e48405e59cc90dc4ef8"
     },
     {
       "id": "SRC-DESIGN-ENTITIES",
@@ -262,14 +262,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "761f0e61c9dd9b615673c33ca1a34f580f0bd55079ac5f6cd7524427286a2931",
-      "source_hash": "8ee24fe25d804948adeee111174d47c47ef6204eb2b48c778dcb6813c36e7277"
+      "source_hash": "b601bbbc6f0ebbfb52ef9bcc050561df4f5931e82b91492c51fc969a7fe5c1a8"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "16217a29e9c742cb926e317109e7fcbd11ccd42224d0179f3c3e93a2f4bbddca",
-      "source_hash": "8ee24fe25d804948adeee111174d47c47ef6204eb2b48c778dcb6813c36e7277"
+      "readme_hash": "0cdc296b5edd843ef3108fd0f4161cf5fd5f772b4d93444d6fb503f45fcb170d",
+      "source_hash": "b601bbbc6f0ebbfb52ef9bcc050561df4f5931e82b91492c51fc969a7fe5c1a8"
     },
     {
       "id": "SRC-UI-SERVICES",

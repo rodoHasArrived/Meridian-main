@@ -51,6 +51,8 @@ export const DESIGN_SYSTEM_ACCOUNTING_COMPONENTS = [
   "ReconciliationPanel"
 ] as const;
 
+/** Manifest-backed adapter references, including compatibility and currently unused
+ * adapters. Availability here is not evidence that an operator route renders one. */
 export const DESIGN_SYSTEM_LIVE_COMPONENTS = {
   core: DESIGN_SYSTEM_CORE_COMPONENTS,
   shell: DESIGN_SYSTEM_SHELL_COMPONENTS,

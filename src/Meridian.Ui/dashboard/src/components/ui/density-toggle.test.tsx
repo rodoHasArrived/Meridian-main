@@ -5,6 +5,7 @@ import { DensityToggle } from "@/components/ui/density-toggle";
 
 afterEach(() => {
   document.body.removeAttribute("data-theme-density");
+  localStorage.clear();
 });
 
 describe("DensityToggle", () => {
@@ -25,5 +26,16 @@ describe("DensityToggle", () => {
   it("marks the active level via aria-checked", () => {
     render(<DensityToggle value="spacious" apply={false} />);
     expect(screen.getByRole("radio", { name: "Spacious" })).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("persists Terminal and restores it when the control remounts", async () => {
+    const user = userEvent.setup();
+    const view = render(<DensityToggle persist="meridian.workstation.density.v1" />);
+    await user.click(screen.getByRole("radio", { name: "Terminal" }));
+    expect(document.body).toHaveAttribute("data-theme-density", "terminal");
+    expect(localStorage.getItem("meridian.workstation.density.v1")).toBe("terminal");
+    view.unmount();
+    render(<DensityToggle persist="meridian.workstation.density.v1" />);
+    expect(screen.getByRole("radio", { name: "Terminal" })).toHaveAttribute("aria-checked", "true");
   });
 });

@@ -6,6 +6,7 @@ const focusableSelector = [
   "textarea:not([disabled])",
   "input:not([disabled]):not([type='hidden'])",
   "select:not([disabled])",
+  "summary",
   "[contenteditable='true']",
   "[tabindex]:not([tabindex='-1'])"
 ].join(",");
@@ -233,8 +234,30 @@ function getActiveElement(): HTMLElement | null {
 }
 
 function isDialogElementFocusable(element: HTMLElement): boolean {
-  if (element.hasAttribute("disabled") || element.getAttribute("aria-hidden") === "true") {
+  if (element.matches(":disabled") || element.closest("[hidden], [inert], [aria-hidden='true']")) {
     return false;
+  }
+
+  const view = element.ownerDocument.defaultView;
+  const visibility = view?.getComputedStyle(element).visibility;
+  if (visibility === "hidden" || visibility === "collapse") {
+    return false;
+  }
+
+  // Inspect ancestors as well: descendants of display:none and closed details can
+  // retain tabIndex=0, but focusing them does nothing in the browser. Using layout
+  // geometry here would also exclude valid fixed-position controls and jsdom nodes.
+  for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
+    const style = view?.getComputedStyle(ancestor);
+    if (style?.display === "none" || style?.contentVisibility === "hidden") {
+      return false;
+    }
+    if (ancestor.tagName === "DETAILS" && !ancestor.hasAttribute("open") && ancestor !== element) {
+      const summary = Array.from(ancestor.children).find((child) => child.tagName === "SUMMARY");
+      if (!summary?.contains(element)) {
+        return false;
+      }
+    }
   }
 
   return element.tabIndex >= 0 || element.hasAttribute("autofocus") || element.hasAttribute("data-dialog-autofocus");

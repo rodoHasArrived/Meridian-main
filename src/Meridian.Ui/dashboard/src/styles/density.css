@@ -1,0 +1,61 @@
+/* Dashboard adapter for the design-system density scopes in tokens/theme.css.
+   The existing default layout stays unchanged. Explicit virtualized row heights
+   remain owned by their callers so scrolling and keyboard reveal stay aligned. */
+[data-theme-density="terminal"] {
+  --theme-spacing-xs: 1px;
+  --theme-spacing-sm: 4px;
+  --theme-spacing-md: 6px;
+  --theme-spacing-lg: 8px;
+  --theme-spacing-xl: 12px;
+  --theme-row-height: 26px;
+  --pad-panel: 8px;
+  --pad-panel-tight: 6px;
+  --gap-panel: 6px;
+}
+
+[data-theme-density="compact"] {
+  --theme-spacing-xs: 2px;
+  --theme-spacing-sm: 6px;
+  --theme-spacing-md: 8px;
+  --theme-spacing-lg: 12px;
+  --theme-spacing-xl: 16px;
+  --theme-row-height: 32px;
+  --pad-panel: 12px;
+  --pad-panel-tight: 8px;
+  --gap-panel: 8px;
+}
+
+[data-theme-density="spacious"] {
+  --theme-spacing-xs: 6px;
+  --theme-spacing-sm: 12px;
+  --theme-spacing-md: 16px;
+  --theme-spacing-lg: 20px;
+  --theme-spacing-xl: 32px;
+  --theme-row-height: 48px;
+  --pad-panel: 22px;
+  --pad-panel-tight: 16px;
+  --gap-panel: 16px;
+}
+
+/* Scope to supported values, including when the control targets a subtree. */
+:is([data-theme-density="terminal"], [data-theme-density="compact"], [data-theme-density="spacious"])
+  .dense-data-table-wrap:not(.dense-data-table-wrap-virtual) .dense-data-table :is(th, td) {
+  padding-block: max(2px, calc((var(--theme-row-height) - 21px) / 2));
+  padding-inline: var(--theme-spacing-md);
+}
+
+:is([data-theme-density="terminal"], [data-theme-density="compact"], [data-theme-density="spacious"])
+  .dense-data-table-wrap:not(.dense-data-table-wrap-virtual) .dense-data-table tbody tr {
+  height: var(--theme-row-height);
+}
+
+:is([data-theme-density="terminal"], [data-theme-density="compact"], [data-theme-density="spacious"])
+  :is(.workspace-workbench-shell, .workspace-workbench-shell-layout, .workspace-workbench-shell-main) {
+  gap: var(--gap-panel);
+}
+
+:is([data-theme-density="terminal"], [data-theme-density="compact"], [data-theme-density="spacious"])
+  :is(.workspace-workbench-shell-status-band, .workspace-workbench-shell-context-rail,
+    .workspace-workbench-shell-evidence-drawer, .workspace-document-canvas) {
+  padding: var(--pad-panel-tight);
+}

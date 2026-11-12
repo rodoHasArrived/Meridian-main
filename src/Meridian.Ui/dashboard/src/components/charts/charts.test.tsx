@@ -25,10 +25,10 @@ describe("CandleChart", () => {
 
   it("draws a crosshair price chip at the given index", () => {
     const { container } = render(<CandleChart bars={bars} crosshairIndex={2} />);
-    // The close price (107.00) shows as the white-filled crosshair chip label (distinct from the
-    // axis tick that may share the value).
+    // The close price uses theme-aware ink on the crosshair chip, distinct from
+    // the axis tick that may share its value. Dark mode requires dark label ink.
     const chip = Array.from(container.querySelectorAll("text")).find(
-      (t) => t.getAttribute("fill") === "#fff" && t.textContent === "107.00"
+      (t) => t.getAttribute("fill") === "var(--text-on-fill, #fff)" && t.textContent === "107.00"
     );
     expect(chip).toBeTruthy();
   });

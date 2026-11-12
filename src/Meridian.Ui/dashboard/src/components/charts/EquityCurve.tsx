@@ -217,7 +217,7 @@ export function EquityCurve({
             <text
               x={plotR + axisR / 2}
               y={y(primary.points[crosshairIndex]) + 5}
-              fill="#fff"
+              fill="var(--text-on-fill, #fff)"
               textAnchor="middle"
               style={{ ...axFont, fontWeight: 600, fontSize: 13 }}
             >

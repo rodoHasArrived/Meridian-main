@@ -46,25 +46,25 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.jnl{border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-card,2px);
+.jnl{border:1px solid var(--ws-border,#E4E3DE);border-radius:var(--radius-card,2px);
   background:var(--bg-light,#FBFAF8);overflow:hidden;}
 .jnl__hd{display:grid;grid-template-columns:140px 160px 1fr;gap:12px;padding:14px;
-  border-bottom:1px solid var(--border,#E4E3DE);background:var(--bg-medium,#EDEAE4);}
+  border-bottom:1px solid var(--ws-border,#E4E3DE);background:var(--bg-medium,#EDEAE4);}
 .jnl__field{display:flex;flex-direction:column;gap:4px;min-width:0;}
 .jnl__lbl{font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#5E666F);}
 .jnl__inp{font-family:var(--font-body,inherit);font-size:12px;color:var(--text-primary,#22252A);
-  background:var(--bg-light,#FBFAF8);border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-button,2px);
+  background:var(--bg-light,#FBFAF8);border:1px solid var(--ws-border,#E4E3DE);border-radius:var(--radius-button,2px);
   padding:5px 8px;line-height:1.4;width:100%;box-sizing:border-box;}
-.jnl__inp:focus{outline:2px solid var(--accent,#A85436);outline-offset:-1px;border-color:var(--accent,#A85436);}
+.jnl__inp:focus{outline:2px solid var(--ws-accent,#A85436);outline-offset:-1px;border-color:var(--ws-accent,#A85436);}
 .jnl__inp--num{font-family:var(--font-data,monospace);text-align:right;font-variant-numeric:tabular-nums;}
 .jnl__grid{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
 .jnl__grid th{padding:8px 12px;text-align:left;font-family:var(--font-body,inherit);font-size:10px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border,#E4E3DE);}
+  border-bottom:1px solid var(--ws-border,#E4E3DE);}
 .jnl__grid th.jnl--r{text-align:right;}
 .jnl__grid th.jnl--x{width:36px;}
-.jnl__grid td{padding:5px 12px;border-top:1px solid var(--border,#E4E3DE);vertical-align:middle;}
+.jnl__grid td{padding:5px 12px;border-top:1px solid var(--ws-border,#E4E3DE);vertical-align:middle;}
 .jnl__grid tbody tr:first-child td{border-top:none;}
 .jnl__grid td.jnl--r{text-align:right;}
 .jnl__del{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
@@ -75,13 +75,13 @@ function inject(): void {
   background:var(--bg-medium,#EDEAE4);font-weight:600;}
 .jnl__grid tfoot td.jnl--r{text-align:right;}
 .jnl__foot-lbl{font-family:var(--font-body,inherit);font-size:11px;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#4E5258);}
-.jnl__bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--border,#E4E3DE);}
+.jnl__bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--ws-border,#E4E3DE);}
 .jnl__actions{display:flex;gap:8px;}
 .jnl__btn{font-family:var(--font-body,inherit);font-size:12px;font-weight:600;cursor:pointer;
   border-radius:var(--radius-button,2px);padding:6px 12px;line-height:1.3;border:1px solid;transition:all .12s ease;}
-.jnl__btn--ghost{background:transparent;border-color:var(--border,#E4E3DE);color:var(--text-secondary,#4E5258);}
+.jnl__btn--ghost{background:transparent;border-color:var(--ws-border,#E4E3DE);color:var(--text-secondary,#4E5258);}
 .jnl__btn--ghost:hover{background:var(--bg-hover,#F0EEE9);border-color:var(--border-strong,#AFABA1);}
-.jnl__btn--primary{background:var(--accent,#A85436);border-color:var(--accent,#A85436);color:#fff;}
+.jnl__btn--primary{background:var(--ws-accent,#A85436);border-color:var(--ws-accent,#A85436);color:var(--text-on-fill,#fff);}
 .jnl__btn--primary:hover:not(:disabled){background:var(--accent-pressed,#8C4429);border-color:var(--accent-pressed,#8C4429);}
 .jnl__btn:disabled{cursor:not-allowed;opacity:.5;}
 .jnl__status{display:inline-flex;align-items:center;gap:7px;

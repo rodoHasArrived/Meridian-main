@@ -19,6 +19,7 @@ public static class DesignModule
 
     public static readonly string[] CurrentSourcePaths =
     [
+        "src/Meridian.Documents",
         "src/Meridian.Contracts",
         "src/Meridian.Storage",
         "src/Meridian.Ui.Shared",

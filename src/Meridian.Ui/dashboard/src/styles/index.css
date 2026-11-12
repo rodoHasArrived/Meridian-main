@@ -251,6 +251,27 @@
     --nav-item-active: var(--text-primary);
     --nav-section-label: var(--text-muted);
 
+    /* Native adapters share the package's public color roles. --border and
+       --accent remain HSL channels for Tailwind; plain CSS colors use the
+       --ws-* names above. Derived roles follow the active root theme. */
+    --card-surface: var(--ws-surface);
+    --card-surface-raised: var(--ws-surface-raised);
+    --bg-subtle: var(--ws-surface-raised);
+    --accent-dim: var(--ws-accent-pressed);
+    --accent-pressed: var(--ws-accent-pressed);
+    --text-on-fill: hsl(var(--primary-foreground));
+    --green-a10: color-mix(in srgb, var(--green) 10%, transparent);
+    --red-a10: color-mix(in srgb, var(--red) 10%, transparent);
+    --orange-a10: color-mix(in srgb, var(--orange) 10%, transparent);
+    --blue-a10: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+    --chart-plot: var(--ws-surface);
+    --chart-axis: var(--ws-text-muted);
+    --chart-border: var(--ws-border-strong);
+    --chart-equity: var(--green);
+    --chart-drawdown: var(--red);
+    --chart-primary: var(--ws-accent);
+    --chart-warning: var(--orange);
+
     /* ─── Semantic palette (Tier 2) — copper/forest/brick/ochre/slate-violet.
        Single source of truth for one-off semantic color and the derived
        severity/state/mode layers below. ────────────────────────────────────*/

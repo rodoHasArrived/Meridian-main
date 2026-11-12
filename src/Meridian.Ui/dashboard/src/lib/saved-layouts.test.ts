@@ -55,6 +55,13 @@ describe("saved-layouts serialization", () => {
     expect(decodeLayoutStateToken(token)).toEqual(sampleState);
   });
 
+  it("retains Terminal density in a saved layout and its restore plan", () => {
+    const state: SavedLayoutState = { ...sampleState, density: "terminal" };
+    const decoded = decodeLayoutStateToken(encodeLayoutStateToken(state));
+    expect(decoded?.density).toBe("terminal");
+    expect(buildLayoutRestorePlan(userLayout({ state })).density).toBe("terminal");
+  });
+
   it("rejects a foreign or malformed token", () => {
     expect(decodeLayoutStateToken(null)).toBeNull();
     expect(decodeLayoutStateToken("not-a-token")).toBeNull();

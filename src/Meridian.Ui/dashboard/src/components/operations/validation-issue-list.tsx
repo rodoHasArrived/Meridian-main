@@ -8,12 +8,12 @@ import { injectStyle } from "./inject-style";
 import { normalizeSeverity } from "./status";
 
 const CSS = `
-.mds-issues{display:flex;flex-direction:column;border:1px solid var(--border,#E4E3DE);
+.mds-issues{display:flex;flex-direction:column;border:1px solid var(--ws-border,#E4E3DE);
   border-radius:var(--radius-card,2px);overflow:hidden;background:var(--bg-panel,var(--bg-light,#FBFAF8));}
 .mds-issues__empty{padding:14px;text-align:center;color:var(--text-muted,#5E666F);
   font-family:var(--font-body);font-size:12px;}
 .mds-issue{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:baseline;
-  padding:9px 12px;border-top:1px solid var(--border,#E4E3DE);}
+  padding:9px 12px;border-top:1px solid var(--ws-border,#E4E3DE);}
 .mds-issue:first-child{border-top:0;}
 .mds-issue--dense{padding:6px 10px;}
 .mds-issue__dot{align-self:center;width:7px;height:7px;border-radius:50%;flex:0 0 auto;

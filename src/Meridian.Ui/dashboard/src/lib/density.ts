@@ -4,13 +4,13 @@
 // storage convention.
 import { getLocalStorage } from "@/lib/theme";
 
-export type Density = "compact" | "default" | "spacious";
+export type Density = "terminal" | "compact" | "default" | "spacious";
 
 export const DENSITY_STORAGE_KEY = "meridian.workstation.density.v1";
 export const DEFAULT_DENSITY: Density = "default";
 
 export function isDensity(value: unknown): value is Density {
-  return value === "compact" || value === "default" || value === "spacious";
+  return value === "terminal" || value === "compact" || value === "default" || value === "spacious";
 }
 
 export function readStoredDensity(

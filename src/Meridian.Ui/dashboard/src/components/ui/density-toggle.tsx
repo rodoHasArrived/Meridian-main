@@ -18,6 +18,7 @@ export interface DensityToggleProps {
 }
 
 const LEVELS: Array<{ value: Density; label: string; gap: number }> = [
+  { value: "terminal", label: "Terminal", gap: 0.5 },
   { value: "compact", label: "Compact", gap: 1 },
   { value: "default", label: "Default", gap: 2 },
   { value: "spacious", label: "Spacious", gap: 4 }
@@ -53,7 +54,7 @@ function Glyph({ gap }: { gap: number }) {
 }
 
 /**
- * Operator control for the density token scopes (`data-theme-density="compact"|"spacious"`).
+ * Operator control for the terminal, compact, default, and spacious density scopes.
  * Writes the attribute to a target element (`document.body` by default) and can `persist` the
  * choice. Concrete segmented look — flat, hairline, 2px corners.
  */

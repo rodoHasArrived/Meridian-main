@@ -127,6 +127,22 @@
   opacity: 0.7;
 }
 
+/* SVGs loaded through img cannot inherit the link's currentColor. Their
+   monochrome strokes need a light rendering on the warm graphite rail. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) img.operator-nav-item__icon {
+    filter: invert(1);
+  }
+}
+
+:root[data-theme="dark"] img.operator-nav-item__icon {
+  filter: invert(1);
+}
+
+:root[data-theme="light"] img.operator-nav-item__icon {
+  filter: none;
+}
+
 .operator-nav-item:hover {
   background: var(--mds-nav-rail-hover, var(--sidebar-hover, #F0EEE9));
   color: var(--mds-nav-rail-text-active, var(--nav-item-hover, #22252A));

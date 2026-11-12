@@ -1665,10 +1665,37 @@ component references, patterns, templates, and governance scripts. The browser w
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
 and runtime CSS alignment under test.
-Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
-`WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
-adapt the manifest-backed design-system references without importing root JSX or runtime-injected
-package CSS into the dashboard build.
+Native adapters use `--ws-border` and `--ws-accent` for complete CSS colors; `--border` and
+`--accent` remain HSL channels consumed through `hsl(...)` by Tailwind. Chart, surface, tint and
+filled-label roles resolve through the active workstation theme, including automatic dark mode
+and the explicit light override. `src/design-system-color-contract.test.ts` covers these theme
+combinations and rejects raw-channel color collisions in the native adapters.
+Dense-table headers and alternating rows use the active surface tokens; contrast checks cover
+their text in both themes. Monochrome navigation image assets invert in dark mode and retain their
+original strokes when the operator explicitly chooses light mode.
+The dashboard adapts the package through native TypeScript components rather than importing its
+root JSX or complete runtime-injected bundle. The shell renders `DesignSystemMasthead` directly;
+`WorkstationTopbar` is its compatibility wrapper. `WorkstationStatusBar`, `TrialBalanceTable`, and
+`ReconciliationComparisonPanel` have production callers. Other available adapters, including
+`AgingTable`, remain reference/test surfaces until a workflow consumes them. Manifest membership,
+an export, or a `DESIGN_SYSTEM_LIVE_COMPONENTS` entry proves availability, not route integration.
+
+Display density supports Terminal, Compact, Default, and Spacious. The saved preference applies
+before the app mounts. `src/styles/density.css` adapts nonvirtual dense-table row minimums and cell
+padding, plus workbench gaps and panel padding. Multiline financial evidence can make rows taller
+than the minimum; virtualized tables retain their caller-specified geometry. Default preserves the
+existing layout. Density persistence, saved-layout restore, and the control have focused tests.
+
+`src/styles/print.css` adapts the package's browser-print pattern to the workstation shell. It hides
+navigation and command chrome, releases ordinary scroll containers, repeats table headers, and
+keeps source/financial notices. Printing covers the current rendered view; it does not fetch rows,
+open disclosures, or replace governed report generation. Virtualized offscreen records require the
+workflow's export/report path.
+
+Design-system validation has separate scopes: dashboard contract/component tests check the native
+adapters; package contrast checks cover declared color pairs and runtime token references; package
+governance checks inspect reference/demo files as well. A passing dashboard build does not establish
+that every package component is integrated or that every reference template passes governance.
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped
 under Close, Records, Reconciliation, Review, and Administration; Accounting screens do not repeat
 those routes in a horizontal tab strip or task-mode launcher. Governed delivery evidence remains a

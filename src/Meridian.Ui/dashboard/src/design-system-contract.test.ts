@@ -511,6 +511,13 @@ describe("dashboard design-system contract", () => {
     expect(styles.match(/--ws-page-bg: #F2F0EC/g)).toHaveLength(2);
   });
 
+  it("keeps monochrome navigation images visible in automatic and chosen dark appearance", () => {
+    const navStyles = readWorkspaceNavStyles();
+    expect(navStyles).toMatch(/@media \(prefers-color-scheme: dark\)\s*\{\s*:root:not\(\[data-theme="light"\]\) img\.operator-nav-item__icon\s*\{\s*filter: invert\(1\)/);
+    expect(navStyles).toMatch(/:root\[data-theme="dark"\] img\.operator-nav-item__icon\s*\{\s*filter: invert\(1\)/);
+    expect(navStyles).toMatch(/:root\[data-theme="light"\] img\.operator-nav-item__icon\s*\{\s*filter: none/);
+  });
+
   it("uses Segoe UI as the primary sans font and Cascadia Mono with JetBrains fallback for mono", () => {
     const tailwindConfig = readTailwindConfig();
 

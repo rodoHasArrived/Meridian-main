@@ -12,8 +12,8 @@ const CSS = `
 .mds-empty__title{font-size:14px;font-weight:600;color:var(--text-secondary,#4E5258);}
 .mds-empty--compact .mds-empty__title{font-size:13px;}
 .mds-empty__detail{font-size:12px;color:var(--text-muted,#5E666F);max-width:280px;line-height:1.5;}
-.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--accent,#A85436);
-  background:var(--accent,#A85436);color:#fff;border-radius:var(--radius-button,2px);
+.mds-empty__action{margin-top:4px;padding:7px 16px;border:1px solid var(--ws-accent,#A85436);
+  background:var(--ws-accent,#A85436);color:var(--text-on-fill,#fff);border-radius:var(--radius-button,2px);
   font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:background .12s ease;}
 .mds-empty__action:hover{background:var(--accent-pressed,#8C4429);border-color:var(--accent-pressed,#8C4429);}
 .mds-empty__action:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:2px;}

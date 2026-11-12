@@ -128,7 +128,7 @@ export function DepthChart({
       {/* mid / spread */}
       <line x1={x(midPrice)} x2={x(midPrice)} y1={plotT} y2={plotB} stroke={CROSSHAIR} strokeWidth="1.2" strokeDasharray="4 3" />
       <rect x={x(midPrice) - 38} y={plotT - 2} width="76" height="17" fill={CROSSHAIR} opacity="0.95" />
-      <text x={x(midPrice)} y={plotT + 11} fill="#fff" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>
+      <text x={x(midPrice)} y={plotT + 11} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>
         mid {priceFmt(midPrice)}
       </text>
 

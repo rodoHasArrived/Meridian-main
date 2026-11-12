@@ -9,7 +9,7 @@ import { normalizeSeverity } from "./status";
 
 const CSS = `
 .mds-evidence{display:inline-flex;align-items:center;gap:8px;max-width:100%;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
+  border:1px solid var(--ws-border,#E4E3DE);border-radius:var(--radius-chip,2px);
   background:var(--bg-medium,#EDEAE4);padding:5px 9px;font-family:var(--font-body);font-size:12px;
   color:var(--text-primary,#22252A);text-decoration:none;cursor:pointer;
   transition:border-color 120ms ease,background-color 120ms ease;}

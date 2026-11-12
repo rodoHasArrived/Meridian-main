@@ -169,7 +169,7 @@
 
 .dense-data-table-sorted .dense-data-table-sort-indicator {
   opacity: 1;
-  color: var(--accent, #A85436);
+  color: var(--ws-accent, #A85436);
 }
 
 .dense-data-table-sorted .dense-data-table-sort-button {
@@ -352,7 +352,7 @@
 }
 
 .dense-data-table thead {
-  background: #F4F3EF;
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {
@@ -373,7 +373,7 @@
 }
 
 .dense-data-table tbody tr:nth-child(even) {
-  background: #fbfcfd;
+  background: var(--ws-surface-raised);
 }
 
 .dense-data-table tbody tr:hover {

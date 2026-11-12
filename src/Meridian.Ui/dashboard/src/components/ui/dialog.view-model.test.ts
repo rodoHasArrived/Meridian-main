@@ -80,4 +80,48 @@ describe("dialog interaction view model", () => {
 
     root.remove();
   });
+
+  it("excludes hidden and inert descendants and controls disabled by a fieldset", () => {
+    const root = document.createElement("div");
+    root.innerHTML = `
+      <div hidden><button>Hidden</button></div>
+      <div inert><button>Inert</button></div>
+      <div aria-hidden="true"><button>Not exposed</button></div>
+      <div style="display:none"><button>Not rendered</button></div>
+      <div style="visibility:hidden"><button>Not visible</button></div>
+      <div style="content-visibility:hidden"><button>Hidden content</button></div>
+      <fieldset disabled>
+        <legend><button id="legend">Legend action</button></legend>
+        <button>Disabled by fieldset</button>
+      </fieldset>
+      <button id="visible">Visible action</button>
+    `;
+    document.body.append(root);
+
+    expect(getFocusableDialogElements(root).map((element) => element.id)).toEqual(["legend", "visible"]);
+    expect(resolveInitialDialogFocus(root)).toBe(root.querySelector("#legend"));
+    root.remove();
+  });
+
+  it("keeps a closed disclosure summary tabbable while withholding its content", () => {
+    const root = document.createElement("div");
+    root.innerHTML = `
+      <button id="first">First action</button>
+      <details>
+        <summary id="summary">Evidence details</summary>
+        <button id="evidence">Open retained evidence</button>
+      </details>
+    `;
+    document.body.append(root);
+    const first = root.querySelector<HTMLElement>("#first");
+    const summary = root.querySelector<HTMLElement>("#summary");
+
+    expect(getFocusableDialogElements(root).map((element) => element.id)).toEqual(["first", "summary"]);
+    expect(resolveDialogTabTarget(root, first, true)).toBe(summary);
+    expect(resolveDialogTabTarget(root, summary, false)).toBe(first);
+
+    root.querySelector("details")!.open = true;
+    expect(getFocusableDialogElements(root).map((element) => element.id)).toEqual(["first", "summary", "evidence"]);
+    root.remove();
+  });
 });

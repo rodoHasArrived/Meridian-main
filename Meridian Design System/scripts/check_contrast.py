@@ -481,11 +481,7 @@ def check_var_chains(root: Path) -> list[str]:
         if f.exists():
             workstation_tokens |= set(DECL_NAME.findall(blank_comments(f.read_text(encoding="utf-8"))))
     for track, base in call_sites(root):
-        if not base.exists():
-            continue
-        for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
-            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
-                continue
+        for path in runtime_call_site_paths(base):
             text = path.read_text(encoding="utf-8", errors="replace")
             if path.suffix == ".css":
                 text = blank_comments(text)
@@ -553,6 +549,7 @@ INNER_VAR = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)")
 PACKAGE_CALL_SITES = ["components", "templates", "guidelines", "tokens", "scripts", "docs"]
 WORKSTATION_CALL_SITES = ["src/Meridian.Ui/dashboard/src"]
 CALL_SITE_SUFFIXES = (".jsx", ".tsx", ".ts", ".css", ".html", ".sh")
+TEST_SOURCE_NAME = re.compile(r"\.(?:test|spec)\.[cm]?[jt]sx?$", re.IGNORECASE)
 
 
 # The compiled bundle is a call site too, and it is the one that actually ships to a
@@ -576,6 +573,24 @@ def call_sites(root: Path) -> list[tuple[str, Path]]:
     return ([("package", root / rel) for rel in PACKAGE_CALL_SITES]
             + [("workstation", repo / rel) for rel in WORKSTATION_CALL_SITES]
             + [("package", root / COMPILED_BUNDLE)])
+
+
+def runtime_call_site_paths(base: Path) -> list[Path]:
+    """Sources that can supply runtime CSS, excluding conventional test-only files.
+
+    Test assertions often contain fragments of generated CSS, whose dependencies
+    exist only in the compiled stylesheet. They are evidence about rendered CSS,
+    not declarations the browser consumes. Keep runtime sources in the scan even
+    when their names contain words such as 'test' (for example backtest-chart.tsx).
+    """
+    if not base.exists():
+        return []
+    candidates = [base] if base.is_file() else sorted(base.rglob("*"))
+    return [path for path in candidates
+            if path.is_file()
+            and (path == base or path.suffix in CALL_SITE_SUFFIXES)
+            and not TEST_SOURCE_NAME.search(path.name)
+            and "__tests__" not in path.relative_to(base).parts]
 
 
 def split_var_call(text: str, start: int) -> tuple[str, str] | None:
@@ -686,14 +701,7 @@ def check_fallbacks(root: Path) -> list[str]:
     notes: list[str] = []
     checked = 0
     for track, base in call_sites(root):
-        if not base.exists():
-            continue
-        paths = [base] if base.is_file() else sorted(base.rglob("*"))
-        for path in paths:
-            if not path.is_file():
-                continue
-            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
-                continue
+        for path in runtime_call_site_paths(base):
             text = path.read_text(encoding="utf-8", errors="replace")
             if path.suffix == ".css":
                 text = blank_comments(text)

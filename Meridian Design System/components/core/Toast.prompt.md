@@ -7,6 +7,9 @@ Toast notifications — mount `<ToastProvider />` ONCE at the app root, then fir
 // anywhere:
 window.MeridianToast.success("Order accepted", "buy 400 AAPL · market · DAY");
 window.MeridianToast.error("Reconciliation failed", "RECON-204 · custody cash break");
+// Only after a reversible operation with a real recovery callback:
+const toastId = window.MeridianToast.undo("Watchlist item removed", restoreWatchlistItem);
+window.MeridianToast.dismiss(toastId);
 ```
 
 Toasts are for transient confirmations of user actions. Persistent conditions (data gaps, degraded feeds) belong in `StatusBanner` or the status bar — not a toast that disappears.
