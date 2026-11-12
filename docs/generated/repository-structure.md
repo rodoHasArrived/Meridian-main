@@ -4850,6 +4850,7 @@ Meridian-main
 │   │   │   ├── BankingStartup.cs
 │   │   │   ├── CompositionConfiguration.cs
 │   │   │   ├── DatabaseMigrationReadinessReceipt.cs
+│   │   │   ├── DatabaseStartupPlan.cs
 │   │   │   ├── DefaultProviderSetupHandlerRegistration.cs
 │   │   │   ├── DirectLendingStartup.cs
 │   │   │   ├── FundAccountsStartup.cs
@@ -6773,7 +6774,8 @@ Meridian-main
 │   │   │   │   ├── TwelveDataHistoricalDataProvider.cs
 │   │   │   │   └── TwelveDataSymbolSearchProvider.cs
 │   │   │   └── YahooFinance
-│   │   │       └── YahooFinanceHistoricalDataProvider.cs
+│   │   │       ├── YahooFinanceHistoricalDataProvider.cs
+│   │   │       └── YahooFinanceProviderModule.cs
 │   │   ├── Contracts
 │   │   │   ├── ContractVerificationExtensions.cs
 │   │   │   └── ContractVerificationService.cs
@@ -7309,11 +7311,13 @@ Meridian-main
 │   │   ├── CertifiedReportingSnapshotBuilder.cs
 │   │   ├── DefaultReportingTemplateCatalog.cs
 │   │   ├── DesignModule.cs
+│   │   ├── IReportingTemplateGovernanceStore.cs
 │   │   ├── Meridian.Reporting.csproj
 │   │   ├── NavAttributionService.cs
 │   │   ├── PartnersCapitalProjection.cs
 │   │   ├── README.md
 │   │   ├── ReportGenerationService.cs
+│   │   ├── ReportingAccessPolicyEvaluator.cs
 │   │   ├── ReportingArtifactContracts.cs
 │   │   ├── ReportingArtifactDeclaration.cs
 │   │   ├── ReportingCanonicalParameterSerializer.cs
@@ -7336,6 +7340,7 @@ Meridian-main
 │   │   ├── ReportingRetainedLedgerPopulationValidation.cs
 │   │   ├── ReportingSchedulePeriodPlanner.cs
 │   │   ├── ReportingStarterKitCatalog.cs
+│   │   ├── ReportingTemplateRegistryService.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
 │   │   ├── ReportWriterFormulaReferences.cs
 │   │   ├── ReportWriterGridEngine.cs
@@ -11480,6 +11485,7 @@ Meridian-main
 │   │   │   │   ├── BusinessDayCalendarSourceCompositionTests.cs
 │   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
 │   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
+│   │   │   │   ├── DatabaseStartupPlanTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── FactorPaydownLotInstructionCompositionTests.cs
@@ -11514,7 +11520,8 @@ Meridian-main
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
 │   │   │   │   ├── TenantCutoverGuardServiceTests.cs
 │   │   │   │   ├── TenantGuardedLocalFundAccountServiceTests.cs
-│   │   │   │   └── TenantPostureHostedServiceTests.cs
+│   │   │   │   ├── TenantPostureHostedServiceTests.cs
+│   │   │   │   └── YahooFinanceProviderModuleCompositionTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── AppSettingsSampleTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -11571,6 +11578,7 @@ Meridian-main
 │   │   │   ├── Integrations
 │   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationBondValueNormalizationTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationFieldTransformsTests.cs
 │   │   │   │   ├── ProviderIntegrationFixedIncomeTermsValidationTests.cs
@@ -11713,6 +11721,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
 │   │   │   ├── StructuredCashFlowLedgerGateTests.cs
+│   │   │   ├── StructuredCashFlowScheduleEntryEqualityTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
@@ -12552,6 +12561,7 @@ Meridian-main
 │   │   │   ├── ReportingSchedulePeriodPlannerTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
+│   │   │   ├── ReportingTemplateRegistryServiceTests.cs
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs
 │   │   │   └── ReportWriterGridEngineTests.cs
 │   │   ├── Risk

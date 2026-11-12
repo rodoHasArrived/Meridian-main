@@ -2203,6 +2203,10 @@ only from data the screen already loads:
   equity-curve client when the sheet opens; a run without a curve keeps its plate and says why.
   Paths are rebased to 100 at each run's first curve point, and Total return is the run record's
   figure. The package's overlay sheet and corner-docked tray are not ported.
+  Strategy's equity-path component and state live in `strategy-screen.equity-paths.tsx` and
+  `strategy-screen.equity-paths.view-model.ts`; the run-library view model re-exports its existing
+  equity-path API for compatibility. This keeps chart selection, curve loading, and shared-scale
+  presentation cohesive without growing the main screen and command view model.
 - `RollforwardTrace` and `TieOutPanel` (`src/components/accounting/`, arithmetic in
   `proof-arithmetic.ts`) are read-only. The Capital Account workbench proves each investor row from
   its subledger entries' net capital activity and reports an account with no entries as
