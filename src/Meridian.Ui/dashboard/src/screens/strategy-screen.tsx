@@ -1,7 +1,6 @@
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { useEffect, useMemo, useRef } from "react";
-import type { ReactNode } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
@@ -16,14 +15,8 @@ import { Sparkline } from "@/components/charts/Sparkline";
 import { exportTableQuery } from "@/lib/table-workbench";
 import { formatNumber } from "@/lib/format";
 import { Histogram } from "@/components/charts";
-import {
-  CompareSheet,
-  CompareToggle,
-  CompareTray,
-  SelectionCompareProvider,
-  useSelectionCompare
-} from "@/components/charts/SelectionCompare";
-import type { CompareSheetColumn } from "@/components/charts/SelectionCompare";
+import { CompareToggle } from "@/components/charts/SelectionCompare";
+import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,7 +27,6 @@ import { cn } from "@/lib/utils";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import {
   buildStrategyEquityPathCompareItem,
-  useStrategyEquityPathCompare,
   useStrategyRunLibraryViewModel
 } from "@/screens/strategy-screen.view-model";
 import type {
@@ -54,7 +46,7 @@ import type {
   StrategyRunLibraryState,
   StrategyRunTableRow
 } from "@/screens/strategy-screen.view-model";
-import type { StrategyRunRecord, StrategyWorkspaceResponse } from "@/types";
+import type { StrategyWorkspaceResponse } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface StrategyScreenProps {
@@ -245,78 +237,6 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
     description: "PlotTool workstation: scatter analysis, notebooks, and statistics."
   }
 };
-
-/** Drops a run from the equity-path set when the run library no longer lists it. */
-function EquityPathCompareRowSync({ runIds }: { runIds: readonly string[] }) {
-  const { items, remove } = useSelectionCompare();
-  useEffect(() => {
-    for (const item of items) {
-      if (!runIds.includes(item.id)) {
-        remove(item.id);
-      }
-    }
-  }, [items, remove, runIds]);
-  return null;
-}
-
-/**
- * Equity paths on one scale for the Strategy run library: the design-system SelectionCompare
- * tray and inline sheet, wired the way the package's strategy-runs template wires them. The set
- * (up to six runs) is visual only and independent of the two-run compare / diff / promote
- * selection. Curves are read when the chart is opened, not before.
- */
-function StrategyRunEquityPathCompare({ runs, children }: { runs: StrategyRunRecord[]; children: ReactNode }) {
-  const equityPaths = useStrategyEquityPathCompare(runs);
-  const runIds = useMemo(() => runs.map((run) => run.id), [runs]);
-  const { viewFor } = equityPaths;
-  const tableColumns = useMemo<CompareSheetColumn[]>(() => [
-    { id: "curve-dates", label: "Curve dates", render: (item) => viewFor(item.id).curveDatesText },
-    { id: "curve-points", label: "Curve points", numeric: true, render: (item) => viewFor(item.id).curvePointsText },
-    { id: "initial-equity", label: "Initial equity (reported)", numeric: true, render: (item) => viewFor(item.id).initialEquityText },
-    { id: "final-equity", label: "Final equity (reported)", numeric: true, render: (item) => viewFor(item.id).finalEquityText }
-  ], [viewFor]);
-
-  return (
-    <SelectionCompareProvider
-      max={equityPaths.maxRuns}
-      categories={equityPaths.categories}
-      format={equityPaths.formatIndex}
-      onChange={equityPaths.onCompareSetChange}
-      onOpenChange={equityPaths.onSheetOpenChange}
-    >
-      <EquityPathCompareRowSync runIds={runIds} />
-      <CompareTray
-        label="runs to compare"
-        emptyLabel={`Tick ▢ Chart on two or more runs to compare their equity paths on one scale (up to ${equityPaths.maxRuns}). This set only draws a chart; it is separate from the two-run selection used by Compare, Diff and Promote.`}
-        regionLabel="Equity path comparison set"
-        compareLabel={(count) => count >= 2 ? `Chart ${count} equity paths` : "Chart equity paths"}
-        compareDisabledReason="Tick ▢ Chart on at least two runs to chart their equity paths."
-        removeLabel={(item) => `Remove ${item.title} from the equity path set`}
-        fullLabel={(max) => `Set is full (${max}). Remove a run to chart another.`}
-      />
-      <CompareSheet
-        mode="inline"
-        title="Equity paths on one scale"
-        footerLabel="Total return"
-        footerValue={equityPaths.totalReturnFor}
-        seriesFor={equityPaths.seriesFor}
-        categoryLabels={equityPaths.categoryLabels}
-        tableColumns={tableColumns}
-        itemColumnLabel="Run"
-        closeLabel="Close equity path chart"
-        basis={(
-          <ul className="list-disc space-y-1 pl-5">
-            <li>{equityPaths.basisText.value}</li>
-            <li>{equityPaths.basisText.category}</li>
-            <li>{equityPaths.basisText.footer}</li>
-            <li>{equityPaths.basisText.asOf}</li>
-          </ul>
-        )}
-      />
-      {children}
-    </SelectionCompareProvider>
-  );
-}
 
 export function StrategyScreen({ data }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
@@ -1709,8 +1629,9 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+            <div className="h-[180px] w-full">
               <Histogram
+                ariaLabel={vm.distributionChart.ariaLabel}
                 bins={vm.distributionChart.bars.map((bar, index) => ({
                   x0: index,
                   x1: index + 1,

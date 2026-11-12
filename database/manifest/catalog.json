@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "c38b561e8a4c3306f34a09c6981c7ac3124c1b4a8892e03640ce03250f265c96",
+  "database_fingerprint": "3a6a2c18015a4735c7483942c0bd0a6824cccac2dd2412fe1707d89282eb1154",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -10787,6 +10787,7 @@
     "identity_access",
     "ledger",
     "money_market",
+    "operator_triage",
     "public",
     "reporting",
     "security_master"
@@ -10831,6 +10832,11 @@
       "display_name": "Money Market",
       "id": "money-market",
       "physical_schema": "money_market"
+    },
+    {
+      "display_name": "Operator Triage",
+      "id": "operator-triage",
+      "physical_schema": "operator_triage"
     },
     {
       "display_name": "Reporting",
@@ -14839,6 +14845,34 @@
     {
       "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
       "object": "column:money_market.schema_migrations.filename"
+    },
+    {
+      "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+      "object": "column:operator_triage.item_metadata.company_id"
+    },
+    {
+      "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+      "object": "column:operator_triage.item_metadata.state"
+    },
+    {
+      "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+      "object": "column:operator_triage.item_metadata.tenant_id"
+    },
+    {
+      "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+      "object": "column:operator_triage.item_metadata.work_item_id"
+    },
+    {
+      "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+      "object": "column:operator_triage.operator_triage_schema_migrations.applied_at"
+    },
+    {
+      "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+      "object": "column:operator_triage.operator_triage_schema_migrations.checksum"
+    },
+    {
+      "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+      "object": "column:operator_triage.operator_triage_schema_migrations.filename"
     },
     {
       "fingerprint": "65f4c57eede1346c9b829f7a5de35e762a98bd72eab6a75e984da1802989341b",
@@ -20605,8 +20639,16 @@
       "object": "column:security_master.security_raw_prices.price_as_of"
     },
     {
+      "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+      "object": "column:security_master.security_raw_prices.price_exact"
+    },
+    {
       "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
       "object": "column:security_master.security_raw_prices.price_unit"
+    },
+    {
+      "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+      "object": "column:security_master.security_raw_prices.quotation_evidence"
     },
     {
       "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
@@ -21615,6 +21657,14 @@
     {
       "fingerprint": "019cdbe71066a79d001e9c26f52150b1c2bf3b744fc8fd44ce648b91d413d4eb",
       "object": "comment:column:security_master.security_identifier_revisions.history_available_from"
+    },
+    {
+      "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+      "object": "comment:column:security_master.security_raw_prices.price_exact"
+    },
+    {
+      "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+      "object": "comment:column:security_master.security_raw_prices.quotation_evidence"
     },
     {
       "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
@@ -22891,6 +22941,14 @@
     {
       "fingerprint": "f15d373bffeb0d61ac995ee43ad7b7d17132475f719b05197db7d392c4104560",
       "object": "constraint:money_market.schema_migrations.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+      "object": "constraint:operator_triage.item_metadata.item_metadata_pkey"
+    },
+    {
+      "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+      "object": "constraint:operator_triage.operator_triage_schema_migrations.operator_triage_schema_migrations_pkey"
     },
     {
       "fingerprint": "1287069ffaea7de02274ce4bbc14913987d1ed6f78fdabb111f5f39453df88df",
@@ -29753,6 +29811,14 @@
       "object": "index:money_market.schema_migrations_pkey"
     },
     {
+      "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+      "object": "index:operator_triage.item_metadata_pkey"
+    },
+    {
+      "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+      "object": "index:operator_triage.operator_triage_schema_migrations_pkey"
+    },
+    {
       "fingerprint": "46fb9195989bc4d94d890b7ca772f2c01b58105c5351185c2b97650d44dcae80",
       "object": "index:reporting.ix_reporting_access_grants_expiration"
     },
@@ -31565,6 +31631,14 @@
       "object": "rls:money_market.schema_migrations"
     },
     {
+      "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+      "object": "rls:operator_triage.item_metadata"
+    },
+    {
+      "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+      "object": "rls:operator_triage.operator_triage_schema_migrations"
+    },
+    {
       "fingerprint": "126a90253412551ea2694fba5515ec4c4ac7045eccda00e51fcf76a5053323f2",
       "object": "rls:reporting.reporting_access_grants"
     },
@@ -32177,6 +32251,10 @@
       "object": "schema:money_market"
     },
     {
+      "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+      "object": "schema:operator_triage"
+    },
+    {
       "fingerprint": "d50d95b1e1f14ff63c78aa659d07cab43b51d2ee16152371176bb5564e18c5b3",
       "object": "schema:public"
     },
@@ -32185,7 +32263,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+      "fingerprint": "b2c9db4190b1e42632076ce3ba13beaae1a1985dd15304c3d6d725d7a5f893ff",
       "object": "schema:security_master"
     },
     {
@@ -32571,6 +32649,14 @@
     {
       "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
       "object": "table:money_market.schema_migrations"
+    },
+    {
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+      "object": "table:operator_triage.item_metadata"
+    },
+    {
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+      "object": "table:operator_triage.operator_triage_schema_migrations"
     },
     {
       "fingerprint": "98ca98760d135dbef6f9b34d034f24d25064637af018c65080fd16660e6785a8",
@@ -33073,7 +33159,7 @@
       "object": "table:security_master.security_pricing_hierarchy_history"
     },
     {
-      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+      "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
       "object": "table:security_master.security_raw_prices"
     },
     {
@@ -33493,6 +33579,7 @@
     "identity_access",
     "ledger",
     "money_market",
+    "operator_triage",
     "reporting",
     "security_master"
   ],
@@ -107958,6 +108045,756 @@
       "acl": [
         {
           "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "create"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "comment": null,
+      "comments": [],
+      "composite_types": [],
+      "dependencies": [],
+      "domains": [],
+      "enums": [],
+      "exists": true,
+      "extensions": [],
+      "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+      "foreign_tables": [],
+      "functions": [],
+      "logical_modules": [
+        "operator-triage"
+      ],
+      "materialized_views": [],
+      "name": "operator_triage",
+      "owner": "meridian",
+      "partitions": [],
+      "policies": [],
+      "procedures": [],
+      "relations": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "work_item_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+              "delete_action": null,
+              "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "item_metadata_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+              "expression": null,
+              "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "item_metadata_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "item_metadata",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operator_triage_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "operator_triage_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "operator_triage_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "row_level_security": [
+        {
+          "enabled": false,
+          "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+          "forced": false,
+          "policies": [],
+          "relation": "item_metadata",
+          "schema": "operator_triage"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+          "forced": false,
+          "policies": [],
+          "relation": "operator_triage_schema_migrations",
+          "schema": "operator_triage"
+        }
+      ],
+      "security_labels": [],
+      "sequences": [],
+      "tables": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "work_item_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+              "delete_action": null,
+              "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "item_metadata_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+              "expression": null,
+              "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "item_metadata_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "item_metadata",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operator_triage_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "operator_triage_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "operator_triage_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "triggers": [],
+      "views": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
           "grantee": "PUBLIC",
           "grantor": "pg_database_owner",
           "privilege": "usage"
@@ -131887,6 +132724,18 @@
           "object_type": "column"
         },
         {
+          "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+          "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+          "object": "security_master.security_raw_prices.price_exact",
+          "object_type": "column"
+        },
+        {
+          "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+          "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+          "object": "security_master.security_raw_prices.quotation_evidence",
+          "object_type": "column"
+        },
+        {
           "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
           "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
           "object": "security_master.structured_credit_projection.attachment_point",
@@ -136514,7 +137363,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+      "fingerprint": "b2c9db4190b1e42632076ce3ba13beaae1a1985dd15304c3d6d725d7a5f893ff",
       "foreign_tables": [],
       "functions": [
         {
@@ -177601,6 +178450,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "quotation_evidence",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "price_exact",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -177672,7 +178553,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+          "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -226455,6 +227336,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "quotation_evidence",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "price_exact",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -226526,7 +227439,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+          "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

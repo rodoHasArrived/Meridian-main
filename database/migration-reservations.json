@@ -97,6 +97,12 @@
       "filename_template": "{ordinal:03d}_{slug}.sql",
       "ordinal_pattern": "^(?P<ordinal>\\d+)_",
       "reservations": []
+    },
+    {
+      "id": "operator-triage",
+      "filename_template": "{ordinal:03d}_{slug}.sql",
+      "ordinal_pattern": "^(?P<ordinal>\\d+)_",
+      "reservations": []
     }
   ]
 }

@@ -14,6 +14,9 @@ public interface ISecurityMasterPricingService
     Task<SecurityPriceGoldenCopyDto?> GetGoldenCopyPriceAsOfAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);
     /// <summary>Replays an exact retained selection; absent or differently scoped receipts return null.</summary>
     Task<SecurityPriceGoldenCopyDto?> GetGoldenCopySelectionAsync(Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default);
+    /// <summary>Retains one exact choice receipt per eligible source observation for an operator picker.</summary>
+    Task<IReadOnlyList<SecurityPriceGoldenCopyDto>> GetObservationSelectionsAsync(Guid securityId, string? accountId,
+        DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);
     Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityClosePriceSetDto> CreateClosePriceSetAsync(CreateSecurityClosePriceSetRequest request, CancellationToken ct = default);
     Task<SecurityClosePriceSetDto> ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default);

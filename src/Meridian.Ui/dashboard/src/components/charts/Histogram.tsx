@@ -2,6 +2,7 @@
 // raw `values` (auto-binned) or precomputed `bins`. When `signed`, bars left of zero tint red and
 // right of zero green so a returns distribution reads instantly; an optional dashed mean rule
 // overlays. Flat, token-driven, explicit-height svg.
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 
 export interface HistogramBin {
   x0: number;
@@ -9,7 +10,7 @@ export interface HistogramBin {
   count: number;
 }
 
-export interface HistogramProps {
+export interface HistogramProps extends ChartA11yProps {
   /** Raw sample — auto-binned. Provide this OR `bins`. */
   values?: number[] | null;
   /** Precomputed bins. Provide this OR `values`. */
@@ -67,7 +68,10 @@ export function Histogram({
   mean: meanProp = null,
   valueFmt = (v) => v.toFixed(1),
   countFmt = (c) => String(c),
-  xTicks = 7
+  xTicks = 7,
+  ariaLabel = "Distribution histogram",
+  ariaDescription,
+  accessibleData
 }: HistogramProps) {
   const bins = presetBins || (values && values.length ? buildBins(values, binCount) : []);
   const W = 960;
@@ -98,12 +102,12 @@ export function Histogram({
   const tStep = Math.max(1, Math.round((n || 1) / xTicks));
 
   return (
-    <svg
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Distribution histogram"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {[...new Set(cTicks)].map((c, k) => (
@@ -154,7 +158,7 @@ export function Histogram({
 
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
       <line x1={plotL} x2={plotL} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1" opacity="0.5" />
-    </svg>
+    </ChartSvg>
   );
 }
 

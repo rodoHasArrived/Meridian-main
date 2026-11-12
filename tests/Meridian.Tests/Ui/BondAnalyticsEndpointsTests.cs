@@ -37,8 +37,23 @@ public sealed class BondAnalyticsEndpointsTests
             && request.Context.KnownAt == new DateTimeOffset(2026, 10, 28, 0, 0, 0, TimeSpan.Zero)), Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task Analytics_BindsRetainedReceiptWithoutManualPrice()
+    {
+        var service = Substitute.For<IBondAnalyticsService>();
+        await using var app = await CreateAppAsync(service);
+        var receipt = Guid.NewGuid();
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/reference-data/bonds/{Guid.NewGuid()}/analytics?asOf=2026-10-29T00:00:00Z&selectionReceiptId={receipt}&priceAccountId=account-a");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await service.Received(1).CalculateAsync(Arg.Is<BondAnalyticsRequest>(request =>
+            request.SelectionReceiptId == receipt && request.PriceAccountId == "account-a"
+            && request.CleanPrice == null && request.Yield == null), Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("cleanPrice=100&yield=0.05")]
+    [InlineData("cleanPrice=100&selectionReceiptId=11111111-1111-1111-1111-111111111111")]
     [InlineData("cleanPrice=100&yieldConvention=999")]
     [InlineData("cleanPrice=100&yieldConvention=0")]
     [InlineData("yieldConvention=NominalPeriodic")]

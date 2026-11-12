@@ -1,3 +1,4 @@
+using Meridian.Contracts.Calendars;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -19,12 +20,20 @@ public sealed class ProviderIntegrationDryRunService
     internal const string ManualCsvEndpointKey = "manual-csv-upload";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
+    private readonly IBusinessDayCalendarSource? calendars;
     private readonly ILogger<ProviderIntegrationDryRunService> logger;
 
     public ProviderIntegrationDryRunService(
         IProviderIntegrationManifestStore store,
         ILogger<ProviderIntegrationDryRunService>? logger = null)
+        : this(store, logger, null) { }
+
+    public ProviderIntegrationDryRunService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationDryRunService>? logger,
+        IBusinessDayCalendarSource? calendars = null)
     {
+        this.calendars = calendars;
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.logger = logger ?? NullLogger<ProviderIntegrationDryRunService>.Instance;
     }
@@ -145,6 +154,7 @@ public sealed class ProviderIntegrationDryRunService
         var accepted = 0;
         var quarantined = 0;
         var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
+        var mappedRecordPreviews = new List<JsonElement>();
 
         if (csvRecords.Count == 0)
         {
@@ -175,9 +185,11 @@ public sealed class ProviderIntegrationDryRunService
                 }
             }
 
-            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
+            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
             allIssues.AddRange(rowIssues);
             var mappedElement = ToJsonElement(mappedRecord);
+            if (mappedRecordPreviews.Count < 20)
+                mappedRecordPreviews.Add(mappedElement);
             var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
             var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(
                 connection.ConnectionId,
@@ -247,7 +259,10 @@ public sealed class ProviderIntegrationDryRunService
             accepted,
             quarantined,
             status,
-            allIssues);
+            allIssues)
+        {
+            MappedRecordPreviews = mappedRecordPreviews
+        };
         await scopedStore.SaveSyncRunAsync(
             CreateSyncRun(request, manifest, manifestReference, connection, payloadId, result), ct).ConfigureAwait(false);
         return result;
