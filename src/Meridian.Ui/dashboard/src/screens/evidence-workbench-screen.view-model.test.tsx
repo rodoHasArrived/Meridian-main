@@ -46,7 +46,9 @@ vi.mock("@/lib/api", () => ({
   intakeEvidenceVaultDocument: vi.fn(),
   listEvidenceVaultDocuments: vi.fn(),
   listEvidenceVaultRequestLists: vi.fn(),
-  reviewEvidenceVaultDocument: vi.fn()
+  reviewEvidenceVaultDocument: vi.fn(),
+  apiGetJson: vi.fn().mockRejectedValue(new Error("Attestation service unavailable in this isolated screen test.")),
+  apiPostJson: vi.fn()
 }));
 
 beforeEach(() => {

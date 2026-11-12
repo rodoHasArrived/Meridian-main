@@ -211,6 +211,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |
 <!-- source-roadmap-traceability:end -->

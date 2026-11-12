@@ -31,6 +31,12 @@ public static class LedgerReportPackBuilder
             chart,
             financialAccountId,
             request.LineDimensions);
+        var preparerAttestations = ledger.GetJournalEntries(to: request.AsOf)
+            .Where(entry => entry.Lines.Any(line => (string.IsNullOrWhiteSpace(financialAccountId)
+                || string.Equals(line.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                && MatchesLineDimensions(line.Dimensions, request.LineDimensions)))
+            .Select(entry => LedgerReportPreparerAttestation.Read(entry, request)).Where(item => item is not null)
+            .Select(item => item!).OrderBy(item => item.JournalEntryId).ToArray();
 
         var artifacts = new List<LedgerReportPackArtifact>
         {
@@ -39,13 +45,18 @@ public static class LedgerReportPackBuilder
             CreateCsvArtifact("balance-sheet.csv", statements.BalanceSheetRows),
             CreateCashFlowArtifact("cash-flow-statement.csv", statements.CashFlow),
             CreatePartnersCapitalArtifact("partners-capital-statement.csv", statements.PartnersCapital),
-            CreateFinancialStatementsJsonArtifact(request, statements),
+            CreateFinancialStatementsJsonArtifact(request, statements, preparerAttestations),
             CreateTaxLotRealizedGainsArtifact(taxLotReliefProjections ?? []),
         };
         var provenance = BuildLineProvenance(ledger, request, statements, financialAccountId);
         artifacts.Add(CreateLineProvenanceArtifact(provenance));
 
         var generalLedgerLines = SelectGeneralLedgerLines(ledger, request, financialAccountId);
+        if (preparerAttestations.Length > 0)
+        {
+            var content = JsonSerializer.Serialize(preparerAttestations, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            artifacts.Add(new("accounting-preparer-attestations.json", "application/json", content, Sha256Digest.ComputeUtf8(content)));
+        }
         artifacts.Add(CreateGeneralLedgerDetailArtifact(generalLedgerLines));
         artifacts.Add(CreateProfitAndLossAttributionArtifact(
             generalLedgerLines
@@ -97,7 +108,8 @@ public static class LedgerReportPackBuilder
 
         return new LedgerFinancialReportPack(request, statements, artifacts, signature)
         {
-            LineProvenance = provenance
+            LineProvenance = provenance,
+            PreparerAttestations = preparerAttestations.Length == 0 ? null : preparerAttestations
         };
     }
 
@@ -325,7 +337,8 @@ public static class LedgerReportPackBuilder
 
     private static LedgerReportPackArtifact CreateFinancialStatementsJsonArtifact(
         LedgerReportPackRequest request,
-        LedgerFinancialStatements statements)
+        LedgerFinancialStatements statements,
+        IReadOnlyList<LedgerReportPreparerAttestation> preparerAttestations)
     {
         var builder = new StringBuilder();
         builder.AppendLine("{");
@@ -351,7 +364,9 @@ public static class LedgerReportPackBuilder
         builder.AppendLine("  },");
         AppendRows(builder, "trialBalanceRows", statements.TrialBalanceRows, trailingComma: true);
         AppendRows(builder, "incomeStatementRows", statements.IncomeStatementRows, trailingComma: true);
-        AppendRows(builder, "balanceSheetRows", statements.BalanceSheetRows, trailingComma: false);
+        AppendRows(builder, "balanceSheetRows", statements.BalanceSheetRows, trailingComma: preparerAttestations.Count > 0);
+        if (preparerAttestations.Count > 0)
+            builder.AppendLine($"  \"preparerAttestations\": {JsonSerializer.Serialize(preparerAttestations, new JsonSerializerOptions(JsonSerializerDefaults.Web))}");
         builder.AppendLine("}");
 
         var content = builder.ToString();

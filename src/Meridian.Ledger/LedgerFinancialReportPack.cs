@@ -17,6 +17,9 @@ public sealed record LedgerFinancialReportPack(
 
     public IReadOnlyList<LedgerReportLineProvenance> LineProvenance { get; init; } = [];
 
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<LedgerReportPreparerAttestation>? PreparerAttestations { get; init; }
+
     public IReadOnlyList<LedgerReportPackRestatement> Restatements { get; init; } = [];
 
     public LedgerFinancialReportPack Validate(string actor, DateTimeOffset occurredAtUtc, string reason, IReadOnlyList<string> evidenceLinks)

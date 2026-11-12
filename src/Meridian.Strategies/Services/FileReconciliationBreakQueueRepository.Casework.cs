@@ -1071,6 +1071,9 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
         return command.Action switch
         {
+            _ when PreparerAttestationApprovalBoundary.IsReservedReference(command.ApprovalReference)
+                || PreparerAttestationApprovalBoundary.IsReservedReference(command.ApprovalActor)
+                => PreparerApprovalRefusal(item),
             _ when RequiresHumanOrigin(command) && !OperationsOriginGuard.IsHumanOperator(command.ActionOrigin)
                 => Invalid(item, OperationsOriginGuard.RefusalMessage("resolve, sign off, or reopen reconciliation cases"), ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
             ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
