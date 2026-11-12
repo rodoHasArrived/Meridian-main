@@ -249,3 +249,16 @@ versioned journal references and recovery workflow. Its 291 tests, TypeScript bu
 unchanged style/size gates and Chromium workflow checks passed. WPF retains the new agreement
 view and asynchronously primed configuration snapshots. A local startup run encountered 26
 disk-capacity errors; obsolete ignored build outputs were removed before rerunning those cases.
+
+The next synchronization incorporates `3ada46416ddaea7215a8b806759d9b6450a80b0b`, preserving the
+new default-off preparer-attestation lanes and their native producer authority. Both new ledger
+interfaces resolve to the existing writer singleton alongside the deferred agreement authority.
+All twelve new storage sources and migration 066 retain one adapter owner. The new integration
+cases remain in the canonical main suite. No native writer or defragmentation repair changed.
+The fifth-sync fund-agreement and UI projection slices passed 14 and 77 tests respectively.
+The sixth browser synchronization retained 31 upstream attestation files byte-for-byte and all
+615 extracted declarations; its changed attestation, API and workbench slice passed 173 tests.
+The larger combined regression slice is being rerun after correcting the composition test's
+service-collection interface declaration and a nullable native-posting actor boundary. New
+reconciliation support imports use the extracted DataIntegration contract namespace. Earlier
+failed builds are not passing test results.

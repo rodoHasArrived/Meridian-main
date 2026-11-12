@@ -85,6 +85,8 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null)
     {
+        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport,
+            CorporateActionCashDividendReconciliationSupport>();
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         services.TryAddSingleton<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>();
         services.AddHostedService(sp => sp.GetRequiredService<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>());
@@ -1261,7 +1263,8 @@ public static class WorkstationServiceCollectionExtensions
                 ResolveWorkstationDataDirectory(sp),
                 logger,
                 sp.GetService<IReconciliationSlaPolicyProvider>(),
-                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>());
+                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>(),
+                preparerAttestationReferences: sp.GetRequiredService<Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier>());
         });
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(

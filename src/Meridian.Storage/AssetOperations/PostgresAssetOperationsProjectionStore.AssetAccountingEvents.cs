@@ -65,6 +65,18 @@ public sealed partial class PostgresAssetOperationsProjectionStore
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
 
+        var result = await AppendAssetAccountingWithinTransactionAsync(connection, transaction, projection,
+            expectedSpineVersion, expectedBookPositionVersion, hasDurableSuccessorAuthority, fingerprint, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return result;
+    }
+
+    private async Task<AssetAccountingEventAppendResult> AppendAssetAccountingWithinTransactionAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, AssetAccountingEventSpineDto projection,
+        long expectedSpineVersion, long expectedBookPositionVersion, bool hasDurableSuccessorAuthority,
+        string fingerprint, CancellationToken ct, bool verifiedCashDividendPosting = false)
+    {
+
         await AcquireAssetAccountingEventLockAsync(
                 connection,
                 transaction,
@@ -95,7 +107,6 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                     "already exists with a different canonical fingerprint.");
             }
 
-            await transaction.CommitAsync(ct).ConfigureAwait(false);
             return new AssetAccountingEventAppendResult(
                 exactIdentity.Projection,
                 exactIdentity.CanonicalFingerprint,
@@ -124,6 +135,13 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                 ct)
             .ConfigureAwait(false);
         var currentSpineVersion = latest?.Projection.SpineVersion ?? 0;
+        if (!verifiedCashDividendPosting && (projection.PreparerAttestation is not null
+                || projection.Stages.Any(stage => stage.Stage == AssetAccountingLifecycleStageDto.PreparerAttested))
+            && (latest?.Projection.PreparerAttestation is null || latest.Projection.PostedJournalImpact is null
+                || projection.Stages.LastOrDefault()?.Stage is not (AssetAccountingLifecycleStageDto.Reconciled or AssetAccountingLifecycleStageDto.Reported)
+                || !AssetAccountingEventProjectionRules.PayloadEquals(latest.Projection.PreparerAttestation, projection.PreparerAttestation)
+                || !AssetAccountingEventProjectionRules.PayloadEquals(latest.Projection.PostedJournalImpact, projection.PostedJournalImpact)))
+            throw new InvalidOperationException("Only the native economic lease may introduce preparer authority or its posted journal; later evidence stages must preserve the retained posted decision.");
         if (currentSpineVersion != expectedSpineVersion)
         {
             throw new InvalidOperationException(
@@ -146,8 +164,6 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                 fingerprint,
                 ct)
             .ConfigureAwait(false);
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
-
         return new AssetAccountingEventAppendResult(projection, fingerprint, WasReplay: false);
     }
 

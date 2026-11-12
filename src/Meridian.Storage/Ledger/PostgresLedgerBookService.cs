@@ -445,6 +445,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         var reason = RequireText(request.Reason, nameof(request.Reason));
         var approvalReference = RequireText(request.ApprovalReference, nameof(request.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalReference, nameof(request.ApprovalReference));
         var evidence = request.EvidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
