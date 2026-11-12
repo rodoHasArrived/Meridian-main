@@ -1333,6 +1333,7 @@ Meridian-main
 │   │   │   ├── identity_access.json
 │   │   │   ├── ledger.json
 │   │   │   ├── money_market.json
+│   │   │   ├── operator_triage.json
 │   │   │   ├── public.json
 │   │   │   ├── reporting.json
 │   │   │   └── security_master.json
@@ -1907,6 +1908,7 @@ Meridian-main
 │   │   │   │   ├── identity_access.mmd
 │   │   │   │   ├── ledger.mmd
 │   │   │   │   ├── money_market.mmd
+│   │   │   │   ├── operator_triage.mmd
 │   │   │   │   ├── public.mmd
 │   │   │   │   ├── reporting.mmd
 │   │   │   │   └── security_master.mmd
@@ -1918,6 +1920,7 @@ Meridian-main
 │   │   │   │   ├── identity_access.md
 │   │   │   │   ├── ledger.md
 │   │   │   │   ├── money_market.md
+│   │   │   │   ├── operator_triage.md
 │   │   │   │   ├── public.md
 │   │   │   │   ├── reporting.md
 │   │   │   │   └── security_master.md
@@ -8595,6 +8598,8 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital.api.test.ts
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
+│   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
+│   │   │   │   │   │   ├── provider-integration-identity.api.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
 │   │   │   │   │   │   ├── provider-modules.api.ts
 │   │   │   │   │   │   ├── provider-ownership.api.ts
@@ -9190,6 +9195,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.view-model.ts
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
+│   │   │   │   │   ├── security-master-authoritative-detail.ts
 │   │   │   │   │   ├── security-master-policy-evidence.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.ts
 │   │   │   │   │   ├── settings-mutation-confirm-dialog.tsx
@@ -9231,10 +9237,12 @@ Meridian-main
 │   │   │   │   │   ├── strategy-run-ledger-screen.test.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.tsx
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
+│   │   │   │   │   ├── strategy-screen.equity-path-compare.tsx
 │   │   │   │   │   ├── strategy-screen.equity-paths.test.tsx
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
 │   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
+│   │   │   │   │   ├── strategy-screen.plot-charts.ts
 │   │   │   │   │   ├── strategy-screen.status-announcement.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
 │   │   │   │   │   ├── strategy-screen.tsx
@@ -9358,6 +9366,7 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── private-capital.ts
 │   │   │   │   │   ├── provider-accounting.ts
+│   │   │   │   │   ├── provider-integration-identity.ts
 │   │   │   │   │   ├── provider-integration-provenance.ts
 │   │   │   │   │   ├── provider-ownership.types.ts
 │   │   │   │   │   ├── provider-setup.ts
@@ -13957,6 +13966,7 @@ Meridian-main
 │   │   ├── test_schema_control_render.py
 │   │   ├── test_schema_control_reservations.py
 │   │   ├── test_schema_control_workflow.py
+│   │   ├── test_schema_control_workstation_registry.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
 │   │   ├── test_service_backed_integrations_workflow.py

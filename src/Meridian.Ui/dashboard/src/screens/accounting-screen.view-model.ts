@@ -1,3 +1,4 @@
+import { useAuthoritativeSecurityDetail } from "./security-master-authoritative-detail";
 import type { ReconciliationSelectionState } from "./reconciliation-view-state";
 import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -3183,9 +3184,7 @@ export function useSecurityMasterViewModel(
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<ApiErrorDisplay | null>(null);
   const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
-  const [selectedEntry, setSelectedEntry] = useState<SecurityMasterEntry | null>(null);
-  const [detailError, setDetailError] = useState<ApiErrorDisplay | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const { selectedEntry, detailError, detailLoading, resetDetail, loadDetail } = useAuthoritativeSecurityDetail(services.getDetail);
   const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
   const [identityLoading, setIdentityLoading] = useState(false);
   const [identityError, setIdentityError] = useState<ApiErrorDisplay | null>(null);
@@ -3250,9 +3249,7 @@ export function useSecurityMasterViewModel(
     conflictGenerationRef.current += 1;
     setSearching(false);
     setSelectedSecurityId(null);
-    setSelectedEntry(null);
-    setDetailError(null);
-    setDetailLoading(false);
+    resetDetail();
     setIdentity(null);
     setIdentityLoading(false);
     setIdentityError(null);
@@ -3277,7 +3274,7 @@ export function useSecurityMasterViewModel(
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
-  }, [active, resetReferenceDataCoverage]);
+  }, [active, resetReferenceDataCoverage, resetDetail]);
 
   const refreshConflicts = useCallback(async () => {
     if (!active) {
@@ -3506,9 +3503,7 @@ export function useSecurityMasterViewModel(
     const generation = identityGenerationRef.current + 1;
     identityGenerationRef.current = generation;
     setSelectedSecurityId(securityId);
-    setSelectedEntry(null);
-    setDetailError(null);
-    setDetailLoading(Boolean(services.getDetail));
+    resetDetail();
     setIdentity(null);
     setIdentityError(null);
     setIdentityLoading(true);
@@ -3527,19 +3522,7 @@ export function useSecurityMasterViewModel(
     setTradingParameters(null);
     setTradingParametersError(null);
 
-    // Fetch authoritative economics independently of the search page. A ladder or explorer
-    // can select a record that is absent from the current filtered search results.
-    const detailTask = services.getDetail?.(securityId).then((entry) => {
-      if (identityGenerationRef.current !== generation) return;
-      if (entry.securityId.toLowerCase() !== securityId.toLowerCase())
-        throw new Error("Security detail returned a different security.");
-      setSelectedEntry(entry);
-    }).catch((err: unknown) => {
-      if (identityGenerationRef.current === generation)
-        setDetailError(describeApiError(err, "Authoritative security detail failed to load."));
-    }).finally(() => {
-      if (identityGenerationRef.current === generation) setDetailLoading(false);
-    });
+    const detailTask = loadDetail(securityId, () => identityGenerationRef.current === generation);
 
     try {
       const detail = await services.getIdentity(securityId);
@@ -3556,7 +3539,7 @@ export function useSecurityMasterViewModel(
       }
       await detailTask;
     }
-  }, [active, resetReferenceDataCoverage, services]);
+  }, [active, resetReferenceDataCoverage, resetDetail, loadDetail, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,

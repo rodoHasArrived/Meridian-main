@@ -120,10 +120,11 @@ public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMaster
         await using var command = connection.CreateCommand();
         command.CommandText = $"""
             insert into {Qualified("security_raw_prices")} as retained
-                (security_id, source_id, price, price_as_of, price_unit, recorded_by, recorded_at, quotation_evidence)
-            values (@security_id, @source_id, @price, @price_as_of, @price_unit, @recorded_by, now(), @quotation::jsonb)
+                (security_id, source_id, price, price_exact, price_as_of, price_unit, recorded_by, recorded_at, quotation_evidence)
+            values (@security_id, @source_id, @price, @price, @price_as_of, @price_unit, @recorded_by, now(), @quotation::jsonb)
             on conflict (security_id, source_id, price_as_of) do update set price = retained.price
-            where retained.price = excluded.price and retained.price_unit = excluded.price_unit
+            where coalesce(retained.price_exact, retained.price) = coalesce(excluded.price_exact, excluded.price)
+                and retained.price_unit = excluded.price_unit
                 and retained.recorded_by = excluded.recorded_by
                 and retained.quotation_evidence is not distinct from excluded.quotation_evidence
             returning 1;
@@ -146,7 +147,7 @@ public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMaster
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText = $"""
-            select distinct on (source_id) source_id, price, price_as_of, price_unit, quotation_evidence
+            select distinct on (source_id) source_id, coalesce(price_exact, price), price_as_of, price_unit, quotation_evidence
             from {Qualified("security_raw_prices")}
             where security_id = @security_id and price_as_of <= @as_of and recorded_at <= @known_at
             order by source_id, price_as_of desc;

@@ -1,3 +1,4 @@
+import type { ProviderIntegrationIdentityDecision } from "./provider-integration-identity";
 import type {
   MetricSnapshot,
   ProviderCredentialSource,
@@ -750,21 +751,6 @@ export interface ProviderIntegrationStagingIdentityResolutionRow {
   evidenceHash?: string | null;
   hasIdentifierConflict?: boolean;
   operatorResolution?: ProviderIntegrationIdentityDecision | null;
-}
-
-export interface ProviderIntegrationIdentityResolutionRequest {
-  syncRunId: string;
-  stagingRecordId: string;
-  selectedSecurityId: string;
-  evidenceHash: string;
-  reason: string;
-}
-
-export interface ProviderIntegrationIdentityDecision extends ProviderIntegrationIdentityResolutionRequest {
-  decisionId: string;
-  connectionId: string;
-  reviewedBy: string;
-  reviewedAt: string;
 }
 
 export interface ProviderIntegrationStagingIdentityResolutionPreview {

@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 510. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 523. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileRollbackRequestDto["SecurityAssetProfileRollbackRequestDto"] {
+        +string ApprovalReference
+        +string? CorrelationId
+        +DateOnly EffectiveFrom
+        +string ProfileId
+        +string Rationale
+        +string? RequestedBy
+        +int TargetVersion
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto["SecurityAssetProfileStatusDto"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto["SecurityAssetProfileTermsDto"] {
         +string CustomProfileId
         +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
@@ -166,6 +177,7 @@ classDiagram
         +decimal? PctDiffFromGoldenCopy
         +decimal Price
         +DateTimeOffset PriceAsOf
+        +SecurityPriceQuotationEvidence? Quotation
         +string SourceId
         +SecurityPriceUnit Unit
     }
@@ -193,6 +205,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurvePointDto["SecurityCurvePointDto"] {
         +DateOnly Date
+        +SecurityRatePointEvidenceDto? RateEvidence
         +string? Tenor
         +decimal Value
     }
@@ -416,10 +429,6 @@ classDiagram
         +string? ResolvedWinnerSource
         +Guid SecurityId
         +string Status
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategories["SecurityMasterConflictFieldCategories"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategory["SecurityMasterConflictFieldCategory"] {
     }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms

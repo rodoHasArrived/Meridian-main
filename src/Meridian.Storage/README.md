@@ -11,10 +11,14 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Storage
 
-The Security Master quotation-evidence migration adds optional price quotation evidence and widens raw price storage
-from numeric(28,10) to numeric so new CLR-decimal quotations survive retention exactly. Existing
-rounded observations are left as retained evidence. Nullable metadata is omitted from legacy
-canonical serialization. Curve point JSON can retain typed rate observations and reviewed construction
+Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
+column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a
+compatibility mirror, including its limit of eighteen integer digits; new values outside that
+range are still refused. Reads and same-timestamp idempotence use `COALESCE(price_exact, price)`
+so quotes that share a rounded mirror remain distinct. Existing rows keep null exact prices and
+unknown quotation metadata: no missing historical digits are backfilled. Nullable metadata is
+omitted from legacy canonical serialization, and retained receipt payloads and hashes stay unchanged.
+Curve point JSON can retain typed rate observations and reviewed construction
 evidence; only evidence-bearing versions add it to content hashes, preserving legacy curve hashes.
 Typed-rate retries compare all retained source and construction facts except retrieval time under
 the curve row lock. A retry returns its original immutable version, hash and evidence, including

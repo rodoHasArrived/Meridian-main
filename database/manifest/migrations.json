@@ -559,6 +559,15 @@
       "sha256": "3b66440592481b5d7743c7d37e52549dd0f9db1f046abf81db6a33ee94ffba2b"
     },
     {
+      "filename": "065_security_price_quotation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 65,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/065_security_price_quotation_evidence.sql",
+      "schema": "security_master",
+      "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1450,6 +1459,15 @@
       "sha256": "d263b7c9ebb519957950ff2a8f5a1826f003fc64a020ba00ad0a4a3d09e2a02e"
     },
     {
+      "filename": "001_operator_triage.sql",
+      "immutable": true,
+      "migration_set_id": "operator-triage",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
+      "schema": "operator_triage",
+      "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
+    },
+    {
       "filename": "001_user_access_assignment.sql",
       "immutable": true,
       "migration_set_id": "identity-access",
@@ -1460,7 +1478,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "8ed43ed9dd9dc667cc8eab3757fa0831e3a62ceb509ae139f9d1a236a8f85212",
+  "fingerprint": "b69e0c4351b7d7c3b16264f1a725704af5a74f0d33c739d170ff994c3a704207",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1674,6 +1692,30 @@
     },
     {
       "connection_variables": [
+        "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
+        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/Workstation/Migrations",
+      "display_name": "Operator Triage",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "operator-triage",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "operator_triage_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Workstation",
+      "quote_schema": false,
+      "schema": "operator_triage",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
         "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
         "MERIDIAN_SCOPED_ACCESS_SCHEMA"
       ],
@@ -1698,8 +1740,8 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 162,
-    "migration_sets": 10,
+    "files": 164,
+    "migration_sets": 11,
     "waivers": 29,
     "warnings": 0
   },
