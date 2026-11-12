@@ -54,7 +54,7 @@ class DemoSmokeWorkflowTests(unittest.TestCase):
 
     def test_cli_keeps_normal_seed_build_and_reuses_release_for_serve_and_reset(self):
         script = next(step["run"] for step in self.steps if "demo_run()" in step.get("run", ""))
-        with tempfile.TemporaryDirectory(prefix="demo-smoke-workflow-") as temporary:
+        with tempfile.TemporaryDirectory(prefix="demo-smoke-workflow-", ignore_cleanup_errors=True) as temporary:
             directory = Path(temporary)
             command_log = directory / "commands.jsonl"
             dotnet = directory / "dotnet"
