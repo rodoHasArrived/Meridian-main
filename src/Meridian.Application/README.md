@@ -11,6 +11,10 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
+Subscription application trims symbol names and keeps the first declaration when names repeat
+case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
+hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
+
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
 uses the shared versioned term keys for call schedules and schedule conventions.
