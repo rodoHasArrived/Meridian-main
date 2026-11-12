@@ -33,7 +33,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-close__grid{display:grid;grid-template-columns:repeat(var(--close-cols,7),minmax(132px,1fr));overflow:auto}
 .mds-close__day{min-height:var(--calendar-cell-min-height,170px);border-right:1px solid var(--border-divider,#E2DED5);position:relative}
 .mds-close__day:last-child{border-right:0}
-.mds-close__day[data-past="true"] .mds-close__date{color:var(--text-disabled,#A4ABB2)}
+.mds-close__day[data-past="true"] .mds-close__date{color:var(--text-muted,#606870)}
 .mds-close__date{display:flex;justify-content:space-between;gap:6px;padding:7px 8px;border-bottom:1px solid var(--border-divider,#E2DED5);font:600 10px var(--font-data,monospace);color:var(--text-muted,#606870);background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
 .mds-close__tasks{padding:5px;display:grid;gap:4px}
 .mds-close__task{display:grid;gap:2px;width:100%;border:0;border-left:2px solid var(--neutral,#6D757D);background:var(--surface-well,#FCFBF8);padding:6px;text-align:left;cursor:pointer;color:var(--text-secondary,#535C65);font-family:var(--font-body)}
@@ -67,7 +67,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 function TaskRow({t,depth=0,selectedId,onSelect,tasks}){
   const s=st(t.status);
   const requires=(t.dependsOn||[]).map(id=>tasks.find(x=>String(x.id)===String(id))?.title||id);
-  return <button type="button" className="mds-close__row mds-close__depth" style={{"--depth":depth}} data-tone={s.tone} data-selected={String(t.id)===String(selectedId)?"true":undefined} onClick={()=>onSelect?.(t)}>
+  return <button type="button" disabled={!onSelect} title={onSelect?undefined:"Task inspection is unavailable in this view"} className="mds-close__row mds-close__depth" style={{"--depth":depth}} data-tone={s.tone} data-selected={String(t.id)===String(selectedId)?"true":undefined} onClick={()=>onSelect?.(t)}>
     <span className="mds-close__mark" aria-hidden="true">{s.glyph}</span>
     <span><strong>{t.title}</strong>{requires.length?<small>Requires: {requires.join(", ")}</small>:null}{t.blocker?<small>Blocked: {t.blocker}</small>:null}</span>
     <span>{t.evidence?<small>Evidence: {t.evidence}</small>:null}{t.signoff?<small>Sign-off: {t.signoff}</small>:null}</span>
@@ -121,7 +121,7 @@ export function CloseCalendar({
       {days.map((day,i)=><div className="mds-close__day" key={day.date} data-past={dayIndex>=0&&i<dayIndex?"true":undefined}>
         {day.date===currentDate?<Datum role="current-time" orientation="vertical" position={0} label={currentTime?`Now · ${currentTime}`:"Current period"}/>:null}
         <div className="mds-close__date"><span>{day.label||day.date}</span><span>{tasks.filter(t=>t.date===day.date).length||""}</span></div>
-        <div className="mds-close__tasks">{tasks.filter(t=>t.date===day.date).map(t=>{const s=st(t.status);return <button type="button" className="mds-close__task" data-tone={s.tone} data-status={s.key} data-selected={String(t.id)===String(selectedId)?"true":undefined} key={t.id} onClick={()=>onSelect?.(t)}>
+        <div className="mds-close__tasks">{tasks.filter(t=>t.date===day.date).map(t=>{const s=st(t.status);return <button type="button" disabled={!onSelect} title={onSelect?undefined:"Task inspection is unavailable in this view"} className="mds-close__task" data-tone={s.tone} data-status={s.key} data-selected={String(t.id)===String(selectedId)?"true":undefined} key={t.id} onClick={()=>onSelect?.(t)}>
           <span className="mds-close__name"><span className="mds-close__mark" aria-hidden="true">{s.glyph}</span>{t.title}</span>
           <span className="mds-close__meta">{t.due||"No due time"} · {t.owner||"Unassigned"}</span>
           <span className="mds-close__meta">{s.label}{t.evidence?` · ${t.evidence}`:""}</span>

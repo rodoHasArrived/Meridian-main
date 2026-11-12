@@ -23,7 +23,7 @@ function inject() {
 .mds-bb td{font-family:var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;}
 .mds-bb td.is-ref{color:var(--text-secondary);}
 .mds-bb td.is-changed{background:var(--cond-overridden-bg);box-shadow:inset 2px 0 0 var(--cond-overridden-fg);
-  color:var(--cond-overridden-fg);font-weight:var(--weight-medium,500);}
+  color:var(--text-primary);font-weight:var(--weight-medium,500);}
 .mds-bb td.is-changed::after{content:" ◆";font-size:8px;vertical-align:2px;}
 .mds-bb tfoot td,.mds-bb tfoot th{border-bottom:0;border-top:1px solid var(--border-strong);
   background:var(--bg-light);font-family:var(--font-body);}

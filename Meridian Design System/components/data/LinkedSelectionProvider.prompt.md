@@ -20,3 +20,5 @@ Hover stays local to the renderer. Click, Enter, or Space commits. Escape clears
   </LinkedSelectionProvider>
 </LinkedSelectionProvider>
 ```
+
+The default target is a keyboard-operable button with `aria-pressed`. Supply a selection role such as `option` or `row` inside its proper owning listbox/table when that pattern is intended; those roles use `aria-selected`. Selection lists deduplicate stable IDs. Unavailable storage does not block session selection or URL updates.

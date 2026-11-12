@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Data condition — Meridian's eleven-condition vocabulary for any analytical value:
  * `confirmed · provisional · estimated · stale · overridden · missing · na ·
@@ -40,7 +41,7 @@ export interface DataConditionProps extends React.HTMLAttributes<HTMLSpanElement
   /** Hide the marker glyph — only when an adjacent marker already carries it. */
   showGlyph?: boolean;
 }
-export declare function DataCondition(props: DataConditionProps): JSX.Element;
+export declare function DataCondition(props: DataConditionProps): React.JSX.Element;
 
 export interface DataConditionValueProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Pre-formatted value text; `null`/omitted renders `—` (or `Missing`).
@@ -54,7 +55,7 @@ export interface DataConditionValueProps extends React.HTMLAttributes<HTMLSpanEl
   /** `"right"` for numeric table columns. */
   align?: "left" | "right";
 }
-export declare function DataConditionValue(props: DataConditionValueProps): JSX.Element;
+export declare function DataConditionValue(props: DataConditionValueProps): React.JSX.Element;
 
 export interface DataConditionLegendItem {
   id?: string;
@@ -67,7 +68,7 @@ export interface DataConditionLegendItem {
 export interface DataConditionLegendProps extends React.HTMLAttributes<HTMLDivElement> {
   items: DataConditionLegendItem[];
 }
-export declare function DataConditionLegend(props: DataConditionLegendProps): JSX.Element;
+export declare function DataConditionLegend(props: DataConditionLegendProps): React.JSX.Element;
 
 /** 4.0: the condition vocabulary, re-homed from the retired top-level `CONDITIONS`
  *  export. 4.1: eleven entries — `restricted` added as the entitlement condition. */

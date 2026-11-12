@@ -26,4 +26,4 @@ export interface ChartTooltipProps {
   /** Chart's value-rail width in px. @default 62 */
   rail?: number;
 }
-export declare function ChartTooltip(props: ChartTooltipProps): JSX.Element;
+export declare function ChartTooltip(props: ChartTooltipProps): React.JSX.Element;

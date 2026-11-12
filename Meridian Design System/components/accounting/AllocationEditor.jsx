@@ -5,7 +5,8 @@ import React from "react";
 const { useState } = React;
 import { AmountCell } from "./AmountCell";
 import { toNumber, formatMoney } from "../core/format.js";
-import { allocateAmount } from "./money";
+import { allocateAmount } from "./money.js";
+import { knownAmount } from "./knownAmounts.js";
 
 let injected = false;
 function inject() {
@@ -58,19 +59,21 @@ export function AllocationEditor({
   caption,
 }) {
   inject();
-  const [weights, setWeights] = useState(() => lines.map((l) => toNumber(l.weight) || 0));
-  React.useEffect(() => { setWeights(lines.map((l) => toNumber(l.weight) || 0)); }, [lines.length]);
+  const [weights, setWeights] = useState(() => lines.map((l) => knownAmount(l.weight) ?? 0));
+  React.useEffect(() => { setWeights(lines.map((l) => knownAmount(l.weight) ?? 0)); }, [lines.length]);
 
-  const amounts = allocateAmount(total, weights, decimals);
+  const knownTotal=knownAmount(total);
+  const amounts = knownTotal===null?[]:allocateAmount(knownTotal,weights,decimals);
   const wSum = weights.reduce((a, b) => a + (b > 0 ? b : 0), 0);
 
   const setWeight = (i, v) => {
     const next = weights.slice();
-    next[i] = Math.max(0, toNumber(v) || 0);
+    next[i] = Math.max(0,knownAmount(v)??0);
     setWeights(next);
-    onChange?.(allocateAmount(total, next, decimals), next);
+    if(knownTotal!==null)onChange?.(allocateAmount(knownTotal,next,decimals),next);
   };
 
+  if(knownTotal===null)return <div className="alc-wrap" role="status">Allocation unavailable — total is missing or invalid. No allocated amount can be proved.</div>;
   return (
     <div className="alc-wrap" role="region" aria-label={caption || "Allocation"}>
       <table className="alc">
@@ -101,7 +104,7 @@ export function AllocationEditor({
                 />
               </td>
               <td className="alc__share">
-                {wSum > 0 && weights[i] > 0 ? `${((weights[i] / wSum) * 100).toFixed(1)}%` : "\u2014"}
+                {wSum>0?`${((weights[i]/wSum)*100).toFixed(1)}%`:`${(100/lines.length).toFixed(1)}%`}
               </td>
               <td><AmountCell value={amounts[i]} currency={currency} zeroDash /></td>
             </tr>
@@ -112,7 +115,7 @@ export function AllocationEditor({
             <td className="alc--l alc__foot-label" colSpan={3}>
               Allocated
               <span className="alc__foot-note">
-                largest-remainder · sums to {formatMoney(total, { currency, decimals })} exactly
+                {lines.length?`${wSum>0?"Largest-remainder":"Equal split because all weights are zero"} · sums to ${formatMoney(total,{currency,decimals})} exactly`:`No lines; ${formatMoney(total,{currency,decimals})} remains unallocated`}
               </span>
             </td>
             <td><AmountCell value={amounts.reduce((a, b) => a + b, 0)} currency={currency} strong /></td>

@@ -28,12 +28,17 @@ function inject() {
 
 export function TextArea({ label, error, rows = 4, className = "", ...rest }) {
   inject();
+  const generatedId = React.useId();
+  const inputId = rest.id || generatedId;
+  const errorId = `${inputId}--error`;
   const textarea = (
     <textarea
       className={`mds-textarea${error ? " mds-textarea--error" : ""}${className ? " " + className : ""}`}
       rows={rows}
-      aria-invalid={error ? true : undefined}
       {...rest}
+      id={inputId}
+      aria-invalid={error ? true : rest["aria-invalid"]}
+      aria-describedby={[rest["aria-describedby"], error ? errorId : null].filter(Boolean).join(" ") || undefined}
     />
   );
   if (!label && !error) return textarea;
@@ -41,7 +46,7 @@ export function TextArea({ label, error, rows = 4, className = "", ...rest }) {
     <label className="mds-textarea-field">
       {label && <span className="mds-textarea-label">{label}</span>}
       {textarea}
-      {error && <span className="mds-textarea-error">{error}</span>}
+      {error && <span className="mds-textarea-error" id={errorId}>{error}</span>}
     </label>
   );
 }

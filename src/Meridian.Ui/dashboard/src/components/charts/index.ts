@@ -33,3 +33,21 @@ export {
   nearestTimestampIndex
 } from "./chart-sync";
 export type { ChartSyncState, ChartSyncApi, ChartCrosshairSync } from "./chart-sync";
+
+export { ComparisonPlate, PlateGrid } from "./ComparisonPlate";
+export type { ComparisonPlateProps, PlateGridProps, PlateSpec } from "./ComparisonPlate";
+
+export {
+  SelectionCompareProvider,
+  CompareToggle,
+  CompareTray,
+  CompareSheet,
+  useSelectionCompare
+} from "./SelectionCompare";
+export type {
+  SelectionCompareProviderProps,
+  CompareItem,
+  CompareToggleProps,
+  CompareTrayProps,
+  CompareSheetProps
+} from "./SelectionCompare";

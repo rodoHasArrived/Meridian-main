@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Claim header — the top of Meridian's reading-path contract. The title states
  * a **claim, question, or decision**, not a topic: `The belly steepened while
@@ -50,4 +51,4 @@ export interface ClaimHeaderProps extends React.HTMLAttributes<HTMLElement> {
   /** View controls, right-aligned — keep them adjacent to the evidence. */
   children?: React.ReactNode;
 }
-export declare function ClaimHeader(props: ClaimHeaderProps): JSX.Element;
+export declare function ClaimHeader(props: ClaimHeaderProps): React.JSX.Element;

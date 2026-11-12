@@ -25,9 +25,13 @@ directory:
 
 ```bash
 npm ci
+python3 scripts/sync_manifest_metadata.py --write
 npm run build
 npm run build:check
 npm run test:release
+npm run test:source -- --out=api/source-contract-results.json
+npm run test:library -- --out=/tmp/meridian-library
+python scripts/project_compatibility.py
 python scripts/validate_release.py
 python scripts/export_release.py --check
 python scripts/export_release.py
@@ -46,6 +50,13 @@ contracts and `npm run test:browser` exercises the standalone reference. Set
 have their own synthetic-data scope; they do not replace workstation integration
 or live-backend validation.
 
+The full compatibility follow-up repaired the 67 original governance findings.
+All seven release gates now pass, with retained warnings reported separately.
+`api/project-compatibility.json` records all export/template/screen reviews and
+the executed browser matrix. Its validator rejects stale or incomplete proof;
+assembly requires supplied reviewer records and a complete executed report.
+See `tests/README.md` for reconstruction inputs and the source/test freeze rule.
+Package checks establish the scoped artifact and synthetic browser contracts.
 The additional `tests/optimistic-settlement-regression.mjs` and
 `tests/chart-accessibility-regression.mjs` cover observer reporting and the chart
 keyboard/data-alternative contracts. Run the full specimen matrix after the
@@ -108,6 +119,27 @@ After extraction, verify the payload against its internal inventory/SHA256SUMS.
 Checksums detect changed bytes; they do not independently establish authorship or
 publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
 
+## Accepting a re-export
+
+A fresh export from the design source replaces the vendored files and drops every
+local fix that was not carried upstream. Before accepting a new tree, rebuild and
+run the local-patch regressions, then re-apply whatever fails from
+[LOCAL_PATCHES.md](LOCAL_PATCHES.md):
+
+```bash
+npm run build
+MERIDIAN_CHROMIUM_PATH=/path/to/chromium npm run test:patches
+```
+
+## Hosted checks
+
+`.github/workflows/design-system-package.yml` runs on pull requests and `main` pushes that
+change this package or the dashboard asset synchronization script. `package-integrity` runs
+`build:check`, `release:check`, `test:release`, the dashboard asset projection check,
+`test:patches`, `test:agency` and `test:browser`. `release-governance` runs
+`scripts/validate_release.py` and the Python suite with no allowance for failure. Neither
+is a required check.
+
 ## Consumer dependencies
 
 - **Component bundle:** React is a consumer-supplied peer/global. Load React
@@ -115,7 +147,7 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   into an existing application.
 - **Styles:** preserve `styles.css` and every imported token stylesheet. Tokens
   are a dependency closure, not optional individual samples.
-- **Fonts:** `tokens/fonts.css` references IBM Plex Sans/Mono TTFs in
+- **Fonts:** `tokens/fonts.css` references local IBM Plex Sans/Mono files in
   `assets/fonts/`; the OFL licenses ship beside them. No Google Fonts request is
   required for this package's type system.
 - **Templates:** `.dc.html`/`x-dc`/`x-import` content retains its Design Component

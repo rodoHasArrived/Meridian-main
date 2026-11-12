@@ -53,13 +53,14 @@ export function NotificationCenter({ items = [], onMarkAllRead, onSelect, label 
   inject();
   const [open, setOpen] = React.useState(false);
   const rootRef = React.useRef(null);
+  const buttonRef = React.useRef(null);
   const unread = items.filter((n) => !n.read).length;
   React.useEffect(() => {
     if (!open) return;
     const onDown = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
     };
-    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape" && rootRef.current?.contains(e.target)) { e.stopPropagation(); setOpen(false); buttonRef.current?.focus(); } };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
     return () => {
@@ -69,7 +70,7 @@ export function NotificationCenter({ items = [], onMarkAllRead, onSelect, label 
   }, [open]);
   return (
     <div className="mds-notif" ref={rootRef}>
-      <button type="button" className="mds-notif__bell" aria-expanded={open} aria-haspopup="true"
+      <button ref={buttonRef} type="button" className="mds-notif__bell" aria-expanded={open} aria-haspopup="true"
         onClick={() => setOpen((o) => !o)}>
         {label}
         {unread > 0 && <span className="mds-notif__count">{unread}</span>}
@@ -85,6 +86,8 @@ export function NotificationCenter({ items = [], onMarkAllRead, onSelect, label 
           {items.length === 0 && <div className="mds-notif__empty">Nothing while you were away.</div>}
           {items.map((n) => (
             <div key={n.id} className={`mds-notif__item${n.read ? "" : " mds-notif__item--unread"}`}
+              role={onSelect ? "button" : undefined} tabIndex={onSelect ? 0 : undefined}
+              onKeyDown={(e) => { if (onSelect && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onSelect(n); } }}
               onClick={() => onSelect && onSelect(n)} style={onSelect ? { cursor: "pointer" } : undefined}>
               <span className={`mds-notif__dot mds-notif__dot--${n.tone || "info"}`} aria-hidden="true" />
               <span>

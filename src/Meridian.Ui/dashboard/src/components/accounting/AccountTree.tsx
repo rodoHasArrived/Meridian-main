@@ -262,6 +262,7 @@ export function AccountTree({
                   <button
                     type="button"
                     className="act__tw"
+                    tabIndex={-1}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggle(node.code);

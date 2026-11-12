@@ -20,6 +20,7 @@ button.mds-ichip:focus-visible{outline:var(--focus-ring);outline-offset:var(--fo
 .mds-ichip__sym{font-size:12px;font-weight:700;letter-spacing:.01em;color:var(--text-primary,#20252B);}
 .mds-ichip__venue{font-family:var(--font-body);font-size:9.5px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.05em;color:var(--text-muted,#606870);}
+.mds-ichip--selected .mds-ichip__venue{color:var(--text-secondary,#535C65);}
 .mds-ichip--sm{padding:1px 5px 1px 2px;gap:5px;}
 .mds-ichip--sm .mds-ichip__class{width:13px;height:13px;font-size:7.5px;}
 .mds-ichip--sm .mds-ichip__sym{font-size:11px;}

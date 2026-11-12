@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * ObjectModel — the seventeen financial objects Meridian manipulates, and the identity contract each
  * one answers. Instead of every workstation inventing its own identity header, a screen names the
@@ -89,9 +90,22 @@ export interface ObjectDescriptor {
 }
 /** Normalizes any record into the identity contract, so a header, a chip, a breadcrumb, and a
  *  search result describe the same object the same way. */
-export declare function describeObject(object: ObjectDescriptor): Required<ObjectDescriptor> & {
-  typeLabel: string; materialLabel: string;
-};
+export interface NormalizedObjectDescriptor {
+  type: string;
+  typeLabel: string;
+  identifierLabel: string;
+  id: string | number | null;
+  name: React.ReactNode;
+  context: { label: string; value: React.ReactNode }[];
+  condition: string | null;
+  asOf: React.ReactNode;
+  value: ObjectDescriptor["value"] | null;
+  version: string | number | null;
+  coverage: { text: string; complete: boolean | null } | null;
+  exceptions: { count: number; blocking: boolean; label?: string } | null;
+  materialLabel: string;
+}
+export declare function describeObject(object?: ObjectDescriptor): NormalizedObjectDescriptor;
 
 export interface ObjectHeaderProps extends ObjectDescriptor, Omit<React.HTMLAttributes<HTMLElement>, "id"> {
   /** Makes the evidence facet a button. */
@@ -102,7 +116,7 @@ export interface ObjectHeaderProps extends ObjectDescriptor, Omit<React.HTMLAttr
   dense?: boolean;
 }
 /** The identity contract, rendered. Facets the object does not carry are absent, never blank. */
-export declare function ObjectHeader(props: ObjectHeaderProps): JSX.Element;
+export declare function ObjectHeader(props: ObjectHeaderProps): React.JSX.Element;
 
 /** Bundle carrier — helpers for consumers of `_ds_bundle.js`. */
 export declare const ObjectHooks: {

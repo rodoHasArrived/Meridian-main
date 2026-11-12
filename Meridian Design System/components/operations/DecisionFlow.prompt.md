@@ -17,3 +17,11 @@ Own the ordered, guarded, version-aware progression from observation to committe
 ```
 
 `useDecisionFlow()` exposes `stepGuards`, `complete`, `goTo`, `unmet`, `versionChanged`. Do not let the flow become a wizard that hides evidence: the rail is navigation, not a funnel, and every step keeps its evidence and consequence surfaces reachable. Always declare `reversibility` on the consequence bar.
+
+No declared/current decision step means no consequential primary action. Completion rejects unknown or unmet steps; empty data preserves a known restored selection until steps return. Version changes invalidate dependent completion as before.
+
+Review state is bound to the canonical object type, id and version. Switching object identity clears all prior completion, guard results and transition history, including steps stable across versions. Pending validation or step-entry work from an older object binding cannot complete or transition the new binding.
+
+A rejected asynchronous `onValidate` result becomes a blocking validation-unavailable guard and cannot complete a step. Explicit `validate(stepId)` or a later completion attempt can revalidate after recovery. Superseded object-bound results remain ignored. Unavailable local storage does not prevent URL navigation or in-memory flow state.
+
+While asynchronous validation is in progress, the consequential primary waits. Only the newest result for a step may replace its guards or complete it; superseded results do not certify an empty guard set. A rejected step-entry callback produces blocking evidence and can recover through the existing step navigation. Pending validation/entry completions cannot settle a changed or unmounted object binding.

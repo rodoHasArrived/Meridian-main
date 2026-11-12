@@ -23,7 +23,11 @@ const FormatContext = React.createContext(null);
 
 // A resolved surface, with every formatter pre-bound to it — call sites pass values, never locales.
 function bind(surface) {
-  const base = { locale: surface.locale, currency: surface.currency };
+  let locale = surface.locale;
+  if (surface.numerals) {
+    try { locale = new Intl.Locale(locale, { numberingSystem: surface.numerals }).toString(); } catch { /* Formatter owns invalid-locale fallback. */ }
+  }
+  const base = { locale, currency: surface.currency, parens: surface.negative === "parens" };
   const withBase = (o) => ({ ...base, ...o });
   return {
     ...surface,
@@ -32,7 +36,7 @@ function bind(surface) {
     money: (v, o) => formatMoney(v, withBase(o)),
     moneyCompact: (v, o) => formatMoneyCompact(v, withBase(o)),
     compact: (v, o) => formatCompact(v, withBase(o)),
-    quantity: (v, max) => formatQuantity(v, max ?? surface.quantityDecimals, surface.locale),
+    quantity: (v, max) => formatQuantity(v, max ?? surface.quantityDecimals, base.locale),
     // The surface's default decimals is a fallback only: a per-call decimals or an effective tick wins.
     price: (v, o) => {
       const opts = withBase(o);
@@ -41,7 +45,7 @@ function bind(surface) {
     },
     percent: (v, o) => formatPercent(v, withBase(o)),
     bps: (v, o) => formatBps(v, withBase(o)),
-    delta: formatSignedDelta,
+    delta: (v, format) => formatSignedDelta(v, format || ((n) => formatNumber(n, base))),
     symbol: currencySymbol,
     decimalsFor: (instrument) => (instrument && instrument.tick != null ? decimalsForTick(instrument.tick) : surface.priceDecimals),
     glyphs: GLYPHS,
@@ -96,7 +100,7 @@ export function useFormat(overrides) {
     const keys = Object.keys(o).filter((k) => o[k] !== undefined && o[k] !== null);
     if (!keys.length) return base;
     return bind({ ...base, ...Object.fromEntries(keys.map((k) => [k, o[k]])) });
-  }, [ctx, o && o.locale, o && o.currency, o && o.negative, o && o.priceDecimals, o && o.quantityDecimals, o && o.tick]);
+  }, [ctx, o && o.locale, o && o.currency, o && o.negative, o && o.numerals, o && o.priceDecimals, o && o.quantityDecimals, o && o.tick]);
 }
 
 /** Hook carrier — `const { useFormat } = MeridianDesignSystem.FormatHooks`. */

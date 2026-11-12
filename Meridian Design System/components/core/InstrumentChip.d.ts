@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * InstrumentChip — the identity micro-chip for a tradable instrument: mono symbol, small-caps
  * venue, and an asset-class block letter on a washed semantic tint (E equity · F ETF ·
@@ -21,4 +22,4 @@ export interface InstrumentChipProps extends React.HTMLAttributes<HTMLElement> {
   /** Renders the chip as a real button. */
   onClick?: () => void;
 }
-export declare function InstrumentChip(props: InstrumentChipProps): JSX.Element;
+export declare function InstrumentChip(props: InstrumentChipProps): React.JSX.Element;

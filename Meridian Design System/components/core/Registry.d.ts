@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Registry — one lookup for every controlled vocabulary in the system
  * (`density · severity · timeRole · seriesRole · condition · environment ·
@@ -12,14 +13,20 @@
  * REGISTRY.density.review.row;     // 44
  * <RegistryTable />                // every vocabulary, documented
  */
-export declare const REGISTRY: Record<string, Record<string, any>>;
+export declare const Registry: {
+  density: typeof DENSITY; severity: typeof SEVERITY;
+  timeRole: Record<string, { label: string; note: string }>;
+  seriesRole: Record<string, string>; condition: Record<string, string>; environment: Record<string, string>;
+  objectType: Record<string, { label: string; note: string }>; authority: Record<string, string>;
+  readonly resolve: typeof resolve;
+};
 export declare const DENSITY: Record<"terminal" | "dense" | "standard" | "review", { label: string; row: number; body: number; aliases?: string[] }>;
 export declare const SEVERITY: Record<"ready" | "info" | "review" | "action" | "blocked", { label: string; rank: number }>;
-export declare const TIME_ROLES: Record<string, string>;
+export { TIME_ROLES } from "./TimeContext";
 /** Also reachable as `Registry.resolve` (non-enumerable, so vocabulary iteration is unaffected). */
-export declare function resolve(vocabulary: keyof typeof REGISTRY, value: string): string | null;
+export declare function resolve(vocabulary: Exclude<keyof typeof Registry, "resolve">, value: string): string | null;
 export interface RegistryTableProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Show one vocabulary instead of all. */
-  vocabulary?: keyof typeof REGISTRY;
+  vocabulary?: Exclude<keyof typeof Registry, "resolve">;
 }
-export declare function RegistryTable(props: RegistryTableProps): JSX.Element;
+export declare function RegistryTable(props: RegistryTableProps): React.JSX.Element;

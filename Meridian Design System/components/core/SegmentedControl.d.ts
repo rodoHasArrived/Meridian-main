@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Compact mutually-exclusive view switch — denser than `RadioGroup`, made for toolbars
  * (table/chart, Day/Week/Month, status filters). The active segment lifts onto a light
@@ -24,7 +25,7 @@ export interface SegmentedControlProps extends Omit<React.HTMLAttributes<HTMLDiv
   /** Stretch segments to fill the container width. @default false */
   fullWidth?: boolean;
 }
-export declare function SegmentedControl(props: SegmentedControlProps): JSX.Element;
+export declare function SegmentedControl(props: SegmentedControlProps): React.JSX.Element;
 
 /** 3.5 · A real radio group: role="radiogroup"/"radio" + aria-checked, roving tabindex (one tab
  *  stop), Arrow/Home/End move AND select. Migration note: was role="tablist". */

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * FilterBuilder — structured field / operator / value query rows, AND-combined. Where
  * `Toolbar` does free text + facet chips, FilterBuilder composes explicit
@@ -35,7 +36,7 @@ export interface FilterRow {
   /** Upper bound for "between". */
   value2?: string;
 }
-export interface FilterBuilderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface FilterBuilderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
   fields: FilterField[];
   /** Controlled rows. */
   value?: FilterRow[];
@@ -52,4 +53,4 @@ export interface FilterBuilderProps extends React.HTMLAttributes<HTMLDivElement>
   /** @default "+ Add filter" */
   addLabel?: string;
 }
-export declare function FilterBuilder(props: FilterBuilderProps): JSX.Element;
+export declare function FilterBuilder(props: FilterBuilderProps): React.JSX.Element;

@@ -4,6 +4,7 @@
 // reviewed → certified; each step is a named signature bound to the balance it vouched for, so a
 // later movement voids the signature instead of letting it stand over a different number.
 import React from "react";
+import { knownAmount } from "./knownAmounts.js";
 import { formatMoney } from "../core/format.js";
 
 export const ASSURANCE_STAGES = [
@@ -37,12 +38,22 @@ export function assuranceState(record, currentBalance) {
   };
 }
 
+// Historical stage lookup may omit a current value. Current close coverage may not.
+function currentAssuranceState(record,balance) {
+  const value=knownAmount(balance);
+  const historical=assuranceState(record);
+  if(value===null)return{...historical,stage:"unprepared",voided:false,live:[],currentMissing:true};
+  const state=assuranceState(record,value);
+  if(state.live.some(signature=>knownAmount(signature.balance)===null))return{...state,stage:"unprepared",voided:false,live:[],unbound:true};
+  return state;
+}
+
 /** Coverage of a set of accounts — the lock gate reads this, not task completion. */
 export function assuranceCoverage(accounts, records, currentBalances = {}, { requiredStage = "certified", materialOnly = true } = {}) {
   const need = STAGE[requiredStage].rank;
   const rows = accounts.map((a) => {
-    const st = assuranceState(records[a.code], currentBalances[a.code]);
-    return { ...a, stage: st.stage, voided: st.voided, covered: STAGE[st.stage].rank >= need };
+    const st = currentAssuranceState(records[a.code], currentBalances[a.code]);
+    return { ...a, stage: st.stage, voided: st.voided, currentMissing:!!st.currentMissing,unbound:!!st.unbound,covered: STAGE[st.stage].rank >= need };
   });
   const inScope = materialOnly ? rows.filter((r) => r.material) : rows;
   const uncovered = inScope.filter((r) => !r.covered);
@@ -77,7 +88,7 @@ function inject() {
 .mds-asr[data-stage="certified"]{color:var(--green-dim,#225840);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.1))}
 .mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B54B42)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
-.mds-cert{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-data,monospace);font-size:11.5px}
+.mds-cert{overflow:auto;max-width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-data,monospace);font-size:11.5px}
 .mds-cert table{width:100%;border-collapse:collapse}
 .mds-cert th{padding:7px 10px;text-align:left;font:600 9.5px var(--font-body);font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border-strong,#AAA49A)}
 .mds-cert th.c,.mds-cert td.c{text-align:center;width:88px}
@@ -112,21 +123,21 @@ export function CertificationMatrix({ accounts = [], records = {}, balances = {}
   inject();
   const cov = assuranceCoverage(accounts, records, balances, { requiredStage, materialOnly: false });
   const stages = ASSURANCE_STAGES.slice(1);
-  return <div className={`mds-cert${className ? " " + className : ""}`} role="region" aria-label={caption} {...rest}>
+  return <div className={`mds-cert${className ? " " + className : ""}`} role="region" aria-label={caption} tabIndex={0} {...rest}>
     <table>
       <thead><tr><th scope="col">Account</th><th scope="col" style={{ textAlign: "right" }}>Balance</th>{stages.map((s) => <th key={s.id} scope="col" className="c">{s.label}</th>)}<th scope="col">Last signature</th></tr></thead>
       <tbody>
         {cov.rows.map((r) => {
-          const st = assuranceState(records[r.code], balances[r.code]);
+          const st = currentAssuranceState(records[r.code], balances[r.code]);
           const top = st.signatures[st.signatures.length - 1];
           const rank = STAGE[st.stage].rank;
           return <tr key={r.code} data-click={onOpenAccount ? "true" : undefined} tabIndex={onOpenAccount ? 0 : undefined}
             onClick={onOpenAccount ? () => onOpenAccount(r.code) : undefined}
             onKeyDown={onOpenAccount ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpenAccount(r.code); } } : undefined}>
             <td>{r.code} · {r.name}{r.material ? <span className="mds-cert__mat" title="Material — required for lock">MATERIAL</span> : null}</td>
-            <td className="r">{formatMoney(Math.abs(balances[r.code] ?? 0), { currency })}</td>
-            {stages.map((s) => <td key={s.id} className="c"><span className="mds-cert__dot" data-on={rank >= s.rank ? "true" : undefined} data-void={st.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : undefined} aria-label={`${s.label}: ${rank >= s.rank ? "done" : st.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}`} /></td>)}
-            <td style={{ color: "var(--text-secondary)" }}>{top ? `${top.actor} · ${top.at.replace("T", " ").slice(0, 16)}Z${st.voided ? " · void — balance moved" : ""}` : "—"}</td>
+            <td className="r">{knownAmount(balances[r.code])===null?"Missing":formatMoney(Math.abs(knownAmount(balances[r.code])), { currency })}</td>
+            {stages.map((s) => <td key={s.id} className="c"><span role="img" className="mds-cert__dot" data-on={rank >= s.rank ? "true" : undefined} data-void={st.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : undefined} aria-label={`${s.label}: ${rank >= s.rank ? "done" : st.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}`} /></td>)}
+            <td style={{ color: "var(--text-secondary)" }}>{top ? `${top.actor} · ${top.at.replace("T", " ").slice(0, 16)}Z${st.currentMissing?" · current balance missing":st.unbound?" · balance not bound":st.voided ? " · void — balance moved" : ""}` : "—"}</td>
           </tr>;
         })}
       </tbody>
@@ -134,6 +145,7 @@ export function CertificationMatrix({ accounts = [], records = {}, balances = {}
     <div className="mds-cert__foot">
       <span><b>{cov.rows.filter((r) => r.covered).length}</b> of {cov.rows.length} accounts {STAGE[requiredStage].label.toLowerCase()}</span>
       <span><b>{cov.rows.filter((r) => r.material && r.covered).length}</b> of {cov.rows.filter((r) => r.material).length} material</span>
+      {cov.rows.some(row=>row.currentMissing)?<span>{cov.rows.filter(row=>row.currentMissing).length} current balances missing</span>:null}
       {cov.rows.some((r) => r.voided) ? <span style={{ color: "var(--red-dim,#883832)" }}><b>{cov.rows.filter((r) => r.voided).length}</b> signature{cov.rows.filter((r) => r.voided).length === 1 ? "" : "s"} void — balance moved since signing</span> : null}
     </div>
   </div>;

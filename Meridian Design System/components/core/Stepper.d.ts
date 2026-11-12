@@ -52,4 +52,4 @@ export interface StepperProps extends React.OlHTMLAttributes<HTMLOListElement> {
  *   onStepChange={setStep}
  * />
  */
-export declare function Stepper(props: StepperProps): JSX.Element;
+export declare function Stepper(props: StepperProps): React.JSX.Element;

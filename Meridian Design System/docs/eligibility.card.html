@@ -1,5 +1,6 @@
 <!-- @dsCard group="Documentation" viewport="1280x1240" name="Template eligibility" subtitle="Which primitives each of the 27 screens actually owes — 270 cells, 152 eligible, and the adoption figure recomputed from its own rows" -->
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Template eligibility</title><link rel="stylesheet" href="../styles.css"><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Template eligibility</title><link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css"><style>
 body{margin:0;padding:22px 24px 44px;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px}
 h1{font:600 20px/28px var(--font-display,var(--font-body));color:var(--text-primary);margin:0 0 6px}
 p.lede{margin:0 0 16px;max-width:96ch;text-wrap:pretty}
@@ -41,7 +42,7 @@ dl.rz dd{margin:0;text-wrap:pretty}
 .note{border-left:3px solid var(--brand-signal);background:var(--bg-medium);padding:11px 14px;margin-top:22px;max-width:96ch;line-height:19px;text-wrap:pretty}
 .two{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
 @media(max-width:1000px){.two{grid-template-columns:1fr}}
-</style></head><body>
+</style></head><body class="mds-specimen">
 <h1>Template eligibility</h1>
 <p class="lede">Requiring every operating-language primitive on every screen would be consistency theater, so adoption is measured against the cells that carry a design judgment: <b>eligible templates conforming ÷ templates eligible</b>. Every one of the 27 templates is on the record — <code>C-16</code> in the static gate fails the release if a new screen ships unclassified, because an unclassified template is absent from both terms and would move the printed percentage without anything having been migrated. Judgment: <code>guidelines/TEMPLATE_CONTRACT.md</code>. Record: <code>api/template-eligibility.json</code>. Gate: <code>scripts/check_template_eligibility.py</code>.</p>
 <div class="tiles" id="tiles"></div>

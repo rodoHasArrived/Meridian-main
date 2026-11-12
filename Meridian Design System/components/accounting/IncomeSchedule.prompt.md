@@ -10,3 +10,5 @@ const rows = Money.effectiveYieldSchedule({
 ```
 
 Selecting a period should drive the journal preview and `RollforwardTrace` — the schedule is the navigation, not a report. Rename the columns for premium lots or equity income; keep one row per period and never blank a cell (a period with no accretion shows `—` via the zero-dash rule).
+
+Unavailable source amounts render Missing and prevent a partial numeric column total. Actual zero retains the accounting dash. The currency prop is passed to the formatter as well as the totals label.

@@ -18,7 +18,7 @@ function inject() {
 .mds-trust__item--blocked{border-color:var(--state-danger-bd,rgba(181,75,66,.35));border-left-color:var(--state-danger-fg,#883832);background:var(--state-danger-bg,rgba(181,75,66,.10));}
 .mds-trust__item--pending{border-color:var(--state-pending-bd,rgba(122,107,82,.34));border-left-color:var(--state-pending-fg,#5C503E);background:var(--state-pending-bg,rgba(122,107,82,.10));}
 .mds-trust__label{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.05em;color:var(--text-muted,#606870);white-space:nowrap;}
+  letter-spacing:.05em;color:var(--text-primary,#20252B);white-space:nowrap;}
 .mds-trust__value{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#20252B);white-space:nowrap;}
 `;
   const el = document.createElement("style");

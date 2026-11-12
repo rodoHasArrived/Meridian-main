@@ -42,6 +42,17 @@ export function Popover({
   inject();
   const rootRef = useRef(null);
   const [style, setStyle] = useState({});
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement;
+    const panel = rootRef.current;
+    return () => {
+      if (document.activeElement === document.body || panel?.contains(document.activeElement)) {
+        const target = anchorEl || previous;
+        if (target?.isConnected) target.focus();
+      }
+    };
+  }, [open, anchorEl]);
 
   // useLayoutEffect: measure + position synchronously before paint, so the popover
   // never flashes at (0,0) on open before the position effect fires.

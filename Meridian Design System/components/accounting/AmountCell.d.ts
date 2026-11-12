@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Money primitive — a single right-aligned mono amount. Encodes sign, currency, fixed or
  * ISO-minor-unit decimals, accounting parentheses, zero-as-dash, an unsigned Dr/Cr side
@@ -52,10 +53,10 @@ export interface AmountCellProps {
   /** Metric emphasis — 600 weight at 1.25em. @default false */
   emphasis?: boolean;
   /** Wrapper element. @default "span" */
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
   style?: React.CSSProperties;
 }
-export declare function AmountCell(props: AmountCellProps): JSX.Element;
+export declare function AmountCell(props: AmountCellProps): React.JSX.Element;
 
 /** True when a value is an envelope-shaped object (`value` plus at least one facet). */
 export declare function isEnvelopeValue(v: unknown): boolean;

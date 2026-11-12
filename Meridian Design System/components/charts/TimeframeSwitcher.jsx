@@ -69,7 +69,20 @@ export function TimeframeSwitcher({
   const opts = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   const isControlled = value != null;
   const [internal, setInternal] = React.useState(defaultValue != null ? defaultValue : (opts[0] || {}).value);
-  const current = isControlled ? value : internal;
+  const requested = isControlled ? value : internal;
+  const current = opts.some(option => option.value === requested) ? requested : opts[0]?.value;
+  const refs = React.useRef([]);
+  const move = (event, index) => {
+    let next;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % opts.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + opts.length) % opts.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = opts.length - 1;
+    else return;
+    event.preventDefault();
+    refs.current[next]?.focus();
+    select(opts[next].value);
+  };
   const select = (v) => {
     if (!isControlled) setInternal(v);
     onChange && onChange(v);
@@ -77,8 +90,9 @@ export function TimeframeSwitcher({
   return (
     <div role="radiogroup" aria-label="Timeframe"
       className={`mds-tf mds-tf--${size}${className ? " " + className : ""}`} {...rest}>
-      {opts.map((o) => (
+      {opts.map((o, index) => (
         <button key={o.value} type="button" role="radio" aria-checked={o.value === current}
+          ref={node => { refs.current[index] = node; }} tabIndex={o.value === current ? 0 : -1} onKeyDown={event => move(event, index)}
           className={`mds-tf__btn${o.value === current ? " mds-tf__btn--active" : ""}`}
           onClick={() => select(o.value)}>
           {o.label}
@@ -114,10 +128,11 @@ export function AsOfControl({
     if (asOf != null) setFrozen(new Date(asOf));
   }, [asOf]);
 
+  const displayedFrozen=asOf!=null?new Date(asOf):frozen;
   const set = (nextMode, nextAsOf) => {
     if (!isControlled) setInternalMode(nextMode);
-    if (nextAsOf) setFrozen(nextAsOf);
-    onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? (nextAsOf || frozen) : null });
+    if (nextAsOf&&asOf==null) setFrozen(nextAsOf);
+    onChange && onChange({ mode: nextMode, asOf: nextMode === "asof" ? (nextAsOf || displayedFrozen) : null });
   };
 
   const live = mode === "live";
@@ -136,12 +151,12 @@ export function AsOfControl({
         <React.Fragment>
           <span className="mds-asof__label">AS-OF</span>
           <input type="datetime-local" className="mds-asof__input" aria-label="As-of time (UTC)"
-            value={toLocalInput(frozen)}
+            value={toLocalInput(displayedFrozen)}
             onChange={(e) => {
               const d = new Date(e.target.value + "Z");
               if (!isNaN(d.getTime())) set("asof", d);
             }} />
-          <span className="mds-asof__time" title={utcStamp(frozen, true)}>UTC</span>
+          <span className="mds-asof__time" title={utcStamp(displayedFrozen, true)}>UTC</span>
           <button type="button" className="mds-asof__btn" onClick={() => set("live")}>Return to live</button>
         </React.Fragment>
       )}

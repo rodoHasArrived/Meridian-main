@@ -64,7 +64,7 @@ export function Pagination({
   const handleJump = () => {
     const page = Math.max(1, Math.min(totalPages, parseInt(jumpValue, 10) || 1));
     setJumpValue(String(page));
-    onPageChange(page);
+    if (page !== currentPage) onPageChange(page);
   };
 
   // Calculate page range to display

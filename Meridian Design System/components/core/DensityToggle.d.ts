@@ -29,4 +29,4 @@ export interface DensityToggleProps {
   fullWidth?: boolean;
   className?: string;
 }
-export declare function DensityToggle(props: DensityToggleProps): JSX.Element;
+export declare function DensityToggle(props: DensityToggleProps): React.JSX.Element;

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Thin determinate / indeterminate progress bar — the system's ONE bar: batch operations,
  * reconciliation runs, sync status, and any bounded ratio (utilisation, coverage, funded
@@ -21,4 +22,4 @@ export interface ProgressBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Track thickness. @default "md" */
   size?: "sm" | "md" | "lg";
 }
-export declare function ProgressBar(props: ProgressBarProps): JSX.Element;
+export declare function ProgressBar(props: ProgressBarProps): React.JSX.Element;

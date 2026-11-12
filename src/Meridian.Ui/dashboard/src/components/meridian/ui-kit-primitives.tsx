@@ -129,6 +129,8 @@ export interface DenseDataTableProps<T> {
   emptyText: string;
   ariaLabel: string;
   tableId?: string;
+  /** Retains a screen's minimum-width or layout contract inside the shared scroll area. */
+  tableClassName?: string;
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
@@ -185,6 +187,7 @@ function DenseDataTableComponent<T>({
   emptyText,
   ariaLabel,
   tableId,
+  tableClassName,
   caption,
   sort: controlledSort = null,
   onToggleSort,
@@ -444,7 +447,7 @@ function DenseDataTableComponent<T>({
     <table
       id={tableId}
       role={exposesExpandedRows ? "treegrid" : undefined}
-      className="dense-data-table"
+      className={cn("dense-data-table", tableClassName)}
       aria-label={ariaLabel}
       aria-describedby={selectableRows ? keyboardInstructionsId : undefined}
       aria-rowcount={isVirtual ? rows.length + 1 : undefined}

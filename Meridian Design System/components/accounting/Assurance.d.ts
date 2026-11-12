@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Assurance — certification as carried state on a BALANCE (account × period × basis), not only on
  * a close. Stages climb unprepared → prepared → reviewed → certified, one at a time; each signature
@@ -49,7 +50,7 @@ export interface AssuranceChipProps extends React.HTMLAttributes<HTMLSpanElement
   stage?: AssuranceStageId;
   showActor?: boolean;
 }
-export declare function AssuranceChip(props: AssuranceChipProps): JSX.Element;
+export declare function AssuranceChip(props: AssuranceChipProps): React.JSX.Element;
 
 export interface CertificationMatrixProps extends React.HTMLAttributes<HTMLDivElement> {
   accounts: AssuranceAccount[];
@@ -62,7 +63,7 @@ export interface CertificationMatrixProps extends React.HTMLAttributes<HTMLDivEl
   caption?: string;
 }
 /** Accounts × stages — the close's real progress bar. */
-export declare function CertificationMatrix(props: CertificationMatrixProps): JSX.Element;
+export declare function CertificationMatrix(props: CertificationMatrixProps): React.JSX.Element;
 
 export declare const Assurance: {
   STAGES: typeof ASSURANCE_STAGES; state: typeof assuranceState; coverage: typeof assuranceCoverage; sign: typeof signAssurance;

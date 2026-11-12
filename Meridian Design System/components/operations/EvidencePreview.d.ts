@@ -1,5 +1,6 @@
+import * as React from "react";
 export type EvidenceType = "statement" | "confirmation" | "extract" | "custodian" | "pricing" | "model" | "policy" | "approval" | "correspondence" | "snapshot" | "document" | (string & {});
-export interface EvidencePreviewProps extends React.HTMLAttributes<HTMLElement> {
+export interface EvidencePreviewProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   title: React.ReactNode;
   source?: React.ReactNode;
   sourceSystem?: React.ReactNode;
@@ -24,7 +25,8 @@ export interface EvidencePreviewProps extends React.HTMLAttributes<HTMLElement> 
   extractionStatus?: React.ReactNode;
   completeness?: React.ReactNode;
   confidence?: number;
-  /** One of the eleven data conditions. */
+  /** One of the eleven data conditions. Restricted withholds excerpt, image, text equivalent,
+   * extraction details and custom metadata; opening and comparing remain unavailable. */
   condition?: string;
   superseded?: boolean;
   supersededBy?: React.ReactNode;
@@ -47,4 +49,4 @@ export interface EvidencePreviewProps extends React.HTMLAttributes<HTMLElement> 
   onLink?: () => void;
   onMarkSuperseded?: () => void;
 }
-export declare function EvidencePreview(props: EvidencePreviewProps): JSX.Element;
+export declare function EvidencePreview(props: EvidencePreviewProps): React.JSX.Element;

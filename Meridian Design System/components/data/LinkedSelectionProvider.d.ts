@@ -1,3 +1,4 @@
+import type React from "react";
 export interface LinkedSelection { id: string; value?: unknown; source?: string; [key: string]: unknown; }
 export interface LinkedSelectionMeta { source?: string; force?: boolean; replaceHistory?: boolean; }
 export interface LinkedSelectionApi {
@@ -45,7 +46,7 @@ export interface LinkedSelectionProviderProps {
   historyLimit?: number;
   children?: React.ReactNode;
 }
-export declare function LinkedSelectionProvider(props: LinkedSelectionProviderProps): JSX.Element;
+export declare function LinkedSelectionProvider(props: LinkedSelectionProviderProps): React.JSX.Element;
 export declare function useLinkedSelection(scope?: string): LinkedSelectionApi;
 /** Bundle carrier. The compiler exposes only capitalized exports, so consumers of
  *  `_ds_bundle.js` read the hook through this object. */
@@ -57,4 +58,4 @@ export declare function LinkedSelectionTarget(props: {
   /** Position in the provider's `items` — enables shift-click range extension. */
   index?: number;
   as?: React.ElementType;
-} & Record<string, any>): JSX.Element;
+} & Record<string, any>): React.JSX.Element;

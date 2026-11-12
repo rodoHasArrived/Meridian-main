@@ -9,7 +9,7 @@ const SEVERITY={blocked:{label:"Blocked",tone:"exception",mark:"▲"},action:{la
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","resolution-drawer");el.textContent=`
 .mds-res{display:flex;flex-direction:column;min-height:420px;background:var(--surface-overlay,var(--surface-overlay-base,#fff));border-left:1px solid var(--border-strong,#AAA49A);font-family:var(--font-body);color:var(--text-secondary,#535C65)}
 .mds-res--inline{border:1px solid var(--border,#D2CDC3)}
-.mds-res__back{display:none}
+.mds-res__back{display:flex;align-items:center;gap:6px;min-height:32px;padding:7px 12px;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--surface-recessed,var(--bg-medium,#EBE8E1));font:10px var(--font-data,monospace);color:var(--interaction-link,#2A5F96);cursor:pointer;width:100%;text-align:left}.mds-res__back:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-res__head{padding:11px 12px;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-res__titlerow{display:flex;align-items:flex-start;gap:8px}
 .mds-res__head h3{margin:0;font-size:14px;color:var(--text-primary,#20252B)}
@@ -67,9 +67,11 @@ export function ResolutionDrawer({
   const uid = React.useId();
   inject();
   const sev=SEVERITY[String(severity).toLowerCase()]||SEVERITY.exception;
-  const[localReason,setLocalReason]=React.useState("");
-  const reasonValue=reason!==undefined?reason:localReason;
-  const setReason=v=>{if(reason===undefined)setLocalReason(v);onReasonChange?.(v)};
+  const reasonScope=JSON.stringify([caseId??null,version??null]);
+  const[localReason,setLocalReason]=React.useState(()=>({scope:reasonScope,value:""}));
+  const reasonValue=reason!==undefined?reason:localReason.scope===reasonScope?localReason.value:"";
+  React.useEffect(()=>{setLocalReason(previous=>previous.scope===reasonScope?previous:{scope:reasonScope,value:""})},[reasonScope]);
+  const setReason=v=>{if(reason===undefined)setLocalReason({scope:reasonScope,value:v});onReasonChange?.(v)};
   const own=ownership||(assignee||sla?{assignee,due:sla}:null);
   const ownRows=own?[["Assignee",own.assignee],["Team",own.team],["Due",own.due],["Age",own.age],["Escalation",own.escalation],["Prior handoffs",own.handoffs]].filter(([,v])=>v!==undefined&&v!==null&&v!==""):[];
   const canResolve=!requireReason||reasonValue.trim().length>0;
@@ -95,11 +97,11 @@ export function ResolutionDrawer({
       </>:null}</Section>
       <Section title="Root cause">{rootCauses?.length?<div className="mds-res__select">
         <label htmlFor={`${uid}-rootcause`}>Classification</label>
-        <select id={`${uid}-rootcause`} value={typeof rootCause==="string"?rootCause:""} onChange={e=>onRootCauseChange?.(e.target.value)}>
+        <select disabled={!onRootCauseChange} id={`${uid}-rootcause`} value={typeof rootCause==="string"?rootCause:""} onChange={e=>onRootCauseChange?.(e.target.value)}>
           <option value="">Not classified</option>
           {rootCauses.map(o=>{const v=typeof o==="string"?o:o.value;const l=typeof o==="string"?o:o.label;return <option value={v} key={v}>{l}</option>})}
         </select>
-        {onRootCauseNoteChange!==undefined||rootCauseNote!==undefined?<><label htmlFor={`${uid}-rootnote`}>{rootCauseNoteLabel}</label><textarea id={`${uid}-rootnote`} value={rootCauseNote||""} onChange={e=>onRootCauseNoteChange?.(e.target.value)} placeholder="Optional detail beyond the classification."/></>:null}
+        {onRootCauseNoteChange!==undefined||rootCauseNote!==undefined?<><label htmlFor={`${uid}-rootnote`}>{rootCauseNoteLabel}</label><textarea readOnly={!onRootCauseNoteChange} id={`${uid}-rootnote`} value={rootCauseNote||""} onChange={e=>onRootCauseNoteChange?.(e.target.value)} placeholder="Optional detail beyond the classification."/></>:null}
       </div>:rootCause?<div className="mds-res__prose">{rootCause}</div>:null}</Section>
       <Section title="Proposed correction">{correction||correctionFacts.length?<>
         {correction?<div className="mds-res__prose">{correction}</div>:null}
@@ -110,7 +112,7 @@ export function ResolutionDrawer({
         {impactItems.map((f,i)=><div className="mds-res__field" data-flag={f.flag?"true":undefined} key={f.label||i}><span>{f.label}</span><span>{f.value}</span></div>)}
       </>:null}</Section>
       <Section title="Ownership and SLA">{ownRows.length?ownRows.map(([k,v])=><div className="mds-res__field" key={k}><span>{k}</span><span>{v}</span></div>):null}</Section>
-      {requireReason?<section className="mds-res__section"><h4>{reasonLabel}</h4><div className="mds-res__select"><textarea aria-label={reasonLabel} value={reasonValue} onChange={e=>setReason(e.target.value)} placeholder="Required before this exception can be resolved."/></div></section>:null}
+      {requireReason?<section className="mds-res__section"><h4>{reasonLabel}</h4><div className="mds-res__select"><textarea readOnly={reason!==undefined&&!onReasonChange} aria-label={reasonLabel} value={reasonValue} onChange={e=>setReason(e.target.value)} placeholder="Required before this exception can be resolved."/></div></section>:null}
       <Section title="Audit details">{audit}</Section>
     </div>
     <footer className="mds-res__foot">
@@ -118,7 +120,7 @@ export function ResolutionDrawer({
       <span className="spacer"/>
       {onRequestEvidence?<Button size="sm" variant="ghost" onClick={onRequestEvidence}>Request evidence</Button>:null}
       {onAssign?<Button size="sm" variant="ghost" onClick={onAssign}>Assign</Button>:null}
-      {secondaries.map(k=><Button size="sm" variant="ghost" key={k} onClick={actions[k].fn} disabled={actions[k].disabled}>{actions[k].label}</Button>)}
+      {secondaries.map(k=><Button size="sm" variant="ghost" key={k} onClick={()=>actions[k].fn(reasonValue)} disabled={actions[k].disabled}>{actions[k].label}</Button>)}
       {primaryKey?<Button size="sm" onClick={()=>actions[primaryKey].fn(reasonValue)} disabled={actions[primaryKey].disabled}>{actions[primaryKey].label}</Button>:null}
     </footer>
   </aside>;

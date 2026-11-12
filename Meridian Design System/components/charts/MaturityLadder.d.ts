@@ -1,3 +1,4 @@
+import * as React from "react";
 export type MaturityMode = "amount" | "percent";
 export interface MaturityBucket {
   id?: string;
@@ -42,4 +43,8 @@ export interface MaturityLadderProps extends Omit<React.HTMLAttributes<HTMLDivEl
   description?: string;
 }
 export declare const MATURITY_BUCKETS: string[];
-export declare function MaturityLadder(props: MaturityLadderProps): JSX.Element;
+export declare function MaturityLadder(props: MaturityLadderProps): React.JSX.Element;
+
+/** Explicit missing/not-applicable/restricted or invalid required amounts render
+ * an unavailable result without row labels, numeric bars, or derived table totals.
+ * Restore usable inputs to recover the ordinary view. */

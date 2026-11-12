@@ -6,6 +6,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { Input } from "@/components/ui/input";
 
 export function focusManualJournalCell(lineId: string, column: string): void {
   const existing = document.getElementById(`manual-je-${column}-${lineId}`);
@@ -173,7 +174,7 @@ function DimensionField({ label, value, placeholder, onChange }: { label: string
   return (
     <label className="space-y-1">
       <span className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</span>
-      <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
+      <Input className="min-h-9 w-full font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
     </label>
   );
 }
