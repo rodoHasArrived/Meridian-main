@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IUnitizedLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IUnitizedLot</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L12).
+
+The one lot shape shared by execution, backtesting, the ledger and face-value accounting: a decimal quantity, what one unit of it measures, and the contract multiplier that scales it to economic exposure. A face-value lot is the SecurityLotUnitKind.FaceValue case with a multiplier of one; a listed-option lot is the SecurityLotUnitKind.Contracts case carrying the option&#x27;s multiplier.
+
+```csharp
+public interface IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>decimal Quantity { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L15) | Lot quantity in UnitKind units. Never fractional-unsafe: always decimal. |
+| <code>SecurityLotUnitKind UnitKind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L18) | What one unit of Quantity measures. |
+| <code>decimal Multiplier { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L21) | The factor that scales one unit to economic exposure (1 unless the unit is a contract). |
+
 ## LotQuantity
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.LotQuantity</code>. Kind: `record struct`.
@@ -812,16 +832,4 @@ The set of contracts under one master agreement whose exposures net against each
 
 ```csharp
 public sealed record OtcNettingSetDto(Guid NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, string Name, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcNettingSetViewDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:138](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L138).
-
-A netting set with the agreements it sits under and the contracts it holds.
-
-```csharp
-public sealed record OtcNettingSetViewDto(OtcNettingSetDto NettingSet, OtcMasterAgreementDto MasterAgreement, OtcCollateralAgreementDto? CollateralAgreement, IReadOnlyList<OtcContractDto> Contracts);
 ```
