@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "1b8957264317480259f21e467b946d09958e579770ea127a08eca7b3a549e94a",
+  "database_fingerprint": "3a6a2c18015a4735c7483942c0bd0a6824cccac2dd2412fe1707d89282eb1154",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -20639,8 +20639,16 @@
       "object": "column:security_master.security_raw_prices.price_as_of"
     },
     {
+      "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+      "object": "column:security_master.security_raw_prices.price_exact"
+    },
+    {
       "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
       "object": "column:security_master.security_raw_prices.price_unit"
+    },
+    {
+      "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+      "object": "column:security_master.security_raw_prices.quotation_evidence"
     },
     {
       "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
@@ -21649,6 +21657,14 @@
     {
       "fingerprint": "019cdbe71066a79d001e9c26f52150b1c2bf3b744fc8fd44ce648b91d413d4eb",
       "object": "comment:column:security_master.security_identifier_revisions.history_available_from"
+    },
+    {
+      "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+      "object": "comment:column:security_master.security_raw_prices.price_exact"
+    },
+    {
+      "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+      "object": "comment:column:security_master.security_raw_prices.quotation_evidence"
     },
     {
       "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
@@ -32247,7 +32263,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+      "fingerprint": "b2c9db4190b1e42632076ce3ba13beaae1a1985dd15304c3d6d725d7a5f893ff",
       "object": "schema:security_master"
     },
     {
@@ -33143,7 +33159,7 @@
       "object": "table:security_master.security_pricing_hierarchy_history"
     },
     {
-      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+      "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
       "object": "table:security_master.security_raw_prices"
     },
     {
@@ -132708,6 +132724,18 @@
           "object_type": "column"
         },
         {
+          "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+          "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+          "object": "security_master.security_raw_prices.price_exact",
+          "object_type": "column"
+        },
+        {
+          "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+          "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+          "object": "security_master.security_raw_prices.quotation_evidence",
+          "object_type": "column"
+        },
+        {
           "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
           "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
           "object": "security_master.structured_credit_projection.attachment_point",
@@ -137335,7 +137363,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+      "fingerprint": "b2c9db4190b1e42632076ce3ba13beaae1a1985dd15304c3d6d725d7a5f893ff",
       "foreign_tables": [],
       "functions": [
         {
@@ -178422,6 +178450,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "quotation_evidence",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "price_exact",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -178493,7 +178553,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+          "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -227276,6 +227336,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "quotation_evidence",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "price_exact",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -227347,7 +227439,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+          "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
