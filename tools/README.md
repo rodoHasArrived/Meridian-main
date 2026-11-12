@@ -12,6 +12,8 @@ If you are new to the project, start here instead of opening individual Python f
   Scripts for roadmap governance checks and roadmap-data validation/rendering.
 - `tools/source_docs/`  
   Scripts for source-module README coverage checks and deterministic generated source-doc outputs.
+- `tools/source_reference/`
+  Lexical public C# declaration extraction for the [Source API Reference](../docs/reference/source-api/README.md).
 - `tools/schema_control/`
   PostgreSQL migration auditing, `pg_catalog` extraction, data-object cataloguing, policy checks,
   and deterministic schema documentation.
@@ -20,6 +22,7 @@ If you are new to the project, start here instead of opening individual Python f
 
 - Use **`tools/roadmap/`** if you are working on roadmap phases, roadmap evidence files, or roadmap governance checks.
 - Use **`tools/source_docs/`** if you are working on source-module docs under `docs/source/` and generated source docs under `docs/generated/source/`.
+- Use **`tools/source_reference/`** for source API declarations, XML summaries, public member signatures, and enum values; run `python3 build/scripts/docs/render-public-type-reference.py` to regenerate its reference pages.
 - Use **`tools/schema_control/`** when adding or reviewing PostgreSQL migrations, database policies,
   public DTOs/data contracts, or generated database diagrams.
 

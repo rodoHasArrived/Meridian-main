@@ -262,3 +262,13 @@ The larger combined regression slice is being rerun after correcting the composi
 service-collection interface declaration and a nullable native-posting actor boundary. New
 reconciliation support imports use the extracted DataIntegration contract namespace. Earlier
 failed builds are not passing test results.
+
+### Final local validation before documentation-only synchronization
+
+The combined application, startup, reporting, intercompany, attestation and security slice passed
+1,582 of 1,582 tests with zero skips. Subsequent formatting changed whitespace in three test
+files only; their assertions are unchanged. The synchronized inventory contains 329 PNGs
+(90,922,143 bytes), exactly matching upstream `4d1059e0fd03dcf0230f49db06d67149000a3447`.
+The later `f65ab80d30d0bb7cff6279ad0a2f61fe17ec0871` synchronization changes documentation
+and tooling only, with no executable source changes. Required hosted checks on the final
+published head remain the merge authority.
