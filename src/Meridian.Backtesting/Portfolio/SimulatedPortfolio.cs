@@ -1197,9 +1197,6 @@ internal sealed class SimulatedPortfolio
         var ts = fill.FilledAt;
         var symbol = fill.Symbol;
         var accountId = account.Account.AccountId;
-        var securitiesAccount = _chart.Resolve(LedgerAccountRole.Securities, accountId, symbol);
-        var shortPayableAccount = _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, symbol);
-        var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
         var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId);
 
         var longBuyQty = qty > 0
@@ -1208,103 +1205,47 @@ internal sealed class SimulatedPortfolio
 
         if (longBuyQty > 0)
         {
-            var cost = longBuyQty * price;
             _ledger.PostLines(
                 ts,
                 $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
-                [
-                    (securitiesAccount, cost, 0m),
-                    (cashAccount, 0m, cost),
-                ],
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.OpenLong, longBuyQty, longBuyQty * price),
+                    symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "buy" });
         }
         else if (qty < 0 && existingQty > 0 && realised.HasValue)
         {
             var closeQty = Math.Min(-qty, existingQty);
-            var proceeds = closeQty * price;
-            var gain = realised.Value;
-
-            List<(LedgerAccount account, decimal debit, decimal credit)> lines;
-
-            if (gain > 0)
-            {
-                lines =
-                [
-                    (cashAccount, proceeds, 0m),
-                    (securitiesAccount, 0m, costBasisRemoved),
-                    (_chart.Resolve(LedgerAccountRole.RealizedGain, accountId), 0m, gain),
-                ];
-            }
-            else if (gain < 0)
-            {
-                lines =
-                [
-                    (cashAccount, proceeds, 0m),
-                    (_chart.Resolve(LedgerAccountRole.RealizedLoss, accountId), Math.Abs(gain), 0m),
-                    (securitiesAccount, 0m, costBasisRemoved),
-                ];
-            }
-            else
-            {
-                lines =
-                [
-                    (cashAccount, proceeds, 0m),
-                    (securitiesAccount, 0m, costBasisRemoved),
-                ];
-            }
-
-            _ledger.PostLines(ts, $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "sell" });
+            _ledger.PostLines(
+                ts,
+                $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.CloseLong, closeQty, closeQty * price, CarryingValue: costBasisRemoved),
+                    symbol, accountId, _chart),
+                fillMetadata with { ActivityType = "sell" });
         }
 
         if (shortOpenQty > 0)
         {
-            var shortProceeds = shortOpenQty * price;
             _ledger.PostLines(
                 ts,
                 $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
-                [
-                    (cashAccount, shortProceeds, 0m),
-                    (shortPayableAccount, 0m, shortProceeds),
-                ],
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.OpenShort, shortOpenQty, shortOpenQty * price),
+                    symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "short_sell" });
         }
 
         if (qty > 0 && existingQty < 0 && shortRealised.HasValue)
         {
             var coverQty = Math.Min(qty, -existingQty);
-            var coverCost = coverQty * price;
-            var gain = shortRealised.Value;
-
-            List<(LedgerAccount account, decimal debit, decimal credit)> lines;
-
-            if (gain > 0)
-            {
-                lines =
-                [
-                    (shortPayableAccount, shortOriginalProceeds, 0m),
-                    (cashAccount, 0m, coverCost),
-                    (_chart.Resolve(LedgerAccountRole.RealizedGain, accountId), 0m, gain),
-                ];
-            }
-            else if (gain < 0)
-            {
-                lines =
-                [
-                    (shortPayableAccount, shortOriginalProceeds, 0m),
-                    (_chart.Resolve(LedgerAccountRole.RealizedLoss, accountId), Math.Abs(gain), 0m),
-                    (cashAccount, 0m, coverCost),
-                ];
-            }
-            else
-            {
-                lines =
-                [
-                    (shortPayableAccount, shortOriginalProceeds, 0m),
-                    (cashAccount, 0m, coverCost),
-                ];
-            }
-
-            _ledger.PostLines(ts, $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "cover_short" });
+            _ledger.PostLines(
+                ts,
+                $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.CoverShort, coverQty, coverQty * price, CarryingValue: shortOriginalProceeds),
+                    symbol, accountId, _chart),
+                fillMetadata with { ActivityType = "cover_short" });
         }
 
         if (commission > 0)
@@ -1312,10 +1253,7 @@ internal sealed class SimulatedPortfolio
             _ledger.PostLines(
                 ts,
                 $"Commission – {symbol} order {fill.OrderId} – {account.Account.DisplayName}",
-                [
-                    (_chart.Resolve(LedgerAccountRole.CommissionExpense, accountId), commission, 0m),
-                    (cashAccount, 0m, commission),
-                ],
+                SecurityTradePostingProjector.Commission(commission, accountId, _chart),
                 fillMetadata with { ActivityType = "commission" });
         }
     }

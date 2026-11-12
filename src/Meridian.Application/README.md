@@ -11,11 +11,14 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
-`LoanAccountingProjector` resolves trading cash and loan-specific account roles through the shared
-`IChartOfAccounts` registry while preserving retained loan account names, instrument symbols and
-loan account scope. Unknown roles and unbalanced projections fail before a journal write is returned.
-Shared lending payment/accrual line projection rejects negative source amounts before zero-line
-filtering or prepaid-interest allocation, so command and outbox paths cannot silently omit them.
+`DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
+`LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
+account roles resolve through the shared `IChartOfAccounts` registry while preserving historical
+account names, instrument symbols and loan account scope. The outbox produces the same economic
+lines as authoritative posting, including reversal, principal receipt, amortization and restructuring.
+Unknown roles, unbalanced projections, missing required amounts and negative source amounts fail
+before posting or draft creation. Public compatibility line helpers use registry definitions without
+inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
 
 `IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
 receipts and effective-date selection over the durable agreement store. Retrospective amendments

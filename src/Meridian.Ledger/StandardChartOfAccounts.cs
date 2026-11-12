@@ -51,8 +51,19 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
             // Preserve the historical loan-premium liability identity; policy changes require a governed rebook.
             [LedgerAccountRole.LoanPremium] = Loan("LoanPremium", LedgerAccountType.Liability),
             [LedgerAccountRole.LoanPremiumAmortizationIncome] = Loan("PremiumAmortizationIncome", LedgerAccountType.Revenue),
-            [LedgerAccountRole.LoanRestructuringLoss] = Loan("RestructuringLoss", LedgerAccountType.Expense)
+            [LedgerAccountRole.LoanRestructuringLoss] = Loan("RestructuringLoss", LedgerAccountType.Expense),
+            [LedgerAccountRole.MarginLoanPayable] = new(LedgerAccounts.MarginLoanPayable),
+            [LedgerAccountRole.ShortSaleCollateralReceivable] = new(LedgerAccounts.ShortSaleCollateralReceivable)
         }.ToFrozenDictionary();
+
+    /// <inheritdoc />
+    public LedgerAccount GetDefinition(LedgerAccountRole role)
+    {
+        if (!Definitions.TryGetValue(role, out var definition))
+            throw new ArgumentOutOfRangeException(nameof(role), role, "Posting account role is not registered.");
+
+        return definition.Account with { Symbol = null, FinancialAccountId = null };
+    }
 
     /// <inheritdoc />
     public LedgerAccount Resolve(

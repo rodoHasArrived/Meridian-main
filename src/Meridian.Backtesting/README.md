@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Backtesting
@@ -88,9 +88,11 @@ canonical SecurityIds or acquisition FX, authorize short posting, or replace ret
 
 `SimulatedPortfolio` resolves posting accounts through the shared `IChartOfAccounts` and
 `StandardChartOfAccounts` role registry, retaining existing account identities and brokerage/symbol
-scopes for capital, fills, financing, income, and corporate actions. This lookup convergence retains
-the simulator's short-payable accounting; it does not migrate historical execution journals that
-record short positions as credits to Securities.
+scopes for capital, fills, financing, income, and corporate actions. Fill and commission journal
+lines consume the shared `SecurityTradePostingProjector` with each leg's exact relieved basis or
+short proceeds; simulation keeps its descriptions, activity types, and fill/order references.
+The simulator retains short-payable accounting; it does not migrate historical execution journals
+that record short positions as credits to Securities.
 
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical

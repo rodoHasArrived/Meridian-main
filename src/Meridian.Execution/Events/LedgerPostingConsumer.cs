@@ -1,12 +1,14 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Channels;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Execution.Serialization;
 using Meridian.Storage.Ledger;
 using static Meridian.Contracts.Text.TextPrimitives;
 
@@ -24,7 +26,7 @@ namespace Meridian.Execution.Events;
 /// The channel is bounded (capacity configurable via constructor) and applies backpressure
 /// when full so trade-fill events are never silently discarded.
 /// </remarks>
-public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDisposable
+public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetainedTradeEventPublisher, IAsyncDisposable
 {
     private static readonly TimeSpan DefaultDrainTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DefaultCancellationTimeout = TimeSpan.FromSeconds(1);
@@ -38,6 +40,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private const string ReconciliationExternalTransactionIdTag = "externalTransactionId";
 
     private readonly ITradeFillLedgerPostingTarget _postingTarget;
+    private readonly bool _requireCurrentAccountingEvidence;
     private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
     private readonly Ledger.Ledger? _projectionLedger;
     private readonly Channel<PendingTradeFillPosting> _channel;
@@ -106,6 +109,28 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         bool requireSecurityMasterPostingGate = true,
         TimeSpan? drainTimeout = null,
         TimeSpan? cancellationTimeout = null)
+        : this(postingTarget, logger, postingStore, postingContext, false, projectionLedger,
+            channelCapacity, securityValidationGate, requireSecurityMasterPostingGate,
+            drainTimeout, cancellationTimeout)
+    {
+    }
+
+    /// <summary>
+    /// Creates a consumer with explicit admission policy. Production composition requires current
+    /// evidence on newly accepted fills; recovery still reads exact retained legacy events.
+    /// </summary>
+    public LedgerPostingConsumer(
+        ITradeFillLedgerPostingTarget postingTarget,
+        ILogger<LedgerPostingConsumer> logger,
+        ITradeFillPostingStore postingStore,
+        TradeFillLedgerPostingContext postingContext,
+        bool requireCurrentAccountingEvidence,
+        Ledger.Ledger? projectionLedger = null,
+        int channelCapacity = 10_000,
+        ISecurityValidationGateService? securityValidationGate = null,
+        bool requireSecurityMasterPostingGate = true,
+        TimeSpan? drainTimeout = null,
+        TimeSpan? cancellationTimeout = null)
     {
         ArgumentNullException.ThrowIfNull(postingTarget);
         ArgumentNullException.ThrowIfNull(logger);
@@ -139,6 +164,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         }
 
         _postingTarget = postingTarget;
+        _requireCurrentAccountingEvidence = requireCurrentAccountingEvidence;
         _projectionLedger = projectionLedger;
         _logger = logger;
         _postingStore = postingStore;
@@ -189,9 +215,23 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     ///     Disposal prevented acceptance, or the fill was durably accepted but the live channel
     ///     closed before enqueue; in the latter case the exception message confirms restart replay.
     /// </exception>
-    public async Task PublishAsync(TradeExecutedEvent tradeEvent)
+    public Task PublishAsync(TradeExecutedEvent tradeEvent) => PublishCoreAsync(tradeEvent, retainedRecovery: false);
+
+    Task IRetainedTradeEventPublisher.PublishRecoveredAsync(
+        TradeExecutedEvent tradeEvent,
+        TradeFillPostingScopeIdentity retainedScopeIdentity)
+    {
+        var retained = retainedScopeIdentity.Validate();
+        if (!retained.IsExact || !ScopeIdentity.IsExact || retained != ScopeIdentity)
+            throw new InvalidDataException("Retained trade-fill recovery must match the consumer's exact accounting scope.");
+        return PublishCoreAsync(tradeEvent, retainedRecovery: true);
+    }
+
+    private async Task PublishCoreAsync(TradeExecutedEvent tradeEvent, bool retainedRecovery)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
+        if (_requireCurrentAccountingEvidence && !retainedRecovery && tradeEvent.AccountingEvidenceVersion != 1)
+            throw new InvalidDataException("New trade fills require accounting evidence version 1; legacy events are supported only by retained recovery or explicit compatibility consumers.");
         if (Volatile.Read(ref _disposeStarted) != 0)
         {
             throw new ChannelClosedException(
@@ -597,6 +637,13 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has negative commission {evt.Commission}.");
         if (evt.ContractMultiplier <= 0m)
             throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive contract multiplier {evt.ContractMultiplier}.");
+        if (evt.Side is not (Sdk.OrderSide.Buy or Sdk.OrderSide.Sell))
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has an unsupported order side.");
+
+        if (evt.AccountingEvidenceVersion == 1)
+            return BuildEvidenceJournals(evt, securityGate);
+        if (evt.AccountingEvidenceVersion != 0 || evt.AccountingEvidence is not null)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has an unsupported or inconsistent accounting evidence version.");
 
         var journals = new List<JournalEntry>(evt.Commission > 0m ? 2 : 1);
         if (!evt.SettlesVariationMargin)
@@ -611,6 +658,125 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         return journals;
     }
 
+    private IReadOnlyList<JournalEntry> BuildEvidenceJournals(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate)
+    {
+        var evidence = evt.AccountingEvidence
+            ?? throw new InvalidDataException($"Fill '{evt.FillId:D}' has no authoritative lot accounting evidence and remains pending for reconciliation.");
+        var accountId = NormalizeOptional(evt.FinancialAccountId);
+        if (!string.Equals(accountId, NormalizeOptional(evidence.FinancialAccountId), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting evidence belongs to another financial account.");
+        if (evidence.Fees < 0m || evidence.SlippageCost < 0m
+            || evidence.ShortCollateralHeld < 0m || evidence.ShortCollateralReleased < 0m)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting evidence has a negative charge or collateral amount.");
+        if (evidence.SettlesVariationMargin != evt.SettlesVariationMargin)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting evidence disagrees with its settlement model.");
+
+        var journals = new List<JournalEntry>(2);
+        if (evidence.SettlesVariationMargin)
+        {
+            if (evidence.Closing is not null || evidence.Opening is not null
+                || evidence.ShortCollateralHeld != 0m || evidence.ShortCollateralReleased != 0m)
+                throw new InvalidDataException($"Variation-margin fill '{evt.FillId:D}' cannot carry notional security or collateral postings.");
+            if (evidence.VariationMarginPnl != evt.RealizedPnl)
+                throw new InvalidDataException($"Variation-margin fill '{evt.FillId:D}' has inconsistent settlement evidence.");
+            if (evt.RealizedPnl != 0m)
+            {
+                const string activityType = "trade-variation-margin";
+                var description = FormattableString.Invariant(
+                    $"Variation margin on {evt.Side} {evt.FilledQuantity} {evt.Symbol} @ {evt.FillPrice:F4}");
+                journals.Add(CreateJournal(evt, securityGate, activityType,
+                    CreateDeterministicGuid(evt.FillId, activityType, "journal"), description,
+                    SecurityTradePostingProjector.VariationMargin(evt.Symbol, evt.RealizedPnl, accountId, _chartOfAccounts)));
+            }
+        }
+        else
+        {
+            if (evidence.VariationMarginPnl != 0m)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' cannot carry variation-margin income on the notional model.");
+            var closing = evidence.Closing;
+            var opening = evidence.Opening;
+            if (closing is null && opening is null)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' is missing its opening or closing trade facts.");
+            if (closing is not null)
+            {
+                SecurityTradePostingProjector.Validate(closing);
+                ValidateLegExecutionValue(evt, closing);
+                var expectedKind = evt.Side == Sdk.OrderSide.Buy
+                    ? SecurityTradePostingKind.CoverShort : SecurityTradePostingKind.CloseLong;
+                if (closing.Kind != expectedKind)
+                    throw new InvalidDataException($"Fill '{evt.FillId:D}' has a closing leg inconsistent with its side.");
+            }
+            if (opening is not null)
+            {
+                SecurityTradePostingProjector.Validate(opening);
+                ValidateLegExecutionValue(evt, opening);
+                var expectedKind = evt.Side == Sdk.OrderSide.Buy
+                    ? SecurityTradePostingKind.OpenLong : SecurityTradePostingKind.OpenShort;
+                if (opening.Kind != expectedKind)
+                    throw new InvalidDataException($"Fill '{evt.FillId:D}' has an opening leg inconsistent with its side.");
+            }
+            if ((closing?.Quantity ?? 0m) + (opening?.Quantity ?? 0m) != evt.FilledQuantity)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting quantities do not match the executed quantity.");
+            if (evidence.RealizedPnl != evt.RealizedPnl)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' has inconsistent realized accounting evidence.");
+            if (evidence.ShortCollateralHeld != 0m && opening?.Kind != SecurityTradePostingKind.OpenShort)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' cannot hold collateral without a short opening.");
+            if (evidence.ShortCollateralReleased != 0m && closing?.Kind != SecurityTradePostingKind.CoverShort)
+                throw new InvalidDataException($"Fill '{evt.FillId:D}' cannot release collateral without a short cover.");
+
+            var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
+            if (closing is not null)
+                lines.AddRange(SecurityTradePostingProjector.Project(closing with { LoanRepaid = 0m },
+                    evt.Symbol, accountId, _chartOfAccounts));
+            if (opening is not null)
+                lines.AddRange(SecurityTradePostingProjector.Project(opening with { BorrowedAmount = 0m },
+                    evt.Symbol, accountId, _chartOfAccounts));
+            var description = FormattableString.Invariant(
+                $"{(evt.Side == Sdk.OrderSide.Buy ? "Buy" : "Sell")} {evt.FilledQuantity} {evt.Symbol} @ {evt.FillPrice:F4}");
+            journals.Add(CreateJournal(evt, securityGate, TradeFillActivityType,
+                CreateDeterministicGuid(evt.FillId, TradeFillActivityType, "journal"), description, lines));
+
+            var financing = SecurityTradePostingProjector.MarginFinancing(
+                opening?.BorrowedAmount ?? 0m, closing?.LoanRepaid ?? 0m, accountId, _chartOfAccounts);
+            if (financing.Count > 0)
+            {
+                const string activityType = "trade-margin-financing";
+                journals.Add(CreateJournal(evt, securityGate, activityType,
+                    CreateDeterministicGuid(evt.FillId, activityType, "journal"),
+                    $"Margin financing on {evt.Symbol} fill {evt.FillId}", financing));
+            }
+            var collateral = evidence.ShortCollateralReleased > 0m
+                ? SecurityTradePostingProjector.ShortCollateral(evidence.ShortCollateralReleased,
+                    release: true, accountId, _chartOfAccounts)
+                : SecurityTradePostingProjector.ShortCollateral(evidence.ShortCollateralHeld,
+                    release: false, accountId, _chartOfAccounts);
+            if (collateral.Count > 0)
+            {
+                const string activityType = "trade-short-collateral";
+                journals.Add(CreateJournal(evt, securityGate, activityType,
+                    CreateDeterministicGuid(evt.FillId, activityType, "journal"),
+                    $"Short collateral on {evt.Symbol} fill {evt.FillId}", collateral));
+            }
+        }
+
+        var charges = evt.Commission + evidence.Fees + evidence.SlippageCost;
+        if (charges > 0m)
+            journals.Add(BuildCommissionJournal(evt, securityGate, charges));
+        return journals;
+    }
+
+    private static void ValidateLegExecutionValue(TradeExecutedEvent evt, SecurityTradePosting leg)
+    {
+        // Preserve the lot book's multiplication order for each split leg. Comparing their
+        // sum to a differently grouped whole-fill product can lose the final decimal quantum.
+        var price = evt.UsesFaceValuePercentageOfPar ? evt.FillPrice / 100m : evt.FillPrice;
+        var multiplier = evt.UsesFaceValuePercentageOfPar ? 1m : evt.ContractMultiplier;
+        if (leg.GrossValue != leg.Quantity * price * multiplier)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting gross value does not match its executed quote and scale.");
+    }
+
     /// <summary>
     /// The trade journal a buy-to-cover fill produced before cover accounting: every buy debited
     /// Securities and credited Cash at gross value, whatever its realized P&amp;L. Returns
@@ -621,6 +787,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         LedgerPostingSecurityGateResult securityGate,
         JournalEntry expectedJournal)
         => evt.Side == Sdk.OrderSide.Buy
+            && evt.AccountingEvidenceVersion == 0
             && evt.RealizedPnl != 0m
             && !evt.SettlesVariationMargin
             && string.Equals(expectedJournal.Metadata.ActivityType, TradeFillActivityType, StringComparison.Ordinal)
@@ -731,24 +898,20 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
     private JournalEntry BuildCommissionJournal(
         TradeExecutedEvent evt,
-        LedgerPostingSecurityGateResult securityGate)
+        LedgerPostingSecurityGateResult securityGate,
+        decimal? totalCharges = null)
     {
         const string activityType = "trade-commission";
         var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
         var description = $"Commission on {evt.Symbol} fill {evt.FillId}";
         var accountId = NormalizeOptional(evt.FinancialAccountId);
-        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
-        var commissionAccount = _chartOfAccounts.Resolve(LedgerAccountRole.CommissionExpense, accountId);
         return CreateJournal(
             evt,
             securityGate,
             activityType,
             journalId,
             description,
-            [
-                (commissionAccount, evt.Commission, 0m),
-                (cashAccount, 0m, evt.Commission)
-            ]);
+            SecurityTradePostingProjector.Commission(totalCharges ?? evt.Commission, accountId, _chartOfAccounts));
     }
 
     private JournalEntry CreateJournal(
@@ -899,6 +1062,15 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 lines)
         };
 
+        if (evt.AccountingEvidenceVersion == 1)
+        {
+            tags["tradeFill.accountingEvidenceVersion"] = "1";
+            tags["tradeFill.accountingEvidence"] = BuildAccountingEvidenceFingerprint(evt.AccountingEvidence!);
+            // The handoff WAL can compact acknowledged fills. Retain the inspectable source
+            // facts with the immutable journal, not only the digest used for replay comparison.
+            tags["tradeFill.accountingEvidence.v1"] = BuildAccountingEvidenceSource(evt.AccountingEvidence!);
+        }
+
         if (string.Equals(activityType, TradeFillActivityType, StringComparison.Ordinal))
         {
             // Trade-identity tags for statement reconciliation: the journal→custodian-transaction
@@ -959,6 +1131,11 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         AppendCanonical(canonical, NormalizeOptional(evt.FinancialAccountId));
         AppendCanonical(canonical, securityId.ToString("D"));
         AppendCanonical(canonical, activityType);
+        if (evt.AccountingEvidenceVersion == 1)
+        {
+            AppendCanonical(canonical, "accounting-evidence-v1");
+            AppendCanonical(canonical, BuildAccountingEvidenceFingerprint(evt.AccountingEvidence!));
+        }
         foreach (var line in lines)
         {
             AppendCanonical(canonical, ((int)line.Account.AccountType).ToString(CultureInfo.InvariantCulture));
@@ -1102,6 +1279,61 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         builder.Append(':');
         builder.Append(value);
         builder.Append('|');
+    }
+
+    private static string BuildAccountingEvidenceSource(TradeFillAccountingEvidence evidence)
+    {
+        static decimal Number(decimal value) => decimal.Parse(
+            FormatDecimal(value), NumberStyles.Float, CultureInfo.InvariantCulture);
+        static SecurityTradePosting? Leg(SecurityTradePosting? value) => value is null ? null : value with
+        {
+            Quantity = Number(value.Quantity),
+            GrossValue = Number(value.GrossValue),
+            CarryingValue = value.CarryingValue is { } basis ? Number(basis) : null,
+            BorrowedAmount = Number(value.BorrowedAmount),
+            LoanRepaid = Number(value.LoanRepaid)
+        };
+        var canonical = evidence with
+        {
+            Closing = Leg(evidence.Closing),
+            Opening = Leg(evidence.Opening),
+            Fees = Number(evidence.Fees),
+            SlippageCost = Number(evidence.SlippageCost),
+            ShortCollateralHeld = Number(evidence.ShortCollateralHeld),
+            ShortCollateralReleased = Number(evidence.ShortCollateralReleased),
+            VariationMarginPnl = Number(evidence.VariationMarginPnl),
+            FinancialAccountId = NormalizeOptional(evidence.FinancialAccountId)?.ToUpperInvariant()
+        };
+        return JsonSerializer.Serialize(canonical, ExecutionJsonContext.Default.TradeFillAccountingEvidence);
+    }
+
+    private static string BuildAccountingEvidenceFingerprint(TradeFillAccountingEvidence evidence)
+    {
+        var canonical = new StringBuilder();
+        void Leg(SecurityTradePosting? posting)
+        {
+            AppendCanonical(canonical, posting is null ? "absent" : "present");
+            if (posting is null)
+                return;
+            AppendCanonical(canonical, ((int)posting.Kind).ToString(CultureInfo.InvariantCulture));
+            AppendCanonical(canonical, FormatDecimal(posting.Quantity));
+            AppendCanonical(canonical, FormatDecimal(posting.GrossValue));
+            AppendCanonical(canonical, posting.CarryingValue is { } carrying ? FormatDecimal(carrying) : "absent");
+            AppendCanonical(canonical, FormatDecimal(posting.BorrowedAmount));
+            AppendCanonical(canonical, FormatDecimal(posting.LoanRepaid));
+        }
+
+        AppendCanonical(canonical, "accounting-evidence-v1");
+        Leg(evidence.Closing);
+        Leg(evidence.Opening);
+        AppendCanonical(canonical, FormatDecimal(evidence.Fees));
+        AppendCanonical(canonical, FormatDecimal(evidence.SlippageCost));
+        AppendCanonical(canonical, FormatDecimal(evidence.ShortCollateralHeld));
+        AppendCanonical(canonical, FormatDecimal(evidence.ShortCollateralReleased));
+        AppendCanonical(canonical, evidence.SettlesVariationMargin ? "variation-margin" : "notional");
+        AppendCanonical(canonical, FormatDecimal(evidence.VariationMarginPnl));
+        AppendCanonical(canonical, NormalizeOptional(evidence.FinancialAccountId)?.ToUpperInvariant());
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
     }
 
     private static string FormatDecimal(decimal value)
