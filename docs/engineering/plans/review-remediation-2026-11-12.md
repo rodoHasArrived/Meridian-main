@@ -153,3 +153,27 @@ status-writer retry test isolates static metrics; its change does not alter prod
 The final C# formatting changes affect four test files only. Reviewed source hashes were refreshed
 only for `SRC-UI-SHARED`, `SRC-UI-DASHBOARD` and `SRC-UI` after these final changes; the accepted
 WPF source baseline remained stable.
+
+### Second synchronization after network access was applied
+
+The active environment applied policy revision 2, and the normal Git LFS client successfully
+uploaded and verified all 393 reachable objects (102 MB). No LFS hook or repository protection
+was bypassed. Main advanced to `b51cf47ef4` during the network wait, so the publication branch
+also incorporates its fixed-income units, exact-decimal transport, retained evidence and generated
+Security Master codec changes.
+
+Upstream now contains the explorer fixes and additional nontruncating admission bounds; the
+explorer endpoint and reader retain those latest implementations. Browser extraction preserves
+all 592 latest declarations without token changes. The upstream equity-path component and
+view-model pair replaces the superseded local single-file extraction, avoiding a TypeScript
+module-resolution collision. Presentation budgets remain unchanged. Independent review found
+no material issue in the combined accounting/storage registration, generated codec ordering or
+reporting forwarding boundaries.
+
+The second synchronized backend build completed with zero errors. Its browser slice passed
+408 tests across 18 files, and Chromium workflow checks passed at both desktop viewports.
+Documentation generation converged with zero failed steps or protection violations; source
+hash validation reported zero errors and warnings. Independent remote hydration began with an
+empty LFS cache and no local references: all 329 images (90,112,988 bytes) matched their retained
+manifest, Git pointers and freshly downloaded objects. `git lfs fsck --objects --pointers` passed.
+Hosted checks on the published pull-request head remain authoritative for the merge.

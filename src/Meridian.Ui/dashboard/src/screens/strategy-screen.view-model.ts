@@ -1,6 +1,6 @@
-import type { ApprovePromotionRequest } from "@/lib/api";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
-import { formatCount as formatCountValue } from "@/lib/format";
+import type { ApprovePromotionRequest } from "@/lib/api";
 import { appendRouteQuery, evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
 import {
   countBy,
@@ -20,46 +20,43 @@ import {
 } from "@/screens/strategy-screen.formatters";
 import { buildStrategyStatusAnnouncement } from "@/screens/strategy-screen.status-announcement";
 import type {
-  MetricsDiff,
+  EquityCurveSummary,
   MetricSnapshot,
+  MetricsDiff,
   ParameterDiff,
   PositionDiffEntry,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
-  RunComparisonRow,
-  RunDiff,
-  StrategyPlotToolPayload,
   StrategyRunAcceptanceChecklistItem,
   StrategyRunEvidenceLoop,
   StrategyRunRecord,
   StrategyRunReviewPacket,
-  StrategyWorkspaceResponse
+  StrategyPlotToolPayload,
+  StrategyWorkspaceResponse,
+  RunComparisonRow,
+  RunDiff
 } from "@/types";
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { StrategyRunLibraryServices } from "./strategy-screen.equity-paths";
-import { defaultStrategyServices } from "./strategy-screen.equity-paths";
-
-export {
-  buildStrategyEquityPathCompareItem,
-  buildStrategyEquityPathView,
-  describeStrategyEquityPathFailure,
-  describeStrategyEquityPathFailureCause,
-  formatStrategyEquityPathIndex,
-  formatStrategyEquityPathTotalReturn,
-  STRATEGY_EQUITY_PATH_BASIS_TEXT,
-  STRATEGY_EQUITY_PATH_CATEGORIES,
-  STRATEGY_EQUITY_PATH_CATEGORY_LABELS,
-  STRATEGY_EQUITY_PATH_COMPARE_MAX,
-  STRATEGY_EQUITY_PATH_POINT_COUNT,
-  strategyEquityPathIndexFractionDigits,
-  useStrategyEquityPathCompare,
-  withStrategyEquityPathRunStatus
-} from "./strategy-screen.equity-paths";
-export type { StrategyEquityPathLoadState, StrategyEquityPathView, StrategyRunLibraryServices } from "./strategy-screen.equity-paths";
+import { formatCount as formatCountValue } from "@/lib/format";
+import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
 export type StrategyCommand = "compare" | "diff" | "history";
 export type StrategyPlotToolView = "workspace" | "statistics";
+
+export interface StrategyRunLibraryServices {
+  compareRuns: (runIds: string[]) => Promise<RunComparisonRow[]>;
+  diffRuns: (baseRunId: string, targetRunId: string) => Promise<RunDiff>;
+  getPromotionHistory: () => Promise<PromotionRecord[]>;
+  evaluatePromotion: (runId: string) => Promise<PromotionEvaluationResult>;
+  approvePromotion: (request: ApprovePromotionRequest) => Promise<PromotionDecisionResult>;
+  getRunReviewPacket: (runId: string) => Promise<StrategyRunReviewPacket>;
+  /**
+   * Published equity curve of one run, read only when the operator charts equity paths. Optional
+   * so callers that inject the run-library commands keep working; the existing workstation
+   * client is used when it is left out.
+   */
+  getRunEquityCurve?: (runId: string) => Promise<EquityCurveSummary>;
+}
 
 export type PromoteState = "idle" | "evaluating" | "evaluated" | "approving" | "done";
 export const STRATEGY_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-detail";
@@ -721,6 +718,16 @@ export interface StrategyPlotSampleRow {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+const defaultStrategyServices: StrategyRunLibraryServices = {
+  compareRuns: (runIds) => workstationApi.compareRuns(runIds),
+  diffRuns: (baseRunId, targetRunId) => workstationApi.diffRuns(baseRunId, targetRunId),
+  getPromotionHistory: () => workstationApi.getPromotionHistory(),
+  evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
+  approvePromotion: (request) => workstationApi.approvePromotion(request),
+  getRunReviewPacket: (runId) => workstationApi.getRunReviewPacket(runId),
+  getRunEquityCurve: defaultGetRunEquityCurve
+};
+
 export function useStrategyRunLibraryViewModel(
   data: StrategyWorkspaceResponse | null,
   services: StrategyRunLibraryServices = defaultStrategyServices
@@ -1126,6 +1133,8 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledgement: updatePromotionAcknowledgement
   };
 }
+
+export * from "@/screens/strategy-screen.equity-paths.view-model";
 
 export function buildStrategyRunLibraryState({
   runs,

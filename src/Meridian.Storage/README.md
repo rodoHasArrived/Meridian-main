@@ -20,6 +20,19 @@ from re-appending to successful children; this is not cross-process replay dedup
 `CatalogSyncSink` carries whole-file counts and ranges across flush windows and restarts, with
 directory indexes persisted when a file first enters the catalog.
 
+Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
+column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a
+compatibility mirror, including its limit of eighteen integer digits; new values outside that
+range are still refused. Reads and same-timestamp idempotence use `COALESCE(price_exact, price)`
+so quotes that share a rounded mirror remain distinct. Existing rows keep null exact prices and
+unknown quotation metadata: no missing historical digits are backfilled. Nullable metadata is
+omitted from legacy canonical serialization, and retained receipt payloads and hashes stay unchanged.
+Curve point JSON can retain typed rate observations and reviewed construction
+evidence; only evidence-bearing versions add it to content hashes, preserving legacy curve hashes.
+Typed-rate retries compare all retained source and construction facts except retrieval time under
+the curve row lock. A retry returns its original immutable version, hash and evidence, including
+after a newer distinct publication; it never makes the older observation latest again.
+
 Security Master migration 062 now checks its apply conditions in the runner without changing
 the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,
 hold source-table write locks through commit, and refuse the usual thirty-second command timeout

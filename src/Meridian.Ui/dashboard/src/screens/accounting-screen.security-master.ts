@@ -2,6 +2,7 @@ import {
   getCorporateActions,
   getReferenceDataWorkbenchCoverage,
   getSecurityConflicts,
+  getSecurityDetail,
   getSecurityIdentity,
   getSecurityInstrumentPassport,
   getSecurityTrustSnapshot,
@@ -60,6 +61,7 @@ import {
   resolveSecurityScheduleEvents
 } from "./accounting-screen.security-projections";
 import { normalizeApiErrorDisplay } from "./accounting-screen.view-model.shared";
+import { useAuthoritativeSecurityDetail } from "./security-master-authoritative-detail";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -69,6 +71,7 @@ export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 export interface SecurityMasterServices {
   search: (query: string) => Promise<SecurityMasterEntry[]>;
   getIdentity: (securityId: string) => Promise<SecurityIdentityDrillIn>;
+  getDetail?: (securityId: string) => Promise<SecurityMasterEntry>;
   getConflicts: () => Promise<SecurityMasterConflict[]>;
   resolveConflict: (request: ResolveConflictRequest) => Promise<SecurityMasterConflict>;
 }
@@ -247,6 +250,7 @@ export interface SecurityConflictRowViewModel extends SecurityMasterConflict {
 export const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
   getIdentity: (securityId) => getSecurityIdentity(securityId),
+  getDetail: (securityId) => getSecurityDetail(securityId, { allowDevelopmentFallback: false }),
   getConflicts: () => getSecurityConflicts(),
   resolveConflict: (request) => resolveSecurityConflict(request)
 };
@@ -272,6 +276,7 @@ export function useSecurityMasterViewModel(
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<ApiErrorDisplay | null>(null);
   const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
+  const { selectedEntry, detailError, detailLoading, resetDetail, loadDetail } = useAuthoritativeSecurityDetail(services.getDetail);
   const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
   const [identityLoading, setIdentityLoading] = useState(false);
   const [identityError, setIdentityError] = useState<ApiErrorDisplay | null>(null);
@@ -336,6 +341,7 @@ export function useSecurityMasterViewModel(
     conflictGenerationRef.current += 1;
     setSearching(false);
     setSelectedSecurityId(null);
+    resetDetail();
     setIdentity(null);
     setIdentityLoading(false);
     setIdentityError(null);
@@ -360,7 +366,7 @@ export function useSecurityMasterViewModel(
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
-  }, [active, resetReferenceDataCoverage]);
+  }, [active, resetReferenceDataCoverage, resetDetail]);
 
   const refreshConflicts = useCallback(async () => {
     if (!active) {
@@ -589,6 +595,7 @@ export function useSecurityMasterViewModel(
     const generation = identityGenerationRef.current + 1;
     identityGenerationRef.current = generation;
     setSelectedSecurityId(securityId);
+    resetDetail();
     setIdentity(null);
     setIdentityError(null);
     setIdentityLoading(true);
@@ -607,6 +614,8 @@ export function useSecurityMasterViewModel(
     setTradingParameters(null);
     setTradingParametersError(null);
 
+    const detailTask = loadDetail(securityId, () => identityGenerationRef.current === generation);
+
     try {
       const detail = await services.getIdentity(securityId);
       if (identityGenerationRef.current === generation) {
@@ -620,8 +629,9 @@ export function useSecurityMasterViewModel(
       if (identityGenerationRef.current === generation) {
         setIdentityLoading(false);
       }
+      await detailTask;
     }
-  }, [active, resetReferenceDataCoverage, services]);
+  }, [active, resetReferenceDataCoverage, resetDetail, loadDetail, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,
@@ -665,8 +675,8 @@ export function useSecurityMasterViewModel(
     [identity]
   );
   const selectedSearchResult = useMemo(
-    () => selectedSecurityId ? results?.find((entry) => entry.securityId === selectedSecurityId) ?? null : null,
-    [results, selectedSecurityId]
+    () => selectedSecurityId ? selectedEntry ?? (services.getDetail ? null : results?.find((entry) => entry.securityId === selectedSecurityId) ?? null) : null,
+    [results, selectedSecurityId, selectedEntry, services.getDetail]
   );
   const corporateActionRows = useMemo(
     () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
@@ -884,6 +894,9 @@ export function useSecurityMasterViewModel(
     results,
     searching,
     selectedSecurityId,
+    selectedEntry: selectedSearchResult,
+    detailLoading,
+    detailErrorText: detailError?.summary ?? null,
     selectSecurity,
     identity,
     identityView,

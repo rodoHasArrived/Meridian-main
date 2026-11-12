@@ -189,29 +189,6 @@ public sealed partial class FinancialRecordExplorerReadService
             return null;
         }
 
-        var normalizedRequest = NormalizeSavedViewRequest(request);
-        if (normalizedRequest.Filters.Count == 0 && string.IsNullOrWhiteSpace(normalizedRequest.SearchText))
-        {
-            throw new InvalidOperationException("Saved view requires a search term or at least one filter.");
-        }
-
-        var view = new FinancialRecordExplorerSavedViewDto(
-            ViewId: $"operator-{Slugify(normalizedRequest.Label)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
-            Label: normalizedRequest.Label,
-            Description: normalizedRequest.Description,
-            IsSystem: false,
-            IsActive: false,
-            Filters: normalizedRequest.Filters,
-            SearchText: normalizedRequest.SearchText,
-            ColumnIds: normalizedRequest.ColumnIds ?? []);
-
-        return await _savedViewStore.SaveAsync(tenantId, normalized, view, ct).ConfigureAwait(false);
-    }
-
-    internal static FinancialRecordExplorerSavedViewSaveRequestDto NormalizeSavedViewRequest(
-        FinancialRecordExplorerSavedViewSaveRequestDto request)
-    {
-        ArgumentNullException.ThrowIfNull(request);
         var label = request.Label?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(label))
         {
@@ -220,15 +197,22 @@ public sealed partial class FinancialRecordExplorerReadService
 
         var filters = NormalizeFilters(request.Filters);
         var searchText = request.SearchText?.Trim() ?? string.Empty;
-
-        return request with
+        if (filters.Count == 0 && string.IsNullOrWhiteSpace(searchText))
         {
-            Label = label,
-            Description = request.Description?.Trim() ?? string.Empty,
-            SearchText = searchText,
-            Filters = filters,
-            ColumnIds = NormalizeColumnIds(request.ColumnIds)
-        };
+            throw new InvalidOperationException("Saved view requires a search term or at least one filter.");
+        }
+
+        var view = new FinancialRecordExplorerSavedViewDto(
+            ViewId: $"operator-{Slugify(label)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            Label: label,
+            Description: request.Description?.Trim() ?? string.Empty,
+            IsSystem: false,
+            IsActive: false,
+            Filters: filters,
+            SearchText: searchText,
+            ColumnIds: NormalizeColumnIds(request.ColumnIds));
+
+        return await _savedViewStore.SaveAsync(tenantId, normalized, view, ct).ConfigureAwait(false);
     }
 
     private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(

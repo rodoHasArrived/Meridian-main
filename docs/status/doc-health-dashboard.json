@@ -1,11 +1,11 @@
 {
-  "total_files": 965,
+  "total_files": 966,
   "orphaned_count": 399,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 79,
-  "signal_digest": "sha256:aba522b3fd7f92fef899f03680f77fc592c16145b452e16b3a025a9488f58002",
+  "signal_digest": "sha256:3c0281b012163ff266da33455b3926264fe5ff54d253e3fdad64d3c318389ce2",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2893,6 +2893,13 @@
     },
     {
       "path": "docs/generated/database/modules/money_market.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/modules/operator_triage.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
