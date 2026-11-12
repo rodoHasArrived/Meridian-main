@@ -139,6 +139,7 @@ DEFAULT_TEST_PROJECTS = [
     ("execution-unit", "tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj", None),
     ("contracts-unit", "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj", None),
     ("core-unit", "tests/Meridian.Core.UnitTests/Meridian.Core.UnitTests.csproj", None),
+    ("demo", "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj", None),
     ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
     ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),
     ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj", None),

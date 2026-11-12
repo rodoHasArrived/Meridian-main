@@ -55,11 +55,19 @@ forks), merge groups, main pushes and manual/reusable calls.
 The shared implementation uses the certification `postgres:17` service, health checks and
 eight domain connection strings. The database and credentials are disposable within each
 job; no production secrets or privileged PR event are used. Checkout uses the event SHA with
-credentials persistence disabled and `contents: read`. Both project restores and test runs
-are attempted independently, so one failure cannot hide the other's result. TRX validation
+credentials persistence disabled and `contents: read`. Meridian, Direct Lending and Demo project
+restores and test runs are attempted independently, so one failure cannot hide another result. TRX validation
 runs after failures and rejects missing required suite prefixes, failed/skipped/unknown
 outcomes and every file with zero discovered tests. Coverage and schema evidence retain the
 existing certification artifact contract (90 days); CI companion evidence is retained 14 days.
+
+Demo Smoke uses the focused `Meridian.Demo.Tests` project for the same 26 demo cases, avoiding
+compilation of the unrelated monolithic test sources. The solution and canonical runner retain
+the ordinary cases, while the shared PostgreSQL gate retains all eight demo integration cases
+in its required `demo-integrations` TRX and coverage suite. Evidence creation and reuse both
+require that suite. The CLI seed keeps normal restore/build behavior; serve and reset reuse
+the Release output with `--no-build`. Runner class, NuGet caching and check identities stay
+the same. Compare equivalent hosted runs before claiming a timing improvement.
 
 Administrators may add `integration-gate` as a required companion check after human governance
 review and a successful PR/merge-group rollout. This change does not alter repository rulesets
