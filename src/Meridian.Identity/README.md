@@ -6,10 +6,17 @@ module_id: SRC-DESIGN-IDENTITY
 path: src/Meridian.Identity
 status: active
 owner_lane: Identity and Access
-last_reviewed: 2026-06-09
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Identity
+
+Private-capital source records and broker option assessments have separate read and management
+permissions. Admin can manage both, accounting roles can manage private-capital observations,
+and Trade Desk can import broker assessments. Analysis, reporting, compliance, executive and
+Developer roles receive observation reads without import authority; ReadOnly acquires neither
+write permission. These grants do not authorize orders, elections or accounting postings, and
+every record endpoint still enforces its tenant/company and entity/account scope.
 
 ### Effective account deployment scope
 

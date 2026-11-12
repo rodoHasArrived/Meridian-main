@@ -6,10 +6,19 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Shared
+
+Visualization services are registered through the existing workstation composition and endpoint
+map. Private-capital observation and broker-assessment imports use dedicated permissions and
+authenticated tenant/company plus entity/account checks. The former verifies retained source
+document bytes and stores immutable register/snapshot/import records; the latter retains the
+original report and its exact basket/account identity. Neither enters issuer-side call capacity,
+reserves trading collateral or submits an order. Corporate-action calendar reads use a date-range
+query before paging, while deadline capture reuses the case evidence/version/idempotency path.
+Operator source-entry and recovery procedures are in `docs/operators/financial-visualizations.md`.
 
 Observed bond-fixing retention and selection routes require workstation tenant scope and Security
 Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current

@@ -6,10 +6,19 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+Visualization contracts retain server-calculated loan maturity buckets as exact decimal strings,
+bond contractual maturity and governing yield-scenario identities, and audit-source availability.
+`PrivateCapital` describes holder-side source observations and import receipts, separately from
+issuer-side `Ledger.PrivateCapitalLifecycleDtos`. `Options` screening and broker-assessment
+contracts distinguish neutral contract criteria from an exact basket/account assessment as of its
+source time. Typed corporate-action deadline evidence carries precision, original source text and
+correction identity outside economic payload fingerprints. Additive read fields preserve older
+payload compatibility; missing observations are not reported zeros or inferred approvals.
 
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in

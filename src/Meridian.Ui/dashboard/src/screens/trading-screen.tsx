@@ -82,6 +82,7 @@ import {
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
+import { ExecutionJourneyPanel } from "@/screens/execution-journey";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -481,6 +482,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
   const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
+  const journeyOrderId = blotterVm.selectedExecutionKind === "fill"
+    ? blotterVm.fillRows.find((row) => row.id === blotterVm.selectedFillRowId)?.orderId
+    : selectedOrderRow?.orderId;
   const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
     "mark-readiness": (row) => row.markFreshness.label,
     symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
@@ -890,6 +894,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </Button>
             ) : null}
           />
+          {journeyOrderId ? <ExecutionJourneyPanel key={`${fundAccountId}:${data.brokerage.account}:${journeyOrderId}`} orderId={journeyOrderId} fills={data.fills} /> : null}
         </div>
       )}>
 

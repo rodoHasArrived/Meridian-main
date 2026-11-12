@@ -38,6 +38,7 @@ export interface AuditTrailExplorerResult {
   totalMatched: number;
   returned: number;
   entries: AuditTrailTimelineEntry[];
+  sourceAvailability?: { executionAudit: boolean; operationsContinuity: boolean } | null;
 }
 
 /** Query parameters accepted by `GET /api/execution/audit/search`. */

@@ -55,7 +55,13 @@ public sealed record AuditTrailExplorerResultDto(
     DateTimeOffset AsOf,
     int TotalMatched,
     int Returned,
-    IReadOnlyList<AuditTrailTimelineEntryDto> Entries);
+    IReadOnlyList<AuditTrailTimelineEntryDto> Entries,
+    AuditTrailSourceAvailabilityDto? SourceAvailability = null);
+
+/// <summary>Distinguishes an empty retained trail from a source that is not configured.</summary>
+public sealed record AuditTrailSourceAvailabilityDto(
+    bool ExecutionAudit,
+    bool OperationsContinuity);
 
 /// <summary>
 /// Stable object-kind vocabulary for audit explorer rows.

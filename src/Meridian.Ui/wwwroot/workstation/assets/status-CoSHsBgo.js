@@ -1,0 +1,1 @@
+import{c as e}from"./button-Bymx3-fV.js";function t(t){return e(t)}function n(e){return e?String(e).replace(/([a-z0-9])([A-Z])/g,`$1 $2`).replace(/[_-]+/g,` `).replace(/^./,e=>e.toUpperCase()):``}export{t as n,n as t};

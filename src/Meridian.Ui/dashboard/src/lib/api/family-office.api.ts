@@ -12,6 +12,6 @@ import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
 import { FAMILY_OFFICE_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { FamilyOfficeOverview } from "@/types/family-office.types";
 
-export function getFamilyOfficeOverview(options: ApiRequestOptions = {}): Promise<FamilyOfficeOverview> {
-  return apiGetJson<FamilyOfficeOverview>(FAMILY_OFFICE_API_ENDPOINTS.overview, options);
+export function getFamilyOfficeOverview(options: ApiRequestOptions = {}, familyOfficeId?: string): Promise<FamilyOfficeOverview> {
+  return apiGetJson<FamilyOfficeOverview>(`${FAMILY_OFFICE_API_ENDPOINTS.overview}${familyOfficeId ? `?familyOfficeId=${encodeURIComponent(familyOfficeId)}` : ""}`, { ...options, allowDevelopmentFallback: false });
 }

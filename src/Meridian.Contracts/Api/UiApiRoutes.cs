@@ -415,6 +415,10 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionCases = "/api/security-master/corporate-actions/cases";
     public const string SecurityMasterCorporateActionCase = "/api/security-master/corporate-actions/cases/{caseId:guid}";
     public const string SecurityMasterCorporateActionCaseEvidence = "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence";
+    public const string SecurityMasterCorporateActionsCalendar = "/api/security-master/corporate-actions/calendar";
+    public const string SecurityMasterCorporateActionCaseDeadlines = "/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines";
+    public const string SecurityMasterCorporateActionDeadlineImportPreview = "/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines/import-preview";
+    public const string SecurityMasterCorporateActionDeadlineImport = "/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines/import";
     public const string SecurityMasterCorporateActionCaseConflicts = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts";
     public const string SecurityMasterCorporateActionCaseConflict = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}";
     public const string SecurityMasterCorporateActionCaseConflictResolution = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution";
@@ -626,6 +630,17 @@ public static class UiApiRoutes
     // Options / Derivatives endpoints
     public const string OptionsChains = "/api/options/chains/{underlyingSymbol}";
     public const string OptionsExpirations = "/api/options/expirations/{underlyingSymbol}";
+    public const string OptionsScreen = "/api/options/screen";
+    public const string OptionAssessments = "/api/options/assessments/accounts/{accountId:guid}";
+    public const string OptionAssessmentPreview = "/api/options/assessments/accounts/{accountId:guid}/preview";
+    public const string OptionAssessmentAccept = "/api/options/assessments/accounts/{accountId:guid}/accept";
+    public const string OptionAssessmentSource = "/api/options/assessments/accounts/{accountId:guid}/{assessmentId}/source";
+    public const string PrivateCapitalRecords = "/api/private-capital/records";
+    public const string PrivateCapitalRecordChoices = "/api/private-capital/choices";
+    public const string PrivateCapitalRecordCommitments = "/api/private-capital/commitments";
+    public const string PrivateCapitalRecordImportPreview = "/api/private-capital/preview";
+    public const string PrivateCapitalRecordImportAccept = "/api/private-capital/accept";
+    public const string PrivateCapitalRecordImportInspection = "/api/private-capital/imports/{batchId:guid}";
     public const string OptionsStrikes = "/api/options/strikes/{underlyingSymbol}/{expiration}";
     public const string OptionsQuote = "/api/options/quote";
     public const string OptionsQuotesByUnderlying = "/api/options/quotes/{underlyingSymbol}";

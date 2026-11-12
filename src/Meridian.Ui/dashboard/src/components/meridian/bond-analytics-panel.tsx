@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { BondEconomicsHorizon } from "@/components/meridian/bond-economics-horizon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -471,6 +472,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 </p>
               </>
             )}
+            <BondEconomicsHorizon key={`${result.securityId}:${result.context.asOf}:${result.context.settlementDate}:${result.cleanPrice}`} result={result} />
             {result.diagnostics.length ? (
               <StatusBanner
                 tone="warning"

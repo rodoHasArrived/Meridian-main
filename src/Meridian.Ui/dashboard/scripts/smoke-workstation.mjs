@@ -184,6 +184,8 @@ async function setupApiMocking(page, fixtureRoutes) {
   await page.route("**/api/**", (route) => {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
+    // Vite source imports such as /workstation/src/lib/api/*.ts are not API requests.
+    if (!pathname.startsWith("/api/")) return route.continue();
 
     if (Object.prototype.hasOwnProperty.call(fixtureRoutes, pathname)) {
       return route.fulfill({

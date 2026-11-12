@@ -86,7 +86,8 @@ public sealed class AuditTrailExplorerService
             DateTimeOffset.UtcNow,
             matched.Length,
             returned.Length,
-            returned);
+            returned,
+            new AuditTrailSourceAvailabilityDto(_auditTrail is not null, _operationsContinuity is not null));
     }
 
     private static bool Matches(AuditTrailTimelineEntryDto entry, AuditTrailExplorerQueryDto query)

@@ -6,10 +6,16 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Application
+
+Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
+these summarize current principal and do not project repayments. Corporate-action calendar reads
+use the scoped retained date population before pagination and bind cursors to the range revision.
+Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
+predecessor validation, frozen-case checks and durable command replay without changing economics.
 
 Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
 the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,

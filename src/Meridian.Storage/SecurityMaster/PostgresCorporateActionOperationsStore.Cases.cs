@@ -175,6 +175,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
         var processingCase = await LoadScopedCaseForMutationAsync(connection, transaction, request, ct)
             .ConfigureAwait(false);
         EnsureCaseContentMutable(processingCase, "add evidence");
+        if (request.EvidenceKind == CorporateActionDeadlinePolicy.EvidenceKind)
+            await ValidateDeadlineAppendAsync(connection, transaction, processingCase, request, ct).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
         var updatedCase = await UpdateCaseVersionAsync(
             connection, transaction, processingCase, request.ExpectedVersion, request.Actor,

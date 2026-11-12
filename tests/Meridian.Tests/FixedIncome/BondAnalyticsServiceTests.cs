@@ -31,6 +31,8 @@ public sealed class BondAnalyticsServiceTests
         result.Dv01.Should().BeGreaterThan(0m);
         result.Inputs.Should().Contain(static input => input.Kind == "SecurityTerms" && input.Version == 7);
         result.Context.SecurityVersion.Should().Be(7);
+        result.MaturityDate.Should().Be(new DateOnly(2028, 1, 15));
+        result.GoverningYieldScenarios.Should().ContainSingle().Which.Kind.Should().Be("Maturity");
     }
 
     [Fact]
@@ -181,6 +183,7 @@ public sealed class BondAnalyticsServiceTests
         result.ExerciseYields.Single(static item => item.Kind == "Put").RedemptionPrice.Should().Be(105m);
         result.YieldToWorst.Should().Be(Math.Min(result.YieldToMaturity!.Value,
             result.ExerciseYields.Single(static item => item.Kind == "Call").Yield));
+        result.GoverningYieldScenarios.Should().NotBeEmpty().And.OnlyContain(item => item.Kind != "Put" && item.Yield == result.YieldToWorst);
         result.ExerciseYields.Should().OnlyContain(static item => item.LatestNoticeDate == new DateOnly(2026, 12, 16));
     }
 

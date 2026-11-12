@@ -14,7 +14,7 @@ public static partial class WorkstationEndpoints
 {
     private static void MapFamilyOfficeEndpoints(RouteGroupBuilder group)
     {
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeOverview), async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeOverview), async Task<IResult> (HttpContext context, Guid? familyOfficeId) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -22,7 +22,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Family-office read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var overview = await service.GetOverviewAsync(context.RequestAborted).ConfigureAwait(false);
+            var overview = await service.GetOverviewAsync(context.RequestAborted, familyOfficeId).ConfigureAwait(false);
             return Results.Json(overview, FamilyOfficeJsonContext.Default.FamilyOfficeOverviewDto);
         })
         .WithName("GetWorkstationFamilyOfficeOverview").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
@@ -30,7 +30,7 @@ public static partial class WorkstationEndpoints
         .Produces<FamilyOfficeOverviewDto>(200)
         .Produces(501);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeBalanceSheet), async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeBalanceSheet), async Task<IResult> (HttpContext context, Guid? familyOfficeId) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -38,7 +38,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Family-office read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var balanceSheet = await service.GetBalanceSheetAsync(context.RequestAborted).ConfigureAwait(false);
+            var balanceSheet = await service.GetBalanceSheetAsync(context.RequestAborted, familyOfficeId).ConfigureAwait(false);
             return Results.Json(balanceSheet, FamilyOfficeJsonContext.Default.FamilyOfficeBalanceSheetResponseDto);
         })
         .WithName("GetWorkstationFamilyOfficeBalanceSheet").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
@@ -46,7 +46,7 @@ public static partial class WorkstationEndpoints
         .Produces<FamilyOfficeBalanceSheetResponseDto>(200)
         .Produces(501);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeEntities), async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeEntities), async Task<IResult> (HttpContext context, Guid? familyOfficeId) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -54,7 +54,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Family-office read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var entities = await service.GetEntitiesAsync(context.RequestAborted).ConfigureAwait(false);
+            var entities = await service.GetEntitiesAsync(context.RequestAborted, familyOfficeId).ConfigureAwait(false);
             return Results.Json(entities, FamilyOfficeJsonContext.Default.FamilyOfficeEntitiesResponseDto);
         })
         .WithName("GetWorkstationFamilyOfficeEntities").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)
@@ -62,7 +62,7 @@ public static partial class WorkstationEndpoints
         .Produces<FamilyOfficeEntitiesResponseDto>(200)
         .Produces(501);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeOwnershipGraph), async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeOwnershipGraph), async Task<IResult> (HttpContext context, Guid? familyOfficeId) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -70,7 +70,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Family-office read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var ownershipGraph = await service.GetOwnershipGraphAsync(context.RequestAborted).ConfigureAwait(false);
+            var ownershipGraph = await service.GetOwnershipGraphAsync(context.RequestAborted, familyOfficeId).ConfigureAwait(false);
             return Results.Json(ownershipGraph, FamilyOfficeJsonContext.Default.FamilyOfficeOwnershipGraphResponseDto);
         })
         .WithName("GetWorkstationFamilyOfficeOwnershipGraph").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)

@@ -10,6 +10,23 @@ namespace Meridian.Tests.Ui;
 public sealed class AuditTrailExplorerServiceTests
 {
     [Fact]
+    public async Task SearchAsync_DistinguishesUnavailableSourcesFromAnEmptyRetainedTrail()
+    {
+        var unavailable = await new AuditTrailExplorerService().SearchAsync();
+        unavailable.Entries.Should().BeEmpty();
+        unavailable.SourceAvailability.Should().Be(new AuditTrailSourceAvailabilityDto(false, false));
+        var root = CreateTempRoot();
+        try
+        {
+            await using var auditTrail = CreateAuditTrail(root);
+            var empty = await new AuditTrailExplorerService(auditTrail).SearchAsync();
+            empty.Entries.Should().BeEmpty();
+            empty.SourceAvailability.Should().Be(new AuditTrailSourceAvailabilityDto(true, false));
+        }
+        finally { DeleteTempRoot(root); }
+    }
+
+    [Fact]
     public async Task SearchAsync_ProjectsExecutionPromotionAndControlAuditIntoCrossObjectTimeline()
     {
         var root = CreateTempRoot();

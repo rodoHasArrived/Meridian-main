@@ -904,6 +904,9 @@ public static class WorkstationServiceCollectionExtensions
         }
         services.TryAddSingleton<LedgerAmountProvenanceService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.AddPrivateCapitalRecords();
+        services.AddOptionVisualizationServices();
+        services.TryAddSingleton<Meridian.Application.SecurityMaster.CorporateActions.CorporateActionCalendarService>();
         services.TryAddSingleton(sp => new FamilyOfficeReadService(
             sp.GetService<IFundStructureService>(),
             sp.GetService<Meridian.PortfolioRecords.FundAccounts.IFundAccountService>(),

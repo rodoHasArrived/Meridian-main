@@ -147,4 +147,16 @@ public enum UserPermission : long
 
     /// <summary>Reopen a closed corporate-action case or initiate correction/restatement.</summary>
     ReopenCorporateActionCase = 1L << 39,
+
+    /// <summary>Read source-reported private-capital commitments and valuation observations.</summary>
+    ViewPrivateCapitalRecords = 1L << 40,
+
+    /// <summary>Register private-capital commitments and accept evidence-backed observation imports.</summary>
+    ManagePrivateCapitalRecords = 1L << 41,
+
+    /// <summary>Read account-scoped retained broker option assessments.</summary>
+    ViewOptionAssessments = 1L << 42,
+
+    /// <summary>Import and correct evidence-backed broker option assessments.</summary>
+    ManageOptionAssessments = 1L << 43,
 }

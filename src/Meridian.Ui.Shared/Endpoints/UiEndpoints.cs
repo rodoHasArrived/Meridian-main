@@ -185,6 +185,8 @@ public static class UiEndpoints
 
         // Options / Derivatives endpoints
         app.MapOptionsEndpoints(jsonOptions);
+        app.MapOptionVisualizationEndpoints(jsonOptions);
+        app.MapPrivateCapitalRecordEndpoints(jsonOptions);
 
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);

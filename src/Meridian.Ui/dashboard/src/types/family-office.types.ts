@@ -68,6 +68,7 @@ export interface FamilyOwnershipNode {
 }
 
 export interface FamilyOwnershipEdge {
+  notes?: string | null;
   edgeId: string;
   sourceNodeId: string;
   targetNodeId: string;
@@ -210,6 +211,7 @@ export interface FamilyOfficeReadiness {
 }
 
 export interface FamilyOfficeOverview {
+  availableClients?: Array<{ clientId: string; displayName: string }>;
   familyOfficeId: string;
   displayName: string;
   baseCurrency: string;

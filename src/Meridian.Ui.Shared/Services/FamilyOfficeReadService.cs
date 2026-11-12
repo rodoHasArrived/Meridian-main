@@ -34,7 +34,7 @@ public sealed class FamilyOfficeReadService
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    public async Task<FamilyOfficeOverviewDto> GetOverviewAsync(CancellationToken ct = default)
+    public async Task<FamilyOfficeOverviewDto> GetOverviewAsync(CancellationToken ct = default, Guid? familyOfficeId = null)
     {
         var generatedAt = _timeProvider.GetUtcNow();
         if (_fundStructureService is null)
@@ -55,15 +55,19 @@ public sealed class FamilyOfficeReadService
             return BuildEmptyOverview(generatedAt, ["No FamilyOffice client segment is configured in the fund-structure graph."]);
         }
 
+        var choices = familyClients.Select(static client => new FamilyOfficeClientOptionDto(client.ClientId.ToString("D"), client.Name)).ToArray();
+        var familyClient = familyOfficeId.HasValue
+            ? familyClients.FirstOrDefault(client => client.ClientId == familyOfficeId.Value)
+            : familyClients.Length == 1 ? familyClients[0] : null;
+        if (familyClient is null)
+            return BuildEmptyOverview(generatedAt, [familyOfficeId.HasValue
+                ? "The selected family office is unavailable in the current authorized scope."
+                : "Select a family office before reading its ownership and balances."]) with { AvailableClients = choices };
+
         var warnings = new List<string>();
-        var familyClient = familyClients[0];
-        if (familyClients.Length > 1)
-        {
-            warnings.Add("Multiple FamilyOffice clients are configured; this read service currently projects the first active family-office client.");
-        }
 
         var asOfDate = DateOnly.FromDateTime(generatedAt.UtcDateTime);
-        var relevant = SelectRelevantGraph(graph, familyClient);
+        var relevant = SelectRelevantGraph(graph, familyClient, warnings);
         var entities = BuildEntities(relevant, warnings);
         var ownershipGraph = BuildOwnershipGraph(relevant, asOfDate);
         var evidenceLinks = BuildStructureEvidenceLinks(relevant, asOfDate);
@@ -95,24 +99,25 @@ public sealed class FamilyOfficeReadService
             CapitalCommitments: commitments,
             RecentCapitalActivity: [],
             Readiness: readiness,
-            EvidenceLinks: evidenceLinks);
+            EvidenceLinks: evidenceLinks,
+            AvailableClients: choices);
     }
 
-    public async Task<FamilyOfficeBalanceSheetResponseDto> GetBalanceSheetAsync(CancellationToken ct = default)
+    public async Task<FamilyOfficeBalanceSheetResponseDto> GetBalanceSheetAsync(CancellationToken ct = default, Guid? familyOfficeId = null)
     {
-        var overview = await GetOverviewAsync(ct).ConfigureAwait(false);
+        var overview = await GetOverviewAsync(ct, familyOfficeId).ConfigureAwait(false);
         return new FamilyOfficeBalanceSheetResponseDto(overview.BalanceSheet, BuildEndpointState(overview));
     }
 
-    public async Task<FamilyOfficeEntitiesResponseDto> GetEntitiesAsync(CancellationToken ct = default)
+    public async Task<FamilyOfficeEntitiesResponseDto> GetEntitiesAsync(CancellationToken ct = default, Guid? familyOfficeId = null)
     {
-        var overview = await GetOverviewAsync(ct).ConfigureAwait(false);
+        var overview = await GetOverviewAsync(ct, familyOfficeId).ConfigureAwait(false);
         return new FamilyOfficeEntitiesResponseDto(overview.Entities, BuildEndpointState(overview));
     }
 
-    public async Task<FamilyOfficeOwnershipGraphResponseDto> GetOwnershipGraphAsync(CancellationToken ct = default)
+    public async Task<FamilyOfficeOwnershipGraphResponseDto> GetOwnershipGraphAsync(CancellationToken ct = default, Guid? familyOfficeId = null)
     {
-        var overview = await GetOverviewAsync(ct).ConfigureAwait(false);
+        var overview = await GetOverviewAsync(ct, familyOfficeId).ConfigureAwait(false);
         return new FamilyOfficeOwnershipGraphResponseDto(overview.OwnershipGraph, BuildEndpointState(overview));
     }
 
@@ -191,47 +196,84 @@ public sealed class FamilyOfficeReadService
             EvidenceLinks: [stateEvidence]);
     }
 
-    private static RelevantFamilyGraph SelectRelevantGraph(OrganizationStructureGraphDto graph, ClientSummaryDto familyClient)
+    private static RelevantFamilyGraph SelectRelevantGraph(OrganizationStructureGraphDto graph, ClientSummaryDto familyClient, List<string> warnings)
     {
         var clientId = familyClient.ClientId;
         var business = graph.Businesses.FirstOrDefault(b => b.BusinessId == familyClient.BusinessId);
-        var portfolios = graph.InvestmentPortfolios.Where(p => p.ClientId == clientId || (business is not null && p.BusinessId == business.BusinessId)).ToArray();
-        var funds = graph.Funds.Where(f => business is not null && f.BusinessId == business.BusinessId).ToArray();
-        var fundIds = funds.Select(static fund => fund.FundId).ToHashSet();
-        var portfolioEntityIds = portfolios.Select(static portfolio => portfolio.EntityId).OfType<Guid>().ToHashSet();
-        var fundEntityIds = funds.SelectMany(static fund => fund.EntityIds).ToHashSet();
-        var entityIds = portfolioEntityIds.Concat(fundEntityIds).ToHashSet();
-        var accounts = graph.Accounts
-            .Where(account =>
-                (account.EntityId.HasValue && entityIds.Contains(account.EntityId.Value)) ||
-                (account.FundId.HasValue && fundIds.Contains(account.FundId.Value)) ||
-                portfolios.Any(portfolio => portfolio.AccountIds.Contains(account.AccountId)) ||
-                funds.Any(fund => fund.AccountIds.Contains(account.AccountId)))
-            .OrderBy(static account => account.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        // Client membership is explicit and shallow. A legal Client -> Portfolio link
+        // remains relevant when the portfolio's sole operating parent is a fund/sleeve/
+        // vehicle. Neither a shared business nor arbitrary Owns reachability grants scope.
+        var directPortfolioIds = familyClient.InvestmentPortfolioIds.ToHashSet();
+        directPortfolioIds.UnionWith(graph.OwnershipLinks.Where(link => link.ParentNodeId == clientId
+            && link.RelationshipType == OwnershipRelationshipTypeDto.Owns).Select(static link => link.ChildNodeId));
+        var portfolios = graph.InvestmentPortfolios.Where(portfolio => portfolio.ClientId == clientId
+            || directPortfolioIds.Contains(portfolio.InvestmentPortfolioId)).ToArray();
+        var portfolioIds = portfolios.Select(static portfolio => portfolio.InvestmentPortfolioId).ToHashSet();
 
-        entityIds.UnionWith(accounts.Select(static account => account.EntityId).OfType<Guid>());
+        // A shared entity/fund is context, never authority to collect all of its accounts.
+        var accountIds = portfolios.SelectMany(static portfolio => portfolio.AccountIds).ToHashSet();
+        accountIds.UnionWith(graph.OwnershipLinks.Where(link => portfolioIds.Contains(link.ParentNodeId)
+            && link.RelationshipType is OwnershipRelationshipTypeDto.Operates
+                or OwnershipRelationshipTypeDto.CustodiesFor or OwnershipRelationshipTypeDto.ClearsFor)
+            .Select(static link => link.ChildNodeId));
+        var accounts = graph.Accounts.Where(account => accountIds.Contains(account.AccountId)
+            || (Guid.TryParse(account.PortfolioId, out var portfolioId) && portfolioIds.Contains(portfolioId)))
+            .OrderBy(static account => account.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();
+        accountIds = accounts.Select(static account => account.AccountId).ToHashSet();
+
+        // Resolve only the selected portfolios' retained structural parents. These nodes
+        // explain legal paths without adding their other portfolios, entities or accounts.
+        var vehicleIds = portfolios.Select(static portfolio => portfolio.VehicleId).OfType<Guid>()
+            .Concat(accounts.Select(static account => account.VehicleId).OfType<Guid>()).ToHashSet();
+        vehicleIds.UnionWith(graph.Vehicles.Where(vehicle => vehicle.InvestmentPortfolioIds.Any(portfolioIds.Contains))
+            .Select(static vehicle => vehicle.VehicleId));
+        vehicleIds.UnionWith(graph.OwnershipLinks.Where(link => portfolioIds.Contains(link.ChildNodeId)
+            && link.RelationshipType == OwnershipRelationshipTypeDto.Owns
+            && graph.Vehicles.Any(vehicle => vehicle.VehicleId == link.ParentNodeId)).Select(static link => link.ParentNodeId));
+        var vehicles = graph.Vehicles.Where(vehicle => vehicleIds.Contains(vehicle.VehicleId)).ToArray();
+        var sleeveIds = portfolios.Select(static portfolio => portfolio.SleeveId).OfType<Guid>()
+            .Concat(accounts.Select(static account => account.SleeveId).OfType<Guid>()).ToHashSet();
+        sleeveIds.UnionWith(graph.Sleeves.Where(sleeve => sleeve.InvestmentPortfolioIds.Any(portfolioIds.Contains))
+            .Select(static sleeve => sleeve.SleeveId));
+        sleeveIds.UnionWith(graph.OwnershipLinks.Where(link => portfolioIds.Contains(link.ChildNodeId)
+            && link.RelationshipType == OwnershipRelationshipTypeDto.AllocatesTo
+            && graph.Sleeves.Any(sleeve => sleeve.SleeveId == link.ParentNodeId)).Select(static link => link.ParentNodeId));
+        var sleeves = graph.Sleeves.Where(sleeve => sleeveIds.Contains(sleeve.SleeveId)).ToArray();
+        var fundIds = portfolios.Select(static portfolio => portfolio.FundId).OfType<Guid>()
+            .Concat(accounts.Select(static account => account.FundId).OfType<Guid>())
+            .Concat(vehicles.Select(static vehicle => vehicle.FundId))
+            .Concat(sleeves.Select(static sleeve => sleeve.FundId)).ToHashSet();
+        fundIds.UnionWith(graph.Funds.Where(fund => fund.InvestmentPortfolioIds.Any(portfolioIds.Contains))
+            .Select(static fund => fund.FundId));
+        fundIds.UnionWith(graph.OwnershipLinks.Where(link => portfolioIds.Contains(link.ChildNodeId)
+            && link.RelationshipType == OwnershipRelationshipTypeDto.AllocatesTo
+            && graph.Funds.Any(fund => fund.FundId == link.ParentNodeId)).Select(static link => link.ParentNodeId));
+        var funds = graph.Funds.Where(fund => fundIds.Contains(fund.FundId)).ToArray();
+        var entityIds = portfolios.Select(static portfolio => portfolio.EntityId).OfType<Guid>()
+            .Concat(accounts.Select(static account => account.EntityId).OfType<Guid>())
+            .Concat(vehicles.Select(static vehicle => vehicle.LegalEntityId)).ToHashSet();
         var entities = graph.Entities.Where(entity => entityIds.Contains(entity.EntityId)).ToArray();
         var nodeIds = new HashSet<Guid>([clientId]);
-        if (business is not null)
-            nodeIds.Add(business.BusinessId);
-        foreach (var fund in funds)
-            nodeIds.Add(fund.FundId);
-        foreach (var portfolio in portfolios)
-            nodeIds.Add(portfolio.InvestmentPortfolioId);
-        foreach (var entity in entities)
-            nodeIds.Add(entity.EntityId);
-        foreach (var account in accounts)
-            nodeIds.Add(account.AccountId);
+        if (business is not null) nodeIds.Add(business.BusinessId);
+        nodeIds.UnionWith(funds.Select(static fund => fund.FundId));
+        nodeIds.UnionWith(sleeves.Select(static sleeve => sleeve.SleeveId));
+        nodeIds.UnionWith(vehicles.Select(static vehicle => vehicle.VehicleId));
+        nodeIds.UnionWith(portfolioIds);
+        nodeIds.UnionWith(entities.Select(static entity => entity.EntityId));
+        nodeIds.UnionWith(accountIds);
+        if (accounts.Length > 0)
+            warnings.Add("Balances are unweighted source values for explicitly associated accounts; legal ownership percentages do not establish economic exposure.");
 
+        if (graph.OwnershipLinks.Any(link => nodeIds.Contains(link.ParentNodeId) != nodeIds.Contains(link.ChildNodeId)))
+            warnings.Add("Some ownership paths stop at the boundary of this client scope; unavailable counterparties are not disclosed.");
         var links = graph.OwnershipLinks
-            .Where(link => nodeIds.Contains(link.ParentNodeId) || nodeIds.Contains(link.ChildNodeId))
+            .Where(link => nodeIds.Contains(link.ParentNodeId) && nodeIds.Contains(link.ChildNodeId))
             .OrderBy(static link => link.EffectiveFrom)
             .ThenBy(static link => link.OwnershipLinkId)
             .ToArray();
         var assignments = graph.Assignments.Where(assignment => nodeIds.Contains(assignment.NodeId)).ToArray();
 
-        return new RelevantFamilyGraph(familyClient, business, funds, entities, portfolios, accounts, links, assignments);
+        return new RelevantFamilyGraph(familyClient, business, funds, sleeves, vehicles, entities, portfolios, accounts, links, assignments);
     }
 
     private static IReadOnlyList<FamilyEntityDto> BuildEntities(RelevantFamilyGraph graph, List<string> warnings)
@@ -589,8 +631,11 @@ public sealed class FamilyOfficeReadService
             nodes.Add(new FamilyOwnershipNodeDto(graph.Business.BusinessId.ToString("D"), graph.Business.Name, graph.Business.BusinessKind.ToString(), graph.Business.BusinessId.ToString("D"), null, graph.Business.BaseCurrency));
         }
         nodes.AddRange(graph.Funds.Select(static fund => new FamilyOwnershipNodeDto(fund.FundId.ToString("D"), fund.Name, "Fund", fund.FundId.ToString("D"), null, fund.BaseCurrency)));
+        nodes.AddRange(graph.Sleeves.Select(static sleeve => new FamilyOwnershipNodeDto(sleeve.SleeveId.ToString("D"), sleeve.Name, "Sleeve", null, null, null)));
+        nodes.AddRange(graph.Vehicles.Select(static vehicle => new FamilyOwnershipNodeDto(vehicle.VehicleId.ToString("D"), vehicle.Name, "Vehicle", vehicle.LegalEntityId.ToString("D"), null, vehicle.BaseCurrency)));
         nodes.AddRange(graph.LegalEntities.Select(static entity => new FamilyOwnershipNodeDto(entity.EntityId.ToString("D"), entity.Name, entity.EntityType.ToString(), entity.EntityId.ToString("D"), entity.Jurisdiction, entity.BaseCurrency)));
         nodes.AddRange(graph.Accounts.Select(static account => new FamilyOwnershipNodeDto(account.AccountId.ToString("D"), account.DisplayName, $"Account:{account.AccountType}", account.AccountId.ToString("D"), null, account.BaseCurrency)));
+        nodes.AddRange(graph.Portfolios.Select(static portfolio => new FamilyOwnershipNodeDto(portfolio.InvestmentPortfolioId.ToString("D"), portfolio.Name, "InvestmentPortfolio", portfolio.EntityId?.ToString("D"), null, portfolio.BaseCurrency)));
 
         var edges = graph.OwnershipLinks.Select(static link => new FamilyOwnershipEdgeDto(
             EdgeId: link.OwnershipLinkId.ToString("D"),
@@ -600,7 +645,8 @@ public sealed class FamilyOfficeReadService
             OwnershipPercent: link.OwnershipPercent,
             EffectiveFrom: DateOnly.FromDateTime(link.EffectiveFrom.UtcDateTime),
             EffectiveTo: link.EffectiveTo is null ? null : DateOnly.FromDateTime(link.EffectiveTo.Value.UtcDateTime),
-            SourceDocumentId: link.Notes)).ToArray();
+            SourceDocumentId: null,
+            Notes: link.Notes)).ToArray();
 
         return new FamilyOwnershipGraphDto(asOfDate, nodes.DistinctBy(static node => node.NodeId).ToArray(), edges, BuildStructureEvidenceLinks(graph, asOfDate));
     }
@@ -681,6 +727,8 @@ public sealed class FamilyOfficeReadService
         ClientSummaryDto Client,
         BusinessSummaryDto? Business,
         IReadOnlyList<FundSummaryDto> Funds,
+        IReadOnlyList<SleeveSummaryDto> Sleeves,
+        IReadOnlyList<VehicleSummaryDto> Vehicles,
         IReadOnlyList<LegalEntitySummaryDto> LegalEntities,
         IReadOnlyList<InvestmentPortfolioSummaryDto> Portfolios,
         IReadOnlyList<AccountSummaryDto> Accounts,

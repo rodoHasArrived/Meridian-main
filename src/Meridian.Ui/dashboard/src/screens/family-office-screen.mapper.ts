@@ -82,6 +82,9 @@ export function mapFamilyOfficeOverview(overview: FamilyOfficeOverview | null): 
     displayName: overview.displayName,
     baseCurrency: overview.baseCurrency,
     asOfDate: overview.asOfDate,
+    ownershipGraph: overview.ownershipGraph,
+    publicAssets: overview.publicAssets,
+    warnings: overview.readiness.blockers,
     entities: hasRoot(entities, overview.familyOfficeId)
       ? entities
       : [buildSyntheticRoot(overview, entities, privateAssets), ...entities],

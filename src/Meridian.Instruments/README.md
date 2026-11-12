@@ -6,10 +6,17 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Instruments
+
+Bond analytics identifies contractual maturity and every exactly tied governing issuer-call or
+maturity yield scenario; holder puts remain separate elections and do not determine yield to
+worst. General option-screen validation preserves resolved contract identities, signed delta,
+criteria reasons and exact decimal evidence. Basket/assessment fingerprints bind full option or
+equity legs and account/order context; imported broker evidence is dated and is not a local
+options margin model or permission to execute.
 
 Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing
 already-reset periods. Security/version, index, currency, exact reset date and economic/knowledge

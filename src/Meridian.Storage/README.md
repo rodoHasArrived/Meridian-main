@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Storage
@@ -72,6 +72,27 @@ book/entity/currency ownership and serializes commitment amendments with final p
 same commitment advisory-lock identity. Historical capital journals without native receipts require
 opening reconciliation. Funding receipt and bank-line uniqueness span the owning tenant/company,
 and database triggers protect approved authority, retained calls, and posting receipts from rewrite.
+
+Holder-side private-fund asset observations use the separate `IPrivateCapitalRecordStore`, not
+issuer-side `PostgresPrivateCapitalStore` call authority. Fund Accounts migration `009` adds
+`private_capital_record`: immutable register entries, original manual/CSV import inputs, reviewed
+previews, source-reported snapshots and command receipts, partitioned by tenant and company.
+Amounts remain exact decimal strings inside retained JSON; missing source values remain null.
+Explicit snapshot supersession records corrections, and the unique correction index refuses a
+second successor for the same retained observation. No legacy assignment is promoted to a
+measured balance, and no historical monetary digits are invented or backfilled.
+
+`PostgresPrivateCapitalRecordStore` uses the existing Fund Accounts connection, schema and
+migration runner. A transaction-scoped partition advisory lock serializes validation against
+current correction heads, append and receipt retention; failure rolls back the complete batch.
+`FilePrivateCapitalRecordStore` is the durable alternative when that connection is absent. It
+hashes the tenant/company identity into the partition path, checks the retained envelope scope,
+holds an exclusive cross-process writer lock, reloads current records under that lock and uses
+`AtomicFileWriter` to publish the complete replacement. Neither implementation silently replaces
+or deletes prior records. Repeating a command with identical reviewed inputs returns its retained
+outcome after restart; changed inputs under the same command identity conflict. Focused coverage
+is in `PrivateCapitalRecordServiceTests`, `PrivateCapitalRecordAuthorityTests`,
+`PrivateCapitalRecordEndpointTests` and `PostgresPrivateCapitalRecordStoreTests`.
 
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
