@@ -47,6 +47,7 @@ import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-tabl
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
 import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
   buildPortfolioExplorerPresentation,
   resolveBrokerageAccountFilterKeyCommand,
@@ -1132,6 +1133,16 @@ export function PortfolioScreen({
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">
                       {vm.selectedBrokeragePosition.statusDetail}
                     </p>
+                    {vm.selectedBrokeragePosition.bondSecurityId ? (
+                      <div className="mt-3 flex flex-wrap gap-2" aria-label="Selected bond workflows">
+                        <Button asChild size="sm" variant="outline">
+                          <Link to={bondWorkflowRoute(vm.selectedBrokeragePosition.bondSecurityId, "analytics")}>Bond analytics</Link>
+                        </Button>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to={bondWorkflowRoute(vm.selectedBrokeragePosition.bondSecurityId, "migration")}>Convention migration</Link>
+                        </Button>
+                      </div>
+                    ) : null}
                     <dl className="mt-4 grid gap-2">
                       {vm.selectedBrokeragePosition.fields.map((field) => (
                         <div
@@ -1239,6 +1250,18 @@ export function PortfolioScreen({
                     </Link>
                   </Button>
                 </div>
+                <details className="mt-3 text-sm">
+                  <summary className="cursor-pointer font-medium text-foreground">Fixed-income actions</summary>
+                  <p className="mt-2 text-xs text-muted-foreground">Resolve this holding in Security Master to open its bond workflow. If multiple instruments match, select the correct record first.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={holdingBondWorkflowRoute(vm.selectedPosition.title, "analytics")} aria-label={`Open bond analytics for ${vm.selectedPosition.title}`}>Bond analytics</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={holdingBondWorkflowRoute(vm.selectedPosition.title, "migration")} aria-label={`Open convention migration for ${vm.selectedPosition.title}`}>Convention migration</Link>
+                    </Button>
+                  </div>
+                </details>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedPosition.statusDetail}</p>
                 <dl className="mt-4 grid gap-2">
                   {vm.selectedPosition.fields.map((field) => (

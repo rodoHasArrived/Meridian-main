@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isBondAssetClass } from "@/lib/fixed-income-navigation";
 import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
@@ -390,6 +391,7 @@ export interface PortfolioRunTradeEvidenceRow {
 
 export interface PortfolioBrokeragePositionDetail {
   id: string;
+  bondSecurityId: string | null;
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -1748,6 +1750,7 @@ function buildSelectedBrokeragePositionDetail(
 
   return {
     id: brokeragePositionId(position),
+    bondSecurityId: position.security && isBondAssetClass(position.security.assetClass) ? position.security.securityId : null,
     title: position.symbol,
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,

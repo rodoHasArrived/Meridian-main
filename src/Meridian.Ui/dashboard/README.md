@@ -6,10 +6,44 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui/dashboard
+
+## Fixed-income workflow access
+
+Asset detail and selected bond holdings link to the existing Security Master analytics and
+convention-migration workflows. Symbol-only holdings resolve an exact Security Master identity;
+ambiguous matches require selection. `securityId`, `tab=evidence` and `bondAction=analytics|migration`
+retain the requested action on reload. Explicitly linked instruments control the explorer selection;
+an absent row never substitutes the default instrument. Initial action focus is applied once, and
+manual record selection updates the link. Instrument reads disable development fallback.
+
+Issuer and maturity ladders are browsable before selecting a security. Keyboard-accessible row
+actions open authoritative instrument detail. Command search includes analytics, convention
+migration, ladders, account forecasts and reviewed close prices. Account oversight is visible in
+Reconciliation with account-owned book selection and explicit access/configuration blockers.
+
+Cash-ladder contributions link instruments and Security Master evidence. Their inline inspector
+reads the exact Asset Operations projection identity, engine and retained terms version/hash;
+unavailable original evidence remains a blocker. Asset Operations and contractual scenario run
+identities are distinct. Contractual scenarios expose multiple prepayment intervals, contract-derived
+stream selection and separate explicit hypothetical notice dates. Account forecasts already support
+dated FX: preparation can reuse a selected retained snapshot's observations, flows and dated FX with
+unchanged amounts/evidence, then capture a reviewed linked correction. New source discovery and
+first-run preparation still require further shared API work.
+
+`lib/workstation-features.ts` exports `WORKSTATION_CAPABILITY_TRACES`, mapping the ten fixed-income
+capabilities through service, API, client, screen/action, permission and browser acceptance evidence.
+Missing seams stay explicit; catalog metadata never grants access. Curve/version selection,
+pricing-source controls, settlement, governed amortization, contextual factor preparation, provider
+discovery and browsable contractual run history remain in the
+[access plan](../../../docs/engineering/plans/bond-capability-expansion.md#existing-capability-access-next-delivery-priority).
+
+Focused validation includes the changed screen/component tests, `fixed-income-capabilities.test.ts`,
+and `node scripts/dev/verify-fixed-income-access.mjs` from the repository root against a running Vite
+server. Browser evidence uses deterministic synthetic API responses, not live provider certification.
 
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;

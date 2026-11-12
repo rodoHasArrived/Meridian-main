@@ -891,6 +891,26 @@ describe("PortfolioScreen", () => {
       "href",
       "/portfolio/asset-detail?symbol=MSFT&source=portfolio"
     );
+    await user.click(screen.getByText("Fixed-income actions"));
+    expect(screen.getByRole("link", { name: "Open bond analytics for MSFT" })).toHaveAttribute(
+      "href", "/portfolio/asset-detail?symbol=MSFT&source=portfolio&bondAction=analytics"
+    );
+    expect(screen.getByRole("link", { name: "Open convention migration for MSFT" })).toHaveAttribute(
+      "href", "/portfolio/asset-detail?symbol=MSFT&source=portfolio&bondAction=migration"
+    );
+  });
+
+  it("opens bond workflows from the selected brokerage holding's retained Security Master identity", async () => {
+    const bondPortfolio: BrokerageHouseholdPortfolio = {
+      ...brokeragePortfolio,
+      positions: [{ ...brokeragePortfolio.positions[0], symbol: "US-SYNTHETIC", assetClass: "bond", security: {
+        securityId: "bond-held", displayName: "Synthetic Treasury", assetClass: "Bond", currency: "USD", status: "Active", primaryIdentifier: "US-SYNTHETIC", subType: "Treasury"
+      } }]
+    };
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} brokeragePortfolio={bondPortfolio} />, { initialEntries: ["/portfolio/brokerage-sync"] });
+
+    expect(screen.getByRole("link", { name: "Bond analytics" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-held&tab=evidence&bondAction=analytics");
+    expect(screen.getByRole("link", { name: "Convention migration" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-held&tab=evidence&bondAction=migration");
   });
 
   it("updates the run evidence detail panel from the selectable row", async () => {

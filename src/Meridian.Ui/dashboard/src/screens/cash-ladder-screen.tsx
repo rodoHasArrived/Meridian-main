@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { CashLadderProjectionEvidence } from "@/screens/cash-ladder-screen.projection-evidence";
 import { cn } from "@/lib/utils";
 import {
   buildCashLadderChart,
@@ -49,13 +50,16 @@ const metricToneMap = {
   danger: "danger"
 } as const;
 
-const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
+function drillColumns(onInspect: (row: CashLadderDrillRow) => void): DenseDataTableColumn<CashLadderDrillRow>[] {
+  return [
   {
     id: "instrument",
     label: "Instrument",
     render: (row) => (
       <div className="flex flex-col">
-        <span className="font-semibold text-foreground">{row.instrument}</span>
+        {row.assetClass !== "CapitalActivity" && row.securityId && row.securityId !== "00000000-0000-0000-0000-000000000000" ? (
+          <Link className="font-semibold text-foreground underline underline-offset-2" to={workstationRouteWithQuery("portfolioAssetDetail", { securityId: row.securityId })}>{row.instrument}</Link>
+        ) : <span className="font-semibold text-foreground">{row.instrument}</span>}
         <span className="text-xs text-muted-foreground">{row.assetClass}</span>
       </div>
     )
@@ -95,7 +99,9 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
     label: "Projection run",
     render: (row) => (
       <div className="flex flex-col">
-        <span className="font-mono text-foreground">{row.projectionRunId}</span>
+        {row.assetClass !== "CapitalActivity" && row.projectionRunIdentity && row.securityId && row.securityId !== "00000000-0000-0000-0000-000000000000" ? (
+          <button type="button" className="text-left font-mono text-foreground underline underline-offset-2" aria-label={`Inspect projection run for ${row.instrument}`} onClick={() => onInspect(row)}>{row.projectionRunId}</button>
+        ) : <span className="font-mono text-foreground">{row.projectionRunId}</span>}
         <span className="text-xs text-muted-foreground">{row.projectionEngineVersion}</span>
       </div>
     )
@@ -108,7 +114,12 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
   {
     id: "source",
     label: "Source",
-    render: (row) => <span className="text-xs text-muted-foreground">{row.sourceDomain}</span>
+    render: (row) => <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      {row.sourceDomain === "SecurityMaster" && row.sourceEntityId ? (
+        <Link className="underline underline-offset-2" to={workstationRouteWithQuery("accountingSecurityMaster", { securityId: row.sourceEntityId, tab: "evidence" })}>Security Master evidence</Link>
+      ) : <span>{row.sourceDomain}</span>}
+      {row.sourceEntityId ? <span className="break-all font-mono">{row.sourceEntityId}</span> : <span>Source identity unavailable</span>}
+    </div>
   },
   {
     id: "scenario",
@@ -122,7 +133,8 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
         <span className="text-xs text-muted-foreground">—</span>
       )
   }
-];
+  ];
+}
 
 export interface CashLadderScreenProps {
   fundAccountId?: string;
@@ -145,11 +157,15 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
   const [selection, setSelection] = useState<{ requestKey: string; index: number } | null>(null);
+  const [evidenceSelection, setEvidenceSelection] = useState<{ requestKey: string; row: CashLadderDrillRow } | null>(null);
   const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash]);
   const ladder = result?.requestKey === requestKey ? result.ladder : null;
   const status = result?.requestKey === requestKey ? result.status : "loading";
   const selectedBucket = selection?.requestKey === requestKey ? selection.index : null;
-  const setSelectedBucket = (index: number | null) => setSelection(index === null ? null : { requestKey, index });
+  const setSelectedBucket = (index: number | null) => {
+    setSelection(index === null ? null : { requestKey, index });
+    setEvidenceSelection(null);
+  };
   const minimumCashDirty = useRef(false);
 
   useEffect(() => {
@@ -285,7 +301,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <CardTitle>Projected cash by bucket</CardTitle>
+                  <h2 className="card-title font-semibold leading-snug tracking-normal">Projected cash by bucket</h2>
                   <CardDescription>
                     {ladder
                       ? `${ladder.horizonDays}-day horizon from ${formatCashLadderDate(ladder.asOfDate)} · scenario: ${activeScenario?.displayName ?? ladder.scenarioId}`
@@ -321,7 +337,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                 <svg
                   viewBox={`0 0 ${CASH_LADDER_CHART_WIDTH} ${CASH_LADDER_CHART_HEIGHT}`}
                   className="w-full"
-                  role="img"
+                  role="group"
                   aria-label="Portfolio cash ladder: stacked projected flows per bucket with cumulative cash line and minimum-balance band"
                 >
                   {chart.yTicks.map((tick) => (
@@ -378,7 +394,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                       role="button"
                       tabIndex={0}
                       aria-label={bar.ariaLabel}
-                      className="cursor-pointer focus:outline-hidden"
+                      className="cursor-pointer focus:outline-2 focus:outline-offset-2 focus:outline-primary"
                       onClick={() => setSelectedBucket(bar.index === selectedBucket ? null : bar.index)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
@@ -474,9 +490,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           <div className="grid gap-4 xl:grid-cols-3">
             <Card className="xl:col-span-2">
               <CardHeader className="pb-2">
-                <CardTitle>
+                <h2 className="card-title font-semibold leading-snug tracking-normal">
                   {selectedBucketLabel ? `Contributing flows · ${selectedBucketLabel}` : "Contributing flows"}
-                </CardTitle>
+                </h2>
                 <CardDescription>
                   {selectedBucketLabel
                     ? "Every flow in the selected bucket, traceable to its projection run and Security Master terms version."
@@ -485,7 +501,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
               </CardHeader>
               <CardContent>
                 <DenseDataTable
-                  columns={drillColumns}
+                  columns={drillColumns((row) => setEvidenceSelection({ requestKey, row }))}
                   rows={drillRows}
                   getRowId={(row) => row.id}
                   emptyText={
@@ -495,12 +511,15 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   }
                   ariaLabel="Cash ladder contributing flows"
                 />
+                {evidenceSelection?.requestKey === requestKey && ladder ? (
+                  <CashLadderProjectionEvidence key={evidenceSelection.row.id} row={evidenceSelection.row} onClose={() => setEvidenceSelection(null)} />
+                ) : null}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Scenario semantics</CardTitle>
+                <h2 className="card-title font-semibold leading-snug tracking-normal">Scenario semantics</h2>
                 <CardDescription>What this scenario models versus what it assumes.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">

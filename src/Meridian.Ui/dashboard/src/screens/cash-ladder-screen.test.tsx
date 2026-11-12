@@ -2,12 +2,17 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { axe } from "jest-axe";
 import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
+import { getAssetOperations } from "@/lib/api";
 import { CashLadderScreen } from "./cash-ladder-screen";
+import type { AssetOperationsDetail } from "@/types";
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 vi.mock("@/lib/api/portfolio-cash-ladder.api", () => ({ getPortfolioCashLadder: vi.fn() }));
+vi.mock("@/lib/api", () => ({ getAssetOperations: vi.fn() }));
 const getLadder = vi.mocked(getPortfolioCashLadder);
+const getOperations = vi.mocked(getAssetOperations);
 afterEach(() => vi.resetAllMocks());
 
 function ladder(account: string, minimumCashThreshold = 10000): PortfolioCashLadder {
@@ -39,6 +44,90 @@ function deferred<T>() {
 }
 
 describe("Cash Ladder request scope", () => {
+  it("links an instrument and its source evidence and inspects the exact Asset Operations run", async () => {
+    const projection = ladder("A");
+    Object.assign(projection.contributions[0], { projectionRunId: "run-original", projectionEngineVersion: "engine-original",
+      termsVersionId: "terms-original", termsHash: "hash-original", sourceEntityId: "bond" });
+    getLadder.mockResolvedValue(projection);
+    getOperations.mockResolvedValue(operations());
+    const user = userEvent.setup();
+    const { container } = render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    const table = within(screen.getByRole("table", { name: "Cash ladder contributing flows" }));
+    expect(table.getByRole("link", { name: "Bond A" })).toHaveAttribute("href", "/portfolio/asset-detail?securityId=bond");
+    expect(table.getByRole("link", { name: "Security Master evidence" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond&tab=evidence");
+    await user.click(table.getByRole("button", { name: "Inspect projection run for Bond A" }));
+    const evidence = within(screen.getByRole("region", { name: "Projection evidence for Bond A" }));
+    await evidence.findByText("Matched terms evidence");
+    expect(evidence.getByText("run-original")).toBeInTheDocument();
+    expect(evidence.getByText("Retained original bond terms")).toBeInTheDocument();
+    expect(evidence.queryByText("Unrelated current terms")).not.toBeInTheDocument();
+    expect(getOperations).toHaveBeenCalledWith("bond", expect.objectContaining({ allowDevelopmentFallback: false, signal: expect.any(AbortSignal) }));
+    expect((await axe(container)).violations).toEqual([]);
+    await user.click(evidence.getByRole("button", { name: "Close projection evidence" }));
+    expect(screen.queryByRole("region", { name: "Projection evidence for Bond A" })).not.toBeInTheDocument();
+  });
+
+  it("withholds a newer run and reports that the contribution's exact run is unavailable", async () => {
+    const projection = ladder("A");
+    Object.assign(projection.contributions[0], { projectionRunId: "missing-run", projectionEngineVersion: "engine-original" });
+    getLadder.mockResolvedValue(projection);
+    getOperations.mockResolvedValue(operations());
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    await user.click(screen.getByRole("button", { name: "Inspect projection run for Bond A" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Exact projection evidence unavailable");
+    expect(screen.getByRole("alert")).toHaveTextContent("a newer run cannot substitute");
+    expect(screen.queryByText("Matched terms evidence")).not.toBeInTheDocument();
+  });
+
+  it("does not link capital activity to an invented instrument or projection", async () => {
+    const projection = ladder("A");
+    Object.assign(projection.contributions[0], { securityId: "investor-reference", assetClass: "CapitalActivity", sourceDomain: "PartnershipLedger", sourceEntityId: "investor-reference", projectionRunId: null });
+    getLadder.mockResolvedValue(projection);
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    const table = within(screen.getByRole("table", { name: "Cash ladder contributing flows" }));
+    expect(table.queryByRole("link")).not.toBeInTheDocument();
+    expect(table.queryByRole("button")).not.toBeInTheDocument();
+    expect(table.getByText("PartnershipLedger")).toBeInTheDocument();
+    expect(table.getByText("investor-reference")).toBeInTheDocument();
+  });
+
+  it("preserves the exact run but does not substitute a current terms version", async () => {
+    const projection = ladder("A");
+    Object.assign(projection.contributions[0], { projectionRunId: "run-original", projectionEngineVersion: "engine-original", termsVersionId: "terms-missing", termsHash: "hash-missing" });
+    getLadder.mockResolvedValue(projection);
+    getOperations.mockResolvedValue(operations());
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    await user.click(screen.getByRole("button", { name: "Inspect projection run for Bond A" }));
+    await screen.findByText("Exact terms evidence unavailable");
+    expect(screen.getByText("Run status")).toBeInTheDocument();
+    expect(screen.queryByText("Matched terms evidence")).not.toBeInTheDocument();
+    expect(screen.queryByText("Unrelated current terms")).not.toBeInTheDocument();
+  });
+
+  it("aborts projection evidence on account change and ignores its late response", async () => {
+    const projection = ladder("A");
+    Object.assign(projection.contributions[0], { projectionRunId: "run-original", projectionEngineVersion: "engine-original" });
+    getLadder.mockResolvedValueOnce(projection).mockResolvedValueOnce(ladder("B"));
+    const pending = deferred<AssetOperationsDetail>();
+    getOperations.mockReturnValue(pending.promise);
+    const user = userEvent.setup();
+    const { rerender } = render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    await user.click(screen.getByRole("button", { name: "Inspect projection run for Bond A" }));
+    const signal = getOperations.mock.calls[0][1]!.signal!;
+    rerender(view("account-b"));
+    expect(signal.aborted).toBe(true);
+    await act(async () => pending.resolve(operations()));
+    expect(screen.queryByRole("region", { name: "Projection evidence for Bond A" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Retained original bond terms")).not.toBeInTheDocument();
+  });
   it("retains scenario choices through a delayed and failed refresh without retaining balances", async () => {
     const pending = deferred<PortfolioCashLadder>();
     getLadder.mockResolvedValueOnce(ladder("A")).mockReturnValueOnce(pending.promise)
@@ -180,3 +269,16 @@ describe("Cash Ladder request scope", () => {
     expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(30000);
   });
 });
+
+function operations(): AssetOperationsDetail {
+  return {
+    subject: { securityId: "bond", assetClass: "Bond", displayName: "Bond A", primaryIdentifier: null, operationalProfile: [] },
+    termsHistory: [
+      { securityId: "bond", termsVersionId: "terms-original", termsHash: "hash-original", versionNumber: 1, effectiveDate: "2026-01-01", recordedAt: "2026-01-01T12:00:00Z", sourceDomain: "SecurityMaster", sourceEntityId: "bond", summary: "Retained original bond terms" },
+      { securityId: "bond", termsVersionId: "terms-current", termsHash: "hash-current", versionNumber: 2, effectiveDate: "2026-02-01", recordedAt: "2026-02-01T12:00:00Z", sourceDomain: "SecurityMaster", sourceEntityId: "bond", summary: "Unrelated current terms" }
+    ],
+    cashFlowProjectionRuns: [{ projectionRunId: "run-original", securityId: "bond", projectionAsOf: "2026-07-05", engineVersion: "engine-original", status: "Completed", generatedAt: "2026-07-05T12:00:00Z", sourceDomain: "SecurityMaster", sourceEntityId: "bond" }],
+    lifecycleEvents: [], projectedCashFlows: [], actualActivity: [], reconciliationRuns: [], reconciliationResults: [], ledgerProjections: [], workflowAudit: [],
+    readiness: { securityId: "bond", status: "ReviewRequired", capabilities: [], readyCapabilities: [], missingCapabilities: [], blockers: [], evaluatedAt: "2026-07-05T12:00:00Z", sourceDomain: "SecurityMaster", sourceEntityId: "bond" }
+  };
+}

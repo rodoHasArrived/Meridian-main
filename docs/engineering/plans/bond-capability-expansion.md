@@ -82,6 +82,72 @@ cash-reconciliation differences and posting refusals. A missing or unreadable pr
 cutover receipt must fail closed. A deployment rollback must preserve retained receipts and journals;
 never restore legacy live calculations by deleting cutover evidence.
 
+## Existing capability access: next delivery priority
+
+The next increment makes retained fixed-income functionality discoverable and usable before adding
+new calculation or planning products. Account-specific forecasting **already supports dated FX**;
+its access and input preparation need improvement. This is not a new forecast-engine requirement.
+
+The browser feature catalog links to the operation traces in
+[`fixed-income-capabilities.ts`](../../../src/Meridian.Ui/dashboard/src/lib/fixed-income-capabilities.ts).
+Each operation records **capability → service → API → client → screen/action → permission → browser
+acceptance**, including null seams and remaining gaps. Catalog tests check source references and
+shared API route identities. Component coverage does not certify browser acceptance; pending browser
+scenarios remain pending until executed. These records describe discoverability and evidence, and
+never grant permission or replace server authorization.
+
+An operation counts as fully accessible only when an authorized operator can find it, prepare its
+supported inputs without internal IDs or JSON, complete the workflow, inspect relevant evidence,
+and understand configuration/data blockers. Finding a service, API route, or working form alone
+does not meet this standard.
+
+| Capability | Access increment | Remaining supported-workflow gap |
+| --- | --- | --- |
+| Bond analytics and convention migration | Contextual Asset detail and holding actions; exact Security Master selection, Evidence deep links and command-search shortcuts | Adjusted schedules need a retained-calendar picker; complete browser acceptance must cover governed staging; no automatic approval/publication |
+| Issuer and maturity ladders | Browse before security selection; activate rows into exact authoritative instrument detail | Verify query, paging and keyboard drill-through in the rendered screen |
+| Contractual cash-flow scenarios | Multiple supported prepayment assumptions and explicit exercise notice dates | Curve/version selection; retained-run enumeration needs store/API support beyond save and get-by-ID |
+| Portfolio cash ladder | Contributing instrument links and inspection of the exact retained AssetOperations projection run | Source domain/entity references need an authoritative mapping before becoming Evidence Vault artifact links; contractual run IDs are a different identity family |
+| Account forecasts and reviewed close prices | Visible account oversight entry, forecast/close-price shortcuts and structured reuse of retained forecast snapshot inputs | First-run source discovery/assembly needs shared preparation APIs; reuse preserves exact opening observations, projection identities and dated FX rather than inventing missing data |
+| Curves and pricing-source hierarchy | Existing API seams catalogued | Browser clients, curve/version inspection, source priority controls, freshness explanations and calculation input selection |
+| Settlement consideration | Existing preparation API catalogued | Holding/trade input assembly and preview of clean cost, accrued interest, fees, total cash and reconciliation differences |
+| Bond amortization | Existing canonical lot preparation/reversal services catalogued | Governed operator API and browser preview, review, draft-journal, posting and reversal workflows for supported methods |
+| Factor paydowns | Existing Ledger explorer preparation/draft/review controls retained and catalogued | Selected holding/factor-observation launch and contextual input preparation; manual IDs and evidence JSON remain a gap |
+| Provider-backed bond discovery | Existing provider fixed-income classification below browser search catalogued | Bond-specific provider search, duplicate/identity review and staged Security Master import |
+
+The implementation and acceptance scope of this increment is the first five rows' access work.
+API-only and service-only rows remain incomplete. Configuration and data failures must stay explicit;
+the workstation must not substitute fixtures or cached financial authority in ordinary operation.
+Development browser acceptance may use deterministic, visibly identified synthetic request fixtures.
+
+Validation for the 2026-11-12 browser increment: the focused 15-file regression run passed 306 tests;
+an 84-test Accounting/migration follow-up passed after the final form/focus changes. The dashboard
+TypeScript/Vite production build passed. Scoped ESLint had no errors or new warnings; the shared
+explorer retains four pre-existing hook warnings. Full `scripts/ci.sh` and live-provider verification
+were not run for this UI-only increment.
+
+`node scripts/dev/verify-fixed-income-access.mjs` exercises eight synthetic Chromium checks at
+1440×900 and 1366×768: issuer/maturity browsing, keyboard instrument selection, contextual analytics,
+deep-link reload, visible migration focus, exact cash-ladder projection/terms inspection, command
+search to the account configuration blocker, and multiple prepayments with explicit notice dates.
+Supporting evidence gaps return named 503 blockers. Migration staging, forecast capture, and
+multi-page ladder continuation remain outside this browser evidence; their complete-operation
+catalog acceptance stays pending. Screenshots and machine-readable evidence are written outside
+the repository under `/tmp/meridian-fixed-income-access` by default.
+
+Delivery order remains:
+
+1. Complete existing access: contextual navigation, working deep links, usable inputs, API/client
+   connections and browser acceptance for each supported operation.
+2. Expose existing calculation depth: curves, pricing hierarchy, settlement and governed amortization.
+3. Add saved scenario comparison with payment-level explanations and provider revision impact review,
+   retaining original runs and reconciling payment differences to totals.
+4. Add hypothetical reinvestment/ladder-roll plans, liability matching and funding gaps, and lot-aware
+   sale/replacement previews against one retained market snapshot. Cash-alternative comparison remains
+   a later planning capability with explicit compounding, liquidity and reinvestment assumptions.
+
+The new planning features are deferred by this access increment; their appearance in this plan is
+not implementation or verification evidence.
+
 ## Bond consistency increment
 
 Declared analytics v2, context cash-flow receipts v2 and amortization v5 share the Contracts

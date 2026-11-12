@@ -11,6 +11,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import * as api from "@/lib/api/account-oversight.api";
 import { describeApiError } from "@/lib/api-errors";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { RetainedForecastPreparation } from "./accounting-screen.account-cash-forecasts.prepare";
 import type {
   AccountCashFlow, AccountCashForecastRequest, AccountCashForecastSnapshot, AccountCashProvenance,
   AccountSettledCashObservation, OversightContext, OversightScope
@@ -44,6 +45,8 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
   const [selected, setSelected] = useState<AccountCashForecastSnapshot | null>(null);
   const [pending, setPending] = useState<AccountCashForecastRequest | null>(null);
   const [fileName, setFileName] = useState("");
+  const [preparing, setPreparing] = useState(false);
+  const [pendingOrigin, setPendingOrigin] = useState<"handoff" | "retained">("handoff");
   const [loading, setLoading] = useState(true);
   const [historyAvailable, setHistoryAvailable] = useState(false);
   const [busy, setBusy] = useState<"import" | "capture" | "detail" | null>(null);
@@ -61,9 +64,9 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
     return () => { alive.current = false; importGeneration.current += 1; operation.current?.abort(); };
   }, []);
   useEffect(() => {
-    onDirtyChange?.(pending !== null);
+    onDirtyChange?.(pending !== null || preparing);
     return () => onDirtyChange?.(false);
-  }, [pending, onDirtyChange]);
+  }, [pending, preparing, onDirtyChange]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -113,7 +116,7 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
       const text = await file.text();
       if (!alive.current || generation !== importGeneration.current) return;
       const request = api.parseCashForecastImport(text, scope);
-      setPending(request); setFileName(file.name);
+      setPending(request); setPendingOrigin("handoff"); setFileName(file.name);
       setNotice("Handoff validated for preview. Review the inputs before capturing server evidence.");
     } catch (reason) {
       if (alive.current && generation === importGeneration.current) setError(failureText(reason));
@@ -128,8 +131,8 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
     && item.inputs.periodEnd === pending.periodEnd).at(-1) : undefined;
   const correctionError = !pending ? null : latestForPendingPeriod
     ? pending.previousSnapshotId !== latestForPendingPeriod.snapshotId
-      ? `Correction must link the latest retained snapshot for this period: ${latestForPendingPeriod.snapshotId}. Update the handoff and import it again.`
-      : !pending.correctionRationale?.trim() ? "A linked correction requires a rationale in the handoff." : null
+      ? `Correction must link the latest retained snapshot for this period: ${latestForPendingPeriod.snapshotId}. Refresh history and prepare the inputs again.`
+      : !pending.correctionRationale?.trim() ? "A linked correction requires a rationale." : null
     : pending.previousSnapshotId ? "The correction parent is absent from the authoritative history. Refresh history before capturing." : null;
 
   async function capture() {
@@ -164,17 +167,26 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
       {notice ? <p className="text-sm" role="status">{notice}</p> : null}
       <div className="flex flex-wrap items-end gap-3">
         <FormRow label="Retained cash forecast" labelFor={`${id}-snapshot`} className="min-w-[16rem] flex-1">
-          <Select id={`${id}-snapshot`} value={selectedId} onChange={event => void inspect(event.target.value)} disabled={loading || busy !== null}>
+          <Select id={`${id}-snapshot`} value={selectedId} onChange={event => void inspect(event.target.value)} disabled={loading || busy !== null || preparing}>
             <option value="">{loading ? "Loading retained forecasts…" : "Select a retained forecast"}</option>
             {history.map(item => <option key={item.snapshotId} value={item.snapshotId}>{item.inputs.periodStart} – {item.inputs.periodEnd} · {item.inputs.runId} · {item.inputs.previousSnapshotId ? "Correction" : "Original"} · {item.isCertified ? "Certified" : "Blocked"}</option>)}
           </Select>
         </FormRow>
-        <Button variant="outline" disabled={loading || busy !== null} onClick={() => setRevision(value => value + 1)}>Refresh cash history</Button>
+        <Button variant="outline" disabled={loading || busy !== null || preparing} onClick={() => setRevision(value => value + 1)}>Refresh cash history</Button>
       </div>
       {loading ? <p role="status" className="text-sm">Loading authoritative cash forecast history…</p> : null}
       {!loading && !error && history.length === 0 ? <p role="status" className="text-sm">No cash forecasts retained for this account and book.</p> : null}
       {busy === "detail" ? <p role="status" className="text-sm">Reading the selected immutable forecast…</p> : null}
       {selected ? <ForecastSnapshot snapshot={selected} /> : null}
+      {context.canWrite ? <section aria-label="Prepare account cash forecast" className="space-y-3">
+        {!preparing ? <>
+          <Button variant="outline" disabled={!selected || loading || !historyAvailable || busy !== null || pending !== null} onClick={() => { setPreparing(true); setError(null); setNotice(null); }}>Prepare from retained inputs</Button>
+          <p className="text-xs text-muted-foreground">Select a retained forecast to reuse its exact observations, cash flows and dated FX without preparing a JSON handoff. New source data requires a reviewed source handoff.</p>
+        </> : selected ? <RetainedForecastPreparation key={selected.snapshotId} source={selected} history={history} onCancel={() => setPreparing(false)} onPrepare={request => {
+          setPending(request); setPendingOrigin("retained"); setFileName("Retained account inputs"); setPreparing(false); setError(null);
+          setNotice("Retained inputs prepared for preview. Review the selected sources before capturing server evidence.");
+        }} /> : null}
+      </section> : null}
       {context.canWrite ? <TechnicalDetails label="Capture cash forecast from source handoff" description="Import the supported cash forecast JSON handoff prepared from independently reviewed Evidence Vault source documents. Amounts and FX rates must be decimal strings. The server verifies source bytes, scope and accepted review before retaining any result.">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
@@ -183,24 +195,24 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
           </div>
           <p className="text-xs text-muted-foreground">The template contains empty required dates, amounts, settlement status and evidence identities. Populate it from the exact retained source documents. Empty or invented evidence cannot establish certification.</p>
           <FormRow label="Cash forecast handoff file" labelFor={`${id}-file`} hint="Choose a JSON file up to 1 MiB. Importing creates a local structured preview; it does not capture or certify a forecast.">
-            <Input id={`${id}-file`} ref={fileInput} type="file" accept="application/json,.json" disabled={busy !== null || loading} onChange={event => void importFile(event)} />
+            <Input id={`${id}-file`} ref={fileInput} type="file" accept="application/json,.json" disabled={busy !== null || loading || preparing} onChange={event => void importFile(event)} />
           </FormRow>
-          {pending ? <section aria-label="Cash forecast handoff preview" className="space-y-3">
-            <h3 className="text-sm font-semibold">Review handoff: {fileName}</h3>
-            <p className="text-sm">{pending.periodStart} – {pending.periodEnd} · Run {pending.runId} · Recorded {pending.recordedAtUtc}</p>
-            <p className="text-sm text-muted-foreground">Preview has no certification result. Only validated server evidence can reconcile cash.</p>
-            <p className="text-sm">{pending.previousSnapshotId ? `Correction of ${pending.previousSnapshotId} · ${pending.correctionRationale || "Rationale missing"}` : "Original forecast for this period"}</p>
-            {correctionError ? <StatusBanner role="alert" tone="warning" title={<span className="text-foreground">Correction linkage needs attention</span>} detail={correctionError} /> : null}
-            {!historyAvailable ? <p className="text-sm text-warning">Refresh authoritative cash history before capturing. Correction linkage cannot be verified while history is unavailable.</p> : null}
-            <CashInputs request={pending} />
-            <div className="flex flex-wrap gap-2">
-              <Button disabled={busy !== null || loading || !historyAvailable || !!correctionError || !!error} onClick={() => void capture()}>{busy === "capture" ? "Capturing cash forecast…" : "Capture cash forecast"}</Button>
-              <Button variant="outline" disabled={busy !== null} onClick={() => { setPending(null); setFileName(""); setNotice(null); setError(null); }}>Discard handoff</Button>
-              {error ? <Button variant="outline" disabled={busy !== null || loading} onClick={() => setError(null)}>Keep handoff and retry</Button> : null}
-            </div>
-          </section> : null}
         </div>
       </TechnicalDetails> : null}
+      {pending ? <section aria-label={pendingOrigin === "handoff" ? "Cash forecast handoff preview" : "Prepared cash forecast preview"} className="space-y-3">
+        <h3 className="text-sm font-semibold">Review inputs: {fileName}</h3>
+        <p className="text-sm">{pending.periodStart} – {pending.periodEnd} · Run {pending.runId} · Recorded {pending.recordedAtUtc}</p>
+        <p className="text-sm text-muted-foreground">Preview has no certification result. Only validated server evidence can reconcile cash.</p>
+        <p className="text-sm">{pending.previousSnapshotId ? `Correction of ${pending.previousSnapshotId} · ${pending.correctionRationale || "Rationale missing"}` : "Original forecast for this period"}</p>
+        {correctionError ? <StatusBanner role="alert" tone="warning" title={<span className="text-foreground">Correction linkage needs attention</span>} detail={correctionError} /> : null}
+        {!historyAvailable ? <p className="text-sm text-warning">Refresh authoritative cash history before capturing. Correction linkage cannot be verified while history is unavailable.</p> : null}
+        <CashInputs request={pending} />
+        <div className="flex flex-wrap gap-2">
+          <Button disabled={!context.canWrite || busy !== null || loading || !historyAvailable || !!correctionError || !!error} onClick={() => void capture()}>{busy === "capture" ? "Capturing cash forecast…" : "Capture cash forecast"}</Button>
+          <Button variant="outline" disabled={busy !== null} onClick={() => { setPending(null); setFileName(""); setNotice(null); setError(null); }}>{pendingOrigin === "handoff" ? "Discard handoff" : "Discard prepared inputs"}</Button>
+          {error ? <Button variant="outline" disabled={busy !== null || loading} onClick={() => setError(null)}>{pendingOrigin === "handoff" ? "Keep handoff and retry" : "Keep prepared inputs and retry"}</Button> : null}
+        </div>
+      </section> : null}
     </CardContent>
   </Card>;
 }

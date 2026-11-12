@@ -37,6 +37,7 @@ import type {
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
+  SecurityMasterEntry,
   SecurityMasterTrustSnapshot,
   SessionInfo
 } from "@/types";
@@ -207,6 +208,7 @@ vi.mock("@/lib/api", async () => {
       }
     ]),
     getSecurityIdentity: vi.fn().mockResolvedValue(null),
+    getSecurityDetail: vi.fn().mockRejectedValue(new Error("Instrument unavailable")),
     getOperatorOverrides: vi.fn().mockResolvedValue({
       securityId: "sec-1",
       values: {},
@@ -4952,6 +4954,32 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
     expect(row).toHaveAttribute("aria-selected", "true");
     expect(screen.getByLabelText("Clean price / 100")).toHaveValue("");
+  });
+
+  it("opens the exact deep-linked bond without search and ignores the explorer's delayed default", async () => {
+    const bondId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    const bond: SecurityMasterEntry = { securityId: bondId, displayName: "Direct bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } };
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    let finishExplorer!: (value: typeof explorer) => void;
+    vi.mocked(api.getFinancialRecordExplorer).mockImplementationOnce(() => new Promise(resolve => { finishExplorer = resolve; }));
+    vi.mocked(api.getSecurityDetail).mockResolvedValueOnce(bond);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({ securityId: bondId, displayName: bond.displayName, assetClass: "Bond", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] });
+    await renderAccountingScreen(data, `/accounting/security-master?securityId=${bondId.toUpperCase()}&tab=evidence&bondAction=analytics`);
+    expect(await screen.findByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
+    expect(api.getSecurityDetail).toHaveBeenCalledWith(bondId.toUpperCase(), expect.objectContaining({ allowDevelopmentFallback: false }));
+    expect(document.getElementById("bond-analytics-action")).toHaveFocus();
+    finishExplorer(explorer);
+    await waitForAsyncEffects();
+    expect(api.getSecurityIdentity).toHaveBeenLastCalledWith(bondId.toUpperCase());
+    expect(screen.getByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
+  });
+
+  it("offers issuer and maturity ladders before a security is selected", async () => {
+    vi.mocked(api.getFinancialRecordExplorer).mockRejectedValueOnce(new Error("Explorer unavailable"));
+    await renderAccountingScreen(data, "/accounting/security-master#bond-ladders");
+    expect(screen.getByRole("region", { name: "Bond reference ladders" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Load ladder" })).toBeEnabled();
+    expect(screen.queryByRole("tab", { name: /^Identity/ })).not.toBeInTheDocument();
   });
 
   it("announces security search failures as alerts", async () => {

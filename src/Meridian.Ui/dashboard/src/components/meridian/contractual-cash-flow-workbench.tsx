@@ -37,7 +37,19 @@ export interface ContractualCashFlowWorkbenchProps {
 interface ExerciseChoice {
   include: boolean;
   exerciseDate: string;
+  noticeDate: string;
   amount: string;
+}
+
+interface PrepaymentChoice {
+  id: string;
+  streamId: string;
+  startDate: string;
+  endDate: string;
+  method: PrepaymentMethod;
+  value: string;
+  seasoningOrigin: string;
+  policy: RecastPolicy;
 }
 
 const newRunId = () =>
@@ -65,7 +77,7 @@ const eventColumns: DenseDataTableColumn<ContractualCashFlowEvent>[] = [
 
 /**
  * Cash-flow scenario workbench over the shared contractual cash-flow routes: hypothetical valuation date,
- * knowledge cutoff, horizon, rate shock, exercise selections and one prepayment assumption; the result
+ * knowledge cutoff, horizon, rate shock, explicit notice dates and multiple prepayment assumptions; the result
  * ladder with blockers; retained runs under a client-generated identity; and a retained-run browser that
  * verifies replay by comparing the retained output hash with a fresh preview of the retained request.
  * Nothing here changes terms or posts anything, and displayed amounts are never resubmitted.
@@ -75,7 +87,8 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const [knowledgeCutoff, setKnowledgeCutoff] = useState(nowLocalMinutes);
   const [horizon, setHorizon] = useState("");
   const [rateScenario, setRateScenario] = useState<RateScenario>("Base");
-  const [prepay, setPrepay] = useState({ enabled: false, streamId: "", startDate: "", endDate: "", method: "Cpr" as PrepaymentMethod, value: "", policy: "PreservePayments" as RecastPolicy });
+  const [prepayments, setPrepayments] = useState<PrepaymentChoice[]>([]);
+  const [streams, setStreams] = useState<Array<{ streamId: string; prepaymentAllowed: boolean }>>([]);
   const [exerciseChoices, setExerciseChoices] = useState<Record<string, ExerciseChoice>>({});
   const [eligibility, setEligibility] = useState<CashFlowExerciseEligibility[]>([]);
   const [result, setResult] = useState<ContractualCashFlowResult | null>(null);
@@ -95,6 +108,10 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     setReplayStatus(null);
     setEligibility([]);
     setExerciseChoices({});
+    setPrepayments([]);
+    setStreams([]);
+    setBusy(null);
+    setRunIdInput("");
     setError(null);
     setRunId(newRunId());
     return () => inFlight.current?.abort();
@@ -119,23 +136,34 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     for (const entry of eligibility) {
       const choice = exerciseChoices[eligibilityKey(entry)];
       if (!choice?.include) continue;
-      if (!choice.exerciseDate || !DECIMAL_LITERAL.test(choice.amount.trim()))
-        return `Choose an exercise date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
+      if (!choice.exerciseDate || !choice.noticeDate || !DECIMAL_LITERAL.test(choice.amount.trim()))
+        return `Choose an exercise date, a notice date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
+      if (choice.noticeDate < valuationDate || choice.noticeDate > choice.exerciseDate)
+        return "A hypothetical notice date must be on/after valuation and on/before exercise. Contractual notice windows are checked by the service.";
       exercises.push({
         side: entry.side, entryStartDate: entry.entryStartDate, streamId: entry.streamId,
-        exerciseDate: choice.exerciseDate, noticeDate: choice.exerciseDate, amount: choice.amount.trim(), hypotheticalNotice: true
+        exerciseDate: choice.exerciseDate, noticeDate: choice.noticeDate, amount: choice.amount.trim(), hypotheticalNotice: true
       });
     }
-    if (prepay.enabled && (!prepay.streamId.trim() || !prepay.startDate || !prepay.endDate || !DECIMAL_LITERAL.test(prepay.value.trim())))
-      return "A prepayment assumption needs a stream, a [start, end) interval and a decimal value.";
+    for (const assumption of prepayments) {
+      if (!assumption.streamId || !assumption.startDate || !assumption.endDate || !DECIMAL_LITERAL.test(assumption.value.trim()))
+        return "Each prepayment assumption needs a contractual stream, a [start, end) interval and a decimal value.";
+      if (assumption.startDate < valuationDate || assumption.endDate <= assumption.startDate)
+        return "A prepayment interval must start on/after valuation and end after its start date.";
+      if (assumption.method === "Psa" && (!assumption.seasoningOrigin || assumption.seasoningOrigin > assumption.startDate))
+        return "PSA requires a seasoning origin on/before the interval start.";
+    }
     return {
       valuationDate,
       knowledgeCutoff: utcInstantFromLocalInput(knowledgeCutoff),
       horizon: horizon || null,
       rateScenario,
       exercises: exercises.length > 0 ? exercises : null,
-      prepayments: prepay.enabled
-        ? [{ streamId: prepay.streamId.trim(), startDate: prepay.startDate, endDate: prepay.endDate, method: prepay.method, value: prepay.value.trim(), policy: prepay.policy }]
+      prepayments: prepayments.length > 0
+        ? prepayments.map(({ streamId, startDate, endDate, method, value, seasoningOrigin, policy }) => ({
+          streamId, startDate, endDate, method, value: value.trim(), policy,
+          seasoningOrigin: method === "Psa" ? seasoningOrigin : null
+        }))
         : null
     };
   }
@@ -167,6 +195,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       if (signal.aborted) return;
       setResult(next);
       setEligibility(next.exerciseEligibility);
+      setStreams(next.resolvedContract?.streams ?? [...new Set(next.events.map((event) => event.streamId))].map((streamId) => ({ streamId, prepaymentAllowed: true })));
     }, "Cash-flow scenario could not be previewed.");
   }
 
@@ -177,7 +206,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       const next = await retainContractualCashFlowRun(subjectKind, subjectId, { runId, projection: request }, { signal });
       if (signal.aborted) return;
       if (isContractualCashFlowRun(next)) {
-        if (next.subjectId.toLowerCase() !== subjectId.toLowerCase()) throw new Error("The retained run names another subject. Refresh the selected record.");
+        if (next.subjectKind !== subjectKind || next.subjectId.toLowerCase() !== subjectId.toLowerCase()) throw new Error("The retained run names another subject. Refresh the selected record.");
         setRun(next);
         setResult(next.result);
       } else {
@@ -195,6 +224,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     await guard("load", async (signal) => {
       const next = await getContractualCashFlowRun(subjectKind, subjectId, id, { signal });
       if (signal.aborted) return;
+      if (next.subjectKind !== subjectKind || next.subjectId.toLowerCase() !== subjectId.toLowerCase()) throw new Error("The retained run names another subject. Refresh the selected record.");
       setLoadedRun(next);
     }, "Retained cash-flow run could not be loaded.");
   }
@@ -242,29 +272,54 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           </Select>
         </label>
 
-        <fieldset className="grid gap-2 md:col-span-4 md:grid-cols-6">
-          <legend className="font-medium text-muted-foreground">Prepayment assumption</legend>
-          <Checkbox checked={prepay.enabled} label="Apply" aria-label="Apply a prepayment assumption"
-            onCheckedChange={(checked) => edit(() => setPrepay((prev) => ({ ...prev, enabled: checked })))} />
-          <Input placeholder="Stream id" value={prepay.streamId} disabled={!prepay.enabled} aria-label="Prepayment stream id"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, streamId: e.target.value })))} />
-          <Input type="date" value={prepay.startDate} disabled={!prepay.enabled} aria-label="Prepayment start date"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, startDate: e.target.value })))} />
-          <Input type="date" value={prepay.endDate} disabled={!prepay.enabled} aria-label="Prepayment end date"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, endDate: e.target.value })))} />
-          <Select value={prepay.method} disabled={!prepay.enabled} aria-label="Prepayment method"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, method: e.target.value as PrepaymentMethod })))}>
-            {PREPAYMENT_METHODS.map((method) => <option key={method} value={method}>{method.toUpperCase()}</option>)}
-          </Select>
-          <div className="flex gap-2">
-            <Input placeholder="Value" value={prepay.value} disabled={!prepay.enabled} aria-label="Prepayment value"
-              onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, value: e.target.value })))} />
-            <Select value={prepay.policy} disabled={!prepay.enabled} aria-label="Prepayment recast policy"
-              onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, policy: e.target.value as RecastPolicy })))}>
-              <option value="PreservePayments">Preserve payments</option>
-              <option value="Recast">Recast</option>
-            </Select>
-          </div>
+        <fieldset className="grid gap-3 md:col-span-4">
+          <legend className="font-medium text-muted-foreground">Prepayment assumptions</legend>
+          <p className="text-muted-foreground">Intervals include the start and exclude the end. Intervals on one stream must not overlap.
+            CPR/SMM use fractions (0.06 = 6%); PSA uses multiples (1 = 100% PSA). Amount is cash on the start date.
+            Preview first to discover contractual streams; the service checks whether prepayment is supported.</p>
+          {prepayments.map((assumption, index) => {
+            const update = (next: Partial<PrepaymentChoice>) => edit(() => setPrepayments((previous) => previous.map((item) => item.id === assumption.id ? { ...item, ...next } : item)));
+            return (
+              <fieldset key={assumption.id} className="grid gap-2 rounded-md border border-border/60 p-3 md:grid-cols-4">
+                <legend className="px-1 font-medium">Prepayment {index + 1}</legend>
+                <label className="grid gap-1">Contractual stream
+                  <Select value={assumption.streamId} aria-label={`Prepayment ${index + 1} stream`} onChange={(event) => update({ streamId: event.target.value })}>
+                    <option value="">Choose a stream</option>
+                    {streams.map((stream) => <option key={stream.streamId} value={stream.streamId} disabled={!stream.prepaymentAllowed}>{stream.streamId}{!stream.prepaymentAllowed ? " · prepayment unavailable" : ""}</option>)}
+                  </Select>
+                </label>
+                <label className="grid gap-1">Start (inclusive)
+                  <Input type="date" value={assumption.startDate} aria-label={`Prepayment ${index + 1} start date`} onChange={(event) => update({ startDate: event.target.value })} />
+                </label>
+                <label className="grid gap-1">End (exclusive)
+                  <Input type="date" value={assumption.endDate} aria-label={`Prepayment ${index + 1} end date`} onChange={(event) => update({ endDate: event.target.value })} />
+                </label>
+                <label className="grid gap-1">Method
+                  <Select value={assumption.method} aria-label={`Prepayment ${index + 1} method`} onChange={(event) => update({ method: event.target.value as PrepaymentMethod })}>
+                    {PREPAYMENT_METHODS.map((method) => <option key={method} value={method}>{method.toUpperCase()}</option>)}
+                  </Select>
+                </label>
+                <label className="grid gap-1">Value ({assumption.method === "Psa" ? "multiple" : assumption.method === "Amount" ? "cash amount" : "fraction"})
+                  <Input value={assumption.value} aria-label={`Prepayment ${index + 1} value`} onChange={(event) => update({ value: event.target.value })} />
+                </label>
+                {assumption.method === "Psa" ? (
+                  <label className="grid gap-1">Seasoning origin
+                    <Input type="date" value={assumption.seasoningOrigin} aria-label={`Prepayment ${index + 1} seasoning origin`} onChange={(event) => update({ seasoningOrigin: event.target.value })} />
+                  </label>
+                ) : null}
+                <label className="grid gap-1">Recast policy
+                  <Select value={assumption.policy} aria-label={`Prepayment ${index + 1} recast policy`} onChange={(event) => update({ policy: event.target.value as RecastPolicy })}>
+                    <option value="PreservePayments">Preserve payments</option>
+                    <option value="Recast">Recast</option>
+                  </Select>
+                </label>
+                <Button type="button" size="sm" variant="outline" className="self-end" aria-label={`Remove prepayment ${index + 1}`} onClick={() => edit(() => setPrepayments((previous) => previous.filter((item) => item.id !== assumption.id)))}>Remove assumption</Button>
+              </fieldset>
+            );
+          })}
+          {streams.length > 0 && !streams.some((stream) => stream.prepaymentAllowed) ? <p className="text-muted-foreground" role="status">The resolved contractual streams do not support prepayments.</p> : null}
+          <Button type="button" size="sm" variant="outline" className="justify-self-start" disabled={!streams.some((stream) => stream.prepaymentAllowed)}
+            onClick={() => edit(() => setPrepayments((previous) => [...previous, { id: newRunId(), streamId: "", startDate: valuationDate, endDate: "", method: "Cpr", value: "", seasoningOrigin: "", policy: "PreservePayments" }]))}>Add prepayment assumption</Button>
         </fieldset>
 
         {eligibility.length > 0 ? (
@@ -272,7 +327,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
             <legend className="font-medium text-muted-foreground">Exercise selections (hypothetical notices)</legend>
             {eligibility.map((entry) => {
               const key = eligibilityKey(entry);
-              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", amount: "" };
+              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", noticeDate: "", amount: "" };
               const update = (next: Partial<ExerciseChoice>) => edit(() => setExerciseChoices((prev) => ({ ...prev, [key]: { ...choice, ...next } })));
               return (
                 <div key={key} className="grid items-center gap-2 md:grid-cols-5">
@@ -287,9 +342,13 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
                     <Input type="date" value={choice.exerciseDate} disabled={!choice.include} aria-label={`Exercise date for ${entry.streamId}`}
                       onChange={(e) => update({ exerciseDate: e.target.value })} />
                   )}
+                  <label className="grid gap-1">Hypothetical notice date
+                    <Input type="date" value={choice.noticeDate} disabled={!choice.include} aria-label={`Notice date for ${entry.streamId}`}
+                      onChange={(e) => update({ noticeDate: e.target.value })} />
+                  </label>
                   <Input placeholder="Amount" value={choice.amount} disabled={!choice.include} aria-label={`Exercise amount for ${entry.streamId}`}
                     onChange={(e) => update({ amount: e.target.value })} />
-                  <span className="text-muted-foreground md:col-span-2">{entry.businessDayCalendarId ? `Notice calendar ${entry.businessDayCalendarId}` : "No notice calendar declared"}</span>
+                  <span className="text-muted-foreground">{entry.businessDayCalendarId ? `Notice calendar ${entry.businessDayCalendarId}` : "No notice calendar declared"}</span>
                 </div>
               );
             })}
