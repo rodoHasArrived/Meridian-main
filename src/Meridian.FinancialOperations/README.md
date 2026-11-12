@@ -189,6 +189,13 @@ Ambiguous interrupted starts retain their claim and require recovery instead of 
 and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
 and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
 
+`OperationsReviewedAutomationProjection` owns the read-only automation review stages, allowed and
+prohibited action guidance, and evidence-linked artifacts projected by
+`OperationsContinuityWorkflowService`. The workflow service retains transition, audit, posting,
+and close authority; the projection consumes retained state without writing it. Focused proof
+lives in `OperationsReviewedAutomationProjectionTests`, with service integration covered by
+`OperationsContinuityWorkflowServiceTests`.
+
 Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
 statement store so committed imports use Storage-owned directory durability without an
 Infrastructure-to-Storage reference.
@@ -1189,7 +1196,7 @@ evidence deletion.
 
 ```bash
 dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityWorkflowServiceTests|FullyQualifiedName~OperationsReviewedAutomationProjectionTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy|FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
