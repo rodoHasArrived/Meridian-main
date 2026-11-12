@@ -1237,9 +1237,10 @@ public sealed partial class AccountingSystemIntegrationService
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty);
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}\u001epositionId={dimensions.PositionId.Value:D}"
             : signature;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
     }
 
     private static AccountingSystemImportDetailDto NormalizeImportedDetail(

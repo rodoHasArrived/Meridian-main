@@ -6,10 +6,37 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Storage
+
+Maintenance windows and trading-session checks use the configured `PrimaryTimeZone`,
+including the starting weekday of overnight windows and the offset at each window boundary.
+The scheduler scans deferred queue entries without blocking other due jobs, and counts running
+admissions before case-history writes complete when enforcing scheduled-job concurrency.
+Explicit `ExecuteJobAsync` calls retain their existing manual-execution bypass of window admission.
+
+Date-only natural-language search filters use UTC midnight boundaries. Parquet timestamp-column
+conversion shares the export timestamp parser, treating date-only strings and unspecified
+`DateTime` values as UTC while preserving the instant carried by explicit timestamp offsets.
+
+`PostgresIntercompanyAgreementStore` uses fund-structure migration `006`: a tenant-qualified head
+points to immutable command snapshots, approved revisions, audit decisions and command receipts.
+One command atomically checks its expected head and retains its result; command identities are
+unique within a tenant. Database guards refuse history rewrites and tenant reassignment. Party
+reads remain stable under entity authority locks; sorted shared agreement leases survive through
+the ledger store's owned commit. Explicit references require that authority, while unsupported
+caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
+The exception still requires unit-successor lineage, an originating atomic mutation batch and a
+retained basis adjustment; ordinary acquisitions retain exact quantity/price/basis checks.
+
+`FileProviderIntegrationManifestStore` stores identity decisions under each sync run's
+`identity-decisions` directory. Entity locking protects append-only retention: identical retries
+reuse the existing decision, while a changed payload under the same decision ID is refused.
+Staged source records remain unchanged.
 
 Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
 column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a

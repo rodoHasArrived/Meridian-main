@@ -39,7 +39,7 @@ public sealed class FileBondObservedFixingStore(StorageOptions options, TimeProv
         // Retries re-verify the same source at a later retrieval time. Only this transport time is
         // excluded from semantic identity; the original complete evidence and hash remain retained.
         var identity = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(fixing with
-            { Observation = fixing.Observation with { RetrievedAt = default } }, BondObservedFixingJsonContext.Default.BondObservedFixingCandidate));
+        { Observation = fixing.Observation with { RetrievedAt = default } }, BondObservedFixingJsonContext.Default.BondObservedFixingCandidate));
         var receiptId = new Guid(Convert.FromHexString(identity[..32]));
         var path = FilePath(fixing.SecurityId, receiptId);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -68,7 +68,8 @@ public sealed class FileBondObservedFixingStore(StorageOptions options, TimeProv
     public async Task<BondObservedFixingReceipt?> GetAsync(Guid securityId, Guid receiptId, CancellationToken ct = default)
     {
         var path = FilePath(securityId, receiptId);
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         var receipt = JsonSerializer.Deserialize(await File.ReadAllTextAsync(path, ct).ConfigureAwait(false),
             BondObservedFixingJsonContext.Default.BondObservedFixingReceipt) ?? throw new InvalidDataException("Observed fixing receipt is empty.");
         if (receipt.ReceiptId != receiptId || receipt.Fixing.SecurityId != securityId || !Sha256Digest.FixedEquals(receipt.ContentSha256, Hash(receipt)))
@@ -79,7 +80,8 @@ public sealed class FileBondObservedFixingStore(StorageOptions options, TimeProv
     public async Task<IReadOnlyList<BondObservedFixingReceipt>> ListAsync(Guid securityId, CancellationToken ct = default)
     {
         var directory = Path.Combine(_root, securityId.ToString("N"));
-        if (!Directory.Exists(directory)) return [];
+        if (!Directory.Exists(directory))
+            return [];
         var receipts = new List<BondObservedFixingReceipt>();
         foreach (var path in Directory.EnumerateFiles(directory, "*.json"))
         {
@@ -96,7 +98,8 @@ public sealed class FileBondObservedFixingStore(StorageOptions options, TimeProv
 
     private string FilePath(Guid securityId, Guid receiptId)
     {
-        if (securityId == Guid.Empty || receiptId == Guid.Empty) throw new ArgumentException("Security and observed-fixing receipt identities are required.");
+        if (securityId == Guid.Empty || receiptId == Guid.Empty)
+            throw new ArgumentException("Security and observed-fixing receipt identities are required.");
         return Path.Combine(_root, securityId.ToString("N"), receiptId.ToString("N") + ".json");
     }
 }

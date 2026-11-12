@@ -11,7 +11,8 @@ public sealed partial class BondAnalyticsService
         DateOnly economicDate, BondCalculationContext context, List<BondCalculationInput> inputs, CancellationToken ct)
     {
         var selected = new Dictionary<DateOnly, BondObservedFixingReceipt>();
-        if (context.ObservedFixingReceiptIds is not { Count: > 0 } ids) return (selected, null);
+        if (context.ObservedFixingReceiptIds is not { Count: > 0 } ids)
+            return (selected, null);
         if (ids.Count > 64 || ids.Any(static id => id == Guid.Empty) || ids.Distinct().Count() != ids.Count)
             return (selected, new("InvalidFixingSelection", "Select at most 64 distinct retained observed fixing receipts."));
         var eligibleResets = schedule.Periods.Where(period => period.PaymentDate > settlement && period.AccrualStart <= economicDate)
@@ -20,7 +21,8 @@ public sealed partial class BondAnalyticsService
         foreach (var id in ids)
         {
             BondObservedFixingReceipt? receipt;
-            try { receipt = _observedFixings is null ? null : await _observedFixings.GetAsync(security.SecurityId, id, ct).ConfigureAwait(false); }
+            try
+            { receipt = _observedFixings is null ? null : await _observedFixings.GetAsync(security.SecurityId, id, ct).ConfigureAwait(false); }
             catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or System.Text.Json.JsonException)
             { return (selected, new("FixingReceiptUnavailable", "Selected observed fixing evidence is unavailable or corrupt; review its retained receipt.")); }
             if (receipt is null || receipt.ReceiptId != id || receipt.Fixing.SecurityId != security.SecurityId)

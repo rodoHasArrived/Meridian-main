@@ -2,9 +2,9 @@
 
 # `fund_structure` schema
 
-- Relations: 15
-- Functions/procedures: 1
-- Triggers: 2
+- Relations: 20
+- Functions/procedures: 3
+- Triggers: 12
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -107,6 +107,36 @@ erDiagram
         text resolved_tenant_id
         text resolution_note
     }
+    fund_structure_intercompany_agreement {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        bigint aggregate_version FK
+    }
+    fund_structure_intercompany_agreement_audit {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        integer sequence_number PK
+        jsonb payload
+    }
+    fund_structure_intercompany_agreement_command_receipt {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        uuid command_id PK
+        jsonb payload
+    }
+    fund_structure_intercompany_agreement_revision {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        integer agreement_version PK
+        jsonb payload
+    }
+    fund_structure_intercompany_agreement_snapshot {
+        text tenant_id PK,FK
+        uuid agreement_id PK,FK
+        bigint aggregate_version PK
+        jsonb payload
+        timestamp_with_time_zone retained_at_utc
+    }
     fund_structure_investment_portfolio {
         uuid investment_portfolio_id PK
         uuid business_id
@@ -202,6 +232,11 @@ erDiagram
         timestamp_with_time_zone updated_at
         text tenant_id
     }
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_audit : "intercompany_agreement_audit_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_command_receipt : "intercompany_agreement_command_rece_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_revision : "intercompany_agreement_revision_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_snapshot : "intercompany_agreement_snapshot_tenant_id_agreement_id_fkey"
+    fund_structure_intercompany_agreement_snapshot ||--o{ fund_structure_intercompany_agreement : "intercompany_agreement_snapshot_pointer"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
@@ -215,6 +250,11 @@ erDiagram
 | `fund_structure_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `fund_structure_tenant_backfill_receipt` | table | 8 | `run_id` | 0 | 1 | Immutable receipts binding an explicit tenant-backfill run to its reviewed plan hash, operator, review reference, and atomically committed attribution and quarantine counts. |
 | `fund_structure_tenant_quarantine` | table | 8 | `node_id` | 0 | 2 | Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason. |
+| `intercompany_agreement` | table | 3 | `tenant_id`, `agreement_id` | 1 | 1 | - |
+| `intercompany_agreement_audit` | table | 4 | `tenant_id`, `agreement_id`, `sequence_number` | 1 | 1 | - |
+| `intercompany_agreement_command_receipt` | table | 4 | `tenant_id`, `agreement_id`, `command_id` | 1 | 2 | - |
+| `intercompany_agreement_revision` | table | 4 | `tenant_id`, `agreement_id`, `agreement_version` | 1 | 1 | Approved agreement terms and termination decisions; no historical payload is rewritten. |
+| `intercompany_agreement_snapshot` | table | 5 | `tenant_id`, `agreement_id`, `aggregate_version` | 1 | 1 | Immutable command snapshots; the agreement head points to one exact aggregate version. |
 | `investment_portfolio` | table | 17 | `investment_portfolio_id` | 0 | 2 | - |
 | `legal_entity` | table | 17 | `entity_id` | 0 | 2 | - |
 | `organization` | table | 11 | `organization_id` | 0 | 2 | - |

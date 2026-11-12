@@ -1711,6 +1711,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             payload += $"|positionId={dimensions.PositionId.Value:D}";
         }
 
+        payload = LedgerAgreementDimensions.AppendSignature(payload, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion);
         return Sha256Digest.ComputeUtf8(payload);
     }
 
@@ -1804,7 +1805,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             VendorId: dimensions?.VendorId,
             ProjectId: dimensions?.ProjectId)
         {
-            PositionId = dimensions?.PositionId
+            PositionId = dimensions?.PositionId,
+            IntercompanyAgreementId = dimensions?.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions?.IntercompanyAgreementVersion
         };
     }
 
@@ -2019,6 +2022,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                && MatchesDimensionValue(normalized.CapitalAccountId, filter.CapitalAccountId)
                && MatchesDimensionGuid(normalized.InstrumentId, filter.InstrumentId)
                && MatchesDimensionGuid(normalized.PositionId, filter.PositionId)
+               && MatchesDimensionGuid(normalized.IntercompanyAgreementId, filter.IntercompanyAgreementId)
+               && (!filter.IntercompanyAgreementVersion.HasValue || normalized.IntercompanyAgreementVersion == filter.IntercompanyAgreementVersion)
                && MatchesDimensionValue(normalized.TaxLotId, filter.TaxLotId)
                && MatchesDimensionValue(normalized.CostCenterId, filter.CostCenterId)
                && MatchesDimensionValue(normalized.CounterpartyId, filter.CounterpartyId)
@@ -2088,7 +2093,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
         return HasAnyDimension(normalized) ? normalized : null;
     }
@@ -2122,6 +2129,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         {
             keys.Add("positionId");
         }
+
+        if (dimensions.IntercompanyAgreementId.HasValue)
+            keys.Add("intercompanyAgreementId");
+        if (dimensions.IntercompanyAgreementVersion.HasValue)
+            keys.Add("intercompanyAgreementVersion");
 
         AddDimensionKey(keys, "taxLotId", dimensions.TaxLotId);
         AddDimensionKey(keys, "costCenterId", dimensions.CostCenterId);
@@ -2180,6 +2192,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             payload += $"|positionId={dimensions.PositionId.Value:D}";
         }
 
+        payload = LedgerAgreementDimensions.AppendSignature(payload, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion);
         return Sha256Digest.ComputeUtf8(payload)[..12];
     }
 

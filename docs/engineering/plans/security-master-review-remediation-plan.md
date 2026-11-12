@@ -520,7 +520,7 @@ model, StructuredNote's accounting treatment).
 D10 recommendations as the decisions, and sequenced the remaining code as follow-up pull requests
 after the close-out pull request merges. Recorded in the review's
 [owner decisions](../../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
-Remaining work, none of it started:
+At the time of the owner decision, the follow-up items were:
 
 - **S3-E record contraction**, one field group at a time, each with its own replay-compatibility
   proof, including module homes for the residual complement listed above.
@@ -613,3 +613,21 @@ CertificateOfDeposit, CommercialPaper and CashSweep, so 24 of 32 classes are gen
 remain hand-written: five need the structural codecs named in the table (Bond, Swap, DirectLoan,
 StructuredCredit, CommitmentGuarantee) and three have bespoke decodes (Equity, InvestmentFund,
 CustomAsset). See the review record for the split.
+
+## Accrual and accounting follow-through — 2026-11-12
+
+The S3-E contraction above is already complete and retains its per-group replay proofs. Accrual
+windows now read shared lot exposure and the declared quote convention; recurring admission
+remains Bond only, with unsupported factored lots refused. Empty blocked projections report
+their block before checking for an empty schedule. Cash-flow context v4 stores row version 1
+and measured accrual dates; frozen v0 serialization preserves v1–v3 receipts.
+
+The unused whole-coupon helper and direct corporate-action poster have been removed from
+production. Golden cases for historical corporate-action defects remain in test fixtures.
+StructuredNote uses the existing governed daily-valuation workflow with an explicit FVTPL
+template, source-mark evidence and approval; it remains outside coupon accrual accounting.
+
+The canonical principal-only call/put mode binds reviewed full long-lot quantities and bases to
+a retained disposal instruction. Approval, period checks and atomic disposal govern lot closure
+and journal posting together. Interest, make-whole and short redemptions remain blocked on this
+path pending their own allocation support.

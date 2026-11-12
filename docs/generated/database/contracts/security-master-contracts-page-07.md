@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 7 of 7
 
-Objects 481-527 of 527. References crossing pages remain available in the dependency manifest.
+Objects 481-525 of 525. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityValuationAccountingTreatment["SecurityValuationAccountingTreatment"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto["SecurityValuationBlockerDto"] {
         +string Code
         +string Reason
@@ -74,29 +76,6 @@ classDiagram
         +DateOnly FirstDate
         +DateOnly LastDate
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine["StructuredCashFlowLedgerLine"] {
-        +string Account
-        +string AccountType
-        +decimal Credit
-        +decimal Debit
-        +string? FinancialAccountId
-        +string? Symbol
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting["StructuredCashFlowLedgerPosting"] {
-        +string Description
-        +bool IsBalanced
-        +IReadOnlyList~StructuredCashFlowLedgerLine~ Lines
-        +DateTimeOffset PeriodDate
-        +decimal TotalCredits
-        +decimal TotalDebits
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult["StructuredCashFlowLedgerPostingResult"] {
-        +string? BlockedReason
-        +SecurityCashFlowBlockerDto? Blocker
-        +bool IsPostable
-        +IReadOnlyList~StructuredCashFlowLedgerPosting~ Postings
-        +Guid SecurityId
-    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
         +decimal? CapRate
         +decimal? CurrentIndexRate
@@ -152,6 +131,7 @@ classDiagram
         +DateTimeOffset PeriodDate
         +decimal PrincipalAmount
         +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
+        +int RowVersion
         +DateOnly? UnadjustedEnd
         +DateOnly? UnadjustedStart
     }
@@ -381,8 +361,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationInputDto
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationObservability
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg --> Meridian_Contracts_SecurityMaster_StructuredCashFlowNotionalStep
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg --> Meridian_Contracts_SecurityMaster_StructuredCashFlowResetFixing
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry

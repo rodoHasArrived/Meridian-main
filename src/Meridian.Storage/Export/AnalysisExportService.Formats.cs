@@ -191,7 +191,9 @@ public sealed partial class AnalysisExportService
                 timestamp = dto;
                 return true;
             case DateTime dt:
-                timestamp = new DateTimeOffset(dt, dt.Kind == DateTimeKind.Unspecified ? TimeSpan.Zero : default).ToUniversalTime();
+                timestamp = new DateTimeOffset(dt.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
+                    : dt).ToUniversalTime();
                 return true;
             case string s when DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed):

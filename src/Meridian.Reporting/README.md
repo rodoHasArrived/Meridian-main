@@ -43,6 +43,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, shadow NAV,
   performance, holdings, capital account, board packet, audit package, and certified-dataset
   template metadata.
+- `ReportingTemplateRegistryService.cs` - versioned template drafting, formula validation,
+  submission, independent approval/rejection, supersession, scoped lookup, and template rendering.
+  `IReportingTemplateGovernanceStore.cs` is its storage port; the existing workstation file
+  adapter retains the same snapshots. `ReportingAccessPolicyEvaluator.cs` owns policy
+  normalization, validation, and caller/immutable-manifest access evaluation.
 - `ReportingStarterKitCatalog.cs` - starter reporting-desk kit records that map operator
   archetypes to enabled template ids, hub layout ids, default periods, and draft schedule seeds.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
@@ -75,6 +80,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   with optional Security Master classification.
 
 ## Important workflows
+
+Template governance can run directly from this module through
+`ReportingTemplateRegistryService` and `ReportingAccessQueryContext`, without referencing UI
+Shared. Existing workstation registry and access-policy types delegate to the same implementation
+and preserve their public signatures, DTOs, registrations, and tenant/company checks. The legacy
+template store interface remains unchanged behind an adapter, including explicitly implemented
+store methods. File storage and the template lifecycle retain their existing behavior; approving
+a template does not approve or release a report run.
 
 Investment-income comparisons use two explicit retained run IDs and a retained grid/metric.
 `ReportingIncomeComparisonEngine` freezes both manifests and reuses `ReportSnapshotDiffEngine`.
@@ -223,6 +236,7 @@ released notice and delivered notice are distinct states.
 
 ```bash
 dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests|FullyQualifiedName~ReportingTenantIsolationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportingGovernance|FullyQualifiedName~ReportingArtifact|FullyQualifiedName~ReportingSecureDistribution|FullyQualifiedName~ReportingRunCertification|FullyQualifiedName~ReportingTenantIsolation" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
