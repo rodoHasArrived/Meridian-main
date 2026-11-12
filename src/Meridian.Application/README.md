@@ -42,6 +42,10 @@ Security asset-profile approval and rollback reject reserved W14 preparer-attest
 before changing profile state. Existing actor-separation and governed version checks still apply;
 other opaque reference strings retain their existing validation limits.
 
+Subscription application trims symbol names and keeps the first declaration when names repeat
+case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
+hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
+
 `IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
 receipts and effective-date selection over the durable agreement store. Retrospective amendments
 preserve posted versions; semantic bases follow effective chronology rather than approval order.

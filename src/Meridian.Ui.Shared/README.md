@@ -298,6 +298,14 @@ mapped activity, symbols and currencies remain comparison evidence rather than f
 
 Provider module status and connection tests select one complete credential record, matching runtime ownership. A retained partial or empty record cannot borrow mapped environment fields; only proven absence allows the separate mapped record. The compatibility vault adapter exposes record presence without exposing additional secrets.
 
+Alignment creation and preview return HTTP 501 until an alignment execution service is available;
+no queued job or output estimate is fabricated. The legacy replay start route performs an
+explicit `event_count` scan with `playbackSupported: false`. Timed playback, pause, resume, seek
+and speed changes return HTTP 501. Start and speed requests reject nonpositive or nonfinite
+multipliers. Scan history is bounded to 64 entries, evicts finished scans at capacity, and refuses
+additional work while every retained scan is active. File listing, previews, scan status and
+scan cancellation remain available.
+
 Replay file previews return an explicit empty JSON error response for malformed persisted events,
 including source file/line evidence, and distinguish active/unavailable captures from corruption.
 Quant Lab parameter discovery returns HTTP 400 when any globals `Param` metadata is incomplete;
