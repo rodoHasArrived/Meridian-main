@@ -24,8 +24,10 @@ public sealed class StrategyRunReadServiceTests
             BuildCompletedRun(id, "sensitivity", "Sensitivity", equity, pnl, totalReturn,
                 pnl, 0m, 1, 1.0, 100m) with
             {
-                SweepId = "experiment-1", SweepDefinitionHash = "sweep-v2:comparison-context",
-                SweepObjective = "TotalReturn", DatasetReference = dataset,
+                SweepId = "experiment-1",
+                SweepDefinitionHash = "sweep-v2:comparison-context",
+                SweepObjective = "TotalReturn",
+                DatasetReference = dataset,
                 ParameterSet = new Dictionary<string, string> { ["lookback"] = id == "a" ? "10" : "20" }
             };
         await store.RecordRunAsync(Point("a", 200_000m, 10_000m, 0.1m, "dataset-a"));
@@ -48,7 +50,9 @@ public sealed class StrategyRunReadServiceTests
         await store.RecordRunAsync(BuildCompletedRun("unknown-objective", "sensitivity", "Sensitivity",
             110_000m, 10_000m, 0.1m, 10_000m, 0m, 1, 1.0, 100m) with
         {
-            SweepId = "legacy", SweepDefinitionHash = "legacy-point-hash", SweepObjective = "UnsupportedMetric"
+            SweepId = "legacy",
+            SweepDefinitionHash = "legacy-point-hash",
+            SweepObjective = "UnsupportedMetric"
         });
         var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
         var group = (await service.GetSweepResultGroupsAsync()).Single();

@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.RunMatPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -184,7 +185,7 @@
                          VerticalScrollBarVisibility="Auto"
                          HorizontalScrollBarVisibility="Auto"
                          TextWrapping="NoWrap"
-                         FontFamily="Cascadia Code, Consolas, monospace"
+                         FontFamily="{DynamicResource MeridianDataFontFamily}"
                          FontSize="13"
                          Background="{StaticResource PremiumPanelBrush}"
                          Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -227,7 +228,7 @@
                             AutomationProperties.Name="RunMat Resolved Executable Panel">
                         <StackPanel>
                             <TextBlock Text="Resolved Executable" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                            <TextBlock Text="{Binding ResolvedExecutablePath}" FontFamily="Cascadia Code, Consolas, monospace"
+                            <TextBlock Text="{Binding ResolvedExecutablePath}" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap"
                                        AutomationProperties.AutomationId="RunMatResolvedExecutablePath"
                                        AutomationProperties.Name="RunMat Resolved Executable Path" />

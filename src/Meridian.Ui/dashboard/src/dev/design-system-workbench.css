@@ -1,0 +1,41 @@
+.native-workbench {
+  max-width: 1600px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: var(--font-body, "IBM Plex Sans", sans-serif);
+}
+.native-workbench-header { display: flex; align-items: start; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+.native-workbench-header h1 { margin: 4px 0 8px; font-size: 22px; line-height: 28px; font-weight: 600; }
+.native-workbench-header p { max-width: 75ch; color: var(--ws-text-muted); }
+.native-workbench-header .native-workbench-kicker { color: var(--ws-text); font-size: 12px; font-weight: 600; }
+.native-workbench-header a { flex: 0 0 auto; color: var(--interaction-link); text-decoration: underline; }
+.native-workbench-header a:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 3px; }
+.native-workbench-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 16px; padding: 16px; margin-bottom: 20px; }
+.native-workbench-control { min-width: 0; display: grid; gap: 8px; }
+.native-workbench-control > span { font-size: 12px; color: var(--ws-text-muted); }
+.native-workbench-reset { display: flex; align-items: end; }
+.native-workbench-specimens { min-width: 0; padding: 16px; background: var(--ws-page-bg); color: var(--ws-text); border: 1px solid var(--ws-border); }
+.native-workbench-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.native-workbench-case { min-width: 0; padding: 16px; }
+.native-workbench-case h2 { margin: 0; font-size: 16px; line-height: 22px; font-weight: 600; }
+.native-workbench-description { color: var(--ws-text-muted); margin: 8px 0 16px; max-width: 80ch; }
+.native-workbench-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.native-workbench-badges { margin-block: 16px; }
+.native-workbench-note { margin-top: 16px; color: var(--ws-text-muted); font-size: 12px; min-height: 18px; }
+.native-workbench-wide { grid-column: 1 / -1; }
+.native-workbench-form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 16px; }
+.native-workbench-form-actions p { color: var(--ws-text-muted); }
+.native-workbench-inspector { min-width: 0; padding: 16px; border: 1px solid var(--ws-border); background: var(--ws-surface); }
+.native-workbench-inspector h3 { margin-bottom: 16px; font-size: 14px; font-weight: 600; }
+.native-workbench-facts { display: grid; gap: 12px; }
+.native-workbench-facts > div { display: grid; gap: 4px; border-bottom: 1px solid var(--ws-border); padding-bottom: 8px; }
+.native-workbench-facts dt { font-size: 12px; color: var(--ws-text-muted); }
+.native-workbench-facts dd { overflow-wrap: anywhere; }
+.native-workbench-error { display: grid; gap: 12px; justify-items: start; }
+@media (max-width: 1000px) {
+  .native-workbench { padding: 16px; }
+  .native-workbench-header { flex-wrap: wrap; }
+  .native-workbench-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .native-workbench-grid { grid-template-columns: minmax(0, 1fr); }
+}

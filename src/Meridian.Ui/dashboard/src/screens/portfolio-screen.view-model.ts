@@ -45,6 +45,7 @@ import type {
   StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 type PortfolioRiskState = TradingWorkspaceResponse["risk"];
 type PortfolioBrokerageStatus = TradingWorkspaceResponse["brokerage"];
@@ -64,6 +65,10 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  marketValue: string;
+  currency: string | null;
+  weight: string;
+  weightBasis: string | null;
   markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
@@ -311,6 +316,8 @@ export interface PortfolioPositionDetail {
   title: string;
   subtitle: string;
   ariaLabel: string;
+  /** The one status shown beside the holding's name; null when there is nothing to flag. */
+  statusLabel: string | null;
   statusTitle: string;
   statusDetail: string;
   statusTone: "default" | "success" | "warning" | "danger";
@@ -669,6 +676,10 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
+      marketValue: p.marketValue && p.currency ? `${p.marketValue} ${p.currency}` : "Unavailable · currency or value not supplied",
+      currency: p.currency ?? null,
+      weight: p.weight && p.weightBasis ? p.weight : "Unavailable",
+      weightBasis: p.weightBasis ?? null,
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
@@ -1165,7 +1176,7 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "trades",
         label: "Trades",
-        value: trades ? trades.totalFills.toLocaleString() : "—",
+        value: trades ? formatCount(trades.totalFills) : "—",
         detail: trades
           ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatCurrency(trades.totalCommissions)} commissions.`
           : "Trade-level fill evidence has not been loaded.",
@@ -1253,12 +1264,12 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
     .map((fill) => ({
       id: fill.fillId,
       symbol: fill.symbol,
-      quantity: fill.filledQuantity.toLocaleString(),
+      quantity: formatCount(fill.filledQuantity),
       price: formatCurrencyPrecise(fill.fillPrice),
       commission: formatCurrencyPrecise(fill.commission),
       filledAt: formatDateTime(fill.filledAt),
       accountId: fill.accountId ?? "No account",
-      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${fill.filledQuantity.toLocaleString()} at ${formatCurrencyPrecise(fill.fillPrice)} on ${formatDateTime(fill.filledAt)}`
+      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatCurrencyPrecise(fill.fillPrice)} on ${formatDateTime(fill.filledAt)}`
     }));
 }
 
@@ -2313,6 +2324,7 @@ function buildSelectedPositionDetail(
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
+    statusLabel: position.markFreshness.reviewRequired ? "Review required" : risk?.state ?? null,
     statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
     statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
     statusTone,

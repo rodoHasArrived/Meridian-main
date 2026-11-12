@@ -6,17 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WorksheetGrid</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
-<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EC); font-family: var(--font-body);">
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EB); font-family: var(--font-body);">
   <div style="max-width: 852px; margin: 0 auto;">
-    <h2 style="margin: 0 0 4px 0; font-size: 22px; color: var(--text-primary, #22252A);">WorksheetGrid</h2>
-    <p style="margin: 0 0 20px 0; font-size: 13px; color: var(--text-muted, #5E666F);">Click a cell or arrow-key to select; double-click or just start typing to edit — Enter / Tab commits and advances, Escape cancels.</p>
+    <h2 style="margin: 0 0 4px 0; font-size: 22px; color: var(--text-primary, #20252B);">WorksheetGrid</h2>
+    <p style="margin: 0 0 20px 0; font-size: 13px; color: var(--text-muted, #606870);">Click a cell or arrow-key to select; double-click or just start typing to edit — Enter / Tab commits and advances, Escape cancels.</p>
     <div id="demo"></div>
   </div>
 
   <script type="text/babel">
-    const { WorksheetGrid } = window.MeridianDesignSystem_4f61be;
+    const { WorksheetGrid } = window.MeridianDesignSystem_205d17;
 
     const columns = [
       { key: "A", label: "Security", width: 168, align: "left" },
@@ -56,7 +58,7 @@
       });
       return <WorksheetGrid columns={columns} rows={7} cells={data} defaultActiveCell="D2" editable onCellCommit={onCommit} />;
     }
-    ReactDOM.render(<Demo />, document.getElementById("demo"));
+    ReactDOM.createRoot(document.getElementById("demo")).render(<Demo />);
   </script>
 </body>
 </html>

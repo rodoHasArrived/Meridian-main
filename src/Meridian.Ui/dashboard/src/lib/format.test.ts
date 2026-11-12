@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatCount,
+  formatMoney,
+  formatQuantity,
+  formatUtcDate,
+  formatUtcTimestamp,
   formatAmountWithCode,
   formatCompactCurrency,
   formatCurrency,
@@ -8,6 +13,9 @@ import {
   formatPrefixedCurrency,
   formatRatioAsPercent,
   formatSignedCurrency,
+  formatPnl,
+  normalizeFinancialLabel,
+  pnlToneForValue,
   pluralizeCount
 } from "@/lib/format";
 
@@ -20,6 +28,12 @@ describe("formatNumber", () => {
   it("honours explicit fraction digit bounds", () => {
     expect(formatNumber(12, { minimumFractionDigits: 2 })).toBe("12.00");
     expect(formatNumber(0.123456, { maximumFractionDigits: 4 })).toBe("0.1235");
+  });
+
+  it("preserves tiny nonzero observations with explicitly requested scientific notation", () => {
+    expect(formatNumber(1e-9, { notation: "scientific", maximumFractionDigits: 11 })).toBe("1E-9");
+    expect(formatNumber(1e-100, { notation: "scientific", maximumFractionDigits: 11 })).toBe("1E-100");
+    expect(formatNumber(0, { notation: "scientific" })).toBe("0E0");
   });
 
   it("renders the fallback for null, undefined, and non-finite values", () => {
@@ -165,5 +179,91 @@ describe("pluralizeCount", () => {
   it("localizes the count when requested", () => {
     expect(pluralizeCount(1234, "row", { localizeCount: true })).toBe("1,234 rows");
     expect(pluralizeCount(1234, "row")).toBe("1234 rows");
+  });
+});
+
+describe("formatCount", () => {
+  it("groups with the en-US locale whatever the host locale, and falls back for non-finite input", () => {
+    expect(formatCount(1234567)).toBe("1,234,567");
+    expect(formatCount(0)).toBe("0");
+    expect(formatCount(Number.NaN)).toBe("—");
+    expect(formatCount(null, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+});
+
+describe("formatMoney", () => {
+  it("uses the currency's minor units and parentheses for negatives in the accounting context", () => {
+    expect(formatMoney(1234.5, { context: "accounting" })).toBe("$1,234.50");
+    expect(formatMoney(-1234.5, { context: "accounting" })).toBe("($1,234.50)");
+    expect(formatMoney(-500, { context: "accounting", currency: "EUR" })).toBe("(€500.00)");
+    expect(formatMoney(1500, { context: "accounting", currency: "JPY" })).toBe("¥1,500");
+    expect(formatMoney(-12.5, { context: "accounting", currency: null })).toBe("(12.50)");
+  });
+
+  it("uses instrument precision and a minus sign for trading, and whole units for summaries", () => {
+    expect(formatMoney(-0.0125, { context: "trading", decimals: 4 })).toBe("-$0.0125");
+    expect(formatMoney(3100, { context: "trading", signed: true })).toBe("+$3,100.00");
+    expect(formatMoney(3100.4, { context: "summary", signed: true })).toBe("+$3,100");
+    expect(formatMoney(undefined)).toBe("—");
+  });
+});
+
+describe("formatQuantity", () => {
+  it("formats at instrument precision with an optional sign", () => {
+    expect(formatQuantity(1250)).toBe("1,250");
+    expect(formatQuantity(0.012345)).toBe("0.0123");
+    expect(formatQuantity(12.5, { signed: true })).toBe("+12.5");
+    expect(formatQuantity(414.2, { minDecimals: 2, maxDecimals: 2 })).toBe("414.20");
+  });
+});
+
+describe("UTC date labels", () => {
+  it("always carries the year so a ledger or evidence timestamp is unambiguous", () => {
+    expect(formatUtcTimestamp(new Date("2026-06-30T18:05:00Z"))).toBe("Jun 30, 2026, 18:05 UTC");
+    expect(formatUtcTimestamp(new Date("2025-01-01T00:00:00Z"))).toBe("Jan 1, 2025, 00:00 UTC");
+    expect(formatUtcTimestamp(new Date("not a time"))).toBe("Invalid Date");
+    expect(formatUtcDate(new Date("2026-05-03T23:59:00Z"))).toBe("May 3, 2026");
+  });
+});
+
+
+describe("formatPnl", () => {
+  it("signs every non-zero amount, groups thousands and fixes decimals", () => {
+    expect(formatPnl(1234.5)).toBe("+$1,234.50");
+    expect(formatPnl(-1234.5)).toBe("-$1,234.50");
+    expect(formatPnl(0)).toBe("$0.00");
+    expect(formatPnl(90, { decimals: 0 })).toBe("+$90");
+    expect(formatPnl(-4, { currency: "EUR" })).toBe("-€4.00");
+  });
+
+  it("renders the fallback for a missing value", () => {
+    expect(formatPnl(null)).toBe("—");
+    expect(formatPnl(Number.NaN, { fallback: "Not recorded" })).toBe("Not recorded");
+  });
+});
+
+describe("pnlToneForValue", () => {
+  it("is green for a gain, red for a loss and neutral otherwise", () => {
+    expect(pnlToneForValue(0.01)).toBe("success");
+    expect(pnlToneForValue(-0.01)).toBe("danger");
+    expect(pnlToneForValue(0)).toBe("default");
+    expect(pnlToneForValue(null)).toBe("default");
+  });
+});
+
+describe("normalizeFinancialLabel", () => {
+  it.each([
+    ["Unrealized PnL", "Unrealized P&L"],
+    ["Net P/L", "Net P&L"],
+    ["P & L impact", "P&L impact"],
+    ["Total P and L", "Total P&L"],
+    ["Realized P&L", "Realized P&L"]
+  ])("spells %s as %s", (label, expected) => {
+    expect(normalizeFinancialLabel(label)).toBe(expected);
+  });
+
+  it("leaves identifiers and unrelated words alone", () => {
+    expect(normalizeFinancialLabel("unrealizedPnl")).toBe("unrealizedPnl");
+    expect(normalizeFinancialLabel("Open positions")).toBe("Open positions");
   });
 });

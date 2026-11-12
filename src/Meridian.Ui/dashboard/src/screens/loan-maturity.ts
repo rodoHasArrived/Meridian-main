@@ -1,4 +1,5 @@
 import type { LoanSummary } from "@/types/direct-lending.types";
+import { LocalDate } from "@/lib/local-date";
 
 export interface LoanMaturityBucket {
   id: string;
@@ -12,17 +13,15 @@ export interface LoanMaturityBucket {
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY"];
 
 export function loanMaturityCurrency(value: string | number): string {
-  const numeric = typeof value === "number" || /^\d+$/.test(String(value));
-  if (numeric) return CURRENCIES[Number(value)] ?? "Unspecified currency";
   const text = String(value ?? "").trim().toUpperCase();
+  if (typeof value === "number" || /^\d+$/.test(text)) return CURRENCIES[Number(value)] ?? "Unspecified currency";
   return CURRENCIES.includes(text) ? text : "Unspecified currency";
 }
 
 /** Validate calendar days without applying the workstation's timezone. */
 export function isCalendarDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? "")) return false;
-  const parsed = new Date(`${value}T00:00:00Z`);
-  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  return LocalDate.fromISO(value) !== null;
 }
 
 export function maturityPeriod(date: string, today: string): string {

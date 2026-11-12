@@ -641,6 +641,34 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
+    public void RegTAccount_ShortLifecycle_LedgerCashTracksAccountCash()
+    {
+        // The ledger used to book the full short proceeds into Cash while the account's cash fell
+        // by the posted margin, so the two disagreed by the whole $30 000 collateral until cover.
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 100_000m,
+                MarginType: MarginAccountType.RegT),
+        ], ledger);
+        var openingLedgerCash = ledger.GetBalance(LedgerAccounts.Cash);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
+        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m,
+            "ledger cash must fall by the posted margin exactly as account cash does");
+        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(30_000m);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 200m));
+        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(15_000m);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 180m));
+        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(0m,
+            "all collateral returns to cash once the short is fully covered");
+    }
+
+    [Fact]
     public void RegTAccount_PartialCoverShort_ReleasesProportionalCollateral()
     {
         // Arrange: short 100 @ $200
@@ -758,9 +786,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         //   Cash = $100 000 − $5 000 = $95 000 (50 % additional margin posted)
         //   Collateral = 150 % × $10 000 = $15 000
         //   Cover MV = 100 × $200 = $20 000
-        //   Maintenance = 130 % × $20 000 = $26 000
-        //   Equity = $95 000 + 0 long MV = $95 000
-        //   ExcessLiquidity = $95 000 − $26 000 = $69 000 → no call (too much cash)
+        //   (Too much cash for a call.)
         //
         // Simplest real margin call: start with minimal cash for long
         //   $1 000 cash, 50 % reg-T; buy 20 shares @ $100 → notional $2 000
@@ -815,9 +841,9 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         //   $10 000 cash, short 100 @ $100 → cash = $10 000 - $5 000 = $5 000
         //                                       collateral = $15 000
         //   Price jumps to $500 → cover MV = $50 000
-        //   maintenance = 130 % × $50 000 = $65 000
-        //   equity = $5 000 + 0 long MV = $5 000
-        //   ExcessLiquidity = $5 000 − $65 000 = −$60 000 → MARGIN CALL ✓
+        //   net equity = $20 000 credit − $50 000 short = −$30 000
+        //   maintenance = 30 % × $50 000 = $15 000 (130 % against the credit balance)
+        //   ExcessLiquidity = −$30 000 − $15 000 = −$45 000 → MARGIN CALL ✓
         var portfolio = new PaperTradingPortfolio(
         [
             new AccountDefinition("margin-1", "Reg T", AccountKind.Brokerage, 10_000m,
@@ -827,12 +853,61 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 100m));
 
         // Price explodes to $500 → short is massively underwater
-        // maintenance = 130 % × $50 000 = $65 000; equity = $5 000 → call
+        // net equity = −$30 000 against $15 000 maintenance → call
         var status = portfolio.CheckMarginStatus("margin-1",
             new Dictionary<string, decimal> { ["AAPL"] = 500m });
 
         status.IsMarginCall.Should().BeTrue();
         status.MarginDeficiency.Should().BeGreaterThan(0m);
+    }
+
+    [Fact]
+    public void CheckMarginStatus_RegTShortAtEntry_IsNotAMarginCall()
+    {
+        // $10k cash, short 100 @ $100: $5k additional margin posted, $15k credit balance.
+        // At the entry price the account meets Reg T (credit $15k ≥ 130 % × $10k), so the
+        // net-equity check must not report a call.
+        var portfolio = BuildRegTPortfolio(10_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 100m));
+
+        var status = portfolio.CheckMarginStatus("margin-1",
+            new Dictionary<string, decimal> { ["AAPL"] = 100m });
+
+        status.IsMarginCall.Should().BeFalse();
+        status.PortfolioRequirement.MaintenanceMargin.Should().Be(3_000m);
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(7_000m);
+        status.PositionRequirements.Should().ContainSingle()
+            .Which.ExcessLiquidity.Should().Be(7_000m,
+                "per-position equity must subtract the short liability too");
+    }
+
+    [Fact]
+    public void CheckMarginStatus_PositionEquity_UsesSuppliedPricesNotStoredMarks()
+    {
+        // $5k cash, short 100 @ $100 → $15k credit balance. Check at $120 WITHOUT updating the
+        // stored mark: net equity = 15,000 − 12,000 = 3,000 vs 30 % × 12,000 = 3,600 → −600.
+        var portfolio = BuildRegTPortfolio(5_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 100m));
+
+        var status = portfolio.CheckMarginStatus("margin-1",
+            new Dictionary<string, decimal> { ["AAPL"] = 120m });
+
+        status.PortfolioRequirement.ExcessLiquidity.Should().Be(-600m);
+        status.PositionRequirements.Should().ContainSingle()
+            .Which.ExcessLiquidity.Should().Be(-600m,
+                "per-position equity must use the same price snapshot as the portfolio view");
+    }
+
+    [Fact]
+    public void CheckMarginStatus_MissingPriceForOpenPosition_FailsClosed()
+    {
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+
+        var act = () => portfolio.CheckMarginStatus("margin-1", new Dictionary<string, decimal>());
+
+        act.Should().Throw<MarginPriceUnavailableException>()
+            .Which.Symbols.Should().Equal("AAPL");
     }
 
     [Fact]
@@ -881,7 +956,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
-    public void AccrueMarginInterest_OneDay_DeductsInterestFromCashAndAddsToLoan()
+    public void AccrueMarginInterest_OneDay_DeductsInterestFromCashOnly()
     {
         // $100 000 cash, buy $20 000 notional on 50 % margin → $10 000 borrowed.
         // Annual rate 7.3 % → daily = 7.3 / 365 = 0.02 %.
@@ -894,7 +969,8 @@ public sealed class PaperTradingPortfolioMarginRulesTests
 
         var expectedInterest = 10_000m * (0.073m / 365m);
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.0001m);
-        portfolio.MarginBalance.Should().BeApproximately(10_000m + expectedInterest, precision: 0.0001m);
+        portfolio.MarginBalance.Should().Be(10_000m,
+            because: "interest is paid from cash; growing the loan too would charge it twice");
     }
 
     [Fact]
@@ -906,8 +982,132 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
 
         var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
-        portfolio.MarginBalance.Should().BeApproximately(10_000m + expectedInterest, precision: 0.001m);
+        portfolio.MarginBalance.Should().Be(10_000m);
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.001m);
+    }
+
+    [Fact]
+    public void AccrueMarginInterest_ReducesPortfolioValueByExactlyTheInterest()
+    {
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        var valueBefore = portfolio.PortfolioValue;
+
+        portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
+
+        var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
+        portfolio.PortfolioValue.Should().BeApproximately(valueBefore - expectedInterest, precision: 0.0001m);
+    }
+
+    [Fact]
+    public void AccrueMarginInterest_ThenSellingRepaysOnlyThePrincipal()
+    {
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
+
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
+
+        // $20 000 proceeds less the $10 000 principal returns $10 000; the interest is
+        // charged once, at accrual, and not again through the loan repayment.
+        var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
+        portfolio.Cash.Should().BeApproximately(100_000m - expectedInterest, precision: 0.0001m);
+        portfolio.MarginBalance.Should().Be(0m);
+    }
+
+    [Fact]
+    public void AccrueMarginInterest_WithLedger_PostsBalancedExpenseEntry()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(
+        [
+            new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 100_000m,
+                MarginType: MarginAccountType.RegT),
+        ], ledger);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        var asOf = new DateTimeOffset(2026, 11, 5, 21, 0, 0, TimeSpan.Zero);
+
+        portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 1, asOf: asOf);
+
+        var expectedInterest = 10_000m * (0.073m / 365m);
+        var entry = ledger.Journal.Single(e => e.Description.Contains("Margin interest"));
+        entry.Timestamp.Should().Be(asOf);
+        entry.Lines.Should().HaveCount(2);
+        entry.Lines.Single(l => l.Account == LedgerAccounts.MarginInterestExpense).Debit.Should().Be(expectedInterest);
+        entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(expectedInterest);
+    }
+
+    [Theory]
+    [InlineData(1, 2)]
+    [InlineData(30, 60)]
+    public void AccrueMarginInterest_ReplayingOperations_PreservesSingleChargeThroughPartialAndFullRepayment(
+        int days, int expectedInterest)
+    {
+        var boughtAt = new DateTimeOffset(2026, 11, 1, 12, 0, 0, TimeSpan.Zero);
+        var accruedAt = boughtAt.AddDays(days);
+        var buy = BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m) with { Timestamp = boughtAt };
+        var partialSale = BuildFill("AAPL", OrderSide.Sell, qty: 40, price: 200m) with
+        {
+            Timestamp = accruedAt.AddMinutes(1)
+        };
+        var finalSale = BuildFill("AAPL", OrderSide.Sell, qty: 60, price: 200m) with
+        {
+            Timestamp = accruedAt.AddMinutes(2)
+        };
+
+        var originalTrace = RunScenario();
+        // Reconstruct the same explicit operations in fresh books twice. This is operation
+        // replay, not durable session replay: sessions do not yet record margin accruals.
+        for (var reconstruction = 0; reconstruction < 2; reconstruction++)
+            RunScenario().Should().Equal(originalTrace);
+
+        (DateTimeOffset Timestamp, string Description, LedgerAccount Account, decimal Debit, decimal Credit)[] RunScenario()
+        {
+            var ledger = new Meridian.Ledger.Ledger();
+            var portfolio = new PaperTradingPortfolio(
+            [
+                new AccountDefinition("margin-1", "Synthetic Reg T", AccountKind.Brokerage, 100_000m,
+                    MarginType: MarginAccountType.RegT),
+            ], ledger);
+
+            AssertStage(cash: 100_000m, principal: 0m, securities: 0m, expense: 0m, entries: 1);
+            portfolio.ApplyFill("margin-1", buy);
+            AssertStage(cash: 90_000m, principal: 10_000m, securities: 20_000m, expense: 0m, entries: 2);
+
+            portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt);
+            AssertStage(90_000m - expectedInterest, 10_000m, 20_000m, expectedInterest, entries: 3);
+
+            portfolio.ApplyFill("margin-1", partialSale);
+            AssertStage(94_000m - expectedInterest, 6_000m, 12_000m, expectedInterest, entries: 4);
+            portfolio.ApplyFill("margin-1", finalSale);
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+
+            // Once flat, another period accrues nothing and cannot charge repaid principal.
+            portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt.AddDays(days));
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+            ledger.Journal.Should().ContainSingle(entry => entry.Description.Contains("Margin interest"));
+            ledger.Journal.SelectMany(entry => entry.Lines)
+                .Where(line => line.Account == LedgerAccounts.MarginLoanPayable)
+                .Sum(line => line.Debit).Should().Be(10_000m, "repayment must retire only the original principal");
+
+            // Generated posting IDs and the constructor's wall-clock timestamp are not
+            // economic inputs. Every fill/accrual timestamp and every ledger amount is.
+            return ledger.Journal.SelectMany(entry => entry.Lines.Select(line =>
+                (entry.Description.StartsWith("Initial capital", StringComparison.Ordinal) ? DateTimeOffset.MinValue : entry.Timestamp,
+                    entry.Description, line.Account, line.Debit, line.Credit))).ToArray();
+
+            void AssertStage(decimal cash, decimal principal, decimal securities, decimal expense, int entries)
+            {
+                portfolio.Cash.Should().Be(cash);
+                portfolio.MarginBalance.Should().Be(principal);
+                portfolio.PortfolioValue.Should().Be(100_000m - expense);
+                ledger.GetBalance(LedgerAccounts.Cash).Should().Be(cash);
+                ledger.GetBalance(LedgerAccounts.MarginLoanPayable).Should().Be(principal);
+                ledger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(securities);
+                ledger.GetBalance(LedgerAccounts.MarginInterestExpense).Should().Be(expense);
+                ledger.Journal.Should().HaveCount(entries).And.OnlyContain(entry => entry.IsBalanced);
+            }
+        }
     }
 
     [Fact]

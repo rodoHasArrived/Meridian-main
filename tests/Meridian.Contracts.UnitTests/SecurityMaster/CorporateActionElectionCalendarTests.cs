@@ -32,8 +32,14 @@ public sealed class CorporateActionElectionCalendarTests
     [InlineData("2026-02-30T16:00:00Z")]
     public void Read_RejectsMissingTimeOffsetOrInvalidDate(string deadlineAt)
     {
-        var payload = JsonSerializer.SerializeToElement(new { electionCalendar = new { schemaVersion = 1,
-            cutoffs = new[] { new { id = "deadline", label = "Election", deadlineAt, source = "Custodian", evidenceReference = "document://notice" } } } });
+        var payload = JsonSerializer.SerializeToElement(new
+        {
+            electionCalendar = new
+            {
+                schemaVersion = 1,
+                cutoffs = new[] { new { id = "deadline", label = "Election", deadlineAt, source = "Custodian", evidenceReference = "document://notice" } }
+            }
+        });
         var result = CorporateActionElectionCalendar.Read(payload);
         result.EvidenceState.Should().Be("InvalidEvidence");
         result.Cutoffs.Should().BeEmpty();

@@ -40,6 +40,14 @@ SOURCE_SUFFIXES = {
     ".xml",
 }
 SOURCE_EXCLUDES = EXCLUDE_DIRS | {"dist", "coverage", "wwwroot"}
+# Resolver output that npm rewrites on every dependency bump. Module READMEs never
+# describe resolved dependency versions, so lockfile churn is not review evidence.
+SOURCE_EXCLUDED_FILES = {"package-lock.json"}
+PACKAGE_MANIFEST = "package.json"
+# package.json sections whose values are dependency version specifiers. Package
+# names stay in the fingerprint, so adding or removing a dependency still drifts.
+PACKAGE_VERSION_SECTIONS = ("dependencies", "devDependencies", "optionalDependencies", "overrides")
+MASKED_VERSION = "<version>"
 
 
 def iter_source_files(path: Path) -> list[Path]:
@@ -51,19 +59,73 @@ def iter_source_files(path: Path) -> list[Path]:
         current_path = Path(current)
         for filename in filenames:
             candidate = current_path / filename
-            if candidate.suffix.lower() in SOURCE_SUFFIXES:
+            if candidate.suffix.lower() in SOURCE_SUFFIXES and filename not in SOURCE_EXCLUDED_FILES:
                 files.append(candidate)
     # Path ordering folds case on Windows but is ordinal on Linux. Hash the same
     # repository-relative POSIX ordering on both hosts, independent of checkout root.
     return sorted(files, key=lambda file_path: file_path.relative_to(path).as_posix())
 
 
+def _mask_version(value: object) -> object:
+    """Mask a registry version range; keep every specifier that names a source."""
+    if isinstance(value, dict):
+        # Nested overrides ({"pkg": {".": "1.0.0", "dep": "2.0.0"}}) keep their keys.
+        return {key: _mask_version(item) for key, item in value.items()}
+    if not isinstance(value, str):
+        return value
+    if ":" not in value and "/" not in value:
+        # Semver ranges, exact versions, dist-tags, and "$name" override references.
+        return MASKED_VERSION
+    if value.startswith("npm:"):
+        # Aliases keep the target package name; only the range after the last "@" is masked.
+        name, separator, version = value[len("npm:"):].rpartition("@")
+        if separator and name and ":" not in version and "/" not in version:
+            return f"npm:{name}@{MASKED_VERSION}"
+    # file:, link:, workspace:, git, GitHub, and URL specifiers change what is built.
+    return value
+
+
+def _unique_pairs(pairs: list[tuple[str, object]]) -> dict:
+    result: dict = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate package.json key: {key}")
+        result[key] = value
+    return result
+
+
+def package_manifest_fingerprint(content: bytes) -> str | None:
+    """Fingerprint package.json without dependency version specifiers.
+
+    Returns None when the bytes are not a well-formed package manifest; callers
+    then hash the raw content so malformed edits still drift.
+    """
+    try:
+        manifest = json.loads(content.decode("utf-8"), object_pairs_hook=_unique_pairs)
+    except (UnicodeDecodeError, ValueError):
+        return None
+    if not isinstance(manifest, dict):
+        return None
+    for section in PACKAGE_VERSION_SECTIONS:
+        if isinstance(manifest.get(section), dict):
+            manifest[section] = _mask_version(manifest[section])
+    return sha256_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")))
+
+
+def source_file_hash(path: Path) -> str:
+    if path.name == PACKAGE_MANIFEST:
+        fingerprint = package_manifest_fingerprint(path.read_bytes())
+        if fingerprint is not None:
+            return fingerprint
+    # Git text checkouts can use LF or CRLF; the source content is unchanged.
+    # The shared manifest hasher normalizes UTF-8 text and preserves binary bytes.
+    return sha256_manifest_file(path)
+
+
 def tree_hash(root: Path, module_path: Path) -> str:
     parts: list[str] = []
     for file_path in iter_source_files(module_path):
-        # Git text checkouts can use LF or CRLF; the source content is unchanged.
-        # The shared manifest hasher normalizes UTF-8 text and preserves binary bytes.
-        parts.append(f"{repo_path(file_path, root)}:{sha256_manifest_file(file_path)}")
+        parts.append(f"{repo_path(file_path, root)}:{source_file_hash(file_path)}")
     return sha256_text("\n".join(parts))
 
 

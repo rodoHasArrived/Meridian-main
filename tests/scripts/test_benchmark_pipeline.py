@@ -104,7 +104,7 @@ else:
 @unittest.skipUnless(sys.platform.startswith("linux"), "The pipeline lane records Linux hardware")
 class PipelineBenchmarkTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.directory = Path(self.temporary.name)
         self.output = self.directory / "artifacts"

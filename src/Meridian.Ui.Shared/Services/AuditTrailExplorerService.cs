@@ -7,14 +7,18 @@ using Meridian.Execution.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
+public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
+
 /// <summary>
 /// Projects execution audit records into the shared cross-object audit timeline contract.
 /// </summary>
 public sealed class AuditTrailExplorerService
 {
+    public const int MaximumExportEntries = 250_000;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuity;
     private readonly PaperSessionPersistenceService? _paperSessions;
+    public bool HasSource => _auditTrail is not null || _operationsContinuity is not null;
 
     public AuditTrailExplorerService(
         ExecutionAuditTrailService? auditTrail = null,
@@ -26,9 +30,23 @@ public sealed class AuditTrailExplorerService
         _paperSessions = paperSessions;
     }
 
-    public async Task<AuditTrailExplorerResultDto> SearchAsync(
+    public Task<AuditTrailExplorerResultDto> SearchAsync(
         AuditTrailExplorerQueryDto? query = null,
         CancellationToken ct = default)
+        => ReadAsync(query, null, complete: false, ct);
+
+    /// <summary>HTTP reads authorize each operations source before loading its timeline.</summary>
+    public Task<AuditTrailExplorerResultDto> SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: false, ct);
+
+    /// <summary>Every authorized retained match; the browser/1,000-row browse cap is never an export limit.</summary>
+    public Task<AuditTrailExplorerResultDto> ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: true, ct);
+
+    private async Task<AuditTrailExplorerResultDto> ReadAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>>? canReadWorkflow, bool complete, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         query ??= new AuditTrailExplorerQueryDto();
@@ -37,6 +55,8 @@ public sealed class AuditTrailExplorerService
         if (_auditTrail is not null)
         {
             var executionEntries = await _auditTrail.GetAllAsync(ct).ConfigureAwait(false);
+            if (complete && executionEntries.Count > MaximumExportEntries)
+                throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
             entries.AddRange(executionEntries.Select(static (entry, index) => MapExecution(entry, index + 1)));
         }
 
@@ -46,7 +66,13 @@ public sealed class AuditTrailExplorerService
             foreach (var workflow in workflows)
             {
                 ct.ThrowIfCancellationRequested();
+                if (canReadWorkflow is not null && !await canReadWorkflow(workflow, ct).ConfigureAwait(false))
+                    continue;
                 var timeline = await _operationsContinuity.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
+                if (canReadWorkflow is not null && timeline.Any(entry => entry.WorkflowId != workflow.WorkflowId || entry.FundAccountId != workflow.FundAccountId))
+                    throw new InvalidDataException("An audit timeline did not match its authorized workflow/account identity.");
+                if (complete && timeline.Count > MaximumExportEntries - entries.Count)
+                    throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
                 entries.AddRange(timeline.Select(static (entry, index) => MapOperations(entry, index + 1)));
             }
         }
@@ -61,6 +87,8 @@ public sealed class AuditTrailExplorerService
                 ct.ThrowIfCancellationRequested();
                 foreach (var fill in _paperSessions.GetSessionFillHistory(summary.SessionId))
                 {
+                    if (complete && entries.Count >= MaximumExportEntries)
+                        throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
                     var metadata = new Dictionary<string, string>
                     {
                         ["timestampBasis"] = "execution-report-event",
@@ -99,10 +127,10 @@ public sealed class AuditTrailExplorerService
             .Where(entry => Matches(entry, query))
             .OrderByDescending(static entry => entry.OccurredAt)
             .ThenBy(static entry => entry.AuditId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static entry => entry.ActionLedgerSource, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.ObjectId, StringComparer.Ordinal)
             .ToArray();
-        var returned = matched
-            .Take(Math.Clamp(query.Limit, 1, 1_000))
-            .ToArray();
+        var returned = complete ? matched : matched.Take(Math.Clamp(query.Limit, 1, 1_000)).ToArray();
 
         return new AuditTrailExplorerResultDto(
             DateTimeOffset.UtcNow,
@@ -112,7 +140,8 @@ public sealed class AuditTrailExplorerService
             [new("ExecutionAuditTrail", _auditTrail is null ? "Unavailable" : "RetainedRecordsOnly"),
              new("OperationsContinuityTimeline", _operationsContinuity is null ? "Unavailable" : "RetainedRecordsOnly"),
              new("PaperSessionFillHistory", _paperSessions is null ? "Unavailable" : string.IsNullOrWhiteSpace(query.OrderId) ? "SelectOrderToRead" : "SessionRecordsOnly")],
-            "Retained evidence only. Missing events or passed checks are not proof that a stage did not occur. Recording timestamps may differ from broker event times. Results are capped at 1000; narrow the time range if truncated." +
+            "Retained evidence only. Missing events or passed checks are not proof that a stage did not occur. Recording timestamps may differ from broker event times. " +
+            (complete ? "Every matching record from available sources is included; source retention limits historical coverage." : "Browse results are capped at 1000; narrow the time range if truncated.") +
             (orderSelection.Status == "Ambiguous" ? " Order identity is ambiguous across canonical orders or known source contexts; no events are returned. Use the canonical client/order ID and resolve conflicting evidence." : ""),
             orderSelection.Status);
     }
@@ -145,7 +174,8 @@ public sealed class AuditTrailExplorerService
     private static (IEnumerable<AuditTrailTimelineEntryDto> Entries, string Status) SelectOrderContext(
         IReadOnlyList<AuditTrailTimelineEntryDto> entries, string? orderId)
     {
-        if (string.IsNullOrWhiteSpace(orderId)) return (entries, "NotRequested");
+        if (string.IsNullOrWhiteSpace(orderId))
+            return (entries, "NotRequested");
         var requested = orderId.Trim();
         // Canonical client/order identities take precedence over another order's coinciding
         // broker alias. Never transitively union the two identifier namespaces.
@@ -155,14 +185,17 @@ public sealed class AuditTrailExplorerService
         if (matching.Length == 0)
         {
             var aliases = entries.Where(entry => string.Equals(Metadata(entry, "gatewayOrderId"), requested, StringComparison.Ordinal)).ToArray();
-            if (aliases.Length == 0) return ([], "NotFound");
+            if (aliases.Length == 0)
+                return ([], "NotFound");
             var candidates = aliases.Select(entry => entry.OrderId).Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.Ordinal).ToArray();
-            if (candidates.Length != 1 || aliases.Any(entry => string.IsNullOrWhiteSpace(entry.OrderId))) return ([], "Ambiguous");
+            if (candidates.Length != 1 || aliases.Any(entry => string.IsNullOrWhiteSpace(entry.OrderId)))
+                return ([], "Ambiguous");
             canonical = candidates[0]!;
             matching = entries.Where(entry => string.Equals(entry.OrderId, canonical, StringComparison.Ordinal)).ToArray();
             status = "UniqueBrokerAlias";
         }
-        if (HasConflictingContext(matching)) return ([], "Ambiguous");
+        if (HasConflictingContext(matching))
+            return ([], "Ambiguous");
         var direct = matching.Select(entry => entry.AuditId).ToHashSet(StringComparer.Ordinal);
         var correlations = matching.Select(entry => entry.CorrelationId).Where(value => !string.IsNullOrWhiteSpace(value)).ToHashSet(StringComparer.Ordinal);
         var references = matching.SelectMany(entry => new[] { Metadata(entry, "manualOverrideId"), Metadata(entry, "overrideId"), Metadata(entry, "escalationId") }).Where(value => !string.IsNullOrWhiteSpace(value)).ToHashSet(StringComparer.Ordinal);

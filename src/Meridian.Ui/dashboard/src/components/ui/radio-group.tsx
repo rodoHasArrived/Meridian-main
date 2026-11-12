@@ -41,14 +41,23 @@ export function RadioGroup({
   const groupName = name ?? generatedName;
   const items = normalize(options);
   const enabled = items.filter((option) => !(disabled || option.disabled));
+  const tabStop = enabled.find((option) => option.value === value)?.value ?? enabled[0]?.value;
 
-  const move = (currentValue: string, delta: number) => {
+  const select = (event: KeyboardEvent<HTMLLabelElement>, optionValue: string) => {
+    const group = event.currentTarget.closest("[role='radiogroup']");
+    const target = Array.from(group?.querySelectorAll<HTMLInputElement>("input[type='radio']") ?? [])
+      .find((input) => input.value === optionValue);
+    target?.focus();
+    onChange?.(optionValue);
+  };
+
+  const move = (event: KeyboardEvent<HTMLLabelElement>, currentValue: string, delta: number) => {
     if (enabled.length === 0) {
       return;
     }
     const index = enabled.findIndex((option) => option.value === currentValue);
     const nextIndex = index < 0 ? 0 : (index + delta + enabled.length) % enabled.length;
-    onChange?.(enabled[nextIndex]!.value);
+    select(event, enabled[nextIndex]!.value);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLLabelElement>, optionValue: string) => {
@@ -56,17 +65,17 @@ export function RadioGroup({
       case "ArrowDown":
       case "ArrowRight":
         event.preventDefault();
-        move(optionValue, 1);
+        move(event, optionValue, 1);
         break;
       case "ArrowUp":
       case "ArrowLeft":
         event.preventDefault();
-        move(optionValue, -1);
+        move(event, optionValue, -1);
         break;
       case " ":
       case "Enter":
         event.preventDefault();
-        onChange?.(optionValue);
+        select(event, optionValue);
         break;
       default:
         break;
@@ -91,15 +100,6 @@ export function RadioGroup({
             )}
             onKeyDown={(event) => !itemDisabled && handleKeyDown(event, option.value)}
           >
-            <span
-              aria-hidden="true"
-              className={cn(
-                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full border bg-[var(--ws-surface-raised)] transition-colors",
-                checked ? "border-primary" : "border-border"
-              )}
-            >
-              {checked ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
-            </span>
             <input
               type="radio"
               name={groupName}
@@ -107,9 +107,18 @@ export function RadioGroup({
               checked={checked}
               disabled={itemDisabled}
               onChange={() => onChange?.(option.value)}
-              className="sr-only"
-              tabIndex={checked || (!value && option.value === enabled[0]?.value) ? 0 : -1}
+              className="peer sr-only"
+              tabIndex={option.value === tabStop ? 0 : -1}
             />
+            <span
+              aria-hidden="true"
+              className={cn(
+                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full border bg-[var(--ws-surface-raised)] transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--interaction-focus)]",
+                checked ? "border-[var(--interaction-selected)]" : "border-border"
+              )}
+            >
+              {checked ? <span className="h-2 w-2 rounded-full bg-[var(--interaction-selected)]" /> : null}
+            </span>
             <span className="grid gap-0.5">
               <span className="leading-[18px] text-foreground">{option.label}</span>
               {option.hint ? <span className="text-xs leading-5 text-muted-foreground">{option.hint}</span> : null}

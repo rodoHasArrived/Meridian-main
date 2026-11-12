@@ -32,6 +32,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PageLoadedCoreAsync(sender, e), nameof(OnPageLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PageLoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         AttachViewModelEvents();
         ApplyToneBindings();

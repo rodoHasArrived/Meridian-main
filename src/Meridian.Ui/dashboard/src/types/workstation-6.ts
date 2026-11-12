@@ -1099,6 +1099,35 @@ export interface LedgerPostedJournalEntry {
   // exists when they agree — see resolvePostedEntryDimensions.
 }
 
+/** One posting to an account with the account balance after it. */
+export interface LedgerAccountRunningBalancePoint {
+  journalEntryId: string;
+  entryId: string;
+  globalSequence: number;
+  timestamp: string;
+  description: string;
+  debit: number;
+  credit: number;
+  balance: number;
+}
+
+/**
+ * Posting history of one account inside a ledger period with a running balance in the
+ * account's normal-balance sign (`GET /api/ledger/periods/{periodId}/accounts/running-balance`).
+ */
+export interface LedgerAccountRunningBalance {
+  periodId: string;
+  ledgerBookId: string;
+  accountName: string;
+  accountType: string | null;
+  symbol: string | null;
+  financialAccountId: string | null;
+  totalDebits: number;
+  totalCredits: number;
+  endingBalance: number;
+  points: LedgerAccountRunningBalancePoint[];
+}
+
 /** P&L summary of the posted journal for a closed ledger period (`GET /api/ledger/periods/{periodId}/pnl-summary`). */
 export interface LedgerPeriodPnlSummary {
   periodId: string;
@@ -1610,7 +1639,11 @@ export type SecurityIdentifierKind =
   | "Cik"
   | "LoanX"
   | "Clip"
-  | "ListingId";
+  | "ListingId"
+  | "Uti"
+  | "Upi"
+  | "MarkitRedEntity"
+  | "MarkitRedPair";
 
 export type SecurityAssetProfileStatus = "Draft" | "Approved" | "Superseded" | "Retired";
 
@@ -1782,6 +1815,26 @@ export interface SecurityIdentityDrillIn {
   aliases: SecurityAliasEntry[];
 }
 
+export type SecurityMasterDeclaredExerciseStatus = "Resolved" | "Blocked";
+
+export interface SecurityMasterScheduleBlocker {
+  code: string;
+  reason: string;
+}
+
+/**
+ * Typed outcome of a record's declared call and put schedule. Absent for a record that declares
+ * no schedule; `blockers` is empty when the schedule resolved.
+ */
+export interface SecurityMasterDeclaredExerciseOutcome {
+  status: SecurityMasterDeclaredExerciseStatus;
+  asOf: string;
+  securityVersion: number | null;
+  windowCount: number;
+  blockers: SecurityMasterScheduleBlocker[];
+  diagnostics: string[];
+}
+
 export interface SecurityMasterScheduleSummary {
   supportsCashflowSchedule: boolean;
   supportsFactorHistory: boolean;
@@ -1791,6 +1844,7 @@ export interface SecurityMasterScheduleSummary {
   nextLifecycleDate: string | null;
   sourceSummary: string;
   summary: string;
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
 }
 
 export interface SecurityMasterScheduleEvent {

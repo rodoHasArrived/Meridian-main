@@ -1,7 +1,7 @@
 using System.Net.Http;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Support;

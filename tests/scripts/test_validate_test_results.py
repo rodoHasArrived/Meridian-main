@@ -26,7 +26,7 @@ class ValidateTestResultsTests(unittest.TestCase):
         )
 
     def test_accepts_passing_required_suites(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             root = Path(temporary_directory)
             self.write_trx(root, "meridian-integrations.trx", [("api", "Passed")])
             self.write_trx(root, "direct-lending-integrations.trx", [("ledger", "Passed")])
@@ -40,7 +40,7 @@ class ValidateTestResultsTests(unittest.TestCase):
             self.assertEqual(MODULE.validation_errors(evidence), [])
 
     def test_rejects_failed_skipped_and_unknown_outcomes(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             root = Path(temporary_directory)
             self.write_trx(
                 root,
@@ -56,7 +56,7 @@ class ValidateTestResultsTests(unittest.TestCase):
             self.assertEqual(len(errors), 3)
 
     def test_rejects_required_suite_without_passing_result(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             root = Path(temporary_directory)
             self.write_trx(root, "meridian-integrations.trx", [("api", "Passed")])
 
@@ -66,13 +66,13 @@ class ValidateTestResultsTests(unittest.TestCase):
             self.assertIn("required TRX suite 'missing-suite' produced no passing tests", MODULE.validation_errors(evidence))
 
     def test_rejects_empty_results_directory(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             with self.assertRaisesRegex(ValueError, "produced no TRX files"):
                 MODULE.collect_evidence(Path(temporary_directory))
 
     def test_rejects_zero_discovery_even_when_the_other_required_suite_passes(self):
         for empty_prefix in ("meridian-integrations", "direct-lending-integrations"):
-            with self.subTest(empty_prefix=empty_prefix), tempfile.TemporaryDirectory() as directory:
+            with self.subTest(empty_prefix=empty_prefix), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
                 root = Path(directory)
                 prefixes = ["meridian-integrations", "direct-lending-integrations"]
                 for prefix in prefixes:
@@ -82,7 +82,7 @@ class ValidateTestResultsTests(unittest.TestCase):
                 self.assertIn(f"required TRX suite '{empty_prefix}' produced no passing tests", MODULE.validation_errors(evidence))
 
     def test_rejects_zero_discovery_without_required_prefixes(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             self.write_trx(root, "empty.trx", [])
             evidence = MODULE.collect_evidence(root)
@@ -90,7 +90,7 @@ class ValidateTestResultsTests(unittest.TestCase):
             self.assertIn("production certification executed no passing tests", MODULE.validation_errors(evidence))
 
     def test_rejects_empty_trx_beside_passing_trx_with_the_same_prefix(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             self.write_trx(root, "meridian-integrations_net10.trx", [("api", "Passed")])
             self.write_trx(root, "meridian-integrations_net11.trx", [])
@@ -102,7 +102,7 @@ class ValidateTestResultsTests(unittest.TestCase):
 
     def test_cli_retains_failure_summary_for_missing_or_malformed_trx(self):
         for scenario in ("missing-directory", "empty-directory", "malformed-trx"):
-            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory() as directory:
+            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
                 root = Path(directory)
                 results = root / "results"
                 if scenario != "missing-directory":
@@ -126,7 +126,7 @@ class ValidateTestResultsTests(unittest.TestCase):
                 self.assertIn(evidence["errors"][0], result.stderr)
 
     def test_cli_retains_passing_evidence(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             self.write_trx(root, "ibapi-runtime-reconnect.trx", [("reconnect", "Passed")])
             output = root / "evidence" / "test-evidence.json"

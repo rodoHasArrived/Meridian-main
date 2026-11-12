@@ -5,6 +5,7 @@ using Meridian.Strategies.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -410,7 +411,7 @@ public sealed class CashFlowViewModel : BindableBase
     {
         _runId = summary.RunId;
         Title = $"Cash Flow ({summary.RunId[..Math.Min(8, summary.RunId.Length)]})";
-        AsOfText = summary.AsOf.LocalDateTime.ToString("g");
+        AsOfText = UtcFormat.FormatUtcTimestamp(summary.AsOf);
         TotalEntriesText = summary.TotalEntries.ToString("N0");
         TotalInflowsText = summary.TotalInflows.ToString("C2");
         TotalOutflowsText = summary.TotalOutflows.ToString("C2");
@@ -639,7 +640,7 @@ public sealed class CashFlowViewModel : BindableBase
                 selected.Amount >= 0 ? WorkspaceTone.Success : WorkspaceTone.Warning),
             Facts =
             [
-                new("Timestamp", selected.Timestamp.LocalDateTime.ToString("g")),
+                new("Timestamp", UtcFormat.FormatUtcTimestamp(selected.Timestamp)),
                 new("Type", selected.EventKind),
                 new("Symbol", hasSymbol ? selected.Symbol! : "-"),
                 new("Amount", selected.Amount.ToString("C2")),
@@ -661,7 +662,7 @@ public sealed class CashFlowViewModel : BindableBase
     internal static InspectorPanelModel BuildLadderBucketInspector(CashLadderBucketDto selected)
         => new()
         {
-            Title = $"{selected.BucketStart.LocalDateTime:yyyy-MM-dd} to {selected.BucketEnd.LocalDateTime:yyyy-MM-dd}",
+            Title = $"{selected.BucketStart.UtcDateTime:yyyy-MM-dd} to {selected.BucketEnd.UtcDateTime:yyyy-MM-dd}",
             Subtitle = "Cash ladder bucket",
             Detail = "Review the projected inflow and outflow bucket before using cash posture in run review.",
             Badge = new WorkstationBadgeModel(
@@ -671,8 +672,8 @@ public sealed class CashFlowViewModel : BindableBase
                 selected.NetFlow >= 0 ? WorkspaceTone.Success : WorkspaceTone.Warning),
             Facts =
             [
-                new("Start", selected.BucketStart.LocalDateTime.ToString("g")),
-                new("End", selected.BucketEnd.LocalDateTime.ToString("g")),
+                new("Start", UtcFormat.FormatUtcTimestamp(selected.BucketStart)),
+                new("End", UtcFormat.FormatUtcTimestamp(selected.BucketEnd)),
                 new("Inflows", selected.ProjectedInflows.ToString("C2")),
                 new("Outflows", selected.ProjectedOutflows.ToString("C2")),
                 new("Currency", selected.Currency),

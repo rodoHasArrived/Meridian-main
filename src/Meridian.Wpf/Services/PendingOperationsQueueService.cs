@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -384,7 +385,7 @@ public sealed class PendingOperationsQueueService
         }
     }
 
-    private bool TryDequeueNext(out PendingOperation operation)
+    private bool TryDequeueNext([MaybeNullWhen(false)] out PendingOperation operation)
     {
         if (_replayFront.TryDequeue(out operation))
         {

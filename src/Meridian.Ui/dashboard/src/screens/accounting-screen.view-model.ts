@@ -1,3 +1,4 @@
+import { useAuthoritativeSecurityDetail } from "./security-master-authoritative-detail";
 import type { ReconciliationSelectionState } from "./reconciliation-view-state";
 import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +16,7 @@ import {
   getSecurityConflicts,
   getSecurityInstrumentPassport,
   getSecurityIdentity,
+  getSecurityDetail,
   getSecurityTrustSnapshot,
   previewInvestmentAccountingTransaction,
   getTradingParameters,
@@ -42,6 +44,7 @@ import {
 } from "./reconciliation-casework-outcome";
 import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import { formatCorporateActionPayload } from "./accounting-screen.corporate-action-formatting";
+import { cashFlowBlockerEvidence, declaredExerciseEvidence, governanceEvidence, type SecurityMasterPolicyEvidence } from "./security-master-policy-evidence";
 import {
   accountingBasisDisplayName,
   buildBasisBridgeViewState
@@ -49,7 +52,8 @@ import {
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
   formatConflictDate, formatFinanceFacingSourceSummary, formatSecurityConflictField, formatSecurityDate,
-  formatSecurityDateRange, formatSecurityReferenceValue, referenceDataStatusBadgeVariant,
+  formatSecurityDateRange, formatSecurityReferenceValue, formatSecurityScheduleEventType,
+  formatSecuritySchedulePostingStatus, referenceDataStatusBadgeVariant,
   referenceDataStatusLabel, referenceDataStatusTone, statusBadgeVariantForSecurityIdentity,
   summarizeReferenceDataRoutes,
 } from "./accounting-screen.security-master-presenters";
@@ -186,12 +190,16 @@ import type {
   SecurityMasterOpenLot,
   SecurityMasterOpenLotReadModel,
   SecurityMasterTrustSnapshot,
+  SecurityMasterDeclaredExerciseOutcome,
+  SecurityMasterGovernance,
+  SecurityMasterScheduleBlocker,
   StatementRunSummary,
   SubmitManualJournalEntryApprovalRequest,
   TradingParameters,
   ValidateManualJournalEntryDraftRequest,
   CapitalAccountWorkbench
 } from "@/types";
+import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
 
 export {
   buildCalibrationSummaryViewState
@@ -228,6 +236,7 @@ export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 export interface SecurityMasterServices {
   search: (query: string) => Promise<SecurityMasterEntry[]>;
   getIdentity: (securityId: string) => Promise<SecurityIdentityDrillIn>;
+  getDetail?: (securityId: string) => Promise<SecurityMasterEntry>;
   getConflicts: () => Promise<SecurityMasterConflict[]>;
   resolveConflict: (request: ResolveConflictRequest) => Promise<SecurityMasterConflict>;
 }
@@ -986,6 +995,9 @@ export interface SecuritySchedulesViewState {
   errorDetails: string[];
   hasRows: boolean;
   statusAnnouncement: string;
+  declaredExercise: SecurityMasterPolicyEvidence | null;
+  cashFlowBlocker: SecurityMasterPolicyEvidence | null;
+  governance: SecurityMasterPolicyEvidence;
 }
 
 export type TradingParametersField = { label: string; value: string; tone?: "default" | "warning" };
@@ -2435,6 +2447,8 @@ export interface CloseCommandCenterBlockerViewModel {
   ownerLabel: string | null;
   dueLabel: string | null;
   evidenceLabel: string;
+  /** Raw identifiers of the records behind the blocker; shown only under audit details. */
+  sourceRecordIds?: string[];
   actionLabel: string;
   impactLabel: string;
 }
@@ -2924,6 +2938,7 @@ const ACCOUNTING_BASIS_OPTIONS: Array<Pick<AccountingTrialBalanceBasisOption, "i
 const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
   getIdentity: (securityId) => getSecurityIdentity(securityId),
+  getDetail: (securityId) => getSecurityDetail(securityId, { allowDevelopmentFallback: false }),
   getConflicts: () => getSecurityConflicts(),
   resolveConflict: (request) => resolveSecurityConflict(request)
 };
@@ -3169,6 +3184,7 @@ export function useSecurityMasterViewModel(
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<ApiErrorDisplay | null>(null);
   const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
+  const { selectedEntry, detailError, detailLoading, resetDetail, loadDetail } = useAuthoritativeSecurityDetail(services.getDetail);
   const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
   const [identityLoading, setIdentityLoading] = useState(false);
   const [identityError, setIdentityError] = useState<ApiErrorDisplay | null>(null);
@@ -3233,6 +3249,7 @@ export function useSecurityMasterViewModel(
     conflictGenerationRef.current += 1;
     setSearching(false);
     setSelectedSecurityId(null);
+    resetDetail();
     setIdentity(null);
     setIdentityLoading(false);
     setIdentityError(null);
@@ -3257,7 +3274,7 @@ export function useSecurityMasterViewModel(
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
-  }, [active, resetReferenceDataCoverage]);
+  }, [active, resetReferenceDataCoverage, resetDetail]);
 
   const refreshConflicts = useCallback(async () => {
     if (!active) {
@@ -3486,6 +3503,7 @@ export function useSecurityMasterViewModel(
     const generation = identityGenerationRef.current + 1;
     identityGenerationRef.current = generation;
     setSelectedSecurityId(securityId);
+    resetDetail();
     setIdentity(null);
     setIdentityError(null);
     setIdentityLoading(true);
@@ -3504,6 +3522,8 @@ export function useSecurityMasterViewModel(
     setTradingParameters(null);
     setTradingParametersError(null);
 
+    const detailTask = loadDetail(securityId, () => identityGenerationRef.current === generation);
+
     try {
       const detail = await services.getIdentity(securityId);
       if (identityGenerationRef.current === generation) {
@@ -3517,8 +3537,9 @@ export function useSecurityMasterViewModel(
       if (identityGenerationRef.current === generation) {
         setIdentityLoading(false);
       }
+      await detailTask;
     }
-  }, [active, resetReferenceDataCoverage, services]);
+  }, [active, resetReferenceDataCoverage, resetDetail, loadDetail, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,
@@ -3562,8 +3583,8 @@ export function useSecurityMasterViewModel(
     [identity]
   );
   const selectedSearchResult = useMemo(
-    () => selectedSecurityId ? results?.find((entry) => entry.securityId === selectedSecurityId) ?? null : null,
-    [results, selectedSecurityId]
+    () => selectedSecurityId ? selectedEntry ?? (services.getDetail ? null : results?.find((entry) => entry.securityId === selectedSecurityId) ?? null) : null,
+    [results, selectedSecurityId, selectedEntry, services.getDetail]
   );
   const corporateActionRows = useMemo(
     () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
@@ -3629,7 +3650,10 @@ export function useSecurityMasterViewModel(
       error: trustSnapshotError,
       factorHistoryCount: trustSnapshot?.scheduleBook?.factorHistory.length ?? 0,
       provenanceCount: trustSnapshot?.scheduleBook?.provenanceHistory.length ?? 0,
-      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null
+      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null,
+      declaredExercise: trustSnapshot?.scheduleBook?.declaredExercise ?? trustSnapshot?.scheduleSummary?.declaredExercise ?? null,
+      governance: trustSnapshot?.governance ?? null,
+      cashFlowBlocker: trustSnapshot?.cashFlowBlocker ?? null
     }),
     [
       identity?.assetClass,
@@ -3778,6 +3802,9 @@ export function useSecurityMasterViewModel(
     results,
     searching,
     selectedSecurityId,
+    selectedEntry: selectedSearchResult,
+    detailLoading,
+    detailErrorText: detailError?.summary ?? null,
     selectSecurity,
     identity,
     identityView,
@@ -4152,6 +4179,17 @@ export function useAccountingReconciliationViewModel(
     }
   }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
+  // Bulk triage (C2) returns the committed cases from the governed bulk endpoint. Like the
+  // single-case handlers, the update is bound to the scope the action started in: a response that
+  // lands after the operator changed scope is not merged into (or prepended to) the new queue.
+  const beginBreakQueueUpdate = useCallback(() => {
+    const requestScope = activeScopeRef.current;
+    return (items: ReconciliationBreakQueueItem[]) => {
+      if (items.length === 0 || activeScopeRef.current !== requestScope) return;
+      setBreakQueue((current) => items.reduce((queue, item) => replaceBreakQueueItem(queue, item), current));
+    };
+  }, []);
+
   useEffect(() => {
     if (!selectionState?.replaceSelection || workstream !== "reconciliation"
       || breakQueueReadScope !== scopeRevision || statementRunsReadScope !== scopeRevision
@@ -4364,6 +4402,16 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    sourceRows: scopedBreakQueue,
+    applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
+      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
+        setBreakQueue((current) => {
+          const retained = current.find((item) => item.breakId === updated.breakId);
+          if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;
+          return replaceBreakQueueItem(current, updated);
+        });
+      }
+    },
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
@@ -4395,6 +4443,7 @@ export function useAccountingReconciliationViewModel(
     },
     assignBreak,
     resolveBreak,
+    beginBreakQueueUpdate,
     calibrationSummary,
     calibrationLoading,
     calibrationErrorText: calibrationError?.summary ?? null,
@@ -4501,7 +4550,7 @@ export function buildSecurityMasterPageViewState({
     : referenceDataLoading
       ? "Refreshing endpoint coverage for the selected record."
       : referenceDataCoverage
-        ? `${referenceRouteCounts.readyCount.toLocaleString()} ready · ${referenceRouteCounts.reviewCount.toLocaleString()} need review · ${referenceRouteCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${referenceRouteCounts.totalCount.toLocaleString()} total.`
+        ? `${formatCountValue(referenceRouteCounts.readyCount)} ready · ${formatCountValue(referenceRouteCounts.reviewCount)} need review · ${formatCountValue(referenceRouteCounts.deferredOrBlockedCount)} deferred or blocked · ${formatCountValue(referenceRouteCounts.totalCount)} total.`
         : selectedSecurityId
           ? "Reference coverage is queued for the selected record."
           : "Select a security to inspect source coverage.";
@@ -4650,7 +4699,7 @@ export function buildSecurityMasterPageViewState({
       {
         id: "conflicts",
         label: "Open conflicts",
-        value: conflictsLoading ? "Loading" : openConflictCount.toLocaleString(),
+        value: conflictsLoading ? "Loading" : formatCountValue(openConflictCount),
         detail: conflictsLoading
           ? "Refreshing provider conflict evidence."
           : openConflictCount > 0
@@ -5304,7 +5353,7 @@ function buildLedgerJournalEvidenceRow(
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const money = (value: number) => (currency ? formatCurrencyForCode(value, currency) : formatCurrency(value));
   const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
-  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${line.lineCount.toLocaleString()} lines`;
+  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${formatCountValue(line.lineCount)} lines`;
 
   return {
     ...line,
@@ -5362,7 +5411,7 @@ function buildTrialBalanceRow(
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
   const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
-  const entryCountLabel = line.entryCount.toLocaleString();
+  const entryCountLabel = formatCountValue(line.entryCount);
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
@@ -5539,7 +5588,7 @@ function buildLedgerAccountFilteredCountLabel(
     return totalCount === 1 ? "1 GL account row" : `${totalCount} GL account rows`;
   }
 
-  return `${filteredCount.toLocaleString()} of ${totalCount.toLocaleString()} GL account rows`;
+  return `${formatCountValue(filteredCount)} of ${formatCountValue(totalCount)} GL account rows`;
 }
 
 function buildTrialBalanceDetail(
@@ -6113,7 +6162,10 @@ export function buildSecuritySchedulesViewState({
   error = null,
   factorHistoryCount = 0,
   provenanceCount = 0,
-  sourceSummary = null
+  sourceSummary = null,
+  declaredExercise = null,
+  governance = null,
+  cashFlowBlocker = null
 }: {
   securityId: string | null;
   displayName: string | null;
@@ -6125,6 +6177,9 @@ export function buildSecuritySchedulesViewState({
   factorHistoryCount?: number;
   provenanceCount?: number;
   sourceSummary?: string | null;
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
+  governance?: SecurityMasterGovernance | null;
+  cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
 }): SecuritySchedulesViewState {
   const normalizedError = normalizeApiErrorDisplay(error);
   const errorText = normalizedError?.summary ?? null;
@@ -6138,6 +6193,7 @@ export function buildSecuritySchedulesViewState({
   const pendingCount = rows.filter((row) => row.postingStatus === "Pending" || row.postingStatus === "Forecast").length;
   const varianceCount = rows.filter((row) => row.postingStatus === "Variance").length;
   const factorCount = rows.filter((row) => row.factorStart !== null || row.factorEnd !== null).length;
+  const exerciseEvidence = declaredExerciseEvidence(declaredExercise);
 
   return {
     securityId: displaySecurityId,
@@ -6167,10 +6223,17 @@ export function buildSecuritySchedulesViewState({
     errorText,
     errorDetails: normalizedError?.details ?? [],
     hasRows: eventCount > 0,
+    declaredExercise: exerciseEvidence,
+    cashFlowBlocker: cashFlowBlockerEvidence(cashFlowBlocker),
+    governance: governanceEvidence(governance),
     statusAnnouncement: errorText
       ? `Schedule book error: ${errorText}`
       : loading
         ? `Loading schedule book for ${displaySecurityId}.`
+        : cashFlowBlocker
+          ? `Cash-flow calculation blocked. ${cashFlowBlocker.code}: ${cashFlowBlocker.reason}`
+        : exerciseEvidence?.blocked
+          ? `${exerciseEvidence.title}. ${exerciseEvidence.messages.join(" ")}`
         : eventCount > 0
           ? `${eventCount} cash-flow schedule ${eventCount === 1 ? "event" : "events"} loaded for ${displaySecurityId}.`
           : ""
@@ -6533,30 +6596,30 @@ export function buildReferenceDataWorkbenchViewState({
       {
         id: "routes",
         label: "Mapped routes",
-        value: routeCounts.totalCount > 0 ? routeCounts.totalCount.toLocaleString() : "Pending",
+        value: routeCounts.totalCount > 0 ? formatCountValue(routeCounts.totalCount) : "Pending",
         detail: routeCounts.totalCount > 0
-          ? `${routeCounts.readyCount.toLocaleString()} ready · ${routeCounts.reviewCount.toLocaleString()} need review · ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${routeCounts.totalCount.toLocaleString()} total.`
+          ? `${formatCountValue(routeCounts.readyCount)} ready · ${formatCountValue(routeCounts.reviewCount)} need review · ${formatCountValue(routeCounts.deferredOrBlockedCount)} deferred or blocked · ${formatCountValue(routeCounts.totalCount)} total.`
           : "Select a security to build reference data checks.",
         tone: routeCounts.totalCount > 0 ? "default" : "warning"
       },
       {
         id: "ready",
         label: "Ready data",
-        value: routeCounts.readyCount.toLocaleString(),
+        value: formatCountValue(routeCounts.readyCount),
         detail: routeCounts.readyCount > 0 ? `${formatCount(routeCounts.readyCount, "reference route")} returned data.` : "No reference route has returned data yet.",
         tone: routeCounts.readyCount > 0 ? "success" : "default"
       },
       {
         id: "review",
         label: "Needs review",
-        value: routeCounts.reviewCount.toLocaleString(),
+        value: formatCountValue(routeCounts.reviewCount),
         detail: routeCounts.reviewCount > 0 ? `${formatCount(routeCounts.reviewCount, "data source")} returned empty, missing, or error status.` : "No checked data source is flagged for review.",
         tone: routeCounts.reviewCount > 0 ? "warning" : "success"
       },
       {
         id: "deferred",
         label: "Deferred / blocked",
-        value: routeCounts.deferredOrBlockedCount.toLocaleString(),
+        value: formatCountValue(routeCounts.deferredOrBlockedCount),
         detail: routeCounts.deferredOrBlockedCount > 0
           ? [
               routeCounts.deferredCount > 0 ? `${formatCount(routeCounts.deferredCount, "write-capable source")} intentionally deferred.` : null,
@@ -6585,7 +6648,7 @@ export function buildReferenceDataWorkbenchViewState({
       : loading
         ? `Loading multi-asset reference data coverage for ${displaySecurityId}.`
         : rows.length > 0
-          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${routeCounts.readyCount.toLocaleString()} ready, ${routeCounts.reviewCount.toLocaleString()} need review, and ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked.`
+          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${formatCountValue(routeCounts.readyCount)} ready, ${formatCountValue(routeCounts.reviewCount)} need review, and ${formatCountValue(routeCounts.deferredOrBlockedCount)} deferred or blocked.`
           : ""
   };
 }
@@ -6972,31 +7035,6 @@ export function buildTradingParametersViewState(
   };
 }
 
-function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
-  const labels: Record<string, string> = {
-    Coupon: "Coupon",
-    Principal: "Principal",
-    Paydown: "Paydown",
-    Maturity: "Maturity",
-    Call: "Call",
-    Distribution: "Distribution",
-    FactorUpdate: "Factor update"
-  };
-
-  return labels[eventType] ?? eventType;
-}
-
-function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
-  const labels: Record<string, string> = {
-    Posted: "Posted",
-    Pending: "Pending",
-    Variance: "Variance review",
-    Forecast: "Forecast"
-  };
-
-  return labels[status] ?? status;
-}
-
 function securitySchedulePostingTone(
   status: SecuritySchedulePostingStatus
 ): SecurityScheduleRowViewModel["postingStatusTone"] {
@@ -7026,10 +7064,7 @@ function formatScheduleAmount(value: number | null, currency: string): string {
   }
 
   const prefix = value >= 0 ? "" : "-";
-  const amount = Math.abs(value).toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 0
-  });
+  const amount = formatNumber(Math.abs(value), { maximumFractionDigits: 2, minimumFractionDigits: 0 });
   return `${prefix}${amount} ${currency}`;
 }
 
@@ -7043,7 +7078,7 @@ function formatSignedScheduleAmount(value: number, currency: string): string {
   }
 
   const sign = value > 0 ? "+" : "-";
-  return `${sign}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+  return `${sign}${formatNumber(Math.abs(value), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function formatQuantity(value: number | null): string {
@@ -7051,7 +7086,7 @@ function formatQuantity(value: number | null): string {
     return "—";
   }
 
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  return formatNumber(value, { maximumFractionDigits: 4 });
 }
 
 function formatOpenLotScope(lot: SecurityMasterOpenLot): string {
@@ -7090,7 +7125,7 @@ function formatScheduleVariance(expected: number | null, actual: number | null, 
   }
 
   const sign = variance > 0 ? "+" : "-";
-  return `${sign}${Math.abs(variance).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+  return `${sign}${formatNumber(Math.abs(variance), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function formatScheduleFactor(start: number | null, end: number | null): string {

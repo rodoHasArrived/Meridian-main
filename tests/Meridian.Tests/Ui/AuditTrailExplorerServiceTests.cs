@@ -109,9 +109,15 @@ public sealed class AuditTrailExplorerServiceTests
                 var session = await first.CreateSessionAsync(new CreatePaperSessionDto("strategy", "Restart", 10000m));
                 await first.RecordFillAsync(session.SessionId, new Meridian.Execution.Sdk.ExecutionReport
                 {
-                    OrderId = "retained-order", Symbol = "ABC", ReportType = Meridian.Execution.Sdk.ExecutionReportType.Fill,
-                    OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled, Side = Meridian.Execution.Sdk.OrderSide.Buy,
-                    OrderQuantity = 3m, FilledQuantity = 3m, FillPrice = 12m, Timestamp = DateTimeOffset.Parse("2026-11-12T10:00:00Z")
+                    OrderId = "retained-order",
+                    Symbol = "ABC",
+                    ReportType = Meridian.Execution.Sdk.ExecutionReportType.Fill,
+                    OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+                    Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                    OrderQuantity = 3m,
+                    FilledQuantity = 3m,
+                    FillPrice = 12m,
+                    Timestamp = DateTimeOffset.Parse("2026-11-12T10:00:00Z")
                 });
             }
             await using (var restarted = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
@@ -133,11 +139,18 @@ public sealed class AuditTrailExplorerServiceTests
         var eventAt = DateTimeOffset.Parse("2026-11-12T10:00:00Z");
         await sessions.RecordFillAsync(session.SessionId, new Meridian.Execution.Sdk.ExecutionReport
         {
-            OrderId = "client-1", ClientOrderId = "client-1", GatewayOrderId = "broker-1", Symbol = "ABC",
+            OrderId = "client-1",
+            ClientOrderId = "client-1",
+            GatewayOrderId = "broker-1",
+            Symbol = "ABC",
             ReportType = Meridian.Execution.Sdk.ExecutionReportType.PartialFill,
             OrderStatus = Meridian.Execution.Sdk.OrderStatus.PartiallyFilled,
             Side = Meridian.Execution.Sdk.OrderSide.Buy,
-            OrderQuantity = 10m, FilledQuantity = 3m, LastFillQuantity = 3m, FillPrice = 12m, Timestamp = eventAt
+            OrderQuantity = 10m,
+            FilledQuantity = 3m,
+            LastFillQuantity = 3m,
+            FillPrice = 12m,
+            Timestamp = eventAt
         });
         var service = new AuditTrailExplorerService(paperSessions: sessions);
         var result = await service.SearchAsync(new(OrderId: "broker-1"));

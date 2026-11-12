@@ -24,6 +24,12 @@ public sealed record BondAnalyticsRequest(
 {
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? CalculationVersion { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SelectionReceiptId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PriceAccountId { get; init; }
 }
 
 public sealed record BondAnalyticsBlocker(string Code, string Reason);
@@ -36,7 +42,28 @@ public sealed record BondAnalyticsCashFlow(
     DateOnly AccrualEnd,
     decimal Interest,
     decimal Principal,
-    decimal TimeInYears);
+    decimal TimeInYears)
+{
+    /// <summary>Resolved floating-coupon inputs. Omitted for fixed and zero-coupon models.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondAnalyticsFloatingCoupon? FloatingCoupon { get; init; }
+}
+
+/// <summary>
+/// Inputs used for one floating coupon, not a separate pricing model. Index and coupon rates are
+/// annual fractions; spread is in basis points. CouponRate includes the retained cap and floor.
+/// IsObserved follows the economic cutoff, while settlement governs cash-flow entitlement.
+/// Source names the retained reset schedule, sourced current fixing, or forward curve; the result's
+/// Inputs identify the exact retained security and curve versions or content hashes.
+/// </summary>
+public sealed record BondAnalyticsFloatingCoupon(
+    DateOnly ResetDate,
+    bool IsObserved,
+    string IndexName,
+    decimal IndexRate,
+    decimal SpreadBps,
+    decimal CouponRate,
+    string Source);
 
 /// <summary>Contractual exercise scenario, not an exercise forecast or trading instruction.</summary>
 public sealed record BondExerciseYield(
@@ -80,4 +107,11 @@ public sealed record BondAnalyticsResult(
     public IReadOnlyList<BondExerciseYield> RedemptionScenarios { get; init; } = [];
     public IReadOnlyList<BondExerciseYield> YieldToWorstScenarios { get; init; } = [];
     public bool IsBlocked => Blockers.Count > 0;
+
+    /// <summary>
+    /// Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the
+    /// coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? SpreadDv01 { get; init; }
 }

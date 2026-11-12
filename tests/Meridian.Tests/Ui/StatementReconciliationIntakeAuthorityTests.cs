@@ -10,7 +10,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;

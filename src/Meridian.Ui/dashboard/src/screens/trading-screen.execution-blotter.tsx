@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Broker-side execution blotter for Trading → Risk.
  *
@@ -14,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ApiError } from "@/lib/api-errors";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import {
   getExecutionAccountSnapshot,
   getExecutionBlotter,
@@ -33,6 +35,8 @@ import type {
   ExecutionBlotterSnapshot,
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** The status these endpoints answer when their execution service is not registered. */
 const SERVICE_INACTIVE_STATUS = 503;
@@ -84,8 +88,8 @@ export function ExecutionBlotterPanel() {
   const rows = useMemo(() => (blotter?.positions ?? []).map(buildExecutionBlotterRow), [blotter]);
 
   async function submitUpsize(positionKey: string) {
-    const quantity = Number(upsizeQuantity);
-    if (!Number.isFinite(quantity) || quantity <= 0) {
+    const quantity = parsePositiveDecimal(upsizeQuantity);
+    if (quantity === null) {
       setError("Enter a positive quantity to add to the position.");
       return;
     }
@@ -135,48 +139,30 @@ export function ExecutionBlotterPanel() {
         <div className="grid gap-2 md:grid-cols-4" aria-label="Execution gateway posture">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">{metric.label}</div>
+              <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
               <div className={toneTextClassName(metric.tone)}>{metric.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{metric.detail}</div>
             </div>
           ))}
         </div>
 
-        <table className="w-full text-sm" aria-label="Execution blotter positions">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Symbol</th>
-              <th>Side</th>
-              <th>Quantity</th>
-              <th>Avg cost</th>
-              <th>Mark</th>
-              <th>Market value</th>
-              <th>Unrealised</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-muted-foreground">
-                  {executionBlotterEmptyMessage(readState)}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.positionKey} className="border-t border-border/60" aria-label={row.ariaLabel}>
-                <td className="py-2">
+        <TableWorkbench<(typeof rows)[number]> workbenchId="trading-execution-blotter" sourceKey={`${blotter?.source ?? "unavailable"}:${blotter?.asOf ?? ""}`} sourceDescription="Authoritative execution position snapshot. Source numbers are exported without display formatting; provenance remains explicit."
+ completePopulation={readState === "ready" && !error} rows={rows} getRowId={(row)=>row.positionKey} getRowAriaLabel={(row)=>row.ariaLabel}
+ maxVisibleRows={null} ariaLabel="Execution blotter positions" emptyText={executionBlotterEmptyMessage(readState)}
+ getSearchText={(row)=>`${row.symbol} ${row.side} ${row.product}`}
+ columns={[{id:"symbol",sortValue:(row)=>row.symbol,label:"Symbol",render:(row)=>(<>
                   <div className="font-mono text-xs">{row.symbol}</div>
                   <div className="text-xs text-muted-foreground">
                     {row.assetClass}{row.contractDetail ? ` · ${row.contractDetail}` : ""}
                   </div>
-                </td>
-                <td>{row.side}</td>
-                <td className="font-mono text-xs">{row.quantity}</td>
-                <td className="font-mono text-xs">{row.averageCostBasis}</td>
-                <td className="font-mono text-xs">{row.marketPrice}</td>
-                <td className="font-mono text-xs">{row.marketValue}</td>
-                <td className={`font-mono text-xs ${toneInlineClassName(row.unrealisedTone)}`}>{row.unrealisedPnl}</td>
-                <td className="text-right">
+                </>),exportValue:(row)=>row.symbol},
+{id:"side",sortValue:(row)=>row.side,label:"Side",render:(row)=>(<>{row.side}</>),exportValue:(row)=>row.side},
+{id:"quantity",numeric:true,hideable:true,sortValue:(row)=>row.values.quantity,label:"Quantity",align:"right",className:"tabular-nums",render:(row)=>(<>{row.quantity}</>),exportValue:(row)=>row.values.quantity},
+{id:"averageCostBasis",numeric:true,hideable:true,sortValue:(row)=>row.values.averageCostBasis,label:"Avg cost",align:"right",className:"tabular-nums",render:(row)=>(<>{row.averageCostBasis}</>),exportValue:(row)=>row.values.averageCostBasis},
+{id:"marketPrice",numeric:true,hideable:true,sortValue:(row)=>row.values.marketPrice,label:"Mark",align:"right",className:"tabular-nums",render:(row)=>(<>{row.marketPrice}</>),exportValue:(row)=>row.values.marketPrice},
+{id:"marketValue",numeric:true,hideable:true,sortValue:(row)=>row.values.marketValue,label:"Market value",align:"right",className:"tabular-nums",render:(row)=>(<>{row.marketValue}</>),exportValue:(row)=>row.values.marketValue},
+{id:"unrealisedPnl",numeric:true,hideable:true,sortValue:(row)=>row.values.unrealisedPnl,label:"Unrealised",align:"right",className:"tabular-nums",render:(row)=>(<span className={toneInlineClassName(row.unrealisedTone)}>{row.unrealisedPnl}</span>),exportValue:(row)=>row.values.unrealisedPnl},
+{id:"actions",label:"Actions",render:(row)=>(<>
                   {row.canUpsize ? (
                     upsizeKey === row.positionKey ? (
                       <span className="flex items-center justify-end gap-2">
@@ -196,11 +182,7 @@ export function ExecutionBlotterPanel() {
                       </Button>
                     )
                   ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </>)}]} />
       </CardContent>
     </Card>
   );

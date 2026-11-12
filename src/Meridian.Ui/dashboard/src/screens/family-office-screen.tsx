@@ -27,6 +27,9 @@ import {
   type FamilyOfficePanelViewModel,
   type FamilyOfficeTone
 } from "@/screens/family-office-screen.view-model";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { pluralizeCount } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -226,7 +229,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           tone: resolvedStructure ? "ready" : "blocked"
         }}
         scope={{
-          value: resolvedStructure ? `${resolvedStructure.entities.length} entities` : "No family entities",
+          value: resolvedStructure ? pluralizeCount(resolvedStructure.entities.length, "entity", { plural: "entities" }) : "No family entities",
           detail: resolvedStructure ? `${resolvedStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
           tone: resolvedStructure?.entities.length ? "ready" : "blocked"
         }}
@@ -237,10 +240,10 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         }}
         completeness={{
           value: resolvedStructure
-            ? `${resolvedStructure.privateAssets.length} private assets · ${resolvedStructure.commitments.length} commitments`
+            ? `${pluralizeCount(resolvedStructure.privateAssets.length, "private asset")} · ${pluralizeCount(resolvedStructure.commitments.length, "commitment")}`
             : "No records loaded",
           detail: "Private-asset and commitment coverage",
-          tone: resolvedStructure ? "ready" : "blocked"
+          tone: resolvedStructure ? resolvedStructure.sourceWarnings?.length ? "review" : "ready" : "blocked"
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",
@@ -286,7 +289,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       ) : null}
 
       {entityStructure === undefined ? <form className="flex flex-wrap items-end gap-3 rounded-sm border border-border p-3" onSubmit={event => { event.preventDefault(); setAppliedStructureDate(structureDate); }}>
-        <label className="text-sm">Ownership structure on<input type="date" max={new Date().toISOString().slice(0, 10)} className="mt-1 block min-h-9 rounded-sm border border-border bg-background px-2 text-foreground focus-visible:outline-2 focus-visible:outline-primary" value={structureDate} onChange={event => setStructureDate(event.target.value)} /></label>
+        <label className="text-sm">Ownership structure on<input type="date" max={utcToday()} className="mt-1 block min-h-9 rounded-sm border border-border bg-background px-2 text-foreground focus-visible:outline-2 focus-visible:outline-primary" value={structureDate} onChange={event => setStructureDate(event.target.value)} /></label>
         <Button type="submit" variant="outline" size="sm" disabled={loadState === "loading"}>Apply structure date</Button>
         <Button type="button" variant="outline" size="sm" disabled={loadState === "loading"} onClick={() => { setStructureDate(""); setAppliedStructureDate(""); }}>Current structure</Button>
         <p className="w-full text-xs text-muted-foreground">Date selection changes ownership structure only. Financial balances and valuations retain their own source dates.</p>
@@ -395,7 +398,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
+                    <div className={eyebrowClassName(vm.ownershipGraph.selectedNode.type)}>{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
                       <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
@@ -470,7 +473,7 @@ function OwnershipNodeButton({
       onClick={() => onSelect(node.id)}
       onKeyDown={onKeyDown}
     >
-      <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">{node.type}</span>
+      <span className={cn("block text-[10px] font-semibold opacity-80", usesTrackedCaps(node.type) && "uppercase tracking-[0.2em]")}>{node.type}</span>
       <span className="mt-2 block text-sm font-semibold text-foreground">{node.label}</span>
       <span className="mt-3 flex items-center justify-between gap-3 font-mono text-xs tabular-nums">
         <span>{node.value}</span>

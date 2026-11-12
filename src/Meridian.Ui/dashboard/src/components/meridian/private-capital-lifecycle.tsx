@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CapitalActivity, CapitalCommitment } from "@/types/family-office.types";
+import { formatNumber } from "@/lib/format";
 import { groupPrivateCapital, hasPrivateCapitalBalances, PRIVATE_CAPITAL_METRICS, privateCapitalRowKey } from "./private-capital-lifecycle.view-model";
 
 export interface PrivateCapitalLifecycleProps {
@@ -9,7 +10,7 @@ export interface PrivateCapitalLifecycleProps {
   asOfDate: string;
 }
 
-const money = (amount: number, currency: string) => `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(amount)} ${currency}`;
+const money = (amount: number, currency: string) => `${formatNumber(amount, { maximumFractionDigits: 2 })} ${currency}`;
 
 /** Read-only retained lifecycle balances; distributions and remaining NAV are independent measures. */
 export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate }: PrivateCapitalLifecycleProps) {
@@ -63,7 +64,7 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
                   <span>{available ? money(row[metric], row.currency) : "Unavailable"}</span>
                   <svg aria-hidden="true" viewBox="0 0 100 8" className="mt-1 h-2 w-full" preserveAspectRatio="none"><rect width="100" height="8" fill="var(--chart-grid, #E4E3DE)" />
                     {available ? <rect x={view.hasNegative ? 50 + Math.min(0, row[metric]) / (view.maximum || 1) * 50 : 0}
-                      width={Math.abs(row[metric]) / (view.maximum || 1) * (view.hasNegative ? 50 : 100)} height="8" fill={label === "Distributions" ? "var(--chart-equity, #3A7A56)" : "var(--chart-crosshair, #6B655C)"} /> : null}
+                      width={Math.abs(row[metric]) / (view.maximum || 1) * (view.hasNegative ? 50 : 100)} height="8" fill={label === "Distributions" ? "var(--chart-equity)" : "var(--chart-axis)"} /> : null}
                     {view.hasNegative ? <line x1="50" x2="50" y1="0" y2="8" stroke="var(--chart-border, #AFABA1)" strokeWidth="0.5" /> : null}</svg>
                 </td>)}
                 <td className="p-2 text-xs">{available ? row.balanceStatus ?? "Retained" : "Unavailable"}<span className="block text-muted-foreground">As of {row.asOfDate}</span></td>

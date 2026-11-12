@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { EntityLink } from "@/components/meridian/entity-inspector";
+import { workstationRouteWithQuery } from "@/lib/workspace";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
@@ -27,6 +29,8 @@ import type {
   SecurityMasterEntry,
   TradingParameters
 } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { Select } from "@/components/ui/select";
 
 export interface OperatorOverridesService {
   get: (securityId: string) => Promise<OperatorOverridesDto>;
@@ -271,7 +275,12 @@ export function SecurityDetailsPanel({
           )}
         </CardTitle>
         <CardDescription>
-          Extended reference data for <span className="font-mono">{securityId}</span>. Operator overrides sync to the
+          Extended reference data for <EntityLink record={{ kind: "security", id: securityId,
+            label: identity?.displayName ?? entry?.displayName ?? "Security name unavailable",
+            workspaceHref: workstationRouteWithQuery("accountingSecurityMaster", { securityId }),
+            summary: [{ label: "Name", value: identity?.displayName ?? entry?.displayName ?? "Security name unavailable" },
+              { label: "Asset class", value: identity?.assetClass ?? entry?.classification.assetClass ?? "Unavailable" }]
+          }} />. Operator overrides sync to the
           server when available and fall back to local storage when offline.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -306,7 +315,7 @@ export function SecurityDetailsPanel({
       <CardContent className="space-y-6">
         {vm.groups.map((group) => (
           <section key={group.id} aria-label={group.title} className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{group.title}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(group.title) && "uppercase tracking-[0.14em]")}>{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
                 return (
@@ -427,7 +436,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
   if (def.kind === "select" && def.options) {
     return (
       <span className="block space-y-1">
-        <select
+        <Select
           id={editor.id}
           className={baseClass}
           value={value}
@@ -442,7 +451,7 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
           {def.options.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
-        </select>
+        </Select>
         <FieldSupportText
           helpId={editor.helperId}
           helpText={editor.helperText}
@@ -850,7 +859,7 @@ function LotDraftField({
 }) {
   return (
     <div className={cn("min-w-0 space-y-1", className)}>
-      <label htmlFor={field.id} className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <label htmlFor={field.id} className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.12em]")}>
         {field.label}
       </label>
       <Input
@@ -880,7 +889,7 @@ function LotDraftField({
 function LotsMetric({ label, value, tone }: { label: string; value: string; tone?: "success" | "danger" }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
+      <div className={cn("text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
       <div className={cn(
         "mt-1 font-mono text-sm font-semibold tabular-nums",
         tone === "success" ? "text-success" : tone === "danger" ? "text-danger" : "text-foreground"

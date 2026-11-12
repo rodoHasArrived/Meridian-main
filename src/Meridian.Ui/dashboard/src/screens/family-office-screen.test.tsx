@@ -59,6 +59,17 @@ describe("FamilyOfficeScreen", () => {
     expect(getFamilyOfficeOverview).toHaveBeenCalledTimes(2);
   });
 
+  it("does not report all sources current when retained source qualifications require review", async () => {
+    const overview = buildFamilyOfficeOverviewFixture();
+    overview.readiness.blockers = ["Private-capital source is unavailable; balances are excluded."];
+    getFamilyOfficeOverview.mockResolvedValue(overview);
+    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+    await screen.findByRole("heading", { name: "Legal ownership relationships" });
+    expect(screen.getByLabelText("Family office data confidence")).toHaveAttribute("data-status-tone", "review");
+    expect(screen.queryByText("All sources current")).not.toBeInTheDocument();
+    expect(screen.getByText("Private-capital source is unavailable; balances are excluded.")).toBeInTheDocument();
+  });
+
   it("requests historical structure without relabelling the financial snapshot date", async () => {
     const overview = buildFamilyOfficeOverviewFixture();
     getFamilyOfficeOverview.mockResolvedValueOnce(overview);
@@ -69,7 +80,8 @@ describe("FamilyOfficeScreen", () => {
     await screen.findByRole("heading", { name: "Legal ownership relationships" });
     fireEvent.change(screen.getByLabelText("Ownership structure on"), { target: { value: "2025-01-01" } });
     await userEvent.click(screen.getByRole("button", { name: "Apply structure date" }));
-    await screen.findByText("Effective structure on 2025-01-01. Financial balance dates remain independent.");
+    expect(await screen.findByText("2025-01-01", { selector: "time" })).toHaveAttribute("datetime", "2025-01-01");
+    expect(screen.getByText(/Financial balance dates remain independent/)).toBeInTheDocument();
     expect(getFamilyOfficeOverview).toHaveBeenLastCalledWith(expect.objectContaining({ signal: expect.any(AbortSignal) }), "2025-01-01");
     expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent(overview.asOfDate);
   });

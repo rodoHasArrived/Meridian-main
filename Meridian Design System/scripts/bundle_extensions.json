@@ -1,0 +1,7 @@
+{
+  "comment": "Extension modules folded into _ds_bundle.js — validated by compile_bundle_extensions.py; the design-system compiler performs the actual fold idempotently.",
+  "modules": [
+    { "path": "components/core/StrategyModel.jsx", "exports": ["StrategyModel", "STRATEGY_LIFECYCLE", "STRATEGY_FORMATION_STEPS"] },
+    { "path": "components/operations/StrategyRunModel.jsx", "exports": ["StrategyRunModel", "STRATEGY_RUN_AXES"] }
+  ]
+}

@@ -1,5 +1,7 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import { formatCurrency, formatNumber } from "@/lib/format";
 import { formatTaxAmount, isTaxDecimalText } from "@/lib/ledger-tax-results-format";
 import type { LedgerDisposalTaxParcel, LedgerDisposalTaxResult, LedgerJournalTaxResults } from "@/types/ledger-tax-results";
 
@@ -33,7 +35,9 @@ export function TaxParcelComposition({ result }: { result: LedgerJournalTaxResul
   const maxY = rawMin === rawMax ? 1 : rawMax;
   const x = (value: number) => 88 + (value / maxX) * 640;
   const y = (value: number) => 250 - ((value - minY) / (maxY - minY)) * 210;
-  const approximate = (value: number) => new Intl.NumberFormat("en", { maximumSignificantDigits: 4, notation: Math.abs(value) >= 1_000_000 ? "compact" : "standard" }).format(value);
+  const approximate = (value: number) => result.functionalCurrency.trim()
+    ? formatCurrency(value, { currency: result.functionalCurrency, maximumFractionDigits: 2, notation: Math.abs(value) >= 1_000_000 ? "compact" : "standard" })
+    : formatNumber(value, { maximumFractionDigits: 2 });
   return (
     <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-sm border border-border p-3">
       <h3 id={`${id}-title`} className="text-sm font-semibold">Tax-parcel composition</h3>
@@ -44,10 +48,10 @@ export function TaxParcelComposition({ result }: { result: LedgerJournalTaxResul
             <line x1="88" x2="728" y1={y(0)} y2={y(0)} stroke="currentColor" strokeDasharray="4 3" opacity="0.65" />
             <line x1="88" x2="88" y1="40" y2="250" stroke="currentColor" />
             <line x1="88" x2="728" y1="250" y2="250" stroke="currentColor" />
-            {[minY, (minY + maxY) / 2, maxY].map((value, index) => <text key={index} x="80" y={y(value) + 4} textAnchor="end" fill="currentColor" fontSize="12">{approximate(value)}</text>)}
-            {[...new Set([0, Math.floor(maxX / 2), maxX])].map((value) => <text key={value} x={x(value)} y="272" textAnchor="middle" fill="currentColor" fontSize="12">{value}</text>)}
-            <text x="408" y="300" textAnchor="middle" fill="currentColor" fontSize="13">Retained holding-period days</text>
-            <text x="88" y="22" fill="currentColor" fontSize="12">Economic gain / loss ({result.functionalCurrency || "unavailable currency"})</text>
+            {[minY, (minY + maxY) / 2, maxY].map((value, index) => <text key={index} x="80" y={y(value) + 4} textAnchor="end" fill="currentColor" className="text-xs">{approximate(value)}</text>)}
+            {[...new Set([0, Math.floor(maxX / 2), maxX])].map((value) => <text key={value} x={x(value)} y="272" textAnchor="middle" fill="currentColor" className="text-xs">{value}</text>)}
+            <text x="408" y="300" textAnchor="middle" fill="currentColor" className="text-xs">Retained holding-period days</text>
+            <text x="88" y="22" fill="currentColor" className="text-xs">Economic gain / loss ({result.functionalCurrency || "unavailable currency"})</text>
             {points.map((point) => {
               const label = `Inspect parcel ${point.index}, ${point.parcel.lotId}, ${point.x} holding days, ${character[point.parcel.character]}, ${point.disposal.state}, economic gain or loss ${formatTaxAmount(point.parcel.economicGainOrLoss, result.functionalCurrency)}`;
               return <g key={point.id} role="button" tabIndex={0} aria-label={label} aria-pressed={point.id === selectedId}
@@ -60,18 +64,17 @@ export function TaxParcelComposition({ result }: { result: LedgerJournalTaxResul
               </g>;
             })}
           </svg>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <caption className="sr-only">Parcel plot data and keyboard selection; full lot identities and exact tax evidence open on selection.</caption>
-              <thead><tr>{["Parcel", "Security", "Holding days", "Supplied character", "State", "Economic gain / loss"].map((label) => <th scope="col" key={label} className="border-b border-border p-2">{label}</th>)}</tr></thead>
-              <tbody>{points.map((point) => <tr key={point.id} className={point.id === selectedId ? "bg-secondary/40" : ""}>
-                <td className="p-2"><Button size="sm" variant="outline" aria-label={`Select parcel ${point.index}: ${point.parcel.lotId}`} aria-pressed={point.id === selectedId} onClick={() => setSelectedId(point.id)}>Parcel {point.index}</Button></td>
-                <td className="p-2">{point.disposal.symbol ?? point.disposal.accountName}</td><td className="p-2 font-mono">{point.x}</td>
-                <td className="p-2">{point.parcel.character}</td><td className="p-2">{point.disposal.state} result</td>
-                <td className="p-2 font-mono">{formatTaxAmount(point.parcel.economicGainOrLoss, result.functionalCurrency)}</td>
-              </tr>)}</tbody>
-            </table>
-          </div>
+          <DenseDataTable rows={points} getRowId={(point) => point.id} selectedRowId={selectedId}
+            emptyText="No retained parcels to inspect."
+            ariaLabel="Parcel plot data and keyboard selection" caption="Full lot identities and exact tax evidence open on selection."
+            columns={[
+              { id: "parcel", label: "Parcel", render: (point) => <Button size="sm" variant="outline" aria-label={`Select parcel ${point.index}: ${point.parcel.lotId}`} aria-pressed={point.id === selectedId} onClick={() => setSelectedId(point.id)}>Parcel {point.index}</Button> },
+              { id: "security", label: "Security", render: (point) => point.disposal.symbol ?? point.disposal.accountName },
+              { id: "days", label: "Holding days", numeric: true, render: (point) => point.x },
+              { id: "character", label: "Supplied character", render: (point) => point.parcel.character },
+              { id: "state", label: "State", render: (point) => `${point.disposal.state} result` },
+              { id: "gain", label: "Economic gain / loss", render: (point) => formatTaxAmount(point.parcel.economicGainOrLoss, result.functionalCurrency) }
+            ]} />
         </>
       ) : <p role="status" className="text-sm text-muted-foreground">No plottable retained parcel evidence for this journal entry.</p>}
       {omitted ? <p role="status" className="text-xs text-warning">{omitted} parcels have unavailable plot coordinates. Original evidence remains in the disposal details.</p> : null}

@@ -7,14 +7,38 @@ namespace Meridian.Reporting;
 
 /// <summary>
 /// Canonical wire representation used by certification, persistence validation, release
-/// revalidation, and audit hashing. A reporting parameter snapshot has one byte representation
+/// revalidation, and audit hashing. A new reporting parameter snapshot has one byte representation
 /// regardless of the persistence adapter.
 /// </summary>
 public static class ReportingCanonicalParameterSerializer
 {
     public static string Serialize(
         ReportingRunParametersDto parameters,
+        bool requiresCertifiedLedgerPresentation = false) =>
+        SerializeCore(parameters, requiresCertifiedLedgerPresentation, canonicalizeExternalGl: true);
+
+    /// <summary>
+    /// Matches the current canonical bytes or the exact former raw-dictionary serialization of
+    /// the same DTO. Callers must still verify the stored hash against the original frozen bytes.
+    /// </summary>
+    public static bool MatchesRetained(
+        string? retainedCanonicalJson,
+        ReportingRunParametersDto parameters,
         bool requiresCertifiedLedgerPresentation = false)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        return retainedCanonicalJson is not null
+            && (string.Equals(retainedCanonicalJson,
+                    Serialize(parameters, requiresCertifiedLedgerPresentation), StringComparison.Ordinal)
+                || string.Equals(retainedCanonicalJson,
+                    SerializeCore(parameters, requiresCertifiedLedgerPresentation, canonicalizeExternalGl: false),
+                    StringComparison.Ordinal));
+    }
+
+    private static string SerializeCore(
+        ReportingRunParametersDto parameters,
+        bool requiresCertifiedLedgerPresentation,
+        bool canonicalizeExternalGl)
     {
         ArgumentNullException.ThrowIfNull(parameters);
         using var stream = new MemoryStream();
@@ -28,7 +52,19 @@ public static class ReportingCanonicalParameterSerializer
             WriteOptional(writer, "portfolioId", parameters.Scope.PortfolioId);
             WriteOptional(writer, "investorId", parameters.Scope.InvestorId);
             writer.WritePropertyName("dimensions");
-            JsonSerializer.Serialize(writer, parameters.Scope.Dimensions);
+            var dimensions = parameters.Scope.Dimensions;
+            if (canonicalizeExternalGl && dimensions?.ExternalGlDimensions is { Count: > 1 } externalGlDimensions)
+            {
+                // Certification already orders this map. Reapply that same byte order after
+                // persistence adapters such as jsonb reorder object properties on read-back.
+                dimensions = dimensions with
+                {
+                    ExternalGlDimensions = externalGlDimensions
+                        .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                        .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal)
+                };
+            }
+            JsonSerializer.Serialize(writer, dimensions);
             writer.WriteEndObject();
             writer.WriteString("periodId", parameters.PeriodId);
             writer.WriteString(

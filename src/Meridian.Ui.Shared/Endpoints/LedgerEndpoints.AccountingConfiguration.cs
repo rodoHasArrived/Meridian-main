@@ -520,7 +520,8 @@ public static partial class LedgerEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
-            catch (InvalidOperationException ex)
+            // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+            catch (InvalidOperationException ex) when (ex is not Meridian.Application.SecurityMaster.SecurityMasterTermsCapabilityRefusedException)
             {
                 return Results.Conflict(new { error = ex.Message });
             }

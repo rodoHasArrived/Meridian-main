@@ -6,9 +6,9 @@
   gap: 0.75rem;
   min-width: 0;
   padding: 0.75rem 0.875rem;
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-lg);
-  background: rgba(11, 21, 32, 0.96);
+  background: var(--ws-surface);
   box-shadow: var(--shadow-panel);
 }
 
@@ -27,11 +27,11 @@
   gap: 0.375rem;
   min-height: 1.625rem;
   padding: 0 0.625rem;
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-sm);
-  background: rgba(20, 18, 15, 0.92);
+  background: var(--ws-surface-subtle);
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -39,14 +39,22 @@
 }
 
 .meridian-toolbar-chip b {
-  color: #FDFAF5;
+  color: var(--ws-text);
   font-weight: 500;
+  /* A chip's value is data ("0 corporate actions"), not a label: it keeps its own case. */
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.meridian-toolbar-chip .meridian-toolbar-chip-sentence {
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(217, 138, 100, 0.35);
-  background: rgba(217, 138, 100, 0.10);
-  color: var(--cyan-primary);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
 }
 
 .meridian-toolbar-right {
@@ -60,29 +68,64 @@
 .dense-data-table-wrap {
   max-height: 35rem;
   overflow: auto;
-  border: 1px solid rgba(74, 68, 60, 0.9);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-lg);
-  background: rgba(20, 18, 15, 0.55);
+  background: var(--ws-surface);
 }
 
 .dense-data-table {
+  --dense-head-py: 0.4375rem;
+  --dense-cell-py: 0.4375rem;
+  --dense-cell-px: 0.625rem;
   width: 100%;
   min-width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
 }
 
+/* Row rhythm follows the operator density chosen in Settings (data-theme-density on the
+   body) unless a table pins its own with the `density` prop (data-density on the wrap). */
+:where(body[data-theme-density="compact"]) .dense-data-table,
+.dense-data-table-wrap[data-density="compact"] .dense-data-table {
+  --dense-head-py: 0.25rem;
+  --dense-cell-py: 0.25rem;
+  --dense-cell-px: 0.5rem;
+}
+
+:where(body[data-theme-density="spacious"]) .dense-data-table,
+.dense-data-table-wrap[data-density="spacious"] .dense-data-table {
+  --dense-head-py: 0.6875rem;
+  --dense-cell-py: 0.75rem;
+  --dense-cell-px: 0.75rem;
+}
+
+.dense-data-table-wrap[data-density="default"] .dense-data-table {
+  --dense-head-py: 0.4375rem;
+  --dense-cell-py: 0.4375rem;
+  --dense-cell-px: 0.625rem;
+}
+
+/* Virtualized tables window rows by a fixed pixel height (the trial balance uses 36px), so they
+   keep at most the default rhythm: spacious padding would make each row taller than the height
+   the window, spacer and keyboard-reveal math uses, and rows would drift out of place. */
+:where(body[data-theme-density="spacious"]) .dense-data-table-wrap-virtual .dense-data-table,
+.dense-data-table-wrap.dense-data-table-wrap-virtual[data-density="spacious"] .dense-data-table {
+  --dense-head-py: 0.4375rem;
+  --dense-cell-py: 0.4375rem;
+  --dense-cell-px: 0.75rem;
+}
+
 .dense-data-table thead {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: rgba(22, 35, 52, 0.62);
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {
-  padding: 0.625rem 0.75rem;
+  padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -91,15 +134,15 @@
 }
 
 .dense-data-table td {
-  padding: 0.75rem;
-  border-top: 1px solid rgba(74, 68, 60, 0.66);
+  padding: var(--dense-cell-py) var(--dense-cell-px);
+  border-top: 1px solid var(--ws-row-border);
   color: var(--ws-text);
   vertical-align: top;
   font-size: 0.75rem;
 }
 
 .dense-data-table tbody tr {
-  background: rgba(20, 18, 15, 0.24);
+  background: var(--ws-surface-raised);
   transition: background 100ms ease;
 }
 
@@ -108,17 +151,17 @@
 }
 
 .dense-data-table tbody tr:hover {
-  background: rgba(217, 138, 100, 0.06);
+  background: var(--ws-row-hover);
 }
 
 .dense-data-table tbody tr.selected {
-  background: rgba(217, 138, 100, 0.10);
+  background: var(--interaction-selected-surface);
 }
 
 .dense-data-table tbody tr.selectable:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: -2px;
-  background: rgba(217, 138, 100, 0.08);
+  background: var(--interaction-selected-surface);
 }
 
 .dense-data-table-empty {
@@ -127,6 +170,77 @@
 }
 
 .dense-data-table-sortable {
+  cursor: pointer;
+}
+
+/* Headers longer than two words read in sentence case, not tracked caps. */
+.dense-data-table th.dense-data-table-th-sentence {
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+/* Numeric columns: tabular figures so digits line up under a right-aligned header. */
+.dense-data-table .dense-data-table-numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dense-data-table-frame {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.dense-data-table-columns {
+  position: relative;
+  justify-self: end;
+  font-size: 0.75rem;
+}
+
+.dense-data-table-columns > summary {
+  min-height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--ws-border);
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.dense-data-table-columns > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dense-data-table-columns[open] > summary,
+.dense-data-table-columns > summary:hover {
+  color: var(--ws-text);
+}
+
+.dense-data-table-columns > summary:focus-visible {
+  outline: 2px solid var(--interaction-focus);
+  outline-offset: 2px;
+}
+
+.dense-data-table-columns-menu {
+  position: absolute;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 0.375rem;
+  min-width: 12rem;
+  margin: 0.25rem 0 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--ws-border);
+  border-radius: var(--radius-sm);
+  background: var(--ws-surface);
+  box-shadow: var(--shadow-menu);
+}
+
+.dense-data-table-columns-menu label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ws-text);
   cursor: pointer;
 }
 
@@ -156,20 +270,20 @@
 
 .dense-data-table-sort-button:focus-visible {
   border-radius: var(--radius-sm);
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
 .dense-data-table-sort-indicator {
   opacity: 0.45;
-  color: var(--cyan-primary);
+  color: var(--interaction-link);
   font-size: 0.6875rem;
   line-height: 1;
 }
 
 .dense-data-table-sorted .dense-data-table-sort-indicator {
   opacity: 1;
-  color: var(--accent, #A85436);
+  color: var(--interaction-selected);
 }
 
 .dense-data-table-sorted .dense-data-table-sort-button {
@@ -180,32 +294,32 @@
   display: flex;
   justify-content: center;
   padding: 0.625rem;
-  border-top: 1px solid rgba(74, 68, 60, 0.66);
-  background: rgba(20, 18, 15, 0.72);
+  border-top: 1px solid var(--ws-row-border);
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table-row-cap button {
   min-height: 1.75rem;
   padding: 0 0.625rem;
-  border: 1px solid rgba(217, 138, 100, 0.32);
+  border: 1px solid var(--interaction-selected);
   border-radius: var(--radius-sm);
-  background: rgba(217, 138, 100, 0.10);
-  color: var(--cyan-primary);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .dense-data-table-row-cap button:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
 .entity-summary {
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-xl);
-  background: rgba(13, 23, 34, 0.9);
+  background: var(--ws-surface);
   padding: 1rem;
   box-shadow: var(--shadow-panel);
 }
@@ -218,18 +332,41 @@
   gap: 1rem;
 }
 
-.entity-summary-title {
-  margin-top: 0.625rem;
-  color: #FDFAF5;
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.2;
+/* One heading line: the kind of thing ("Break detail") beside its name. */
+.entity-summary-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  row-gap: 0.125rem;
 }
 
+.entity-summary-kind {
+  color: var(--fg-muted);
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.entity-summary-title {
+  min-width: 0;
+  color: var(--ws-text);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.entity-summary-fields {
+  margin-top: 0.875rem;
+}
+
+/* Prose (subtitles, descriptions, phrase values) reads in the body face; mono is kept for
+   figures and identifiers (see `usesDataFace` in detail-pane.view-model.ts). */
 .entity-summary-subtitle {
   margin-top: 0.375rem;
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-size: 0.75rem;
 }
 
@@ -246,43 +383,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-}
-
-.entity-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.entity-summary-field {
-  min-width: 0;
-  padding: 0.75rem 0.875rem;
-  border: 1px solid rgba(74, 68, 60, 0.9);
-  border-radius: var(--radius-lg);
-  background: rgba(20, 18, 15, 0.62);
-  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
-}
-
-.entity-summary-field:hover {
-  border-color: var(--border-hi);
-  background: var(--surface-raise-bg);
-  box-shadow: var(--shadow-panel);
-}
-
-.entity-summary-field dt {
-  color: var(--fg-muted);
-  font-size: 0.6875rem;
-  line-height: 1.4;
-}
-
-.entity-summary-field dd {
-  margin-top: 0.5rem;
-  word-break: break-word;
-  color: #FDFAF5;
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
-  font-size: 0.75rem;
-  line-height: 1.5;
 }
 
 .meridian-toolbar-strip,
@@ -305,9 +405,9 @@
 }
 
 .meridian-toolbar-chip.active {
-  border-color: rgba(168, 84, 54, 0.34);
-  background: rgba(168, 84, 54, 0.10);
-  color: var(--cyan-primary);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
 }
 
 .entity-summary-title {
@@ -317,26 +417,6 @@
 .entity-summary-subtitle,
 .entity-summary-description {
   color: var(--ws-text-muted);
-}
-
-.entity-summary-field {
-  border-color: var(--ws-border);
-  background: var(--ws-surface-subtle);
-  color: var(--ws-text);
-}
-
-.entity-summary-field:hover {
-  border-color: var(--ws-border-strong);
-  background: var(--ws-surface-raised);
-  box-shadow: var(--ws-shadow);
-}
-
-.entity-summary-field dt {
-  color: var(--ws-text-muted);
-}
-
-.entity-summary-field dd {
-  color: var(--ws-text);
 }
 
 .dense-data-table-wrap {
@@ -352,20 +432,20 @@
 }
 
 .dense-data-table thead {
-  background: #F4F3EF;
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {
   border-bottom: 1px solid var(--ws-border-strong);
-  color: var(--ws-text-muted);
-  padding: 0.4375rem 0.625rem;
+  color: var(--ws-header-text-secondary);
+  padding: var(--dense-head-py) var(--dense-cell-px);
   font-weight: 700;
   letter-spacing: 0;
 }
 
 .dense-data-table td {
   border-top: 1px solid var(--ws-row-border);
-  padding: 0.4375rem 0.625rem;
+  padding: var(--dense-cell-py) var(--dense-cell-px);
 }
 
 .dense-data-table tbody tr {
@@ -373,7 +453,7 @@
 }
 
 .dense-data-table tbody tr:nth-child(even) {
-  background: #fbfcfd;
+  background: var(--ws-surface-raised);
 }
 
 .dense-data-table tbody tr:hover {
@@ -381,8 +461,50 @@
 }
 
 .dense-data-table tbody tr.selected {
+  /* Selected metadata needs its own readable ink on the stronger selection wash.
+     Keep semantic status/P&L colors intact while both native and utility text inherit it. */
+  --muted-foreground: var(--ws-row-selected-muted-foreground);
+  --ws-text-muted: var(--ws-row-selected-text-secondary);
+  --theme-muted-text: var(--ws-row-selected-text-secondary);
+  --text-muted: var(--ws-row-selected-text-secondary);
+  --fg-muted: var(--ws-row-selected-text-secondary);
+  /* Tinted severity badges add another wash above selection; strengthen their
+     semantic ink locally while retaining each status hue and fill. */
+  --severity-blocked-fg: color-mix(in srgb, var(--ws-row-selected-danger-text) 90%, var(--dim-mix));
+  --severity-action-fg: color-mix(in srgb, var(--ws-row-selected-warning-text) 90%, var(--dim-mix));
+  --severity-review-fg: color-mix(in srgb, var(--ws-row-selected-warning-text) 90%, var(--dim-mix));
+  --severity-ready-fg: color-mix(in srgb, var(--ws-row-selected-success-text) 90%, var(--dim-mix));
   background: var(--ws-row-selected);
-  box-shadow: inset 3px 0 0 var(--cyan-primary);
+  box-shadow: inset 3px 0 0 var(--interaction-selected);
+}
+
+/* Keep financial/status hues, using their readable text shade on selection. */
+.dense-data-table tbody tr.selected .text-danger {
+  color: var(--ws-row-selected-danger-text);
+}
+
+.dense-data-table tbody tr.selected .text-warning {
+  color: var(--ws-row-selected-warning-text);
+}
+
+.dense-data-table tbody tr.selected .text-success {
+  color: var(--ws-row-selected-success-text);
+}
+
+/* Grouped tables (a ledger entry and its posting lines): child rows sit under their parent,
+   tinted and indented, and keep that tint through the zebra striping. */
+.dense-data-table tbody tr.dense-data-table-child-row,
+.dense-data-table tbody tr.dense-data-table-child-row:nth-child(even) {
+  /* Keep child groups distinct while retaining the foreground chosen for their data. */
+  background: color-mix(in srgb, var(--ws-surface-subtle) 50%, var(--ws-surface));
+}
+
+.dense-data-table tbody tr.dense-data-table-child-row td {
+  border-top-style: dashed;
+}
+
+.dense-data-table tbody tr.dense-data-table-child-row td:first-child {
+  padding-left: calc(var(--dense-cell-px) + 0.75rem);
 }
 
 .dense-data-table-empty {
@@ -424,18 +546,31 @@
   background: var(--ws-row-selected);
 }
 
-/* ── Concrete radius normalization ──────────────────────────────────────────
-   Concrete unifies control/card/panel corners to a single tight 2px radius;
-   structure is carried by hairline borders, not rounding. Override the legacy
-   scalable-radius values so these hand-authored primitives read as Concrete
-   regardless of the base --radius-* token resolution.
-──────────────────────────────────────────────────────────────────────────*/
+/* Role-specific 4.3 geometry follows the shared token bridge. */
 .meridian-toolbar-strip,
-.entity-summary,
-.entity-summary-field {
-  border-radius: 2px;
+.entity-summary {
+  border-radius: var(--radius-card);
 }
 
 .meridian-toolbar-chip {
-  border-radius: 2px;
+  border-radius: var(--radius-chip);
+}
+
+/* Field prose uses body type; stable codes opt in to the data font. */
+.entity-summary-field dd {
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.entity-summary-field dd code,
+.entity-summary-field dd .font-mono { overflow-wrap: anywhere; }
+.dense-data-table time,
+.entity-summary-field time { white-space: nowrap; }
+.dense-data-table td { font-variant-numeric: tabular-nums; }
+
+/* The wrap is a tab stop when its rows are not selectable, so it needs its own visible ring. */
+.dense-data-table-wrap:focus-visible {
+  outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));
+  outline-offset: -2px;
 }

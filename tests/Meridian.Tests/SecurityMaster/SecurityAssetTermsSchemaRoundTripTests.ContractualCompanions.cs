@@ -19,7 +19,8 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
                 .Concat(SecurityAssetTermsSchema.Fields(assetClass).SelectMany(field => SecurityAssetTermsSchema.ElementFields(assetClass, field.Key)))
                 .Where(field => field.SinceTermsVersion > floor)
                 .Should().OnlyContain(field => field.Key == ScheduleConventionsKey || field.Key == CallScheduleKey
-                    || field.Key == PutScheduleKey || field.Key == SecurityContractualCashFlowTerms.Key,
+                    || field.Key == PutScheduleKey || field.Key == SecurityContractualCashFlowTerms.Key
+                    || field.Key == SecurityRecordRateUnit.FieldKey,
                     "a new readable term must add explicit typed-reader, round-trip and write-boundary coverage");
         }
     }

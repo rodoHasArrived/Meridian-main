@@ -5,7 +5,7 @@ const { useState, useMemo } = React;
 
 function AcctLedgerView(props) {
   const { Toolbar, ToolbarGroup, ToolbarSpacer, Input, Select, Button, LedgerTable, EmptyState, Money } =
-    window.MeridianDesignSystem_4f61be;
+    window.MeridianDesignSystem_205d17;
   const [q, setQ] = useState("");
   const [account, setAccount] = useState(props.initialAccount || "all");
   const rows = props.rows || [];
@@ -22,6 +22,9 @@ function AcctLedgerView(props) {
   }), [rows, q, account]);
 
   const live = filtered.filter((r) => r.status !== "void");
+  const selectedIndex = props.selectedRef
+    ? filtered.findIndex((r) => r.ref === props.selectedRef)
+    : -1;
   const opening = account === "all" ? 0 : (props.openings || {})[account.slice(0, 4)] || 0;
   const caption =
     (account === "all" ? "All accounts" : account) +
@@ -30,8 +33,9 @@ function AcctLedgerView(props) {
 
   const exportCsv = () => {
     const head = "date,ref,account,memo,debit,credit,status";
+    const cell = (value) => '"' + String(value ?? "").replace(/"/g, '""') + '"';
     const body = filtered.map((r) =>
-      [r.date, r.ref, '"' + r.account + '"', '"' + (r.memo || "") + '"', r.debit || "", r.credit || "", r.status || "posted"].join(",")
+      [r.date, r.ref, r.account, r.memo, r.debit, r.credit, r.status ?? "posted"].map(cell).join(",")
     );
     const blob = new Blob([[head, ...body].join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
@@ -48,7 +52,7 @@ function AcctLedgerView(props) {
           <Input placeholder="Filter memo, ref, account…" value={q}
             onChange={(e) => setQ(e.target.value)} style={{ width: 230 }} aria-label="Filter postings" />
           <Select value={account} onChange={setAccount}
-            options={[{ value: "all", label: "All accounts" }, ...accounts.map((a) => ({ value: a, label: a }))]} />
+            ariaLabel="Ledger account" options={[{ value: "all", label: "All accounts" }, ...accounts.map((a) => ({ value: a, label: a }))]} />
         </ToolbarGroup>
         <ToolbarSpacer />
         <ToolbarGroup>
@@ -60,14 +64,15 @@ function AcctLedgerView(props) {
         <EmptyState icon="search" title="No postings match" detail={'Nothing in 2026-06 matches "' + q + '".'}
           action="Clear filters" onAction={() => { setQ(""); setAccount("all"); }} />
       ) : (
-        <LedgerTable rows={filtered} currency="USD" showAccount opening={opening} caption={caption} />
+        <LedgerTable rows={filtered} currency="USD" showAccount opening={opening} caption={caption}
+          onRowClick={(row) => props.onInspect && props.onInspect(row.ref)}
+          selectedIndex={selectedIndex >= 0 ? selectedIndex : undefined} />
       )}
 
-      {props.lastRef && (
-        <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
-          Last posted {props.lastRef}
-        </span>
-      )}
+      <div style={{ display: "flex", gap: 14, alignItems: "baseline", fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
+        {props.lastRef && <span>Last posted {props.lastRef}</span>}
+        <span>Select a posting to inspect its entry</span>
+      </div>
     </section>
   );
 }

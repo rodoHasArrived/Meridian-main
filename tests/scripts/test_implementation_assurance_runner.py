@@ -111,7 +111,7 @@ class ImplementationAssuranceRunnerTests(unittest.TestCase):
                 runner.parse_jsonl(raw)
 
     def test_run_case_records_nonzero_process_exit(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             artifacts = Path(directory)
             def fake_run(prompt, trace_path):
                 trace_path.write_text("\n".join(json.dumps(event) for event in valid_events()), encoding="utf-8")
@@ -122,7 +122,7 @@ class ImplementationAssuranceRunnerTests(unittest.TestCase):
             self.assertIn("codex exec exited with status 7", result.failed)
 
     def test_run_case_reports_malformed_nested_item_without_crashing(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             def fake_run(prompt, trace_path):
                 trace_path.write_text('{"type":"item.completed","item":null}', encoding="utf-8")
                 return 0, ""
@@ -163,7 +163,7 @@ class ImplementationAssuranceRunnerTests(unittest.TestCase):
 
 class ImplementationAssuranceFixtureTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.script = self.root / "scripts/run_evals.py"

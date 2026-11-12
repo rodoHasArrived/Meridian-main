@@ -150,7 +150,7 @@ export function EntitySetupWizard() {
               <CardTitle id="entity-setup-title" className="flex items-center gap-2 text-base">
                 <Network className="h-4 w-4" aria-hidden="true" /> Entity setup wizard
               </CardTitle>
-              <CardDescription>Shared /api/fund-structure workflow for organization, lane, fund, entity, vehicle, portfolio, ownership, and account handoff setup.</CardDescription>
+              <CardDescription>One setup flow for organization, business, fund, entity, vehicle, portfolio, ownership, and account handoff.</CardDescription>
             </div>
             <Badge variant={!preview ? "outline" : blockingCount > 0 ? "warning" : "success"}>
               {!preview ? "Not validated" : `${blockingCount} blockers`}

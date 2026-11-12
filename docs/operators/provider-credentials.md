@@ -105,6 +105,15 @@ credential editing still selects an already-owned connection.
    default host registers no in-process recycle and reports the binding as still pending. Both
    workstations show this state beside the bind action ("Check running instances", "Apply to running
    instances"). Nothing activates hot.
+5. A separate provider-wide OAuth token (access and refresh token) moves under the owned scope with
+   the record during `.../credentials/migrate` and moves back on rollback; the receipt records
+   `oAuthTokenTransferred`. The moved token is unverified like the record. Two provider-wide tokens
+   for one provider, or a token already held by the target scope, refuse the migration.
+6. After the owned record has been verified successfully under its new ownership,
+   `POST .../credentials/finalize` with the migration identity retires the migration: rollback ends,
+   the provider-wide record is released for new saves, and the receipt stays in the audit trail with
+   `finalizedBy`/`finalizedAt`. Finalize is idempotent and refuses unverified, failed-verification or
+   rolled-back migrations. Both workstations offer "Finalize migration" beside rollback.
 
 The host revalidates the selected tenant, connection, provider, enabled state, account and environment
 before reading secrets. Owned providers without an explicit selection block construction; missing

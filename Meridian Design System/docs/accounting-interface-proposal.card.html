@@ -1,0 +1,141 @@
+<!-- @dsCard group="Documentation" viewport="1280x960" name="Books interface proposal · toward 4.2" subtitle="Reorganize accounting around scope and obligation — the books spine, account as destination, the evidence/consequence archetype, and six carried-state concepts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Documentation — Books interface proposal</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
+<style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+.wrap{max-width:1240px;display:grid;gap:13px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid var(--border-strong,#AAA49A);padding-bottom:10px}
+h1{font-size:16px;font-weight:650;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent,#C56343)}
+.headnote{font-family:var(--font-data);font-size:10px;color:var(--text-muted);text-align:right;line-height:1.6;white-space:normal}
+.thesis{font-size:12.5px;line-height:1.55;color:var(--text-secondary);max-width:100ch;margin:0}
+.thesis strong{color:var(--text-primary);font-weight:600}
+.spine{border:1px solid var(--border);border-radius:2px;background:var(--surface-well,#FCFBF8);padding:11px 12px;display:grid;gap:8px}
+.spine h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0}
+.tmpls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tmpl{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:6px 9px;font-family:var(--font-data);font-size:10px;color:var(--text-secondary);display:flex;justify-content:space-between;gap:8px}
+.tmpl b{color:var(--text-primary);font-weight:600}
+.tmpl span{color:var(--text-muted)}
+.bus{display:flex;flex-wrap:wrap;align-items:center;gap:10px;border:1px solid var(--border-strong,#AAA49A);border-radius:2px;background:var(--bg-medium,#EBE8E1);padding:6px 10px;font-family:var(--font-data);font-size:10.5px}
+.bus .k{font-weight:700;color:var(--text-primary)}
+.bus .seg{color:var(--text-secondary)}
+.bus .seg b{color:var(--interaction-link);font-weight:700}
+.bus .note{margin-left:auto;color:var(--text-muted);font-size:9.5px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
+.panel{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:11px 12px 12px;display:grid;gap:8px;align-content:start}
+.ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:7px}
+.ptitle h2{font-size:12px;font-weight:650;margin:0}
+.ptitle .k{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted)}
+.q{font-size:11.5px;line-height:1.45;color:var(--text-secondary);font-style:italic;margin:0}
+.panel p{margin:0;font-size:11.5px;line-height:1.45}
+.panel p b{font-weight:650}
+.ev{display:block;font-family:var(--font-data);font-size:9.5px;line-height:1.5;color:var(--text-muted);margin-top:3px}
+.pill{display:inline-block;font-family:var(--font-data);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border-radius:2px;border:1px solid;white-space:nowrap}
+.pill--absent{color:var(--severity-blocked-fg);border-color:var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.pill--once{color:var(--severity-review-fg);border-color:var(--severity-review-bd);background:var(--severity-review-bg)}
+.pill--law{color:var(--severity-info-fg,#606870);border-color:var(--severity-info-bd,#D2CDC3);background:var(--severity-info-bg,#EBE8E1)}
+.pill--new{color:var(--severity-action-fg);border-color:var(--severity-action-bd);background:var(--severity-action-bg)}
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.chip-demo{font-family:var(--font-data);font-size:9.5px;color:var(--text-secondary);border:1px solid var(--border);border-radius:2px;background:var(--surface-well,#FCFBF8);padding:4px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-demo b{font-weight:700;color:var(--text-primary)}
+.chip-demo .neg{color:var(--red-dim)}
+.chip-demo .ok{color:var(--green-dim)}
+.waves{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);background:var(--surface-well,#FCFBF8)}
+.wave{padding:9px 11px;border-right:1px solid var(--border);display:grid;gap:4px;align-content:start}
+.wave:last-child{border-right:0}
+.wave .w{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted)}
+.wave .ids{font-family:var(--font-data);font-size:11px;font-weight:600;color:var(--text-primary)}
+.wave .why{font-size:10.5px;line-height:1.4;color:var(--text-secondary)}
+.foot{font-size:10.5px;line-height:1.55;color:var(--text-muted);margin:0}
+.foot code{font-family:var(--font-data);font-size:10px}
+a{color:var(--focus,#2D6FB3)}a:hover{color:var(--text-primary)}
+</style>
+</head>
+<body class="meridian mds-specimen">
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Proposal · not law · toward 4.2</div>
+      <h1>Reorganizing the books — scope and obligation over artifact</h1>
+    </div>
+    <div class="headnote">4 books templates · 26 accounting modules<br>full report: docs/ACCOUNTING_INTERFACE_4_2.md</div>
+  </div>
+
+  <p class="thesis">The accounting interface is organized by <strong>artifact</strong> — a ledger view, a TB view, a recon screen — while the work is organized by <strong>scope</strong> (period × basis × entity) and <strong>obligation</strong> (what must tie, post, close). Period is a muted text line; basis has no control; the close is a place, not a state; tie-out, posting impact, and materiality exist as <strong>screens you visit</strong>, not <strong>states you carry</strong>. Three reorganizations, six concepts.</p>
+
+  <div class="spine">
+    <h2>O-1 · The books spine — one carried scope, one store, one URL identity</h2>
+    <div class="tmpls">
+      <div class="tmpl"><b>accounting-workstation</b><span>8 views + drawer</span></div>
+      <div class="tmpl"><b>close-management</b><span>close · tie-out</span></div>
+      <div class="tmpl"><b>reconciliation</b><span>queue · matcher · exception</span></div>
+      <div class="tmpl"><b>investment-event-ledger</b><span>events</span></div>
+    </div>
+    <div class="bus"><span class="k">_books/ store</span><span class="seg">period <b>2026-06</b></span><span class="seg">basis <b>GAAP</b></span><span class="seg">entity <b>MER-FUND-I</b></span><span class="note">precedent: _strategy-executor/ — change period anywhere, it changes everywhere</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="ptitle"><h2>O-2 · Account as destination</h2><span class="pill pill--absent">No surface</span></div>
+      <p class="q">"Why is 1200 · Cash what it is?"</p>
+      <p><b>Account Sheet</b> — one drill-in where balance, rollforward proof, entries, open items, tie state, and lineage converge; every rendered account code becomes a link to it.<span class="ev">today: account = query param on GL · six components on six surfaces · precedent: security-master entity inspector, CloseTieOut.dc.html sibling DC</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>O-3 · Evidence · consequence archetype</h2><span class="pill pill--once">Built once</span></div>
+      <p class="q">"Why is this figure what it is — and what will Post do?"</p>
+      <p>Every books view composes the triptych: work plane · right rail (<b>ValueEnvelope</b> + trace for the selected figure) · bottom bar (<b>PostingImpactPreview</b> for the armed write).<span class="ev">exists only in reconciliation view=exception · GL/TB/statements are single-plane tables · LinkedSelectionProvider already carries selection</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-5 · No blind postings</h2><span class="pill pill--law">Adoption law</span></div>
+      <p class="q">"Same gate for every ledger write."</p>
+      <p>Journal drawer, recon accrual, FX reval, close entries — all run balance gate → <b>PostingImpactPreview</b> → <b>ActionGuard</b>ed Post.<span class="ev">today only the drawer gates on balance · onPostAccrual and onPostReval write directly · zero new components</span></p>
+    </div>
+  </div>
+
+  <div class="cgrid">
+    <div class="panel">
+      <div class="ptitle"><h2>C-1 · PeriodPosture</h2><span class="pill pill--new">New export</span></div>
+      <p>The close as ambient state — one StatusBar chip on every books surface; click → close-management.<span class="ev">today the close is invisible from GL, recon, statements</span></p>
+      <div class="chip-demo"><b>2026-06</b> · SOFT-CLOSE · <b>D-3</b> · <span class="neg">2 gates failing</span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-2 · TieBar</h2><span class="pill pill--new">New export</span></div>
+      <p>Subledger→GL ties as a heartbeat strip, each expanding to the full <b>TieOutPanel</b> — tie-out becomes a condition you observe, not an event you schedule.<span class="ev">data contract exists in TieOutPanel</span></p>
+      <div class="chip-demo">cash <span class="ok">tied</span> · positions <span class="ok">tied</span> · lots <span class="neg">out by (2,340.00)</span> · income <span class="ok">tied</span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-3 · Proof-on-demand</h2><span class="pill pill--law">Law + prop</span></div>
+      <p>No unproven figure at rest: every terminal balance expands its identity — opening + activity = closing, Σ children, statement line → TB lines — as a quiet expander on <b>AmountCell</b>.<span class="ev">reuses the DataGrid proof contract · RollforwardTrace · CalculationTrace</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-4 · BasisLens</h2><span class="pill pill--new">Joins the spine</span></div>
+      <p>Basis (GAAP · Tax · Stat) restates every figure on screen; any two bases diff inline via <b>BasisBridge</b>.<span class="ev">today basis lives only in BasisComparisonMatrix on alm-review — the GL is basis-blind</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-6 · ExceptionBudget</h2><span class="pill pill--new">Derived</span></div>
+      <p>Close readiness as a number: Σ|out-by| + unexplained movement vs <b>MaterialityAssessment</b> thresholds; the close lock derives from it instead of a hand-set boolean.<span class="ev">feeds C-1's gate count and O-3's consequence rail</span></p>
+      <div class="chip-demo">open exposure <b>4,120.00</b> of 25,000.00 budget · 6 items</div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>Compatibility</h2><span class="pill pill--law">Additive</span></div>
+      <p>No API removed. New: <b>PeriodPosture</b> · <b>TieBar</b> · <b>ExceptionBudget</b> · Account Sheet DC · <code style="font-family:var(--font-data);font-size:10px">proof</code> on AmountCell. Everything else is organization and adoption of what exists.</p>
+    </div>
+  </div>
+
+  <div class="waves">
+    <div class="wave"><span class="w">WAVE 1</span><span class="ids">O-1 · C-1</span><span class="why">Spine first — everything else keys off carried scope</span></div>
+    <div class="wave"><span class="w">WAVE 2</span><span class="ids">C-3 · C-5</span><span class="why">Cell-level and law-level; no new screens</span></div>
+    <div class="wave"><span class="w">WAVE 3</span><span class="ids">O-3 · C-2</span><span class="why">Rails consume the spine and the proofs</span></div>
+    <div class="wave"><span class="w">WAVE 4</span><span class="ids">O-2 · C-4 · C-6</span><span class="why">New surfaces on a settled foundation</span></div>
+  </div>
+
+  <p class="foot">Method follows <code>UX_DEPTH_4_1.md</code> — every item is a gap with evidence from the tree. Spine precedent: <code>templates/_strategy-executor/</code> (one store, one URL identity, one nav rail across four screens). Rule-of-use format: <code>guidelines/OPERATING_LANGUAGE.md</code>.</p>
+</div>
+</body>
+</html>

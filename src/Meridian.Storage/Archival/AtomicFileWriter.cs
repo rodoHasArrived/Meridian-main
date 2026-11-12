@@ -750,7 +750,7 @@ public static partial class AtomicFileWriter
             }
             catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
             {
-                await Task.Delay(ReplaceRetryDelay * attempt);
+                await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
             }
         }
     }

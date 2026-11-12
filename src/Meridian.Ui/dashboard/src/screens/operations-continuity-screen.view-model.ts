@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
   collectCloseWorkflowEvidenceLinks,
@@ -1126,7 +1126,7 @@ export function buildOperationsContinuityScreenViewModel({
     ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
     : null;
   return {
-    title: "Operations continuity",
+    title: "Period close workflows",
     subtitle: "Track account-period close workflows from broker intake through Security Master coverage, ledger posting, reconciliation, approval, and close evidence.",
     loading,
     statusAnnouncement: buildStatusAnnouncement({ loading, rows, selectedSummary, detailLoading, detailError }),
@@ -3917,7 +3917,7 @@ function buildStatusAnnouncement({
     return "No operations continuity workflows are available.";
   }
 
-  return `${rows.length} operations continuity workflows loaded. Selected ${selectedSummary.periodId} close.`;
+  return `${pluralizeCount(rows.length, "operations continuity workflow")} loaded. Selected ${selectedSummary.periodId} close.`;
 }
 
 function formatError(err: unknown, fallback: string): string {
@@ -3952,9 +3952,7 @@ function formatOperatorDisplayName(value: string | null): string {
 }
 
 function formatDecimal(value: number | null | undefined): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value.toLocaleString("en-US", { maximumFractionDigits: 4 })
-    : "Not recorded";
+  return formatNumber(value, { maximumFractionDigits: 4, fallback: "Not recorded" });
 }
 
 function formatCurrency(value: number | null | undefined, currency: string): string {

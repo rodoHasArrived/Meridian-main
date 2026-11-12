@@ -3,6 +3,8 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
+import { formatUtcTimestamp } from "@/lib/format";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import * as api from "@/lib/api";
 import type {
   BrokerageConnectionStatus,
@@ -250,6 +252,16 @@ const portfolio: PortfolioWorkspaceResponse = {
   }
 };
 
+// The same payload with a mark the shared valuation policy accepts as current, for tests about
+// when the payload loaded rather than about its marks.
+const portfolioWithCurrentMarks: PortfolioWorkspaceResponse = {
+  ...portfolio,
+  positions: portfolio.positions.map((position) => ({
+    ...position,
+    markFreshness: { symbol: position.symbol, valuationDate: "2026-06-30", observedOn: "2026-06-30", ageDays: 0, policyVersion: "v1", status: "Current" }
+  }))
+};
+
 function createPortfolioFinancialRecordExplorer(): FinancialRecordExplorerDto {
   const detail = {
     recordId: "portfolio:run-1:AAPL",
@@ -377,25 +389,31 @@ describe("PortfolioScreen", () => {
     vi.restoreAllMocks();
   });
 
-  it("navigates between portfolio route views from the tab strip", async () => {
+  it.each([
+    ["/portfolio", "Execution-linked holdings"],
+    ["/portfolio/attribution", "Run attribution evidence"]
+  ])("opens %s on its own view with the sidebar as the only sub-route navigation", async (route, heading) => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
-      initialEntries: ["/portfolio"]
+      initialEntries: [route]
     });
 
-    const tablist = screen.getByRole("tablist", { name: "Portfolio routes" });
-    expect(within(tablist).getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Execution-linked holdings" })).toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
-    expect(screen.queryByText(/live brokerage portfolio/i)).toBeNull();
-    expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+    expect(screen.queryByRole("tablist", { name: "Portfolio routes" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument();
+    if (route === "/portfolio") {
+      expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
+      expect(screen.queryByText(/live brokerage portfolio/i)).toBeNull();
+      expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+    } else {
+      expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
+      expect(screen.queryByRole("treegrid", { name: /open positions/i })).toBeNull();
+    }
+  });
 
-    const user = userEvent.setup();
-    await user.click(within(tablist).getByRole("tab", { name: "Attribution" }));
-    expect(screen.getByRole("heading", { name: "Attribution" })).toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
-    expect(screen.queryByRole("treegrid", { name: /open positions/i })).toBeNull();
+  it("opens /portfolio/brokerage-sync on the live brokerage portfolio", async () => {
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio/brokerage-sync"]
+    });
 
-    await user.click(within(tablist).getByRole("tab", { name: "Brokerage sync" }));
     expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
   });
@@ -413,6 +431,25 @@ describe("PortfolioScreen", () => {
     expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
+  });
+
+  it("names the selected holding in one heading line and lists what its row does not show", async () => {
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+
+    const pane = screen.getByRole("region", { name: /aapl holding detail/i });
+    expect(within(pane).getByRole("heading", { level: 3, name: "Holding AAPL" })).toBeInTheDocument();
+    expect(pane).toHaveAttribute("data-detail-pane", "true");
+    // No separate "Detail" chip; the next action sits with the selection.
+    expect(within(pane).queryByText("Detail")).not.toBeInTheDocument();
+    expect(within(pane).getByRole("link", { name: "Open asset detail for AAPL" })).toBeInTheDocument();
+    const facts = within(pane).getByLabelText("Holding details");
+    expect(facts).toHaveTextContent("Quantity100");
+    // Side and mark readiness are always-visible columns of the selected row.
+    expect(within(facts).queryByText("Side")).not.toBeInTheDocument();
+    expect(within(facts).queryByText("Mark readiness")).not.toBeInTheDocument();
+    for (const value of within(facts).getAllByRole("definition")) {
+      expect(value).toHaveClass("text-left");
+    }
   });
 
   it("puts holdings before supporting records and lets the operator expand readiness", async () => {
@@ -473,7 +510,7 @@ describe("PortfolioScreen", () => {
     const scope = screen.getByLabelText("Explorer scope");
     expect(scope).toHaveTextContent("Demo portfolio data");
     expect(scope).toHaveTextContent("Mean Reversion");
-    expect(scope).toHaveTextContent("Apr 28, 18:14 UTC");
+    expect(scope).toHaveTextContent("Apr 28, 2026, 18:14 UTC");
     const filters = screen.getByLabelText("Applied explorer filters");
     expect(filters).toHaveTextContent("Demo portfolio data");
     expect(filters).toHaveTextContent("Mean Reversion");
@@ -510,6 +547,261 @@ describe("PortfolioScreen", () => {
     expect(summary).toHaveTextContent("Trading workspace");
     expect(summary).toHaveTextContent("Freshness");
     expect(summary).toHaveTextContent("Holdings and run evidence loaded");
+  });
+
+  it("marks headline figures stale and states their source when the last refresh is past its budget", async () => {
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "succeeded",
+          inFlight: false,
+          version: 1,
+          message: "Refresh complete.",
+          error: null,
+          startedAt: "2026-01-02T14:00:00Z",
+          settledAt: "2026-01-02T14:00:00Z",
+          lastSucceededAt: "2026-01-02T14:00:00Z",
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("$10,200")).toHaveClass("text-muted-foreground");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    // The totals cover every workspace position, so that is the scope they state.
+    expect(strip.parentElement).toHaveTextContent(
+      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+    );
+  });
+
+  it("marks headline figures stale when the Portfolio refresh did not complete, as of the last complete one", async () => {
+    // A poll whose Portfolio request failed keeps the previous totals on screen. It settled just
+    // now, but the figures date from the last complete refresh.
+    const now = new Date();
+    const lastComplete = new Date(now.getTime() - 60_000).toISOString();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "partial",
+          inFlight: false,
+          version: 2,
+          message: "Portfolio workspace refresh failed",
+          error: "Portfolio workspace refresh failed",
+          startedAt: now.toISOString(),
+          settledAt: now.toISOString(),
+          lastSucceededAt: lastComplete,
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(
+      `Stale figures · Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(lastComplete))} · Scope: All workspace positions`
+    );
+    expect(screen.getByLabelText("Portfolio data confidence")).toHaveTextContent(
+      "The latest refresh did not complete; the last loaded figures are shown."
+    );
+  });
+
+  it("marks headline figures stale when the shell reports a failed Portfolio reload, as of its last load", async () => {
+    const now = new Date().toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: ["portfolio"], sourceLoadedAt: { portfolio: "2026-01-02T14:00:00Z" } }}
+      >
+        <PortfolioScreen
+          portfolio={portfolio}
+          trading={trading}
+          strategy={strategy}
+          accounting={accounting}
+          refreshStatus={{
+            operation: "portfolio refresh",
+            phase: "succeeded",
+            inFlight: false,
+            version: 1,
+            message: "Refresh complete.",
+            error: null,
+            startedAt: now,
+            settledAt: now,
+            lastSucceededAt: now,
+            staleDiscardCount: 0,
+            backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+          }}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(
+      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+    );
+  });
+
+  it("dates the totals from the Portfolio payload's own load, not from an older brokerage snapshot", async () => {
+    // In the shell the Portfolio payload loaded just now. The brokerage household snapshot is
+    // months old; it does not supply the totals, so it must not date them or mark them stale.
+    const loadedAt = new Date().toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: loadedAt } }}
+      >
+        <PortfolioScreen
+          portfolio={portfolioWithCurrentMarks}
+          trading={trading}
+          strategy={strategy}
+          accounting={accounting}
+          brokeragePortfolio={{ ...brokeragePortfolio, asOf: "2026-01-02T14:00:00Z" }}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(
+      `Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(loadedAt))} · Scope: All workspace positions`
+    );
+    expect(strip.parentElement).not.toHaveTextContent("Stale figures");
+  });
+
+  it("does not keep the totals stale for an earlier failed poll once the payload has reloaded", async () => {
+    // The Portfolio poll failed and its lifecycle is still `partial`; a shell refresh has since
+    // reloaded the Portfolio payload, which is the authoritative evidence.
+    const now = new Date();
+    const reloadedAt = now.toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: reloadedAt } }}
+      >
+        <PortfolioScreen
+          portfolio={portfolioWithCurrentMarks}
+          trading={trading}
+          strategy={strategy}
+          accounting={accounting}
+          refreshStatus={{
+            operation: "portfolio refresh",
+            phase: "partial",
+            inFlight: false,
+            version: 2,
+            message: "Portfolio workspace refresh failed.",
+            error: "Portfolio workspace refresh failed.",
+            startedAt: new Date(now.getTime() - 30_000).toISOString(),
+            settledAt: new Date(now.getTime() - 30_000).toISOString(),
+            lastSucceededAt: new Date(now.getTime() - 90_000).toISOString(),
+            staleDiscardCount: 0,
+            backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+          }}
+        />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).toHaveClass("text-success");
+    expect(strip.parentElement).toHaveTextContent(`As of ${formatUtcTimestamp(new Date(reloadedAt))}`);
+    expect(strip.parentElement).not.toHaveTextContent("Stale figures");
+  });
+
+  it("shows valuation totals as unverified when a position's mark needs review, even on a fresh load", async () => {
+    // The payload loaded just now, but its only position has no accepted mark assessment: the
+    // holdings table warns about it, so the totals built from it must not look current.
+    const loadedAt = new Date().toISOString();
+    await renderPortfolioScreen(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { portfolio: loadedAt } }}
+      >
+        <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />
+      </WorkspaceFigureContextProvider>
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("$10,200")).toHaveClass("text-muted-foreground");
+    expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
+    expect(within(strip).getAllByText("1 of 1 mark needs review")).toHaveLength(2);
+    expect(strip.parentElement).toHaveTextContent("Unverified figures");
+  });
+
+  it("keeps fresh headline figures in their P&L tone", async () => {
+    const now = new Date().toISOString();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolioWithCurrentMarks}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "succeeded",
+          inFlight: false,
+          version: 1,
+          message: "Refresh complete.",
+          error: null,
+          startedAt: now,
+          settledAt: now,
+          lastSucceededAt: now,
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    expect(within(strip).getByText("+$120")).toHaveClass("text-success");
+    expect(strip.parentElement).not.toHaveTextContent("Stale figures");
+  });
+
+  it("explains why the header strip and the explorer report different figures", async () => {
+    const explorer = createPortfolioFinancialRecordExplorer();
+    explorer.scopeItems = [
+      { label: "Source", value: "Portfolio workspace", tone: "Default" },
+      { label: "Run", value: "run-1", tone: "Info" },
+      { label: "As of", value: "2026-04-28T18:14:30Z", tone: "Default" }
+    ];
+    explorer.summaryItems = [
+      { label: "Positions", value: "2", detail: "Retained position rows.", tone: "Success" },
+      { label: "Market value", value: "$25,587", detail: "Aggregate market value.", tone: "Default" },
+      { label: "Unrealized PnL", value: "+$1,239", detail: "Retained unrealized gain.", tone: "Success" }
+    ];
+    vi.spyOn(api, "getFinancialRecordExplorer").mockResolvedValue(explorer);
+
+    await renderPortfolioScreen(
+      <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />,
+      { initialEntries: ["/portfolio/attribution"] }
+    );
+
+    const note = screen.getByRole("note", { name: "Why these differ" });
+    expect(note).toHaveTextContent("Header strip and Portfolio Explorer read different records, so their figures are not expected to match.");
+    const figures = within(note).getByRole("table", { name: "Figures that differ" });
+    expect(within(figures).getByRole("row", { name: "Total exposure $10,200 $25,587" })).toBeInTheDocument();
+    expect(within(figures).getByRole("row", { name: "Unrealized P&L +$120 +$1,239" })).toBeInTheDocument();
+    expect(within(figures).getByRole("row", { name: "Open positions 1 2" })).toBeInTheDocument();
+    expect(note).toHaveTextContent("Source: Portfolio workspace");
+    expect(note).toHaveTextContent("Source: Retained run records · As of Apr 28, 2026, 18:14 UTC · Scope:");
+    // The explorer's own summary uses the one P&L spelling too.
+    expect(within(screen.getByLabelText("Explorer summary")).getByText("Unrealized P&L")).toBeInTheDocument();
+  });
+
+  it("shows no difference note when the explorer agrees with the header strip", async () => {
+    await renderPortfolioScreen(
+      <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />,
+      { initialEntries: ["/portfolio/attribution"] }
+    );
+
+    expect(screen.queryByRole("note", { name: "Why these differ" })).not.toBeInTheDocument();
   });
 
   it("uses loaded snapshot evidence when the refresh lifecycle has no success timestamp", async () => {
@@ -608,6 +900,32 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/1 run needs variance review/i)).toBeDefined();
   });
 
+  it("keeps the headline totals scoped to the workspace when one brokerage account is selected", async () => {
+    const user = userEvent.setup();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        portfolio={portfolio}
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        brokerageConnection={brokerageConnection}
+        brokeragePortfolio={brokeragePortfolio}
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
+    );
+
+    const strip = screen.getByLabelText("Portfolio headline metrics");
+    const exposureBefore = within(strip).getByText("$10,200");
+    expect(strip.parentElement).toHaveTextContent("Scope: All workspace positions");
+
+    // Selecting an account filters the brokerage table only; the totals and their scope stay put.
+    await user.click(screen.getByRole("button", { name: /show alpaca paper roth ira account/i }));
+
+    expect(within(strip).getByText("$10,200")).toBe(exposureBefore);
+    expect(strip.parentElement).toHaveTextContent("Scope: All workspace positions");
+    expect(strip.parentElement).not.toHaveTextContent(/Scope: .*Roth IRA/i);
+  });
+
   it("renders Alpaca account and selectable current positions when brokerage sync data is available", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
@@ -624,7 +942,7 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
     expect(within(trustSnapshot).getByText(/household synced/i)).toBeInTheDocument();
-    expect(within(trustSnapshot).getAllByText("May 7, 12:00 UTC").length).toBeGreaterThan(0);
+    expect(within(trustSnapshot).getAllByText("May 7, 2026, 12:00 UTC").length).toBeGreaterThan(0);
     expect(within(trustSnapshot).getAllByText("$375,000").length).toBeGreaterThan(0);
     expect(within(trustSnapshot).getByText("2 accounts")).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();
@@ -635,27 +953,32 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
 
+    await user.click(screen.getByRole("row", { name: /inspect aapl roth ira live position/i }));
     const defaultDetail = screen.getByRole("region", { name: /aapl brokerage position detail/i });
-    expect(within(defaultDetail).getByText(/brokerage position inspector/i)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /all brokerage accounts detail/i })).not.toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
-    const positionIdentity = within(defaultDetail).getByText("Technical position identity").closest("details");
+    const positionIdentity = within(defaultDetail).getByText("Technical details").closest("details");
     expect(positionIdentity).not.toBeNull();
     const positionId = within(positionIdentity!).getByText("pos-aapl");
     expect(positionIdentity).not.toHaveAttribute("open");
     expect(positionId).not.toBeVisible();
-    await user.click(within(positionIdentity!).getByText("Technical position identity"));
+    await user.click(within(positionIdentity!).getByText("Technical details"));
     expect(positionIdentity).toHaveAttribute("open");
     expect(positionId).toBeVisible();
 
     const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
-    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-position-detail");
+    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-active-detail");
     expect(msftRow).toHaveAttribute("aria-expanded", "false");
     expect(msftRow).toHaveClass("bg-warning/5");
     await user.click(msftRow);
 
     const updatedDetail = screen.getByRole("region", { name: /msft brokerage position detail/i });
     expect(within(updatedDetail).getByText(/alpaca paper \/ alpaca brokerage \/ equity/i)).toBeInTheDocument();
-    expect(within(updatedDetail).getByText("$1,750")).toBeInTheDocument();
+    // The pane lists what the selected row does not show: no repeated market value or P&L.
+    const updatedFacts = within(updatedDetail).getByLabelText("Brokerage position details");
+    expect(updatedFacts).toHaveTextContent("Average entry");
+    expect(updatedFacts).not.toHaveTextContent("Market value");
+    expect(updatedFacts).not.toHaveTextContent("Unrealized P&L");
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
   });
@@ -826,7 +1149,7 @@ describe("PortfolioScreen", () => {
     await user.keyboard(" ");
 
     expect(taxableRow).toHaveAttribute("aria-selected", "true");
-    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-account-detail");
+    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-active-detail");
     expect(taxableRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: /show alpaca paper brokerage account/i })).toHaveAttribute("aria-pressed", "true");
     const accountDetail = screen.getByRole("region", { name: /brokerage brokerage account detail/i });
@@ -939,7 +1262,17 @@ describe("PortfolioScreen", () => {
     expect(detail).toBeDefined();
     expect(screen.getByText(/drawdown review required/i)).toBeDefined();
     expect(within(detail).getAllByText("Needs Review").length).toBeGreaterThan(0);
-    expect(screen.getByText("run-2")).toBeDefined();
+    expect(within(detail).getByRole("heading", { name: "Strategy run Volatility Carry" })).toBeInTheDocument();
+    const runReference = within(detail).getByText("run-2");
+    expect(runReference).not.toBeVisible();
+    const technicalDetails = within(detail).getByText("Technical details").closest("details");
+    expect(technicalDetails).not.toHaveAttribute("open");
+    await user.click(within(detail).getByText("Technical details"));
+    expect(technicalDetails).toHaveAttribute("open");
+    expect(runReference).toBeVisible();
+    expect(within(detail).getByRole("button", { name: "Copy Run ID" })).toBeInTheDocument();
+    expect(within(detail).getByRole("link", { name: "Open Volatility Carry evidence packet" }))
+      .toHaveAttribute("href", "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2");
   });
 
   it("loads shared selected-run portfolio drill-in evidence on demand", async () => {
@@ -1070,13 +1403,20 @@ describe("PortfolioScreen", () => {
     await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
 
     // Equity/drawdown curve renders for a multi-point profile.
-    expect(await screen.findByRole("img", { name: "Equity performance curve" })).toBeDefined();
+    const equityChart = await screen.findByRole("img", { name: "Equity and drawdown curve for Mean Reversion" });
+    expect(equityChart).toHaveAccessibleDescription(/5 points from 2026-05-01 to 2026-05-05\. Final equity 101,900, maximum drawdown -0\.80%\./);
+    // The same points are available to assistive technology as a hidden table, and the
+    // crosshair slider is exposed beside (not inside) the image.
+    const equityTable = screen.getByRole("table", { name: "Equity and drawdown by date for Mean Reversion" });
+    expect(within(equityTable).getByRole("row", { name: "2026-05-03 100,390 -0.80%" })).toBeDefined();
+    expect(equityChart.contains(screen.getByRole("slider"))).toBe(false);
 
     // The daily-return distribution reuses the same fetched points — no extra request — and
     // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the
     // readout assertions to the distribution card so a matching value elsewhere (e.g. the equity
     // card's max-drawdown readout) cannot satisfy them.
-    const distribution = await screen.findByRole("img", { name: "Distribution histogram" });
+    const distribution = await screen.findByRole("img", { name: "Daily return distribution for Mean Reversion" });
+    expect(distribution).toHaveAccessibleDescription(/daily returns\. Mean \+0\.38%, best \+2\.00%, worst -0\.80%/);
     const distributionCard = distribution.closest("div")!.parentElement!;
     expect(within(distributionCard).getByText("Daily return distribution")).toBeDefined();
     expect(within(distributionCard).getByText("+0.38%")).toBeDefined();

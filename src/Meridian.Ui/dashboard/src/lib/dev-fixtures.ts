@@ -1,4 +1,13 @@
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
+import {
+  countOpenBreaks,
+  countOpenOrders,
+  countProviderHealth,
+  OPEN_BREAKS_DEFINITION,
+  OPEN_ORDERS_DEFINITION,
+  PROVIDERS_DEFINITION
+} from "./cross-screen-counts";
+import type { WorkstationCrossScreenCounts } from "../types/cross-screen-counts";
 import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
@@ -125,6 +134,8 @@ import {
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
 import { analyticalFixturePatterns, analyticalFixtureRoutes } from "./dev-fixtures/analytical-fixtures";
+import { workstationSurfaceFixturePatterns, workstationSurfaceFixtureRoutes } from "./dev-fixtures/workstation-surface-fixtures";
+import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -2195,7 +2206,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "100", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$18,840.00", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2254,7 +2265,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "16", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$6,747.20", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2328,7 +2339,7 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
       tone: "Default"
     },
     {
-      label: "Unrealized PnL",
+      label: "Unrealized P&L",
       value: "+$1,239",
       detail: "Fixture unrealized gain retained for portfolio review.",
       tone: "Success"
@@ -2343,8 +2354,8 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
     { columnId: "quantity", header: "Quantity", cellKind: "number", width: 120, isRightAligned: true },
     { columnId: "averageCost", header: "Average cost", cellKind: "currency", width: 140, isRightAligned: true },
     { columnId: "marketValue", header: "Market value", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "unrealizedPnl", header: "Unrealized PnL", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "realizedPnl", header: "Realized PnL", cellKind: "currency", width: 140, isRightAligned: true }
+    { columnId: "unrealizedPnl", header: "Unrealized P&L", cellKind: "currency", width: 150, isRightAligned: true },
+    { columnId: "realizedPnl", header: "Realized P&L", cellKind: "currency", width: 140, isRightAligned: true }
   ],
   rows: fixturePortfolioFinancialRecordExplorerRows,
   selectedRecord: fixturePortfolioFinancialRecordExplorerRows[0]!.detail,
@@ -4387,7 +4398,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       fromGateStatus: "NotStarted",
       toGateStatus: "InProgress",
       actor: "ops-user",
-      rationale: "Open monthly close lane.",
+      rationale: "Open monthly close.",
       correlationId: "dev-continuity",
       references: [],
       previousHash: null,
@@ -5831,18 +5842,40 @@ function createFixtureFinancialRecordExplorer(seed: FixtureFinancialRecordExplor
   };
 }
 
+// Counted from the same fixtures the Trading, Data and Accounting screens read, with the same
+// definitions, as the server counts its own sources (A3).
+const fixtureCrossScreenCounts: WorkstationCrossScreenCounts = {
+  asOf: "2026-03-21T14:30:00Z",
+  openOrders: { count: countOpenOrders(fixtureTradingWorkspace.openOrders) ?? 0, definition: OPEN_ORDERS_DEFINITION },
+  providers: { ...(countProviderHealth(fixtureDataWorkspace.providers) ?? { healthy: 0, total: 0 }), definition: PROVIDERS_DEFINITION },
+  openBreaks: { count: countOpenBreaks(fixtureAccountingWorkspace.breakQueue) ?? 0, definition: OPEN_BREAKS_DEFINITION }
+};
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
+  [WORKSTATION_API_ENDPOINTS.crossScreenCounts]: fixtureCrossScreenCounts,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
-  [WORKSTATION_API_ENDPOINTS.strategy]: fixtureStrategyWorkspace,
+  [WORKSTATION_API_ENDPOINTS.strategy]: { ...fixtureStrategyWorkspace, metrics: fixtureStrategyWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded strategy workspace snapshot", source: "Deterministic development fixture" })) },
   [WORKSTATION_API_ENDPOINTS.strategyBriefing]: fixtureStrategyBriefing,
   "/api/workstation/research": fixtureStrategyWorkspace,
-  [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
-  [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
+  [WORKSTATION_API_ENDPOINTS.trading]: { ...fixtureTradingWorkspace, metrics: fixtureTradingWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded trading workspace snapshot", source: "Deterministic development fixture" })) },
+  [WORKSTATION_API_ENDPOINTS.portfolio]: { ...fixturePortfolioWorkspace, metrics: fixturePortfolioWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded portfolio workspace snapshot", source: "Deterministic development fixture" })) },
   [workstationFinancialRecordExplorerEndpoint("portfolio")]: fixturePortfolioFinancialRecordExplorer,
   [WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage]: fixturePortfolioMultiAssetCoverage,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
+  "/api/workstation/operator/triage": {
+    asOf: fixtureOperatorInbox.asOf,
+    actorId: "seeded-demo-operator",
+    persistenceAvailable: false,
+    unavailableReason: "Seeded read-only inbox. Use a configured shared host for durable triage actions.",
+    items: fixtureOperatorInbox.items.map(item => ({
+      ...item, ownerId: null, dueAt: null, version: 0, sourceVersion: null,
+      acknowledgedAt: null, snoozedUntil: null, activity: [],
+      capabilities: { canAssign: false, canAcknowledge: false, canSnooze: false,
+        canUnsnooze: false, disabledReason: "Seeded read-only inbox; actions are unavailable in this preview." }
+    }))
+  },
   [WORKSTATION_API_ENDPOINTS.workflowSummary]: fixtureWorkflowSummary,
   [WORKSTATION_API_ENDPOINTS.featureCapabilities]: fixtureFeatureCapabilities,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
@@ -5866,7 +5899,7 @@ const fixtures = {
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
   [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
-  [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
+  [WORKSTATION_API_ENDPOINTS.data]: { ...fixtureDataWorkspace, metrics: fixtureDataWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded data workspace snapshot", source: "Deterministic development fixture" })) },
   "/api/workstation/data-operations": fixtureDataWorkspace,
   [PROVIDER_API_ENDPOINTS.connections]: fixtureProviderConnections,
   [PROVIDER_API_ENDPOINTS.readiness]: fixtureProviderReadiness,
@@ -5984,14 +6017,18 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
+  // The books the Accounting configuration fixture already declares, served on their own route.
+  [UI_API_ROUTES.LedgerBooks]: fixtureAccountingConfiguration.ledgerBooks,
   ...marketDataFixtureRoutes,
   ...bootstrapFixtureRoutes,
+  ...workstationSurfaceFixtureRoutes,
   ...analyticalFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  ...workstationSurfaceFixturePatterns,
   {
     pattern: apiRoutePattern(financialRecordExplorerFixtureBase, "/[^/]+"),
     resolve: (cleanPath) => buildFixtureFinancialRecordExplorer(readDecodedPathSegment(cleanPath))

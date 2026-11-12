@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+Options-overwrite candidates preserve delta, open-interest and volume availability separately from numeric values. Required missing measurements and nonfinite delta are refused by preview filters; an absent provider delta cannot become an eligible zero-delta contract. Spread and contract-multiplier facts remain inspectable.
+
 `CanonicalOpenLotAdapter` now compares explicit simulation and retained canonical direction.
 Matching positive-quantity short lots may bind after the same identity/date/basis checks;
 opposite directions cannot net. Existing governed successor-component checks remain mandatory.
@@ -81,6 +83,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   basis components carry unrelieved `EntryCommission`, while
   `AssetEventCashFlow.EntryCommissionDisposed` retains fees relieved by fractional disposals.
   These init-only additions preserve constructor and deconstruction compatibility.
+
+- `BacktestRequest.PopulateAssetEventsFromSecurityMaster` (default `false`) asks the engine to
+  build dividend and split `AssetEvents` from confirmed Security Master corporate actions when the
+  request supplies none. It is valid only with `AdjustForCorporateActions = false`, and when it
+  takes effect it is part of `ExecutionRealismDescriptor` and so of the run's input hash.
 
 ## Unitized lots
 

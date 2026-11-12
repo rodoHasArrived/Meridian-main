@@ -32,6 +32,24 @@ public sealed class OmsGovernedBrokerageOrderGatewayTests
     }
 
     [Fact]
+    public async Task UnifiedExecutionView_StreamNeverReadsTheGatewayReportQueue()
+    {
+        // The OMS is the gateway stream's only consumer; the paper simulator hands each report to
+        // one reader, so a second reader would take resting-order fills away from the OMS.
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("paper");
+        var view = new OmsGovernedExecutionOrderGateway(gateway, () => null);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var updates = new List<Meridian.Execution.Models.OrderStatusUpdate>();
+        await foreach (var update in view.StreamOrderUpdatesAsync(cts.Token))
+            updates.Add(update);
+
+        updates.Should().BeEmpty();
+        gateway.DidNotReceive().StreamExecutionReportsAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public void Constructor_WithNullAdapter_Throws()
     {
         var act = () => new OmsGovernedBrokerageOrderGateway(null!);

@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { formatNumber } from "@/lib/format";
 import type { CoveredCallChainPreview, CoveredCallChainPreviewRequest } from "@/types/covered-call.types";
 
 interface Props {
@@ -40,24 +41,24 @@ export function OptionScreeningMap({ preview, filters, selectedIndex, onSelect }
     <p className="text-xs text-muted-foreground">Current snapshots do not establish historical quotes or executable premium. Preview filters omit IV-percentile and dividend-assignment checks. Select a mark with Enter or Space, or use the chain table.</p>
     {!points.length ? <p role="status" className="text-xs">No returned contracts have measured, valid delta and DTE coordinates. Inspect the chain table for unavailable data and rejection reasons.</p> : null}
     <div className="overflow-x-auto" role="region" aria-label="Options screening chart, scroll horizontally when needed" tabIndex={0}>
-    <svg viewBox="0 0 730 278" className="w-full" style={{ minWidth: 650 }} role="group" aria-label="Option contracts by days to expiry and delta">
+    <svg viewBox="0 0 730 278" className="w-full" style={{ minWidth: 730, fontFamily: "var(--font-data)" }} role="group" aria-label="Option contracts by days to expiry and delta">
       <rect x={x(Math.max(0, captured.minDte))} y={y(Math.min(1, captured.maxDelta))}
         width={Math.max(0, x(captured.maxDte ?? xMax) - x(Math.max(0, captured.minDte)))}
         height={Math.max(0, y(Math.max(yMin, -captured.maxDelta)) - y(Math.min(1, captured.maxDelta)))}
         fill="currentColor" opacity="0.08" />
       {[0, .25, .5, .75, 1, ...(yMin < 0 ? [-1, -.5] : [])].map((delta) => <g key={delta}>
         <line x1="64" x2="684" y1={y(delta)} y2={y(delta)} stroke="currentColor" opacity="0.16" />
-        <text x="54" y={y(delta) + 4} textAnchor="end" fill="currentColor" fontSize="11">{delta.toFixed(2)}</text>
+        <text x="54" y={y(delta) + 4} textAnchor="end" fill="currentColor" fontSize="12">{formatNumber(delta, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</text>
       </g>)}
-      {[0, xMax / 2, xMax].map((days) => <text key={days} x={x(days)} y="244" textAnchor="middle" fill="currentColor" fontSize="11">{Math.round(days)}</text>)}
+      {[0, xMax / 2, xMax].map((days) => <text key={days} x={x(days)} y="244" textAnchor="middle" fill="currentColor" fontSize="12">{formatNumber(days, { maximumFractionDigits: 0 })}</text>)}
       <text x="374" y="267" textAnchor="middle" fill="currentColor" fontSize="12">Days to expiry</text>
       <text x="17" y="135" transform="rotate(-90 17 135)" textAnchor="middle" fill="currentColor" fontSize="12">Delta</text>
       {points.map(({ row, index }) => <g key={`${row.expiration}:${row.strike}:${index}`} role="button" tabIndex={0}
         aria-label={`Select ${preview.underlyingSymbol} ${row.strike} call expiring ${row.expiration}; delta ${row.delta}; ${row.meetsAllFilters ? "passes preview filters" : row.rejectReason ?? "rejected"}`}
-        aria-pressed={selectedIndex === index} className="cursor-pointer focus:outline focus:outline-2 focus:outline-offset-2"
+        aria-pressed={selectedIndex === index} className="cursor-pointer focus:outline focus:outline-2 focus:outline-offset-2" style={{ outlineColor: "var(--interaction-focus)" }}
         onClick={() => onSelect(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(index); } }}>
         <title>{`${row.strike} · ${row.expiration} · ${row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Rejected"}`}</title>
-        <circle cx={x(row.daysToExpiration)} cy={y(row.delta)} r={selectedIndex === index ? 9 : 6} fill={row.meetsAllFilters ? "currentColor" : "var(--color-background, white)"} stroke="currentColor" strokeWidth={selectedIndex === index ? 3 : 1.5} />
+        <circle cx={x(row.daysToExpiration)} cy={y(row.delta)} r={selectedIndex === index ? 9 : 6} fill={row.meetsAllFilters ? "currentColor" : "var(--chart-plot)"} stroke="currentColor" strokeWidth={selectedIndex === index ? 3 : 1.5} />
         {!row.meetsAllFilters ? <path d={`M${x(row.daysToExpiration) - 3},${y(row.delta) - 3}l6,6m0,-6l-6,6`} stroke="currentColor" /> : null}
       </g>)}
     </svg>

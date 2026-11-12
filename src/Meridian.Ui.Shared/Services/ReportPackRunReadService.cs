@@ -3020,7 +3020,8 @@ public sealed partial class ReportPackRunReadService
             || !string.Equals(parameters.PeriodId, scope.PeriodId, StringComparison.Ordinal)
             || !string.Equals(parameters.Scope.FundProfileId, scope.FundId, StringComparison.Ordinal)
             || !string.Equals(ResolveBoundLedgerBookId(parameters), scope.BookId, StringComparison.Ordinal)
-            || !string.Equals(parameters.AccountingBasis.ToString(), source.AccountingBasis, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(parameters.AccountingBasis == ReportingAccountingBasisDto.Management
+                ? "Primary" : parameters.AccountingBasis.ToString(), source.AccountingBasis, StringComparison.OrdinalIgnoreCase)
             || !Equals(readiness.ResolvedTemplate, template)
             || readiness.ResolvedParameters.AsOfDate != parameters.AsOfDate
             || !string.Equals(readiness.ResolvedParameters.PeriodId, parameters.PeriodId, StringComparison.Ordinal)

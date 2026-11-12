@@ -67,14 +67,6 @@ module SecurityMasterLegacyUpgrade =
         | None -> None
         | Some label -> RedemptionStyle.OtherRedemption label |> Some
 
-    let private mapCouponKind = function
-        | "ZeroCoupon" -> CouponKind.ZeroCoupon
-        | "Floating" -> CouponKind.Floating
-        | "Fixed" -> CouponKind.Fixed
-        | "Discount" -> CouponKind.DiscountNote
-        | "SimpleInterest" -> CouponKind.OtherCoupon "SimpleInterest"
-        | other -> CouponKind.OtherCoupon other
-
     let private mapSweepVehicle = function
         | "MoneyMarketFund" -> SweepVehicle.MoneyMarketFund
         | "BankDeposit" -> SweepVehicle.BankDeposit
@@ -177,12 +169,17 @@ module SecurityMasterLegacyUpgrade =
           IsPuttable = not puts.IsEmpty
           PutSchedule = puts }
 
+    let private contractualRateModule (terms: ContractualRateTerms) =
+        if terms.CouponRate.IsNone && terms.FixedCouponBps.IsNone && terms.FeeRate.IsNone
+           && terms.PaymentFrequency.IsNone && terms.DayCount.IsNone then None else Some terms
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
             let preferredTerms = preferredTermsFromClassification terms.Classification
             {
                 SecurityTermModules.empty with
+                    EquityCapital = Some terms.Capital
                     EquityBehavior =
                         Some {
                             ShareClass = terms.ShareClass
@@ -217,22 +214,17 @@ module SecurityMasterLegacyUpgrade =
         | SecurityKind.Option terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = Some terms.Expiry
-                        }
+                    ListingDetail = Some terms.ListingDetail
+                    Maturity = Some terms.Dates
+                    TradingParameters = Some terms.TradingParameters
+                    Exercise = Some terms.Exercise
             }
         | SecurityKind.Future terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = Some terms.Expiry
-                        }
+                    ListingDetail = Some terms.ListingDetail
+                    Maturity = Some terms.Dates
+                    TradingParameters = Some terms.TradingParameters
             }
         | SecurityKind.Bond terms ->
             let isStructured =
@@ -263,12 +255,12 @@ module SecurityMasterLegacyUpgrade =
                 else None
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = terms.IssueDate
-                            MaturityDate = Some terms.Maturity
-                        }
+                    DeclaredSchedule = Some terms.DeclaredSchedule
+                    DebtClassification = Some terms.DebtClassification
+                    BondRedemption = Some terms.RedemptionFacts
+                    BondCoupon = Some terms.CouponStructure
+                    PrincipalSchedule = Some terms.Principal
+                    Maturity = Some terms.Dates
                     Coupon =
                         Some {
                             CouponType =
@@ -286,22 +278,14 @@ module SecurityMasterLegacyUpgrade =
                     // Call and issuer terms are carried like the other callable / issued classes
                     // (deposits, CDs), so the economic definition holds what the bond record holds.
                     Call = Some (callFromSchedules terms.IsCallable terms.CallDate terms.CallPutSchedules)
-                    Issuer =
-                        terms.IssuerName
-                        |> Option.map (fun issuerName ->
-                            {
-                                IssuerName = Some issuerName
-                                InstitutionName = None
-                                IssuerProgram = None
-                                LeiCode = None
-                                UltimateParentName = None
-                                IssuerSector = None
-                                IssuerCountry = None
-                            })
+                    Issuer = terms.IssuerTerms.IssuerName |> Option.map (fun _ -> terms.IssuerTerms)
                     StructuredProduct = structuredTerms
             }
-        | SecurityKind.FxSpot _ ->
-            SecurityTermModules.empty
+        | SecurityKind.FxSpot terms ->
+            {
+                SecurityTermModules.empty with
+                    CurrencyPair = Some terms.CurrencyPair
+            }
         | SecurityKind.Deposit terms ->
             {
                 SecurityTermModules.empty with
@@ -311,135 +295,40 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = None
                             MaturityDate = terms.Maturity
                         }
-                    Coupon =
-                        Some {
-                            CouponType = Some (mapCouponKind "SimpleInterest")
-                            CouponRate = terms.InterestRate
-                            PaymentFrequency = None
-                            DayCount = terms.DayCount
-                        }
-                    Call =
-                        Some {
-                            IsCallable = terms.IsCallable
-                            FirstCallDate = None
-                            CallPrice = None
-                            CallSchedule = []
-                            MakeWholeSpreadBps = None
-                            IsPuttable = false
-                            PutSchedule = []
-                        }
-                    Issuer =
-                        Some {
-                            IssuerName = None
-                            InstitutionName = Some terms.InstitutionName
-                            IssuerProgram = Some terms.DepositType
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Coupon = Some terms.CouponTerms
+                    Call = Some terms.Callability
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.MoneyMarketFund terms ->
             {
                 SecurityTermModules.empty with
-                    Fund =
-                        Some {
-                            FundFamily = terms.FundFamily
-                            WeightedAverageMaturityDays = terms.WeightedAverageMaturityDays
-                            SweepEligible = Some terms.SweepEligible
-                            LiquidityFeeEligible = Some terms.LiquidityFeeEligible
-                        }
+                    Fund = Some terms.FundTerms
             }
         | SecurityKind.CertificateOfDeposit terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = Some terms.Maturity
-                        }
-                    Coupon =
-                        Some {
-                            CouponType = Some CouponKind.Fixed
-                            CouponRate = terms.CouponRate
-                            PaymentFrequency = None
-                            DayCount = terms.DayCount
-                        }
+                    DeclaredSchedule = Some terms.DeclaredSchedule
+                    Maturity = Some terms.Dates
+                    Coupon = Some terms.CouponTerms
                     Accrual = accrualFromConventions terms.ScheduleConventions
                     Call = Some (callFromSchedules terms.CallableDate.IsSome terms.CallableDate terms.CallPutSchedules)
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.IssuerName
-                            InstitutionName = None
-                            IssuerProgram = None
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.CommercialPaper terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = Some terms.Maturity
-                        }
-                    Discount =
-                        Some {
-                            DiscountRate = terms.DiscountRate
-                            YieldRate = None
-                        }
-                    Coupon =
-                        Some {
-                            CouponType = Some (mapCouponKind "Discount")
-                            CouponRate = None
-                            PaymentFrequency = None
-                            DayCount = terms.DayCount
-                        }
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.IssuerName
-                            InstitutionName = None
-                            IssuerProgram = if terms.IsAssetBacked then Some "AssetBacked" else None
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Maturity = Some terms.Dates
+                    Discount = Some terms.DiscountTerms
+                    Coupon = Some terms.CouponTerms
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.TreasuryBill terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = Some terms.Maturity
-                        }
-                    Discount =
-                        Some {
-                            DiscountRate = terms.DiscountRate
-                            YieldRate = None
-                        }
-                    Auction =
-                        Some {
-                            AuctionDate = terms.AuctionDate
-                            AuctionType = None
-                        }
-                    Issuer =
-                        Some {
-                            IssuerName = Some "US Treasury"
-                            InstitutionName = None
-                            IssuerProgram = terms.CUSIP
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = Some "US"
-                        }
+                    Maturity = Some terms.Dates
+                    Discount = Some terms.DiscountTerms
+                    Auction = Some terms.Auction
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.Repo terms ->
             {
@@ -450,39 +339,19 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = Some terms.StartDate
                             MaturityDate = Some terms.EndDate
                         }
-                    Financing =
-                        Some {
-                            Counterparty = Some terms.Counterparty
-                            CollateralType = terms.CollateralType
-                            Haircut = terms.Haircut
-                            OpenDate = Some terms.StartDate
-                            CloseDate = Some terms.EndDate
-                        }
-                    Discount =
-                        Some {
-                            DiscountRate = None
-                            YieldRate = terms.RepoRate
-                        }
+                    Financing = Some terms.FinancingTerms
+                    Discount = Some terms.DiscountTerms
             }
         | SecurityKind.CashSweep terms ->
             {
                 SecurityTermModules.empty with
-                    Sweep =
-                        Some {
-                            ProgramName = Some terms.ProgramName
-                            SweepVehicleType = Some (mapSweepVehicle terms.SweepVehicleType)
-                            SweepFrequency = terms.SweepFrequency |> mapSweepFrequency
-                            TargetAccountType = terms.TargetAccountType
-                        }
-                    Discount =
-                        Some {
-                            DiscountRate = None
-                            YieldRate = terms.YieldRate
-                        }
+                    Sweep = Some terms.SweepTerms
+                    Discount = Some terms.DiscountTerms
             }
         | SecurityKind.OtherSecurity terms ->
             {
                 SecurityTermModules.empty with
+                    ClassificationDetail = Some terms.ClassificationDetail
                     Maturity =
                         Some {
                             EffectiveDate = None
@@ -495,62 +364,37 @@ module SecurityMasterLegacyUpgrade =
                             PaymentLagDays = None
                             PaymentCurrency = None
                         }
-                    Issuer =
-                        Some {
-                            IssuerName = terms.IssuerName
-                            InstitutionName = None
-                            IssuerProgram = terms.SettlementType
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.Swap terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = Some terms.EffectiveDate
-                            IssueDate = Some terms.EffectiveDate
-                            MaturityDate = Some terms.MaturityDate
-                        }
+                    SwapLegs = Some terms.SwapLegs
+                    Maturity = Some terms.Dates
             }
         | SecurityKind.DirectLoan terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = terms.Maturity
-                        }
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.Borrower
-                            InstitutionName = None
-                            IssuerProgram = None
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    ReferenceDataSource = if terms.PricingSource.IsNone then None else Some terms.ReferenceDataSource
+                    PrincipalSchedule = Some terms.Principal
+                    LoanCovenants = Some terms.LoanCovenants
+                    Coupon = if terms.CurrentCouponRate.IsNone then None else Some terms.CouponTerms
+                    FloatingRate =
+                        if terms.ReferenceIndex.IsNone && terms.SpreadBps.IsNone && terms.ResetFrequency.IsNone then None
+                        else Some terms.FloatingRate
+                    Maturity = Some terms.Dates
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.StructuredCredit terms ->
             {
                 SecurityTermModules.empty with
+                    DeclaredSchedule = Some terms.DeclaredSchedule
+                    TrancheContract = Some terms.TrancheContract
                     // The persisted legal final maturity must reach the shared economic-terms
                     // document too: consumers of SecurityEconomicDefinitionRecord.EconomicTerms
                     // (the accounting adapter among them) read maturity only from the Maturity
                     // module, not from the retained asset-specific terms.
-                    Maturity =
-                        terms.Maturity
-                        |> Option.map (fun maturity ->
-                            {
-                                EffectiveDate = None
-                                IssueDate = None
-                                MaturityDate = Some maturity
-                            })
+                    Maturity = terms.Maturity |> Option.map (fun _ -> terms.Dates)
                     Issuer =
                         Some {
                             IssuerName = terms.PoolId
@@ -561,13 +405,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
-                    Coupon =
-                        Some {
-                            CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
-                            CouponRate = None
-                            PaymentFrequency = None
-                            DayCount = None
-                        }
+                    Coupon = Some terms.CouponTerms
                     Accrual = accrualFromConventions terms.ScheduleConventions
                     // Structured credit has no scalar call terms, so a declared schedule fills only the
                     // lists: no first call date or price, and NonCallPeriodEnd never feeds the module.
@@ -583,42 +421,23 @@ module SecurityMasterLegacyUpgrade =
                             CapRate = None
                         }
                     StructuredProduct =
-                        Some {
-                            Factor = terms.CurrentFactor
-                            FactorDate = None
-                            WeightedAvgCoupon = terms.WeightedAverageCoupon
-                            WeightedAvgMaturityMonths = terms.WeightedAverageMaturityMonths
-                            WeightedAvgLoanAgeMos = terms.WeightedAverageLoanAgeMonths
-                            CollateralType = Some terms.CollateralType
-                            PoolIdentifier = terms.PoolId
-                            TrancheClass = Some terms.Tranche
-                            PrepaymentAssumption = None
-                            AverageLifeYears = None
-                            // The typed kind decides the strip flags when it is present; the tranche
-                            // label heuristic stays for records that predate the typed term.
-                            IsInterestOnly =
-                                match terms.Kind with
-                                | Some StructuredCreditKind.InterestOnly -> true
-                                | Some _ -> false
-                                | None -> trancheLabelHasToken "IO" terms.Tranche
-                            IsPrincipalOnly =
-                                match terms.Kind with
-                                | Some StructuredCreditKind.PrincipalOnly -> true
-                                | Some _ -> false
-                                | None -> trancheLabelHasToken "PO" terms.Tranche
-                            NotionalBalance = Some terms.OriginalFace
-                            Originator = None
-                            CreditEnhancementPct = None
-                            // The trustee-report pointer travels as evidence lineage, not as a
-                            // payment or reset frequency.
-                            FactorScheduleReference = terms.FactorSchedule
-                            FactorScheduleEntries = terms.FactorScheduleEntries |> List.map (fun entry ->
-                                { EconomicFactorScheduleEntry.AsOfDate = entry.AsOfDate; Factor = entry.Factor })
+                        Some { terms.Pool with
+                                IsInterestOnly =
+                                    match terms.Kind with
+                                    | Some StructuredCreditKind.InterestOnly -> true
+                                    | Some _ -> false
+                                    | None -> trancheLabelHasToken "IO" terms.Tranche
+                                IsPrincipalOnly =
+                                    match terms.Kind with
+                                    | Some StructuredCreditKind.PrincipalOnly -> true
+                                    | Some _ -> false
+                                    | None -> trancheLabelHasToken "PO" terms.Tranche
                         }
             }
         | SecurityKind.PrivateFundInterest terms ->
             {
                 SecurityTermModules.empty with
+                    PrivateAssetValuation = Some terms.PrivateAssetValuation
                     Fund =
                         Some {
                             FundFamily = Some terms.GpSponsor
@@ -626,74 +445,42 @@ module SecurityMasterLegacyUpgrade =
                             SweepEligible = None
                             LiquidityFeeEligible = None
                         }
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.GpSponsor
-                            InstitutionName = None
-                            IssuerProgram = Some terms.Strategy
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Issuer = Some terms.IssuerTerms
+                    Notional = Some terms.Notional
             }
         | SecurityKind.PrivateCompanyEquity terms ->
             {
                 SecurityTermModules.empty with
+                    EquityCapital = Some terms.Capital
+                    PrivateAssetValuation = Some terms.PrivateAssetValuation
                     EquityBehavior =
                         Some {
                             ShareClass = Some terms.ShareClass
                             VotingRights = None
                             DistributionType = None
                         }
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.Issuer
-                            InstitutionName = None
-                            IssuerProgram = Some terms.Round
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.RealEstateHolding terms ->
             {
                 SecurityTermModules.empty with
-                    Issuer =
-                        Some {
-                            IssuerName = terms.Sponsor
-                            InstitutionName = None
-                            IssuerProgram = Some terms.PropertyType
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = Some "RealEstate"
-                            IssuerCountry = None
-                        }
+                    PrivateAssetValuation = Some terms.PrivateAssetValuation
+                    Issuer = Some terms.IssuerTerms
             }
         | SecurityKind.CommitmentGuarantee terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = Some terms.EffectiveDate
-                            IssueDate = Some terms.EffectiveDate
-                            MaturityDate = terms.ExpiryDate
-                        }
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.Counterparty
-                            InstitutionName = None
-                            IssuerProgram = terms.Beneficiary
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    ContractualRate = contractualRateModule terms.ContractualRate
+                    Financing = if terms.Collateral.IsSome then Some terms.CollateralTerms else None
+                    LoanCovenants = Some terms.LoanCovenants
+                    Maturity = Some terms.Dates
+                    Issuer = Some terms.IssuerTerms
+                    Notional = Some terms.Notional
             }
         | SecurityKind.Commodity terms ->
             {
                 SecurityTermModules.empty with
+                    CommodityContract = Some terms.CommodityContract
                     TradingParameters =
                         Some {
                             LotSize = None
@@ -704,17 +491,25 @@ module SecurityMasterLegacyUpgrade =
                             CircuitBreakerThresholdPct = None
                         }
             }
-        | SecurityKind.CryptoCurrency _ ->
-            SecurityTermModules.empty
+        | SecurityKind.CryptoCurrency terms ->
+            {
+                SecurityTermModules.empty with
+                    DigitalAsset = if terms.Network.IsNone then None else Some terms.DigitalAsset
+                    CurrencyPair = Some terms.CurrencyPair
+            }
         | SecurityKind.Cfd terms ->
             {
                 SecurityTermModules.empty with
+                    UnderlyingExposure = Some terms.UnderlyingExposure
                     TradingParameters =
                         Some {
                             LotSize = None
                             TickSize = None
                             ContractMultiplier = None
-                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> 1m / l * 100m)
+                            // Total for every input: zero leverage carries as a zero margin so the
+                            // definition validator can refuse it (cfd_leverage_invalid) instead of
+                            // this projection throwing before validation runs.
+                            MarginRequirementPct = terms.Leverage |> Option.map (fun l -> if l = 0m then 0m else 1m / l * 100m)
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }
@@ -722,97 +517,66 @@ module SecurityMasterLegacyUpgrade =
         | SecurityKind.Warrant terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = None
-                            MaturityDate = terms.Expiry
-                        }
-                    TradingParameters =
-                        Some {
-                            LotSize = None
-                            TickSize = None
-                            ContractMultiplier = terms.Multiplier
-                            MarginRequirementPct = None
-                            TradingHoursUtc = None
-                            CircuitBreakerThresholdPct = None
-                        }
+                    Maturity = Some terms.Dates
+                    TradingParameters = Some terms.TradingParameters
+                    Exercise = Some terms.Exercise
             }
         | SecurityKind.FxForward terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = terms.TradeDate
-                            IssueDate = None
-                            MaturityDate = Some terms.ValueDate
-                        }
+                    Settlement = if terms.SettlementType.IsNone then None else Some terms.Settlement
+                    Maturity = Some terms.Dates
+                    CurrencyPair = Some terms.CurrencyPair
+                    Notional = Some terms.Notional
             }
         | SecurityKind.NonDeliverableForward terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = Some terms.FixingDate
-                            IssueDate = None
-                            MaturityDate = Some terms.ValueDate
-                        }
+                    ReferenceDataSource = if terms.FixingSource.IsNone then None else Some terms.ReferenceDataSource
+                    Maturity = Some terms.Dates
+                    CurrencyPair = Some terms.CurrencyPair
+                    Notional = Some terms.Notional
             }
         | SecurityKind.CreditDefaultSwap terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = Some terms.EffectiveDate
-                            IssueDate = Some terms.EffectiveDate
-                            MaturityDate = Some terms.MaturityDate
-                        }
+                    ContractualRate = Some terms.ContractualRate
+                    CreditProtection = Some terms.CreditProtection
+                    Maturity = Some terms.Dates
                     Coupon =
                         Some {
                             CouponType = Some CouponKind.Fixed
                             // Running coupon quoted in basis points per annum; the economic module carries a rate.
-                            CouponRate = Some (terms.FixedCouponBps / 10000m)
+                            CouponRate = terms.ContractualRate.FixedCouponBps |> Option.map (fun basisPoints -> basisPoints / 10000m)
                             PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
                             DayCount = terms.DayCount
                         }
+                    Notional = Some terms.Notional
             }
         | SecurityKind.Swaption terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = terms.UnderlyingEffectiveDate
-                            IssueDate = None
-                            MaturityDate = Some terms.Expiry
-                        }
+                    UnderlyingSwap = Some terms.UnderlyingSwap
+                    Settlement = if terms.SettlementType.IsSome then Some terms.Settlement else None
+                    Maturity = Some terms.Dates
+                    Exercise = Some terms.Exercise
+                    Notional = Some terms.Notional
             }
         | SecurityKind.CapFloor terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = Some terms.EffectiveDate
-                            IssueDate = None
-                            MaturityDate = Some terms.MaturityDate
-                        }
-                    FloatingRate =
-                        Some {
-                            ReferenceIndex = Some terms.ReferenceIndex
-                            SpreadBps = None
-                            ResetFrequency = terms.ResetFrequency
-                            FloorRate = terms.FloorStrike
-                            CapRate = terms.CapStrike
-                        }
+                    ContractualRate = contractualRateModule terms.ContractualRate
+                    Maturity = Some terms.Dates
+                    FloatingRate = Some terms.FloatingRate
+                    Exercise = Some terms.Exercise
+                    Notional = Some terms.Notional
             }
         | SecurityKind.StructuredNote terms ->
             {
                 SecurityTermModules.empty with
-                    Maturity =
-                        Some {
-                            EffectiveDate = None
-                            IssueDate = terms.IssueDate
-                            MaturityDate = Some terms.Maturity
-                        }
+                    ContractualRate = contractualRateModule terms.ContractualRate
+                    StructuredPayoff = Some terms.StructuredPayoff
+                    Maturity = Some terms.Dates
                     // A cadence without a rate (a contingent coupon) still belongs on the coupon module.
                     Coupon =
                         if terms.CouponRate.IsNone && terms.PaymentFrequency.IsNone then
@@ -825,39 +589,55 @@ module SecurityMasterLegacyUpgrade =
                                 PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
                                 DayCount = None
                             }
-                    Issuer =
-                        Some {
-                            IssuerName = Some terms.IssuerName
-                            InstitutionName = None
-                            IssuerProgram = None
-                            LeiCode = None
-                            UltimateParentName = None
-                            IssuerSector = None
-                            IssuerCountry = None
-                        }
+                    Issuer = Some terms.IssuerTerms
+                    Notional = Some terms.Notional
             }
         | SecurityKind.InvestmentFund terms ->
             {
                 SecurityTermModules.empty with
-                    Fund =
-                        Some {
-                            FundFamily = terms.FundFamily
-                            WeightedAverageMaturityDays = None
-                            SweepEligible = None
-                            LiquidityFeeEligible = None
-                        }
+                    FundShare =
+                        if terms.FundType.IsNone && terms.NavCurrency.IsNone && terms.DistributionPolicy.IsNone && terms.IsStableNav.IsNone
+                        then None else Some terms.FundShare
+                    ReferenceDataSource = if terms.PricingSource.IsNone then None else Some terms.ReferenceDataSource
+                    Fund = Some terms.FundTerms
             }
-        | SecurityKind.CustomAsset _ ->
+        | SecurityKind.CustomAsset terms ->
             // Custom-asset terms are an opaque profile-governed document; no structural
-            // economic-term modules can be extracted without interpreting the profile.
-            SecurityTermModules.empty
+            // economic-term modules can be extracted without interpreting the profile. The
+            // envelope and the document it pins travel whole on the profile-envelope module.
+            {
+                SecurityTermModules.empty with
+                    ProfileEnvelope = Some terms
+            }
+
+    /// ADR-027 stage 2: the kind → modules projection as a first-class seam. S2-B1's equivalence
+    /// tests reach it directly, and S2-B2 derives the economic definition from commands at
+    /// mapping time through it.
+    let modulesFromKind (kind: SecurityKind) =
+        let rateConvention =
+            match kind with
+            | SecurityKind.Swap terms -> terms.RateConvention
+            | SecurityKind.Deposit terms -> terms.RateConvention
+            | SecurityKind.CertificateOfDeposit terms -> terms.RateConvention
+            | SecurityKind.CommercialPaper terms -> terms.RateConvention
+            | SecurityKind.TreasuryBill terms -> terms.RateConvention
+            | SecurityKind.Repo terms -> terms.RateConvention
+            | SecurityKind.CashSweep terms -> terms.RateConvention
+            | SecurityKind.DirectLoan terms -> terms.RateConvention
+            | SecurityKind.StructuredCredit terms -> terms.RateConvention
+            | SecurityKind.Swaption terms -> terms.RateConvention
+            | SecurityKind.CapFloor terms -> terms.RateConvention
+            | SecurityKind.StructuredNote terms -> terms.RateConvention
+            | _ -> None
+        { termsFromKind kind with
+            RateConvention = rateConvention }
 
     let toEconomicDefinition (record: SecurityMasterRecord) =
         {
             SecurityId = record.SecurityId
             Classification = classificationFromKind record.Kind
             Common = record.Common
-            Terms = termsFromKind record.Kind
+            Terms = modulesFromKind record.Kind
             Identifiers = record.Identifiers
             Status = record.Status
             Version = record.Version
@@ -952,26 +732,11 @@ module SecurityMasterLegacyUpgrade =
             match blockers, draft.Tranche, draft.CollateralType, draft.OriginalFace, draft.CouponOrIndex with
             | [], Some tranche, Some collateralType, Some originalFace, Some couponOrIndex ->
                 Some ({
-                    Tranche = tranche
-                    PoolId = draft.PoolId
-                    CollateralType = collateralType
-                    OriginalFace = originalFace
-                    CurrentFactor = draft.CurrentFactor
-                    CouponOrIndex = couponOrIndex
-                    FactorSchedule = None
-                    FactorScheduleEntries = []
-                    Maturity = draft.Maturity
-                    Kind = draft.Kind
-                    Seniority = draft.Seniority
-                    AttachmentPoint = None
-                    DetachmentPoint = None
-                    WeightedAverageCoupon = None
-                    WeightedAverageMaturityMonths = None
-                    WeightedAverageLoanAgeMonths = None
-                    ReinvestmentPeriodEnd = None
-                    NonCallPeriodEnd = None
-                    ScheduleConventions = ScheduleConventions.empty
-                    CallPutSchedules = CallPutSchedules.empty
+                    Pool = { Factor = draft.CurrentFactor; FactorDate = None; WeightedAvgCoupon = None; WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None; CollateralType = Some (collateralType); PoolIdentifier = draft.PoolId; TrancheClass = Some (tranche); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (originalFace); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = None; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = [] }
+                    CouponTerms = { CouponType = Some (CouponKind.OtherCoupon (couponOrIndex)); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = draft.Kind; Seniority = draft.Seniority; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }
+                    Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = draft.Maturity }
+                    RateConvention = None
+                    DeclaredSchedule = DeclaredScheduleTerms.empty
                 } : StructuredCreditTerms)
             | _ -> None
         let sourceLabel =
@@ -1018,7 +783,7 @@ module SecurityMasterLegacyUpgrade =
                 Seniority = terms.Seniority }
         let proposal = finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers @ conventionBlockers @ callPutBlockers)
         if canWriteCallPut then
-            { proposal with ProposedTerms = proposal.ProposedTerms |> Option.map (fun proposed -> { proposed with CallPutSchedules = terms.CallPutSchedules }) }
+            { proposal with ProposedTerms = proposal.ProposedTerms |> Option.map (fun proposed -> { proposed with DeclaredSchedule = { proposed.DeclaredSchedule with Exercises = terms.CallPutSchedules } }) }
         else proposal
 
     let private tryProperty (name: string) (element: JsonElement) =

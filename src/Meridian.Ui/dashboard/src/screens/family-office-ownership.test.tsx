@@ -20,7 +20,9 @@ function structure() {
   };
   overview.publicAssets = [];
   overview.privateAssets = [{ ...overview.privateAssets[0], privateAssetId: "asset-1", entityId: "C", displayName: "Private vehicle", evidenceCompleteness: "Complete", valuationDate: "2026-11-01" }];
-  return mapFamilyOfficeOverview(overview)!;
+  const mapped = mapFamilyOfficeOverview(overview);
+  if (!mapped?.ownershipSource) throw new Error("Ownership fixture must retain its supplied graph.");
+  return { ...mapped, ownershipSource: mapped.ownershipSource };
 }
 
 describe("faithful ownership relationships", () => {
@@ -44,7 +46,10 @@ describe("faithful ownership relationships", () => {
     const source = structure();
     source.ownershipSource.graph.edges.push({ edgeId: "AB", sourceNodeId: "A", targetNodeId: "B", relationshipType: "Owns", ownershipPercent: 100 });
     const map = buildOwnershipMap(source);
-    expect(map.nodes.find(node => node.id === "C").x).toBeGreaterThan(map.nodes.find(node => node.id === "B").x);
+    const child = map.nodes.find(node => node.id === "C");
+    const parent = map.nodes.find(node => node.id === "B");
+    if (!child || !parent) throw new Error("Expected legal parent and child nodes in the fixture.");
+    expect(child.x).toBeGreaterThan(parent.x);
   });
   it("selects an asset, exposes source/effective evidence in the table and supports keyboard map selection", async () => {
     const { container } = render(<FamilyOfficeOwnershipMap structure={structure()} />);

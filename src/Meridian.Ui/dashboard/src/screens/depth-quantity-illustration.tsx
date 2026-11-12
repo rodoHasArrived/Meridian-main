@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import { formatNumber } from "@/lib/format";
 import type { OrderBookLevelDto, OrderBookResponse } from "@/types/market-data";
 
 export function illustrateDepth(levels: OrderBookLevelDto[], quantity: number, side: "Buy" | "Sell") {
@@ -53,17 +55,25 @@ export function DepthQuantityIllustration({ book }: { book: OrderBookResponse })
       <p>Frozen {snapshot.symbol} · {snapshot.timestamp} · sequence {snapshot.sequenceNumber} · venue {snapshot.venue ?? "unreported"} · stream {snapshot.streamId ?? "unreported"} · {snapshot.marketState}{snapshot.isStale ? " · STALE at capture" : ""}{changed ? " · newer depth is available" : ""}</p>
       {result ? <>
         <p role="status">{format(result.covered)} of {format(Number(quantity))} covered by displayed {side === "Buy" ? "asks" : "bids"}. {result.uncovered > 0 ? `${format(result.uncovered)} exceeds displayed depth; further liquidity is unknown.` : "Illustrative quantity fits within displayed depth."}</p>
-        <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-left [&_th]:px-2 [&_td]:px-2" aria-label="Illustrative depth coverage"><caption className="text-left text-muted-foreground">Only returned levels are included. Highlighted size is the portion used by the illustration.</caption><thead><tr><th>Level</th><th>Price</th><th>Displayed size</th><th>Cumulative size</th><th>Illustrated size</th><th>Coverage</th></tr></thead><tbody>
-          {result.rows.map((row, index) => <tr key={`${row.level}:${row.price}:${index}`} className="border-t border-border"><td className="py-2">{row.level}</td><td className="font-mono">{format(row.price)}</td><td>{format(row.size)}</td><td>{format(row.cumulative)}</td><td>{format(row.included)}</td><td className="min-w-24"><div className="h-2 bg-muted" aria-hidden="true"><div className="h-full bg-primary" style={{ width: `${row.size > 0 ? row.included / row.size * 100 : 0}%` }} /></div><span>{row.included === 0 ? "Unused" : row.included === row.size ? "Whole level" : "Partial level"}</span></td></tr>)}
-          {result.rows.length === 0 ? <tr><td colSpan={6} className="py-3">No displayed levels on this side. Available liquidity is unknown.</td></tr> : null}
-        </tbody></table></div>
+        <DenseDataTable rows={result.rows.map((row, index) => ({ ...row, illustrationRowId: `${row.level}:${row.price}:${index}` }))}
+          getRowId={(row) => row.illustrationRowId} ariaLabel="Illustrative depth coverage" tableClassName="min-w-[620px]" maxVisibleRows={null}
+          caption="Only returned levels are included. Highlighted size is the portion used by the illustration."
+          emptyText="No displayed levels on this side. Available liquidity is unknown."
+          columns={[
+            { id: "level", label: "Level", render: (row) => row.level },
+            { id: "price", label: "Price", render: (row) => format(row.price) },
+            { id: "size", label: "Displayed size", render: (row) => format(row.size) },
+            { id: "cumulative", label: "Cumulative size", render: (row) => format(row.cumulative) },
+            { id: "included", label: "Illustrated size", render: (row) => format(row.included) },
+            { id: "coverage", label: "Coverage", render: (row) => <><div className="h-2 bg-muted" aria-hidden="true"><div className="h-full bg-primary" style={{ width: `${row.size > 0 ? row.included / row.size * 100 : 0}%` }} /></div><span>{row.included === 0 ? "Unused" : row.included === row.size ? "Whole level" : "Partial level"}</span></> }
+          ]} />
       </> : <p role="alert">Enter a finite quantity greater than zero. A snapshot with invalid prices or sizes cannot be illustrated.</p>}
     </section>
   );
 }
 
 function format(value: number) {
-  return new Intl.NumberFormat(undefined, value !== 0 && Math.abs(value) < 1e-8
-    ? { notation: "scientific", maximumSignificantDigits: 12 }
-    : { maximumFractionDigits: 8 }).format(value);
+  return formatNumber(value, value !== 0 && Math.abs(value) < 1e-8
+    ? { notation: "scientific", maximumFractionDigits: 11 }
+    : { maximumFractionDigits: 8 });
 }

@@ -463,6 +463,42 @@ public sealed class LiveBrokeragePortfolioSyncServiceTests
         LimitPrice = order.LimitPrice
     };
 
+    /// <summary>
+    /// A broker can name one account in two ways (Alpaca: account number and internal UUID). A
+    /// link retained under the second name must keep synchronizing, and must not let the same
+    /// broker account be bound to two local accounts.
+    /// </summary>
+    [Fact]
+    public async Task SynchronizeAsync_LinkUnderAnAliasOfTheConnectedAccount_IsRecognizedAndCannotBindTwice()
+    {
+        var fixture = new Fixture();
+        fixture.Gateway.As<IBrokerageAccountIdentity>()
+            .Setup(gateway => gateway.IdentifiesConnectedAccount(It.IsAny<string>()))
+            .Returns((string id) => id is "broker-a" or "broker-a-uuid");
+        // The gateway answers under the name the caller used.
+        fixture.Gateway.As<IBrokeragePortfolioSync>()
+            .Setup(gateway => gateway.GetPortfolioSnapshotAsync("broker-a-uuid", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => fixture.Current with
+            {
+                Account = fixture.Current.Account with { AccountId = "broker-a-uuid" },
+                AccountSnapshot = fixture.Current.AccountSnapshot! with { AccountId = "broker-a-uuid" }
+            });
+
+        var aliased = await fixture.Service.SynchronizeAsync(fixture.AccountId, "broker-a-uuid");
+        var second = await fixture.Service.SynchronizeAsync(Guid.NewGuid(), "broker-a");
+        var stranger = await fixture.Service.SynchronizeAsync(Guid.NewGuid(), "someone-else");
+
+        aliased.IsReady.Should().BeTrue("the connected scope is the same account under its other name");
+        // Failure reasons are deliberately generic, so the refusals are proven by what was never
+        // read: both are rejected before any portfolio evidence is requested for them.
+        second.IsReady.Should().BeFalse("two names for one broker account must not bind it twice");
+        stranger.IsReady.Should().BeFalse("an identifier the gateway does not recognize is not the connected account");
+        var portfolio = fixture.Gateway.As<IBrokeragePortfolioSync>();
+        portfolio.Verify(gateway => gateway.GetPortfolioSnapshotAsync("broker-a", It.IsAny<CancellationToken>()), Times.Never);
+        portfolio.Verify(gateway => gateway.GetPortfolioSnapshotAsync("someone-else", It.IsAny<CancellationToken>()), Times.Never);
+        fixture.Service.GetStatus(fixture.AccountId).IsReady.Should().BeTrue("the refused attempts leave the first binding intact");
+    }
+
     private sealed class Fixture
     {
         public Guid AccountId { get; } = Guid.NewGuid();

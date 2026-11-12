@@ -1,3 +1,4 @@
+import type React from "react";
 export interface BulkAction {
   id: string;
   label: string;
@@ -13,7 +14,7 @@ export interface BulkActionBarProps {
 
 export const BulkActionBar: React.FC<BulkActionBarProps>;
 
-export interface BulkSelectCheckboxProps {
+export interface BulkSelectCheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   indeterminate?: boolean;

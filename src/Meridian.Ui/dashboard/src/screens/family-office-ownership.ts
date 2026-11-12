@@ -1,4 +1,5 @@
 import type { FamilyOfficeEntityStructure } from "@/screens/family-office-screen.view-model";
+import { formatPercent } from "@/lib/format";
 
 export interface OwnershipMapNode { id: string; name: string; kind: string; currency?: string; recordAsOf?: string; valuationDate?: string; x: number; y: number }
 export interface OwnershipMapEdge { id: string; from: string; to: string; relation: string; percent: number | null; fromDate?: string; toDate?: string; source?: string; legal: boolean; holding: boolean }
@@ -6,8 +7,8 @@ export interface OwnershipMap { nodes: OwnershipMapNode[]; edges: OwnershipMapEd
 
 export function buildOwnershipMap(structure: FamilyOfficeEntityStructure): OwnershipMap {
   const source = structure.ownershipSource;
-  const nodes: OwnershipMapNode[] = (source?.graph.nodes ?? []).map(node => ({ id: node.nodeId, name: node.displayName, kind: node.nodeType, currency: node.currency, x: 0, y: 0 }));
-  const edges: OwnershipMapEdge[] = (source?.graph.edges ?? []).map(edge => ({ id: edge.edgeId, from: edge.sourceNodeId, to: edge.targetNodeId, relation: edge.relationshipType, percent: edge.ownershipPercent ?? null, fromDate: edge.effectiveFrom, toDate: edge.effectiveTo, source: edge.sourceDocumentId, legal: edge.relationshipType.toLowerCase() === "owns", holding: false }));
+  const nodes: OwnershipMapNode[] = (source?.graph.nodes ?? []).map(node => ({ id: node.nodeId, name: node.displayName, kind: node.nodeType, currency: node.currency ?? undefined, x: 0, y: 0 }));
+  const edges: OwnershipMapEdge[] = (source?.graph.edges ?? []).map(edge => ({ id: edge.edgeId, from: edge.sourceNodeId, to: edge.targetNodeId, relation: edge.relationshipType, percent: edge.ownershipPercent ?? null, fromDate: edge.effectiveFrom ?? undefined, toDate: edge.effectiveTo ?? undefined, source: edge.sourceDocumentId ?? undefined, legal: edge.relationshipType.toLowerCase() === "owns", holding: false }));
   const warnings: string[] = [];
   const known = new Set(nodes.map(node => node.id));
   // Keep missing graph endpoints visible as unresolved records; never invent ownership.
@@ -18,7 +19,7 @@ export function buildOwnershipMap(structure: FamilyOfficeEntityStructure): Owner
   }
   const assets = [...(source?.publicAssets ?? []).map(asset => ({ id: `asset:${asset.assetId}`, name: asset.displayName, owner: asset.entityId, currency: asset.currency, kind: asset.assetClass, asOf: asset.asOfDate, valuationDate: asset.valuationDate })), ...(source?.privateAssets ?? []).map(asset => ({ id: `private:${asset.privateAssetId}`, name: asset.displayName, owner: asset.entityId, currency: asset.currency, kind: asset.assetType, asOf: asset.asOfDate, valuationDate: asset.valuationDate }))];
   for (const asset of assets) {
-    nodes.push({ id: asset.id, name: asset.name, kind: `Asset · ${asset.kind}`, currency: asset.currency, recordAsOf: asset.asOf, valuationDate: asset.valuationDate, x: 0, y: 0 });
+    nodes.push({ id: asset.id, name: asset.name, kind: `Asset · ${asset.kind}`, currency: asset.currency, recordAsOf: asset.asOf, valuationDate: asset.valuationDate ?? undefined, x: 0, y: 0 });
     if (known.has(asset.owner)) edges.push({ id: `holding:${asset.id}`, from: asset.owner, to: asset.id, relation: "Held in asset register", percent: null, legal: false, holding: true });
     else warnings.push(`${asset.name} has no resolved holding entity in this structure.`);
   }
@@ -47,7 +48,7 @@ export function buildOwnershipMap(structure: FamilyOfficeEntityStructure): Owner
     const level = levels.get(node.id) ?? 0;
     const row = rows.get(level) ?? 0;
     node.x = 24 + level * 300;
-    node.y = 70 + row * 110;
+    node.y = 86 + row * 110;
     rows.set(level, row + 1);
   }
   return { nodes, edges, warnings, asOf, width: Math.max(800, ...nodes.map(node => node.x + 240)), height: Math.max(180, ...nodes.map(node => node.y + 100)) };
@@ -73,5 +74,5 @@ export function ownershipPaths(map: OwnershipMap, selectedId: string): { paths: 
 }
 
 export function ownershipEdgeLabel(edge: OwnershipMapEdge): string {
-  return `${edge.relation}${edge.legal ? ` · ${edge.percent == null ? "percentage unreported" : `${edge.percent}%`}` : ""}`;
+  return `${edge.relation}${edge.legal ? ` · ${edge.percent == null ? "percentage unreported" : formatPercent(edge.percent, { maximumFractionDigits: 20 })}` : ""}`;
 }

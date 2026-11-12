@@ -1,4 +1,5 @@
 import { useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import type { TradingOperatorReadiness } from "@/types";
 
 /** Observe account recovery without letting a failed read renew portfolio freshness. */
@@ -9,11 +10,8 @@ export function useBrokerageRecoveryObservation({ fundAccountId, readiness, setR
   refreshRef: MutableRefObject<() => Promise<void>>;
 }) {
   const portfolioExpiryRef = useRef<{ snapshotKey: string; deadline: number } | null>(null);
-  useEffect(() => {
-    if (!fundAccountId) return;
-    const poll = window.setInterval(() => { void refreshRef.current(); }, 10_000);
-    return () => window.clearInterval(poll);
-  }, [fundAccountId, refreshRef]);
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(() => refreshRef.current(), fundAccountId ? 10_000 : null);
 
   const recoveryAccountId = readiness?.brokerageRecovery?.fundAccountId;
   const portfolioExpiresAt = readiness?.brokerageRecovery?.portfolio?.expiresAt;

@@ -71,12 +71,17 @@ public sealed class FilePrivateCapitalLifecycleSource(string dataDirectory) : IP
         var commitments = eligible.GroupBy(row => row.Commitment.CommitmentId, StringComparer.Ordinal)
             .Select(group => group.OrderByDescending(row => row.Commitment.AsOfDate)
                 .ThenByDescending(row => row.Revision).ThenByDescending(row => row.RecordedAtUtc).First())
-            .Select(row => row.Commitment with { BalancesAvailable = true, SnapshotId = row.SnapshotId,
-                SourceRevision = row.Revision, RecordedAtUtc = row.RecordedAtUtc,
+            .Select(row => row.Commitment with
+            {
+                BalancesAvailable = true,
+                SnapshotId = row.SnapshotId,
+                SourceRevision = row.Revision,
+                RecordedAtUtc = row.RecordedAtUtc,
                 SourceContentSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
                     JsonSerializer.SerializeToUtf8Bytes(row, FamilyOfficeJsonContext.Default.PrivateCapitalSnapshotDto))),
                 ExactBalances = new(Exact(row.Commitment.CommitmentAmount), Exact(row.Commitment.CalledAmount),
-                    Exact(row.Commitment.UnfundedAmount), Exact(row.Commitment.DistributedAmount), Exact(row.Commitment.CurrentNav)) })
+                    Exact(row.Commitment.UnfundedAmount), Exact(row.Commitment.DistributedAmount), Exact(row.Commitment.CurrentNav))
+            })
             .OrderBy(row => row.VehicleName, StringComparer.Ordinal).ToArray();
         var identities = commitments.ToDictionary(row => row.CommitmentId, StringComparer.Ordinal);
         var scopedActivity = document.Activities.Where(row => row is not null && row.FamilyOfficeId == familyOfficeId).ToArray();

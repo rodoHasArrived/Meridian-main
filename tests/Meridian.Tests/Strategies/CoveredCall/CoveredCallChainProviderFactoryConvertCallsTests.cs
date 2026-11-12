@@ -106,7 +106,10 @@ public sealed class CoveredCallChainProviderFactoryConvertCallsTests
         result[0].VolumeAvailable.Should().BeFalse();
         OptionsOverwriteFilters.PassesRiskFilter(result[0], new OptionsOverwriteParams
         {
-            MinStrike = 1m, MaxDelta = 1, MinDte = 0, MaxDte = 365
+            MinStrike = 1m,
+            MaxDelta = 1,
+            MinDte = 0,
+            MaxDte = 365
         }).Should().BeFalse("an unavailable delta is not an eligible measured zero");
         var row = CoveredCallRunProjection.ToChainRow(result[0], false, "Delta unavailable");
         row.DeltaAvailable.Should().BeFalse();

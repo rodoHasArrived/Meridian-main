@@ -835,19 +835,37 @@ internal static partial class SecurityMasterConflictDetection
     /// the nested profileFields values) must NOT appear here: excluding them would leave a
     /// profile-declared currency/countryOfRisk field with no comparator at all, letting two
     /// providers disagree on a governed field without ever opening a conflict.
+    /// <para>
+    /// Term-key SPELLINGS come from the schema's declared aliases (maturity/maturityDate,
+    /// dayCount/dayCountConvention, and the factor-schedule entry's factor/currentFactor) rather
+    /// than a restated copy. The other keys are not alias pairs: each names its own typed
+    /// comparator or factor-evidence key, so they stay literal. Spellings declared only by other
+    /// classes (a CDS's "frequency", a note's "coupon") are deliberately not pulled in:
+    /// excluding them would leave a profile field with no comparator.
+    /// <c>ProfileFieldComparisonExclusions_DeriveTheRetainedKeySet</c> pins the resulting set.
+    /// </para>
     /// </summary>
-    private static readonly HashSet<string> ProfileFieldComparisonExclusions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "maturity", "maturityDate", "issueDate", "couponRate", "par", "principalFace",
-        "paymentFrequency", "dayCount", "dayCountConvention",
+    internal static readonly HashSet<string> ProfileFieldComparisonExclusions = new(
+    [
+        .. SecurityAssetTermsSchema.DeclaredSpellings("maturity"),
+        "issueDate", "couponRate", "par", "principalFace", "paymentFrequency",
+        .. SecurityAssetTermsSchema.DeclaredSpellings("dayCount"),
         // Only the resolver-consumed principalSchedule key stays excluded (its typed comparator
         // above owns it). The legacy sinkingFundSchedule/amortizationSchedule aliases are NOT
         // read by StructuredCashFlowTermsResolver, so a profile declaring one of them has no
         // other comparator — excluding them would let providers disagree on a governed schedule
         // with no conflict opened and no attribution update.
         "principalSchedule",
-        "currentFactor", "factor", "factorDate", "factorSchedule", "factorScheduleEntries",
-    };
+        .. FactorScheduleFactorSpellings(),
+        "factorDate", "factorSchedule", "factorScheduleEntries",
+    ], StringComparer.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> FactorScheduleFactorSpellings()
+    {
+        var factor = SecurityAssetTermsSchema.ElementFields("StructuredCredit", "factorScheduleEntries")
+            .Single(static field => string.Equals(field.Key, "factor", StringComparison.Ordinal));
+        return [factor.Key, .. factor.Aliases];
+    }
 
     private static JsonElement? GetProfileFields(JsonElement assetSpecificTerms)
         => SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)

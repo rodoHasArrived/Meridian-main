@@ -82,6 +82,18 @@ const loanColumns: DenseDataTableColumn<LoanBookRowViewModel>[] = [
     render: (row) => <span className="font-mono tabular-nums text-foreground">{row.interestAccruedLabel}</span>
   },
   {
+    id: "prepaid-interest",
+    label: "Prepaid interest",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.prepaidInterestLabel}</span>
+  },
+  {
+    id: "unapplied-cash",
+    label: "Unapplied cash",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.unappliedCashLabel}</span>
+  },
+  {
     id: "available",
     label: "Available to draw",
     align: "right",
@@ -180,13 +192,13 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
 
         {view.loaded ? (
           <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10.5rem),1fr))] gap-3">
               {view.metrics.map((metric) => (
                 <div
                   key={metric.id}
                   role="group"
                   aria-label={metric.ariaLabel}
-                  className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center"
+                  className="min-w-0 rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center"
                 >
                   <div className="text-xs text-muted-foreground">{metric.label}</div>
                   <div className={cn("mt-1 font-mono text-lg font-semibold tabular-nums", toneClassName[metric.tone])}>
@@ -198,7 +210,7 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
 
             {view.currencyNotice ? <p className="text-sm text-muted-foreground">{view.currencyNotice}</p> : null}
 
-            <LoanMaturityView loans={resolved.loans ?? []} />
+            <LoanMaturityView loans={resolved?.loans ?? []} />
 
             <DenseDataTable
               columns={loanColumns}
@@ -224,12 +236,24 @@ function LoanScenarioSection({ loans }: { loans: Array<{ loanId: string; facilit
   const [loanId, setLoanId] = useState("");
   const selected = loans.find((loan) => loan.loanId === loanId) ?? null;
   if (loans.length === 0) return null;
+  // A facility is chosen by name. The loan identifier is appended only when two facilities share
+  // a name (or one has none), where the name alone could not tell them apart.
+  const nameCounts = new Map<string, number>();
+  for (const loan of loans) {
+    const name = loan.facilityName.trim();
+    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
+  }
+  const optionLabel = (loan: { loanId: string; facilityName: string }) => {
+    const name = loan.facilityName.trim();
+    if (!name) return loan.loanId;
+    return (nameCounts.get(name) ?? 0) > 1 ? `${name} · ${loan.loanId}` : name;
+  };
   return (
     <div className="mt-4 grid gap-3" aria-label="Loan cash-flow scenarios">
       <label className="grid max-w-md gap-1 text-xs font-medium text-muted-foreground">Facility for cash-flow scenarios
         <Select value={loanId} aria-label="Scenario facility" onChange={(event) => setLoanId(event.target.value)}>
           <option value="">Select a facility</option>
-          {loans.map((loan) => <option key={loan.loanId} value={loan.loanId}>{`${loan.facilityName} · ${loan.loanId}`}</option>)}
+          {loans.map((loan) => <option key={loan.loanId} value={loan.loanId} title={loan.loanId}>{optionLabel(loan)}</option>)}
         </Select>
       </label>
       {selected ? <ContractualCashFlowWorkbench subjectKind="Loan" subjectId={selected.loanId} subjectLabel={selected.facilityName} /> : null}

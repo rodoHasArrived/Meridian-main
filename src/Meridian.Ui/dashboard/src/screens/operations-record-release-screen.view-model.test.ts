@@ -287,7 +287,7 @@ describe("operations record release view model", () => {
 
     expect(vm.statusLabel).toBe("Release blocked");
     expect(vm.sourcePanel).toMatchObject({
-      statusLabel: "Payload pending",
+      statusLabel: "Data pending",
       tone: "blocked",
       rows: [],
       emptyText: "No source-data evidence is loaded."
@@ -334,7 +334,7 @@ describe("operations record release view model", () => {
     expect(vm.statusLabel).toBe("Release blocked");
     expect(vm.statusDetail).toBe("1 release step blocked; keep the demo path visible but do not call it closed.");
     expect(vm.sourcePanel).toMatchObject({
-      statusLabel: "Payload pending",
+      statusLabel: "Data pending",
       tone: "blocked"
     });
     expect(vm.steps.map((step) => [step.id, step.tone])).toEqual([

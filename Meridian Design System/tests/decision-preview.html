@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>decision/ — source preview</title><link rel="stylesheet" href="../styles.css"><script src="../_preview_runtime.js"></script><script src="../_preview_jsx.js"></script><style>
+body{margin:0;padding:18px;background:var(--bg);font-family:var(--font-body)}h1{margin:0 0 3px;font-size:15px;font-weight:600;color:var(--text-primary)}p.lede{margin:0 0 14px;font-size:11px;line-height:17px;color:var(--text-muted);max-width:80ch;text-wrap:pretty}.g{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;max-width:1280px}.f{grid-column:1/-1}#err{white-space:pre-wrap;font:11px var(--font-data);color:var(--red-dim,#873832)}@media(max-width:980px){.g{grid-template-columns:1fr}}
+</style></head><body>
+<h1>components/decision/ — source preview</h1>
+<p class="lede">Renders <code>EvidenceRail</code>, <code>ConsequenceRail</code> and <code>DecisionSnapshot</code> by fetching and transpiling their <code>.jsx</code> sources, so a new component can be seen <b>before</b> the bundle is rebuilt — the gap in which <code>components/decision/decision.card.html</code> (which loads <code>_ds_bundle.js</code>) still shows nothing. Probes are left on <code>window</code>: <code>DS</code>, <code>SNAP</code>, <code>FROZEN</code>, <code>FINDINGS</code>. Not a card; not part of the gallery.</p>
+<div id="err"></div><div id="root"></div><script>
+// Local-source harness: the checked-in bundle predates components/decision/, so load the sources.
+(async () => {
+  const err = document.getElementById("err");
+  try {
+    const files = ["EvidenceRail", "ConsequenceRail", "DecisionSnapshot"];
+    const exports = {};
+    for (const name of files) {
+      let src = await (await fetch(`../components/decision/${name}.jsx`)).text();
+      src = src.replace(/^import\s+React\s+from\s+"react";?$/m, "").replace(/^import\s+\{[^}]*\}\s+from\s+"[^"]*";?$/gm, "");
+      const names = [...src.matchAll(/export\s+(?:function|const)\s+(\w+)/g)].map((m) => m[1]);
+      src = src.replace(/^export\s+/gm, "");
+      const out = Babel.transform(src, { presets: [["react", {}]], plugins: [] }).code;
+      const fn = new Function("React", `${out}\nreturn {${names.join(",")}};`);
+      Object.assign(exports, fn(window.React));
+    }
+    window.DS = exports;
+    const { EvidenceRail, ConsequenceRail, DecisionSnapshot, DecisionSnapshotPanel } = exports;
+    const OBJ = { type: "journal", id: "JE-20418", version: 3, label: "FX revaluation — July" };
+    const GUARDS = [{ id: "G-1", label: "Period open", status: "satisfied", detail: "July 2026" }, { id: "G-3", label: "Evidence complete", status: "warning", detail: "1 of 3 provisional" }, { id: "G-4", label: "Controller acknowledgement", status: "pending" }];
+    const CONS = { financial: [{ id: "i-1", label: "STAT net income", delta: 17256.38, currency: "USD", formatted: "+17,256.38", effect: "Increases" }], controls: [{ id: "C-204", label: "FX rate approval", effect: "Re-runs" }], approvals: [{ id: "AP-7", label: "July close attestation", effect: "Superseded" }], reversibility: "compensatable" };
+    const snap = DecisionSnapshot.capture({ object: OBJ, context: { entity: "General Account", book: "STAT", period: "2026-07" }, time: { asOf: "2026-07-31T23:59:00Z", evidenceAt: "2026-08-01T06:14:00Z" }, evidence: [{ id: "DOC-8841", version: "2", hash: "9f2c", condition: "confirmed" }], calculations: [{ id: "CALC-7", version: "3", inputHash: "aa71" }], materiality: { label: "Immaterial" }, guards: GUARDS, consequences: CONS, decision: { type: "approved", actorName: "A. Patel", authority: "Controller" } });
+    window.SNAP = snap;
+    window.FROZEN = Object.isFrozen(snap) && Object.isFrozen(snap.evidence[0]);
+    window.FINDINGS = DecisionSnapshot.verify(snap, { object: { ...OBJ, version: 4 }, evidence: [{ id: "DOC-8841", version: "2", hash: "9f2c", condition: "confirmed" }] });
+    const e = React.createElement;
+    ReactDOM.createRoot(document.getElementById("root")).render(e("div", { className: "g" }, [
+      e(EvidenceRail, { key: "e", object: OBJ, title: "FX revaluation — July", coverage: { attached: 2, required: 3, label: "sources" }, continuity: "retained", freshness: "15m", asOf: "2026-07-31", counts: { sources: 3, audit: 4 }, sections: { summary: e("p", null, "Two of three sources confirmed."), sources: e("p", null, "DOC-8841 · DOC-8847 · DOC-8902"), calculation: e("p", null, "(rate_close − rate_book) × position"), audit: e("p", null, "07:20Z prepared · 09:02Z reviewed") } }),
+      e(ConsequenceRail, { key: "c", object: OBJ, proposal: { id: "CS-1042", changes: [1] }, consequences: CONS, guards: GUARDS, onInspect: () => {} }),
+      e("div", { key: "s", className: "f" }, e(DecisionSnapshotPanel, { snapshot: snap, findings: window.FINDINGS })),
+    ]));
+  } catch (e2) { err.textContent = "HARNESS ERROR: " + (e2 && e2.stack || e2); }
+})();
+</script></body></html>

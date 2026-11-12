@@ -85,7 +85,8 @@ public sealed class BacktestStudioRunOrchestratorTests
             store, [engine], NullLogger<BacktestStudioRunOrchestrator>.Instance);
         var request = BuildValidStudioRequest("sensitivity", "Sensitivity") with
         {
-            SweepId = "experiment-1", SweepObjective = "TotalReturn",
+            SweepId = "experiment-1",
+            SweepObjective = "TotalReturn",
             DatasetReference = "dataset:retained-v1",
             Parameters = new Dictionary<string, string> { ["lookback"] = "10", ["threshold"] = "1" }
         };

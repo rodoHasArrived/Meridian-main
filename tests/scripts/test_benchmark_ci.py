@@ -52,7 +52,7 @@ class BenchmarkCiTests(unittest.TestCase):
                 testIdentityDigest='digest', testSeconds=12.5)))
             return subprocess.CompletedProcess(command, 0)
 
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             code, odd = self.run_pair(directory, 1, launch)
             self.assertEqual(0, code)
             code, even = self.run_pair(directory, 2, launch)
@@ -70,7 +70,7 @@ class BenchmarkCiTests(unittest.TestCase):
             calls.append(command)
             raise FileNotFoundError('npm is absent')
 
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             stale = Path(directory) / 'baseline'
             stale.mkdir()
             (stale / 'summary.json').write_text('{"testSeconds": 1}')
@@ -91,7 +91,7 @@ class BenchmarkCiTests(unittest.TestCase):
             (directory / 'summary.json').write_text('[]')
             return subprocess.CompletedProcess(command, 0)
 
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             code, result = self.run_pair(directory, 1, launch)
             self.assertEqual(1, code)
             for name in ('baseline', 'candidate'):

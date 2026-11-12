@@ -71,7 +71,12 @@ export function buildReportWriterPreviewRows(
     ...(grid.columnFields ?? [])
   ]);
   const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
-  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)))
+  const knownFormulaReferences = [
+    ...(grid.metrics ?? []).flatMap((metric) => [metric.name, metric.sourceField]),
+    ...(grid.formulas ?? []).map((formula) => formula.name),
+    ...dimensionFields
+  ];
+  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression, knownFormulaReferences)))
     .filter((field) => grid.kind !== "Contribution" || !isGeneratedContributionField(field));
   const numericFields = normalizeStringList([
     ...metricSourceFields,
@@ -137,29 +142,37 @@ export function buildReportAccessPolicy(settings: ReportWriterDraftSettings): Re
 }
 
 export function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
-  const field = normalizeDraftText(settings.filterField, "");
-  if (!field) {
-    return null;
-  }
+  const candidates = [
+    { field: settings.filterField, operator: settings.filterOperator, value: settings.filterValue },
+    ...(settings.extraFilters ?? [])
+  ];
+  const filters: ReportWriterFilterDefinition[] = [];
+  for (const candidate of candidates) {
+    const field = normalizeDraftText(candidate.field, "");
+    if (!field) {
+      continue;
+    }
 
-  const operator = normalizeReportWriterFilterOperator(settings.filterOperator);
-  const value = isBlankFilterOperator(operator)
-    ? null
-    : normalizeDraftText(settings.filterValue, "");
-  if (!isBlankFilterOperator(operator) && !value) {
-    return null;
-  }
+    const operator = normalizeReportWriterFilterOperator(candidate.operator);
+    const value = isBlankFilterOperator(operator)
+      ? null
+      : normalizeDraftText(candidate.value, "");
+    // An incomplete row (a comparison with no value yet) is left out rather than sent.
+    if (!isBlankFilterOperator(operator) && !value) {
+      continue;
+    }
 
-  return [
-    {
+    filters.push({
       field,
       operator,
       value,
       label: isBlankFilterOperator(operator)
         ? `${field} ${formatReportWriterFilterOperator(operator)}`
         : `${field} ${formatReportWriterFilterOperator(operator)} ${value}`
-    }
-  ];
+    });
+  }
+
+  return filters.length > 0 ? filters : null;
 }
 
 export function normalizeWriterMetrics(
@@ -252,7 +265,33 @@ export function resolveWriterFieldName(token: ReportingWriterToken): string {
   return normalizeDraftText(token.fieldName ?? token.sourceField ?? token.name ?? token.label, "");
 }
 
-export function extractReportWriterFormulaFields(expression: string | null | undefined): string[] {
+/**
+ * Mirrors the server rule for bare references containing hyphens: the whole identifier when it is
+ * a known name, otherwise the longest known hyphen-delimited prefix (the rest is a subtraction).
+ */
+function resolveReportWriterReferenceLength(identifier: string, knownReferences: readonly string[] | null | undefined): number {
+  if (!knownReferences || !identifier.includes("-")) {
+    return identifier.length;
+  }
+
+  const known = new Set(knownReferences.filter(Boolean).map((name) => name.toLowerCase()));
+  if (known.has(identifier.toLowerCase())) {
+    return identifier.length;
+  }
+
+  for (let split = identifier.lastIndexOf("-"); split > 0; split = identifier.lastIndexOf("-", split - 1)) {
+    if (known.has(identifier.slice(0, split).toLowerCase())) {
+      return split;
+    }
+  }
+
+  return identifier.length;
+}
+
+export function extractReportWriterFormulaFields(
+  expression: string | null | undefined,
+  knownReferences?: readonly string[] | null
+): string[] {
   if (!expression) {
     return [];
   }
@@ -280,8 +319,9 @@ export function extractReportWriterFormulaFields(expression: string | null | und
         continue;
       }
 
-      fields.push(identifier);
-      position = identifierStart + Math.max(identifier.length, 1);
+      const referenceLength = resolveReportWriterReferenceLength(identifier, knownReferences);
+      fields.push(identifier.slice(0, referenceLength));
+      position = identifierStart + Math.max(referenceLength, 1);
       continue;
     }
 
@@ -365,7 +405,7 @@ export function isReportWriterIdentifierPart(value: string | undefined): boolean
 }
 
 export function isReportWriterFormulaFunction(identifier: string): boolean {
-  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round"].includes(identifier.toLowerCase());
+  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round", "if"].includes(identifier.toLowerCase());
 }
 
 export function isGeneratedContributionField(field: string | null | undefined): boolean {
