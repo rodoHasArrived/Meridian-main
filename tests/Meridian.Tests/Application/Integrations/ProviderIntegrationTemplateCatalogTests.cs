@@ -39,7 +39,7 @@ public sealed class ProviderIntegrationTemplateCatalogTests
         var current = catalog.GetManifest("template-fixed-income-security-master-v2")!;
         legacy.ManifestVersion.Should().Be(1);
         legacy.FieldMappings.Single(m => m.TargetField == "security.currency").DefaultValue.Should().Be("USD");
-        current.ManifestVersion.Should().Be(2);
+        current.ManifestVersion.Should().Be(3);
         current.FieldMappings.Where(m => m.TargetField.EndsWith("currency", StringComparison.OrdinalIgnoreCase))
             .Should().OnlyContain(m => m.DefaultValue == null);
         current.FieldMappings.Select(m => m.TargetField).Should().Contain([
@@ -52,6 +52,13 @@ public sealed class ProviderIntegrationTemplateCatalogTests
         catalog.GetManifest(legacy.ManifestId)!.ManifestVersion.Should().Be(2);
         catalog.GetManifest(legacy.ManifestId, 2).Should().BeSameAs(catalog.GetManifest(legacy.ManifestId));
         catalog.GetManifest(legacy.ManifestId, 3).Should().BeNull();
+        var previousWorkflow = catalog.GetManifest(current.ManifestId, 2)!;
+        previousWorkflow.ManifestVersion.Should().Be(2);
+        previousWorkflow.FieldMappings.Should().NotContain(mapping => mapping.TargetField == "security.couponType");
+        current.FieldMappings.Where(mapping => !previousWorkflow.FieldMappings.Any(previous =>
+                previous.Capability == mapping.Capability && previous.TargetField == mapping.TargetField))
+            .Should().OnlyContain(mapping => !mapping.Required && mapping.DefaultValue == null && mapping.ConstantValue == null);
+        current.Capabilities.Should().BeEquivalentTo(previousWorkflow.Capabilities);
     }
 
     [Fact]

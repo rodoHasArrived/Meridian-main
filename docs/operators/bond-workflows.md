@@ -62,6 +62,11 @@ tenant/company scope. Use account routes for account-specific pricing or retaine
    canonical statement intake: the reviewed-row bridge requires a nonempty reviewed population and
    never infers a flat account from missing staged rows.
 
+The workflow-v2 catalog now offers manifest revision 3 with optional explicit family terms for
+reviewed source evidence. Exact revision-2 mappings and replay remain available. Staging these
+fields does not publish Security Master terms: canonical reference changes retain their own
+governed intake and review, and missing canonical terms remain visible coverage gaps.
+
 Holdings declare original/current face, principal factor, inflation ratio, quote basis, clean/dirty
 quotation, accrued interest and nominal/indexed invoice basis. Current face equals original face
 times principal factor; inflation is separate. Prices can be percent of current face, percent of

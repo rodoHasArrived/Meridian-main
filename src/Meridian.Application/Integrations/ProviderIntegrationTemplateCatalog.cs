@@ -59,6 +59,8 @@ public sealed class ProviderIntegrationTemplateCatalog
             throw new ArgumentOutOfRangeException(nameof(manifestVersion));
         if (manifestVersion == 1 && StringComparer.OrdinalIgnoreCase.Equals(manifestId, "template-fixed-income-security-master-v1"))
             return CreateLegacyFixedIncomeSecurityMasterTemplate();
+        if (manifestVersion == 2 && StringComparer.OrdinalIgnoreCase.Equals(manifestId, "template-fixed-income-security-master-v2"))
+            return CreateFixedIncomeWorkflowTemplateVersionTwo();
         var current = GetManifest(manifestId);
         return current?.ManifestVersion == manifestVersion ? current : null;
     }
@@ -356,7 +358,7 @@ public sealed class ProviderIntegrationTemplateCatalog
             null,
             "File template for fixed income security master records with identifier, economics, rating, sector, and NAIC fields.");
 
-    private static ProviderIntegrationManifestDto CreateFixedIncomeWorkflowTemplate()
+    private static ProviderIntegrationManifestDto CreateFixedIncomeWorkflowTemplateVersionTwo()
     {
         // This independent profile retains its original mappings; inheriting the newer reviewed
         // terms profile would require incompatible columns and duplicate coupon/call mappings.
@@ -425,6 +427,37 @@ public sealed class ProviderIntegrationTemplateCatalog
                 "security.dayCountConvention", "security.paymentCalendarId", "security.scheduleConventions"),
                 RequiredRule(ProviderCapabilityKindDto.Holdings, requiredHoldings)],
             ChangeReason = "Versioned explicit bond terms and reviewed full holding snapshots; no assumed currency, face, factors or quotation basis."
+        };
+    }
+
+    private static ProviderIntegrationManifestDto CreateFixedIncomeWorkflowTemplate()
+    {
+        var previous = CreateFixedIncomeWorkflowTemplateVersionTwo();
+        return previous with
+        {
+            ManifestVersion = 3,
+            FieldMappings = [.. previous.FieldMappings,
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.issue_date", "security.issueDate", "date"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.coupon_type", "security.couponType", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.bond_subclass", "security.subclass", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.issuer_name", "security.issuerName", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.payment_frequency", "security.paymentFrequency", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.principal_face", "security.par", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.floating_index", "security.floatingIndex", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.spread_bps", "security.spreadBps", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.cap_rate", "security.capRate", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.floor_rate", "security.floorRate", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.reset_schedule_json", "security.resetSchedule", "json"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.current_index_rate", "security.currentIndexRate", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.current_index_reset_date", "security.currentIndexResetDate", "date"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.current_index_rate_source", "security.currentIndexRateSource", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.inflation_index_ratio", "security.inflationIndexRatio", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.is_callable", "security.isCallable", "boolean"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.settlement_days", "security.settlementDays", "decimal"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.settlement_convention", "security.settlementConvention", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.settlement_calendar_id", "security.settlementCalendarId", "trim")],
+            ChangeReason = "Optional explicit family reference evidence for fixed, zero, simple/overnight floating, inflation-linked, amortizing and signed coupons. " +
+                "Retains revision-2 required fields and holdings mappings; absent terms remain visible gaps for separate governed Security Master intake."
         };
     }
 
