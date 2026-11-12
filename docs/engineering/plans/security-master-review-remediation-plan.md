@@ -658,7 +658,9 @@ PostgreSQL enabled. The filter covers cost-basis/relief precision, the source pr
 context receipt versions, historical lot reconstruction, recurring journal calculations/lifecycle,
 draft intake, rate-unit parity and catalog coverage. The database regression executes governed
 paydowns and a same-day disposal, restarts the store, and verifies final-day entitlement and scope.
-A separate read-only agent financial review found no unresolved findings after corrections.
+An additional 122 lot-adapter, schedule-equality, compatibility and ledger-gate tests passed
+with zero skips. A separate read-only agent financial review found no unresolved findings
+after corrections.
 Changed-file whitespace formatting passed. Maintained documentation generation converged; the
 repository inventory and test coverage report were refreshed. Hosted checks remain the merge
 authority. No migration or historical journal rewrite is introduced.
