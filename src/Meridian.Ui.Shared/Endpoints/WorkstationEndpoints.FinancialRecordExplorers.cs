@@ -172,7 +172,7 @@ public static partial class WorkstationEndpoints
                     new WorkstationTableViewSaveRequest(request.Label, request.SearchText, request.ColumnIds?.Count > 0 ? request.ColumnIds : ["__all__"], "compact", Filters: filters)
                     { Description = request.Description, ExplorerFilters = request.Filters ?? [] },
                     context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(ToExplorerPersonalView(saved) with { Description = request.Description, Filters = request.Filters ?? [] }, jsonOptions);
+                return Results.Json(ToExplorerPersonalView(saved), jsonOptions);
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
             {

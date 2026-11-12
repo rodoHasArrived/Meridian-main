@@ -1605,6 +1605,7 @@ export interface ManualJournalEntryLine {
   evidenceLink?: string | null;
   ledgerAccountSymbol?: string | null;
   ledgerAccountFinancialAccountId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {

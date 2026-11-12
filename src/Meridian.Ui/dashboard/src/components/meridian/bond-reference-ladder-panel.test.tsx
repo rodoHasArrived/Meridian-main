@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { BondReferenceLadderPanel } from "./bond-reference-ladder-panel";
+import { BondReferenceLadderPanel, bondLadderRowId } from "./bond-reference-ladder-panel";
 import type { BondReferenceRow } from "@/types/bond-reference.types";
 
 const row = (id: string, name: string, maturity: string): BondReferenceRow => ({
@@ -30,7 +30,9 @@ describe("BondReferenceLadderPanel", () => {
     expect(screen.getByRole("status")).toHaveTextContent("3 rows loaded; end of ladder.");
     expect(screen.getByRole("button", { name: "Load more" })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole("button", { name: "ACME 3 2032" }));
+    const selectedBond = screen.getByRole("button", { name: "ACME 3 2032" });
+    expect(selectedBond).toHaveAttribute("id", bondLadderRowId("c"));
+    fireEvent.click(selectedBond);
     expect(onSelect).toHaveBeenCalledWith("c");
   });
 

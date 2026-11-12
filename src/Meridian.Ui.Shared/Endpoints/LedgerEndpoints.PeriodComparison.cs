@@ -62,7 +62,7 @@ public static partial class LedgerEndpoints
     private static bool HasUnsupportedComparisonQuery(IQueryCollection query)
     {
         string[] dimensions = ["fundId", "entityId", "sleeveId", "strategyId", "investorId", "capitalAccountId",
-            "instrumentId", "positionId", "taxLotId", "costCenterId", "counterpartyId", "organizationId",
+            "instrumentId", "positionId", "intercompanyAgreementId", "intercompanyAgreementVersion", "taxLotId", "costCenterId", "counterpartyId", "organizationId",
             "portfolioId", "bookId", "accountId", "customerId", "vendorId", "projectId"];
         var known = new HashSet<string>(dimensions, StringComparer.OrdinalIgnoreCase)
         {

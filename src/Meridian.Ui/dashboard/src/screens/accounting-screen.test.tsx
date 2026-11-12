@@ -5,11 +5,13 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as bondReferenceApi from "@/lib/api/bond-reference.api";
 import * as approvalCollaboration from "@/lib/approval-collaboration";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
+import { bondLadderRowId } from "@/components/meridian/bond-reference-ladder-panel";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
 import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -1570,6 +1572,11 @@ function AccountingLocationProbe({ onChange }: { onChange: (search: string) => v
   }, [location.search, onChange]);
 
   return null;
+}
+
+function AccountingRouteProbe() {
+  const location = useLocation();
+  return <output aria-label="Accounting route">{location.pathname}{location.search}{location.hash}</output>;
 }
 
 async function renderAccountingScreenWithLocation(
@@ -5086,6 +5093,47 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Bond reference ladders" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Load ladder" })).toBeEnabled();
     expect(screen.queryByRole("tab", { name: /^Identity/ })).not.toBeInTheDocument();
+  });
+
+  it("returns to the exact ladder row through the route hash while retaining the query and instrument", async () => {
+    const user = userEvent.setup();
+    const bondId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+    const bond: SecurityMasterEntry = { securityId: bondId, displayName: "Ladder return bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockRejectedValueOnce(new Error("Explorer unavailable"));
+    vi.mocked(api.getSecurityDetail).mockResolvedValueOnce(bond);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({ securityId: bondId, displayName: bond.displayName, assetClass: "Bond", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] });
+    const issuerPage = vi.spyOn(bondReferenceApi, "getBondIssuerLadderPage").mockResolvedValueOnce({ items: [{ securityId: bondId, displayName: bond.displayName, currency: "USD", issuerName: "Synthetic issuer", seniority: null, primaryIdentifier: "123456AB1", lifecycle: null, version: 7 }], nextCursor: null });
+    try {
+      renderWithRouter(<><AccountingScreen data={data} /><AccountingRouteProbe /></>, { initialEntries: ["/accounting/security-master?fundAccountId=fund-alpha"] });
+      await user.type(screen.getByLabelText("Issuer name", { exact: true }), "Synthetic issuer");
+      await user.click(screen.getByRole("button", { name: "Load ladder" }));
+      const row = await screen.findByRole("button", { name: bond.displayName });
+      const rowTarget = bondLadderRowId(bondId);
+      const rowHash = `#${encodeURIComponent(rowTarget)}`;
+      expect(row).toHaveAttribute("id", rowTarget);
+      await user.click(row);
+      const returnButton = await screen.findByRole("button", { name: "Return to bond ladder" });
+      expect(screen.getByLabelText("Accounting route")).toHaveTextContent("#security-detail-page-title");
+
+      // Check emitted navigation independently of animation scheduling; browser acceptance
+      // exercises the real shell and local scroll/focus effects together.
+      const frame = vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+      try {
+        await user.click(returnButton);
+        await waitFor(() => expect(screen.getByLabelText("Accounting route")).toHaveTextContent(rowHash));
+        const route = new URL(screen.getByLabelText("Accounting route").textContent!, "http://localhost");
+        expect(route.hash).toBe(rowHash);
+        expect(route.searchParams.get("securityId")).toBe(bondId);
+        expect(route.searchParams.get("fundAccountId")).toBe("fund-alpha");
+        expect(route.searchParams.get("tab")).toBe("reference");
+        expect(document.getElementById(decodeURIComponent(route.hash.slice(1)))).toBe(row);
+        expect(screen.getByLabelText("Issuer name", { exact: true })).toHaveValue("Synthetic issuer");
+      } finally {
+        frame.mockRestore();
+      }
+    } finally {
+      issuerPage.mockRestore();
+    }
   });
 
   it("announces security search failures as alerts", async () => {

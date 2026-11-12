@@ -172,6 +172,7 @@ import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } 
 import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { Select } from "@/components/ui/select";
+import { IntercompanyAgreementsPanel } from "@/screens/accounting-screen.intercompany-agreements";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -1489,12 +1490,14 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const [ladderReturnAvailable, setLadderReturnAvailable] = useState(false);
   const ladderScroll = useRef<Array<{ element: Element; top: number; left: number }>>([]);
   const returnToLadder = () => {
-    navigate({ pathname, search: buildSecurityMasterDrillInSearch(search, "reference"), hash },
+    const selectedRow = ladderScroll.current[0]?.element;
+    // The shell and local restoration must target the same row, regardless of effect timing.
+    const returnHash = selectedRow instanceof HTMLElement && selectedRow.id ? `#${encodeURIComponent(selectedRow.id)}` : "#bond-ladders";
+    navigate({ pathname, search: buildSecurityMasterDrillInSearch(search, "reference"), hash: returnHash },
       { replace: true, preventScrollReset: true });
     requestAnimationFrame(() => {
       for (const position of ladderScroll.current)
         position.element.scrollTo({ top: position.top, left: position.left, behavior: "instant" });
-      const selectedRow = ladderScroll.current[0]?.element;
       if (selectedRow instanceof HTMLElement && selectedRow.isConnected)
         selectedRow.focus({ preventScroll: true });
     });
@@ -2262,6 +2265,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showConfiguration ? (
         <AccountingConfigurationPanel view={configuration} />
+      ) : null}
+
+      {sectionVisibility.showConfiguration ? (
+        <IntercompanyAgreementsPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
