@@ -1383,7 +1383,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
     }
 

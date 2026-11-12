@@ -2,11 +2,17 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 367. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 368. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerBookQuery["LedgerBookQuery"] {
+        +AccountingBasisKindDto? AccountingBasis
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +FundStructureNodeKindDto? FundStructureNodeKind
+    }
     class Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto["LedgerBookRequiredScopeDto"] {
         +AccountingBasisKindDto AccountingBasis
         +string? DisplayName
@@ -123,8 +129,8 @@ classDiagram
         +IReadOnlyDictionary~string__string~ ExternalGlDimensions
         +string? FundId
         +Guid? InstrumentId
-        +string? InvestorId
-        +string? OrganizationId
+        +Guid? IntercompanyAgreementId
+        +int? IntercompanyAgreementVersion
     }
     class Meridian_Contracts_Ledger_LedgerDimensionTags["LedgerDimensionTags"] {
     }
@@ -750,11 +756,6 @@ classDiagram
         +decimal UncalledAfter
         +decimal UncalledBefore
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto["PrivateCapitalCallPreviewDto"] {
-        +IReadOnlyList~string~ Blockers
-        +PrivateCapitalCallDto? Call
-        +bool IsReady
-    }
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest --> Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto
@@ -819,5 +820,4 @@ classDiagram
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowDto
     Meridian_Contracts_Ledger_PrivateCapitalCallDto --> Meridian_Contracts_Ledger_PrivateCapitalCallLineDto
-    Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto --> Meridian_Contracts_Ledger_PrivateCapitalCallDto
 ```

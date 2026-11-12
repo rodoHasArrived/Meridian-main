@@ -6,10 +6,17 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Wpf
+
+Fund Operations includes an Agreements tab over the shared `IntercompanyAgreementWorkspace` and
+API client. It supports entity/date filters, draft terms, evidence, independent review, revision
+comparison and advisory source-line drill-through. Server capabilities control mutations and stale
+responses preserve local edits. The desktop surface does not maintain its own agreement store or
+posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
+native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.

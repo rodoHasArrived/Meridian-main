@@ -15,6 +15,12 @@ Subscription application trims symbol names and keeps the first declaration when
 case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
 hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
 
+`IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
+receipts and effective-date selection over the durable agreement store. Retrospective amendments
+preserve posted versions; semantic bases follow effective chronology rather than approval order.
+`PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
+lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
 uses the shared versioned term keys for call schedules and schedule conventions.

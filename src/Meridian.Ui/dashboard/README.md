@@ -6,10 +6,27 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui/dashboard
+
+Accounting Configure includes a tenant-scoped Intercompany Agreements registry using shared
+FundStructure contracts. Operators can save proposals, submit for independent review, inspect exact
+approved versions/evidence and retain local input across conflicts. Journal source drill-through
+keeps transaction and functional amounts separate and labels agreement coverage as advisory.
+Selected-line agreement authoring requires the server's explicit compatible-writer capability;
+historical agreement/version references remain visible when that capability is unavailable.
+Focused coverage: `accounting-screen.intercompany-agreements.test.tsx`, `intercompany-agreement-editor.test.tsx`,
+`intercompany-journal-reference.test.tsx`, `intercompany-agreement-journals.test.tsx` and
+`intercompany-agreements.api.test.ts`.
+
+Run the focused checks from the repository root:
+
+```bash
+cd src/Meridian.Ui/dashboard
+npx vitest run src/screens/accounting-screen.intercompany-agreements.test.tsx src/components/accounting/intercompany-agreement-editor.test.tsx src/components/accounting/intercompany-journal-reference.test.tsx src/components/accounting/intercompany-agreement-journals.test.tsx src/lib/api/intercompany-agreements.api.test.ts
+```
 
 Floating analytics distinguishes `Select observed fixing` for already-reset coupons from `Select
 forward curve` for future resets. The observed-fixing panel verifies and retains exact-date source

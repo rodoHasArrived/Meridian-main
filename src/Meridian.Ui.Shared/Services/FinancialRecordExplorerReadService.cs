@@ -1496,6 +1496,8 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
+        AddDimensionField(fields, "Agreement", dimensions.IntercompanyAgreementId?.ToString("D"));
+        AddDimensionField(fields, "Agreement version", dimensions.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         AddDimensionField(fields, "Organization", dimensions.OrganizationId);
         AddDimensionField(fields, "Customer", dimensions.CustomerId);
         AddDimensionField(fields, "Vendor", dimensions.VendorId);
