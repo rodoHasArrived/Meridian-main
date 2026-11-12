@@ -1189,9 +1189,12 @@ Meridian-main
 │       │   │   ├── test_check_codex_memory.py
 │       │   │   ├── test_check_docfx_navigation.py
 │       │   │   ├── test_generate_api_contract_coverage_dashboard.py
+│       │   │   ├── test_generate_configuration_reference.py
 │       │   │   ├── test_generate_structure_docs.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
+│       │   │   ├── test_render_endpoint_reference.py
+│       │   │   ├── test_render_public_type_reference.py
 │       │   │   ├── test_repair_links.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
@@ -1219,6 +1222,7 @@ Meridian-main
 │       │   ├── generate-ai-navigation.py
 │       │   ├── generate-api-contract-coverage-dashboard.py
 │       │   ├── generate-changelog.py
+│       │   ├── generate-configuration-reference.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
 │       │   ├── generate-evidence-continuity-dashboard.py
@@ -1237,7 +1241,9 @@ Meridian-main
 │       │   ├── prompt-route-linter.py
 │       │   ├── README.md
 │       │   ├── render-adapter-readiness.py
+│       │   ├── render-endpoint-reference.py
 │       │   ├── render-make-help.py
+│       │   ├── render-public-type-reference.py
 │       │   ├── render-roadmap-diagrams.py
 │       │   ├── render-roadmap-docs.py
 │       │   ├── render-source-diagrams.py
@@ -2049,6 +2055,271 @@ Meridian-main
 │   │   ├── repo-maintenance-prompts.md
 │   │   └── roadmap-source-docs-implementation-prompt.md
 │   ├── reference
+│   │   ├── source-api
+│   │   │   ├── meridian
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.application
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   └── page-012.md
+│   │   │   ├── meridian.audit
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.backtesting
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.backtesting.sdk
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.contracts
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   ├── page-016.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   ├── page-018.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   ├── page-020.md
+│   │   │   │   ├── page-021.md
+│   │   │   │   ├── page-022.md
+│   │   │   │   ├── page-023.md
+│   │   │   │   ├── page-024.md
+│   │   │   │   ├── page-025.md
+│   │   │   │   ├── page-026.md
+│   │   │   │   ├── page-027.md
+│   │   │   │   ├── page-028.md
+│   │   │   │   ├── page-029.md
+│   │   │   │   ├── page-030.md
+│   │   │   │   ├── page-031.md
+│   │   │   │   ├── page-032.md
+│   │   │   │   ├── page-033.md
+│   │   │   │   ├── page-034.md
+│   │   │   │   ├── page-035.md
+│   │   │   │   ├── page-036.md
+│   │   │   │   ├── page-037.md
+│   │   │   │   ├── page-038.md
+│   │   │   │   ├── page-039.md
+│   │   │   │   ├── page-040.md
+│   │   │   │   ├── page-041.md
+│   │   │   │   ├── page-042.md
+│   │   │   │   ├── page-043.md
+│   │   │   │   ├── page-044.md
+│   │   │   │   ├── page-045.md
+│   │   │   │   ├── page-046.md
+│   │   │   │   ├── page-047.md
+│   │   │   │   ├── page-048.md
+│   │   │   │   ├── page-049.md
+│   │   │   │   ├── page-050.md
+│   │   │   │   ├── page-051.md
+│   │   │   │   ├── page-052.md
+│   │   │   │   ├── page-053.md
+│   │   │   │   ├── page-054.md
+│   │   │   │   ├── page-055.md
+│   │   │   │   ├── page-056.md
+│   │   │   │   ├── page-057.md
+│   │   │   │   ├── page-058.md
+│   │   │   │   ├── page-059.md
+│   │   │   │   ├── page-060.md
+│   │   │   │   ├── page-061.md
+│   │   │   │   ├── page-062.md
+│   │   │   │   ├── page-063.md
+│   │   │   │   ├── page-064.md
+│   │   │   │   ├── page-065.md
+│   │   │   │   ├── page-066.md
+│   │   │   │   ├── page-067.md
+│   │   │   │   ├── page-068.md
+│   │   │   │   └── page-069.md
+│   │   │   ├── meridian.core
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   └── page-005.md
+│   │   │   ├── meridian.dataintegration
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   └── page-006.md
+│   │   │   ├── meridian.documents
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.domain
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.entities
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.execution
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.execution.sdk
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   └── page-003.md
+│   │   │   ├── meridian.financialoperations
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   └── page-009.md
+│   │   │   ├── meridian.fsharp
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.ibapi.smokestub
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.identity
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.infrastructure
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   └── page-008.md
+│   │   │   ├── meridian.instruments
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.ledger
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   └── page-006.md
+│   │   │   ├── meridian.mcp
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.platform
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   └── page-003.md
+│   │   │   ├── meridian.portfoliorecords
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.processisolation
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.providersdk
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.quantscript
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.referencedata
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.reporting
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.risk
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.storage
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   └── page-014.md
+│   │   │   ├── meridian.strategies
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.ui.services
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   └── page-016.md
+│   │   │   ├── meridian.ui.shared
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   ├── page-016.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   └── page-018.md
+│   │   │   ├── meridian.workflow
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.wpf
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   ├── page-016.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   ├── page-018.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   ├── page-020.md
+│   │   │   │   └── page-021.md
+│   │   │   └── README.md
 │   │   ├── accounting-configuration.md
 │   │   ├── accounting-report-packs.md
 │   │   ├── api-conflict-contract.md
@@ -14163,6 +14434,7 @@ Meridian-main
 │   │   ├── test_doc_health_dashboard_merge.py
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_doctor_profiles.py
+│   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
 │   │   ├── test_endpoint_benchmark.py
@@ -14356,6 +14628,9 @@ Meridian-main
 │   │   ├── render_source_docs.py
 │   │   ├── requirements-render.txt
 │   │   └── validate_source_readmes.py
+│   ├── source_reference
+│   │   ├── __init__.py
+│   │   └── public_types.py
 │   ├── __init__.py
 │   └── README.md
 ├── .editorconfig
