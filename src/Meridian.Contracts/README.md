@@ -11,6 +11,13 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Intercompany agreement contracts retain bilateral party roles, descriptive terms, proposal state,
+immutable approved versions, evidence hashes and shared capabilities. Authenticated call context
+supplies tenant and actor separately from command bodies. Optional ledger agreement ID/version
+properties travel together; their conditional signature suffix preserves legacy hashes when absent.
+`FundStructureContractsJsonContext` registers the shared registry wire types. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
 structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
 certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
