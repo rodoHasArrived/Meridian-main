@@ -68,8 +68,7 @@ export type {
 } from "./optimistic-ledger";
 
 const CSS = `
-/* The package's --cond-* condition tokens are honoured when the token bridge defines them; until
-   then the same roles resolve to the dashboard's semantic colours, which follow the theme. */
+/* Condition colours use the dashboard tokens already supplied by its theme bridge. */
 .mds-opt{position:relative;display:block;min-width:0;max-width:100%;font-family:var(--font-body,system-ui,sans-serif);}
 .mds-opt__line{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0;}
 .mds-opt--right .mds-opt__line{justify-content:flex-end;}
@@ -81,9 +80,9 @@ const CSS = `
    state class so it outranks EditableCell's own disabled and hover rules (a provisional cell is
    always disabled), whichever stylesheet was injected last. */
 .mds-opt.mds-opt--pending .mds-editable__display,
-.mds-opt.mds-opt--pending .mds-editable__display:hover{background:var(--cond-provisional-bg,color-mix(in srgb,var(--purple,#2F648A) 10%,transparent));
-  border:1px dashed var(--cond-provisional-bd,var(--purple,#2F648A));}
-.mds-opt.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,var(--green,#2E7655));}
+.mds-opt.mds-opt--pending .mds-editable__display:hover{background:color-mix(in srgb,var(--purple) 10%,transparent);
+  border:1px dashed var(--purple);}
+.mds-opt.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--green);}
 .mds-opt.mds-opt--rejected .mds-editable__display{border:1px solid var(--red,#B54B42);}
 .mds-opt.mds-opt--unlanded .mds-editable__display{border:1px dotted var(--severity-action-fg,#724D11);}
 .mds-opt__revert.mds-btn{min-height:24px;padding:0 6px;}
@@ -91,7 +90,7 @@ const CSS = `
 .mds-opt__detail--failed{color:var(--severity-blocked-fg,#883832);font-weight:600;}
 .mds-opt__note{position:absolute;z-index:6;top:100%;left:0;margin-top:4px;min-width:240px;max-width:360px;box-sizing:border-box;
   background:var(--ws-surface-raised,var(--surface-overlay-base,#FFF));border:1px solid var(--border-strong,#AAA49A);
-  border-radius:var(--radius-overlay,6px);box-shadow:var(--shadow-float,0 2px 8px rgba(0,0,0,.16));padding:8px 10px;
+  border-radius:var(--radius-overlay,6px);box-shadow:var(--shadow-float);padding:8px 10px;
   font-size:12px;line-height:1.45;color:var(--text-primary,#20252B);text-align:left;}
 .mds-opt__note--right{left:auto;right:0;}
 .mds-opt__note--inline{position:static;z-index:auto;margin-top:6px;box-shadow:none;}
@@ -113,8 +112,8 @@ const CSS = `
 .mds-optbar__n{font-family:var(--font-data,monospace);font-weight:600;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;}
 .mds-optbar__cond{display:inline-flex;flex-wrap:wrap;gap:4px 10px;font-family:var(--font-data,monospace);}
 .mds-optbar__cond span{white-space:nowrap;}
-.mds-optbar__cond .p{color:var(--cond-provisional-fg,var(--purple-dim,#2F648A));}
-.mds-optbar__cond .c{color:var(--cond-confirmed-fg,var(--severity-ready-fg,#225840));}
+.mds-optbar__cond .p{color:var(--purple-dim);}
+.mds-optbar__cond .c{color:var(--severity-ready-fg);}
 .mds-optbar__cond .r{color:var(--severity-blocked-fg,#883832);}
 .mds-optbar__cond .u{color:var(--severity-action-fg,#724D11);}
 .mds-optbar__spacer{flex:1;}

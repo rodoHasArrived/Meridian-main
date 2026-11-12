@@ -3,10 +3,10 @@ import { buildIncomeWaterfall, formatIncomeAmount } from "@/lib/income-movement-
 import type { IncomeComparison } from "@/types/reporting-income-comparison";
 
 const colors = {
-  total: "var(--chart-primary, #A85436)",
-  increase: "var(--chart-equity, #3A7A56)",
-  decrease: "var(--chart-drawdown, #A8443C)",
-  zero: "var(--chart-axis, #5E666F)"
+  total: "var(--chart-primary)",
+  increase: "var(--chart-equity)",
+  decrease: "var(--chart-drawdown)",
+  zero: "var(--chart-axis)"
 };
 
 export function IncomeMovementWaterfall({ comparison, onSupport }: { comparison: IncomeComparison; onSupport: (id: string) => void }) {
@@ -21,7 +21,7 @@ export function IncomeMovementWaterfall({ comparison, onSupport }: { comparison:
       <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Income waterfall chart and exact amounts">
         <div className="min-w-[720px]">
           <svg viewBox="0 0 900 238" role="img" aria-label="Income bridge from baseline through journal, population, methodology, and unexplained changes to current. Exact amounts and supporting records follow." className="block w-full">
-            <line x1={35} x2={890} y1={y(model.zeroPct)} y2={y(model.zeroPct)} stroke="var(--chart-axis, #5E666F)" strokeWidth={1} />
+            <line x1={35} x2={890} y1={y(model.zeroPct)} y2={y(model.zeroPct)} stroke="var(--chart-axis)" strokeWidth={1} />
             <text x={8} y={y(model.zeroPct) + 4} fill="currentColor" fontSize={12}>0</text>
             {model.stages.map((stage, index) => {
               const x = 26 + index * 150;
@@ -29,8 +29,8 @@ export function IncomeMovementWaterfall({ comparison, onSupport }: { comparison:
               const height = Math.abs(y(stage.startPct) - y(stage.endPct));
               return <g key={stage.label}>
                 <title>{stage.label}: {formatIncomeAmount(stage.amount, currency, stage.direction !== "total")}</title>
-                {index < model.stages.length - 1 ? <line x1={x + 98} x2={x + 150} y1={y(stage.endPct)} y2={y(stage.endPct)} stroke="var(--chart-axis, #5E666F)" strokeDasharray="3 3" /> : null}
-                {height > 0 ? <rect x={x} y={top} width={98} height={height} fill={stage.label === "Unexplained difference" ? "var(--chart-axis, #5E666F)" : colors[stage.direction]} /> : <line x1={x} x2={x + 98} y1={top} y2={top} stroke={colors.zero} strokeWidth={2} />}
+                {index < model.stages.length - 1 ? <line x1={x + 98} x2={x + 150} y1={y(stage.endPct)} y2={y(stage.endPct)} stroke="var(--chart-axis)" strokeDasharray="3 3" /> : null}
+                {height > 0 ? <rect x={x} y={top} width={98} height={height} fill={stage.label === "Unexplained difference" ? "var(--chart-axis)" : colors[stage.direction]} /> : <line x1={x} x2={x + 98} y1={top} y2={top} stroke={colors.zero} strokeWidth={2} />}
                 <text x={x + 49} y={228} textAnchor="middle" fill="currentColor" fontSize={12}>{stage.direction === "total" ? "Total" : stage.direction === "increase" ? "+ Increase" : stage.direction === "decrease" ? "− Decrease" : "No net change"}</text>
               </g>;
             })}

@@ -24,7 +24,7 @@ economic module preserves the declaration on replay. An invalid retained declara
 normalization instead of reviving a field default. New unit versions keep calculation-only
 companions and swap leg conventions read-only through the schema's authoring flag.
 
-`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
+`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (including 0 for JPY, 3 for KWD/BHD, 4 for CLF/UYW, and 2 for ordinary currencies).
 
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.
