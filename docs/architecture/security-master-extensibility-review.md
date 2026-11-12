@@ -974,9 +974,10 @@ a structural module the class recovers, and every field a flattening copies verb
 module added after the identity gate. Two things are left out on purpose. `declaredSchedule`
 keeps the existing rule that an empty declared call or put list is filled from the retained
 document, so it stays in step with the older `call` summary module. And fields the economic
-document carried before stage 3 keep the old fill, because historical and hand-shaped documents
-hold values there that the flat decode does not reproduce; clearing one of those on a row with
-a retained document is still refilled, as before.
+document carried before stage 3 are not on the list, because historical and hand-shaped documents
+hold values there that the flat decode does not reproduce; at this entry's merge, clearing one
+of those on a row with a retained document was still refilled. The second follow-up below
+closes that.
 `EveryFlatAuthoritativeField_IsRebuiltFromTheFlatRow` proves, for every asset class, that each
 listed field is reproduced from the flat row alone.
 
@@ -1053,6 +1054,47 @@ namespaces — 6,983 passed, 1 skipped (the 6,916 before, plus this suite's 67);
 accepted, a persisted member wrongly refused, a derived rule removed) the suite failed on each.
 No golden or corpus byte changed, and no existing test needed a change. The full local
 `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+#### Follow-up — the fold stops refilling any value the row held — 2026-11-11
+
+The fold fix above covered the stage-3 homes only. A value in a field the economic document
+carried before stage 3 — a bond's call date, issue date or issuer name, a loan's reference
+index, a treasury bill's auction date, a repo's haircut, a pool id — was still written back
+after an amendment cleared it, on any row that kept a retained document. Eight such cases were
+added to `SecurityRetainedFoldClearedValueTests` and all eight failed before the change.
+
+No per-class list can settle these: a historical or hand-shaped document can hold a value in
+one of those fields that the flat decode never reproduced, and that value must keep folding
+back. So the question is asked of the document itself. On the write path
+(`SecurityEconomicDefinitionAdapter.FieldsTheFlatRowCarried`) the retained document is flattened
+for the row's class, exactly as the replay that attached it did, and rebuilt with no carry. A
+field that rebuild populates was on the row, so a revision that has it empty cleared it and the
+fold leaves it empty. A field the rebuild leaves empty was never on the row and is filled as
+before. The static stage-3 list is kept and unioned with this, and a document that cannot be
+flattened or rebuilt names no field, which leaves the fold exactly as it was.
+
+With no amendment the rebuild and the row are the same thing, so nothing a replay produces
+changes: the replay corpus and every golden are untouched. One side effect is a correction, not
+a regression: a derived value no longer folds back after the terms that derived it change (a
+bond amended from fixed to floating no longer gets its old scalar coupon rate written back into
+the coupon module).
+
+Tests: the eight cleared-value cases; a bond document carrying both an issuer name (on the row)
+and an LEI (not on the row), where clearing the name loses the name and keeps the LEI; the
+fixed-to-floating amendment above; and the existing sinking-fund and ESG cases, unchanged.
+
+**The floating-coupon bond and the identity gate.** The stage-1 notes recorded that a
+floating-coupon bond image did not shed its retained document at the identity gate. That is no
+longer true and had not been re-checked since the stage-3 contraction. A theory over every
+asset class now pins it: each class's fully populated image, the floating bond included, sheds
+its carry on replay.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,024 passed, 1 skipped (the 6,983 before, plus 41 new cases); the
+fixed-to-floating case was added after that sweep and passes with its suite and the replay
+corpus (165 passed). Adjacent suites — 5,142 passed, 134 skipped. No golden or corpus byte
+changed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
 
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 

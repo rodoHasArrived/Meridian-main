@@ -781,6 +781,10 @@ tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/` until the
 
 ## Chart accessibility contract
 
+Strategy equity-path comparison is composed by `strategy-screen.equity-paths.tsx` and
+`strategy-screen.equity-paths.view-model.ts`; the run-library view model retains its existing
+exports. The chart set remains separate from Compare, Diff and Promote selection.
+
 The SVG charts in `src/components/charts/` (`CandleChart`, `EquityCurve`, `DrawdownChart`,
 `Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx` and
 accept three optional props:

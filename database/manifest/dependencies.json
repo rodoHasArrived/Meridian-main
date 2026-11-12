@@ -57373,6 +57373,24 @@
       "target": "migration-module:money-market"
     },
     {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:operator_triage",
+      "target": "database:operator_triage.item_metadata"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:operator_triage",
+      "target": "database:operator_triage.operator_triage_schema_migrations"
+    },
+    {
+      "kind": "hosts-migration-module",
+      "label": "",
+      "source": "schema:operator_triage",
+      "target": "migration-module:operator-triage"
+    },
+    {
       "kind": "module-contract-map",
       "label": "explicit module mapping",
       "source": "schema:reporting",
@@ -58331,7 +58349,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "342d6bb8d472f39f014aadab9945cac7b4bda2253962556a19c2972aa27e23ee",
+  "fingerprint": "3a4f1f55c6faec87637fdb3434929fddb054ffe96f0960b1789770428ed406ea",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -80847,6 +80865,18 @@
       "schema": "money_market"
     },
     {
+      "id": "database:operator_triage.item_metadata",
+      "kind": "database-table",
+      "label": "operator_triage.item_metadata",
+      "schema": "operator_triage"
+    },
+    {
+      "id": "database:operator_triage.operator_triage_schema_migrations",
+      "kind": "database-table",
+      "label": "operator_triage.operator_triage_schema_migrations",
+      "schema": "operator_triage"
+    },
+    {
       "id": "database:reporting.ck_reporting_access_grant_artifacts_valid on reporting.reporting_access_grants",
       "kind": "database-object",
       "label": "reporting.ck_reporting_access_grant_artifacts_valid on reporting.reporting_access_grants"
@@ -85404,6 +85434,11 @@
       "label": "money-market"
     },
     {
+      "id": "migration-module:operator-triage",
+      "kind": "migration-module",
+      "label": "operator-triage"
+    },
+    {
       "id": "migration-module:reporting",
       "kind": "migration-module",
       "label": "reporting"
@@ -85449,6 +85484,11 @@
       "label": "money_market"
     },
     {
+      "id": "schema:operator_triage",
+      "kind": "database-schema",
+      "label": "operator_triage"
+    },
+    {
       "id": "schema:public",
       "kind": "database-schema",
       "label": "public"
@@ -85467,9 +85507,9 @@
   "summary": {
     "contract_references": 3703,
     "contract_set_memberships": 4660,
-    "edges": 9692,
+    "edges": 9695,
     "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4707
+    "nodes": 4711
   }
 }

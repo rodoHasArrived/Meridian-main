@@ -24,6 +24,15 @@ public sealed class SecurityRetainedFoldClearedValueTests
     [InlineData("DirectLoan", "covenants", "[]")]
     [InlineData("Bond", "principalSchedule", "[]")]
     [InlineData("StructuredCredit", "structuredCreditKind", "null")]
+    // Fields the economic document carried before stage 3: the row held them too.
+    [InlineData("Bond", "callDate", "null")]
+    [InlineData("Bond", "issuerName", "null")]
+    [InlineData("Bond", "issueDate", "null")]
+    [InlineData("OtherSecurity", "maturity", "null")]
+    [InlineData("DirectLoan", "referenceIndex", "null")]
+    [InlineData("StructuredCredit", "poolId", "null")]
+    [InlineData("TreasuryBill", "auctionDate", "null")]
+    [InlineData("Repo", "haircut", "null")]
     public void AnAmendmentThatClearsARecoverableValue_IsNotUndoneByTheRetainedDocument(
         string assetClass, string flatKey, string cleared)
     {
@@ -193,6 +202,106 @@ public sealed class SecurityRetainedFoldClearedValueTests
             Raw(rebuilt, module, field).Should().Be(Raw(economic.EconomicTerms, module, field),
                 $"{assetClass} must rebuild {module}.{field} from the flat row");
         }
+    }
+
+    [Fact]
+    public void AValueTheRowNeverHeld_StillFoldsBack_WhenAnotherFieldOfItsModuleIsCleared()
+    {
+        // A bond row has a key for the issuer's name and none for its LEI. A hand-shaped document
+        // carrying both keeps its carry; an amendment that clears the name must lose the name and
+        // keep the LEI, because only the name was ever on the row.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "Bond", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Bond"]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", original));
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document["issuer"]!.AsObject()["leiCode"] = "5493001KJTIIGC8Y1R12";
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = ToElement(document), LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _)
+            .Should().BeTrue("precondition: the row has no key for the LEI, so the document keeps its carry");
+
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(replayed).EconomicTerms
+            .GetProperty("issuer").GetProperty("leiCode").GetString().Should().Be("5493001KJTIIGC8Y1R12",
+                "with no amendment the LEI folds back as before");
+
+        var amendedTerms = JsonNode.Parse(original.GetRawText())!.AsObject();
+        amendedTerms["issuerName"] = null;
+        var amended = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            replayed,
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", ToElement(amendedTerms)));
+
+        var issuer = SecurityEconomicDefinitionAdapter.ToEconomicRecord(amended).EconomicTerms.GetProperty("issuer");
+
+        issuer.GetProperty("leiCode").GetString().Should().Be("5493001KJTIIGC8Y1R12",
+            "the row never held the LEI, so the retained document still supplies it");
+        issuer.GetProperty("issuerName").ValueKind.Should().Be(JsonValueKind.Null,
+            "the row held the name, so clearing it is not undone");
+    }
+
+    [Fact]
+    public void ADerivedValue_DoesNotFoldBack_AfterTheTermsThatDerivedItChange()
+    {
+        // The coupon module's scalar rate is derived from a fixed coupon structure. Amending the
+        // bond to a floating coupon leaves no scalar rate, and the retained document's old rate
+        // must not be written back beside the new structure.
+        object Bond(string couponType, decimal? couponRate, string? floatingIndex) => new
+        {
+            maturity = "2030-01-01",
+            issueDate = "2024-01-01",
+            couponType,
+            couponRate,
+            floatingIndex,
+            dayCount = "30/360",
+            isCallable = false,
+            issuerName = "ACME Corp",
+            subclass = "Corporate",
+            par = 1000m,
+            paymentFrequency = "SemiAnnual"
+        };
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Bond", Bond("Fixed", 4.25m, null));
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", original));
+        economic.EconomicTerms.GetProperty("coupon").GetProperty("couponRate").GetDecimal().Should().Be(4.25m);
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document["esg"] = JsonNode.Parse(Esg);
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = ToElement(document), LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _).Should().BeTrue();
+
+        var amended = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            replayed,
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                "Bond", SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Bond", Bond("Floating", null, "SOFR"))));
+
+        var coupon = SecurityEconomicDefinitionAdapter.ToEconomicRecord(amended).EconomicTerms.GetProperty("coupon");
+
+        coupon.GetProperty("couponType").GetString().Should().Be("Floating");
+        coupon.GetProperty("couponRate").ValueKind.Should().Be(JsonValueKind.Null,
+            "the fixed rate belonged to the structure the amendment replaced");
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
+    public void ADocumentTheCurrentSerializerWrote_ShedsItsRetainedCarryOnReplay(string assetClass)
+    {
+        // The identity gate drops the retained document when the flat row reproduces it. Every
+        // class's fully populated image does today, the floating-coupon bond included (the Bond
+        // twin is one), which the stage-1 notes recorded as still keeping its carry.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, original));
+        if (assetClass == "Bond")
+        {
+            economic.EconomicTerms.GetProperty("coupon").GetProperty("couponType").GetString()
+                .Should().Be("Floating", "precondition: the bond twin is the floating-coupon case");
+        }
+
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _)
+            .Should().BeFalse($"the {assetClass} flat row reproduces its own image, so the carry adds nothing");
     }
 
     public static TheoryData<string> DeclaredAssetClasses() => SecurityAssetTermsSchemaRoundTripTests.DeclaredAssetClasses();

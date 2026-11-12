@@ -9217,6 +9217,8 @@ Meridian-main
 │   │   │   │   │   ├── strategy-run-ledger-screen.tsx
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
 │   │   │   │   │   ├── strategy-screen.equity-paths.test.tsx
+│   │   │   │   │   ├── strategy-screen.equity-paths.tsx
+│   │   │   │   │   ├── strategy-screen.equity-paths.view-model.ts
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
 │   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
