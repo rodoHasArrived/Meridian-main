@@ -665,6 +665,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <BrokerageRecoveryPanel
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
+        brokerageEnvironment={data?.brokerage.environment ?? null}
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}

@@ -12,7 +12,7 @@ import {
 import { resolveFigureEvidence, useWorkspaceFigureContext, type FigureSourceKey } from "@/lib/workspace-figure-context";
 import type { MetricFreshness, MetricSnapshot } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { metricBasisLabel, presentMetricChange } from "@/lib/metric-context";
+import { metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
 import { useId } from "react";
 import { MetricPassport } from "@/components/meridian/metric-passport";
 
@@ -86,8 +86,10 @@ export function StatStrip({
         ? { ...metric, provenance: { ...metric.provenance, source: `${metric.provenance.source} (${dataLabel})` } }
         : metric)
     : stamped;
-  const firstBasis = metricBasisLabel(metrics[0]!);
-  const sharedBasis = metrics.every(metric => metricBasisLabel(metric) === firstBasis) ? firstBasis : null;
+  // The basis the figures share is stated once, beside a "Basis" term; an undeclared one reads
+  // "Not declared by source" there. Mixed bases fall back to a standalone line per figure.
+  const firstBasis = metricBasisValue(metrics[0]!);
+  const sharedBasis = metrics.every(metric => metricBasisValue(metric) === firstBasis) ? firstBasis : null;
   // Figures from different sources: state each source once with the figures it supplies.
   const provenanceLine = describeMetricProvenance(sharedMetricProvenance(metrics)) ?? describeGroupedMetricProvenance(metrics);
   const stripFreshness = worstMetricFreshness(metrics);

@@ -216,6 +216,68 @@ describe("StatStrip", () => {
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Data workspace$/);
   });
 
+  it("states an undeclared basis once for the strip, in non-failure words", () => {
+    render(
+      <StatStrip
+        label="Undeclared basis metrics"
+        metrics={[
+          metric({ id: "cash", label: "Cash", value: "$1" }),
+          metric({ id: "orders", label: "Orders", value: "2" })
+        ]}
+      />
+    );
+
+    const strip = screen.getByLabelText("Undeclared basis metrics");
+    const basisTerms = within(strip).getAllByText("Basis", { selector: "dt" });
+    expect(basisTerms).toHaveLength(1);
+    expect(basisTerms[0]!.nextElementSibling).toHaveTextContent(/^Not declared by source$/);
+    expect(within(strip).getAllByText("Not declared by source")).toHaveLength(1);
+    expect(strip).not.toHaveTextContent(/unavailable/i);
+    expect(within(strip).queryByText(/^Basis not declared by source/)).not.toBeInTheDocument();
+  });
+
+  it("states a declared basis the figures share once and ties each figure to it", () => {
+    render(
+      <StatStrip
+        label="Declared basis metrics"
+        metrics={[
+          metric({ id: "nav", label: "NAV", value: "$1", basis: "Posted GAAP book", asOf: "2026-11-10" }),
+          metric({ id: "cash", label: "Cash", value: "$2", basis: "Posted GAAP book", asOf: "2026-11-10" })
+        ]}
+      />
+    );
+
+    const strip = screen.getByLabelText("Declared basis metrics");
+    expect(within(strip).getAllByText("Basis", { selector: "dt" })).toHaveLength(1);
+    const shared = within(strip).getByText("Posted GAAP book · as of 2026-11-10");
+    expect(shared.tagName).toBe("DD");
+    expect(within(strip).getAllByText("Posted GAAP book · as of 2026-11-10")).toHaveLength(1);
+    const sharedId = shared.getAttribute("id");
+    expect(sharedId).toBeTruthy();
+    for (const value of ["$1", "$2"]) {
+      expect(within(strip).getByText(value).closest("dd")).toHaveAttribute("aria-describedby", sharedId);
+    }
+  });
+
+  it("states each figure's own basis when the bases differ, naming an undeclared one", () => {
+    render(
+      <StatStrip
+        label="Mixed basis metrics"
+        metrics={[
+          metric({ id: "nav", label: "NAV", value: "$1", basis: "Posted GAAP book" }),
+          metric({ id: "orders", label: "Orders", value: "2" })
+        ]}
+      />
+    );
+
+    const strip = screen.getByLabelText("Mixed basis metrics");
+    expect(within(strip).queryByText("Basis", { selector: "dt" })).not.toBeInTheDocument();
+    expect(within(strip).getByText("Posted GAAP book")).toBeInTheDocument();
+    expect(within(strip).getByText("Basis not declared by source")).toBeInTheDocument();
+    expect(within(strip).getByText("2").closest("dd")).not.toHaveAttribute("aria-describedby");
+    expect(strip).not.toHaveTextContent(/unavailable/i);
+  });
+
   it("names the source of a workspace-fed strip outside the shell without claiming freshness", () => {
     render(<StatStrip label="Data headline metrics" source="Data workspace" metrics={[metric({ id: "runs", label: "Runs", value: "24" })]} />);
 

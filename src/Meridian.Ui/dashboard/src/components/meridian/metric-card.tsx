@@ -2,7 +2,7 @@ import { memo } from "react";
 import { MetricCard as ConcreteMetricCard, type MetricCardTone } from "@/components/data/metric-card";
 import { buildMetricCardViewModel } from "@/components/meridian/metric-card.view-model";
 import type { MetricSnapshot } from "@/types";
-import { metricBasisLabel } from "@/lib/metric-context";
+import { hasDeclaredMetricBasis, metricBasisLabel } from "@/lib/metric-context";
 import { MetricPassport } from "@/components/meridian/metric-passport";
 
 /**
@@ -27,7 +27,8 @@ function MetricSnapshotCardComponent(metric: MetricSnapshot) {
       deltaAriaLabel={vm.deltaAriaLabel ?? undefined}
       freshnessLabel={vm.freshnessLabel ?? undefined}
       provenance={vm.provenanceText ?? undefined}
-      basis={metricBasisLabel(metric)}
+      // An undeclared basis is not repeated on every card; the figure passport states it.
+      basis={hasDeclaredMetricBasis(metric) ? metricBasisLabel(metric) : undefined}
     />
   );
 }

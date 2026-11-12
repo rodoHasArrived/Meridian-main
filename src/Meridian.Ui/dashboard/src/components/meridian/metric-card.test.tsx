@@ -20,6 +20,23 @@ describe("MetricSnapshotCard", () => {
   });
 });
 
+describe("MetricSnapshotCard basis", () => {
+  it("does not repeat an undeclared basis on the card", () => {
+    render(<MetricSnapshotCard id="cash" label="Cash" value="$100" delta="" tone="default" asOf="2026-11-10" />);
+
+    const card = screen.getByRole("group", { name: /Cash metric/ });
+    expect(card).not.toHaveTextContent(/basis/i);
+    expect(card).not.toHaveTextContent(/unavailable/i);
+    expect(card).not.toHaveTextContent("Not declared by source");
+  });
+
+  it("shows a declared basis with its as-of time", () => {
+    render(<MetricSnapshotCard id="nav" label="NAV" value="$100" delta="" tone="default" basis="Posted GAAP book" asOf="2026-11-10" />);
+
+    expect(screen.getByRole("group", { name: /NAV metric/ })).toHaveTextContent("Posted GAAP book · as of 2026-11-10");
+  });
+});
+
 describe("MetricSnapshotCard trust rules", () => {
   it("mutes a stale figure and prints its source under the value", () => {
     render(
