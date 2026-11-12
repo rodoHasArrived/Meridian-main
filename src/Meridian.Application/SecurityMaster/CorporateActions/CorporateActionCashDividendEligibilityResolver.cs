@@ -127,7 +127,7 @@ public sealed class CorporateActionCashDividendEligibilityResolver(
         ValidateCaseFacts(facts, processingCase);
         var security = await securityStore.GetProjectionAsync(processingCase.SecurityId, ct).ConfigureAwait(false);
         Require(security is not null && security.Version == spine.Scope.ExpectedSecurityVersion
-            && security.Currency == "USD" && security.AssetClass == "Equity"
+            && security.Currency == "USD" && security.AssetClass == SecurityAssetClassNames.Equity
             && security.Status == SecurityStatusDto.Active,
             "The cash-dividend class requires the exact current active USD equity Security Master version.");
         var canonicalSymbol = SecurityMasterLedgerSymbol.ResolveUniqueActiveTicker(security!.Identifiers ?? [],

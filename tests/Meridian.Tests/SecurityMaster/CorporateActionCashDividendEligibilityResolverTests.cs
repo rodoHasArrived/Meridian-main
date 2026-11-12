@@ -47,6 +47,22 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         await ExcludedAsync(fixture);
     }
 
+    [Theory]
+    [InlineData("equity")]
+    [InlineData(" Equity ")]
+    [InlineData("Stock")]
+    [InlineData("Bond")]
+    [InlineData("MoneyMarketFund")]
+    [InlineData("Unknown")]
+    [InlineData("")]
+    public async Task CashDividendEligibility_RequiresExactCanonicalEquityClass(string assetClass)
+    {
+        var fixture = await EntitlementFixture.CreateAsync();
+        fixture.CurrentAssetClass = assetClass;
+
+        await ExcludedAsync(fixture);
+    }
+
     [Fact]
     public async Task CashDividendEligibility_WholeEventLimitIsInclusiveAndFractionalCentsCannotRoundDown()
     {
@@ -359,6 +375,7 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         public IReadOnlyList<CorporateActionEvidenceDto> CaseEvidence { get; set; } = [];
         public required InstrumentPositionProjectionSnapshot PositionSnapshot { get; set; }
         public required AccountingConfigurationWorkspaceDto Workspace { get; set; }
+        public string CurrentAssetClass { get; set; } = "Equity";
         public IReadOnlyList<SecurityIdentifierDto> CurrentIdentifiers { get; set; } =
             [new(SecurityIdentifierKind.Ticker, "FIX", true, DateTimeOffset.UnixEpoch)];
         public bool CompleteInventory { get; set; } = true;
@@ -375,7 +392,7 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
             var securities = Substitute.For<ISecurityMasterStore>();
             var empty = JsonSerializer.SerializeToElement(new { });
             securities.GetProjectionAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new SecurityProjectionRecord(SecurityId,
-                "Equity", SecurityStatusDto.Active, "Fixture equity", "USD", "Ticker", "FIX", empty, empty, empty,
+                CurrentAssetClass, SecurityStatusDto.Active, "Fixture equity", "USD", "Ticker", "FIX", empty, empty, empty,
                 3, new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), null, CurrentIdentifiers, []));
             var source = Substitute.For<ICorporateActionOperationsStore>();
             source.GetSourceProposalAsync(Case.ProposalId, Arg.Any<CancellationToken>()).Returns(new CorporateActionSourceProposalDto(

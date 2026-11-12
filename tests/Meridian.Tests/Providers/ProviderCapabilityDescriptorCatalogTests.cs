@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Core.Config;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
@@ -113,12 +114,18 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         module.Register(services, new DataSourceRegistry());
 
-        services.Should().HaveCount(2);
-        services.Select(service => service.ServiceType).Should().BeEquivalentTo(descriptor.Implementations(),
-            "both historical and search capability implementations must have module-owned factories");
+        services.Should().HaveCount(3);
+        services.Select(service => service.ServiceType).Should().BeEquivalentTo(
+            descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
+            "historical and search factories plus the historical adapter's observed-rate alias must be module-owned");
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
             "the module must own concrete factory construction and container lifetime");
+        var observedRates = services.Single(service => service.ServiceType == typeof(ISecurityRateObservationProvider));
+        using var historical = new FredHistoricalDataProvider(apiKey: "synthetic-fred-registration-test");
+        using var provider = new ServiceCollection().AddSingleton(historical).BuildServiceProvider();
+        observedRates.ImplementationFactory!(provider).Should().BeSameAs(historical,
+            "rate observations must reuse the module's existing historical singleton, never construct a parallel adapter");
     }
 
     [Fact]
