@@ -13132,6 +13132,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto"
     },
     {
@@ -13199,24 +13205,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult"
     },
     {
       "kind": "contract-set-member",
@@ -27946,6 +27934,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto"
     },
     {
@@ -28013,24 +28007,6 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult"
     },
     {
       "kind": "contract-set-member",
@@ -31031,6 +31007,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
     },
     {
       "kind": "contract-reference",
@@ -40690,6 +40672,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationModelKind"
     },
     {
@@ -41615,24 +41603,6 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTerms"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
-      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
     },
     {
       "kind": "contract-reference",
@@ -58769,7 +58739,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "fc0da722b81dbb382627b3089c2cf936cea6f7fd7296c2de7ede9096c3d4772b",
+  "fingerprint": "7f5721b0205f9688dba20d9b8e0bfa16119800f3d2e4d48c1d293f719c96ffdf",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71951,6 +71921,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityValidationWorkflowDto"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto",
       "kind": "contract-type",
@@ -72021,24 +71997,6 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "classification": "result",
-      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult"
     },
     {
       "classification": "record",
@@ -86093,11 +86051,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3729,
-    "contract_set_memberships": 4704,
-    "edges": 9765,
+    "contract_references": 3728,
+    "contract_set_memberships": 4700,
+    "edges": 9760,
     "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4739
+    "nodes": 4737
   }
 }
