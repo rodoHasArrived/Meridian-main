@@ -75,7 +75,9 @@ public sealed partial class CorporateActionAssetAccountingEventMapper
                 || lot.Acquisition.Evidence.Any(evidence => !request.RetainedEvidence.Contains(evidence))
                 || selection is null || selection.LotId != lot.LotId || selection.ExpectedVersion != lot.Version
                 || selection.Quantity * scale != lot.OpenQuantity || selection.ExpectedOpenQuantity != selection.Quantity
-                || selection.ExpectedUnitCost * (lot.OriginalQuantity / scale) != lot.Acquisition.TransactionCostBasis
+                || (selection.ExpectedUnitCost * (lot.OriginalQuantity / scale) != lot.Acquisition.TransactionCostBasis
+                    && !OpenLotValidation.IsDerivedSuccessorUnitCost(lot.Acquisition, lot.OriginalQuantity,
+                        selection.ExpectedUnitCost, lot.Acquisition.TransactionCostBasis))
                 || selection.ExpectedCostBasis != lot.OpenFunctionalCostBasis
                 || mutation is null || mutation.Kind != CorporateActionLotMutationKindDto.Dispose
                 || mutation.ExpectedSourceLotVersion != lot.Version || mutation.Quantity != lot.OpenQuantity
@@ -88,6 +90,6 @@ public sealed partial class CorporateActionAssetAccountingEventMapper
         if (instruction.DisposalSalePrice is not { } price
             || price * instruction.DisposalSelections.Sum(selection => selection.Quantity) != projection.EventAmount)
             Block("Redemption disposal execution price and selected durable units must equal the projected principal cash.");
-        return instruction;
+        return AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(instruction);
     }
 }

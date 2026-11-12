@@ -393,7 +393,7 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException("Security Master is unavailable, so the bond's currency cannot be confirmed; fixed-income accruals are blocked.");
         var security = await securities.GetByIdAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security Master holds no security for {ticker}; its currency cannot be confirmed.");
-        if (!SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || descriptor.AssetClass != "Bond")
+        if (!SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || !descriptor.SupportsRecurringFixedIncomeAccrual)
             throw new InvalidOperationException(
                 $"{ticker} is classified as '{security.AssetClass}'; recurring fixed-income accrual currently supports Bond only.");
         if (!string.Equals(security.Currency?.Trim(), context.Scope.Currency.Trim(), StringComparison.OrdinalIgnoreCase))

@@ -30,8 +30,8 @@ cannot attach verified rate evidence. Observed fixings become forecasts only thr
 assumption. Treasury constant-maturity yields require an externally reviewed construction and
 explicit discount factors; the endpoint does not bootstrap them implicitly.
 
-Recurring fixed-income accrual explicitly admits Bond only and passes the catalog quote convention
-to the shared bridge. Daily holding windows split on changes to the complete lot, including unit,
+Recurring fixed-income accrual reads explicit admission from the shared catalog (Bond only) and
+passes its quote convention to the shared bridge. Daily holding windows split on changes to the complete lot, including unit,
 multiplier and carrying inputs. Non-bond classes and factored lots remain blocked until their
 accounting behavior is supported; the bridge itself uses explicit lot exposure instead of par 100.
 

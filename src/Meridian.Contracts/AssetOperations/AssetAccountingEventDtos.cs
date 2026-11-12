@@ -767,7 +767,9 @@ public static class AssetAccountingEventSpineValidator
                 issues.Add("Retained disposal authority requires the canonical Disposal event kind.");
             issues.AddRange(AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.Disposal,
                 retainedDisposal, spine.EventAmount, spine.EffectiveDate, spine.RetainedEvidence));
-            if (hasDraftedStage && !PayloadEquals(retainedDisposal, spine.DraftedLotMutation))
+            if (hasDraftedStage && !PayloadEquals(
+                AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(retainedDisposal),
+                AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(spine.DraftedLotMutation)))
                 issues.Add("The retained disposal instruction cannot be dropped or replaced between Projected and Drafted.");
         }
         if (spine.FactorPaydown is { } factorPaydown)
@@ -1002,6 +1004,20 @@ public static class AssetAccountingEventSpineValidator
 public static class AssetLotMutationInstructionValidator
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    /// <summary>
+    /// Orders a disposal's versioned selections by their retained ordinal before freezing or
+    /// comparing the instruction. Every selection field and all other instruction fields remain exact.
+    /// Null historical instructions and already ordered instructions keep their original shape.
+    /// </summary>
+    public static AssetLotMutationInstructionDto? CanonicalizeDisposalSelections(AssetLotMutationInstructionDto? instruction)
+    {
+        if (instruction is not { Intent: AssetLotMutationIntentDto.Dispose })
+            return instruction;
+        var ordered = instruction.DisposalSelections.OrderBy(static selection => selection.SelectionOrdinal).ToArray();
+        return instruction.DisposalSelections.SequenceEqual(ordered)
+            ? instruction : instruction with { DisposalSelections = ordered };
+    }
 
     public static IReadOnlyList<string> Validate(
         AssetAccountingEventKindDto eventKind,

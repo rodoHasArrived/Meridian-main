@@ -420,7 +420,9 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             "A retained capital-return projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         RequireAssertion(PayloadEquals(source.FactorPaydown, request.LotMutation?.FactorPaydown),
             "A retained factor-paydown projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
-        RequireAssertion(source.Disposal is null || PayloadEquals(source.Disposal, request.LotMutation),
+        RequireAssertion(source.Disposal is null || PayloadEquals(
+            AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(source.Disposal),
+            AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(request.LotMutation)),
             "A retained redemption disposal requires the exact reviewed lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 

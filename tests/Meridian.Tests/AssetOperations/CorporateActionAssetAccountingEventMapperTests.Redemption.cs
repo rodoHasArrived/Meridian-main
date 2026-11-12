@@ -94,15 +94,71 @@ public sealed partial class CorporateActionAssetAccountingEventMapperTests
         canonical.ProjectionInputHash.Should().NotBe(legacy.ProjectionInputHash);
     }
 
-    internal CorporateActionAssetAccountingEventMapRequest CreateRedemptionMap(CorporateActionAccountingTypeDto action, int count)
+    [Fact]
+    public void Redemption_AcceptsRoundedSuccessorQuoteWhileRetainingExactBasis()
+    {
+        var request = CreateRedemptionMap(CorporateActionAccountingTypeDto.CallRedemption, 1,
+            quantity: 3m, basis: 100m, proceeds: 102m, quantityBasis: LotQuantityBasis.Units, successor: true);
+        var result = _sut.Map(request);
+
+        result.Blockers.Should().BeEmpty();
+        result.IsMapped.Should().BeTrue();
+        var selection = result.Projection!.LotMutation!.DisposalSelections.Single();
+        selection.ExpectedUnitCost.Should().Be(33.333333333333m);
+        selection.Quantity.Should().Be(3m);
+        selection.ExpectedCostBasis.Should().Be(100m);
+        request.Redemption!.Lots.Single().OpenFunctionalCostBasis.Should().Be(100m);
+        request.Redemption.Lots.Single().Acquisition.CorporateActionLineage.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData("wrong-successor-quote")]
+    [InlineData("wrong-exact-basis")]
+    [InlineData("regular-acquisition")]
+    [InlineData("invalid-successor-lineage")]
+    public void Redemption_RefusesWrongQuotesAndChangedExactBasis(string scenario)
+    {
+        var request = CreateRedemptionMap(CorporateActionAccountingTypeDto.CallRedemption, 1,
+            quantity: 3m, basis: 100m, proceeds: 102m, quantityBasis: LotQuantityBasis.Units,
+            successor: scenario != "regular-acquisition");
+        var plan = request.Redemption!;
+        var selection = plan.Disposal.DisposalSelections.Single();
+        if (scenario == "wrong-successor-quote")
+            selection = selection with { ExpectedUnitCost = 33.333333333334m };
+        if (scenario == "wrong-exact-basis")
+            selection = selection with { ExpectedCostBasis = 99.999999999999m };
+        if (scenario == "invalid-successor-lineage")
+        {
+            var lot = plan.Lots.Single();
+            plan = plan with
+            {
+                Lots = [lot with { Acquisition = lot.Acquisition with
+            { CorporateActionLineage = lot.Acquisition.CorporateActionLineage! with { PredecessorTaxLotRecordId = Guid.Empty } } }]
+            };
+        }
+        request = request with
+        {
+            Redemption = plan with
+            { Disposal = plan.Disposal with { DisposalSelections = [selection] } }
+        };
+
+        var result = _sut.Map(request);
+
+        result.IsMapped.Should().BeFalse();
+        result.Blockers.Should().Contain(blocker => blocker.Code == "corporate-action.canonical-redemption-required");
+    }
+
+    internal CorporateActionAssetAccountingEventMapRequest CreateRedemptionMap(CorporateActionAccountingTypeDto action, int count,
+        decimal quantity = 100m, decimal basis = 98m, decimal proceeds = 101m,
+        LotQuantityBasis quantityBasis = LotQuantityBasis.Face, bool successor = false)
     {
         var ids = Enumerable.Range(1, count).Select(index => Guid.Parse($"99999999-9999-9999-9999-{index:000000000000}")).ToArray();
         var mutations = ids.Select(id => new CorporateActionLotMutationDto(CorporateActionLotMutationKindDto.Dispose,
-            SecurityId, Quantity: 100m, CarryingAmount: 98m, SourceLotId: id, ExpectedSourceLotVersion: 1,
-            SourceBefore: new CorporateActionLotStateSnapshotDto(100m, 98m, 98m), BasisAmount: 98m)).ToArray();
+            SecurityId, Quantity: quantity, CarryingAmount: basis, SourceLotId: id, ExpectedSourceLotVersion: 1,
+            SourceBefore: new CorporateActionLotStateSnapshotDto(quantity, basis, basis), BasisAmount: basis)).ToArray();
         var projection = _projector.Project(CreateProjectionRequest(action,
-            new CorporateActionEconomicsDto(AffectedQuantity: 100m * count, CarryingAmount: 98m * count,
-                ParAmount: 100m * count, GrossCashConsideration: 101m * count)) with
+            new CorporateActionEconomicsDto(AffectedQuantity: quantity * count, CarryingAmount: basis * count,
+                ParAmount: quantity * count, GrossCashConsideration: proceeds * count)) with
         { CanonicalLotRedemptionJournal = true, AuthoritativeLotMutations = mutations });
         projection.Status.Should().Be(CorporateActionProjectionStatusDto.Projected);
         var evidence = CreateRetainedEvidence(projection, projection.EconomicEvent!).ToList();
@@ -116,20 +172,31 @@ public sealed partial class CorporateActionAssetAccountingEventMapperTests
             };
             evidence.Add(acquisitionEvidence);
             return new OpenLotDto(id, SecurityId, PositionId, LedgerBookId, $"lot-{index}", new DateOnly(2026, 8, 25),
-                100m, 100m, 98m, 98m, 1, new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, 98m, 98m,
-                    new DateOnly(2026, 8, 25), new FaceValueAcquisitionTermsDto(100m, 1m, BondAmortizationMethod.StraightLine, null),
-                    [acquisitionEvidence]));
+                quantity, quantity, basis, basis, 1, new OpenLotAcquisitionDto(quantityBasis, "USD", "USD", 1m, basis, basis,
+                    new DateOnly(2026, 8, 25), quantityBasis == LotQuantityBasis.Face
+                        ? new FaceValueAcquisitionTermsDto(100m, 1m, BondAmortizationMethod.StraightLine, null) : null,
+                    [acquisitionEvidence])
+                {
+                    CorporateActionLineage = successor ? new OpenLotCorporateActionLineageDto(
+                        Guid.Parse("aaaaaaaa-9999-9999-9999-999999999999"), CorporateActionAccountingTypeDto.StockSplit,
+                        new DateOnly(2026, 8, 25), Guid.Parse("bbbbbbbb-9999-9999-9999-999999999999"), 1,
+                        100m, CorporateActionSuccessorRoleDto.Successor, []) : null
+                });
         }).ToArray();
+        var scale = quantityBasis == LotQuantityBasis.Face ? 100m : 1m;
+        var durableQuantity = quantity / scale;
+        var quote = decimal.Round(basis / durableQuantity, 12, MidpointRounding.ToEven);
         var disposal = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.Dispose,
             DisposalSelections: lots.Select((lot, index) => new AssetDisposalLotSelectionDto(lot.TaxLotRecordId, lot.LotId,
-                lot.Version, 1m, 1m, index, lot.Acquisition.Evidence[0].EvidenceId, 98m, 98m)).ToArray(),
-            ReliefMethod: "Fifo", PolicyRevision: "reviewed-v1", AssetAccountId: "Securities", DisposalSalePrice: 101m);
+                lot.Version, durableQuantity, durableQuantity, index, lot.Acquisition.Evidence[0].EvidenceId, quote, basis)).ToArray(),
+            ReliefMethod: "Fifo", PolicyRevision: "reviewed-v1", AssetAccountId: "Securities", DisposalSalePrice: proceeds / durableQuantity);
         var scope = new AssetAccountingEventScopeDto(SecurityId, 2, PositionId, 7, LedgerBookId, PeriodId,
             AccountingBasisKindDto.Gaap, "fund-alpha", "tenant-alpha", "company-alpha");
         var lineage = projection.ProjectionLineage!;
         var effect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey, lineage.ModelVersion,
-            lineage.ProjectionAsOfDate, 101m * count, 101m * count, "USD",
-            [new("Cash", 101m * count, 0m, "USD"), new("Securities", 0m, 98m * count, "USD"), new("RealizedGain", 0m, 3m * count, "USD")]);
+            lineage.ProjectionAsOfDate, proceeds * count, proceeds * count, "USD",
+            [new("Cash", proceeds * count, 0m, "USD"), new("Securities", 0m, basis * count, "USD"),
+                new("RealizedGain", 0m, (proceeds - basis) * count, "USD")]);
         var mappings = projection.PostingSet!.Components.Select((component, index) =>
             new CorporateActionPostingComponentLineMappingDto(index, component.Kind,
                 [new CorporateActionPostingComponentLineAllocationDto(index, component.Amount)], component.Kind.ToString())).ToArray();
