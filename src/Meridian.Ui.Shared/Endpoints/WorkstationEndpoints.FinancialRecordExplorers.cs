@@ -40,6 +40,8 @@ public static partial class WorkstationEndpoints
             }
 
             var query = BuildFinancialRecordExplorerQuery(context);
+            var requestedViewId = query?.ViewId;
+            var serviceQuery = query;
             var personalViews = Array.Empty<FinancialRecordExplorerSavedViewDto>();
             if (context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>() is { } viewStore &&
                 TryResolveCurrentUser(context, out var actor))
@@ -48,10 +50,14 @@ public static partial class WorkstationEndpoints
                 {
                     personalViews = (await viewStore.LoadPersonalViewsAsync(tenantId, actor, explorerId, context.RequestAborted).ConfigureAwait(false))
                         .Where(view => !view.IsReadOnly).Select(ToExplorerPersonalView).ToArray();
-                    var selected = personalViews.FirstOrDefault(view => view.ViewId == query?.ViewId);
+                    var selected = personalViews.FirstOrDefault(view => string.Equals(view.ViewId, requestedViewId, StringComparison.OrdinalIgnoreCase));
                     if (selected is not null)
-                        query = query! with
+                        // The read service resolves only system/legacy IDs. Materialize this
+                        // actor-owned view without forwarding its otherwise unknown personal ID;
+                        // keep the request ID for response selection below.
+                        serviceQuery = query! with
                         {
+                            ViewId = string.Empty,
                             SearchText = context.Request.Query.ContainsKey("searchText") ? query.SearchText : selected.SearchText,
                             Filters = query.Filters?.Count > 0 ? query.Filters : selected.Filters
                         };
@@ -63,7 +69,7 @@ public static partial class WorkstationEndpoints
                     explorerId,
                     tenantId,
                     EndpointAuthorization.ResolveCompanyId(context),
-                    query,
+                    serviceQuery,
                     ResolveExplorerReadScope(context),
                     // The report families the explorer enriches with are not tenant-partitioned at
                     // their source -- ListRecords returns every tenant's workflow records -- so the
@@ -79,7 +85,10 @@ public static partial class WorkstationEndpoints
                 {
                     IsReadOnly = true,
                     Origin = view.IsSystem ? "System view" : "Legacy tenant view — save a personal copy"
-                }).Concat(personalViews).Select(view => query?.ViewId == null ? view : view with { IsActive = view.ViewId == query.ViewId }).ToArray();
+                }).Concat(personalViews).Select(view => string.IsNullOrWhiteSpace(requestedViewId) ? view : view with
+                {
+                    IsActive = string.Equals(view.ViewId, requestedViewId, StringComparison.OrdinalIgnoreCase)
+                }).ToArray();
                 explorer = explorer with { SavedViews = views };
             }
             return explorer is null
@@ -152,7 +161,8 @@ public static partial class WorkstationEndpoints
                 var store = context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>();
                 if (store is null)
                     return Results.Problem("Personal view persistence is unavailable.", statusCode: 501);
-                if (request.Filters?.Any(filter => filter is null || string.IsNullOrWhiteSpace(filter.FilterId)) == true)
+                request = NormalizeExplorerSavedViewRequest(request);
+                if (request.Filters.Any(filter => string.IsNullOrWhiteSpace(filter.FilterId)))
                     return Results.BadRequest(new { error = "Saved-view filters require an identity." });
                 var filters = (request.Filters ?? []).GroupBy(filter => filter.FilterId)
                     .ToDictionary(group => group.Key, group => group.Last().Value ?? string.Empty);
@@ -173,6 +183,32 @@ public static partial class WorkstationEndpoints
         .Produces(400)
         .Produces(404);
     }
+
+    // Explorer clients historically allow nullable filters and columns. Normalize that
+    // presentation input before the shared personal store enforces its limits and settings.
+    // Do not truncate: every retained filter/column must still pass the store's validation.
+    private static FinancialRecordExplorerSavedViewSaveRequestDto NormalizeExplorerSavedViewRequest(
+        FinancialRecordExplorerSavedViewSaveRequestDto request)
+        => request with
+        {
+            Label = request.Label?.Trim() ?? string.Empty,
+            Description = request.Description?.Trim() ?? string.Empty,
+            SearchText = request.SearchText?.Trim() ?? string.Empty,
+            Filters = (request.Filters ?? [])
+                .Where(static filter => filter is not null)
+                .Select(static filter => filter with
+                {
+                    FilterId = filter.FilterId?.Trim() ?? string.Empty,
+                    Label = filter.Label?.Trim() ?? string.Empty,
+                    Value = filter.Value?.Trim() ?? string.Empty,
+                    Operator = string.IsNullOrWhiteSpace(filter.Operator) ? "equals" : filter.Operator.Trim()
+                }).ToArray(),
+            ColumnIds = (request.ColumnIds ?? [])
+                .Where(static column => !string.IsNullOrWhiteSpace(column))
+                .Select(static column => column.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+        };
 
     private static FinancialRecordExplorerSavedViewDto ToExplorerPersonalView(WorkstationTableViewDto view)
         => new(view.ViewId, view.Label, view.Description ?? view.Origin ?? "My view", IsSystem: false, IsActive: false,
