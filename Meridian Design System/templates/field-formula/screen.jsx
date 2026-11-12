@@ -65,9 +65,21 @@ function FieldFormulaScreen() {
   const [mode, setMode] = useState("formula");
   const s = SUGGESTIONS[sel];
   const lhs = "Let current_yield = ";
+  function browseSuggestion(event, index) {
+    let next;
+    if (event.key === "ArrowDown") next = (index + 1) % SUGGESTIONS.length;
+    else if (event.key === "ArrowUp") next = (index + SUGGESTIONS.length - 1) % SUGGESTIONS.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = SUGGESTIONS.length - 1;
+    else return;
+    event.preventDefault();
+    setSel(next);
+    event.currentTarget.parentElement.querySelectorAll(".mds-field-suggestion")[next]?.focus();
+  }
 
   return (
     <React.Fragment>
+      <style>{`.mds-field-suggestion:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}`}</style>
       <WorkstationTopbar moduleLabel="Field & Formula" environment="PAPER" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="fields" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
@@ -112,23 +124,25 @@ function FieldFormulaScreen() {
                 </div>
 
                 {/* Autocomplete popup */}
-                <div style={{ position: "absolute", left: 40, top: 84, width: 460, zIndex: 5,
+                <div role="group" aria-label="Formula suggestions" style={{ position: "absolute", left: 40, top: 84, width: 460, zIndex: 5,
                   background: "var(--card-surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-menu)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderBottom: "1px solid var(--border)", background: "var(--bg-medium)" }}>
                     <Eyebrow>Suggestions</Eyebrow>
                     <div style={{ flex: 1 }}></div>
                     <Kbd>↑</Kbd><Kbd>↓</Kbd><span style={{ fontSize: 11, color: "var(--text-muted)" }}>browse</span>
-                    <Kbd>↵</Kbd><span style={{ fontSize: 11, color: "var(--text-muted)" }}>insert</span>
+                    <Kbd>↵</Kbd><span style={{ fontSize: 11, color: "var(--text-muted)" }}>choose</span>
                   </div>
                   {SUGGESTIONS.map((it, i) => (
-                    <div key={i} onClick={() => setSel(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px 8px 10px", cursor: "pointer",
+                    <button key={i} type="button" className="mds-field-suggestion" aria-pressed={i === sel} tabIndex={i === sel ? 0 : -1}
+                      onClick={() => setSel(i)} onKeyDown={(event) => browseSuggestion(event, i)}
+                      style={{ display: "flex", width: "100%", alignItems: "center", gap: 10, padding: "8px 12px 8px 10px", cursor: "pointer", border: 0, textAlign: "left", font: "inherit", color: "inherit",
                       borderBottom: i < SUGGESTIONS.length - 1 ? "1px solid var(--border)" : "none",
                       borderLeft: i === sel ? "4px solid var(--accent)" : "4px solid transparent",
                       background: i === sel ? "var(--bg-active)" : "transparent" }}>
                       <code style={{ font: "13px var(--font-data)", color: "var(--text-primary)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.formula}</code>
                       <span style={{ fontSize: 11, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{it.desc}</span>
                       <Badge variant={CAT_TONE[it.cat]}>{it.cat}</Badge>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </PanelSurface>
