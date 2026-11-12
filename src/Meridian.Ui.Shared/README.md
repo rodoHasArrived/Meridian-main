@@ -805,6 +805,15 @@ See [amount provenance validation](../../docs/testing/w10-amount-provenance.md).
 
 ## Layer responsibility
 
+Template governance and reporting access-policy rules are owned by `Meridian.Reporting`.
+`ReportTemplateRegistryService` and `ReportAccessPolicyEvaluator` remain compatibility adapters
+for current workstation callers, translating the existing access context and delegating to the
+Reporting implementation. `IReportTemplateGovernanceStore` retains its original methods and
+the registry adapts that port without changing explicit-interface implementations or mocks.
+`FileReportTemplateGovernanceStore` also implements the Reporting-owned storage port while
+retaining the same snapshot format and atomic-write behavior. Endpoint authorization, DTOs, and
+workstation registration stay in this module.
+
 This module owns cross-surface operator-facing projection types and shared endpoint helpers. Preserve
 compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and
 `src/Meridian.Wpf`.

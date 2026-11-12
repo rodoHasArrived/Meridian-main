@@ -1118,6 +1118,18 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 ## Important workflows
 
+`DatabaseStartupPlan` is the shared, sequential migration plan consumed by executable hosts and
+`UiServer`. Each existing `*Startup` owner declares its initializer and prerequisite in
+`DatabaseStartupStep`; `AddDatabaseStartupPlan` registers the eight core participants without
+opening a database. The final graph rejects duplicate identifiers, missing prerequisites and cycles
+before any initializer runs. Failures and cancellation stop the plan before later participants.
+The existing Ledger → Security Master → Direct Lending → Asset Operations → Fund Accounts →
+Fund Structure → Banking → Money Market sequence remains intact. Headless hosts run the plan after
+the production guard and before tenant cutover/background work; desktop children leave migration
+ownership to their parent. Workstation reporting readiness remains a subsequent host-owned step.
+`DatabaseStartupPlanTests`, `HostStartupLifecycleTests`, and
+`SupportedPostureStartupIntegrationTests` cover the plan and both executable entry paths.
+
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
