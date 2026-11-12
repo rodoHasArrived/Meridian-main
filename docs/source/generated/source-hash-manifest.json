@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "f62f4cd36d68727a628206e4924e1f499721336b3ac2e034f58f53295228ee59",
-      "source_hash": "803178909fe7f76003c59f4a29364fbdf5e26c46218c62ea9b4835e5f1be7579"
+      "readme_hash": "55b3bb383f71fc4195ffbef02554075b9b53138085d97603812b76d357599e9c",
+      "source_hash": "07bae14ef67399b8e0d7cc71b9db8d1e86740d418e83a5c755e60e5f116944aa"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,7 +30,7 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "21802b980f9ffd7324846b02fc38f13df6f48938cca801d175a8b83623b67dd1",
+      "readme_hash": "bfe1c7f5bfb0c1afec880e061f09423a14964ef5c2cdc55eb9b09be7d63e06f6",
       "source_hash": "c385a3f0750b8eb8a35f2f075cc5de04696508ac9d7827db8df4c3e58a00e106"
     },
     {
@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "6bb25c2abd5c0ebee8537cb14a40ba96f151e2ec89dd20806a64e7e688a6eb4d",
-      "source_hash": "22c01602db4d4eb7151d0bdb5a21fb64bd79db0d7bdd35a62802ecb2589e4f74"
+      "readme_hash": "62bc70815bd2b3de542e4cafcc3523dcda3f2b8b4bb904161f5a6af360de5faf",
+      "source_hash": "52e1f2fa5239f254b94aab79602371e29c6e459d022ea303415ef4527a2cc98b"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
@@ -247,7 +247,7 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "a8c3bb403a1f10783888bf0aa0900349e547159007601587d87a62bdef6ec6f7",
+      "readme_hash": "3096a3eeb7024ca20a54e08696c3dcc7e9aa65d2485d1a9b21e0f04e6d113e79",
       "source_hash": "341b0b244fb53d3d3f6ac9256effc5aba14ad79b4cdce67ee1f3e72dde1f6be4"
     },
     {
@@ -261,7 +261,7 @@
       "id": "SRC-UI",
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
-      "readme_hash": "f3812c9e136b4a54b3c05dbe96b934abad1b9375bb570f2728f2911dcde7835c",
+      "readme_hash": "97523f99070bd231a8ebbad1bf0a0eef148a14d9169b827f5240c899226ec92b",
       "source_hash": "01ff096821f2509eb8dba40236025094f18b734aa4a7b21cb9d010e3712ae657"
     },
     {
