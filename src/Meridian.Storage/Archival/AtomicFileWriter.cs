@@ -600,7 +600,7 @@ public static partial class AtomicFileWriter
                 // File.Replace used to preserve the destination DACL. Keep that contract when
                 // publishing by rename, and fail before commit if it cannot be preserved.
                 destinationSecurity = new FileInfo(destinationPath).GetAccessControl();
-                new FileInfo(tempPath).SetAccessControl(destinationSecurity);
+                ApplyWindowsAccessRules(tempPath, destinationSecurity);
             }
 
             using var publication = WindowsRename.Prepare(tempPath, destinationPath);
@@ -817,7 +817,7 @@ public static partial class AtomicFileWriter
             if (OperatingSystem.IsWindows())
             {
                 var sourceSecurity = new FileInfo(sourcePath).GetAccessControl();
-                new FileInfo(targetPath).SetAccessControl(sourceSecurity);
+                ApplyWindowsAccessRules(targetPath, sourceSecurity);
                 return;
             }
 

@@ -61,7 +61,7 @@ flowchart LR
 | Financial Operations | `src/Meridian.FinancialOperations` | Own close, reconciliation, accounting-basis workflows, and preparation of governed ledger instructions |
 | Instruments | `src/Meridian.Instruments` | Own instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
 | Reference Data | `src/Meridian.ReferenceData` | Own asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
-| Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
+| Reporting | `src/Meridian.Reporting` | Own template-governance lifecycle and access policy, governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
 | Reporting read models | `src/Meridian.Reporting.ReadModels` | Own leaf reporting and journal-backed readers over Contracts, Ledger, Reporting, and Storage.Accounting, with no UI, host, or provider implementation reference |
 | Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
 | Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy definitions, validation, run evidence, promotion, replay, and supported scripting reusable outside UI |

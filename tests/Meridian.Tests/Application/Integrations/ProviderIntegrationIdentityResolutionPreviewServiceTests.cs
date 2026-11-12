@@ -83,18 +83,15 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
             firstChoice with { DecisionId = "foreign-connection", StagingRecordId = "staging-invalid-decisions", ConnectionId = "foreign" },
             firstChoice with { DecisionId = "foreign-run", StagingRecordId = "staging-invalid-decisions", SyncRunId = "foreign" }
         ];
-        // Finish real asynchronous reads before configuring substitutes: awaiting between a
-        // substitute call and Returns can lose NSubstitute's pending call on a thread switch.
-        var retainedConnection = await retainedStore.GetConnectionAsync(connectionId);
-        var retainedSyncRuns = await retainedStore.ListSyncRunsAsync(connectionId);
-        var retainedStagingRecords = await retainedStore.ListStagingRecordsAsync(syncRunId);
+        // Read the retained values before configuring the substitute: an await inside Returns(...)
+        // can resume on another thread, and NSubstitute tracks the call being configured per thread.
+        var connection = await retainedStore.GetConnectionAsync(connectionId);
+        var syncRuns = await retainedStore.ListSyncRunsAsync(connectionId);
+        var stagingRecords = await retainedStore.ListStagingRecordsAsync(syncRunId);
         var scopedStore = Substitute.For<IProviderIntegrationManifestStore, IProviderIntegrationIdentityDecisionStore>();
-        scopedStore.GetConnectionAsync(connectionId, Arg.Any<CancellationToken>())
-            .Returns(retainedConnection);
-        scopedStore.ListSyncRunsAsync(connectionId, Arg.Any<CancellationToken>())
-            .Returns(retainedSyncRuns);
-        scopedStore.ListStagingRecordsAsync(syncRunId, Arg.Any<CancellationToken>())
-            .Returns(retainedStagingRecords);
+        scopedStore.GetConnectionAsync(connectionId, Arg.Any<CancellationToken>()).Returns(connection);
+        scopedStore.ListSyncRunsAsync(connectionId, Arg.Any<CancellationToken>()).Returns(syncRuns);
+        scopedStore.ListStagingRecordsAsync(syncRunId, Arg.Any<CancellationToken>()).Returns(stagingRecords);
         var decisionStore = (IProviderIntegrationIdentityDecisionStore)scopedStore;
         decisionStore.ListIdentityDecisionsAsync(syncRunId, Arg.Any<CancellationToken>()).Returns(decisions);
         var tenantRoot = Substitute.For<IProviderIntegrationManifestStore, IProviderIntegrationTenantManifestStoreFactory>();

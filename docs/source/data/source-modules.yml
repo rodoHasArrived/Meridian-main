@@ -21,6 +21,7 @@ modules:
       - PaperSession
       - LiveReadiness
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SupportedPostureStartupIntegrationTests" --logger "console;verbosity=normal"
       - python3 build/python/cli/buildctl.py build --project src/Meridian/Meridian.csproj --configuration Debug --isolation-key codex-host
     diagrams:
       - DIA-ASSURANCE-LOOP
@@ -65,7 +66,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Application use cases, contractual cash-flow scenario adapters and immutable replay-packet retention, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
+    purpose: Shared module-owned database startup plans, application use cases, contractual cash-flow scenario adapters and immutable replay-packet retention, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W2-TRD-001
@@ -80,6 +81,7 @@ modules:
       - ResearchContinuity
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DatabaseStartupPlanTests|FullyQualifiedName~HostStartupLifecycleTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
@@ -225,7 +227,7 @@ modules:
     layer: Infrastructure
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Provider adapters, HTTP integration, ETL adapters including SFTP publisher transport, resilience helpers, data-source implementations, and backfill worker/queue orchestration that consumes ProviderSdk-owned backfill job descriptors.
+    purpose: Provider adapters with module-owned Yahoo historical registration, HTTP integration, ETL adapters including SFTP publisher transport, resilience helpers, data-source implementations, and backfill worker/queue orchestration that consumes ProviderSdk-owned backfill job descriptors.
     readme: src/Meridian.Infrastructure/README.md
     roadmap_items:
       - W1-DATA-001
@@ -236,6 +238,7 @@ modules:
       - PaperSession
       - LiveReadiness
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~YahooFinanceProviderModuleCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
@@ -910,7 +913,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Physical bounded-context module project for exact point-in-time reporting contracts, certified snapshot and artifact declarations, governed Draft-to-Released lifecycle, maker-checker approval, new-revision restatement, immutable release authorization, scoped grants and durable delivery state, template catalogs, Security Master-enriched report generation, NAV attribution, orchestration, no-code report-writer grid rendering, saved filters, formulas, lineage, and reporting ownership conformance.
+    purpose: Physical bounded-context module project for exact point-in-time reporting contracts, certified snapshot and artifact declarations, governed Draft-to-Released lifecycle, maker-checker approval, new-revision restatement, immutable release authorization, scoped grants and durable delivery state, template catalogs, template-governance lifecycle and scoped-access evaluation, Security Master-enriched report generation, NAV attribution, orchestration, no-code report-writer grid rendering, saved filters, formulas, lineage, and reporting ownership conformance.
     readme: src/Meridian.Reporting/README.md
     roadmap_items:
       - W4-RPT-001
@@ -919,6 +922,7 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"
       - dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests|FullyQualifiedName~ReportGenerationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
@@ -1023,7 +1027,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models, permissioned contractual cash-flow preview/retention APIs and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces.
+    purpose: Shared UI read models, permissioned contractual cash-flow preview/retention APIs and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility and adapters over Reporting-owned template governance and access policy; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W10-LOT-002
@@ -1056,6 +1060,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterIngestStatusEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false

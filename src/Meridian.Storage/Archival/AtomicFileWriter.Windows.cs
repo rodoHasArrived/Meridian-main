@@ -1,11 +1,24 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
 
 namespace Meridian.Storage.Archival;
 
 public static partial class AtomicFileWriter
 {
+    [SupportedOSPlatform("windows")]
+    private static void ApplyWindowsAccessRules(string targetPath, FileSecurity sourceSecurity)
+    {
+        // A descriptor loaded by GetAccessControl has no modified sections, so persisting
+        // it directly can do nothing. Import its DACL into a fresh descriptor to mark Access
+        // modified, retaining the original rules and inheritance/protection flags.
+        var targetSecurity = new FileSecurity();
+        targetSecurity.SetSecurityDescriptorBinaryForm(
+            sourceSecurity.GetSecurityDescriptorBinaryForm(), AccessControlSections.Access);
+        new FileInfo(targetPath).SetAccessControl(targetSecurity);
+    }
+
     // ReplaceFile can rename the old destination to its backup before publishing the new
     // name. A single FileRenameInfoEx operation instead keeps the destination continuously
     // visible, including while readers retain a deletion-sharing handle to its old generation.

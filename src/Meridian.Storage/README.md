@@ -147,6 +147,8 @@ required; unsupported filesystems fail before the live file changes. Delete-acce
 the sharing protection of readers that deny deletion. Sync and async publishers share bounded
 gates within this process, keyed by normalized, case-insensitive destination paths; temporary-file
 writes and flushes remain concurrent. Local, UNC and extended-length paths use the same primitive.
+Existing destination access rules are explicitly copied and persisted before publication, retaining
+protected DACLs on the replacement as well as its backup.
 
 `ReplaceAsync` stages and flushes the previous generation in a recovery file created with the
 original DACL, then prepares both live and backup publications. A failure before the live commit

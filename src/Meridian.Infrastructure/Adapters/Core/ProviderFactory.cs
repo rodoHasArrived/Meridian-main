@@ -15,7 +15,6 @@ using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.TwelveData;
-using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
@@ -25,8 +24,6 @@ using NasdaqBackfillConfig = Meridian.Core.Config.NasdaqDataLinkConfig;
 using PolygonBackfillConfig = Meridian.Core.Config.PolygonConfig;
 using StooqBackfillConfig = Meridian.Core.Config.StooqConfig;
 using TiingoBackfillConfig = Meridian.Core.Config.TiingoConfig;
-// Type aliases for clarity when dealing with backfill provider configs
-using YahooBackfillConfig = Meridian.Core.Config.YahooFinanceConfig;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -265,13 +262,6 @@ public sealed partial class ProviderFactory
             priority: cfg?.Priority ?? 5,
             rateLimitPerMinute: cfg?.RateLimitPerMinute ?? 200,
             log: _log);
-    }
-
-    internal IHistoricalDataProvider? CreateYahooBackfillProvider(YahooBackfillConfig? cfg)
-    {
-        if (!EnabledByDefault(cfg?.Enabled))
-            return null;
-        return new YahooFinanceHistoricalDataProvider(log: _log);
     }
 
     internal IHistoricalDataProvider? CreatePolygonBackfillProvider(PolygonBackfillConfig? cfg)

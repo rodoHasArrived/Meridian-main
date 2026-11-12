@@ -25,7 +25,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from threading import Lock
-from typing import Sequence
+from typing import Sequence, TextIO
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_evidence import collect_trx
@@ -447,6 +447,15 @@ def write_build_solution_filter(
     }, indent=2) + "\n", encoding="utf-8")
 
 
+def print_console_safe(text: str, *, file: TextIO | None = None) -> None:
+    """Display diagnostics in the console's encoding without changing UTF-8 log artifacts."""
+    stream = file if file is not None else sys.stdout
+    encoding = getattr(stream, "encoding", None)
+    if encoding:
+        text = text.encode(encoding, errors="backslashreplace").decode(encoding)
+    print(text, file=stream, flush=True)
+
+
 def run_default_build(
     projects: Sequence[TestProject], *, repo_root: Path, configuration: str,
     results_dir: Path, dry_run: bool, isolation_key: str | None = None,
@@ -486,7 +495,7 @@ def run_default_build(
             with log_path.open("rb") as log:
                 log.seek(0, os.SEEK_END)
                 log.seek(max(0, log.tell() - 16 * 1024))
-                print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+                print_console_safe(log.read(16 * 1024).decode("utf-8", errors="replace"))
         except OSError as exc:
             print(f"Unable to read build log: {exc}", file=sys.stderr, flush=True)
     return result
@@ -624,7 +633,7 @@ def run_tests(
                     with log_path.open("rb") as log:
                         log.seek(0, os.SEEK_END)
                         log.seek(max(0, log.tell() - 16 * 1024))
-                        print(log.read(16 * 1024).decode("utf-8", errors="replace"), flush=True)
+                        print_console_safe(log.read(16 * 1024).decode("utf-8", errors="replace"))
                 except OSError as exc:
                     print(f"Unable to read shard log: {exc}", file=sys.stderr, flush=True)
         return result

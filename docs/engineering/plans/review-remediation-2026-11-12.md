@@ -221,3 +221,17 @@ The synchronized targeted run passed 903 tests with zero skips, covering changed
 accounting and receipt cases, composition order, architectural boundaries and the security
 regressions. Its ten backfill coverage/resume cases include the corrected stale-log fixture.
 These cases overlap earlier slices and are not an additional independent total.
+
+Upstream later advanced to `a0f1cfffb2d1b2dda4a25c638b1b6540b338b5cb`. Its startup-plan and
+reporting-policy ownership changes retain the reviewed initialization sequence and durable-store
+scope. The compatibility query-context conversion is public across the read-model assembly seam;
+its six fields and policy behavior remain unchanged. No image bytes changed in this synchronization.
+
+The next hosted Windows run passed all atomic reader, backup, alias and long-path cases, but two
+protected-DACL assertions failed. Loaded `FileSecurity` descriptors carried no modified-section
+flags, so persistence was a no-op. The replacement now copies the access descriptor into a fresh
+object and explicitly persists its access rules, preserving the original protection flags without
+owner, group or audit changes. The unchanged assertions require another Windows runtime run.
+Failure-tail printing also escapes characters unsupported by the destination console encoding;
+raw UTF-8 artifacts, original failure status and later-shard execution are preserved. Its Python
+regressions passed 61 tests with three existing optional PowerShell skips.
