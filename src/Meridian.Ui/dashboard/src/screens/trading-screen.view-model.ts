@@ -1,15 +1,18 @@
-import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
   buildOrderRequirementText,
   buildOrderTicketAcknowledgementState,
   buildOrderTicketStatusAnnouncement,
   buildOrderTicketSubmitDisabledReason
 } from "./trading-screen.order-ticket-text";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -404,8 +407,13 @@ export interface TradingFillRow {
   ariaLabel: string;
 }
 
+/** Which execution table the shared order/fill detail pane is showing. */
+export type TradingExecutionDetailKind = "order" | "fill";
+
 export interface TradingBlotterDetail {
   id: string;
+  /** What kind of thing is selected, shown first in the pane heading. */
+  objectType: "Position" | "Order" | "Fill";
   title: string;
   subtitle: string;
   statusLabel: string;
@@ -413,6 +421,8 @@ export interface TradingBlotterDetail {
   ariaLabel: string;
   detail: string;
   fields: TradingBlotterField[];
+  /** Field labels the selected table row always shows; the pane does not repeat them. */
+  shownInRow: string[];
 }
 
 export interface TradingBlotterViewModel {
@@ -422,6 +432,14 @@ export interface TradingBlotterViewModel {
   selectedPosition: TradingBlotterDetail | null;
   selectedOrder: TradingBlotterDetail | null;
   selectedFill: TradingBlotterDetail | null;
+  /**
+   * Orders and fills share one detail pane keyed to the table selected last; this is the detail
+   * it shows and which table it came from.
+   */
+  selectedExecution: TradingBlotterDetail | null;
+  selectedExecutionKind: TradingExecutionDetailKind;
+  executionDetailId: string;
+  executionEmptyText: string;
   selectedPositionRowId: string | null;
   selectedOrderRowId: string | null;
   selectedFillRowId: string | null;
@@ -556,13 +574,24 @@ const idleExecutionEvidenceStatus: RequestLifecycleStatus = {
 const visibleWorkItemLimit = 4;
 const visibleWarningLimit = 3;
 const tradingPositionDetailId = "trading-position-detail";
-const tradingOrderDetailId = "trading-order-detail";
-const tradingFillDetailId = "trading-fill-detail";
+// Orders and fills share one pane, so both tables control the same element.
+const tradingExecutionDetailId = "trading-execution-detail";
+const tradingOrderDetailId = tradingExecutionDetailId;
+const tradingFillDetailId = tradingExecutionDetailId;
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
+  const [lastExecutionKind, setLastExecutionKind] = useState<TradingExecutionDetailKind | null>(null);
+  const selectOrder = useCallback((id: string) => {
+    setSelectedOrderId(id);
+    setLastExecutionKind("order");
+  }, []);
+  const selectFill = useCallback((id: string) => {
+    setSelectedFillId(id);
+    setLastExecutionKind("fill");
+  }, []);
 
   return useMemo(
     () => buildTradingBlotterViewModel({
@@ -570,11 +599,12 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
       selectedPositionId,
       selectedOrderId,
       selectedFillId,
+      lastExecutionKind,
       selectPosition: setSelectedPositionId,
-      selectOrder: setSelectedOrderId,
-      selectFill: setSelectedFillId
+      selectOrder,
+      selectFill
     }),
-    [data, selectedFillId, selectedOrderId, selectedPositionId]
+    [data, lastExecutionKind, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId]
   );
 }
 
@@ -583,6 +613,7 @@ export function buildTradingBlotterViewModel({
   selectedPositionId = null,
   selectedOrderId = null,
   selectedFillId = null,
+  lastExecutionKind = null,
   selectPosition = () => {},
   selectOrder = () => {},
   selectFill = () => {}
@@ -591,6 +622,8 @@ export function buildTradingBlotterViewModel({
   selectedPositionId?: string | null;
   selectedOrderId?: string | null;
   selectedFillId?: string | null;
+  /** The execution table selected last; defaults to orders when there are any, else fills. */
+  lastExecutionKind?: TradingExecutionDetailKind | null;
   selectPosition?: (id: string) => void;
   selectOrder?: (id: string) => void;
   selectFill?: (id: string) => void;
@@ -602,20 +635,42 @@ export function buildTradingBlotterViewModel({
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
   const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
+  // The shared pane shows the table selected last; with no selection yet it shows an open order
+  // when there is one (orders are what an operator acts on), otherwise the latest fill.
+  const selectedExecutionKind: TradingExecutionDetailKind =
+    lastExecutionKind === "fill" && fills.length > 0
+      ? "fill"
+      : lastExecutionKind === "order" && orders.length > 0
+        ? "order"
+        : orders.length > 0 || fills.length === 0 ? "order" : "fill";
+
   const positionRows = positions.map((position, index) => buildPositionRow(position, index, effectivePositionId));
-  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId));
-  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId));
+  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId, selectedExecutionKind === "order"));
+  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId, selectedExecutionKind === "fill"));
   const selectedPositionRow = positionRows.find((row) => row.id === effectivePositionId) ?? null;
   const selectedOrderRow = orderRows.find((row) => row.id === effectiveOrderId) ?? null;
   const selectedFillRow = fillRows.find((row) => row.id === effectiveFillId) ?? null;
+
+  const selectedOrder = selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null;
+  const selectedFill = selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null;
+  const orderEmptyText = data ? "No open orders require operator action." : "Trading workspace data unavailable.";
+  const fillEmptyText = data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.";
 
   return {
     positionRows,
     orderRows,
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
-    selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
-    selectedFill: selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null,
+    selectedOrder,
+    selectedFill,
+    selectedExecution: selectedExecutionKind === "fill" ? selectedFill : selectedOrder,
+    selectedExecutionKind,
+    executionDetailId: tradingExecutionDetailId,
+    executionEmptyText: !data
+      ? "Trading workspace data unavailable."
+      : orders.length === 0 && fills.length === 0
+        ? "No open orders or recent fills in this session."
+        : selectedExecutionKind === "fill" ? fillEmptyText : orderEmptyText,
     selectedPositionRowId: effectivePositionId,
     selectedOrderRowId: effectiveOrderId,
     selectedFillRowId: effectiveFillId,
@@ -629,11 +684,11 @@ export function buildTradingBlotterViewModel({
     orderDetailId: tradingOrderDetailId,
     fillDetailId: tradingFillDetailId,
     positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
-    orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
-    fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
+    orderEmptyText,
+    fillEmptyText,
     cancelAllDisabled: orderRows.length === 0,
     cancelAllDisabledReason: orderRows.length === 0 ? "No open orders require cancellation." : null,
-    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
+    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${pluralizeCount(orderRows.length, "open order")}`,
     selectPosition,
     selectOrder,
     selectFill
@@ -997,7 +1052,8 @@ function buildPositionRow(
 function buildOrderRow(
   order: TradingOrder,
   index: number,
-  selectedId: string | null
+  selectedId: string | null,
+  paneShowsOrders = true
 ): TradingOrderRow {
   const id = orderRowId(order, index);
 
@@ -1014,7 +1070,8 @@ function buildOrderRow(
     statusTone: orderStatusTone(order.status),
     isSelected: id === selectedId,
     detailPanelId: tradingOrderDetailId,
-    ariaExpanded: id === selectedId,
+    // Expanded only while the shared pane is showing this table's selection.
+    ariaExpanded: id === selectedId && paneShowsOrders,
     selectAriaLabel: `Inspect order ${order.orderId}`,
     cancelActionLabel: "Cancel",
     cancelTitleLabel: "Cancel order",
@@ -1026,7 +1083,8 @@ function buildOrderRow(
 function buildFillRow(
   fill: TradingFill,
   index: number,
-  selectedId: string | null
+  selectedId: string | null,
+  paneShowsFills = true
 ): TradingFillRow {
   const id = fillRowId(fill, index);
   const isSelected = id === selectedId;
@@ -1053,83 +1111,9 @@ function buildFillRow(
     ],
     isSelected,
     detailPanelId: tradingFillDetailId,
-    ariaExpanded: isSelected,
+    ariaExpanded: isSelected && paneShowsFills,
     selectAriaLabel: `Inspect fill ${fill.fillId}`,
     ariaLabel: `${fill.fillId}, ${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
-  };
-}
-
-function buildPositionDetail(
-  row: TradingPositionRow,
-  risk: TradingRiskState | null
-): TradingBlotterDetail {
-  const guardrailCount = risk?.activeGuardrails.length ?? 0;
-  const riskText = risk ? `${risk.state}: ${risk.summary}` : "Risk context unavailable.";
-
-  return {
-    id: "selected-position",
-    title: row.symbol,
-    subtitle: `${row.side} · ${row.quantity} shares`,
-    statusLabel: row.markFreshness.reviewRequired ? "Review required" : risk?.state ?? "Position",
-    statusTone: row.markFreshness.reviewRequired ? "warning" : riskStateTone(risk?.state, row.unrealizedPnlTone),
-    ariaLabel: `Position detail for ${row.symbol}`,
-    detail: `${row.markFreshness.reason} Recorded exposure ${row.exposure}, unrealized P&L ${row.unrealizedPnl}. ${riskText}`,
-    fields: [
-      { label: "Side", value: row.side, tone: "default" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Average price", value: row.averagePrice, tone: "muted" },
-      { label: "Recorded mark price", value: row.markPrice, tone: "muted" },
-      ...markFreshnessFields(row.markFreshness),
-      { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
-      { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },
-      { label: "Exposure", value: row.exposure, tone: "default" },
-      { label: "Risk", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Guardrails", value: guardrailCount > 0 ? `${guardrailCount} active` : "None active", tone: guardrailCount > 0 ? "warning" : "success" }
-    ]
-  };
-}
-
-function buildOrderDetail(row: TradingOrderRow, provider: string | null): TradingBlotterDetail {
-  return {
-    id: "selected-order",
-    title: row.orderId,
-    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
-    statusLabel: row.status,
-    statusTone: row.statusTone,
-    ariaLabel: `Order detail for ${row.orderId}`,
-    detail: `${row.type} order submitted ${row.submittedAt}. ${provider ? `${provider} is the active execution adapter.` : "Execution adapter context unavailable."}`,
-    fields: [
-      { label: "Symbol", value: row.symbol, tone: "default" },
-      { label: "Side", value: row.side, tone: "default" },
-      { label: "Type", value: row.type, tone: "default" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Limit", value: row.limitPrice || "Market", tone: "muted" },
-      { label: "Status", value: row.status, tone: row.statusTone },
-      { label: "Submitted", value: row.submittedAt, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
-    ]
-  };
-}
-
-function buildFillDetail(row: TradingFillRow, provider: string | null): TradingBlotterDetail {
-  return {
-    id: "selected-fill",
-    title: row.fillId,
-    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
-    statusLabel: "Fill evidence",
-    statusTone: "success",
-    ariaLabel: `Fill detail for ${row.fillId}`,
-    detail: `${row.symbol} fill posted at ${row.price} on ${row.venue}. ${provider ? `${provider} supplied the execution adapter context.` : "Execution adapter context unavailable."}`,
-    fields: [
-      { label: "Order", value: row.orderId, tone: "muted" },
-      { label: "Symbol", value: row.symbol, tone: "default" },
-      { label: "Side", value: row.side, tone: row.side === "Buy" ? "success" : "warning" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Price", value: row.price, tone: "default" },
-      { label: "Venue", value: row.venue, tone: "muted" },
-      { label: "Timestamp", value: row.timestamp, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
-    ]
   };
 }
 
@@ -1155,23 +1139,6 @@ function orderStatusTone(status: TradingOrder["status"]): TradingDataTone {
   if (status === "Working") return "success";
   if (status === "Partially Filled") return "warning";
   return "muted";
-}
-
-function riskFieldTone(state: TradingRiskState["state"] | undefined): TradingDataTone {
-  if (state === "Healthy") return "success";
-  if (state === "Observe") return "warning";
-  if (state === "Constrained") return "danger";
-  return "muted";
-}
-
-function riskStateTone(
-  state: TradingRiskState["state"] | undefined,
-  fallback: TradingDataTone
-): TradingDataTone {
-  if (state === "Constrained") return "danger";
-  if (state === "Observe") return "warning";
-  if (state === "Healthy") return "success";
-  return fallback;
 }
 
 export type ExecutionEvidenceTone = "success" | "warning" | "danger";
@@ -1392,16 +1359,7 @@ function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
     return "Recorded time unavailable";
   }
 
-  return `Recorded ${new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(occurredAt).replace("24:", "00:")}`;
+  return `Recorded ${formatUtcTimestamp(occurredAt)}`;
 }
 
 function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {
@@ -2776,6 +2734,8 @@ export interface TradingConfirmState {
   result: TradingActionResult | null;
   error: string | null;
   acknowledged: boolean;
+  cancelAllPreview?: CancelAllPreview | null;
+  previewLoading?: boolean;
 }
 
 export interface TradingConfirmResultPanel {
@@ -2823,6 +2783,7 @@ export interface TradingConfirmDialogState {
 }
 
 export interface TradingConfirmServices {
+  getCancelAllPreview?: () => Promise<CancelAllPreview>;
   cancelOrder: (orderId: string) => Promise<TradingActionResult>;
   cancelAllOrders: () => Promise<TradingActionResult>;
   closePosition: (positionKey: string, fundAccountId?: string | null) => Promise<TradingActionResult>;
@@ -2842,6 +2803,7 @@ export interface TradingConfirmViewModel extends TradingConfirmDialogState {
 }
 
 const defaultTradingConfirmServices: TradingConfirmServices = {
+  getCancelAllPreview: readCancelAllPreview,
   cancelOrder: (orderId) => workstationApi.cancelOrder(orderId),
   cancelAllOrders: () => workstationApi.cancelAllOrders(),
   closePosition: (positionKey, fundAccountId) => workstationApi.closePosition(positionKey, fundAccountId),
@@ -2861,12 +2823,27 @@ export function useTradingConfirmViewModel({
 } = {}): TradingConfirmViewModel {
   const [state, setState] = useState<TradingConfirmState>(() => createTradingConfirmState());
   const executingRef = useRef(false);
+  const previewRevisionRef = useRef(0);
 
   const openConfirm = useCallback((action: TradingConfirmAction) => {
+    if (executingRef.current) return;
+    const revision = ++previewRevisionRef.current;
     setState((current) => current.busy ? current : createTradingConfirmState(action));
-  }, []);
+    if (action.kind === "cancel-all") {
+      setState((current) => ({ ...current, previewLoading: true }));
+      (services.getCancelAllPreview ? services.getCancelAllPreview() : Promise.reject(new Error("OMS preview service is unavailable."))).then((preview) => {
+        if (revision !== previewRevisionRef.current) return;
+        setState((current) => current.action?.kind === "cancel-all" ? { ...current, cancelAllPreview: preview, previewLoading: false } : current);
+      }).catch((failure: unknown) => {
+        if (revision !== previewRevisionRef.current) return;
+        setState((current) => ({ ...current, previewLoading: false, error: failure instanceof Error ? failure.message : "The OMS open-order population could not be verified." }));
+      });
+    }
+  }, [services]);
 
   const closeConfirm = useCallback(() => {
+    if (executingRef.current) return;
+    previewRevisionRef.current += 1;
     setState((current) => current.busy ? current : createTradingConfirmState());
   }, []);
 
@@ -2882,7 +2859,7 @@ export function useTradingConfirmViewModel({
 
   const executeConfirm = useCallback(async () => {
     const action = state.action;
-    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current) {
+    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current || (action.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading))) {
       return;
     }
 
@@ -2928,14 +2905,16 @@ export function createTradingConfirmState(action: TradingConfirmAction | null = 
 
 export function buildTradingConfirmDialogState(state: TradingConfirmState): TradingConfirmDialogState {
   const title = state.action ? tradingConfirmActionLabel(state.action) : "";
-  const description = state.action ? tradingConfirmActionDescription(state.action) : "";
+  const description = state.action?.kind === "cancel-all"
+    ? `${tradingConfirmActionDescription(state.action)} ${state.cancelAllPreview ? `OMS snapshot: ${state.cancelAllPreview.orderIds.length} open order(s), received in the browser at ${state.cancelAllPreview.observedAt}. The open book can change before execution; the result reports surviving orders.` : "The current OMS population must be verified before confirmation."}`
+    : state.action ? tradingConfirmActionDescription(state.action) : "";
   const isCompleted = state.result !== null;
   const actionId = state.action ? sanitizeDomId(tradingConfirmActionDomKey(state.action)) : "none";
   const resultPanel = state.result ? buildTradingConfirmResultPanel(state.result) : null;
   const errorPanel = state.error ? { text: state.error, ariaLabel: `Confirmation action failed: ${state.error}` } : null;
   const confirmDisabledReason = buildTradingConfirmDisabledReason(state, isCompleted);
   const acknowledgementDisabledReason = buildTradingConfirmAcknowledgementDisabledReason(state, isCompleted);
-  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged;
+  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged && !(state.action?.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading));
 
   return {
     open: state.action !== null,
@@ -2982,6 +2961,10 @@ function buildTradingConfirmDisabledReason(state: TradingConfirmState, isComplet
 
   if (state.busy) {
     return "Wait for this trading action to finish.";
+  }
+
+  if (state.action.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading)) {
+    return state.previewLoading ? "Loading the current OMS open-order population." : "Verify the current OMS open-order population before confirming.";
   }
 
   if (isCompleted) {
@@ -3081,7 +3064,7 @@ function tradingConfirmActionDescription(action: TradingConfirmAction): string {
     case "cancel-order":
       return "This will request cancellation of the selected order. Partial fills that already occurred are not reversed.";
     case "cancel-all":
-      return "This will request cancellation of every open order in the current session. Partial fills that already occurred are not reversed.";
+      return "This requests cancellation across the entire active OMS open book, including other accounts and strategies. The selected account and table filters do not limit this action. Partial fills that already occurred are not reversed.";
     case "close-position":
       return "A market order will be submitted to flatten the full position at the next available price. You will remain responsible for the resulting fill.";
     case "pause-strategy":
@@ -3100,7 +3083,7 @@ function tradingConfirmAcknowledgementDescription(action: TradingConfirmAction):
     case "cancel-order":
       return `Cancel order ${action.orderId} after reviewing partial-fill risk.`;
     case "cancel-all":
-      return "Cancel every open order in the current session after reviewing partial-fill risk.";
+      return "Cancel the entire OMS open book across accounts and strategies after reviewing the affected identities and partial-fill risk.";
     case "close-position":
       return `Flatten ${action.symbol} with a market order after reviewing fill risk.`;
     case "pause-strategy":
@@ -3285,8 +3268,37 @@ export function useOrderTicketViewModel({
   const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
-  const [acknowledged, setAcknowledged] = useState(false);
+  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const [editor, setEditor] = useState<{
+    scope: string | null;
+    values: Partial<Record<"quantity" | "limitPrice", string>>;
+    acknowledged: boolean;
+  }>(() => ({ scope: normalizedAccountScope, values: {}, acknowledged: false }));
+  const editorMatchesScope = editor.scope === normalizedAccountScope;
+  const acknowledged = editorMatchesScope && editor.acknowledged;
+  const editorValues = editorMatchesScope ? editor.values : {};
+  // Scope-bound derivation withholds the old text and acknowledgement in the first render.
+  // Discard the stored session too, so returning to that account cannot revive its review.
+  if (!editorMatchesScope) {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }
   const submittingRef = useRef(false);
+
+  const resetEditor = useCallback(() => {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }, [normalizedAccountScope]);
+
+  const setAcknowledged = useCallback((next: SetStateAction<boolean>) => {
+    setEditor((current) => {
+      const sameScope = current.scope === normalizedAccountScope;
+      const previous = sameScope && current.acknowledged;
+      return {
+        scope: normalizedAccountScope,
+        values: sameScope ? current.values : {},
+        acknowledged: typeof next === "function" ? next(previous) : next
+      };
+    });
+  }, [normalizedAccountScope]);
 
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
@@ -3318,8 +3330,8 @@ export function useOrderTicketViewModel({
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, [phase]);
+    resetEditor();
+  }, [phase, resetEditor]);
 
   const toggleTicket = useCallback(() => {
     if (open) {
@@ -3332,11 +3344,22 @@ export function useOrderTicketViewModel({
 
   const updateField = useCallback((field: OrderTicketField, value: string) => {
     setForm((current) => updateOrderTicketForm(current, field, value));
+    // Keep local editor text such as "188.0" while the existing model parses it as 188.
+    // Rendering String(188) after that keystroke would make the next "5" become 1885.
+    setEditor((current) => {
+      const values = current.scope === normalizedAccountScope ? current.values : {};
+      return {
+        scope: normalizedAccountScope,
+        values: field === "quantity" || field === "limitPrice"
+          ? { ...values, [field]: value }
+          : field === "symbol" || field === "type" ? {} : values,
+        acknowledged: false
+      };
+    });
     setPhase((current) => current === "submitted" ? "idle" : current);
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, []);
+  }, [normalizedAccountScope]);
 
   const normalizeSymbol = useCallback(() => {
     setForm((current) => ({
@@ -3397,7 +3420,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3413,7 +3436,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3427,10 +3450,17 @@ export function useOrderTicketViewModel({
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services]);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services]);
 
   return {
     ...state,
+    controls: {
+      ...state.controls,
+      quantity: { ...state.controls.quantity, value: editorValues.quantity ?? state.controls.quantity.value },
+      limitPrice: state.controls.limitPrice
+        ? { ...state.controls.limitPrice, value: editorValues.limitPrice ?? state.controls.limitPrice.value }
+        : null
+    },
     preview,
     openTicket,
     closeTicket,
@@ -3594,10 +3624,10 @@ export function updateOrderTicketForm(
   }
 
   if (field === "quantity") {
-    return { ...current, quantity: parsePositiveNumber(value) ?? 0 };
+    return { ...current, quantity: parsePositiveDecimal(value) ?? 0 };
   }
 
-  return { ...current, limitPrice: parsePositiveNumber(value) };
+  return { ...current, limitPrice: parsePositiveDecimal(value) };
 }
 
 export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
@@ -3658,11 +3688,6 @@ function normalizeOrderSymbol(symbol: string): string {
 
 function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
   return type === "Limit" || type === "Stop";
-}
-
-function parsePositiveNumber(value: string): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";
@@ -4035,20 +4060,18 @@ function parseLooseNumber(value: string | null | undefined): number | null {
 }
 
 function formatPrice(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatQuantityValue(value, { minDecimals: 2, maxDecimals: 2 });
 }
 
 function formatMoney(value: number): string {
-  const sign = value < 0 ? "-" : "";
-  const absolute = Math.abs(value);
-  return `${sign}$${absolute.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatMoneyValue(value, { context: "trading", decimals: 2 });
 }
 
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) {
     return "0";
   }
-  return Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 4 });
+  return formatQuantityValue(Math.abs(value), { maxDecimals: 4 });
 }
 
 export type PromotionGateField =

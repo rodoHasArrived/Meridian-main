@@ -181,7 +181,7 @@ class ThroughputMetricsTests(unittest.TestCase):
             metrics.report([start(), start("two")], [])
 
     def test_cli_real_events_and_fail_closed_append(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             (root / "source.py").write_text("first\n")
             log = root / "events.jsonl"
@@ -210,14 +210,14 @@ class ThroughputMetricsTests(unittest.TestCase):
             self.assertEqual(output.read_bytes(), original_output)
 
     def test_read_log_errors_have_location(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             path = Path(directory) / "bad.jsonl"
             path.write_text('{"event": "unknown"}\n')
             with self.assertRaisesRegex(ValueError, "bad.jsonl:1"):
                 metrics.read_logs([path])
 
     def test_source_symlink_escape_rejected(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory) / "root"
             root.mkdir()
             outside = Path(directory) / "outside"

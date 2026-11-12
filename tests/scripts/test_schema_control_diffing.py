@@ -37,7 +37,7 @@ class SchemaDiffTests(unittest.TestCase):
         self.assertEqual(64, len(result["fingerprint"]))
 
     def test_artifact_tree_comparison_is_deterministic(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             expected = root / "expected"
             candidate = root / "candidate"

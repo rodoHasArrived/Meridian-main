@@ -94,19 +94,17 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             DefinedEvent,
             stored.CreatedBy,
             stored.CreatedAt,
-            new
-            {
-                curveId = stored.CurveId,
-                curveKey = stored.CurveKey,
-                kind = stored.Kind.ToString(),
-                currency = stored.Currency,
-                indexName = stored.IndexName,
-                tenor = stored.Tenor,
-                dayCount = stored.DayCount,
-                interpolation = stored.Interpolation.ToString(),
-                source = stored.Source,
-                description = stored.Description
-            },
+            new CurveDefinedPayload(
+                stored.CurveId,
+                stored.CurveKey,
+                stored.Kind.ToString(),
+                stored.Currency,
+                stored.IndexName,
+                stored.Tenor,
+                stored.DayCount,
+                stored.Interpolation.ToString(),
+                stored.Source,
+                stored.Description),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;
@@ -189,6 +187,20 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             return retained;
         }
 
+        // Provider verification re-reads the same source observation with a new retrieval time.
+        // Compare retained source facts under the curve row lock before appending: retries must
+        // return their ORIGINAL version, even after a different version has been published.
+        // Hashes and evidence remain untouched; this does not change legacy curve idempotency.
+        if (normalized.Points.Any(static point => point.RateEvidence is not null))
+        {
+            var original = await ReadEquivalentRateVersionAsync(connection, transaction, normalized, ct).ConfigureAwait(false);
+            if (original is not null)
+            {
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+                return original;
+            }
+        }
+
         long version;
         await using (var next = connection.CreateCommand())
         {
@@ -234,21 +246,19 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             VersionPublishedEvent,
             stored.PublishedBy,
             stored.RecordedAt,
-            new
-            {
-                curveId = stored.CurveId,
-                curveVersionId = stored.CurveVersionId,
-                curveKey = stored.CurveKey,
-                kind = definition.Kind.ToString(),
-                currency = definition.Currency,
-                indexName = definition.IndexName,
-                version = stored.Version,
-                asOf = stored.AsOf,
-                pointCount = stored.Points.Count,
-                contentSha256 = stored.ContentSha256,
-                source = stored.Source,
-                sourcedAt = stored.SourcedAt
-            },
+            new CurveVersionPublishedPayload(
+                stored.CurveId,
+                stored.CurveVersionId,
+                stored.CurveKey,
+                definition.Kind.ToString(),
+                definition.Currency,
+                definition.IndexName,
+                stored.Version,
+                stored.AsOf,
+                stored.Points.Count,
+                stored.ContentSha256,
+                stored.Source,
+                stored.SourcedAt),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;
@@ -369,6 +379,47 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         return await reader.ReadAsync(ct).ConfigureAwait(false) ? ReadVersion(reader) : null;
     }
+
+    private async Task<SecurityCurveVersionDto?> ReadEquivalentRateVersionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        PublishSecurityCurveVersionRequest request,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select {VersionColumns}
+            from {_options.Schema}.security_curve_versions v
+            join {_options.Schema}.security_curves c on c.curve_id = v.curve_id
+            where v.curve_id = @id and v.as_of = @as_of
+            order by v.version;
+            """;
+        command.Parameters.AddWithValue("id", request.CurveId);
+        command.Parameters.AddWithValue("as_of", request.AsOf);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            var candidate = ReadVersion(reader);
+            if (candidate.Source != request.Source || candidate.SourcedAt != request.SourcedAt ||
+                candidate.PublishedBy != request.PublishedBy || candidate.Points.Count != request.Points.Count)
+                continue;
+
+            var retainedPoints = candidate.Points.OrderBy(static point => point.Date).ToArray();
+            if (retainedPoints.Select(WithoutRateRetrievalTime).SequenceEqual(request.Points.Select(WithoutRateRetrievalTime)))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    // Record equality retains every point and source/construction fact, including original
+    // value text, currency, vintage, source units, publication date, role, method and reviewer.
+    private static SecurityCurvePointDto WithoutRateRetrievalTime(SecurityCurvePointDto point)
+        => point.RateEvidence is { } evidence
+            ? point with { RateEvidence = evidence with { Observation = evidence.Observation with { RetrievedAt = default } } }
+            : point;
 
     private static SecurityCurveDefinitionDto ReadDefinition(NpgsqlDataReader reader)
         => new(

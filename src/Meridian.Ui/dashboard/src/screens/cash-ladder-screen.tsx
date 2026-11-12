@@ -1,9 +1,12 @@
+import { formatNumber } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
@@ -28,20 +31,20 @@ import {
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 const SOURCE_PALETTE = [
-  "var(--chart-series-1, #3A7A56)",
-  "var(--chart-series-2, #A85436)",
-  "var(--chart-series-3, #7C5CBF)",
-  "var(--chart-series-4, #B08A2E)",
-  "var(--chart-series-5, #A8443C)",
-  "var(--chart-series-6, #8A5C12)",
-  "var(--chart-series-7, #5E666F)"
+  "var(--chart-series-1, #29323A)",
+  "var(--chart-series-2, #5D7286)",
+  "var(--chart-series-3, #2E4B6E)",
+  "var(--chart-series-4, #7890A4)",
+  "var(--chart-series-5, #8C918F)",
+  "var(--chart-series-6, #4B5C6B)",
+  "var(--chart-series-7, #606870)"
 ] as const;
 
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const CUMULATIVE = "var(--chart-equity, #3A7A56)";
-const THRESHOLD = "var(--chart-warning, #8A5C12)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const CUMULATIVE = "var(--chart-equity, #2E7655)";
+const THRESHOLD = "var(--chart-warning, #986717)";
 
 const metricToneMap = {
   default: "neutral",
@@ -213,7 +216,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
         <div className="flex items-center gap-3">
           <Layers3 className="size-5 text-muted-foreground" aria-hidden />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Cash Ladder</h1>
+            <h2 className="text-lg font-semibold text-foreground">Projected cash flows</h2>
             <p className="text-sm text-muted-foreground">
               Projected portfolio inflows and outflows by source, joined with opening cash and capital activity.
             </p>
@@ -223,8 +226,8 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           {ladder ? <Badge variant="outline">{ladder.engineVersion}</Badge> : null}
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Scenario
-            <select
-              className="rounded border bg-background px-2 py-1 text-sm text-foreground"
+            <Select
+              className="min-h-8 py-1 text-sm"
               value={scenarioId}
               onChange={(event) => {
                 setScenarioId(event.target.value);
@@ -237,14 +240,14 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   {option.displayName}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Min balance
-            <input
+            <Input
               type="number"
               inputMode="decimal"
-              className="w-28 rounded border bg-background px-2 py-1 text-sm text-foreground"
+              className="min-h-8 w-28 py-1 font-mono text-sm"
               placeholder="0"
               value={minimumCashInput}
               onChange={(event) => {
@@ -301,7 +304,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="card-title font-semibold leading-snug tracking-normal">Projected cash by bucket</h2>
+                  <CardTitle>Projected cash by bucket</CardTitle>
                   <CardDescription>
                     {ladder
                       ? `${ladder.horizonDays}-day horizon from ${formatCashLadderDate(ladder.asOfDate)} · scenario: ${activeScenario?.displayName ?? ladder.scenarioId}`
@@ -393,8 +396,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                       key={bar.index}
                       role="button"
                       tabIndex={0}
+                      aria-pressed={bar.index === selectedBucket}
                       aria-label={bar.ariaLabel}
-                      className="cursor-pointer focus:outline-2 focus:outline-offset-2 focus:outline-primary"
+                      className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--interaction-focus)]"
                       onClick={() => setSelectedBucket(bar.index === selectedBucket ? null : bar.index)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
@@ -413,7 +417,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                           fill={SOURCE_PALETTE[segment.paletteIndex]}
                           opacity={selectedBucket === null || selectedBucket === bar.index ? 0.85 : 0.35}
                         >
-                          <title>{`${bar.label} · ${segment.source}: ${segment.amount.toLocaleString("en-US")}`}</title>
+                          <title>{`${bar.label} · ${segment.source}: ${formatNumber(segment.amount, { maximumFractionDigits: 3 })}`}</title>
                         </rect>
                       ))}
                       {bar.breachesMinimumBalance ? (
@@ -490,9 +494,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           <div className="grid gap-4 xl:grid-cols-3">
             <Card className="xl:col-span-2">
               <CardHeader className="pb-2">
-                <h2 className="card-title font-semibold leading-snug tracking-normal">
+                <CardTitle>
                   {selectedBucketLabel ? `Contributing flows · ${selectedBucketLabel}` : "Contributing flows"}
-                </h2>
+                </CardTitle>
                 <CardDescription>
                   {selectedBucketLabel
                     ? "Every flow in the selected bucket, traceable to its projection run and Security Master terms version."
@@ -519,7 +523,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
 
             <Card>
               <CardHeader className="pb-2">
-                <h2 className="card-title font-semibold leading-snug tracking-normal">Scenario semantics</h2>
+                <CardTitle>Scenario semantics</CardTitle>
                 <CardDescription>What this scenario models versus what it assumes.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">

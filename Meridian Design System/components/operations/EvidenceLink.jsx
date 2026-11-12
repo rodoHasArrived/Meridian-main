@@ -3,7 +3,7 @@
 // Mirrors the EvidenceStatus model (Unknown | Ready | ReviewRequired | Blocked |
 // Stale | Missing). Renders as a clickable chip: status dot, label, mono route, arrow.
 import React from "react";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {
@@ -11,21 +11,21 @@ function inject() {
   injected = true;
   const css = `
 .mds-evidence{display:inline-flex;align-items:center;gap:8px;max-width:100%;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);
-  background:var(--bg-medium,#EDEAE4);padding:5px 9px;font-family:var(--font-body);font-size:12px;
-  color:var(--text-primary,#22252A);text-decoration:none;cursor:pointer;
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+  background:var(--bg-medium,#EBE8E1);padding:5px 9px;font-family:var(--font-body);font-size:12px;
+  color:var(--text-primary,#20252B);text-decoration:none;cursor:pointer;
   transition:border-color 120ms ease,background-color 120ms ease;}
-.mds-evidence:hover{border-color:var(--border-hover,#C6C3BB);background:var(--bg-hover,#F0EEE9);}
+.mds-evidence:hover{border-color:var(--border-hover,#BEB8AD);background:var(--bg-hover,#EDEFF0);}
 .mds-evidence:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#5E666F);}
-.mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#2C5C40);}
-.mds-evidence--review .mds-evidence__dot{background:var(--state-paper-fg,#8C4429);}
-.mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#68450E);}
-.mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#7E332D);}
+.mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#606870);}
+.mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#225840);}
+.mds-evidence--review .mds-evidence__dot{background:var(--state-paper-fg,#465664);}
+.mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
+.mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-evidence__route{font-family:var(--font-data,monospace);font-size:10px;color:var(--text-muted,#5E666F);
+.mds-evidence__route{font-family:var(--font-data,monospace);font-size:10px;color:var(--text-muted,#606870);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-.mds-evidence__arrow{margin-left:auto;color:var(--text-muted,#5E666F);flex:0 0 auto;font-size:11px;}
+.mds-evidence__arrow{margin-left:auto;color:var(--text-muted,#606870);flex:0 0 auto;font-size:11px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "evidence-link");
@@ -36,8 +36,8 @@ function inject() {
 export function EvidenceLink({ label, status = "info", route, href, onOpen, className = "", ...rest }) {
   inject();
   const sev = normalizeSeverity(status);
-  const Tag = href ? "a" : "button";
-  const extra = href ? { href } : { type: "button" };
+  const Tag = href ? "a" : onOpen ? "button" : "span";
+  const extra = href ? { href } : onOpen ? { type: "button" } : {};
   return (
     <Tag
       className={`mds-evidence mds-evidence--${sev}${className ? " " + className : ""}`}

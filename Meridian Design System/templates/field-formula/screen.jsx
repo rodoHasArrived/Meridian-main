@@ -4,7 +4,7 @@
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
   SegmentedControl, Combobox, Kbd, Callout, KeyValueGrid
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NAV = [
@@ -106,7 +106,7 @@ function FieldFormulaScreen() {
                   <div style={{ padding: "12px 14px", color: "var(--text-primary)", lineHeight: 1.7 }}>
                     <span style={{ color: "var(--purple-dim)" }}>Let </span>
                     <span>current_yield = </span>
-                    <span style={{ color: "var(--accent)" }}>{s.formula}</span>
+                    <span style={{ color: "var(--brand-signal-ink)" }}>{s.formula}</span>
                     <span style={{ display: "inline-block", width: 2, height: 18, background: "var(--accent)", verticalAlign: "-3px", marginLeft: 1 }}></span>
                   </div>
                 </div>
@@ -139,7 +139,7 @@ function FieldFormulaScreen() {
               <PanelSurface raised style={{ padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Eyebrow>Signature</Eyebrow>
-                  <code style={{ font: "13px var(--font-data)", color: "var(--accent)" }}>{s.formula}</code>
+                  <code style={{ font: "13px var(--font-data)", color: "var(--brand-signal-ink)" }}>{s.formula}</code>
                   <Badge variant={CAT_TONE[s.cat]}>{s.cat}</Badge>
                 </div>
                 <KeyValueGrid columns={1} items={[

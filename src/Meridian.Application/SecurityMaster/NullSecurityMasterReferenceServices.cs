@@ -38,6 +38,10 @@ public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingSer
         Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
         => Task.FromResult<SecurityPriceGoldenCopyDto?>(null);
 
+    public Task<IReadOnlyList<SecurityPriceGoldenCopyDto>> GetObservationSelectionsAsync(Guid securityId, string? accountId,
+        DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null)
+        => Task.FromResult<IReadOnlyList<SecurityPriceGoldenCopyDto>>([]);
+
     public Task<IReadOnlyList<SecurityComparisonPriceDto>> GetComparisonPricesAsync(
         Guid securityId, CancellationToken ct = default)
         => Task.FromResult(_empty);

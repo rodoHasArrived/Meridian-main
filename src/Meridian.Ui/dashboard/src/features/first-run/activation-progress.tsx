@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Circle, FlaskConical, ListChecks } from "lucide-react";
+import { ArrowRight, Check, Circle, FlaskConical, ListChecks, MonitorUp } from "lucide-react";
 import { apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -27,6 +27,9 @@ import type { FirstRunStatus } from "./types";
  * The count alone was a dead end: it named a denominator without ever saying which steps
  * were left or where to do them. The host already publishes a label, an action label and a
  * route per outcome, so the chip opens a drawer that walks the user to the next one.
+ *
+ * The sample-workspace label is not repeated here: the masthead environment badge is the one
+ * place that says the data is sample data.
  *
  * The status is fetched once by AppRoot and passed down — this component must not issue its
  * own fetch, so the shell renders from a single consistent first-run snapshot. It does track
@@ -56,38 +59,37 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
 
   return (
     <div className="flex items-center gap-2">
-      {liveStatus.workspace.isSample ? (
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-semibold text-amber-200"
-          title={liveStatus.workspace.safetyMessage}
+      {/* Kept mounted while the sheet is open so finishing the last step mid-sheet does not
+          pull the drawer's trigger out from under it; it leaves on the next close. */}
+      {model.triggerVisible || open ? (
+        <button
+          type="button"
+          aria-label={model.triggerAriaLabel}
+          title={model.triggerTitle}
+          onClick={() => setOpen(true)}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
+            "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+            model.finished
+              ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
+              : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+          )}
         >
-          <FlaskConical size={13} />
-          {liveStatus.workspace.badge}
-        </span>
+          {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
+          {model.triggerLabel}
+        </button>
       ) : null}
 
+      {/* Icon-sized so the masthead fits one row; the accessible name and tooltip keep
+          the full action. */}
       <button
         type="button"
-        aria-label={model.triggerAriaLabel}
-        title={model.triggerTitle}
-        onClick={() => setOpen(true)}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-          model.finished
-            ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
-            : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-        )}
-      >
-        {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
-        {model.triggerLabel}
-      </button>
-
-      <button
-        className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300 hover:border-cyan-400 hover:text-cyan-200"
+        aria-label="Open desktop workstation"
+        title="Open desktop workstation"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={() => void apiPostJson(WORKSTATION_API_ENDPOINTS.desktopLaunch, { page: "Portfolio" })}
       >
-        Open desktop workstation
+        <MonitorUp className="h-4 w-4" aria-hidden="true" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -102,6 +104,12 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
             </div>
           </SheetHeader>
           <SheetBody>
+            {liveStatus.workspace.isSample ? (
+              <section aria-label="Workspace safety context" className="mb-4 space-y-2 border border-border p-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold"><FlaskConical size={14} aria-hidden="true" />{liveStatus.workspace.badge}</h3>
+                <p className="text-sm text-muted-foreground">{liveStatus.workspace.safetyMessage}</p>
+              </section>
+            ) : null}
             <ol className="space-y-2">
               {model.steps.map((step) => (
                 <li key={step.key}>

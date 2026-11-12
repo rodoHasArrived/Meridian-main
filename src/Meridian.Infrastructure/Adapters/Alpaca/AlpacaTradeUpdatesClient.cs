@@ -255,6 +255,18 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             ReadTime(order, "updated_at") ??
             throw new JsonException("Alpaca trade update lacks a stable timestamp.");
         var eventType = ReadString(data, "event");
+        // A multi-leg parent names no instrument (Alpaca sends an empty symbol and side), so it
+        // has no single-instrument execution report. Admitting one is refused by the durable
+        // inbox and marks the whole stream failed for every other order.
+        if (string.Equals(ReadString(order, "order_class"), "mleg", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(ReadString(order, "symbol")))
+        {
+            _logger.LogWarning(
+                "Alpaca trade update {EventType} for a multi-leg parent order was not normalized; it carries no instrument symbol and only its legs are tracked",
+                eventType);
+            return;
+        }
+
         var status = order.TryGetProperty("status", out var statusElement) ? statusElement.GetString() : null;
         var mapped = Map(status);
         var report = new ExecutionReport
@@ -1183,28 +1195,19 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_lockPath)!);
         _pathGuard.EnsurePath(_lockPath);
-        var stopwatch = Stopwatch.StartNew();
-        IOException? lastFailure = null;
-        while (stopwatch.Elapsed < WriterLeaseTimeout)
+        // Synchronous: the cursor-store contract is synchronous and this runs under the in-process
+        // _gate monitor, so only another process can contend. Only sharing/lock refusals are retried;
+        // any other I/O fault surfaces immediately instead of spinning for the full lease timeout.
+        try
         {
-            try
-            {
-                return new FileStream(
-                    _lockPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None);
-            }
-            catch (IOException ex)
-            {
-                lastFailure = ex;
-                Thread.Sleep(25);
-            }
+            return ExclusiveFileLock.Acquire(_lockPath, WriterLeaseTimeout);
         }
-
-        throw new IOException(
-            $"Timed out acquiring the Alpaca trade-update state lease for '{_path}'.",
-            lastFailure);
+        catch (TimeoutException ex)
+        {
+            throw new IOException(
+                $"Timed out acquiring the Alpaca trade-update state lease for '{_path}'.",
+                ex.InnerException);
+        }
     }
 
     private static string NormalizeEnvironment(string tradingEnvironment)

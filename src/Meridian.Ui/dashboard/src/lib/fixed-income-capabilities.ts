@@ -55,11 +55,11 @@ export const FIXED_INCOME_CAPABILITIES = [
       {
         id: "bond-analytics", label: "Calculate bond analytics",
         service: trace("src/Meridian.Instruments/FixedIncome/BondAnalyticsService.cs", "BondAnalyticsService"),
-        api: [api("ReferenceDataBondAnalytics", "GET", "BondAnalyticsEndpoints.cs")],
+        api: [api("ReferenceDataBondAnalytics", "GET", "BondAnalyticsEndpoints.cs"), api("SecurityMasterRetainedPriceObservations", "GET", "SecurityMasterEndpoints.cs")],
         client: ui("lib/api/bond-analytics.api.ts", "getBondAnalytics"),
         screenAction: ui("components/meridian/bond-analytics-panel.tsx", "BondAnalyticsPanel"),
         permission: securityRead,
-        browserAcceptance: acceptance("From a selected bond or holding, open analytics, supply dates and price/yield, inspect metrics, payment evidence and blockers, then follow the same deep link after reload.", "components/meridian/bond-analytics-panel.test.tsx", "scripts/dev/verify-fixed-income-access.mjs"),
+        browserAcceptance: acceptance("From a selected bond or holding, open analytics, supply dates and price/yield or select a retained quote receipt, inspect metrics, payment evidence, quote freshness and blockers, then follow the same deep link after reload.", "components/meridian/bond-analytics-panel.test.tsx", "scripts/dev/verify-fixed-income-access.mjs"),
         remainingGaps: []
       },
       {
@@ -71,6 +71,16 @@ export const FIXED_INCOME_CAPABILITIES = [
         permission: "ModifySecurityMaster; workstation tenant scope; staging actor comes from the authenticated request",
         browserAcceptance: acceptance("Open migration for the selected bond, preview explicit convention changes, review differences and stage a justified workbench draft; verify stale terms refuse staging.", "components/meridian/bond-migration-preview-panel.test.tsx", "scripts/dev/verify-fixed-income-access.mjs"),
         remainingGaps: ["Adjusted schedules still require retained calendar IDs; a browsable retained-calendar selector is needed to remove internal-ID preparation."]
+      },
+      {
+        id: "select-observed-bond-fixings", label: "Retain and select observed fixing receipts for floating analytics",
+        service: trace("src/Meridian.Application/SecurityMaster/CashFlow/FileBondObservedFixingStore.cs", "FileBondObservedFixingStore"),
+        api: [api("SecurityMasterObservedBondFixings", "GET", "SecurityMasterEndpoints.ObservedFixings.cs"), api("SecurityMasterObservedBondFixings", "POST", "SecurityMasterEndpoints.ObservedFixings.cs")],
+        client: ui("lib/api/bond-observed-fixings.api.ts", "retainBondObservedFixing"),
+        screenAction: ui("components/meridian/bond-observed-fixing-panel.tsx", "BondObservedFixingPanel"),
+        permission: `${securityRead} to inspect; ModifySecurityMaster and authenticated actor to retain provider-verified fixing evidence`,
+        browserAcceptance: acceptance("Resolve an already-reset floating coupon blocker, review exact-date/index/currency source evidence, retain and explicitly select its immutable fixing receipt, then return to the mounted analytics inputs; distinguish future forward-curve requirements.", "components/meridian/bond-observed-fixing-panel.test.tsx"),
+        remainingGaps: []
       }
     ]
   },
@@ -97,7 +107,16 @@ export const FIXED_INCOME_CAPABILITIES = [
       screenAction: ui("components/meridian/contractual-cash-flow-workbench.tsx", "ContractualCashFlowWorkbench"),
       permission: `${securityRead} for reads/preview; ModifySecurityMaster to retain security runs. Loan routes use ViewDirectLending/ManageDirectLending and their fund scope.`,
       browserAcceptance: acceptance("Open a selected asset or loan, choose dates, multiple prepayments and exercise notice dates, preview and retain, then browse retained runs and reproduce the selected result.", "components/meridian/contractual-cash-flow-workbench.test.tsx"),
-      remainingGaps: ["Curve/version selection is not exposed by the workbench.", "Retained-run store and API expose save/get-by-ID, with no list seam for browsable history."]
+      remainingGaps: ["Curve/version selection is not exposed by the contractual workbench; Security Master already provides a separate reviewed rates-ingestion workflow.", "Retained-run store and API expose save/get-by-ID plus two-ID comparison, with no list seam for browsable history."]
+    }, {
+      id: "compare-retained-cash-flow-runs", label: "Compare two retained contractual cash-flow runs",
+      service: trace("src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs", "ContractualCashFlowRunComparer"),
+      api: [api("SecurityMasterCashFlowProjectionRunCompare", "GET", "ContractualCashFlowRunEndpoints.cs"), api("DirectLendingContractualRunCompare", "GET", "ContractualCashFlowRunEndpoints.cs")],
+      client: ui("lib/api/contractual-cash-flow.api.ts", "compareContractualCashFlowRuns"),
+      screenAction: ui("components/meridian/contractual-cash-flow-workbench.tsx", "ContractualCashFlowWorkbench"),
+      permission: `${securityRead}; loan comparison uses ViewDirectLending or ManageDirectLending and the existing subject scope`,
+      browserAcceptance: acceptance("Select two retained runs of one subject/currency, inspect per-date/per-stream cash deltas and their reconciled total, blocker differences and each packet's replay verification.", "components/meridian/contractual-cash-flow-workbench.test.tsx"),
+      remainingGaps: ["Comparison already exists but requires supplied run IDs rather than browsable run selection.", "Comparison reports date/stream cash and blocker deltas; payment-level explanations attributing each change to rates, curves, exercise, prepayments, factors or amended terms remain additional work."]
     }]
   },
   {
@@ -142,18 +161,28 @@ export const FIXED_INCOME_CAPABILITIES = [
     id: "curves-and-pricing-hierarchy", label: "Curve management and pricing-source hierarchy",
     operations: [
       {
-        id: "inspect-and-select-curves", label: "Inspect curves and published versions",
+        id: "inspect-and-select-curves", label: "Browse retained curve versions and pin calculation inputs",
         service: trace("src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs", "ISecurityCurveStore"),
         api: [api("SecurityMasterCurves", "GET", "SecurityMasterEndpoints.Curves.cs"), api("SecurityMasterCurveVersions", "GET", "SecurityMasterEndpoints.Curves.cs")],
         client: null, screenAction: null, permission: "ViewSecurityMaster or ModifySecurityMaster to inspect; ModifySecurityMaster to define/publish. Routes require a registered ISecurityCurveStore.",
         browserAcceptance: acceptance("Browse available curves and retained versions, inspect as-of/cutoff/freshness, and choose an exact version as a calculation input; explain missing configuration."),
-        remainingGaps: ["No curve inspection/version selection browser client or screen workflow."]
+        remainingGaps: ["Curve definitions and reviewed rate ingestion already have a browser workflow; general retained-version browsing and exact version selection for calculation inputs are not exposed."]
+      },
+      {
+        id: "ingest-reviewed-rates", label: "Inspect typed rate observations and publish a reviewed curve version",
+        service: trace("src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs", "SecurityRateIngestionRules"),
+        api: [api("SecurityMasterRateObservations", "GET", "SecurityMasterEndpoints.Rates.cs"), api("SecurityMasterCurves", "GET", "SecurityMasterEndpoints.Curves.cs"), api("SecurityMasterRateIngest", "POST", "SecurityMasterEndpoints.Rates.cs")],
+        client: ui("lib/api/security-rates.api.ts", "ingestRates"),
+        screenAction: ui("components/meridian/security-rates-ingestion-panel.tsx", "SecurityRatesIngestionPanel"),
+        permission: "ViewSecurityMaster or ModifySecurityMaster to inspect; ModifySecurityMaster and authenticated actor to publish; configured rate provider and curve store, with server re-verification of provider observations",
+        browserAcceptance: acceptance("From bond Evidence, load typed rate observations, inspect units/vintage/source, select a defined curve, review a supported one-pillar construction and publish its immutable version without treating a historical fixing as a future forecast.", "components/meridian/security-rates-ingestion-panel.test.tsx"),
+        remainingGaps: ["The existing panel publishes a complete one-pillar version; it is not a general curve-version browser or multi-pillar construction editor."]
       },
       {
         id: "manage-pricing-source-priority", label: "Inspect and change pricing-source priority",
         service: trace("src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs", "ISecurityMasterPricingService"),
         api: [api("SecurityMasterPricingHierarchy", "GET", "SecurityMasterEndpoints.cs"), api("SecurityMasterPricingHierarchy", "PUT", "SecurityMasterEndpoints.cs")],
-        client: null, screenAction: null, permission: "ModifySecurityMaster and authenticated actor for hierarchy mutation; existing read endpoint has no route-level RequirePermission declaration.",
+        client: null, screenAction: null, permission: "Inherited Security Master group filter requires ViewSecurityMaster or ModifySecurityMaster for reads; ModifySecurityMaster and authenticated actor for hierarchy mutation.",
         browserAcceptance: acceptance("Inspect selected instrument/account pricing priorities and freshness, preview the effect of a reorder and save through existing modification authority."),
         remainingGaps: ["No source-priority browser client/control or freshness explanation workflow."]
       }

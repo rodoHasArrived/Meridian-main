@@ -1,0 +1,85 @@
+<!-- @dsCard group="Charts" viewport="1180x780" name="Figure — parametric geometries" subtitle="Reach for this before writing another named chart: Figure supplies the frame, geometry is a prop, and series color comes only from FIGURE_ROLES — the domain ladders keep their own contracts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Figure</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { Figure, FIGURE_ROLES, Eyebrow } = window.MeridianDesignSystem_205d17;
+
+function Panel({ eyebrow, title, note, children, style }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0, ...style }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"74ch" }}>{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+
+const GAP = [
+  { label:"O/N", value:482 }, { label:"1W", value:210 }, { label:"1M", value:-118 }, { label:"3M", value:-402 },
+  { label:"6M", value:-655 }, { label:"1Y", value:-380 }, { label:"2Y", value:145 }, { label:"5Y", value:390, role:"estimated" },
+];
+const CURVE = (b) => [4.32,4.28,4.21,4.18,4.22,4.30,4.38,4.45].map((v,i) => ({ label:["O/N","1W","1M","3M","6M","1Y","2Y","10Y"][i], value:+(v+b).toFixed(2) }));
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,550px),1fr))", gap:16, alignItems:"start", maxWidth:1140 }}>
+      <Panel eyebrow="One geometry" title="Ladder — every schedule chart"
+        note="CashFlowLadder, MaturityLadder, ScheduleLadder, IncomeSchedule and DurationContribution were this figure: signed magnitude bucketed along an ordered axis, zero rule always drawn. The estimated bucket keeps its dashed uncertainty treatment.">
+        <Figure geometry="ladder" title="Net cash gap by horizon" clocks="As of 2026-08-11 20:00Z"
+          series={[{ label:"Net gap", role:"actual", points:GAP }]} width={520} height={210} />
+      </Panel>
+      <Panel eyebrow="Series roles" title="Trace — color assigned by role, never by instance"
+        note="Actual, prior, benchmark, scenario, target, estimated: the role ledger in FIGURE_ROLES owns stroke, dash and fill. A new figure never picks a color.">
+        <Figure geometry="trace" title="Par curve" clocks="Valuation 2026-06-30"
+          series={[
+            { label:"Actual", role:"actual", points:CURVE(0) },
+            { label:"Prior month", role:"prior", points:CURVE(-0.06) },
+            { label:"+200bp scenario", role:"scenario", points:CURVE(2) },
+          ]} width={520} height={210} />
+      </Panel>
+      <Panel eyebrow="Comparison" title="Plate — the matrix that was three components"
+        note="BasisComparisonMatrix, ComparisonPlate and RollforwardMatrix are one plate: labelled rows, role-tagged columns, values already formatted by their owner.">
+        <Figure geometry="plate" title="Basis comparison · June 2026" legend
+          rows={[{ label:"Book value" }, { label:"Fair value" }, { label:"Amortized cost" }, { label:"Tax basis" }]}
+          columns={[{ key:"gaap", label:"US GAAP", role:"actual" }, { key:"stat", label:"Statutory", role:"prior" }, { key:"tax", label:"Tax", role:"benchmark" }]}
+          cells={[
+            ["186,402,881", "186,119,004", "185,900,110"],
+            ["186,402,881", "186,402,881", "—"],
+            ["184,118,220", "184,990,081", "185,900,110"],
+            ["—", "—", "182,004,556"],
+          ]} />
+      </Panel>
+      <Panel eyebrow="Distribution" title="Distribution — observed frequency"
+        note="One series, binned. The same frame carries the title, clock and legend, so a new domain figure is a schema decision, not a component.">
+        <Figure geometry="distribution" title="Overnight P&amp;L distribution · 250d" clocks="Through 2026-08-11"
+          series={[{ label:"Daily P&L", role:"actual", points:[
+            { value:2 }, { value:5 }, { value:11, label:"−2σ" }, { value:24 }, { value:46 }, { value:62, label:"0" },
+            { value:48 }, { value:27 }, { value:12, label:"+2σ" }, { value:4 }, { value:1 },
+          ] }]} width={520} height={190} />
+        <div style={{ display:"flex", flexWrap:"wrap", gap:"6px 16px", marginTop:10 }}>
+          {Object.keys(FIGURE_ROLES).map((k) => (
+            <span key={k} style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:11, color:"var(--text-secondary)" }}>
+              <span style={{ width:16, borderTop:"2px "+(FIGURE_ROLES[k].dash?"dashed":"solid")+" transparent", borderTopColor:FIGURE_ROLES[k].stroke }}></span>
+              {FIGURE_ROLES[k].label}
+            </span>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

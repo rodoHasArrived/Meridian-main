@@ -72,6 +72,11 @@ export interface AppShellWorkflowContinuityViewModel {
   operatorFocusOverflowLabel: string | null;
   operatorFocusItems: AppShellOperatorFocusItem[];
   operatorFocusCommandItems: AppShellOperatorFocusItem[];
+  /**
+   * The queued item the decision brief names: the worst by tone, independent of the order the
+   * queue is listed in. Absent or null when nothing is queued.
+   */
+  leadingOperatorFocusItemId?: string | null;
   evidenceTimelineLabel: string;
   evidenceTimelineSummary: string;
   evidenceTimelineEmptyText: string;

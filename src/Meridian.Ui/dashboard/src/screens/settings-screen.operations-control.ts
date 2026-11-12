@@ -16,6 +16,7 @@ import type {
   SecurityAssetProfileDefinition,
   SessionInfo
 } from "@/types";
+import { pluralizeCount } from "@/lib/format";
 
 export interface SettingsOperationsControlMetric {
   label: string;
@@ -270,7 +271,7 @@ function buildRolePermissionControlCard(
     id: "role-permissions",
     title: "Role and Permission Studio",
     description: "Shows built-in roles, permission groups, and the active operator authority profile.",
-    statusLabel: activeRole ? `${activeRole.displayName} active` : `${catalog.roles.length} roles`,
+    statusLabel: activeRole ? `${activeRole.displayName} active` : pluralizeCount(catalog.roles.length, "role"),
     statusVariant,
     endpointHref: AUTH_API_ENDPOINTS.roles,
     routeHref: AUTH_API_ENDPOINTS.roles,
@@ -310,7 +311,7 @@ function buildApprovalPolicyControlCard(
     id: "approval-policy",
     title: "Approval Policy Matrix",
     description: "Shows required permissions, reviewer separation, report-pack, and checklist-control approval rules.",
-    statusLabel: `${matrix.rows.length} rules`,
+    statusLabel: pluralizeCount(matrix.rows.length, "rule"),
     statusVariant: "success",
     endpointHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
     routeHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,

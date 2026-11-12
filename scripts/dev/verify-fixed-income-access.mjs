@@ -32,7 +32,7 @@ const operations = {
   readiness: { securityId, status: "ReviewRequired", capabilities: [], readyCapabilities: [], missingCapabilities: [], blockers: ["Synthetic evidence only"], evaluatedAt: "2026-07-05T12:00:00Z", sourceDomain: "SecurityMaster", sourceEntityId: securityId }
 };
 const analytics = {
-  securityId, currency: "USD", modelVersion: "synthetic-bond-analytics", context: { asOf: "2026-11-12T00:00:00Z", settlementDate: "2026-11-12" }, yieldConvention: "NominalPeriodic",
+  securityId, currency: "USD", modelVersion: "bond-analytics-v2", context: { asOf: "2026-11-12T00:00:00Z", settlementDate: "2026-11-12" }, yieldConvention: "NominalPeriodic",
   cleanPrice: "99.125", dirtyPrice: "100.125", accruedInterest: "1", yieldToMaturity: "0.0512345", currentYield: "0.05044", macaulayDuration: "3.2", modifiedDuration: "3.1", convexity: "12.5", dv01: "0.031", yieldToWorst: "0.04",
   cashFlows: [{ flowId: "synthetic-coupon", paymentDate: "2027-01-31", accrualStart: "2026-07-31", accrualEnd: "2027-01-31", interest: "2.5", principal: "100", timeInYears: "0.25" }],
   exerciseYields: [], inputs: [{ kind: "SecurityTerms", key: securityId, version: 7, contentSha256: "synthetic-sha256" }], blockers: [], capabilities: [{ operation: "Analytics", supported: true }], diagnostics: ["Synthetic browser acceptance result"], isBlocked: false
@@ -64,6 +64,7 @@ const reads = new Map([
   [`/api/reference-data/bonds/${securityId}/analytics`, analytics],
   ["/api/portfolio/cash-ladder", ladder],
   ["/api/ledger/books", []],
+  ["/api/workstation/tables/accounting-reconciliation-breaks/views", []],
   ["/api/ledger/journal-automation/daily-mark-to-market-schedules", []]
 ]);
 const expectedBlockers = new Set([
@@ -74,7 +75,7 @@ const expectedBlockers = new Set([
 // The existing reference catalog probes other asset families during selection. These are
 // deliberately unavailable supporting reads, not synthetic claims about those workflows.
 const isReferenceCatalogProbe = pathname => /^\/api\/reference-data\/(bonds|options|equities|futures|fxspot|swaps|commodities|crypto|deposits|money-market-funds|certificates-of-deposit|edgar)\//.test(pathname);
-const report = { evidenceScope: "synthetic-verified; live providers untested", browserPath: "Browser plugin not available; Playwright with installed Chromium", base, viewports: [], checks: [], screenshots: [], pageErrors: [], consoleErrors: [], failedRequests: [], unhandledApiRequests: [], expectedApiBlockers: [], scenarioRequests: [] };
+const report = { evidenceScope: "synthetic-verified; live providers untested", browserPath: "Browser plugin not available; Playwright with installed Chromium", base, viewports: [], checks: [], screenshots: [], pageErrors: [], consoleErrors: [], failedRequests: [], unhandledApiRequests: [], expectedApiBlockers: [], scenarioRequests: [], analyticsRequests: [] };
 report.pageIdentitySnapshots = [];
 let browser;
 let page;
@@ -91,12 +92,16 @@ try {
     const url = new URL(request.url());
     if (!url.pathname.startsWith("/api/")) return route.continue();
     const send = (status, body) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body), headers: { "x-meridian-dev-fixture": "true" } });
-    if (request.method() === "GET" && reads.has(url.pathname)) return send(200, reads.get(url.pathname));
+    if (request.method() === "GET" && reads.has(url.pathname)) {
+      if (url.pathname === `/api/reference-data/bonds/${securityId}/analytics`) report.analyticsRequests.push(Object.fromEntries(url.searchParams));
+      return send(200, reads.get(url.pathname));
+    }
     if (request.method() === "POST" && url.pathname === `/api/security-master/${securityId}/cashflow-projections/preview`) {
       report.scenarioRequests.push(request.postDataJSON());
       return send(200, scenarioResult);
     }
-    if (request.method() === "GET" && (expectedBlockers.has(url.pathname) || isReferenceCatalogProbe(url.pathname))) {
+    if ((request.method() === "GET" && (expectedBlockers.has(url.pathname) || isReferenceCatalogProbe(url.pathname))) ||
+      (request.method() === "POST" && url.pathname === "/api/workstation/operator/visits/reconciliation-breaks")) {
       report.expectedApiBlockers.push(url.pathname);
       return send(503, { title: "Synthetic supporting evidence unavailable", detail: "No retained supporting evidence is configured in this synthetic browser acceptance scope.", status: 503 });
     }
@@ -141,8 +146,13 @@ try {
   await capture("issuer-ladder-before-selection");
   await bondRow.press("Enter");
   await page.waitForURL(url => url.searchParams.get("securityId") === securityId);
-  await page.getByText(`Identity drill-in · ${name}`, { exact: true }).waitFor();
-  report.checks.push("Issuer ladder browsable before selection; keyboard activation selects exact authoritative instrument.");
+  assert.equal(new URL(page.url()).searchParams.get("tab"), "evidence");
+  await page.getByLabel("Clean price / 100", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Return to bond ladder", exact: true }).click();
+  assert.equal(await page.getByLabel("Issuer name", { exact: true }).inputValue(), "Synthetic Meridian");
+  await page.waitForFunction(displayName => [...document.querySelectorAll("section[aria-label='Bond reference ladders'] button")]
+    .some(button => button.textContent === displayName && document.activeElement === button), name);
+  report.checks.push("Issuer ladder browsable before selection; keyboard activation opens the exact instrument Evidence tab; Return to bond ladder retains the query and restores row focus.");
   await page.getByLabel("Ladder kind", { exact: true }).selectOption("maturity");
   await page.getByLabel("Maturity window start", { exact: true }).fill("2030-01-01");
   await page.getByLabel("Maturity window end", { exact: true }).fill("2032-12-31");
@@ -155,9 +165,12 @@ try {
   await navigate(`/portfolio/asset-detail?securityId=${securityId}`);
   await page.getByRole("link", { name: "Bond analytics", exact: true }).click();
   await page.waitForURL(url => url.searchParams.get("securityId") === securityId && url.searchParams.get("bondAction") === "analytics" && url.searchParams.get("tab") === "evidence");
+  await page.getByLabel("Input basis", { exact: true }).selectOption("cleanPrice");
   await page.getByLabel("Clean price / 100", { exact: true }).fill("99.125");
   await page.getByRole("button", { name: "Calculate bond analytics", exact: true }).click();
   await page.getByText("Calculation ready.", { exact: true }).waitFor();
+  assert.equal(report.analyticsRequests.at(-1).cleanPrice, "99.125");
+  assert.equal(report.analyticsRequests.at(-1).calculationVersion, "bond-analytics-v2");
   await page.getByText("Projected contractual payments (1)", { exact: true }).click();
   await page.getByRole("table", { name: "Projected bond payments" }).waitFor();
   await page.locator("#bond-analytics-action").evaluate(element => element.scrollIntoView({ block: "start" }));
@@ -269,6 +282,7 @@ try {
   report.error = failure.stack ?? String(failure);
   if (page) {
     report.failureUrl = page.url();
+    report.failureFocus = await page.evaluate(() => ({ tag: document.activeElement?.tagName, id: document.activeElement?.id, text: document.activeElement?.textContent?.slice(0,120) }));
     report.failureText = await page.locator("body").innerText().catch(() => "Body unavailable");
     await page.screenshot({ path: path.join(output, "failure.png"), fullPage: true }).catch(() => {});
   }

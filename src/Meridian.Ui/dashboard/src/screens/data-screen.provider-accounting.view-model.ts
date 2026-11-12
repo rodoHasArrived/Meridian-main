@@ -9,6 +9,7 @@ import type {
   ProviderRateLimitsResponse,
   ProviderRegistrationFailure
 } from "@/types";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export interface ProviderAccountingServices {
   getCatalog: (signal?: AbortSignal) => Promise<ProviderCatalogResponse>;
@@ -25,6 +26,7 @@ export interface ProviderRegistrationFailureRow {
 }
 
 export interface ProviderRateLimitRow {
+  source: ProviderRateLimitSnapshot;
   id: string;
   provider: string;
   surface: string;
@@ -184,6 +186,7 @@ function buildRateLimitRow(
   const reason = normalizeReason(provider.reason);
 
   return {
+    source: provider,
     id: `${provider.provider}-${provider.surface}`,
     provider: provider.displayName || provider.name || provider.provider,
     surface: formatToken(provider.surface),
@@ -273,5 +276,5 @@ function formatToken(value: string): string {
 
 function formatTimestamp(value: string): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed);
 }

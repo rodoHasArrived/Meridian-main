@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { describeApiError } from "@/lib/api-errors";
 import {
+  compareContractualCashFlowRuns,
   getContractualCashFlowRun,
   isContractualCashFlowRun,
   previewContractualCashFlows,
@@ -21,6 +22,7 @@ import {
   type ContractualCashFlowRequest,
   type ContractualCashFlowResult,
   type ContractualCashFlowRun,
+  type ContractualCashFlowRunComparison,
   type ContractualCashFlowSubjectKind,
   type PrepaymentMethod,
   type RateScenario,
@@ -37,8 +39,11 @@ export interface ContractualCashFlowWorkbenchProps {
 interface ExerciseChoice {
   include: boolean;
   exerciseDate: string;
+  /** Explicit date the notice was (or would be) given. */
   noticeDate: string;
   amount: string;
+  /** Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical. */
+  noticeEvidenceId: string;
 }
 
 interface PrepaymentChoice {
@@ -97,7 +102,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const [runIdInput, setRunIdInput] = useState("");
   const [loadedRun, setLoadedRun] = useState<ContractualCashFlowRun | null>(null);
   const [replayStatus, setReplayStatus] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"preview" | "retain" | "load" | "verify" | null>(null);
+  const [compareRunId, setCompareRunId] = useState("");
+  const [comparison, setComparison] = useState<ContractualCashFlowRunComparison | null>(null);
+  const [busy, setBusy] = useState<"preview" | "retain" | "load" | "verify" | "compare" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef<AbortController | null>(null);
 
@@ -106,6 +113,8 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     setRun(null);
     setLoadedRun(null);
     setReplayStatus(null);
+    setComparison(null);
+    setCompareRunId("");
     setEligibility([]);
     setExerciseChoices({});
     setPrepayments([]);
@@ -138,11 +147,16 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       if (!choice?.include) continue;
       if (!choice.exerciseDate || !choice.noticeDate || !DECIMAL_LITERAL.test(choice.amount.trim()))
         return `Choose an exercise date, a notice date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
-      if (choice.noticeDate < valuationDate || choice.noticeDate > choice.exerciseDate)
-        return "A hypothetical notice date must be on/after valuation and on/before exercise. Contractual notice windows are checked by the service.";
+      if (choice.noticeDate > choice.exerciseDate)
+        return `The notice date for the ${entry.side.toLowerCase()} on ${entry.streamId} cannot follow its exercise date.`;
+      const noticeEvidenceId = choice.noticeEvidenceId.trim();
+      if (!noticeEvidenceId && choice.noticeDate < valuationDate)
+        return "A hypothetical notice date must be on/after valuation. Contractual notice windows are checked by the service.";
       exercises.push({
         side: entry.side, entryStartDate: entry.entryStartDate, streamId: entry.streamId,
-        exerciseDate: choice.exerciseDate, noticeDate: choice.noticeDate, amount: choice.amount.trim(), hypotheticalNotice: true
+        exerciseDate: choice.exerciseDate, noticeDate: choice.noticeDate, amount: choice.amount.trim(),
+        hypotheticalNotice: !noticeEvidenceId,
+        noticeEvidenceId: noticeEvidenceId || null
       });
     }
     for (const assumption of prepayments) {
@@ -221,6 +235,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     if (!id) { setError("Enter a retained run identity."); return; }
     setLoadedRun(null);
     setReplayStatus(null);
+    setComparison(null);
     await guard("load", async (signal) => {
       const next = await getContractualCashFlowRun(subjectKind, subjectId, id, { signal });
       if (signal.aborted) return;
@@ -241,6 +256,17 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           ? `Replay matches: output hash ${retained.outputHash} reproduced from current terms, calendars and curves.`
           : `Replay differs: retained output ${retained.outputHash}, current ${fresh.evidence.outputHash}. Source terms ${retained.sourceTermsHash === fresh.evidence.sourceTermsHash ? "unchanged" : "changed"}.`);
     }, "Replay verification could not run.");
+  }
+
+  async function compare() {
+    if (!loadedRun) return;
+    if (!compareRunId.trim()) { setError("Enter the other retained run identity to compare."); return; }
+    setComparison(null);
+    await guard("compare", async (signal) => {
+      const next = await compareContractualCashFlowRuns(subjectKind, subjectId, loadedRun.runId, compareRunId, { signal });
+      if (signal.aborted) return;
+      setComparison(next);
+    }, "Retained runs could not be compared.");
   }
 
   const shown = result;
@@ -324,13 +350,13 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
 
         {eligibility.length > 0 ? (
           <fieldset className="grid gap-2 md:col-span-4">
-            <legend className="font-medium text-muted-foreground">Exercise selections (hypothetical notices)</legend>
+            <legend className="font-medium text-muted-foreground">Exercise selections (hypothetical unless an approved notice is named)</legend>
             {eligibility.map((entry) => {
               const key = eligibilityKey(entry);
-              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", noticeDate: "", amount: "" };
+              const choice = exerciseChoices[key] ?? { include: false, exerciseDate: entry.dates[0] ?? "", noticeDate: "", amount: "", noticeEvidenceId: "" };
               const update = (next: Partial<ExerciseChoice>) => edit(() => setExerciseChoices((prev) => ({ ...prev, [key]: { ...choice, ...next } })));
               return (
-                <div key={key} className="grid items-center gap-2 md:grid-cols-5">
+                <div key={key} className="grid items-center gap-2 md:grid-cols-6">
                   <Checkbox checked={choice.include} label={`${entry.side} · ${entry.streamId} · ${entry.style} until ${entry.windowEnd}`}
                     aria-label={`Include ${entry.side.toLowerCase()} exercise on ${entry.streamId}`} onCheckedChange={(checked) => update({ include: checked })} />
                   {entry.dates.length > 0 ? (
@@ -342,12 +368,14 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
                     <Input type="date" value={choice.exerciseDate} disabled={!choice.include} aria-label={`Exercise date for ${entry.streamId}`}
                       onChange={(e) => update({ exerciseDate: e.target.value })} />
                   )}
-                  <label className="grid gap-1">Hypothetical notice date
+                  <label className="grid gap-1">Notice date
                     <Input type="date" value={choice.noticeDate} disabled={!choice.include} aria-label={`Notice date for ${entry.streamId}`}
                       onChange={(e) => update({ noticeDate: e.target.value })} />
                   </label>
                   <Input placeholder="Amount" value={choice.amount} disabled={!choice.include} aria-label={`Exercise amount for ${entry.streamId}`}
                     onChange={(e) => update({ amount: e.target.value })} />
+                  <Input placeholder="Approved notice id (optional)" value={choice.noticeEvidenceId} disabled={!choice.include} aria-label={`Notice evidence for ${entry.streamId}`}
+                    onChange={(e) => update({ noticeEvidenceId: e.target.value })} />
                   <span className="text-muted-foreground">{entry.businessDayCalendarId ? `Notice calendar ${entry.businessDayCalendarId}` : "No notice calendar declared"}</span>
                 </div>
               );
@@ -416,6 +444,37 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           </p>
         ) : null}
         {replayStatus ? <p role="status" aria-label="Replay verification">{replayStatus}</p> : null}
+        {loadedRun ? (
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="grid gap-1 font-medium text-muted-foreground">Compare with retained run
+              <Input value={compareRunId} aria-label="Comparison run identity" onChange={(e) => setCompareRunId(e.target.value)} className="min-w-[20rem]" />
+            </label>
+            <Button type="button" size="sm" variant="outline" disabled={busy !== null} aria-busy={busy === "compare"} onClick={() => void compare()}>
+              {busy === "compare" ? "Comparing…" : "Compare runs"}
+            </Button>
+          </div>
+        ) : null}
+        {comparison ? (
+          <div className="grid gap-2" aria-label="Retained run comparison">
+            <p className="break-all font-mono text-muted-foreground">
+              {comparison.leftRunId} ({comparison.leftReplayVerified ? "replay verified" : "REPLAY FAILED"}) vs {comparison.rightRunId} ({comparison.rightReplayVerified ? "replay verified" : "REPLAY FAILED"}) · {comparison.sameRequest ? "same request" : "different requests"} · total net cash delta {bondDecimalText(comparison.totalDelta)}
+            </p>
+            {comparison.blockerDeltas.length > 0 ? (
+              <ul className="grid gap-1" aria-label="Blocker differences">
+                {comparison.blockerDeltas.map((delta) => <li key={`${delta.side}:${delta.code}:${delta.streamId ?? ""}`}>{delta.side === "LeftOnly" ? "Only in first" : "Only in second"}: <span className="font-mono">{delta.code}</span>{delta.streamId ? ` (${delta.streamId})` : ""}: {delta.message}</li>)}
+              </ul>
+            ) : null}
+            <DenseDataTable rows={comparison.cashDeltas} getRowId={(row) => `${row.date}:${row.streamId}`} ariaLabel="Net cash deltas by date" caption={null}
+              emptyText="No net cash differences between the two retained runs."
+              columns={[
+                { id: "date", label: "Date", render: (row) => row.date },
+                { id: "stream", label: "Stream", render: (row) => row.streamId },
+                { id: "left", label: "First run", align: "right", render: (row) => bondDecimalText(row.leftNetCash) },
+                { id: "right", label: "Second run", align: "right", render: (row) => bondDecimalText(row.rightNetCash) },
+                { id: "delta", label: "Delta", align: "right", render: (row) => bondDecimalText(row.delta) }
+              ]} />
+          </div>
+        ) : null}
       </div>
     </section>
   );

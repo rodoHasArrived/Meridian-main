@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { LocalDateText } from "@/components/ui/local-date-text";
 import { getAssetOperations } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { workstationRouteWithQuery } from "@/lib/workspace";
+import { formatUtcTimestamp } from "@/lib/format";
 import type { CashLadderDrillRow } from "@/screens/cash-ladder-screen.view-model";
 import type { AssetCashFlowProjectionRun, AssetTermsVersion } from "@/types";
 
@@ -47,7 +49,7 @@ export function CashLadderProjectionEvidence({ row, onClose }: { row: CashLadder
     <section aria-label={`Projection evidence for ${row.instrument}`} className="mt-4 space-y-3 rounded border border-border p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Projection evidence · {row.instrument}</h3>
+          <h4 className="type-section text-foreground">Projection evidence · {row.instrument}</h4>
           <p className="mt-1 text-xs text-muted-foreground">This contribution's exact run and terms are checked against the authoritative instrument record.</p>
         </div>
         <Button type="button" size="sm" variant="outline" onClick={onClose}>Close projection evidence</Button>
@@ -66,15 +68,16 @@ export function CashLadderProjectionEvidence({ row, onClose }: { row: CashLadder
           <dl className="grid gap-2 break-all text-xs sm:grid-cols-2">
             <div><dt className="font-semibold">Run status</dt><dd>{state.evidence.run.status}</dd></div>
             <div><dt className="font-semibold">Engine</dt><dd>{state.evidence.run.engineVersion}</dd></div>
-            <div><dt className="font-semibold">Projection as of</dt><dd>{state.evidence.run.projectionAsOf}</dd></div>
-            <div><dt className="font-semibold">Generated</dt><dd>{state.evidence.run.generatedAt}</dd></div>
+            <div><dt className="font-semibold">Projection as of</dt><dd><LocalDateText value={state.evidence.run.projectionAsOf} /></dd></div>
+            <div><dt className="font-semibold">Generated</dt><dd>{formatUtcTimestamp(new Date(state.evidence.run.generatedAt))}</dd></div>
             <div><dt className="font-semibold">Run source</dt><dd>{state.evidence.run.sourceDomain} · {state.evidence.run.sourceEntityId}</dd></div>
           </dl>
+          {state.evidence.run.blocker ? <StatusBanner tone="warning" role="alert" title={state.evidence.run.blocker.code} detail={state.evidence.run.blocker.reason} /> : null}
           {state.evidence.terms ? (
             <div className="space-y-1 text-xs">
-              <h4 className="font-semibold">Matched terms evidence</h4>
+              <h5 className="font-semibold">Matched terms evidence</h5>
               <p>{state.evidence.terms.summary}</p>
-              <p>Version {state.evidence.terms.versionNumber} · effective {state.evidence.terms.effectiveDate} · recorded {state.evidence.terms.recordedAt}</p>
+              <p>Version {state.evidence.terms.versionNumber} · effective <LocalDateText value={state.evidence.terms.effectiveDate} /> · recorded {formatUtcTimestamp(new Date(state.evidence.terms.recordedAt))}</p>
               <p className="break-all">{state.evidence.terms.sourceDomain} · {state.evidence.terms.sourceEntityId}</p>
             </div>
           ) : <StatusBanner tone="warning" title="Exact terms evidence unavailable" detail="The source did not return terms matching this contribution's version and hash. Current terms are not a substitute." />}

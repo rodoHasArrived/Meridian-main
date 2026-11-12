@@ -24,6 +24,9 @@ public partial class AdvancedAnalyticsPage : Page
     }
 
     private async void AdvancedAnalyticsPage_Loaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => AdvancedAnalyticsPage_LoadedCoreAsync(sender, e), nameof(AdvancedAnalyticsPage_Loaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task AdvancedAnalyticsPage_LoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         await _viewModel.InitializeAsync();
     }

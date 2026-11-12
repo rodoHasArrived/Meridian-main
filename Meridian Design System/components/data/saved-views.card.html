@@ -5,13 +5,15 @@
   <meta charset="UTF-8" />
   <title>Saved views</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
-<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);">
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const { SavedViews, DenseDataTable, Toolbar, ToolbarGroup, ToolbarSpacer, Input, Select, Badge, Eyebrow } = window.MeridianDesignSystem_4f61be;
-const { useTableState } = window.MeridianDesignSystem_4f61be.TableHooks;
+const { SavedViews, DataGrid, Toolbar, ToolbarGroup, ToolbarSpacer, Input, Select, Badge, Eyebrow } = window.MeridianDesignSystem_205d17;
+const { useTableState } = window.MeridianDesignSystem_205d17.TableHooks;
 
 const ORDERS = [
   { time: "14:31:44Z", sym: "NVDA",  side: "BUY",  qty: 1200, px: "128.4200", venue: "ARCA", status: "WORKING" },
@@ -71,15 +73,15 @@ function Demo() {
           </span>
           <SavedViews storageKey="mds-card.blotter" table={table} presets={PRESETS} defaultLabel="All orders" />
         </Toolbar>
-        <DenseDataTable
+        <DataGrid rowKey="index"
           columns={[
             { key: "time", label: "Time" },
             { key: "sym", label: "Symbol" },
-            { key: "side", label: "Side", render: (r) => <Badge variant={r.side === "BUY" ? "success" : "danger"}>{r.side}</Badge> },
-            { key: "qty", label: "Qty", align: "right", render: (r) => r.qty.toLocaleString("en-US") },
+            { key: "side", label: "Side", cell: (r) => <Badge variant={r.side === "BUY" ? "success" : "danger"}>{r.side}</Badge> },
+            { key: "qty", label: "Qty", align: "right", cell: (r) => r.qty.toLocaleString("en-US") },
             { key: "px", label: "Limit", align: "right" },
             { key: "venue", label: "Venue" },
-            { key: "status", label: "Status", render: (r) => <Badge variant={STATUS_VARIANT[r.status]}>{r.status}</Badge> },
+            { key: "status", label: "Status", cell: (r) => <Badge variant={STATUS_VARIANT[r.status]}>{r.status}</Badge> },
           ]}
           rows={table.data} />
       </div>

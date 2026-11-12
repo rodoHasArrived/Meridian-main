@@ -12,34 +12,35 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-caseq{display:flex;flex-direction:column;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-card,6px);background:var(--bg-light,#FBFAF8);overflow:hidden;}
+.mds-caseq{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-card,6px);background:var(--bg-light,#F8F7F3);overflow:hidden;}
 .mds-caseq__row{display:grid;grid-template-columns:3px auto 1fr auto;align-items:center;gap:10px;
-  padding:0 12px 0 0;min-height:var(--theme-row-height,40px);border-bottom:1px solid var(--border,#E4E3DE);
+  padding:0 12px 0 0;min-height:var(--theme-row-height,36px);border-bottom:1px solid var(--border,#D2CDC3);
   background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;
-  font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
+  font-family:var(--font-body,"IBM Plex Sans",sans-serif);}
 .mds-caseq__row:last-child{border-bottom:0;}
-.mds-caseq__row:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-caseq__row:focus-visible{outline:2px solid var(--focus-ring,#A85436);outline-offset:-2px;}
-.mds-caseq__row[aria-selected="true"]{background:var(--accent-a10,rgba(168,84,54,.08));}
+.mds-caseq__row:hover{background:var(--bg-hover,#EDEFF0);}
+.mds-caseq__row:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:-2px;}
+.mds-caseq__row[aria-selected="true"]{background:var(--interaction-selected-surface,#E7EDF2);}
 .mds-caseq__rail{align-self:stretch;background:transparent;}
-.mds-caseq__rail--critical{background:var(--severity-blocked-fg,#7E332D);}
-.mds-caseq__rail--high{background:var(--severity-action-fg,#68450E);}
-.mds-caseq__id{font-family:var(--font-data,"Cascadia Mono",monospace);font-size:10.5px;font-weight:700;
-  color:var(--text-muted,#5E666F);padding-left:9px;white-space:nowrap;}
+.mds-caseq__rail--critical{background:var(--severity-blocked-fg,#883832);}
+.mds-caseq__rail--high{background:var(--severity-action-fg,#724D11);}
+.mds-caseq__id{font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:10.5px;font-weight:700;
+  color:var(--text-muted,#606870);padding-left:9px;white-space:nowrap;}
 .mds-caseq__mid{display:flex;flex-direction:column;gap:2px;min-width:0;padding:6px 0;}
-.mds-caseq__summary{font-size:12.5px;font-weight:600;color:var(--text-primary,#22252A);
+.mds-caseq__summary{font-size:12.5px;font-weight:600;color:var(--text-primary,#20252B);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-caseq__sub{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--text-muted,#5E666F);
-  font-family:var(--font-data,"Cascadia Mono",monospace);white-space:nowrap;overflow:hidden;}
+.mds-caseq__sub{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--text-muted,#606870);
+  font-family:var(--font-data,"IBM Plex Mono",monospace);white-space:nowrap;overflow:hidden;}
 .mds-caseq__end{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
-.mds-caseq__who{font-size:11px;color:var(--text-secondary,#4E5258);white-space:nowrap;}
-.mds-caseq__who--none{color:var(--severity-action-fg,#68450E);font-style:italic;}
-.mds-caseq__empty{padding:18px 14px;font-size:12px;color:var(--text-muted,#5E666F);text-align:center;}
+.mds-caseq__who{font-size:11px;color:var(--text-secondary,#535C65);white-space:nowrap;}
+.mds-caseq__who--none{color:var(--severity-action-fg,#724D11);font-style:italic;}
+.mds-caseq__empty{padding:18px 14px;font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "case-queue");
-  el.textContent = css;
+  el.textContent = css + `
+.mds-caseq__row[aria-selected="true"] .mds-caseq__id,.mds-caseq__row[aria-selected="true"] .mds-caseq__sub{color:var(--text-primary,#20252B);}`;
   document.head.appendChild(el);
 }
 
@@ -62,15 +63,20 @@ export function CaseQueue({
   inject();
   const listRef = useRef(null);
 
-  const move = (dir) => {
-    const idx = items.findIndex((it) => it.id === selectedId);
-    const next = Math.min(items.length - 1, Math.max(0, (idx < 0 ? 0 : idx + dir)));
-    const item = items[next];
-    if (item && onSelect) onSelect(item.id, item);
-  };
-  const onKeyDown = (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+  const selectedIndex=items.findIndex(item=>item.id===selectedId);
+  const activeIndex=selectedIndex<0?0:selectedIndex;
+  const onKeyDown = event => {
+    let index;
+    const focused=Array.from(listRef.current?.querySelectorAll('[role="option"]')||[]).indexOf(document.activeElement);
+    const current=focused<0?activeIndex:focused;
+    if(event.key==="ArrowDown")index=Math.min(items.length-1,current+1);
+    else if(event.key==="ArrowUp")index=Math.max(0,current-1);
+    else if(event.key==="Home")index=0;
+    else if(event.key==="End")index=items.length-1;
+    else return;
+    event.preventDefault();
+    const item=items[index];
+    if(item){onSelect?.(item.id,item);listRef.current?.querySelectorAll('[role="option"]')[index]?.focus();}
   };
 
   if (!items.length) {
@@ -84,25 +90,26 @@ export function CaseQueue({
   return (
     <div
       className={`mds-caseq${className ? " " + className : ""}`}
-      role="listbox"
+      role={onSelect?"listbox":"list"}
       aria-label="Case queue"
       ref={listRef}
-      onKeyDown={onKeyDown}
+      onKeyDown={onSelect?onKeyDown:undefined}
       {...rest}
     >
-      {items.map((it) => {
+      {items.map((it, index) => {
         const selected = it.id === selectedId;
         const subParts = [it.category, it.reason, it.openedAtUtc && `opened ${it.openedAtUtc}`]
           .filter(Boolean);
+        const Item=onSelect?"button":"div";
         return (
-          <button
+          <Item
             key={it.id}
-            type="button"
-            role="option"
-            aria-selected={selected}
+            type={onSelect?"button":undefined}
+            role={onSelect?"option":"listitem"}
+            aria-selected={onSelect?selected:undefined}
             className="mds-caseq__row"
-            tabIndex={selected || (!selectedId && it === items[0]) ? 0 : -1}
-            onClick={() => onSelect && onSelect(it.id, it)}
+            tabIndex={onSelect?(index===activeIndex?0:-1):undefined}
+            onClick={onSelect?() => onSelect(it.id, it):undefined}
           >
             <span className={`mds-caseq__rail ${railClass(it.priority)}`} aria-hidden="true" />
             <span className="mds-caseq__id">{it.id}</span>
@@ -117,7 +124,7 @@ export function CaseQueue({
                 {it.assignee || "Unassigned"}
               </span>
             </span>
-          </button>
+          </Item>
         );
       })}
     </div>

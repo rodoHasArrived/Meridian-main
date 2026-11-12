@@ -140,7 +140,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         canonical.Upserted.Should().BeEmpty("the refused amendment leaves the canonical projection untouched");
     }
 
-    private ApprovedFieldEditCanonicalMergeHandler CreateCanonicalMergeHandler(ISecurityMasterAmender amender)
+    private ApprovedFieldEditCanonicalMergeHandler CreateCanonicalMergeHandler(IGovernedPublicationAmender amender)
         => new(
             _revisions,
             NullLogger<ApprovedFieldEditCanonicalMergeHandler>.Instance,

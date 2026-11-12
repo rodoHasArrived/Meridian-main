@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -7,6 +8,9 @@ import {
   statementIssueBadgeVariant
 } from "@/screens/statement-import-panel.view-model";
 import type { StatementImportPreview } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatMoney } from "@/lib/format";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 export interface StatementImportPreviewDetailsProps {
   onSelectKind: (kind: string) => void;
@@ -90,11 +94,11 @@ function StatementEvidenceSummary({ preview }: { preview: StatementImportPreview
 }
 
 function EvidenceMetric({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p><p className="mt-1 font-mono">{value}</p></div>;
+  return <div><p className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</p><p className="mt-1 font-mono">{value}</p></div>;
 }
 
 function formatAmount(value: number | null, currency: string) {
-  return value == null ? "Not reported" : new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+  return formatMoney(value, { currency, fallback: "Not reported" });
 }
 
 function StatementColumnMappingTable({ preview }: { preview: StatementImportPreview }) {
@@ -104,32 +108,27 @@ function StatementColumnMappingTable({ preview }: { preview: StatementImportPrev
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-xs" aria-label="Statement column mappings">
-        <caption className="sr-only">Detected statement columns mapped onto canonical Meridian fields</caption>
-        <thead>
-          <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-            <th scope="col" className="px-2 py-1.5">Source column</th>
-            <th scope="col" className="px-2 py-1.5">Canonical field</th>
-            <th scope="col" className="px-2 py-1.5">Confidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {preview.columnMappings.map((mapping) => (
-            <tr key={mapping.sourceColumn} className="border-b border-border/60">
-              <td className="px-2 py-1.5 font-mono">{mapping.sourceColumn}</td>
-              <td className="px-2 py-1.5 font-mono">{mapping.canonicalField ?? "—"}</td>
-              <td className="px-2 py-1.5">
+      <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Source column", className: "px-2 py-1.5 font-mono", render: (mapping) => <>{mapping.sourceColumn}</> },
+            { id: "column-2", label: "Canonical field", className: "px-2 py-1.5 font-mono", render: (mapping) => <>{mapping.canonicalField ?? "—"}</> },
+            { id: "column-3", label: "Confidence", className: "px-2 py-1.5", render: (mapping) => <>
                 <Badge
                   variant={statementColumnConfidenceBadgeVariant(mapping.confidence)}
-                  title={`${mapping.rationale} (score ${mapping.score.toFixed(2)})`}
+                  title={`${mapping.rationale} (score ${formatNumber(mapping.score, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
                 >
                   {mapping.confidence}
                 </Badge>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </> }
+          ]}
+          rows={preview.columnMappings}
+          getRowId={(mapping) => String(mapping.sourceColumn)}
+          getRowClassName={() => "border-b border-border/60"}
+          ariaLabel={"Statement column mappings"}
+          tableClassName={"w-full border-collapse text-xs"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
     </div>
   );
 }

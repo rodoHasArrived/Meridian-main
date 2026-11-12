@@ -50,7 +50,7 @@ public sealed class LayerBoundaryTests
             // Application
             typeof(Meridian.FinancialOperations.Reconciliation.StatementReconciliationService).Assembly,
             // UI services
-            typeof(Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService).Assembly,
+            typeof(Meridian.Ui.Services.ApiClientService).Assembly,
             // Infrastructure (adapters, providers, resilience)
             typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly)
         .Build());

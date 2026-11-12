@@ -1,0 +1,54 @@
+<!-- @dsCard group="Operations" viewport="1280x980" name="Decision flow & action guards" subtitle="Guarded, version-aware progression from observation to committed decision — with guards visible before the attempt and reversibility declared" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Decision flow and action guards</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}.wrap{display:grid;gap:14px;max-width:1240px}.flow{display:grid;grid-template-columns:250px 1fr;gap:0;border:1px solid var(--border);background:var(--bg-light)}.rail{border-right:1px solid var(--border);padding:12px}.stage{padding:14px;min-width:0;display:grid;gap:12px;align-content:start}.bar{grid-column:1/-1}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.panel{border:1px solid var(--border);background:var(--bg-light);padding:14px;min-width:0}.panel h2{margin:0 0 3px;font-size:14px;color:var(--text-primary)}.panel p{margin:0 0 12px;font-size:10px;color:var(--text-muted);max-width:62ch;line-height:1.5}.evi{display:grid;gap:0;font-size:11px}.evi div{display:grid;grid-template-columns:1fr auto;gap:12px;padding:6px 0;border-bottom:1px solid var(--border-divider)}.evi div:last-child{border-bottom:0}.evi b{font-family:var(--font-data);font-weight:600}.lbl{font:600 9px var(--font-data);text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}.note{font:10px/1.6 var(--font-data);color:var(--text-muted);border-top:1px solid var(--border-divider);padding-top:8px;max-width:74ch}.ctl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.ctl button{min-height:28px;padding:5px 11px;font:600 11px var(--font-body);background:var(--bg-light);border:1px solid var(--border-strong);color:var(--text-primary);cursor:pointer;white-space:nowrap}.ctl button:hover{background:var(--bg-hover)}.ctl button:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:1px}@media(max-width:900px){body{padding:12px}.flow,.two{grid-template-columns:1fr}.rail{border-right:0;border-bottom:1px solid var(--border)}}
+</style></head><body><div id="root"></div><script type="text/babel">
+const NS=window.MeridianDesignSystem_205d17||{};
+const MISSING=["DecisionFlowProvider","DecisionFlowRail","DecisionFlowStage","DecisionConsequenceBar","DecisionFlow","ActionGuardList","ActionAvailability","VarianceCell","MaterialityBadge"].filter(n=>!NS[n]);
+const {DecisionFlowProvider,DecisionFlowRail,DecisionFlowStage,DecisionConsequenceBar,DecisionFlow,ActionGuardList,ActionAvailability,VarianceCell,MaterialityBadge}=NS;
+const useDecisionFlow=(DecisionFlow||{}).useDecisionFlow||(()=>null);
+const GUARDS={
+  tieout:[{id:"comparable",state:"satisfied",label:"Both sides share the same as-of date and basis"}],
+  evidence:[{id:"coverage",state:"satisfied",label:"3 of 3 primary sources confirmed",evidenceRefs:["src-441","src-442","src-443"]},{id:"freshness",state:"warning",label:"Pricing source is stale by 23 minutes",reason:"Last valid file 09:42 UTC against a 15-minute freshness policy. The residual is unaffected, but the valuation input is aged.",policyRef:"EV-3 §2"}],
+  resolve:[{id:"authority",state:"satisfied",label:"You hold reviewer authority for this account family"},{id:"tolerance",state:"satisfied",label:"Residual within $500 policy REC-CASH-01",policyRef:"REC-CASH-01 v2026.2"}],
+  post:[{id:"balanced",state:"satisfied",label:"Journal debits equal credits"},{id:"period",state:"blocking",label:"Posting period is locked",reason:"July statutory close is hard closed. A posting into July requires an adjustment period opened by a controller.",policyRef:"AC-14 §6.3",remediation:{label:"Request adjustment period",actionId:"request-adjustment",requiredRole:"Controller"}}],
+  attest:[{id:"impact",state:"blocking",label:"Posting impact has not been reviewed against version 18",reason:"The impact preview was generated against version 17 and was invalidated when the object changed.",policyRef:"AC-14 §7.1"}]};
+const STEPS=[{id:"tieout",label:"Understand difference",stableAcrossVersions:true},{id:"evidence",label:"Review evidence",requires:["tieout"]},{id:"resolve",label:"Propose resolution",requires:["evidence"],invalidates:["post"]},{id:"post",label:"Review posting impact",requires:["resolve"]},{id:"attest",label:"Attest",requires:["post"]}];
+function Work(){return <div className="evi">
+  <div><span>Ledger balance · confirmed</span><b>$12,441,284.12</b></div>
+  <div><span>Custodian statement · confirmed</span><b>$12,439,902.44</b></div>
+  <div><span>Difference</span><VarianceCell actual={12441284.12} expected={12439902.44} tolerance={500} notation="accounting" currency="USD" condition="confirmed" comparisonLabel="custodian" layout="inline"/></div>
+  <div><span>Explained · unsettled wire received August 1</span><b>$1,050.00</b></div>
+  <div><span>Residual</span><b>$331.68</b></div>
+  <div><span>Materiality</span><MaterialityBadge classification="operational"/></div>
+</div>}
+function Flow({version}){
+  const [log,setLog]=React.useState([]);
+  return <DecisionFlowProvider object={{type:"reconciliation",id:"REC-418",version}} snapshotId={`snap-2026-07-31-${version}`} steps={STEPS} initialStep="tieout" actorId="a.rivera" urlParam="decisionStep" onValidate={id=>GUARDS[id]||[]} onTransition={t=>setLog(l=>[...l,`${t.from} → ${t.to}`])}>
+    <div className="flow">
+      <div className="rail"><DecisionFlowRail/></div>
+      <DecisionFlowStage className="stage">
+        <Work/>
+        <StepGuards/>
+      </DecisionFlowStage>
+      <DecisionConsequenceBar className="bar" primaryLabel="Accept reconciling item" secondaryLabel="Open evidence workspace" reversibility="compensatable" onPrimary={()=>{}}/>
+    </div>
+    <p className="note">Transitions recorded this session: {log.length?log.join(" · "):"none yet"}. The provider mirrors the active step into the <code>decisionStep</code> URL parameter and restores it on reload, so a decision survives a refresh without losing its place.</p>
+  </DecisionFlowProvider>}
+function StepGuards(){const f=useDecisionFlow();const guards=f?f.stepGuards(f.stepId):[];
+  return <div><span className="lbl">Guards for this step</span><ActionGuardList guards={guards.length?guards:[{id:"none",state:"satisfied",label:"No guards declared for this step"}]} label="Guards" onRemediate={()=>{}}/>  <div className="ctl" style={{marginTop:12,marginBottom:0}}><button type="button" onClick={()=>f&&f.complete()}>Complete step and advance</button></div></div>}
+function Demo(){const [version,setVersion]=React.useState(18);
+  return <div className="wrap">
+    <section className="panel"><h2>One decision, five guarded steps</h2><p>The provider owns step order, the requirement graph, guard results, URL restoration and version invalidation. A locked step states what it requires; a blocked step states which guard blocks it; the consequence bar refuses the primary action and says why.</p>
+      <div className="ctl"><button type="button" onClick={()=>setVersion(v=>v+1)}>Simulate an underlying change · version {version} → {version+1}</button></div>
+      <Flow version={version} key="flow"/>
+      <p className="note">Raising the version invalidates every completed step except those marked <code>stableAcrossVersions</code>, clears cached guard results, and surfaces an acknowledgement notice — the case a wizard with local step state gets wrong, silently carrying an approval taken against an earlier version.</p></section>
+    <div className="two">
+      <section className="panel"><h2>Guards are visible before the attempt</h2><p>Satisfied, warning and blocking share one contract. Each carries its policy reference, its evidence count and — where one exists — a named remediation with the authority it requires.</p>
+        <ActionGuardList guards={[...GUARDS.post,...GUARDS.evidence]} onRemediate={()=>{}}/></section>
+      <section className="panel"><h2>Unavailable, explained</h2><p>Neither a hidden action nor an unexplained disabled button. The user sees the action, the reason, the resolution and the authority required to obtain it.</p>
+        <ActionAvailability action="Post journal" guards={GUARDS.post} onRemediate={()=>{}}/>
+        <p className="note" style={{marginTop:12}}>Reversibility is declared on every consequential action: reversible, compensatable, supersedable or irreversible. This posting is compensatable — the original record remains and a reversal journal creates a new one.</p></section>
+    </div>
+  </div>}
+ReactDOM.createRoot(document.getElementById("root")).render(MISSING.length?<section className="panel"><h2>Bundle out of date</h2><p style={{fontSize:11}}>These exports are not on the design-system namespace yet: {MISSING.join(", ")}. Reload once the bundle has recompiled.</p></section>:<Demo/>);
+</script></body></html>

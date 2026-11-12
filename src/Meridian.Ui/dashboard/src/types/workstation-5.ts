@@ -191,6 +191,8 @@ export interface ReconciliationBulkCaseworkRequest {
   approvalActor?: string | null;
   approvalReference?: string | null;
   supersedingBreakId?: string | null;
+  /** Bulk "assign to me": the server names the authenticated operator as the assignee. */
+  assignToCurrentOperator?: boolean;
 }
 
 export interface ReconciliationBulkCaseworkResult {

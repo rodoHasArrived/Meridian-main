@@ -111,6 +111,21 @@ describe("Cash Ladder request scope", () => {
     expect(screen.queryByText("Unrelated current terms")).not.toBeInTheDocument();
   });
 
+  it("retains the source's blocker explanation on an exact blocked projection run", async () => {
+    const projection = ladder("A");
+    Object.assign(projection.contributions[0], { projectionRunId: "run-original", projectionEngineVersion: "engine-original" });
+    const source = operations();
+    Object.assign(source.cashFlowProjectionRuns[0], { status: "Blocked", blocker: { code: "CurveUnavailable", reason: "The projection requires the retained curve version." } });
+    getLadder.mockResolvedValue(projection);
+    getOperations.mockResolvedValue(source);
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    await user.click(screen.getByRole("button", { name: "Inspect projection run for Bond A" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("CurveUnavailable");
+    expect(screen.getByRole("alert")).toHaveTextContent("The projection requires the retained curve version.");
+  });
+
   it("aborts projection evidence on account change and ignores its late response", async () => {
     const projection = ladder("A");
     Object.assign(projection.contributions[0], { projectionRunId: "run-original", projectionEngineVersion: "engine-original" });
@@ -128,6 +143,22 @@ describe("Cash Ladder request scope", () => {
     expect(screen.queryByRole("region", { name: "Projection evidence for Bond A" })).not.toBeInTheDocument();
     expect(screen.queryByText("Retained original bond terms")).not.toBeInTheDocument();
   });
+  it("exposes keyboard bucket selection within a named chart group", async () => {
+    getLadder.mockResolvedValue(ladder("A"));
+    const user = userEvent.setup();
+    render(view("account-a"));
+    const chart = await screen.findByRole("group", { name: /Portfolio cash ladder: stacked/ });
+    const bucket = within(chart).getByRole("button", { name: /Week A/ });
+    expect(bucket).toHaveAttribute("aria-pressed", "false");
+    bucket.focus();
+    await user.keyboard("{Enter}");
+    expect(bucket).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("Bond A")).toBeInTheDocument();
+    await user.keyboard(" ");
+    expect(bucket).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByText("Bond A")).not.toBeInTheDocument();
+  });
+
   it("retains scenario choices through a delayed and failed refresh without retaining balances", async () => {
     const pending = deferred<PortfolioCashLadder>();
     getLadder.mockResolvedValueOnce(ladder("A")).mockReturnValueOnce(pending.promise)

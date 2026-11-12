@@ -197,22 +197,14 @@ let ``BondTerms callable bond preserves callDate`` () =
     let maturity = DateOnly(2035, 6, 1)
     let callDate = DateOnly(2028, 6, 1)
     let terms = {
-        Maturity = maturity
-        IssueDate = Some (DateOnly(2020, 6, 1))
-        Coupon = BondCouponStructure.Fixed(4.0m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360)
-        IsCallable = true
-        CallDate = Some callDate
-        IssuerName = Some "Corp A"
-        Seniority = Some "Senior"
-        Subclass = BondSubclass.Corporate
-        Par = None
-        PaymentFrequency = None
-        LegalFinalMaturity = None
-        PreRefundDate = None
-        MandatoryPutDate = None
-        PrincipalSchedule = []
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Dates = { EffectiveDate = None; IssueDate = Some (DateOnly(2020, 6, 1)); MaturityDate = Some (maturity) }
+        CouponStructure = { Structure = BondCouponStructure.Fixed(4.0m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360); PaymentFrequency = None }
+        Callability = EconomicCallTerms.scalar true (Some callDate)
+        IssuerTerms = { IssuerName = Some "Corp A"; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
+        DebtClassification = { Subclass = BondSubclass.Corporate; Seniority = Some "Senior" }
+        RedemptionFacts = BondRedemptionTerms.empty
+        Principal = { Payments = [] }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -294,16 +286,15 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
 [<Fact>]
 let ``Legacy MortgageBacked labels remain readable through Other on BondTerms`` () =
     let terms = BondTerms.fixedRate (DateOnly(2050, 1, 1)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360) (Some "Freddie Mac")
-    let mbs = { terms with Subclass = (BondSubclass.Other "MortgageBacked") }
+    let mbs = { terms with DebtClassification = { terms.DebtClassification with Subclass = (BondSubclass.Other "MortgageBacked") } }
     mbs.Subclass |> should equal (BondSubclass.Other "MortgageBacked")
     mbs.IsCallable |> should equal false
 
 [<Fact>]
 let ``EquityTerms VotingRightsCat OtherVotingRights carries string payload`` () =
     let terms = {
-        ShareClass = None
-        VotingRightsCat = Some (VotingRightsCat.OtherVotingRights "Restricted")
-        Classification = None
+        Capital = { ShareClass = None; VotingRightsCat = Some (VotingRightsCat.OtherVotingRights "Restricted"); Classification = None }
+
     }
     match terms.VotingRightsCat with
     | Some (VotingRightsCat.OtherVotingRights label) -> label |> should equal "Restricted"
@@ -347,6 +338,41 @@ let ``Identifier source-provider metadata does not change canonical identity`` (
     let right = { createPrimaryTicker now with Provider = Some "REFINITIV" }
 
     SecurityIdentifier.sameIdentity left right |> should equal true
+
+[<Fact>]
+let ``Identifier identity strips punctuation for alphanumeric kinds like the C# normalizer`` () =
+    let now = DateTimeOffset.UtcNow
+    let isin value = { createPrimaryTicker now with Kind = IdentifierKind.Isin; Value = value }
+
+    SecurityIdentifier.sameIdentity (isin "US 0378-3310 05") (isin "us0378331005") |> should equal true
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Isin " us-0378 331005 " |> should equal "US0378331005"
+
+[<Fact>]
+let ``Identifier identity keeps only digits for Valoren and leaves ticker punctuation intact`` () =
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Valoren "CH-1.234.567" |> should equal "1234567"
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Ticker " brk.b " |> should equal "BRK.B"
+    SecurityIdentifier.normalizeIdentifierValue IdentifierKind.Cusip null |> should equal ""
+
+[<Fact>]
+let ``Identifier check-digit validators delegate to the C# normalizer`` () =
+    // ISIN and CUSIP results are unchanged from the former F# copies for canonical values.
+    SecurityIdentifier.validateIsin " us0378331005 " |> should equal true
+    SecurityIdentifier.validateIsin "US0378331006" |> should equal false
+    SecurityIdentifier.validateIsin "US-0378331005" |> should equal false
+    SecurityIdentifier.validateCusip "037833100" |> should equal true
+    SecurityIdentifier.validateCusip "037833101" |> should equal false
+    SecurityIdentifier.validateCusip null |> should equal false
+    // ISO 17442 takes MOD 97-10 over the LEI in written order; the former F# copy rotated four
+    // characters first and rejected these valid codes.
+    SecurityIdentifier.validateLei "529900T8BM49AURSDO55" |> should equal true
+    SecurityIdentifier.validateLei "HWUPKR0MPOU8FGXBT394" |> should equal true
+    SecurityIdentifier.validateLei "529900T8BM49AURSDO56" |> should equal false
+
+[<Fact>]
+let ``Identifier kinds map to the Contracts kind of the same name`` () =
+    SecurityIdentifier.toContractKind IdentifierKind.Isin |> string |> should equal "Isin"
+    SecurityIdentifier.toContractKind IdentifierKind.ListingId |> string |> should equal "ListingId"
+    SecurityIdentifier.toContractKind (IdentifierKind.ProviderSymbol "XNAS") |> string |> should equal "ProviderSymbol"
 
 [<Fact>]
 let ``ProviderSymbol snapshot rejects provider metadata that contradicts its discriminant`` () =
@@ -402,9 +428,8 @@ let private createEquityCreateCommand classification =
         Identifiers = [ createPrimaryTicker effectiveFrom ]
         Kind =
             SecurityKind.Equity {
-                ShareClass = Some "A"
-                VotingRightsCat = Some VotingRightsCat.LimitedVoting
-                Classification = classification
+                Capital = { ShareClass = Some "A"; VotingRightsCat = Some VotingRightsCat.LimitedVoting; Classification = classification }
+
             }
         EffectiveFrom = effectiveFrom
         Provenance = createBaseProvenance effectiveFrom
@@ -450,7 +475,7 @@ let private createEquityAmendCommand
         SecurityId = currentRecord.SecurityId
         ExpectedVersion = currentRecord.Version
         Common = nextCommon
-        Kind = Some (SecurityKind.Equity { currentTerms with Classification = Some nextClassification })
+        Kind = Some (SecurityKind.Equity { currentTerms with Capital = { currentTerms.Capital with Classification = Some nextClassification } })
         IdentifiersToAdd = []
         IdentifiersToExpire = []
         EffectiveFrom = effectiveFrom
@@ -508,6 +533,26 @@ let ``SecurityMaster.create rejects missing primary identifier and blank common 
         codes |> List.contains "primary_identifier_invalid" |> should equal true
     | Ok events ->
         failwithf "Expected invalid create to be rejected, got: %A" events
+
+[<Fact>]
+let ``SecurityMaster.create refuses a shared-reference UPI as the primary identifier`` () =
+    let baseCommand = createEquityCreateCommand None
+    let upiPrimary =
+        { createPrimaryTicker baseCommand.EffectiveFrom with Kind = IdentifierKind.Upi; Value = "QZRBG6ZTKS42" }
+    let invalidCommand = { baseCommand with Identifiers = [ upiPrimary ] }
+
+    match SecurityMaster.create invalidCommand with
+    | Error errors ->
+        errors |> List.exists (fun error -> error.Code = "primary_identifier_shared_reference") |> should equal true
+    | Ok events ->
+        failwithf "Expected a UPI primary identifier to be refused, got: %A" events
+
+    let ticker = { createPrimaryTicker baseCommand.EffectiveFrom with IsPrimary = true }
+    let upiSecondary = { upiPrimary with IsPrimary = false }
+    match SecurityMaster.create { baseCommand with Identifiers = [ ticker; upiSecondary ] } with
+    | Error errors ->
+        errors |> List.exists (fun error -> error.Code = "primary_identifier_shared_reference") |> should equal false
+    | Ok _ -> ()
 
 [<Fact>]
 let ``SecurityMaster.amend emits TermsAmended when classification changes`` () =
@@ -609,9 +654,9 @@ let private createSwapCommand legs =
     let equityCommand = createEquityCreateCommand None
     { equityCommand with
         Kind = SecurityKind.Swap {
-            EffectiveDate = DateOnly(2026, 1, 15)
-            MaturityDate = DateOnly(2031, 1, 15)
-            Legs = legs
+            Dates = { EffectiveDate = Some (DateOnly(2026, 1, 15)); IssueDate = Some (DateOnly(2026, 1, 15)); MaturityDate = Some (DateOnly(2031, 1, 15)) }
+            SwapLegs = { Legs = legs }
+            RateConvention = None
         } }
 
 let private createSwapSnapshot legs =
@@ -770,22 +815,14 @@ let ``SecurityMaster rejects blank supplied swap leg payment frequency`` () =
 let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` () =
     let maturity = DateOnly(2034, 9, 15)
     let bondTerms = {
-        Maturity = maturity
-        IssueDate = Some (DateOnly(2024, 9, 15))
-        Coupon = BondCouponStructure.Floating("SOFR", Some 150m, Some 7.25m, Some 0.75m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360)
-        IsCallable = true
-        CallDate = Some (DateOnly(2030, 9, 15))
-        IssuerName = Some "Meridian Capital"
-        Seniority = Some "Senior Unsecured"
-        Subclass = BondSubclass.FloatingRate
-        Par = None
-        PaymentFrequency = None
-        LegalFinalMaturity = None
-        PreRefundDate = None
-        MandatoryPutDate = None
-        PrincipalSchedule = []
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Dates = { EffectiveDate = None; IssueDate = Some (DateOnly(2024, 9, 15)); MaturityDate = Some (maturity) }
+        CouponStructure = { Structure = BondCouponStructure.Floating("SOFR", Some 150m, Some 7.25m, Some 0.75m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360); PaymentFrequency = None }
+        Callability = EconomicCallTerms.scalar (true) (Some (DateOnly(2030, 9, 15)))
+        IssuerTerms = { IssuerName = Some "Meridian Capital"; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
+        DebtClassification = { Subclass = BondSubclass.FloatingRate; Seniority = Some "Senior Unsecured" }
+        RedemptionFacts = { Par = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+        Principal = { Payments = [] }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -808,26 +845,17 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
     payload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
 
 let private stepBondTerms = {
-    Maturity = DateOnly(2032, 6, 30)
-    IssueDate = Some (DateOnly(2026, 6, 30))
-    Coupon =
-        BondCouponStructure.Step(
+    Dates = { EffectiveDate = None; IssueDate = Some (DateOnly(2026, 6, 30)); MaturityDate = Some (DateOnly(2032, 6, 30)) }
+    CouponStructure = { Structure = BondCouponStructure.Step(
             [ { EffectiveDate = DateOnly(2026, 6, 30); Rate = 3.0m }
               { EffectiveDate = DateOnly(2028, 6, 30); Rate = 4.0m } ],
-            Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360)
-    IsCallable = false
-    CallDate = None
-    IssuerName = Some "Step Issuer"
-    Seniority = None
-    Subclass = BondSubclass.StepRate
-    Par = Some 1000m
-    PaymentFrequency = None
-    LegalFinalMaturity = None
-    PreRefundDate = None
-    MandatoryPutDate = None
-    PrincipalSchedule = []
-    ScheduleConventions = ScheduleConventions.empty
-    CallPutSchedules = CallPutSchedules.empty
+            Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360); PaymentFrequency = None }
+    Callability = EconomicCallTerms.scalar (false) (None)
+    IssuerTerms = { IssuerName = Some "Step Issuer"; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
+    DebtClassification = { Subclass = BondSubclass.StepRate; Seniority = None }
+    RedemptionFacts = { Par = Some 1000m; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+    Principal = { Payments = [] }
+    DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
 }
 
 [<Fact>]
@@ -863,7 +891,7 @@ let ``SecurityMasterSnapshotWrapper serializes step coupon schedules`` () =
 
 [<Fact>]
 let ``SecurityMaster.create rejects an empty step-coupon schedule`` () =
-    let emptyStep = { stepBondTerms with Coupon = BondCouponStructure.Step([], Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) }
+    let emptyStep = { stepBondTerms with CouponStructure = { Structure = BondCouponStructure.Step([], Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360); PaymentFrequency = None } }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond emptyStep }
 
@@ -876,8 +904,8 @@ let ``SecurityMaster.create rejects an empty step-coupon schedule`` () =
 let ``SecurityMasterSnapshotWrapper serializes inflation-linked coupon terms`` () =
     let linkerTerms = {
         stepBondTerms with
-            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 1.0432m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.ActualActualIsda)
-            Subclass = BondSubclass.InflationLinked
+            CouponStructure = { Structure = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 1.0432m, Some Meridian.Contracts.SecurityMaster.DayCountConvention.ActualActualIsda); PaymentFrequency = None }
+            DebtClassification = { stepBondTerms.DebtClassification with Subclass = BondSubclass.InflationLinked }
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond linkerTerms }
@@ -902,8 +930,8 @@ let ``SecurityMasterSnapshotWrapper serializes inflation-linked coupon terms`` (
 let ``SecurityMaster.create rejects a non-positive inflation index ratio`` () =
     let badLinker = {
         stepBondTerms with
-            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 0m, None)
-            Subclass = BondSubclass.InflationLinked
+            CouponStructure = { Structure = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 0m, None); PaymentFrequency = None }
+            DebtClassification = { stepBondTerms.DebtClassification with Subclass = BondSubclass.InflationLinked }
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond badLinker }
@@ -916,26 +944,11 @@ let ``SecurityMaster.create rejects a non-positive inflation index ratio`` () =
 [<Fact>]
 let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     let terms = {
-        Tranche = "A-1"
-        PoolId = Some "POOL-2026-1"
-        CollateralType = "CLO"
-        OriginalFace = 1_000_000m
-        CurrentFactor = Some 0.9825m
-        CouponOrIndex = "SOFR+250"
-        FactorSchedule = Some "monthly-trustee"
-        FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ]
-        Maturity = Some (DateOnly(2031, 6, 15))
-        Kind = Some StructuredCreditKind.Clo
-        Seniority = Some "Mezzanine"
-        AttachmentPoint = Some 0.12m
-        DetachmentPoint = Some 0.20m
-        WeightedAverageCoupon = Some 7.85m
-        WeightedAverageMaturityMonths = Some 58
-        WeightedAverageLoanAgeMonths = Some 14
-        ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15))
-        NonCallPeriodEnd = Some (DateOnly(2027, 6, 15))
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Pool = { Factor = Some 0.9825m; FactorDate = None; WeightedAvgCoupon = Some 7.85m; WeightedAvgMaturityMonths = Some 58; WeightedAvgLoanAgeMos = Some 14; CollateralType = Some ("CLO"); PoolIdentifier = Some "POOL-2026-1"; TrancheClass = Some ("A-1"); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1_000_000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = Some "monthly-trustee"; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ] }
+        CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("SOFR+250")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = Some StructuredCreditKind.Clo; Seniority = Some "Mezzanine"; AttachmentPoint = Some 0.12m; DetachmentPoint = Some 0.20m; ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15)); NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2031, 6, 15)) }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        RateConvention = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -989,26 +1002,11 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     // the retained asset-specific terms: consumers of EconomicTerms (the accounting adapter among
     // them) read maturity only from the Maturity module.
     let terms = {
-        Tranche = "A-1"
-        PoolId = Some "POOL-2026-1"
-        CollateralType = "CLO"
-        OriginalFace = 1_000_000m
-        CurrentFactor = Some 0.9825m
-        CouponOrIndex = "SOFR+250"
-        FactorSchedule = Some "monthly-trustee"
-        FactorScheduleEntries = []
-        Maturity = Some (DateOnly(2031, 6, 15))
-        Kind = Some StructuredCreditKind.InterestOnly
-        Seniority = None
-        AttachmentPoint = None
-        DetachmentPoint = None
-        WeightedAverageCoupon = Some 6.5m
-        WeightedAverageMaturityMonths = Some 240
-        WeightedAverageLoanAgeMonths = Some 36
-        ReinvestmentPeriodEnd = None
-        NonCallPeriodEnd = None
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Pool = { Factor = Some 0.9825m; FactorDate = None; WeightedAvgCoupon = Some 6.5m; WeightedAvgMaturityMonths = Some 240; WeightedAvgLoanAgeMos = Some 36; CollateralType = Some ("CLO"); PoolIdentifier = Some "POOL-2026-1"; TrancheClass = Some ("A-1"); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1_000_000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = Some "monthly-trustee"; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = [] }
+        CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("SOFR+250")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = Some StructuredCreditKind.InterestOnly; Seniority = None; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2031, 6, 15)) }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        RateConvention = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -1044,10 +1042,12 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade keeps a structured note cadence without a coupon rate`` () =
-    let terms = {
-        IssuerName = "Meridian Bank plc"; UnderlyingDescription = "EURO STOXX 50"; Maturity = DateOnly(2031, 12, 15)
-        IssueDate = None; Denomination = Some 1000m; PrincipalProtectionPct = Some 1m; ParticipationRate = None
-        ReturnCap = None; CouponRate = None; PaymentFrequency = Some "Quarterly"; BarrierLevel = Some 0.6m
+    let terms : StructuredNoteTerms = {
+        StructuredPayoff = { UnderlyingDescription = "EURO STOXX 50"; PrincipalProtectionPct = Some 1m
+                             ParticipationRate = None; ReturnCap = None; BarrierLevel = Some 0.6m }
+        Notional = { Notional = None; Denomination = Some 1000m; CommittedAmount = None
+                     FundedAmount = None; UnfundedAmount = None }
+        IssuerTerms = { IssuerName = Some ("Meridian Bank plc"); InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2031, 12, 15)) }; ContractualRate = { CouponRate = None; FixedCouponBps = None; FeeRate = None; PaymentFrequency = Some "Quarterly"; DayCount = None }; RateConvention = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredNote terms }
@@ -1091,7 +1091,7 @@ let ``SecurityMasterLegacyUpgrade maps preferred classification into term module
 [<Fact>]
 let ``BondTerms factory carries BondSubclass correctly`` () =
     let maturity = DateOnly(2032, 6, 1)
-    let terms = { BondTerms.fixedRate maturity 4.5m None None with Subclass = BondSubclass.Convertible }
+    let terms = { BondTerms.fixedRate maturity 4.5m None None with DebtClassification = { Subclass = BondSubclass.Convertible; Seniority = None } }
     terms.Subclass |> should equal BondSubclass.Convertible
 
 [<Fact>]
@@ -1101,26 +1101,44 @@ let ``BondSubclass Other carries string payload`` () =
     | BondSubclass.Other label -> label |> should equal "CovLite"
     | _ -> failwith "Expected BondSubclass.Other"
 
+// Codec records reuse the economic modules; these fixture builders leave every unrelated
+// field undeclared, exactly as the permanent legacy upcaster does.
+let private codecExercise right strike rate style underlying premium : ExerciseTerms =
+    { OptionRight = right; StrikePrice = strike; StrikeRate = rate; ExerciseStyle = style
+      UnderlyingSecurityId = underlying; PremiumAmount = premium }
+
+let private codecMultiplier multiplier : TradingParams =
+    { LotSize = None; TickSize = None; ContractMultiplier = multiplier; MarginRequirementPct = None
+      TradingHoursUtc = None; CircuitBreakerThresholdPct = None }
+
+let private codecNotional notional denomination commitment funded unfunded : NotionalTerms =
+    { Notional = notional; Denomination = denomination; CommittedAmount = commitment
+      FundedAmount = funded; UnfundedAmount = unfunded }
+
+let private codecListing : ListingDetailTerms =
+    { OptChainId = None; SettlementType = None; IsAdjusted = None; LastTradingDt = None
+      RootSymbol = None; ContractMonth = None; FirstNoticeDt = None; DeliveryMonthDt = None
+      DeliveryLocationCode = None; IsRollTarget = None; RollWindowDays = None }
+
+let private codecCurrencyPair baseCurrency quoteCurrency settlementCurrency forwardRate : CurrencyPairTerms =
+    { BaseCurrency = Some baseCurrency; QuoteCurrency = Some quoteCurrency
+      SettlementCurrency = settlementCurrency; ForwardRate = forwardRate }
+
 [<Fact>]
 let ``OptionTerms carries OptChainId and exercise style correctly`` () =
     let sid = SecurityId(Guid.NewGuid())
-    let terms = {
-        UnderlyingId = sid
-        PutCall = "Call"
-        Strike = 150m
-        Expiry = DateOnly(2025, 12, 19)
-        Multiplier = 100m
-        OptChainId = Some "AAPL-20251219"
-        ExerciseStyle = Some ExerciseStyle.American
-        SettlementType = Some "Physical"
-        IsAdjusted = false
-        LastTradingDt = Some (DateOnly(2025, 12, 18))
+    let terms : OptionTerms = {
+        Exercise = codecExercise (Some "Call") (Some 150m) None (Some "American") (Some sid) None
+        TradingParameters = codecMultiplier (Some 100m)
+        ListingDetail = { codecListing with OptChainId = Some "AAPL-20251219"; SettlementType = Some "Physical"
+                                            IsAdjusted = Some false; LastTradingDt = Some (DateOnly(2025, 12, 18)) }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2025, 12, 19)) }
     }
 
-    terms.OptChainId |> should equal (Some "AAPL-20251219")
-    terms.ExerciseStyle |> should equal (Some ExerciseStyle.American)
-    terms.SettlementType |> should equal (Some "Physical")
-    terms.LastTradingDt |> should equal (Some (DateOnly(2025, 12, 18)))
+    terms.ListingDetail.OptChainId |> should equal (Some "AAPL-20251219")
+    terms.Exercise.ExerciseStyle |> should equal (Some "American")
+    terms.ListingDetail.SettlementType |> should equal (Some "Physical")
+    terms.ListingDetail.LastTradingDt |> should equal (Some (DateOnly(2025, 12, 18)))
 
 [<Fact>]
 let ``MultiCalendarTerms can hold multiple calendar references`` () =
@@ -1572,48 +1590,53 @@ let ``EquityClassification.Convertible round-trips through asString`` () =
 /// is refined from instrument data (Deposit, OtherSecurity).
 let private registrySampleKinds : (SecurityKind * string) list =
     let secId () = SecurityId(Guid.NewGuid())
-    [ SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None }, "Equity"
+    [ SecurityKind.Equity { Capital = { ShareClass = None; VotingRightsCat = None; Classification = None };  }, "Equity"
       SecurityKind.Option {
-          UnderlyingId = secId (); PutCall = "Call"; Strike = 100m; Expiry = DateOnly(2030, 1, 18)
-          Multiplier = 100m; OptChainId = None; ExerciseStyle = None; SettlementType = None
-          IsAdjusted = false; LastTradingDt = None }, "Option"
+          Exercise = codecExercise (Some "Call") (Some 100m) None None (Some (secId ())) None
+          TradingParameters = codecMultiplier (Some 100m)
+          ListingDetail = { codecListing with IsAdjusted = Some false }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2030, 1, 18)) } }, "Option"
       SecurityKind.Future {
-          RootSymbol = "ES"; ContractMonth = "2030-03"; Expiry = DateOnly(2030, 3, 20); Multiplier = 50m
-          LastTradingDt = None; FirstNoticeDt = None; DeliveryMonthDt = None; SettlementType = None
-          DeliveryLocationCode = None; IsRollTarget = false; RollWindowDays = None }, "Future"
+          TradingParameters = codecMultiplier (Some 50m); Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2030, 3, 20)) }
+          ListingDetail = { codecListing with RootSymbol = Some "ES"; ContractMonth = Some "2030-03"; IsRollTarget = Some false } }, "Future"
       SecurityKind.Bond (BondTerms.fixedRate (DateOnly(2032, 6, 1)) 4.5m None None), "Bond"
       SecurityKind.TreasuryBill {
-          Maturity = DateOnly(2026, 6, 1); AuctionDate = None; CUSIP = None; DiscountRate = None }, "TreasuryBill"
-      SecurityKind.Swap { EffectiveDate = DateOnly(2026, 1, 1); MaturityDate = DateOnly(2031, 1, 1); Legs = [] }, "Swap"
-      SecurityKind.Cfd { UnderlyingAssetClass = "Equity"; UnderlyingDescription = None; Leverage = None }, "Cfd"
+          Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2026, 6, 1)) }; Auction = { AuctionDate = None; AuctionType = None }; IssuerTerms = { IssuerName = Some "US Treasury"; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = Some "US" }; DiscountTerms = { DiscountRate = None; YieldRate = None }
+          RateConvention = None
+          }, "TreasuryBill"
+      SecurityKind.Swap { Dates = { EffectiveDate = Some (DateOnly(2026, 1, 1)); IssueDate = Some (DateOnly(2026, 1, 1)); MaturityDate = Some (DateOnly(2031, 1, 1)) }; SwapLegs = { Legs = [] } ; RateConvention = None }, "Swap"
+      SecurityKind.Cfd { UnderlyingExposure = { UnderlyingAssetClass = "Equity"; UnderlyingDescription = None; Leverage = None } }, "Cfd"
       SecurityKind.Warrant {
-          UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
+          Exercise = codecExercise (Some "Call") None None None (Some (secId ())) None
+          TradingParameters = codecMultiplier None; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None } }, "Warrant"
       SecurityKind.FxForward {
-          BaseCurrency = "EUR"; QuoteCurrency = "USD"; Notional = None; ForwardRate = None; TradeDate = None
-          ValueDate = DateOnly(2026, 9, 2); SettlementType = None }, "FxForward"
+          CurrencyPair = codecCurrencyPair "EUR" "USD" None None; Notional = codecNotional None None None None None
+          Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2026, 9, 2)) }; Settlement = { SettlementType = None } }, "FxForward"
       SecurityKind.NonDeliverableForward {
-          BaseCurrency = "USD"; QuoteCurrency = "BRL"; SettlementCurrency = "USD"; Notional = None; ForwardRate = None
-          FixingDate = DateOnly(2026, 6, 29); ValueDate = DateOnly(2026, 7, 1); FixingSource = None }, "NonDeliverableForward"
+          CurrencyPair = codecCurrencyPair "USD" "BRL" (Some "USD") None; Notional = codecNotional None None None None None
+          Dates = { EffectiveDate = Some (DateOnly(2026, 6, 29)); IssueDate = None; MaturityDate = Some (DateOnly(2026, 7, 1)) }; ReferenceDataSource = { PricingSource = None; FixingSource = None } }, "NonDeliverableForward"
       SecurityKind.CreditDefaultSwap {
-          ReferenceEntity = "Meridian Industries Inc"; ReferenceObligation = None; ProtectionSide = "Buy"; Notional = 10_000_000m
-          FixedCouponBps = 100m; EffectiveDate = DateOnly(2026, 3, 20); MaturityDate = DateOnly(2031, 6, 20)
-          PaymentFrequency = None; DayCount = None; Seniority = None; RestructuringClause = None; UpfrontPoints = None
-          RecoveryRateAssumption = None; IndexName = None }, "CreditDefaultSwap"
+          CreditProtection = { ReferenceEntity = "Meridian Industries Inc"; ReferenceObligation = None; ProtectionSide = "Buy"
+                               Seniority = None; RestructuringClause = None; UpfrontPoints = None; RecoveryRateAssumption = None; IndexName = None }
+          Notional = codecNotional (Some 10_000_000m) None None None None
+          ContractualRate = { CouponRate = None; FixedCouponBps = Some 100m; FeeRate = None; PaymentFrequency = None; DayCount = None }; Dates = { EffectiveDate = Some (DateOnly(2026, 3, 20)); IssueDate = Some (DateOnly(2026, 3, 20)); MaturityDate = Some (DateOnly(2031, 6, 20)) } }, "CreditDefaultSwap"
       SecurityKind.Swaption {
-          PayerReceiver = "Payer"; ExerciseStyle = None; StrikeRate = 0.0375m; Expiry = DateOnly(2027, 3, 15)
-          UnderlyingEffectiveDate = None; UnderlyingMaturityDate = DateOnly(2037, 3, 17); Notional = 25_000_000m
-          FloatingIndex = None; FixedLegPaymentFrequency = None; FixedLegDayCount = None; SettlementType = None }, "Swaption"
+          Exercise = codecExercise (Some "Payer") None (Some 0.0375m) None None None
+          Notional = codecNotional (Some 25_000_000m) None None None None
+          Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2027, 3, 15)) }; UnderlyingSwap = { MaturityDate = DateOnly(2037, 3, 17); FloatingIndex = None; FixedLegPaymentFrequency = None; FixedLegDayCount = None }
+          Settlement = { SettlementType = None }; RateConvention = None }, "Swaption"
       SecurityKind.CapFloor {
-          CapFloorType = "Cap"; ReferenceIndex = "SOFR"; CapStrike = Some 0.05m; FloorStrike = None; Notional = 50_000_000m
-          EffectiveDate = DateOnly(2026, 4, 1); MaturityDate = DateOnly(2031, 4, 1); ResetFrequency = None; DayCount = None
-          PremiumAmount = None }, "CapFloor"
+          Exercise = codecExercise (Some "Cap") None None None None None
+          FloatingRate = { ReferenceIndex = Some "SOFR"; SpreadBps = None; CapRate = Some 0.05m; FloorRate = None; ResetFrequency = None }
+          Notional = codecNotional (Some 50_000_000m) None None None None
+          Dates = { EffectiveDate = Some (DateOnly(2026, 4, 1)); IssueDate = None; MaturityDate = Some (DateOnly(2031, 4, 1)) }; ContractualRate = { CouponRate = None; FixedCouponBps = None; FeeRate = None; PaymentFrequency = None; DayCount = None }; RateConvention = None }, "CapFloor"
       SecurityKind.StructuredNote {
-          IssuerName = "Meridian Bank plc"; UnderlyingDescription = "S&P 500 Index"; Maturity = DateOnly(2031, 12, 15)
-          IssueDate = None; Denomination = None; PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None
-          CouponRate = None; PaymentFrequency = None; BarrierLevel = None }, "StructuredNote"
+          StructuredPayoff = { UnderlyingDescription = "S&P 500 Index"; PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None; BarrierLevel = None }
+          Notional = codecNotional None None None None None
+          IssuerTerms = { IssuerName = Some ("Meridian Bank plc"); InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2031, 12, 15)) }; ContractualRate = { CouponRate = None; FixedCouponBps = None; FeeRate = None; PaymentFrequency = None; DayCount = None }; RateConvention = None }, "StructuredNote"
       SecurityKind.InvestmentFund {
-          FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
-          IsStableNav = None; PricingSource = None }, "InvestmentFund"
+          FundShare = { FundType = None; NavCurrency = None; DistributionPolicy = None; IsStableNav = None }
+          FundTerms = { FundFamily = None; WeightedAverageMaturityDays = None; SweepEligible = None; LiquidityFeeEligible = None }
+          ReferenceDataSource = { PricingSource = None; FixingSource = None } }, "InvestmentFund"
       SecurityKind.CustomAsset {
           CustomProfileId = "structured-credit-io-po"; ProfileVersion = 3
           TermsJson = """{"schemaVersion":3,"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""" }, "CustomAsset" ]
@@ -1629,15 +1652,15 @@ let ``Bond principal schedule dates outside the bond term are rejected`` () =
     let maturity = DateOnly(2030, 6, 15)
     let baseTerms =
         { BondTerms.fixedRate maturity 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with
-            IssueDate = Some (DateOnly(2024, 6, 15)) }
+            Dates = { (BondTerms.fixedRate maturity 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME")).Dates with IssueDate = Some (DateOnly(2024, 6, 15)) } }
 
-    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2031, 1, 1); Amount = 10m } ] })
+    validationErrorCodes (SecurityKind.Bond { baseTerms with Principal = { Payments = [ { PaymentDate = DateOnly(2031, 1, 1); Amount = 10m } ] } })
     |> should contain "bond_principal_schedule_date_invalid"
 
-    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2020, 1, 1); Amount = 10m } ] })
+    validationErrorCodes (SecurityKind.Bond { baseTerms with Principal = { Payments = [ { PaymentDate = DateOnly(2020, 1, 1); Amount = 10m } ] } })
     |> should contain "bond_principal_schedule_date_invalid"
 
-    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 10m } ] })
+    validationErrorCodes (SecurityKind.Bond { baseTerms with Principal = { Payments = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 10m } ] } })
     |> should not' (contain "bond_principal_schedule_date_invalid")
 
 [<Fact>]
@@ -1645,138 +1668,106 @@ let ``Bond principal schedules summing to more than Par are rejected`` () =
     let maturity = DateOnly(2030, 6, 15)
     let baseTerms =
         { BondTerms.fixedRate maturity 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with
-            Par = Some 100m }
+            RedemptionFacts = { BondRedemptionTerms.empty with Par = Some 100m } }
 
     // Two 60s against a 100-par bond: projections would cap the second at 40, silently
     // disagreeing with the persisted schedule.
     validationErrorCodes (SecurityKind.Bond { baseTerms with
-                                                PrincipalSchedule =
-                                                    [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }
-                                                      { PaymentDate = DateOnly(2029, 6, 15); Amount = 60m } ] })
+                                                Principal = { Payments = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }; { PaymentDate = DateOnly(2029, 6, 15); Amount = 60m } ] } })
     |> should contain "bond_principal_schedule_exceeds_par"
 
     validationErrorCodes (SecurityKind.Bond { baseTerms with
-                                                PrincipalSchedule =
-                                                    [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }
-                                                      { PaymentDate = DateOnly(2029, 6, 15); Amount = 40m } ] })
+                                                Principal = { Payments = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }; { PaymentDate = DateOnly(2029, 6, 15); Amount = 40m } ] } })
     |> should not' (contain "bond_principal_schedule_exceeds_par")
 
     // Without Par there is no face to validate or project against: downstream substitutes a
     // 100-unit basis and caps instalments, so a schedule without Par is rejected outright.
     validationErrorCodes (SecurityKind.Bond { baseTerms with
-                                                Par = None
-                                                PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 500m } ] })
+                                                RedemptionFacts = { baseTerms.RedemptionFacts with Par = None }
+                                                Principal = { Payments = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 500m } ] } })
     |> should contain "bond_principal_schedule_requires_par"
 
     validationErrorCodes (SecurityKind.Bond { baseTerms with
-                                                PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 40m } ] })
+                                                Principal = { Payments = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 40m } ] } })
     |> should not' (contain "bond_principal_schedule_requires_par")
 
 [<Fact>]
 let ``Structured credit factors above one are rejected`` () =
     let baseTerms = {
-        Tranche = "A-1"
-        PoolId = None
-        CollateralType = "CLO"
-        OriginalFace = 1_000_000m
-        CurrentFactor = Some 0.9m
-        CouponOrIndex = "SOFR+250"
-        FactorSchedule = None
-        FactorScheduleEntries = []
-        Maturity = None
-        Kind = None
-        Seniority = None
-        AttachmentPoint = None
-        DetachmentPoint = None
-        WeightedAverageCoupon = None
-        WeightedAverageMaturityMonths = None
-        WeightedAverageLoanAgeMonths = None
-        ReinvestmentPeriodEnd = None
-        NonCallPeriodEnd = None
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Pool = { Factor = Some 0.9m; FactorDate = None; WeightedAvgCoupon = None; WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None; CollateralType = Some ("CLO"); PoolIdentifier = None; TrancheClass = Some ("A-1"); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1_000_000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = None; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = [] }
+        CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("SOFR+250")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        RateConvention = None
     }
 
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Pool = { baseTerms.Pool with Factor = Some 1.5m } })
     |> should contain "structured_credit_current_factor_invalid"
 
     // Typed tranche terms: the attachment and detachment points are fractions of the deal balance,
     // ordered attachment <= detachment; the pool statistics cannot be negative; the CLO period
     // dates cannot run past the legal final maturity.
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 12m })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with TrancheContract = { baseTerms.TrancheContract with AttachmentPoint = Some 12m } })
     |> should contain "structured_credit_attachment_point_invalid"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with DetachmentPoint = Some -0.1m })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with TrancheContract = { baseTerms.TrancheContract with DetachmentPoint = Some -0.1m } })
     |> should contain "structured_credit_detachment_point_invalid"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 0.3m; DetachmentPoint = Some 0.2m })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with TrancheContract = { baseTerms.TrancheContract with AttachmentPoint = Some 0.3m; DetachmentPoint = Some 0.2m };  })
     |> should contain "structured_credit_attachment_above_detachment"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 0.2m; DetachmentPoint = Some 0.2m })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with TrancheContract = { baseTerms.TrancheContract with AttachmentPoint = Some 0.2m; DetachmentPoint = Some 0.2m };  })
     |> should not' (contain "structured_credit_attachment_above_detachment")
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageCoupon = Some -1m })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Pool = { baseTerms.Pool with WeightedAvgCoupon = Some -1m } })
     |> should contain "structured_credit_weighted_average_coupon_invalid"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageMaturityMonths = Some -1 })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Pool = { baseTerms.Pool with WeightedAvgMaturityMonths = Some -1 } })
     |> should contain "structured_credit_weighted_average_maturity_invalid"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageLoanAgeMonths = Some -1 })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Pool = { baseTerms.Pool with WeightedAvgLoanAgeMos = Some -1 } })
     |> should contain "structured_credit_weighted_average_loan_age_invalid"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Maturity = Some (DateOnly(2031, 6, 15)); ReinvestmentPeriodEnd = Some (DateOnly(2032, 1, 1)) })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Dates = { baseTerms.Dates with MaturityDate = Some (DateOnly(2031, 6, 15)) }; TrancheContract = { baseTerms.TrancheContract with ReinvestmentPeriodEnd = Some (DateOnly(2032, 1, 1)) } })
     |> should contain "structured_credit_period_after_maturity"
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Maturity = Some (DateOnly(2031, 6, 15)); NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Dates = { baseTerms.Dates with MaturityDate = Some (DateOnly(2031, 6, 15)) }; TrancheContract = { baseTerms.TrancheContract with NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) } })
     |> should not' (contain "structured_credit_period_after_maturity")
 
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.2m } ] })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.2m } ] } })
     |> should contain "structured_credit_factor_schedule_invalid"
 
-    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.0m } ] })
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.0m } ] } })
     |> should not' (contain "structured_credit_factor_schedule_invalid")
 
     // A rising factor would GROW outstanding principal — invalid retained evidence for the
     // factor-paydown workflow, however valid each individual factor is.
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
-                                                                  { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9m } ] })
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }; { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9m } ] } })
     |> should contain "structured_credit_factor_schedule_not_monotonic"
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m }
-                                                                  { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m } ] })
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m }; { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m } ] } })
     |> should not' (contain "structured_credit_factor_schedule_not_monotonic")
 
     // Two factors on the SAME date make the effective outstanding principal depend on input
     // ordering — readers keep only one of them — so duplicates are rejected even when each
     // individual factor is valid and the pair happens to be non-increasing.
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
-                                                                  { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.7m } ] })
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }; { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.7m } ] } })
     |> should contain "structured_credit_factor_schedule_duplicate_date"
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
-                                                                  { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m } ] })
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }; { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m } ] } })
     |> should not' (contain "structured_credit_factor_schedule_duplicate_date")
 
     // A factor decline dated AFTER the legal final maturity would emit principal paydowns for a
     // tranche that has already reached term; observations must fall on or before the retained
     // maturity, and a record with no retained maturity keeps the unconstrained behavior.
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            Maturity = Some (DateOnly(2026, 6, 15))
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }
-                                                                  { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.7m } ] })
+                                                            Dates = { baseTerms.Dates with MaturityDate = Some (DateOnly(2026, 6, 15)) }
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }; { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.7m } ] } })
     |> should contain "structured_credit_factor_after_maturity"
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            Maturity = Some (DateOnly(2026, 6, 15))
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }
-                                                                  { AsOfDate = DateOnly(2026, 6, 15); Factor = 0.7m } ] })
+                                                            Dates = { baseTerms.Dates with MaturityDate = Some (DateOnly(2026, 6, 15)) }
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }; { AsOfDate = DateOnly(2026, 6, 15); Factor = 0.7m } ] } })
     |> should not' (contain "structured_credit_factor_after_maturity")
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
-                                                            FactorScheduleEntries =
-                                                                [ { AsOfDate = DateOnly(2030, 1, 1); Factor = 0.7m } ] })
+                                                            Pool = { baseTerms.Pool with FactorScheduleEntries = [ { AsOfDate = DateOnly(2030, 1, 1); Factor = 0.7m } ] } })
     |> should not' (contain "structured_credit_factor_after_maturity")
 
 [<Fact>]
@@ -1842,13 +1833,13 @@ let ``AssetClassRegistry isDerivative agrees with SecurityKind.isDerivative`` ()
 
 [<Fact>]
 let ``AssetClassRegistry classification carries the expected fixed metadata`` () =
-    let equity = AssetClassRegistry.classification (SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None })
+    let equity = AssetClassRegistry.classification (SecurityKind.Equity { Capital = { ShareClass = None; VotingRightsCat = None; Classification = None };  })
     equity.AssetClass |> should equal AssetClass.Equity
     equity.Family |> should equal (Some AssetFamily.CommonEquity)
     equity.SubType |> should equal SecuritySubType.CommonShare
     equity.TypeName |> should equal "Equity"
 
-    let tbill = AssetClassRegistry.classification (SecurityKind.TreasuryBill { Maturity = DateOnly(2026, 6, 1); AuctionDate = None; CUSIP = None; DiscountRate = None })
+    let tbill = AssetClassRegistry.classification (SecurityKind.TreasuryBill { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2026, 6, 1)) }; Auction = { AuctionDate = None; AuctionType = None }; IssuerTerms = { IssuerName = Some "US Treasury"; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = Some "US" }; DiscountTerms = { DiscountRate = None; YieldRate = None } ; RateConvention = None })
     tbill.AssetClass |> should equal AssetClass.FixedIncome
     tbill.Family |> should equal (Some AssetFamily.Sovereign)
     tbill.SubType |> should equal SecuritySubType.TreasuryBill
@@ -1863,8 +1854,10 @@ let private economicDefinitionFor (kind: SecurityKind) =
 let ``Legacy upgrade refines a demand deposit into the DemandDeposit sub-type`` () =
     let demand =
         economicDefinitionFor (SecurityKind.Deposit {
-            DepositType = "DemandDeposit"; InstitutionName = "First Bank"; Maturity = None
-            InterestRate = None; DayCount = None; IsCallable = false })
+            IssuerTerms = { IssuerName = None; InstitutionName = Some ("First Bank"); IssuerProgram = Some ("DemandDeposit"); LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None }
+            CouponTerms = { CouponType = Some (CouponKind.OtherCoupon "SimpleInterest"); CouponRate = None; PaymentFrequency = None; DayCount = None }; Callability = EconomicCallTerms.scalar false None
+            RateConvention = None
+            })
     demand.Classification.AssetClass |> should equal AssetClass.CashEquivalent
     demand.Classification.SubType |> should equal SecuritySubType.DemandDeposit
 
@@ -1872,15 +1865,17 @@ let ``Legacy upgrade refines a demand deposit into the DemandDeposit sub-type`` 
 let ``Legacy upgrade defaults a non-demand deposit to the TimeDeposit sub-type`` () =
     let time =
         economicDefinitionFor (SecurityKind.Deposit {
-            DepositType = "TimeDeposit"; InstitutionName = "First Bank"; Maturity = None
-            InterestRate = None; DayCount = None; IsCallable = false })
+            IssuerTerms = { IssuerName = None; InstitutionName = Some ("First Bank"); IssuerProgram = Some ("TimeDeposit"); LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None }
+            CouponTerms = { CouponType = Some (CouponKind.OtherCoupon "SimpleInterest"); CouponRate = None; PaymentFrequency = None; DayCount = None }; Callability = EconomicCallTerms.scalar false None
+            RateConvention = None
+            })
     time.Classification.SubType |> should equal SecuritySubType.TimeDeposit
 
 [<Fact>]
 let ``Legacy upgrade carries the OtherSecurity sub-type from instrument terms`` () =
     let other =
         economicDefinitionFor (SecurityKind.OtherSecurity {
-            Category = "Widget"; SubType = Some "Gizmo"; Maturity = None; IssuerName = None; SettlementType = None })
+            ClassificationDetail = { Category = "Widget"; SubType = Some "Gizmo" }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None }; IssuerTerms = { IssuerName = None; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None };  })
     other.Classification.AssetClass |> should equal AssetClass.Other
     other.Classification.SubType |> should equal (SecuritySubType.OtherSubType "Gizmo")
 
@@ -1889,13 +1884,9 @@ let ``Legacy upgrade reads IO and PO strips from the tranche label as whole toke
     let structuredProductFor tranche =
         let definition =
             economicDefinitionFor (SecurityKind.StructuredCredit {
-                Tranche = tranche; PoolId = None; CollateralType = "AgencyPool"; OriginalFace = 1_000_000m
-                CurrentFactor = None; CouponOrIndex = "5.5"; FactorSchedule = None; FactorScheduleEntries = []
-                Maturity = None; Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None
-                WeightedAverageCoupon = None; WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
-                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
-                ScheduleConventions = ScheduleConventions.empty
-                CallPutSchedules = CallPutSchedules.empty })
+                Pool = { Factor = None; FactorDate = None; WeightedAvgCoupon = None; WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None; CollateralType = Some ("AgencyPool"); PoolIdentifier = None; TrancheClass = Some (tranche); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1_000_000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = None; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = [] }; CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("5.5")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None }; DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+                RateConvention = None
+                })
         definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
 
     // "Senior" contains the letters "io"; it is not an interest-only strip.
@@ -1914,22 +1905,14 @@ let private reclassificationFor (kind: SecurityKind) =
 
 let private securitizedBond subclass coupon par =
     SecurityKind.Bond {
-        Maturity = DateOnly(2040, 3, 25)
-        IssueDate = None
-        Coupon = coupon
-        IsCallable = false
-        CallDate = None
-        IssuerName = Some "Trust 2026-1"
-        Seniority = Some "Senior"
-        Subclass = subclass
-        Par = par
-        PaymentFrequency = None
-        LegalFinalMaturity = None
-        PreRefundDate = None
-        MandatoryPutDate = None
-        PrincipalSchedule = []
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2040, 3, 25)) }
+        CouponStructure = { Structure = coupon; PaymentFrequency = None }
+        Callability = EconomicCallTerms.scalar (false) (None)
+        IssuerTerms = { IssuerName = Some "Trust 2026-1"; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
+        DebtClassification = { Subclass = subclass; Seniority = Some "Senior" }
+        RedemptionFacts = { Par = par; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+        Principal = { Payments = [] }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
     }
 
 [<Theory>]
@@ -2050,10 +2033,10 @@ let ``Reclassification proposal ignores bonds outside the securitised subclasses
     |> should equal None
 
     reclassificationFor (SecurityKind.OtherSecurity {
-        Category = "Widget"; SubType = None; Maturity = None; IssuerName = None; SettlementType = None })
+        ClassificationDetail = { Category = "Widget"; SubType = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = None }; IssuerTerms = { IssuerName = None; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None };  })
     |> should equal None
 
-    reclassificationFor (SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None })
+    reclassificationFor (SecurityKind.Equity { Capital = { ShareClass = None; VotingRightsCat = None; Classification = None };  })
     |> should equal None
 
 [<Fact>]
@@ -2100,7 +2083,7 @@ let ``Reclassification proposal lets a typed kind on the custom profile resolve 
 let ``Reclassification proposal reads envelope-less legacy custom rows read back as OtherSecurity`` () =
     let proposal =
         reclassificationFor (SecurityKind.OtherSecurity {
-            Category = "ABS"; SubType = None; Maturity = Some (DateOnly(2030, 1, 15)); IssuerName = None; SettlementType = None })
+            ClassificationDetail = { Category = "ABS"; SubType = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2030, 1, 15)) }; IssuerTerms = { IssuerName = None; InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None };  })
         |> Option.defaultWith (fun () -> failwith "Expected an ABS legacy row to be a reclassification candidate")
 
     proposal.SourceLabel |> should equal "ABS"
@@ -2137,33 +2120,26 @@ let private declaredConventionsJson =
     """{"accrualAdjusted":false,"businessDayConvention":"ModifiedFollowing","couponCashBasis":"Level","couponRateUnit":"Percent","direction":"Backward","endOfMonthRule":false,"firstRegularDate":"2026-12-15","lastRegularDate":"2034-06-15","paymentCalendars":["USNY","GBLO"],"paymentLagBusinessDays":2,"rollConvention":"15","stubPolicy":"Short"}"""
 
 let private scheduleBond conventions =
-    SecurityKind.Bond { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with ScheduleConventions = conventions }
+    SecurityKind.Bond { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = conventions } }
 
 let private scheduleDeposit conventions =
     SecurityKind.CertificateOfDeposit ({
-        IssuerName = "First Bank"
-        Maturity = DateOnly(2028, 3, 15)
-        CouponRate = Some 4.1m
-        CallableDate = None
-        DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360
-        ScheduleConventions = conventions
-        CallPutSchedules = CallPutSchedules.empty
+        IssuerTerms = { IssuerName = Some ("First Bank"); InstitutionName = None; IssuerProgram = None; LeiCode = None; UltimateParentName = None; IssuerSector = None; IssuerCountry = None }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2028, 3, 15)) }
+        CouponTerms = { CouponType = Some CouponKind.Fixed; CouponRate = Some 4.1m; PaymentFrequency = None; DayCount = Some Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360 }
+        Callability = EconomicCallTerms.scalar false None
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = conventions }
+        RateConvention = None
     } : CertificateOfDepositTerms)
 
 let private scheduleStructuredCredit conventions =
     SecurityKind.StructuredCredit ({
-        Tranche = "A-1"; PoolId = None; CollateralType = "CLO"; OriginalFace = 1_000_000m
-        CurrentFactor = None; CouponOrIndex = "SOFR+250"; FactorSchedule = None; FactorScheduleEntries = []
-        Maturity = Some (DateOnly(2034, 6, 15)); Kind = Some StructuredCreditKind.Clo; Seniority = None
-        AttachmentPoint = None; DetachmentPoint = None; WeightedAverageCoupon = None
-        WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
-        ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
-        ScheduleConventions = conventions
-        CallPutSchedules = CallPutSchedules.empty
+        Pool = { Factor = None; FactorDate = None; WeightedAvgCoupon = None; WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None; CollateralType = Some ("CLO"); PoolIdentifier = None; TrancheClass = Some ("A-1"); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1_000_000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = None; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = [] }; CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("SOFR+250")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = Some StructuredCreditKind.Clo; Seniority = None; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }; Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2034, 6, 15)) }; DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = conventions }
+        RateConvention = None
     } : StructuredCreditTerms)
 
 let private scheduleSwap legs =
-    SecurityKind.Swap { EffectiveDate = DateOnly(2026, 1, 15); MaturityDate = DateOnly(2031, 1, 15); Legs = legs }
+    SecurityKind.Swap { Dates = { EffectiveDate = Some (DateOnly(2026, 1, 15)); IssueDate = Some (DateOnly(2026, 1, 15)); MaturityDate = Some (DateOnly(2031, 1, 15)) }; SwapLegs = { Legs = legs } ; RateConvention = None }
 
 /// The asset class and the stamped flat terms the snapshot wrapper writes for a record of the kind.
 let private flatTermsFor (kind: SecurityKind) =
@@ -2357,7 +2333,7 @@ let ``Economic accrual fills from declared conventions on bonds, deposits and st
 let ``Reclassification proposal blocks a bond that declares schedule conventions`` () =
     let agencyBond conventions =
         match securitizedBond (BondSubclass.Other "AgencyMbs") (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
-        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions }
+        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = conventions } }
         | other -> other
 
     let proposal =
@@ -2386,9 +2362,9 @@ let ``Reclassification proposal blocks a bond that declares schedule conventions
 /// The kind with its declared call and put schedules replaced (bonds, deposits and structured credit).
 let private withCallPutSchedules (schedules: CallPutSchedules) (kind: SecurityKind) =
     match kind with
-    | SecurityKind.Bond terms -> SecurityKind.Bond { terms with CallPutSchedules = schedules }
-    | SecurityKind.CertificateOfDeposit terms -> SecurityKind.CertificateOfDeposit { terms with CallPutSchedules = schedules }
-    | SecurityKind.StructuredCredit terms -> SecurityKind.StructuredCredit { terms with CallPutSchedules = schedules }
+    | SecurityKind.Bond terms -> SecurityKind.Bond { terms with DeclaredSchedule = { terms.DeclaredSchedule with Exercises = schedules } }
+    | SecurityKind.CertificateOfDeposit terms -> SecurityKind.CertificateOfDeposit { terms with DeclaredSchedule = { terms.DeclaredSchedule with Exercises = schedules } }
+    | SecurityKind.StructuredCredit terms -> SecurityKind.StructuredCredit { terms with DeclaredSchedule = { terms.DeclaredSchedule with Exercises = schedules } }
     | other -> failwithf "'%s' declares no call or put schedules." (SecurityKind.assetClass other)
 
 let private callsOnly (calls: CallScheduleTerm list) = { CallPutSchedules.empty with Calls = calls }
@@ -2418,15 +2394,14 @@ let private economicPutEntry date price = ({ PutDt = date; PutPx = price } : Put
 let private callableBond isCallable callDate schedules =
     SecurityKind.Bond
         { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360) (Some "ACME") with
-            IsCallable = isCallable
-            CallDate = callDate
-            CallPutSchedules = schedules }
+            Callability = EconomicCallTerms.scalar isCallable callDate
+            DeclaredSchedule = { DeclaredScheduleTerms.empty with Exercises = schedules } }
 
 /// A certificate of deposit with the scalar callable date and the declared schedules.
 let private callableDeposit callableDate schedules =
     match scheduleDeposit ScheduleConventions.empty with
     | SecurityKind.CertificateOfDeposit terms ->
-        SecurityKind.CertificateOfDeposit { terms with CallableDate = callableDate; CallPutSchedules = schedules }
+        SecurityKind.CertificateOfDeposit { terms with Callability = EconomicCallTerms.scalar (Option.isSome callableDate) callableDate; DeclaredSchedule = { terms.DeclaredSchedule with Exercises = schedules } }
     | other -> other
 
 [<Fact>]
@@ -2654,7 +2629,7 @@ let ``Economic call fill keeps bond and deposit call scalars verbatim and fills 
     // A mandatory put date alone is not a holder put; a declared put is.
     let mandatoryPutBond schedules =
         match callableBond false None schedules with
-        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with MandatoryPutDate = Some (DateOnly(2030, 6, 15)) }
+        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with RedemptionFacts = { terms.RedemptionFacts with MandatoryPutDate = Some (DateOnly(2030, 6, 15)) } }
         | other -> other
     economicCallFor (mandatoryPutBond CallPutSchedules.empty) |> should equal (callTerms false None [] [])
     economicCallFor (mandatoryPutBond (callsOnly [ declaredCall ])) |> should equal (callTerms false None [ callEntry ] [])
@@ -2671,7 +2646,7 @@ let ``Economic call fill keeps bond and deposit call scalars verbatim and fills 
     // The non-call period never feeds the module.
     let structuredCredit conventions schedules =
         match scheduleStructuredCredit conventions |> withCallPutSchedules schedules with
-        | SecurityKind.StructuredCredit terms -> SecurityKind.StructuredCredit { terms with NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) }
+        | SecurityKind.StructuredCredit terms -> SecurityKind.StructuredCredit { terms with TrancheContract = { terms.TrancheContract with NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) } }
         | other -> other
     economicCallFor (structuredCredit ScheduleConventions.empty CallPutSchedules.empty) |> should equal None
     economicCallFor (structuredCredit declaredConventions CallPutSchedules.empty) |> should equal None
@@ -2705,7 +2680,7 @@ let ``Economic call fill reproduces the scalar-only call terms exactly when no s
 let ``Reclassification proposal retains the conventions blocker after call and put schedules become writable`` () =
     let agencyBond conventions schedules =
         match securitizedBond (BondSubclass.Other "AgencyMbs") (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
-        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions; CallPutSchedules = schedules }
+        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with DeclaredSchedule = { Conventions = conventions; Exercises = schedules } }
         | other -> other
     let proposalFor conventions schedules =
         reclassificationFor (agencyBond conventions schedules)
@@ -2757,3 +2732,47 @@ let ``Every typed day count uses the canonical calculation engine`` () =
     for convention in Enum.GetValues<Meridian.Contracts.SecurityMaster.DayCountConvention>() do
         Meridian.FSharp.Calculations.DayCount.fractionFor convention startDate endDate
         |> should equal (Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(convention, startDate, endDate))
+
+[<Fact>]
+let ``Contracted required fields refuse missing module values without throwing`` () =
+    let optionKind =
+        registrySampleKinds
+        |> List.pick (fun (kind, _) -> match kind with SecurityKind.Option terms -> Some terms | _ -> None)
+    validationErrorCodes (SecurityKind.Option {
+        optionKind with
+            Exercise = { optionKind.Exercise with StrikePrice = None }
+            TradingParameters = { optionKind.TradingParameters with ContractMultiplier = None }
+    }) |> should contain "option_strike_invalid"
+    validationErrorCodes (SecurityKind.Option {
+        optionKind with TradingParameters = { optionKind.TradingParameters with ContractMultiplier = None }
+    }) |> should contain "option_multiplier_invalid"
+
+    let structuredCredit =
+        match scheduleStructuredCredit ScheduleConventions.empty with
+        | SecurityKind.StructuredCredit terms -> terms
+        | _ -> failwith "Expected a structured-credit fixture"
+    let missingPool = {
+        structuredCredit with
+            Pool = { structuredCredit.Pool with TrancheClass = None; CollateralType = None; NotionalBalance = None }
+    }
+    let errors = validationErrorCodes (SecurityKind.StructuredCredit missingPool)
+    errors |> should contain "structured_credit_tranche_required"
+    errors |> should contain "structured_credit_collateral_required"
+    errors |> should contain "structured_credit_original_face_invalid"
+
+    // A missing required date remains an invalid/default date at legacy scalar read sites;
+    // it must not throw while the codec-only rules gather typed errors.
+    let bond = BondTerms.fixedRate (DateOnly(2032, 6, 1)) 4.5m None None
+    let missingDate = { bond with Dates = { bond.Dates with MaturityDate = None } }
+    missingDate.Maturity |> should equal DateOnly.MinValue
+
+
+[<Fact>]
+let ``Required CDS coupon refuses absence while preserving a valid zero coupon`` () =
+    let terms =
+        registrySampleKinds
+        |> List.pick (fun (kind, _) -> match kind with SecurityKind.CreditDefaultSwap terms -> Some terms | _ -> None)
+    let missing = { terms with ContractualRate = { terms.ContractualRate with FixedCouponBps = None } }
+    validationErrorCodes (SecurityKind.CreditDefaultSwap missing) |> should contain "cds_fixed_coupon_invalid"
+    let zero = { terms with ContractualRate = { terms.ContractualRate with FixedCouponBps = Some 0m } }
+    validationErrorCodes (SecurityKind.CreditDefaultSwap zero) |> should not' (contain "cds_fixed_coupon_invalid")

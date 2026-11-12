@@ -10,6 +10,7 @@ import * as api from "@/lib/api/accounting-onboarding.api";
 import type {
   OnboardingComparison, OnboardingCriteria, OnboardingDifference, OnboardingReadinessPacket, OnboardingSourceSelection, OnboardingWorkspace
 } from "@/types/accounting-onboarding";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const split = (value: FormDataEntryValue | null) => String(value ?? "").split(/[,\n]/).map(item => item.trim()).filter(Boolean);
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
@@ -34,9 +35,9 @@ function CriteriaFields({ criteria }: { criteria?: OnboardingCriteria }) {
     <fieldset className="space-y-2 text-sm">
       <legend className="mb-2 text-xs font-semibold">Required coverage</legend>
       {[["Balance", "Balances"], ["Position", "Positions"], ["Nav", "NAV"]].map(([value, label]) => (
-        <label key={value} className="mr-3 inline-flex items-center gap-2"><input type="checkbox" name="requiredKinds" value={value} defaultChecked={criteria ? criteria.requiredKinds.includes(value) : true} />{label}</label>
+        <Checkbox key={value} className="mr-3 inline-flex items-center gap-2" name="requiredKinds" value={value} defaultChecked={criteria ? criteria.requiredKinds.includes(value) : true} label={<>{label}</>} />
       ))}
-      <label className="flex items-center gap-2"><input type="checkbox" name="requireCloseReadiness" defaultChecked={criteria?.requireCloseReadiness ?? true} />Require close readiness</label>
+      <Checkbox className="flex items-center gap-2" name="requireCloseReadiness" defaultChecked={criteria?.requireCloseReadiness ?? true} label={<>Require close readiness</>} />
     </fieldset>
   </FormGrid>;
 }

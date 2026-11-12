@@ -62,7 +62,7 @@ class ConsumerCertificationProcessTests(unittest.TestCase):
         return result, (folder / "stdout").read_text(), (folder / "stderr").read_text(), int(timing.read_text()) / 1000
 
     def test_runtime_descendant_cannot_hold_parent_output_drain_open(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             folder = Path(temporary)
             child_pid_path = folder / "child.pid"
             code = (
@@ -83,7 +83,7 @@ class ConsumerCertificationProcessTests(unittest.TestCase):
                         pass
 
     def test_sql_style_capture_returns_output_and_rejects_nonzero_exit(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             folder = Path(temporary)
             result, output, error, _ = self.run_helper(folder, "print('SQL sentinel')", capture=True)
             self.assertEqual(result.returncode, 0, error)
@@ -94,7 +94,7 @@ class ConsumerCertificationProcessTests(unittest.TestCase):
             self.assertIn("failed probe", error)
 
     def test_native_process_execution_deadline_fails_closed(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             result, _, error, elapsed = self.run_helper(Path(temporary), "import time; time.sleep(30)", timeout=1)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("execution deadline", error)

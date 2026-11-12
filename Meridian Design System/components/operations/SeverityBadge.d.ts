@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Operator status chip — mirrors `.severity-badge`. The single most-used status
  * encoding in Meridian: it collapses every readiness / gate / validation status
@@ -26,4 +27,4 @@ export interface SeverityBadgeProps extends React.HTMLAttributes<HTMLSpanElement
   /** Prepend a filled status dot. @default true */
   dot?: boolean;
 }
-export declare function SeverityBadge(props: SeverityBadgeProps): JSX.Element;
+export declare function SeverityBadge(props: SeverityBadgeProps): React.JSX.Element;

@@ -9,6 +9,7 @@ import type {
   QualityDashboardResponse,
   QualityProviderFreshnessResponse
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 export type QualityDashboardFetcher = typeof getQualityDashboard;
 
@@ -109,7 +110,7 @@ function buildSymbolRow(symbol: QualityCompositeSymbolResponse): DataQualitySymb
   const adapter = componentFor(symbol.components, "AdapterGapIntegrity");
   const expectedEventsLabel = symbol.expectedEvents === null || symbol.observedEvents === null
     ? "Expected-session counts unavailable"
-    : `${symbol.observedEvents.toLocaleString()} / ${symbol.expectedEvents.toLocaleString()} expected events`;
+    : `${formatCount(symbol.observedEvents)} / ${formatCount(symbol.expectedEvents)} expected events`;
 
   return {
     symbol: symbol.symbol,

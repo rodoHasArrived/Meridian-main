@@ -1,51 +1,80 @@
-/* Meridian — Elevation, Radius & Spacing
-   ───────────────────────────────────────
-   Institutional-ops surfaces: shallow. ONE subtle card shadow, a small fixed
-   radius scale (chip → button → card). No heavy/material elevation, no
-   decorative blur. These are the exact tokens components consume.
+/* Meridian — Elevation, Radius, Spacing & Motion (Programmed Institutionalism)
+   ─────────────────────────────────────────────────────────────────────────
+   Elevation is almost none: structure comes from 1px rules, tonal steps and
+   inset wells. Shadows exist ONLY under detached overlays (dialog/popover/menu).
+   Radius scale 2 / 4 / 6 — never above 8. Grid: 8px base · 16 section ·
+   32 workspace · 64 macro.
 */
 :root {
-  /* Motion — unified timing & easing across all components */
-  --motion-fast:    100ms; /* @kind other */
-  --motion-base:    150ms; /* @kind other */
-  --ease-standard:  cubic-bezier(0.4, 0, 0.2, 1); /* @kind other */
-  --space-xs:    3px;   /* micro spacing */
-  --space-sm:    6px;   /* tight */
-  --space-md:   12px;   /* standard */
-  --space-lg:   16px;   /* generous */
-  --space-xl:   24px;   /* section */
-  --space-2xl:  32px;   /* major break */
+  /* Motion — animations explain, nothing celebrates. v2.1 durations, standard cubic, no bounce. */
+  --motion-instant:   80ms; /* @kind other */ /* state flip, checkbox, chip */
+  --motion-fast:     120ms; /* @kind other */
+  --motion-base:     180ms; /* @kind other */
+  --motion-reflow:   240ms; /* @kind other */ /* marks move after sort / filter / scenario */
+  --motion-slow:     240ms; /* @kind other */
+  --motion-deliberate:280ms;/* @kind other */ /* trace / reconcile sequences */
+  --motion-slower:   300ms; /* @kind other */
+  --ease-standard:  cubic-bezier(0.2, 0, 0, 1); /* @kind other */
+  --ease-exit:      cubic-bezier(0.4, 0, 1, 1); /* @kind other */
 
-  /* Border radius — concrete & UNIFIED: one tight 2px corner across chips,
-     controls, and surfaces. Structure comes from borders, not rounding; the
-     system never exceeds a 6px corner (lg/xl, large sheets only). */
+  /* Spacing — 4px base unit: 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 */
+  --space-xs:    4px;   /* micro spacing */
+  --space-sm:    8px;   /* tight */
+  --space-md:   12px;   /* standard */
+  --space-lg:   16px;   /* generous / section */
+  --space-xl:   24px;   /* section break */
+  --space-2xl:  32px;   /* workspace break */
+  --space-3xl:  48px;   /* macro */
+  --space-4xl:  64px;   /* report margins */
+  --space-panel: var(--space-xl); /* app-compat name — workstation panel padding (24px) */
+
+  /* Opacity scale — the only sanctioned transparencies. */
+  --opacity-disabled:         0.38; /* @kind other */
+  --opacity-muted:            0.62; /* @kind other */
+  --opacity-series-secondary: 0.74; /* @kind other */
+
+  /* Stroke — interface rules (chart strokes live in visualization.css). */
+  --stroke-hairline: 1px;
+  --stroke-emphasis: 2px;
+
+  /* Grid — 12 columns large, 8 medium; gutters and margins by breakpoint. */
+  --grid-columns:     12;   /* @kind other */
+  --grid-columns-md:  8;    /* @kind other */
+  --grid-gutter-lg:   24px;
+  --grid-gutter:      20px;
+  --grid-gutter-sm:   16px;
+  --grid-margin-lg:   32px;
+  --grid-margin:      24px;
+  --grid-margin-sm:   20px;
+
+  /* Border radius — instrument-control scale: 2 chips · 4 controls · 6 sheets.
+     Never above 8. Structure comes from rules, not rounding. */
   --radius-none:   0px;
-  --radius-chip:   2px;    /* pills, badges, tags — unified 2px with controls */
-  --radius-button: 2px;    /* buttons, inputs, controls — crisp */
-  --radius-card:   2px;    /* panels, metric cards, surfaces — crisp */
+  --radius-chip:   2px;    /* pills, badges, tags */
+  --radius-analytical: 2px;/* plots, plates, data surfaces */
+  --radius-button: 4px;    /* buttons, inputs, controls */
+  --radius-card:   4px;    /* panels, surfaces */
+  --radius-overlay:6px;    /* popovers, menus, drawers */
+  --radius-dialog: 8px;    /* dialogs — the ceiling */
+  --radius-pill:   999px;  /* status pills only */
   --radius:        var(--radius-button);
-  /* Full named scale (for consumers/templates). Tight by design — the Concrete
-     system never exceeds a 6px corner. xs/sm map to the chip/control hair. */
   --radius-xs:     2px;
   --radius-sm:     2px;
-  --radius-md:     3px;
-  --radius-lg:     4px;
+  --radius-md:     4px;
+  --radius-lg:     6px;
   --radius-xl:     6px;
+  --radius-checkbox: var(--radius-chip); /* app-compat name */
 
-  /* Focus ring — concrete: tight, hard, square. 1px offset reads utilitarian. */
-  --focus-ring:        2px solid var(--border-focus, #A85436);
+  /* Focus ring — tight, visible, interaction blue (never the brand signal). */
+  --focus-ring:        2px solid var(--border-focus, #2D6FB3);
   --focus-ring-offset: 1px;
 
-  /* Elevation — concrete: surfaces are FLAT. Structure is carried by visible
-     borders, not soft shadows or glows. The only shadow is on detached
-     overlays (menus/popovers) that genuinely float above the plane, and it's
-     tight and hard-edged, not a diffuse cloud. */
+  /* Elevation — surfaces are FLAT; fine rules and inset wells carry structure.
+     The only shadow is on detached overlays (dialogs, popovers, menus). */
   --shadow-card:   none;
-  --shadow-menu:   0 2px 6px rgba(0, 0, 0, 0.18);
-  --shadow-inset:  none;
-  /* App-compat shadow aliases. The workstation plane is FLAT — borders carry
-     structure — so these map the dashboard's shadow names onto `none`, keeping
-     operations/section surfaces on-system. Only detached overlays float. */
+  --shadow-menu:   0 2px 8px rgba(17, 23, 29, 0.16);
+  --shadow-inset:  inset 0 1px 2px rgba(17, 23, 29, 0.06);
+  /* App-compat shadow aliases — the workspace plane is flat. */
   --shadow-soft:        none;
   --shadow-panel:       none;
   --shadow-workstation: none;
@@ -54,12 +83,28 @@
   /* Chrome heights — fixed */
   --topbar-height:    44px;
   --statusbar-height: 28px;
-  --row-height:       40px;
+  --row-height:       36px;
+
+  /* Component anatomy — reference dimensions components alias instead of
+     hard-coding. Row height tracks the live density scope. */
+  --table-row-height:     var(--theme-row-height, 36px);
+  --table-header-height:  34px;
+  --selection-rail:       2px;
+  --capsule-header-height:48px;
+  --capsule-footer-height:32px;
+  --capsule-h-sm:        144px;
+  --capsule-h-md:        240px;
+  --capsule-h-lg:        336px;
+  --capsule-h-xl:        432px;
+  --workspace-context-height:44px;
+  --calendar-cell-min-height:170px;
+  --drawer-width-min:    360px;
+  --drawer-width-max:    440px;
+  --drawer-action-height: 36px;
 
   /* Z-index ladder — the single source of stacking order. Never hand-pick a z-index in a
-     component; reach for a token so overlays can't collide. Gaps of 100/50 leave room for
-     app layers between tiers. Ordered: raised chrome < sticky < dropdown/popover < drawer <
-     modal < toast < hotkey sheet < tooltip (tooltips win, they explain everything). */
+     component; reach for a token so overlays can't collide. Ordered: raised chrome <
+     sticky < dropdown/popover < drawer < modal < toast < hotkey sheet < tooltip. */
   --z-base:        0;   /* @kind spacing */
   --z-raised:      10;  /* @kind spacing */ /* sticky table headers, pinned columns */
   --z-sticky:      20;  /* @kind spacing */ /* sticky toolbars, section headers */
@@ -72,8 +117,7 @@
   --z-tooltip:     500; /* @kind spacing */ /* tooltips, chart crosshair readouts */
 
   /* Panel padding — density-aware. Unlike --space-* (fixed), these track
-     data-theme-density so compact mode compresses panel interiors, not just row height.
-     Cozy defaults here; density overrides live in theme.css alongside --theme-spacing-*. */
+     data-theme-density so compact mode compresses panel interiors, not just row height. */
   --pad-panel:       var(--theme-spacing-lg, 16px); /* standard panel/card interior */
   --pad-panel-tight: var(--theme-spacing-md, 12px); /* dense panels, inspector rails */
   --gap-panel:       var(--theme-spacing-md, 12px); /* gap between stacked panel children */

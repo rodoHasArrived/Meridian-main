@@ -93,6 +93,7 @@ import type {
   RuleDryRunResult,
   GeneratedPostingLine,
 } from "@/types";
+import { formatCount as formatCountValue } from "@/lib/format";
 
 const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
 interface AccountingTenantAdministrationProfileDraft {
@@ -2274,7 +2275,7 @@ export function useAccountingConfigurationViewModel(
         };
       });
     const ledgerBookSummaryLabel = workspace
-      ? `${ledgerBookRows.length.toLocaleString()} ledger book${ledgerBookRows.length === 1 ? "" : "s"} registered${selectedLedgerBook ? ` | selected ${selectedLedgerBook.displayName}` : workspace.ledgerBookId ? " | selected book missing from catalog" : " | fund-level scope"}.`
+      ? `${formatCountValue(ledgerBookRows.length)} ledger book${ledgerBookRows.length === 1 ? "" : "s"} registered${selectedLedgerBook ? ` | selected ${selectedLedgerBook.displayName}` : workspace.ledgerBookId ? " | selected book missing from catalog" : " | fund-level scope"}.`
       : "Ledger-book catalog is not loaded.";
     const ledgerBookEmptyText = workspace && ledgerBookRows.length === 0
       ? "No registered ledger books are available in this configuration workspace."

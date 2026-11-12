@@ -20,6 +20,7 @@ namespace Meridian.Execution.Services;
 ///       fills.jsonl          — one versioned fill claim per line (legacy raw reports still read)
 ///       fills.applied.jsonl  — idempotent apply acknowledgements
 ///       orders.jsonl         — one OrderState JSON object per line (append-only)
+///       settlements.jsonl    — one daily variation-margin settlement per line (append-only)
 /// </code>
 /// Atomic writes for <c>session.json</c> use write-to-temp-then-rename semantics
 /// to guard against partial writes on crash. JSONL appends are serialised per base
@@ -173,9 +174,46 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
         await AppendLineAsync(OrdersPath(sessionId), json, ct).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task<PaperSessionSettlementAppendStatus> TryAppendSettlementAsync(
+        string sessionId,
+        PaperSessionSettlementRecord record,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        record.Validate();
+
+        await _appendLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var existing = (await LoadSettlementsCoreAsync(sessionId, ct).ConfigureAwait(false))
+                .FirstOrDefault(candidate => string.Equals(candidate.Key, record.Key, StringComparison.Ordinal));
+            if (existing is not null)
+            {
+                return existing.SettlementPrice == record.SettlementPrice
+                    ? PaperSessionSettlementAppendStatus.ExistingSame
+                    : PaperSessionSettlementAppendStatus.Conflict;
+            }
+
+            var json = JsonSerializer.Serialize(record, ExecutionJsonContext.Default.PaperSessionSettlementRecord);
+            await AppendLineUnderLockAsync(SettlementsPath(sessionId), json, ct).ConfigureAwait(false);
+            return PaperSessionSettlementAppendStatus.Added;
+        }
+        finally
+        {
+            _appendLock.Release();
+        }
+    }
+
     // ------------------------------------------------------------------
     // Read operations
     // ------------------------------------------------------------------
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<PaperSessionSettlementRecord>> LoadSettlementsAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => LoadSettlementsCoreAsync(sessionId, ct);
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
@@ -300,6 +338,9 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
 
     private string FillApplicationsPath(string sessionId) =>
         _pathGuard.ResolvePath(sessionId, "fills.applied.jsonl");
+
+    private string SettlementsPath(string sessionId) =>
+        _pathGuard.ResolvePath(sessionId, "settlements.jsonl");
 
     private string LedgerPath(string sessionId) =>
         _pathGuard.ResolvePath(sessionId, "ledger.jsonl");
@@ -503,6 +544,49 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
         }
 
         return applications;
+    }
+
+    /// <summary>
+    /// Reads every settlement strictly. A corrupt or invalid line fails the load instead of being
+    /// skipped: a dropped settlement would silently mis-state the session's cash on replay.
+    /// </summary>
+    private async Task<IReadOnlyList<PaperSessionSettlementRecord>> LoadSettlementsCoreAsync(
+        string sessionId,
+        CancellationToken ct)
+    {
+        var path = SettlementsPath(sessionId);
+        if (!File.Exists(path))
+            return [];
+
+        _pathGuard.EnsurePath(path);
+        var results = new List<PaperSessionSettlementRecord>();
+        var lineNumber = 0;
+        await using var fs = File.OpenRead(path);
+        using var reader = new StreamReader(fs, Encoding.UTF8);
+        while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
+        {
+            lineNumber++;
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            PaperSessionSettlementRecord? record;
+            try
+            {
+                record = JsonSerializer.Deserialize(line, ExecutionJsonContext.Default.PaperSessionSettlementRecord);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException(
+                    $"Paper session '{sessionId}' has a corrupt settlement record on line {lineNumber}.", ex);
+            }
+
+            if (record is null)
+                throw new InvalidDataException($"Paper session '{sessionId}' has an empty settlement record on line {lineNumber}.");
+            record.Validate();
+            results.Add(record);
+        }
+
+        return results;
     }
 
     private async Task<PersistedSessionRecord?> TryLoadMetadataAsync(string path, CancellationToken ct)

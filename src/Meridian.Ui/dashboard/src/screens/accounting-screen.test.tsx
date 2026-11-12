@@ -5,10 +5,13 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as approvalCollaboration from "@/lib/approval-collaboration";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
+import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
+import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type {
@@ -81,6 +84,14 @@ vi.mock("@/lib/ledger-reports-api", () => ({
 
 vi.mock("@/lib/api/recurring-journals.api", () => ({
   getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
+}));
+
+vi.mock("@/lib/api/operator-workstation.api", () => ({
+  getCrossScreenCounts: vi.fn().mockResolvedValue(null),
+  getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  saveOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  recordOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline")),
+  getOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline"))
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -207,8 +218,12 @@ vi.mock("@/lib/api", async () => {
         }
       }
     ]),
+    getSecurityDetail: vi.fn().mockImplementation(async (securityId: string) => ({
+      securityId, displayName: "Apple Inc.", status: "Active",
+      classification: { assetClass: "Equity", subType: "CommonStock", primaryIdentifierKind: "Ticker", primaryIdentifierValue: "AAPL" },
+      economicDefinition: { currency: "USD", version: 1, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "CommonStock", assetFamily: "Equity", issuerType: "Corporate" }
+    })),
     getSecurityIdentity: vi.fn().mockResolvedValue(null),
-    getSecurityDetail: vi.fn().mockRejectedValue(new Error("Instrument unavailable")),
     getOperatorOverrides: vi.fn().mockResolvedValue({
       securityId: "sec-1",
       values: {},
@@ -1599,6 +1614,29 @@ describe("AccountingScreen", () => {
     searchSecurities.mockReset();
     if (defaultSearchSecuritiesImplementation) {
       searchSecurities.mockImplementation(defaultSearchSecuritiesImplementation);
+    }
+  });
+
+  it("states on the open-breaks card how many breaks are new since the operator's last visit (C3)", async () => {
+    const baseline = "2025-12-31T00:00:00Z";
+    resetSinceLastVisitCache();
+    window.sessionStorage.clear();
+    vi.mocked(getOperatorSurfaceVisit).mockResolvedValueOnce({ surface: "reconciliation-breaks", previousVisitAt: baseline, visitedAt: null });
+    vi.mocked(recordOperatorSurfaceVisit).mockClear();
+    try {
+      await renderAccountingScreen({
+        ...data,
+        metrics: [{ id: "breaks", label: "Open breaks", value: "2", delta: "+1", tone: "warning" }, ...data.metrics.slice(1)]
+      });
+      const expected = data.breakQueue.filter((item) => Date.parse(item.detectedAt) > Date.parse(baseline)).length;
+      const strip = screen.getByLabelText("Accounting headline metrics");
+      expect(await within(strip).findByText(`${expected} new since your last visit`)).toBeInTheDocument();
+      expect(within(strip).queryByText("+1")).not.toBeInTheDocument();
+      // The Accounting landing reads the break-queue baseline; only opening the queue records a visit.
+      expect(recordOperatorSurfaceVisit).not.toHaveBeenCalled();
+    } finally {
+      window.sessionStorage.clear();
+      resetSinceLastVisitCache();
     }
   });
 
@@ -4367,57 +4405,81 @@ describe("AccountingScreen", () => {
 
   it("selects Security Master results and adds source evidence on the manual journal entry workbench", async () => {
     const user = userEvent.setup();
-    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
-      ...manualJournalWorkbench,
-      drafts: [{
-        ...manualJournalDraft,
-        lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? { ...line, securityId: null, securityDisplayName: null } : line),
-        evidenceLinks: [],
-        evidenceAttachments: []
-      }]
+    let retainedVersion = manualJournalDraft.version;
+    let versionAtAttachment = retainedVersion;
+    // Security selection starts the real autosave timer. Its mock must retain the draft even
+    // when slower CI interactions allow that save to finish before evidence is attached.
+    await vi.mocked(api.saveManualJournalEntryDraft).withImplementation(async ({ draft }) => {
+      const saved = { ...draft, version: draft.version + 1 };
+      retainedVersion = saved.version;
+      return saved;
+    }, async () => {
+      vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+        ...manualJournalWorkbench,
+        drafts: [{
+          ...manualJournalDraft,
+          lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? { ...line, securityId: null, securityDisplayName: null } : line),
+          evidenceLinks: [],
+          evidenceAttachments: []
+        }]
+      });
+      vi.mocked(api.attachManualJournalEntryEvidence).mockImplementationOnce((request) => {
+        versionAtAttachment = retainedVersion;
+        const attached = {
+          ...manualJournalDraft,
+          version: request.version + 1,
+          lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? {
+            ...line,
+            securityId: "22222222-2222-2222-2222-222222222222",
+            securityDisplayName: "Apple Inc."
+          } : line),
+          evidenceLinks: request.evidenceLinks ?? [],
+          evidenceAttachments: [request.attachment]
+        };
+        retainedVersion = attached.version;
+        return Promise.resolve(attached);
+      });
+      vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
+
+      await renderAccountingScreen(data, "/accounting/journal-entries");
+
+      await user.type(screen.getByPlaceholderText("Ticker, ISIN, CUSIP, FIGI, name"), "AAPL");
+      await user.click(screen.getByRole("button", { name: "Search Security Master" }));
+      await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
+      expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
+
+      const evidence = within(requirePresent(screen.getByRole("heading", { name: "Source evidence" }).parentElement?.parentElement?.parentElement, "source evidence panel"));
+      fireEvent.change(evidence.getByLabelText("Label"), { target: { value: "Trade blotter" } });
+      fireEvent.change(evidence.getByLabelText("Route or path"), {
+        target: { value: "/api/workstation/evidence/subjects/accounting-record/trade-blotter" }
+      });
+      await user.click(evidence.getByRole("button", { name: "Attach" }));
+
+      expect(await evidence.findByText("Trade blotter")).toBeInTheDocument();
+      expect(api.attachManualJournalEntryEvidence).toHaveBeenCalledWith(expect.objectContaining({
+        journalEntryId: "manual-je-1",
+        fundProfileId: "fund-alpha",
+        version: versionAtAttachment,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
+        attachment: expect.objectContaining({
+          displayName: "Trade blotter",
+          uri: "/api/workstation/evidence/subjects/accounting-record/trade-blotter",
+          evidenceKind: "SourceDocument"
+        })
+      }));
+      expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+      await user.click(screen.getByRole("button", { name: "Validate" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled());
+      expect(screen.getByText("Validation is current for this draft and no issues were returned.")).toBeInTheDocument();
+      expect(api.validateManualJournalEntryDraft).toHaveBeenCalledWith(expect.objectContaining({
+        draft: expect.objectContaining({
+          evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
+          lines: expect.arrayContaining([expect.objectContaining({
+            lineId: "line-debit", securityId: "22222222-2222-2222-2222-222222222222", securityDisplayName: "Apple Inc."
+          })])
+        })
+      }));
     });
-    vi.mocked(api.attachManualJournalEntryEvidence).mockImplementationOnce((request) => Promise.resolve({
-      ...manualJournalDraft,
-      version: manualJournalDraft.version + 1,
-      lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? {
-        ...line,
-        securityId: "22222222-2222-2222-2222-222222222222",
-        securityDisplayName: "Apple Inc."
-      } : line),
-      evidenceLinks: request.evidenceLinks ?? [],
-      evidenceAttachments: [request.attachment]
-    }));
-    vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
-
-    await renderAccountingScreen(data, "/accounting/journal-entries");
-
-    await user.type(screen.getByPlaceholderText("Ticker, ISIN, CUSIP, FIGI, name"), "AAPL");
-    await user.click(screen.getByRole("button", { name: "Search Security Master" }));
-    await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
-    expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText("Label"), { target: { value: "Trade blotter" } });
-    fireEvent.change(screen.getByLabelText("Route or path"), {
-      target: { value: "/api/workstation/evidence/subjects/accounting-record/trade-blotter" }
-    });
-    await user.click(screen.getByRole("button", { name: "Attach" }));
-
-    expect(await screen.findByText("Trade blotter")).toBeInTheDocument();
-    expect(api.attachManualJournalEntryEvidence).toHaveBeenCalledWith(expect.objectContaining({
-      journalEntryId: "manual-je-1",
-      fundProfileId: "fund-alpha",
-      version: 1,
-      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
-      attachment: expect.objectContaining({
-        displayName: "Trade blotter",
-        uri: "/api/workstation/evidence/subjects/accounting-record/trade-blotter",
-        evidenceKind: "SourceDocument"
-      })
-    }));
-    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "Validate" }));
-    await waitFor(() => expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled());
-    expect(screen.getByText("Validation is current for this draft and no issues were returned.")).toBeInTheDocument();
   });
 
   it("renders approvals as a dedicated workstream and posts approval decisions", async () => {
@@ -4434,11 +4496,11 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1");
 
     expect(await screen.findByRole("heading", { name: "Approval queue and audit gate" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Approvals", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Pending close approvals", level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
     const approvalQueue = screen.getByRole("region", { name: "Accounting approval queue" });
     expect(approvalQueue).toHaveTextContent("2026-05");
-    expect(approvalQueue).toHaveTextContent("Jun 1, 12:00 UTC");
+    expect(approvalQueue).toHaveTextContent("Jun 1, 2026, 12:00 UTC");
     expect(approvalQueue).not.toHaveTextContent("workflow-close-1");
     const workflowIdentifiers = screen.getByText("Workflow identifiers").closest("details");
     expect(workflowIdentifiers).not.toHaveAttribute("open");
@@ -4455,6 +4517,48 @@ describe("AccountingScreen", () => {
       reportPackId: "report-pack-2026-05",
       rationale: "Approved from Accounting approvals workstream."
     }));
+  });
+
+  it("moves through approval rows and opens review or assignment without making a decision", async () => {
+    const other = { ...approvalWorkflowSummary, workflowId: "workflow-approval-2", periodId: "2026-04", updatedAtUtc: "2026-05-01T12:00:00Z" };
+    const discussion = vi.spyOn(approvalCollaboration, "getApprovalCollaboration").mockImplementation(async (workflowId) => ({
+      workflowId, version: 7, approvalState: "Submitted", currentApprovalId: "approval-close-1", submitter: "operator-a", reviewer: null,
+      comments: [], approvalHistory: [], canComment: true, canReassign: true, disabledReason: null
+    }));
+    const write = vi.spyOn(approvalCollaboration, "applyApprovalCollaboration");
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary, other]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockImplementation(async (id) => id === other.workflowId ? { ...approvalWorkflowDetail, ...other } : approvalWorkflowDetail);
+    vi.mocked(api.approveOperationsContinuityWorkflow).mockClear();
+    vi.mocked(api.rejectOperationsContinuityWorkflow).mockClear();
+    try {
+      await renderAccountingScreen(data, "/accounting/approvals");
+      const first = await screen.findByRole("row", { name: "2026-05, Pending" });
+      first.focus();
+      fireEvent.keyDown(first, { key: "j" });
+      const second = screen.getByRole("row", { name: "2026-04, Pending" });
+      await waitFor(() => expect(second).toHaveFocus());
+      expect(second).toHaveAttribute("aria-selected", "true");
+      fireEvent.keyDown(second, { key: "r" });
+      const detail = screen.getByRole("region", { name: "Selected approval detail" });
+      await waitFor(() => expect(detail).toHaveFocus());
+      fireEvent.keyDown(detail, { key: "Escape" });
+      await waitFor(() => expect(second).toHaveFocus());
+      await waitFor(() => expect(within(detail).getByLabelText("Independent reviewer operator ID")).toBeEnabled());
+      fireEvent.keyDown(second, { key: "a" });
+      const reviewer = within(detail).getByLabelText("Independent reviewer operator ID");
+      expect(reviewer.closest("details")).toHaveAttribute("open");
+      expect(reviewer).toHaveFocus();
+      fireEvent.keyDown(reviewer, { key: "j" });
+      expect(second).toHaveAttribute("aria-selected", "true");
+      fireEvent.keyDown(reviewer, { key: "r" });
+      fireEvent.keyDown(reviewer, { key: "d" });
+      expect(api.approveOperationsContinuityWorkflow).not.toHaveBeenCalled();
+      expect(api.rejectOperationsContinuityWorkflow).not.toHaveBeenCalled();
+      expect(write).not.toHaveBeenCalled();
+    } finally {
+      discussion.mockRestore();
+      write.mockRestore();
+    }
   });
 
   it("uses workflow status when an approval record has not been created yet", async () => {
@@ -4904,7 +5008,8 @@ describe("AccountingScreen", () => {
 
     await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));
     const commandDeck = screen.getByRole("region", { name: "Security Master command deck" });
-    expect(commandDeck).toHaveTextContent("Selected security");
+    await waitFor(() => expect(api.getSecurityDetail).toHaveBeenCalledWith("sec-dev-001", { allowDevelopmentFallback: false }));
+    expect(commandDeck).toHaveTextContent("Apple Inc.");
     expect(commandDeck).not.toHaveTextContent("sec-dev-001");
     const explorerSummary = screen.getByLabelText("Explorer summary");
     await waitFor(() => expect(explorerSummary).toHaveTextContent("Review required"));
@@ -4943,6 +5048,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [selectedRow], selectedRecord: selectedRow.detail });
     const bondId = "33333333-3333-3333-3333-333333333333";
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([{ securityId: bondId, displayName: "Reviewed corporate bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }]);
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", status: "Active", classification: { assetClass: securityId === bondId ? "Bond" : "Equity", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }));
     vi.mocked(api.getSecurityIdentity).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", assetClass: securityId === bondId ? "Bond" : "Equity", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] }));
     await renderAccountingScreen(data, "/accounting/security-master");
     await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));

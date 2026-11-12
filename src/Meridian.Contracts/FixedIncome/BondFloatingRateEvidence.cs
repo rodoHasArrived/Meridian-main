@@ -19,9 +19,13 @@ public sealed record BondFloatingRateEvidence(
     public const string ModelVersion = "bond-floating-coupon-v1";
 
     public bool TryCoupon(decimal forecastIndexShift, out decimal cash, out string? refusal)
+        => TryCoupon(forecastIndexShift, out cash, out refusal, out _);
+
+    public bool TryCoupon(decimal forecastIndexShift, out decimal cash, out string? refusal, out SecurityCashFlowBlockerDto? blocker)
     {
         cash = 0m;
         refusal = null;
+        blocker = null;
         if (ResetDate == default || string.IsNullOrWhiteSpace(IndexName) || string.IsNullOrWhiteSpace(Source)
             || OriginalRateUnit is not (SecurityCouponRateUnit.Percent or SecurityCouponRateUnit.Fraction)
             || Principal <= 0m || AccrualFraction <= 0m || Cap is { } cap && Floor is { } floor && floor > cap)
@@ -36,7 +40,8 @@ public sealed record BondFloatingRateEvidence(
             rate = Math.Max(rate, lower);
         if (rate < 0m)
         {
-            refusal = "Negative floating coupon cash requires a supported signed-interest model.";
+            blocker = SecurityInterestSupport.NegativeInterestBlocker;
+            refusal = blocker.Reason;
             return false;
         }
         cash = checked(Principal * rate * AccrualFraction);

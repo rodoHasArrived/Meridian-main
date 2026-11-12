@@ -22,6 +22,12 @@ public static class StructuredCashFlowLedgerGate
     {
         ArgumentNullException.ThrowIfNull(projection);
 
+        if (projection.Blocker is { } blocker)
+            return blocker.Reason;
+
+        if (projection.Schedule.Any(static entry => entry.InterestAmount < 0m))
+            return SecurityInterestSupport.NegativeInterestReason;
+
         if (projection.BlockedReason is { Length: > 0 } blockedReason)
             return blockedReason;
 

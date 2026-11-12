@@ -12,6 +12,7 @@ import type {
   ExecutionBlotterSnapshot,
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
+import { formatMoney, formatQuantity } from "@/lib/format";
 
 export type ExecutionBlotterTone = "default" | "success" | "warning" | "danger";
 
@@ -41,6 +42,16 @@ export interface ExecutionBlotterRow {
   contractDetail: string | null;
   canUpsize: boolean;
   ariaLabel: string;
+  /** Raw figures behind the formatted columns, for sorting. */
+  values: ExecutionBlotterRowValues;
+}
+
+export interface ExecutionBlotterRowValues {
+  quantity: number;
+  averageCostBasis: number;
+  marketPrice: number;
+  marketValue: number;
+  unrealisedPnl: number;
 }
 
 export interface ExecutionProvenance {
@@ -133,6 +144,13 @@ export function buildExecutionBlotterRow(position: ExecutionBlotterPosition): Ex
     // The server decides which positions an upsize applies to; absence of the
     // flag is treated as "not offered" rather than assumed to be allowed.
     canUpsize: position.supportsUpsize === true,
+    values: {
+      quantity: position.quantity,
+      averageCostBasis: position.averageCostBasis,
+      marketPrice: position.marketPrice,
+      marketValue: position.marketValue,
+      unrealisedPnl: position.unrealisedPnl
+    },
     ariaLabel: `${position.side} ${formatNumber(position.quantity)} ${position.symbol}, market value ${formatCurrency(position.marketValue)}, unrealised ${formatSignedCurrency(position.unrealisedPnl)}`
   };
 }
@@ -160,7 +178,7 @@ function pnlTone(value: number): ExecutionBlotterTone {
 }
 
 function formatCurrency(value: number): string {
-  return value.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  return formatMoney(value, { context: "trading", decimals: 2 });
 }
 
 function formatSignedCurrency(value: number): string {
@@ -168,5 +186,5 @@ function formatSignedCurrency(value: number): string {
 }
 
 function formatNumber(value: number): string {
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  return formatQuantity(value, { maxDecimals: 4 });
 }

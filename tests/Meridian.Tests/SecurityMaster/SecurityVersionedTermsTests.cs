@@ -52,7 +52,7 @@ public sealed class SecurityVersionedTermsTests
                     {
                         var expected = write
                             ? !SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload)
-                              && field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass)
+                              && field.AuthoringEnabled && field.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass)
                             : field.SinceTermsVersion <= OldDecodeThrough(assetClass, payload, write: false);
                         var actual = SecurityVersionedTerms.Decoding(assetClass, payload, write).Decodes(field);
                         if (actual != expected)
@@ -98,7 +98,7 @@ public sealed class SecurityVersionedTermsTests
         SecurityVersionedTerms.Decoding("Bond", Json("{" + BondBody + "}"), writeMode: false).Through.Should().Be(1);
         SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: false).Through.Should().Be(3);
         SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: true).Through.Should().Be(3);
-        SecurityVersionedTerms.Decoding("StructuredCredit", Terms(1, "\"tranche\":\"A-1\""), writeMode: true).Through.Should().Be(4);
+        SecurityVersionedTerms.Decoding("StructuredCredit", Terms(1, "\"tranche\":\"A-1\""), writeMode: true).Through.Should().Be(6);
 
         SecurityVersionedTerms.Decoding("StructuredCredit", Json("""{"customProfileId":"structured-credit-v1","profileFields":{}}"""), writeMode: false)
             .ProfileGoverned.Should().BeTrue();
@@ -120,7 +120,8 @@ public sealed class SecurityVersionedTermsTests
             envelopeThroughFour.Decodes(field).Should().BeFalse($"a profile envelope decodes no versioned container ({assetClass}.{path})");
         }
 
-        foreach (var field in AllFields().Where(static field => !SecurityVersionedTerms.IsVersionedContainer(field)))
+        foreach (var field in AllFields().Where(static field => !SecurityVersionedTerms.IsVersionedContainer(field)
+            && field.Key != SecurityRecordRateUnit.FieldKey))
         {
             flatThroughThree.Decodes(field).Should().BeTrue();
             envelopeThroughFour.Decodes(field).Should().BeTrue();
@@ -314,7 +315,7 @@ public sealed class SecurityVersionedTermsTests
         SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Bond", Terms(2, $"{BondBody},\"scheduleConventions\":{CanonicalBlock}"))
             .Status.Should().Be(SecurityDeclaredConventionsStatus.None, "a Bond has no array term with a leg block");
 
-        var unreadable = Swap(4, $"\"legs\":[{FixedLeg},{longLeg}]");
+        var unreadable = Swap(5, $"\"legs\":[{FixedLeg},{longLeg}]");
         var read = SecurityVersionedTerms.ReadDeclaredLegScheduleConventions("Swap", unreadable);
         read.Status.Should().Be(SecurityDeclaredConventionsStatus.Unreadable);
         read.UnreadableReason.Should().Be(ReadGuardMessage("Swap", unreadable));
@@ -332,8 +333,8 @@ public sealed class SecurityVersionedTermsTests
                 "Terms payload for asset class 'Bond' declares termsFormat 'economic', which is not an asset-specific-terms format; " +
                 "route it through SecurityAssetSpecificTermsUpcasterChain before reading."),
             ("Bond", Terms(5, BondBody), "Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4."),
-            ("StructuredCredit", Terms(0, "\"tranche\":\"A-1\""), "Unsupported assetClassTermsVersion '0' for asset class 'StructuredCredit'; this node reads versions 1 through 5."),
-            ("Swap", Terms(4, "\"legs\":[]"), "Unsupported assetClassTermsVersion '4' for asset class 'Swap'; this node reads versions 1 through 3."),
+            ("StructuredCredit", Terms(0, "\"tranche\":\"A-1\""), "Unsupported assetClassTermsVersion '0' for asset class 'StructuredCredit'; this node reads versions 1 through 6."),
+            ("Swap", Terms(5, "\"legs\":[]"), "Unsupported assetClassTermsVersion '5' for asset class 'Swap'; this node reads versions 1 through 4."),
         };
 
         foreach (var (assetClass, terms, expected) in refused)

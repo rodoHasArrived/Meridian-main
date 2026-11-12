@@ -18,7 +18,7 @@ describe("dialog interaction view model", () => {
     expect(viewModel.className).toContain("max-h-[calc(100dvh-2rem)]");
     expect(viewModel.className).toContain("overflow-y-auto");
     expect(viewModel.className).toContain("overscroll-contain");
-    expect(viewModel.className).toContain("rounded-[2px]");
+    expect(viewModel.className).toContain("rounded-[var(--radius-dialog)]");
   });
 
   it("preserves caller-provided tab target while deriving the dialog surface", () => {

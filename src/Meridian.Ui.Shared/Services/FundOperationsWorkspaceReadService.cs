@@ -1958,7 +1958,9 @@ public sealed partial class FundOperationsWorkspaceReadService
         row.NetBalance
     ];
 
-    private static byte[] BuildTrialBalanceCsv(IReadOnlyList<EnrichedLedgerRow> rows, CancellationToken ct)
+    // Rows come from CertifiedReportingSnapshotBuilder, whose labels are already decoded; exported
+    // verbatim (decoding again would rewrite literal payloads such as "None"). Internal for tests.
+    internal static byte[] BuildTrialBalanceCsv(IReadOnlyList<EnrichedLedgerRow> rows, CancellationToken ct)
     {
         var builder = new StringBuilder();
         AppendCsvRow(builder, TrialBalanceHeaders);

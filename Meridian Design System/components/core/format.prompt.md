@@ -1,0 +1,3 @@
+# Numeric authority and GLYPHS
+
+`GLYPHS` publishes the canonical minus and missing-value dash. Other numeric helpers are carried by `Format` and bound by `FormatProvider`: decimal and currency precision, grouping, sign conventions and tick precision remain explicit. Formatting is presentation, not monetary validation or financial arithmetic. In particular, `toNumber` accepts money-like display strings and must not validate command inputs. Use `Validators.currency` or the caller's typed service contract before accepting edits. Format values once at their rendering boundary; preserve null/missing state separately from numeric zero. No helper authorizes a financial write.

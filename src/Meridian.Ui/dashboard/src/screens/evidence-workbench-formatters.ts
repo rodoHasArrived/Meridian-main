@@ -1,4 +1,5 @@
 import type { EvidenceVaultDocumentEntry } from "@/types";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export function formatEvidenceNodeLabel(nodeId: string) {
   const parts = nodeId.split(":").filter(Boolean);
@@ -78,11 +79,5 @@ export function formatDate(value: string) {
     return value;
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number) {
-  return value.toString().padStart(2, "0");
+  return formatUtcTimestamp(date);
 }

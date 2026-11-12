@@ -4,7 +4,6 @@ import meridianHeroUrl from "@/assets/brand/meridian-hero.svg";
 import meridianMarkLightUrl from "@/assets/brand/meridian-mark-light.svg";
 import meridianMarkMonochromeUrl from "@/assets/brand/meridian-mark-monochrome.svg";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
-import meridianSymbolUrl from "@/assets/brand/meridian-symbol.svg";
 import meridianTilePngUrl from "@/assets/brand/meridian-tile-256.png";
 import meridianTileUrl from "@/assets/brand/meridian-tile.svg";
 import meridianWordmarkStackedUrl from "@/assets/brand/meridian-wordmark-stacked.svg";
@@ -18,9 +17,12 @@ import strategyIconUrl from "@/assets/icons/strategy-builder.svg";
 import tradingIconUrl from "@/assets/icons/trading.svg";
 
 export const DESIGN_SYSTEM_PACKAGE_ROOT = "../../../Meridian Design System" as const;
+export const DESIGN_SYSTEM_VERSION = "4.3.0" as const;
+export const DESIGN_SYSTEM_RELEASE_FILE = `${DESIGN_SYSTEM_PACKAGE_ROOT}/release.json` as const;
 export const DESIGN_SYSTEM_MANIFEST_FILE = `${DESIGN_SYSTEM_PACKAGE_ROOT}/_ds_manifest.json` as const;
 
 export const DESIGN_SYSTEM_TOKEN_FILES = [
+  `${DESIGN_SYSTEM_PACKAGE_ROOT}/tokens/fonts.css`,
   `${DESIGN_SYSTEM_PACKAGE_ROOT}/tokens/theme.css`,
   `${DESIGN_SYSTEM_PACKAGE_ROOT}/tokens/colors.css`,
   `${DESIGN_SYSTEM_PACKAGE_ROOT}/tokens/colors-dark.css`,
@@ -70,8 +72,8 @@ export type DesignSystemLiveComponentName =
 
 /**
  * Canonical workstation token contract the shell adapters are wired against. These
- * `--ws-*` custom properties are authored in `src/styles/index.css` from the Concrete
- * light source in the vendored design-system package (`tokens/theme.css` + `colors.css`)
+ * `--ws-*` custom properties are authored in `src/styles/index.css` from the 4.3
+ * Programmed Institutionalism source (`tokens/theme.css` + `colors.css`)
  * and consumed by the masthead, rail, and surface CSS. Keeping the list here lets the
  * design-system primitives and the contract test reference one authoritative surface.
  */
@@ -112,7 +114,7 @@ export const meridianBrandAssets = {
   mark: meridianMarkUrl,
   markLight: meridianMarkLightUrl,
   markMonochrome: meridianMarkMonochromeUrl,
-  symbol: meridianSymbolUrl,
+  symbol: meridianMarkUrl,
   tile: meridianTileUrl,
   tilePng: meridianTilePngUrl,
   wordmark: meridianWordmarkUrl,

@@ -60,6 +60,71 @@
           "required": true
         }
       ]
+    },
+    {
+      "termsVersion": 2,
+      "fields": [
+        {
+          "key": "exerciseStyle",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "expiry",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "fixedLegDayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "fixedLegPaymentFrequency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "floatingIndex",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "notional",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "payerReceiver",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "rateUnit",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "settlementType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "strikeRate",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "underlyingEffectiveDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "underlyingMaturityDate",
+          "type": "Date",
+          "required": true
+        }
+      ]
     }
   ]
 }

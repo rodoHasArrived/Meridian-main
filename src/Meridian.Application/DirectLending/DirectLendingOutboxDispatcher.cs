@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.DirectLending;
+using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -192,22 +193,25 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 break;
 
             case "loan.daily-accrual-posted":
-                var interest = GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
+                GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
                 var commitmentFee = GetRequiredDecimal(payload.RootElement, "commitmentFeeAmount", "CommitmentFeeAmount");
                 var penalty = GetDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 var pikInterest = GetDecimal(payload.RootElement, "pikInterestAmount", "PikInterestAmount");
                 description = "Daily accrual";
-                if (interest > 0m)
+                // PRD-115: interest settled from prepaid interest first (shared with LoanAccountingProjector).
+                foreach (var line in DirectLendingJournalLines.ForAccruedInterest(payload.RootElement))
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
-                // PIK interest capitalizes into loan principal instead of a cash receivable.
+                // Capitalization policy: PIK waits in a PIK receivable until a capitalization date.
+                // Legacy PIK toggle: PIK interest capitalizes into loan principal the same day.
                 if (pikInterest > 0m)
                 {
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "LoanPrincipal", pikInterest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, pikInterest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    var deferred = payload.RootElement.TryGetProperty("pikCapitalizationDeferred", out var deferredElement)
+                        && deferredElement.ValueKind == JsonValueKind.True;
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, deferred ? "PikInterestReceivable" : "LoanPrincipal", pikInterest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, deferred ? "PikInterestIncome" : "InterestIncome", 0m, pikInterest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
                 if (commitmentFee > 0m)
@@ -223,11 +227,33 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 }
                 break;
 
+            case "loan.pik-capitalized":
+                var capitalizedPik = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
+                description = "PIK capitalization";
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "LoanPrincipal", capitalizedPik, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "PikInterestReceivable", 0m, capitalizedPik, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                break;
+
             case "loan.mixed-payment-applied":
-                var paymentAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
+                GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Mixed payment";
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
-                lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                // PRD-115: split by allocation (shared with LoanAccountingProjector).
+                foreach (var line in DirectLendingJournalLines.ForMixedPayment(payload.RootElement))
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
+                break;
+
+            case "loan.unapplied-cash-applied":
+            case "loan.unapplied-cash-refunded":
+                description = sourceEvent.EventType == "loan.unapplied-cash-applied" ? "Unapplied cash applied" : "Unapplied cash refund";
+                // PRD-115 increment 7 (shared with LoanAccountingProjector).
+                foreach (var line in sourceEvent.EventType == "loan.unapplied-cash-applied"
+                    ? DirectLendingJournalLines.ForUnappliedCashApplied(payload.RootElement)
+                    : DirectLendingJournalLines.ForUnappliedCashRefunded(payload.RootElement))
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, line.Account, line.Debit, line.Credit, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
                 break;
 
             case "loan.fee-assessed":
@@ -258,6 +284,22 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         if (lines.Count == 0)
         {
             return;
+        }
+
+        // Fail closed: a drafted journal that does not balance (or carries a negative amount) is
+        // never saved; the delivery is retained for recovery instead.
+        if (lines.Any(line => line.DebitAmount < 0m || line.CreditAmount < 0m))
+        {
+            throw new LedgerValidationException(
+                $"Direct lending journal draft for event '{envelope.SourceEventId}' ({sourceEvent.EventType}) contains a negative amount.");
+        }
+
+        var totalDebits = lines.Sum(line => line.DebitAmount);
+        var totalCredits = lines.Sum(line => line.CreditAmount);
+        if (totalDebits != totalCredits)
+        {
+            throw new LedgerValidationException(
+                $"Direct lending journal draft for event '{envelope.SourceEventId}' ({sourceEvent.EventType}) does not balance: debits {totalDebits}, credits {totalCredits}.");
         }
 
         var entry = new JournalEntryDto(

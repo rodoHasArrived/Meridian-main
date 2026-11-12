@@ -16,6 +16,9 @@ public sealed class ContractualCashFlowPreviewTests
     private static SecurityDetailDto Security(Guid id) => new(id, "Bond", SecurityStatusDto.Active, "Test", "USD",
         JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new
         {
+            // Review D10, slice 4: the coupon's unit is declared, never inferred from its magnitude.
+            assetClassTermsVersion = 2,
+            scheduleConventions = new { couponRateUnit = "Percent" },
             issueDate = "2026-01-01",
             maturity = "2027-01-01",
             par = 1000m,
@@ -25,7 +28,7 @@ public sealed class ContractualCashFlowPreviewTests
         }), [], [], 1, new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), null);
 
     [Fact]
-    public async Task Preview_uses_recorded_terms_cutoff_and_preserves_percent_coupon_units()
+    public async Task Preview_uses_recorded_terms_cutoff_and_preserves_declared_percent_coupon_units()
     {
         var id = Guid.NewGuid();
         var query = Substitute.For<ISecurityMasterQueryService>();
@@ -175,13 +178,13 @@ public sealed class ContractualCashFlowPreviewTests
     }
 
     [Theory]
-    [InlineData("swapLegs", 1, 50)]
+    [InlineData("swapLegs", 1, null)]
     [InlineData("swapLegs", 2, .5)]
-    [InlineData("cashFlowLegs", 1, 50)]
+    [InlineData("cashFlowLegs", 1, null)]
     [InlineData("cashFlowLegs", 2, .5)]
-    [InlineData("LEGS", 1, 50)]
+    [InlineData("LEGS", 1, null)]
     [InlineData("LEGS", 2, .5)]
-    public async Task Same_currency_swap_leg_aliases_preserve_the_declared_rate_unit(string legContainer, int version, decimal interest)
+    public async Task Same_currency_swap_leg_aliases_preserve_the_declared_rate_unit(string legContainer, int version, double? interest)
     {
         var id = Guid.NewGuid();
         var security = Security(id) with
@@ -205,9 +208,18 @@ public sealed class ContractualCashFlowPreviewTests
         var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
             .PreviewSecurityAsync(id, Request);
 
+        if (interest is null)
+        {
+            // A version-1 row does not decode its leg block, so the 0.05 has no declared unit. It is
+            // flagged rather than read as five percent (review D10, slice 4).
+            result!.Blockers.Should().ContainSingle().Which.Code.Should().Be(RateUnitNormalizer.UndeclaredCode);
+            result.Events.Should().BeEmpty();
+            return;
+        }
+
         result!.Blockers.Should().BeEmpty();
         result.ResolvedContract!.Currency.Should().Be("USD");
-        result.Events.Sum(static item => item.CashInterest).Should().BeApproximately(interest, .00000003m);
+        result.Events.Sum(static item => item.CashInterest).Should().BeApproximately((decimal)interest.Value, .00000003m);
     }
 
     [Fact]
@@ -379,12 +391,20 @@ public sealed class ContractualCashFlowPreviewTests
         var result = await new ContractualCashFlowPreviewService(query, Substitute.For<ISecurityMasterCashFlowService>())
             .PreviewSecurityAsync(id, Request);
 
+        if (!declared)
+        {
+            // A stray leg block on an unstamped or version-1 swap cannot change its retained economics,
+            // and without it the 0.05 has no declared unit: it is flagged, not read as five percent.
+            result!.Blockers.Should().ContainSingle().Which.Code.Should().Be(RateUnitNormalizer.UndeclaredCode);
+            result.Events.Should().BeEmpty();
+            return;
+        }
+
         result!.Blockers.Should().BeEmpty();
         var stream = result.ResolvedContract!.Streams.Should().ContainSingle().Which;
-        stream.FixedRate.Should().Be(declared ? .0005m : .05m);
-        stream.Conventions!.IsEmpty.Should().Be(!declared,
-            "a stray leg block on an unstamped or version-1 swap cannot change its retained economics");
-        result.Events.Sum(static item => item.CashInterest).Should().BeApproximately(declared ? .5m : 50m, .00000003m);
+        stream.FixedRate.Should().Be(.0005m);
+        stream.Conventions!.IsEmpty.Should().BeFalse();
+        result.Events.Sum(static item => item.CashInterest).Should().BeApproximately(.5m, .00000003m);
     }
 
     [Fact]

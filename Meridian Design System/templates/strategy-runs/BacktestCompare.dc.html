@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>BacktestCompare — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Companion · BacktestCompare" description="Declared companion view of the strategy-runs template; retains the same shared object and workflow state." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<script src="../_strategy-executor/screen-kit.js"></script>
+<meta name="dc-template" content="backtest-compare">
+<style>html,body{margin:0;padding:0;height:100%}
+.bc-prov{display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--border-divider,var(--border))}
+.bc-prov .k{flex:none;width:64px;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted)}
+.bc-prov .v{font-family:var(--font-data);font-size:11px;color:var(--text-secondary);word-break:break-all}
+</style>
+</helmet>
+<div data-screen-label="Backtest compare" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Run Compare" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="compare" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Compare runs</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="66px,18px">{{ envLabel }}</x-import>
+<div style="flex:1"></div>
+<div style="width:270px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Run A · baseline" value="{{ a }}" on-change="{{ onPickA }}" options="{{ runOptions }}" hint-size="270px,52px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onSwap }}" hint-size="50px,28px">Swap</x-import>
+<div style="width:270px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Run B · candidate" value="{{ b }}" on-change="{{ onPickB }}" options="{{ runOptions }}" hint-size="270px,52px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ promoteReason }}" hint-size="150px,28px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ promoteDisabled }}" on-click="{{ onPromote }}" hint-size="150px,28px">Promote B to review</x-import>
+</x-import>
+</div>
+<sc-if value="{{ showStorageNotice }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="{{ storageTitle }}" detail="{{ storageDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="{{ verdictTone }}" title="{{ verdictTitle }}" detail="{{ verdictDetail }}" hint-size="100%,48px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Comparison" action-label="Reload runs" on-action="{{ onRetry }}" hint-size="100%,900px">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" style="padding:0" hint-size="100%,380px">
+<div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">KPI deltas</x-import>
+<div style="flex:1"></div>
+<span style="font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:11px;color:var(--text-muted)">Δ = B − A · {{ windowChip }}</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="index" columns="{{ kpiColumns }}" rows="{{ kpiRows }}" hint-size="100%,340px"></x-import>
+</x-import>
+<sc-if value="{{ hasCurves }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChartCard" title="Equity curves" subtitle="{{ curvesSubtitle }}" readout="{{ eqReadout }}" height="{{ 280 }}" hint-size="100%,340px">
+<div style="height:280px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EquityCurve" series="{{ eqSeries }}" labels="{{ monthLabels }}" value-fmt="{{ fmtIdx }}" baseline="{{ 100 }}" baseline-label="Start = 100" height="{{ 280 }}" hint-size="100%,280px"></x-import>
+</div>
+</x-import>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChartCard" title="Drawdown · A {{ aId }}" readout="{{ ddReadoutA }}" height="{{ 190 }}" hint-size="100%,250px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DrawdownChart" series="{{ ddA }}" labels="{{ monthLabels }}" value-fmt="{{ fmtPct }}" hint-size="100%,190px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChartCard" title="Drawdown · B {{ bId }}" readout="{{ ddReadoutB }}" height="{{ 190 }}" hint-size="100%,250px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DrawdownChart" series="{{ ddB }}" labels="{{ monthLabels }}" value-fmt="{{ fmtPct }}" hint-size="100%,190px"></x-import>
+</x-import>
+</div>
+</sc-if>
+<sc-if value="{{ limited }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="warning" title="Curves unavailable" hint-size="100%,60px">{{ limitedNote }}</x-import>
+</sc-if>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" style="padding:0" hint-size="320px,260px">
+<div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="140px,14px">Configuration · A → B</x-import>
+</div>
+<div style="padding:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DiffView" changes="{{ diffChanges }}" hint-size="100%,200px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" style="padding:0" hint-size="320px,240px">
+<div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="80px,14px">Provenance</x-import>
+</div>
+<div style="padding:6px 14px 12px;display:flex;flex-direction:column">
+<sc-for list="{{ provRows }}" as="p" hint-placeholder-count="6">
+<div class="bc-prov"><span class="k">{{ p.k }}</span><span class="v">{{ p.v }}</span></div>
+</sc-for>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" style="margin-top:10px" on-click="{{ onTraces }}" hint-size="120px,28px">Open run traces</x-import>
+</div>
+</x-import>
+</div>
+</div>
+</x-import>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  state = { booted: false, bootError: null, draft: null, a: null, b: null };
+  K() { return window.MeridianExecutorKit; }
+  componentDidMount() { const wait = setInterval(() => { if (this.K()) { clearInterval(wait); this.K().applyChrome(this.props, "FIXTURE"); this.K().boot(this, (X, idn) => ({ draft: X.getStrategy(idn.strategyId), a: idn.runA, b: idn.runB })); } }, 30); this._wait = wait; }
+  componentWillUnmount() { clearInterval(this._wait); this.K() && this.K().unboot(this); }
+  componentDidUpdate() { this.K() && this.K().applyChrome(this.props, "FIXTURE"); }
+  renderVals() {
+    const K = this.K(), env = String(this.props.environment ?? "FIXTURE").toUpperCase();
+    if (!K) return { dataState: "loading" };
+    const base = { dataState: this.state.bootError ? "error" : (!this.state.booted ? "loading" : (this.props.dataState ?? "ready")), onRetry: () => window.location.reload(), envLabel: env, envVariant: env.toLowerCase(), navSections: K.NAV_SECTIONS, onNav: (id) => K.nav(id), fmtIdx: (v) => v.toFixed(1), fmtPct: (v) => v.toFixed(1) + "%" };
+    if (!this.state.booted) return { ...base, statusItems: [{ label: "Compare", value: "Loading" }].concat(K.statusTail(env)), kpiColumns: this.kpiCols(), kpiRows: [], eqSeries: [], monthLabels: [], ddA: [], ddB: [], runOptions: [], diffChanges: [], provRows: [], verdictTone: "info", verdictTitle: "Loading", hasCurves: false, limited: false };
+    const X = K.X(), d = this.state.draft, RM = K.ds().StrategyRunModel;
+    const completed = X.listRuns(d.id).filter((r) => r.lifecycle === "complete");
+    const A = (this.state.a && X.getRun(this.state.a)) || completed[1] || completed[0] || null;
+    const B = (this.state.b && X.getRun(this.state.b)) || completed.find((r) => A && r.id !== A.id) || null;
+    const storage = X.storageNotice();
+    const mA = A ? (A.metrics || A.reported || {}) : {}, mB = B ? (B.metrics || B.reported || {}) : {};
+    const seriesOk = A && B && A.series && B.series;
+    const sA = K.sample(A && A.series ? A.series.equity : null, 64), sB = K.sample(B && B.series ? B.series.equity : null, 64);
+    const freshB = B ? X.freshnessFor(B.id) : { state: "unknown" };
+    const promoteGated = !B || B.legacy || freshB.state !== "current";
+    const pick = (key) => (v) => { X.setUrlState({ [key]: v }); this.setState({ [key === "runA" ? "a" : "b"]: v }); };
+    const dm = (get, fmt, dfmt) => { const va = get(mA), vb = get(mB); return { a: va == null ? "—" : fmt(va), b: vb == null ? "—" : fmt(vb), d: va == null || vb == null ? "—" : (dfmt || fmt)(vb - va, true) }; };
+    const pctD = (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v * 100).toFixed(1) + "%";
+    const numD = (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(v).toFixed(2);
+    const snapField = (r, fn) => { const s = r && r.inputs && r.inputs.snapshot ? r.inputs.snapshot.fields : null; return s ? fn(s) : "—"; };
+    const kpi = (label, get, fmt, dfmt, method) => { const x = dm(get, fmt, dfmt); return { metric: label, a: x.a, b: x.b, delta: x.d, method }; };
+    return {
+      ...base,
+      statusItems: [
+        { label: "A", value: A ? A.id : "—" },
+        { label: "B", value: B ? B.id : "—" },
+        { status: freshB.state === "current" ? "ok" : "warn", label: "B freshness", value: B ? (B.legacy ? "legacy" : freshB.state) : "—" },
+      ].concat(K.statusTail(env)),
+      showStorageNotice: !!storage, storageTitle: storage ? storage.title : "", storageDetail: storage ? storage.message : "",
+      a: A ? A.id : null, b: B ? B.id : null,
+      onPickA: pick("runA"), onPickB: pick("runB"),
+      onSwap: () => { if (!A || !B) return; X.setUrlState({ runA: B.id, runB: A.id }); this.setState({ a: B.id, b: A.id }); },
+      runOptions: completed.map((r) => ({ value: r.id, label: r.id + " · v" + (r.strategyVersion ?? "?") + " · " + r.env + (r.legacy ? " · legacy" : "") })),
+      promoteDisabled: promoteGated,
+      promoteReason: promoteGated ? (B && B.legacy ? "Legacy artifacts cannot be promoted." : "B must be a completed run with a current proof.") : "Hand B to Governance for review and attestation.",
+      onPromote: () => { if (!promoteGated) K.nav("governance", { run: B.id }); },
+      verdictTone: !A || !B ? "info" : !seriesOk ? "warning" : (mB.totalReturn ?? 0) >= (mA.totalReturn ?? 0) && (mB.sharpe ?? 0) >= (mA.sharpe ?? 0) ? "success" : "info",
+      verdictTitle: !A || !B ? "Pick two completed runs" : !seriesOk ? "Comparison limited — a side lacks raw evidence" : (mB.totalReturn ?? 0) >= (mA.totalReturn ?? 0) ? "B clears A on return" + ((mB.sharpe ?? 0) >= (mA.sharpe ?? 0) ? " and Sharpe" : "; A holds Sharpe") : "A holds on return",
+      verdictDetail: !A || !B ? "Compare reads completed artifacts of this strategy — runs still executing or failed are not comparable." : !seriesOk ? (A.legacy ? A.id : B.id) + " is a legacy artifact without raw series — derived KPIs and curves are unavailable for it; reported figures show as provisional." : "Δ total " + (mA.totalReturn != null && mB.totalReturn != null ? pctD(mB.totalReturn - mA.totalReturn) : "—") + " · Δ Sharpe " + (mA.sharpe != null && mB.sharpe != null ? numD(mB.sharpe - mA.sharpe) : "—") + " · both proofs " + (RM.verifyProof(A).state === "verified" && RM.verifyProof(B).state === "verified" ? "verified" : "unverified"),
+      windowChip: A && A.request.window ? K.isoD(A.request.window.start) + " → " + K.isoD(A.request.window.end) : "—",
+      kpiColumns: this.kpiCols(),
+      kpiRows: [
+        kpi("Total return", (m) => m.totalReturn, (v) => K.pct(v), pctD, "close-to-close"),
+        kpi("Benchmark return", (m) => m.benchmarkReturn, (v) => K.pct(v), pctD, "close-to-close"),
+        kpi("Excess return", (m) => m.excessReturn, (v) => K.pct(v), pctD, "total − benchmark"),
+        kpi("CAGR", (m) => m.cagr, (v) => K.pct(v), pctD, "ACT/365.2425"),
+        kpi("Max drawdown", (m) => m.maxDrawdown, (v) => K.pct(v), pctD, "rolling-peak"),
+        kpi("Sharpe", (m) => m.sharpe, (v) => Number(v).toFixed(2), numD, "daily · rf 0 · √252"),
+        kpi("Win rate", (m) => m.winRate, (v) => K.pctu(v), pctD, "closed trades, net fees"),
+        kpi("Avg holding", (m) => m.avgHoldingDays, (v) => Math.round(v) + "d", (v) => (v >= 0 ? "+" : "\u2212") + Math.abs(Math.round(v)) + "d", "closed trades"),
+        kpi("Turnover", (m) => m.turnover, (v) => Number(v).toFixed(2) + "×", numD, "notional / avg equity · ann."),
+        kpi("Fees", (m) => m.fees, (v) => K.usd0(v), (v) => K.usd0s(v), "recorded per-trade"),
+      ],
+      hasCurves: !!seriesOk, limited: !!(A && B && !seriesOk),
+      limitedNote: A && B && !seriesOk ? (A.legacy ? A.id : B.id) + " carries no raw series — StrategyRunModel keeps legacy reported figures separate from derived evidence, so only the tabular comparison is shown." : "",
+      curvesSubtitle: A && B ? "B " + (B ? B.id : "") + " (graphite) vs A " + (A ? A.id : "") + " (slate, dashed) · indexed to 100" : "",
+      eqReadout: seriesOk ? [{ label: "windows", value: (A.request.window ? K.isoD(A.request.window.start) : "—") + "… / " + (B.request.window ? K.isoD(B.request.window.start) : "—") + "…" }] : [],
+      eqSeries: seriesOk ? [{ label: "B · " + B.id, color: "var(--series-actual, #29323A)", points: sB.values }, { label: "A · " + A.id, color: "var(--series-prior, #7890A4)", points: sA.values, dashed: true, area: false }] : [],
+      monthLabels: (sB.labels.length ? sB : sA).labels,
+      aId: A ? A.id : "—", bId: B ? B.id : "—",
+      ddA: sA.values.length ? K.ddPct(sA.values) : [], ddB: sB.values.length ? K.ddPct(sB.values) : [],
+      ddReadoutA: mA.maxDrawdown != null ? [{ label: "trough", value: K.pct(mA.maxDrawdown) }] : [],
+      ddReadoutB: mB.maxDrawdown != null ? [{ label: "trough", value: K.pct(mB.maxDrawdown) }] : [],
+      diffChanges: A && B ? [
+        { field: "Window", before: A.request.window ? K.isoD(A.request.window.start) + " → " + K.isoD(A.request.window.end) : "—", after: B.request.window ? K.isoD(B.request.window.start) + " → " + K.isoD(B.request.window.end) : "—" },
+        { field: "Dataset", before: A.request.dataset ? A.request.dataset.id : "—", after: B.request.dataset ? B.request.dataset.id : "—" },
+        { field: "Snapshot", before: "v" + (A.strategyVersion ?? "?"), after: "v" + (B.strategyVersion ?? "?") },
+        { field: "Filters", before: snapField(A, (s) => (s.universe.filters || []).length + " filters"), after: snapField(B, (s) => (s.universe.filters || []).length + " filters") },
+        { field: "Max positions", before: snapField(A, (s) => s.portfolioRules.maxPositions), after: snapField(B, (s) => s.portfolioRules.maxPositions) },
+        { field: "DD policy", before: snapField(A, (s) => s.riskGovernance.maxDrawdownPct + "%"), after: snapField(B, (s) => s.riskGovernance.maxDrawdownPct + "%") },
+        { field: "Engine", before: A.request.engine.name + " " + (A.request.engine.version || ""), after: B.request.engine.name + " " + (B.request.engine.version || "") },
+        { field: "Environment", before: A.env, after: B.env },
+      ] : [],
+      provRows: A && B ? [
+        { k: "A proof", v: A.proof ? K.hash8(A.proof.inputHash) + " · " + RM.verifyProof(A).state : "none · legacy" },
+        { k: "B proof", v: B.proof ? K.hash8(B.proof.inputHash) + " · " + RM.verifyProof(B).state : "none · legacy" },
+        { k: "A run", v: K.iso(A.completedAt) },
+        { k: "B run", v: K.iso(B.completedAt) },
+        { k: "Strategy", v: d.id + " · draft v" + d.version + " · " + K.hash8(K.ds().StrategyModel.materialHash(d)) },
+        { k: "B fresh", v: B.legacy ? "n/a · legacy" : freshB.state },
+      ] : [],
+      onTraces: () => K.nav("runs", { run: A ? A.id : null }),
+    };
+  }
+  kpiCols() { return [{ key: "metric", label: "Metric", align: "left" }, { key: "a", label: "A", align: "right" }, { key: "b", label: "B", align: "right" }, { key: "delta", label: "Δ", align: "right" }, { key: "method", label: "Declared method", align: "left" }]; }
+}
+</script>
+</body>
+</html>

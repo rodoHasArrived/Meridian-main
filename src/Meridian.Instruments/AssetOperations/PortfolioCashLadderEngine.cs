@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Instruments.AssetOperations;
 
@@ -96,7 +97,7 @@ public static partial class PortfolioCashLadderEngine
             RatesDownScenarioId,
             "Rates -100bp",
             "Parallel 100bp downward shift applied to retained floating-rate flows only.",
-            ["Declared floating coupons reprice future forecast resets using contractual spread, caps and floors; observed resets stay fixed. Legacy undeclared flows retain proportional scaling and their historical zero floor."],
+            ["Declared floating coupons reprice future forecast resets using contractual spread, caps and floors; observed resets stay fixed. Legacy undeclared flows retain proportional scaling; unsupported negative interest blocks the scenario."],
             [
                 "Fixed-coupon flows are contractual and remain unchanged.",
                 "Flows are treated as floating only when the retained terms or flow payload identify a floating rate.",
@@ -204,12 +205,19 @@ public static partial class PortfolioCashLadderEngine
 
         var scenario = ResolveScenario(scenarioId, warnings);
         warnings.AddRange(inputs.PositionSourceNotices);
+        SecurityCashFlowBlockerDto? interestBlocker = null;
         if (inputs.DecisionBlockers.Count == 0)
         {
             try
-            { ValidateDeclaredScenario(inputs, scenario.ScenarioId, windowStart, windowEnd); }
+            {
+                ValidateUnsignedInterestScenario(inputs, scenario.ScenarioId, windowStart, windowEnd);
+                ValidateDeclaredScenario(inputs, scenario.ScenarioId, windowStart, windowEnd);
+            }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException or ArithmeticException)
-            { inputs = inputs with { DecisionBlockers = [error.Message] }; }
+            {
+                interestBlocker = error is NegativeInterestScenarioException ? SecurityInterestSupport.NegativeInterestBlocker : null;
+                inputs = inputs with { DecisionBlockers = [error.Message] };
+            }
         }
         if (inputs.DecisionBlockers.Count > 0)
         {
@@ -230,7 +238,8 @@ public static partial class PortfolioCashLadderEngine
                 SecuritiesEvaluated: 0,
                 SecuritiesWithFlows: 0,
                 IsDecisionReady: false,
-                BlockingReasons: inputs.DecisionBlockers.Distinct(StringComparer.Ordinal).ToArray());
+                BlockingReasons: inputs.DecisionBlockers.Distinct(StringComparer.Ordinal).ToArray())
+            { Blocker = interestBlocker };
         }
 
         var openingCash = inputs.CashBalances.Sum(static balance => balance.Amount);
@@ -519,6 +528,27 @@ public static partial class PortfolioCashLadderEngine
             _ => contributions
         };
 
+    private sealed class NegativeInterestScenarioException() : InvalidOperationException(SecurityInterestSupport.NegativeInterestReason) { }
+
+    private static void ValidateUnsignedInterestScenario(PortfolioCashLadderInputs inputs, string scenarioId, DateOnly start, DateOnly end)
+    {
+        var shift = scenarioId == RatesUpScenarioId ? RateShiftPerHundredBps
+            : scenarioId == RatesDownScenarioId ? -RateShiftPerHundredBps : 0m;
+        foreach (var position in inputs.Positions.Where(static position => position.Quantity != 0m))
+        {
+            if (SelectProjectionRun(position.Operations)?.Blocker is { } blocker
+                && blocker.Code == SecurityInterestSupport.NegativeInterestUnsupported)
+                throw new NegativeInterestScenarioException();
+            if (HasDeclaredTerms(position.Operations))
+                continue; // Retained reset evidence applies contractual caps and floors below.
+            var floating = TermsIndicateFloatingRate(position.Operations, SelectProjectionRun(position.Operations));
+            foreach (var flow in SelectPositionFlows(position, start, end)
+                         .Where(flow => ResolveInstrumentLane(flow.FlowType) == CouponLane))
+                if (flow.AnnualRate is { } rate && (rate < 0m || floating && rate + shift < 0m))
+                    throw new NegativeInterestScenarioException();
+        }
+    }
+
     private static List<PortfolioCashLadderContributionDto> ApplyRateShift(
         List<PortfolioCashLadderContributionDto> contributions,
         PortfolioCashLadderInputs inputs,
@@ -549,7 +579,9 @@ public static partial class PortfolioCashLadderEngine
                 continue;
             }
 
-            var shiftedRate = Math.Max(0m, annualRate + rateShift);
+            var shiftedRate = annualRate + rateShift;
+            if (shiftedRate < 0m)
+                throw new NegativeInterestScenarioException();
             var adjusted = RoundCash(row.BaseAmount * (shiftedRate / annualRate));
             result.Add(row with
             {

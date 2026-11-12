@@ -1034,6 +1034,17 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     /// </summary>
     private async Task<IReadOnlyList<HistoricalBar>> FetchBarsAsync(BackfillRequest request, CancellationToken ct)
     {
+        // This worker only has a daily-bar fetch and a session-date HistoricalBar store. Fetching
+        // daily bars for any other granularity and persisting them under that granularity's file
+        // prefix would make gap analysis count the range as filled with data that was never
+        // retrieved, so fail the request instead of mislabeling it.
+        if (request.Granularity != DataGranularity.Daily)
+        {
+            throw new NotSupportedException(
+                $"Queued backfill only supports daily bars; {request.Granularity.ToDisplayName()} " +
+                $"was requested for {request.Symbol}. No data was fetched or written.");
+        }
+
         // Track the request
         if (request.AssignedProvider != null)
         {
@@ -1142,15 +1153,15 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Handles connectivity state changes. When going online, triggers reprocessing of offline-queued requests.
+    /// Logs connectivity state changes. It does not wake the worker loop: while offline the loop
+    /// re-checks <see cref="IConnectivityProbeService.IsOnline"/> every <see cref="EmptyPollMaxDelay"/>,
+    /// so offline-queued requests resume within that interval after connectivity returns.
     /// </summary>
     private void OnConnectivityChanged(object? sender, bool isOnline)
     {
         if (isOnline)
         {
-            _log.Information("Connectivity restored, reprocessing offline-queued backfill requests");
-            // Signal the worker loop to check for queued requests
-            // This happens naturally as the loop will process any items in the queue
+            _log.Information("Connectivity restored; offline-queued backfill requests resume on the worker's next poll");
         }
         else
         {

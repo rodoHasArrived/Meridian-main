@@ -119,9 +119,9 @@ public static class ShareClassUnitRegisterProjector
                     units = holding.Units;
                 }
 
-                var cash = NavPerUnitCalculator.CashForRedemption(units, transaction.NavPerUnit);
+                var cash = NavPerUnitCalculator.CashForRedemption(units, transaction.NavPerUnit, shareClass.Currency);
                 holding.Units = NavPerUnitCalculator.RoundUnits(holding.Units - units);
-                holding.Redeemed = RoundCurrency(holding.Redeemed + cash);
+                holding.Redeemed = RoundCurrency(holding.Redeemed + cash, shareClass.Currency);
                 unitsOutstanding = NavPerUnitCalculator.RoundUnits(unitsOutstanding - units);
 
                 movements.Add(new ShareClassUnitMovement(

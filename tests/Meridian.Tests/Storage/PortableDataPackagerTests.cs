@@ -190,6 +190,33 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task CreatePackageAsync_EmbeddedManifest_ListsSupplementaryFiles()
+    {
+        await CreateTestJsonlFileAsync("AAPL/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+
+        var result = await _packager.CreatePackageAsync(new PackageOptions
+        {
+            Name = "supplementary-inventory",
+            OutputDirectory = TestOutputDir,
+            IncludeLoaderScripts = true
+        });
+
+        result.Success.Should().BeTrue();
+        result.Manifest!.SupplementaryFiles.Should().NotBeNullOrEmpty();
+
+        // The copy inside the zip must carry the same inventory as the returned manifest.
+        using var archive = ZipFile.OpenRead(result.PackagePath!);
+        using var reader = new StreamReader(archive.GetEntry("manifest.json")!.Open());
+        using var json = JsonDocument.Parse(await reader.ReadToEndAsync());
+        json.RootElement.TryGetProperty("supplementaryFiles", out var embedded).Should().BeTrue();
+        embedded.ValueKind.Should().Be(JsonValueKind.Array);
+        embedded.GetArrayLength().Should().Be(result.Manifest.SupplementaryFiles!.Length);
+    }
+
+    [Fact]
     public async Task CreatePackageAsync_WithChecksums_ShouldComputeSha256()
     {
         // Arrange
@@ -212,6 +239,62 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
         result.Success.Should().BeTrue();
         result.PackageChecksum.Should().NotBeNullOrEmpty();
         result.Manifest!.Files.Should().AllSatisfy(f => f.ChecksumSha256.Should().NotBeNullOrEmpty());
+    }
+
+    [Fact]
+    public async Task CreatePackageAsync_ReportedChecksumAndSize_MatchFinalFileOnDisk()
+    {
+        await CreateTestJsonlFileAsync("AAPL/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+
+        var result = await _packager.CreatePackageAsync(new PackageOptions
+        {
+            Name = "checksum-roundtrip",
+            OutputDirectory = TestOutputDir,
+            VerifyChecksums = true
+        });
+
+        result.Success.Should().BeTrue();
+        var bytes = await File.ReadAllBytesAsync(result.PackagePath!);
+        var actual = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes));
+        result.PackageChecksum.Should().BeEquivalentTo(actual,
+            "ETL readback verification compares the reported checksum against the file on disk");
+        result.PackageSizeBytes.Should().Be(bytes.LongLength);
+        result.Manifest!.PackageChecksum.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public async Task CreatePackageAsync_WhenCancelled_LeavesNoPackageOrTempFile()
+    {
+        await CreateTestJsonlFileAsync("AAPL/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+        await CreateTestJsonlFileAsync("MSFT/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "MSFT", Price = 410.10m, Size = 50 }
+        });
+
+        using var cts = new CancellationTokenSource();
+        _packager.ProgressChanged += (_, e) =>
+        {
+            // Cancel once the first data file has been written into the archive.
+            if (e.Stage == PackageStage.Writing && e.FilesProcessed >= 1)
+                cts.Cancel();
+        };
+
+        var result = await _packager.CreatePackageAsync(new PackageOptions
+        {
+            Name = "cancelled-package",
+            OutputDirectory = TestOutputDir,
+            IncludeQualityReport = false
+        }, cts.Token);
+
+        result.Success.Should().BeFalse();
+        Directory.EnumerateFiles(TestOutputDir).Should().BeEmpty(
+            "a cancelled run must not leave a truncated package or temp file behind");
     }
 
     [Fact]
@@ -367,6 +450,7 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
         contents.TotalFiles.Should().Be(1);
         contents.Symbols.Should().Contain("AAPL");
         contents.Files.Should().NotBeEmpty();
+        contents.PackageSizeBytes.Should().Be(new FileInfo(createResult.PackagePath!).Length);
     }
 
     [Fact]

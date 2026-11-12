@@ -163,6 +163,12 @@ internal sealed class BrokerageGatewayAdapter : IOrderGateway
             _logger.LogInformation("{Broker} order {OrderId} cancel — {Status}", BrokerName, LogSanitizer.Sanitize(orderId), report.OrderStatus);
             return report.OrderStatus is SdkOrderStatus.Cancelled;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Caller cancellation must propagate: returning false would read as "the broker
+            // refused the cancel", which is a different outcome the caller may act on.
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "{Broker} failed to cancel order {OrderId}", BrokerName, LogSanitizer.Sanitize(orderId));
