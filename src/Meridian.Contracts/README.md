@@ -6,10 +6,15 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
+structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
+certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
+Disposal instructions compare selections by retained ordinal while keeping every field exact.
 
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in
@@ -44,6 +49,11 @@ Strategy execution, portfolio and comparison reads expose `FinancingCoverageStat
 `RunAttributedMarginInterest`. An unavailable total remains explicit JSON null and carries
 coverage warnings into continuity reads. Existing decimal totals remain compatibility fields;
 financing comparisons require complete run-allocation evidence. Legacy coverage stays unassessed.
+
+`StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
+interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
+row schema for historical receipts. The catalog declares StructuredNote valuation as fair value
+through profit or loss, independently of eligibility for coupon-accrual accounting.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

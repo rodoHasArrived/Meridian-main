@@ -69,6 +69,168 @@ public sealed class PostedStrategyRunLedgerSourceTests
     }
 
     [Theory]
+    [InlineData("accountScopeId", "acct-paper")]
+    [InlineData("accountId", "historical-broker-account")]
+    public async Task LegacyAccountLabel_PreservesAuthorizedFullRunDetailAndRetainedLedger(string key, string label)
+    {
+        var retained = new Meridian.Ledger.Ledger();
+        retained.Post(Record(null).Entry);
+        var parameters = new Dictionary<string, string>(Run.ParameterSet!) { [key] = label };
+        var run = Run with
+        {
+            FundAccountId = null,
+            ParameterSet = parameters,
+            Metrics = Result(retained),
+            LedgerReference = "retained-legacy-run-ledger"
+        };
+        var (store, registry) = Stores([Record("run-a")]);
+        var source = new PostedStrategyRunLedgerSource(store, registry);
+        var (reads, continuity) = await ReadersAsync(run, source);
+
+        var detail = await reads.GetRunDetailAsync(run.RunId, Scope);
+        detail.Should().NotBeNull();
+        detail!.Ledger!.JournalEntryCount.Should().Be(1);
+        (await reads.GetLedgerSnapshotAsync(run.RunId, Scope))!.Journal.Should().ContainSingle()
+            .Which.JournalEntryId.Should().Be(retained.Journal.Single().JournalEntryId);
+        (await continuity.GetRunContinuityAsync(run.RunId, Scope))!.ContinuityStatus.Warnings
+            .Should().NotContain(warning => warning.Code == "missing-ledger");
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().ListLedgerBooksAsync(Arg.Any<string>(), Arg.Any<Guid?>(),
+            Arg.Any<FundStructureNodeKindDto?>(), Arg.Any<CancellationToken>());
+
+        var foreignScope = Scope with { TenantId = "other-tenant", CompanyId = "other-company" };
+        (await reads.GetRunDetailAsync(run.RunId, foreignScope)).Should().BeNull("legacy labels do not weaken retained run authorization");
+    }
+
+    [Theory]
+    [InlineData("ledgerBookId")]
+    [InlineData("ledgerBookScopeId")]
+    [InlineData("bookId")]
+    [InlineData("bookScopeId")]
+    public async Task OpaqueBookAliasWithTypedFundAccountAndLegacyAccountLabel_PreservesRetainedDetail(string bookKey)
+    {
+        var retained = new Meridian.Ledger.Ledger();
+        retained.Post(Record(null).Entry);
+        var run = Run with
+        {
+            Metrics = Result(retained),
+            LedgerReference = "retained-legacy-book",
+            ParameterSet = new Dictionary<string, string>(Run.ParameterSet!)
+            {
+                ["accountScopeId"] = "acct-paper",
+                [bookKey] = "book-paper"
+            }
+        };
+        var (store, registry) = Stores([]);
+        var (reads, _) = await ReadersAsync(run, new PostedStrategyRunLedgerSource(store, registry));
+        var detail = await reads.GetRunDetailAsync(run.RunId, Scope);
+        detail!.Ledger!.JournalEntryCount.Should().Be(1);
+        (await reads.GetLedgerSnapshotAsync(run.RunId, Scope))!.Journal.Should().ContainSingle()
+            .Which.JournalEntryId.Should().Be(retained.Journal.Single().JournalEntryId);
+        (await reads.GetRunDetailAsync(run.RunId, Scope with { CompanyId = "other-company" })).Should().BeNull();
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().GetLedgerBookAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().ListLedgerBooksAsync(Arg.Any<string>(), Arg.Any<Guid?>(),
+            Arg.Any<FundStructureNodeKindDto?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UuidAccountAliasWithoutTypedFundAccount_StillRequiresAuthorizedBookAndProvenance()
+    {
+        var run = Run with
+        {
+            FundAccountId = null,
+            ParameterSet = new Dictionary<string, string>(Run.ParameterSet!) { ["accountScopeId"] = AccountId.ToString("D") }
+        };
+        var (store, registry) = Stores([Record("run-a")]);
+        var result = await new PostedStrategyRunLedgerSource(store, registry).ReadAsync(run, Scope);
+        result!.Journal.Should().ContainSingle();
+        registry.ResolveAsync("fund-a", Arg.Any<CancellationToken>()).Returns(new FundProfileOwnership("fund-a", "other-tenant", "other-company"));
+        (await new PostedStrategyRunLedgerSource(store, registry).ReadAsync(run, Scope)).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyAccountLabelAlongsideConsistentUuidBinding_PreservesRetainedDetailWithoutPostedGuess(bool typedBinding)
+    {
+        var retained = new Meridian.Ledger.Ledger();
+        retained.Post(Record(null).Entry);
+        var parameters = new Dictionary<string, string>(Run.ParameterSet!) { ["accountScopeId"] = "acct-paper" };
+        if (!typedBinding)
+            parameters["accountId"] = AccountId.ToString("D");
+        var run = Run with
+        {
+            FundAccountId = typedBinding ? AccountId : null,
+            ParameterSet = parameters,
+            Metrics = Result(retained),
+            LedgerReference = "retained-account-label"
+        };
+        var (store, registry) = Stores([]);
+        var (reads, _) = await ReadersAsync(run, new PostedStrategyRunLedgerSource(store, registry));
+        (await reads.GetRunDetailAsync(run.RunId, Scope))!.Ledger!.JournalEntryCount.Should().Be(1);
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().ListLedgerBooksAsync(Arg.Any<string>(), Arg.Any<Guid?>(),
+            Arg.Any<FundStructureNodeKindDto?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("ledgerBookId")]
+    [InlineData("ledgerBookScopeId")]
+    [InlineData("bookId")]
+    [InlineData("bookScopeId")]
+    public async Task UuidBookAlias_StillResolvesOnlyTheBoundAuthorizedBook(string bookKey)
+    {
+        var run = Run with
+        {
+            ParameterSet = new Dictionary<string, string>(Run.ParameterSet!) { [bookKey] = BookId.ToString("D") }
+        };
+        var (store, registry) = Stores([Record("run-a")]);
+        var source = new PostedStrategyRunLedgerSource(store, registry);
+        (await source.ReadAsync(run, Scope))!.Journal.Should().ContainSingle();
+        await store.Received(1).GetLedgerBookAsync(BookId, Arg.Any<CancellationToken>());
+        registry.ResolveAsync("fund-a", Arg.Any<CancellationToken>()).Returns(new FundProfileOwnership("fund-a", "other-tenant", "company-a"));
+        (await source.ReadAsync(run, Scope)).Should().BeNull();
+        await store.Received(1).QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("book")]
+    [InlineData("account-aliases")]
+    [InlineData("typed-account")]
+    [InlineData("empty-book")]
+    public async Task OpaqueLabelsCannotMaskConflictingOrEmptyActualUuidBindings(string conflict)
+    {
+        var parameters = new Dictionary<string, string>(Run.ParameterSet!)
+        {
+            ["accountScopeId"] = "acct-paper",
+            ["bookScopeId"] = "book-paper"
+        };
+        Guid? typedAccount = AccountId;
+        if (conflict == "book")
+        {
+            parameters["ledgerBookId"] = BookId.ToString("D");
+            parameters["bookId"] = Guid.NewGuid().ToString("D");
+        }
+        else if (conflict == "empty-book")
+            parameters["ledgerBookId"] = Guid.Empty.ToString("D");
+        else if (conflict == "account-aliases")
+        {
+            typedAccount = null;
+            parameters["accountScopeId"] = AccountId.ToString("D");
+            parameters["accountId"] = Guid.NewGuid().ToString("D");
+        }
+        else
+            parameters["accountId"] = Guid.NewGuid().ToString("D");
+        var run = Run with { FundAccountId = typedAccount, ParameterSet = parameters, Metrics = Result(new Meridian.Ledger.Ledger()) };
+        var (store, registry) = Stores([]);
+        var (reads, _) = await ReadersAsync(run, new PostedStrategyRunLedgerSource(store, registry));
+        await reads.Invoking(service => service.GetRunDetailAsync(run.RunId, Scope)).Should().ThrowAsync<InvalidDataException>();
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+        await store.DidNotReceive().GetLedgerBookAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task NoAttributedOrRetainedPopulation_PreservesMissingLedgerWarning(bool hasLegacyPosting)
@@ -135,6 +297,69 @@ public sealed class PostedStrategyRunLedgerSourceTests
     }
 
     [Fact]
+    public async Task ManyJournalsAcrossPeriods_ReadEachDistinctPeriodOncePerInvocation()
+    {
+        var secondPeriod = Guid.NewGuid();
+        var records = Enumerable.Range(0, 120).Select(index => Record("run-a") with
+        {
+            PeriodId = index % 2 == 0 ? PeriodId : secondPeriod
+        }).ToArray();
+        var (store, registry) = Stores(records);
+        store.GetPeriodAsync(secondPeriod, Arg.Any<CancellationToken>()).Returns(new LedgerAccountingPeriod(
+            secondPeriod, BookId, 2026, 12, "Second retained period", new(2026, 11, 1), new(2026, 11, 30), "Open", At, null, 1));
+        var source = new PostedStrategyRunLedgerSource(store, registry);
+
+        (await source.ReadAsync(Run, Scope))!.Journal.Should().HaveCount(120);
+        await store.Received(1).GetPeriodAsync(PeriodId, Arg.Any<CancellationToken>());
+        await store.Received(1).GetPeriodAsync(secondPeriod, Arg.Any<CancellationToken>());
+
+        (await source.ReadAsync(Run, Scope))!.Journal.Should().HaveCount(120);
+        await store.Received(2).GetPeriodAsync(PeriodId, Arg.Any<CancellationToken>());
+        await store.Received(2).GetPeriodAsync(secondPeriod, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PeriodAuthorityIsRecheckedOnNextRead_AndForeignBookCannotReusePriorCache()
+    {
+        var secondPeriod = Guid.NewGuid();
+        var records = Enumerable.Range(0, 40).Select(index => Record("run-a") with
+        {
+            PeriodId = index % 2 == 0 ? PeriodId : secondPeriod
+        }).ToArray();
+        var (store, registry) = Stores(records);
+        var authorized = new LedgerAccountingPeriod(secondPeriod, BookId, 2026, 12, "Second retained period",
+            new(2026, 11, 1), new(2026, 11, 30), "Open", At, null, 1);
+        store.GetPeriodAsync(secondPeriod, Arg.Any<CancellationToken>()).Returns(authorized);
+        var source = new PostedStrategyRunLedgerSource(store, registry);
+        (await source.ReadAsync(Run, Scope))!.Journal.Should().HaveCount(40);
+
+        store.GetPeriodAsync(secondPeriod, Arg.Any<CancellationToken>()).Returns(authorized with { LedgerBookId = Guid.NewGuid() });
+        await source.Invoking(reader => reader.ReadAsync(Run, Scope)).Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*different accounting book*");
+        await store.Received(2).GetPeriodAsync(PeriodId, Arg.Any<CancellationToken>());
+        await store.Received(2).GetPeriodAsync(secondPeriod, Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EmptyAuthoritativeAccountIdentity_IsNotTreatedAsAnAbsentLegacyBinding(bool typedIdentity)
+    {
+        var run = Run with
+        {
+            FundAccountId = typedIdentity ? Guid.Empty : null,
+            ParameterSet = new Dictionary<string, string>(Run.ParameterSet!)
+            {
+                ["accountScopeId"] = typedIdentity ? "acct-paper" : Guid.Empty.ToString("D")
+            }
+        };
+        var (store, registry) = Stores([]);
+        await new PostedStrategyRunLedgerSource(store, registry).Invoking(source => source.ReadAsync(run, Scope))
+            .Should().ThrowAsync<InvalidDataException>();
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task MissingAccountingScope_NeverSelectsJournalsByStrategyAlone()
     {
         var (store, registry) = Stores([Record("run-a")]);
@@ -145,7 +370,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
     }
 
     [Theory]
-    [InlineData("ledgerBookId", "malformed")]
+    [InlineData("ledgerBookId", "00000000-0000-0000-0000-000000000000")]
     [InlineData("accountId", "11111111-1111-1111-1111-111111111111")]
     public async Task InvalidExplicitScope_NeverFallsBackToAnotherBook(string key, string value)
     {
@@ -163,6 +388,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
         var store = Substitute.For<ILedgerJournalStore>();
         var book = new LedgerBookRecord(BookId, "fund-a", AccountId, FundStructureNodeKindDto.Account,
             "Account book", "USD", At, At);
+        store.GetLedgerBookAsync(BookId, Arg.Any<CancellationToken>()).Returns(book);
         store.ListLedgerBooksAsync(null, AccountId, null, Arg.Any<CancellationToken>()).Returns(new[] { book });
         store.QueryAsync(Arg.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == BookId),
             Arg.Any<CancellationToken>()).Returns(records);

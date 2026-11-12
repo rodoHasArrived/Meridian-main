@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Shared
@@ -138,6 +138,11 @@ stored policy, rule, source-event and approval envelopes. Both formats preserve 
 dimensions and currency JSON using source-generated contexts. Decimal amounts are invariant decimal
 text in Parquet as well as CSV, retaining precision across external readers. CSV text uses the shared
 spreadsheet formula guard. These downloads do not submit entries to any external GL provider.
+
+Recurring fixed-income accrual reads explicit admission from the shared catalog (Bond only) and
+passes its quote convention to the shared bridge. Daily holding windows split on changes to the complete lot, including unit,
+multiplier and carrying inputs. Non-bond classes and factored lots remain blocked until their
+accounting behavior is supported; the bridge itself uses explicit lot exposure instead of par 100.
 
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review

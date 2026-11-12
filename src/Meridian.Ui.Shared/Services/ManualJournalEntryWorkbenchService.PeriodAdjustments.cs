@@ -7,7 +7,8 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class ManualJournalEntryWorkbenchService
 {
-    private async Task<string?> ValidatePriorPeriodAdjustmentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct)
+    private async Task<string?> ValidatePriorPeriodAdjustmentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct,
+        bool allowHardClosedCloseLock = false)
     {
         var authority = draft.PriorPeriodAdjustmentSource;
         if (authority is null)
@@ -35,8 +36,13 @@ public sealed partial class ManualJournalEntryWorkbenchService
             return "The exact retained source journal is unavailable in the selected ledger book.";
         var sourcePeriod = await _journalStore.GetPeriodAsync(authority.SourcePeriodId, ct).ConfigureAwait(false);
         var target = await _journalStore.GetPeriodAsync(authority.TargetPeriodId, ct).ConfigureAwait(false);
+        // This private capability is supplied only by the server-authorized LockAfterClose
+        // action. Re-read the closed target here so a stale earlier status cannot grant a lock.
+        var validTargetStatus = allowHardClosedCloseLock
+            ? draft.Status == ManualJournalEntryStatusDto.Posted && target?.Status == "HardClosed"
+            : target?.Status == "Open";
         if (sourcePeriod is null || sourcePeriod.Status != "HardClosed" || sourcePeriod.LedgerBookId != bookId
-            || target is null || target.LedgerBookId != bookId || target.Status != "Open"
+            || target is null || target.LedgerBookId != bookId || !validTargetStatus
             || draft.AccountingDate < target.StartDate || draft.AccountingDate > target.EndDate
             || target.StartDate <= sourcePeriod.EndDate)
             return "The source is no longer hard-closed or the selected later period is no longer open.";

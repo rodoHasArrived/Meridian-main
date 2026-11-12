@@ -13,6 +13,25 @@ namespace Meridian.Tests.Ui;
 public sealed class PriorPeriodAdjustmentCorrectionTests
 {
     [Fact]
+    public async Task CloseLock_RefusesTargetReopenedAfterInitialServerStatusRead()
+    {
+        using var fixture = await Fixture.CreateAsync();
+        var posted = await fixture.PostPreparedAsync();
+        fixture.ReturnReopenedTargetAfterInitialCloseCheck();
+
+        var lockJournal = () => fixture.Workbench.ApplyLifecycleActionAsync(new(posted.JournalEntryId, Fixture.Fund,
+            JournalEntryLifecycleActionDto.LockAfterClose, "close-controller", posted.Version,
+            Notes: "Retain the reviewed closed-period journal.", EvidenceLinks:
+            [$"evidence://close/ledger-book/{fixture.Book.LedgerBookId:D}/period/{fixture.OpenPeriod.PeriodId:D}/journal/{posted.JournalEntryId:D}/tenant/{Fixture.Tenant}/company/{Fixture.Company}"],
+            LedgerBookId: fixture.Book.LedgerBookId, TenantId: Fixture.Tenant, CompanyId: Fixture.Company));
+
+        await lockJournal.Should().ThrowAsync<InvalidOperationException>().WithMessage("*critical validation issues*");
+        (await new FileManualJournalEntryDraftStore(fixture.DraftPath).GetAsync(Fixture.Fund, posted.JournalEntryId,
+            tenantId: Fixture.Tenant, companyId: Fixture.Company))!.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        fixture.Journals.Should().HaveCount(2);
+    }
+
+    [Fact]
     public async Task InitialPreparedInverse_AlsoRejectsChangedMaterializedAccounts()
     {
         using var fixture = await Fixture.CreateAsync();
@@ -254,6 +273,13 @@ public sealed class PriorPeriodAdjustmentCorrectionTests
 
         public ManualJournalEntryWorkbenchService RestartWorkbench() => new(new FileManualJournalEntryDraftStore(DraftPath),
             _postingConfiguration, _audit, journalStore: _store.Object, postingTarget: _target);
+
+        public void ReturnReopenedTargetAfterInitialCloseCheck()
+        {
+            var reads = 0;
+            _store.Setup(store => store.GetPeriodAsync(OpenPeriod.PeriodId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => ++reads == 1 ? OpenPeriod with { Status = "HardClosed" } : OpenPeriod);
+        }
 
         // Post validates the draft, validates the inverse mapping, then loads the materialization chart.
         public void ChangeMappingAtPostingMaterialization() => _mappingReadCountdown = 3;

@@ -8,7 +8,8 @@ namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Compares broker evidence with posted cash and canonical open lots. Carrying-value marks are
-/// excluded from cost basis. A missing acquisition or a moved read population is unavailable,
+/// excluded from cost basis only after validating their retained evidence. Incomplete acquisition
+/// coverage or a moved read population is unavailable,
 /// never a fabricated zero or a matched custodian-to-provider comparison.
 /// </summary>
 public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore store)
@@ -60,21 +61,26 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
                     .Distinct().ToArray();
                 var lots = new List<LedgerTaxLotRecord>();
                 foreach (var lotAccount in accounts)
-                    lots.AddRange(await store.ListOpenTaxLotsAsync(book.LedgerBookId, lotAccount, ct));
-                if (lots.Any(l => l.UpdatedAt > provider.SyncedAt || l.AcquiredDate > DateOnly.FromDateTime(provider.SyncedAt.UtcDateTime)))
+                {
+                    var retained = await store.ListOpenTaxLotsAsync(book.LedgerBookId, lotAccount, ct);
+                    if (retained.Any(l => l.LedgerBookId != book.LedgerBookId || l.Account != lotAccount))
+                        throw new InvalidOperationException("Canonical lot evidence does not match the selected book and exact account identity.");
+                    lots.AddRange(retained);
+                }
+                if (lots.Select(l => l.TaxLotRecordId).Distinct().Count() != lots.Count)
+                    throw new InvalidOperationException("Canonical lot identities are duplicated across the selected position population.");
+                if (lots.Any(l => l.CreatedAt > provider.SyncedAt || l.UpdatedAt > provider.SyncedAt || l.AcquiredDate > DateOnly.FromDateTime(provider.SyncedAt.UtcDateTime)))
                     throw new InvalidOperationException("Current lot evidence is later than the broker observation.");
-                if (lots.Count == 0 && lines.Where(l => l.Account.Symbol == symbol && l.Account.Name is "Securities" or "Short Securities Payable")
-                        .Sum(l => l.Debit - l.Credit) != 0m)
-                    throw new InvalidOperationException("The posted position lacks canonical acquisition and open-lot evidence.");
-                var canonical = lots.DistinctBy(l => l.TaxLotRecordId).Select(l => l.ToOpenLot()).ToArray();
+                var canonical = lots.Select(l => l.ToOpenLot()).ToArray();
                 if (canonical.Any(l => l.Acquisition.QuantityBasis != LotQuantityBasis.Units))
                     throw new InvalidOperationException("The broker quantity convention is not certified against this face-denominated lot population.");
                 if (canonical.Any(l => !string.Equals(l.Acquisition.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)) ||
                     (brokerRows ?? []).Any(p => !string.Equals(p.Currency ?? provider.Balance?.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)))
                     throw new InvalidOperationException("Position cost comparison requires the same currency or retained FX conversion evidence.");
+                EnsureAcquisitionCoverage(book, symbol, eligible, accounts, lots, brokerRows ?? []);
                 quantity = canonical.Sum(l => l.Acquisition.Direction == OpenLotDirection.Short ? -l.OpenQuantity : l.OpenQuantity);
                 cost = canonical.Sum(l => l.OpenFunctionalCostBasis);
-                reason += " Quantity and cost use canonical open lots, including governed basis adjustments.";
+                reason += " Quantity and cost use canonical acquisitions covering every retained position origin; validated valuation marks do not change acquisition basis.";
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or NotSupportedException or LedgerValidationException)
             {
@@ -89,6 +95,85 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
         if (records.Count != after.Count || sequence != (after.Count == 0 ? 0 : after.Max(r => r.GlobalSequence)))
             throw new InvalidOperationException("The posted journal changed while reconciling; retry with a stable ledger population.");
         return result;
+    }
+
+    private static void EnsureAcquisitionCoverage(LedgerBookDto book, string symbol,
+        IReadOnlyList<LedgerJournalEntryRecord> records, IReadOnlyCollection<LedgerAccount> accounts,
+        IReadOnlyList<LedgerTaxLotRecord> lots, IReadOnlyList<FundAccountBrokeragePositionDto> brokerRows)
+    {
+        // A nonempty open-lot subset is not proof of the account's total position. Do not invent
+        // opening lots, or infer historical disposal/restatement allocations from a net balance.
+        if (lots.Any(l => l.OpenQuantity != l.OriginalQuantity || l.BasisAdjustment is not null
+            || l.Acquisition?.CorporateActionLineage is not null || l.OriginatingMutationBatchId != l.LastMutationBatchId))
+            throw new InvalidOperationException("Historical lot mutations require complete retained population coverage before quantity or cost can be compared.");
+        if (lots.Select(l => l.SecurityId).Distinct().Count() > 1
+            || brokerRows.Any(p => p.Security is { } security && lots.Any(l => l.SecurityId != security.SecurityId)))
+            throw new InvalidOperationException("The broker symbol and canonical lots do not identify one exact instrument.");
+
+        foreach (var lot in lots)
+        {
+            var origins = records.Where(r => r.Entry.JournalEntryId == lot.SourceJournalEntryId).ToArray();
+            if (origins.Length != 1)
+                throw new InvalidOperationException("A canonical lot lacks one retained acquisition origin in the selected book and cutoff.");
+            var origin = origins[0].Entry;
+            var originLines = origin.Lines.Where(l => l.Account == lot.Account).ToArray();
+            if (origin.Metadata.SecurityId != lot.SecurityId || originLines.Length == 0
+                || originLines.Any(l => l.Dimensions?.InstrumentId != lot.SecurityId || l.Dimensions?.PositionId != lot.BookPositionId)
+                || originLines.Any(l => l.Dimensions?.AccountId is { } financialAccountId
+                    && !string.Equals(financialAccountId, lot.Account.FinancialAccountId, StringComparison.OrdinalIgnoreCase))
+                || ValuationMarkEvidenceGuard.IsValuation(origin.Metadata.IdempotencyKey) || origin.Metadata.ActivityType == "fair-value-mark"
+                || (origin.Metadata.EffectiveDate ?? DateOnly.FromDateTime(origin.Timestamp.UtcDateTime)) != lot.AcquiredDate)
+                throw new InvalidOperationException("Canonical acquisition origin does not match the retained instrument, position, account and acquisition date.");
+            if ((lot.Account.Name == "Short Securities Payable") != (lot.Acquisition!.Direction == OpenLotDirection.Short))
+                throw new InvalidOperationException("Canonical acquisition direction does not match its securities account.");
+        }
+
+        foreach (var record in records)
+        {
+            var entry = record.Entry;
+            foreach (var component in entry.Lines.Where(l => accounts.Contains(l.Account)).GroupBy(l => l.Account))
+            {
+                if (IsValidatedValuationOnly(book, symbol, entry, component.Key, lots))
+                    continue;
+                var acquisitions = lots.Where(l => l.SourceJournalEntryId == entry.JournalEntryId && l.Account == component.Key).ToArray();
+                var shortPosition = component.Key.Name == "Short Securities Payable";
+                if (acquisitions.Length == 0 || !entry.IsBalanced
+                    || component.Any(l => shortPosition ? l.Debit != 0m : l.Credit != 0m)
+                    || component.Any(l => l.Currency is { } currency && !string.Equals(currency.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+                    || component.Sum(l => shortPosition ? l.Credit : l.Debit) != acquisitions.Sum(l => l.Acquisition!.FunctionalCostBasis))
+                    throw new InvalidOperationException("The posted position lacks complete canonical acquisition coverage for every retained origin and account component; an opening balance or other unsupported history remains unavailable.");
+            }
+        }
+    }
+
+    private static bool IsValidatedValuationOnly(LedgerBookDto book, string symbol, JournalEntry entry,
+        LedgerAccount account, IReadOnlyList<LedgerTaxLotRecord> lots)
+    {
+        var gainAccount = LedgerAccounts.UnrealizedGainFor(account.FinancialAccountId ?? symbol);
+        var lossAccount = LedgerAccounts.UnrealizedLossFor(account.FinancialAccountId ?? symbol);
+        if ((!ValuationMarkEvidenceGuard.IsValuation(entry.Metadata.IdempotencyKey) && entry.Metadata.ActivityType != "fair-value-mark")
+            || !entry.IsBalanced || entry.Metadata.SecurityId is not { } securityId
+            || account != LedgerAccounts.Securities(symbol, account.FinancialAccountId)
+            || !lots.Any(l => l.Account == account && l.SecurityId == securityId)
+            || !string.Equals(entry.Metadata.Symbol, symbol, StringComparison.OrdinalIgnoreCase)
+            || entry.Lines.Any(l => l.Account != account && l.Account != gainAccount && l.Account != lossAccount)
+            || entry.Lines.All(l => l.Account == account)
+            || entry.Lines.Any(l => l.Currency is null || !l.Currency.IsFunctionalCurrency
+                || !string.Equals(l.Currency.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)))
+            return false;
+        var entityIds = entry.Lines.Select(l => l.Dimensions?.EntityId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var positionLines = entry.Lines.Where(l => l.Account == account).ToArray();
+        if (entityIds.Length != 1 || entry.Lines.Any(l => l.Dimensions is null
+                || l.Dimensions.FundId != book.FundProfileId || l.Dimensions.InstrumentId != securityId
+                || l.Dimensions.AccountId != account.FinancialAccountId)
+            || entry.Lines.Any(l => l.Account == gainAccount && l.Debit != 0m || l.Account == lossAccount && l.Credit != 0m)
+            || positionLines.Sum(l => l.Debit) != entry.Lines.Where(l => l.Account == gainAccount).Sum(l => l.Credit)
+            || positionLines.Sum(l => l.Credit) != entry.Lines.Where(l => l.Account == lossAccount).Sum(l => l.Debit))
+            return false;
+        return ValuationMarkEvidenceGuard.Validate(
+            entry.Metadata.Tags?.GetValueOrDefault(ValuationMarkEvidenceGuard.EvidenceTag), book.FundProfileId,
+            entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(entry.Timestamp.UtcDateTime), securityId,
+            account.FinancialAccountId, symbol, entry.Metadata.Tags?.GetValueOrDefault(ValuationMarkEvidenceGuard.DigestTag), entityIds[0]) is null;
     }
 
     private static ProviderShadowBookComparisonLineDto Compare(string dimension, string label, decimal? ledger,

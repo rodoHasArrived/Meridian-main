@@ -6,10 +6,14 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Application
+
+Provider holding normalization identifies bond-style records through the catalog coupon-structure
+capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
+uses the shared versioned term keys for call schedules and schedule conventions.
 
 Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
 the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
@@ -49,6 +53,13 @@ completeness reader uses `HasAccountingImpact`, which shares the posting kernel 
 non-accounting events do not create false missing-journal breaks. Malformed and negative source
 amounts raise validation errors rather than disappearing from the accounting population.
 
+Cash-flow context v4 persists schedule row version 1, including measured accrual dates. A frozen
+v0 serializer keeps v1–v3 receipt hashes and replay arithmetic stable; unsupported row versions
+refuse replay. Accrual posting reads held face from shared lot quantity and multiplier and converts
+acquisition prices using the declared quote convention. Blocked empty schedules report their blocker.
+The unused whole-coupon posting helper and direct corporate-action poster have been retired;
+historical corporate-action characterizations live only in test fixtures.
+
 The governed Security Master field-edit lifecycle accepts `assetSpecificTerms.rateUnit` on scalar-rate
 classes without schedule anchors. Publishing the approved edit promotes only its declaration,
 preserves the stored rate amount, emits `rateConvention` economics, and feeds the same normalized
@@ -74,7 +85,7 @@ Its banking schema follows `BankingStartup.SchemaVariable`; funding requires ret
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v3`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 and v2 through their original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+Bond cash-flow context receipts now use `bond-cash-flow-context-v4`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1–v3 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no
 schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject
@@ -118,8 +129,8 @@ resolves only the declaring block's calendars; it never substitutes a common or 
 former Application-side prototype factory (with a common-calendar fallback) was removed. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
-Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
-CLR constructors alongside the extended policy and calculation-receipt composition paths.
+Cash-flow service composition no longer accepts the retired whole-coupon bridge. Its remaining
+constructors support calendar, policy and calculation-receipt composition.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 

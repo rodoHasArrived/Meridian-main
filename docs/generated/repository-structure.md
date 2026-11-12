@@ -5010,7 +5010,6 @@ Meridian-main
 │   │   │   │   ├── FileBondObservedFixingStore.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
-│   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
 │   │   │   │   ├── CorporateActionCaseAccountingService.cs
@@ -5080,6 +5079,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
+│   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.CapitalHomes.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
@@ -5109,7 +5109,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestFailureClassifier.cs
 │   │   │   ├── SecurityMasterIngestStatusService.cs
-│   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterMapping.EquityCapital.cs
 │   │   │   ├── SecurityMasterMapping.GeneratedDecode.cs
@@ -6848,6 +6847,7 @@ Meridian-main
 │   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.LotPlans.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapper.cs
+│   │   │   ├── CorporateActionAssetAccountingEventMapper.Redemption.cs
 │   │   │   ├── CorporateActionMappedAccountingEffectAttestor.cs
 │   │   │   ├── DirectLoanProjectionService.cs
 │   │   │   ├── FactorPaydownProjectionService.cs
@@ -7079,6 +7079,7 @@ Meridian-main
 │   │   ├── ShortCarryProjector.cs
 │   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
+│   │   ├── StructuredNoteAccountingTemplate.cs
 │   │   ├── TaxCharacter.cs
 │   │   ├── ValuationFreshnessPolicy.cs
 │   │   ├── ValuationMarkEvidence.cs
@@ -11748,7 +11749,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.RecordRateUnit.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
-│   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
+│   │   │   ├── StructuredCashFlowLedgerGateTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
@@ -11793,6 +11794,7 @@ Meridian-main
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
 │   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
+│   │   │   ├── CorporateActionAssetAccountingEventMapperTests.Redemption.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.PreparationRevision.cs
@@ -12464,6 +12466,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalEvidenceTests.cs
 │   │   │   ├── RecurringJournalScheduleTests.cs
 │   │   │   ├── ShareClassUnitRegisterTests.cs
+│   │   │   ├── StructuredNoteAccountingTemplateTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
 │   │   │   ├── LedgerToolsTests.cs
@@ -12679,6 +12682,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
+│   │   │   ├── HistoricalCorporateActionLedgerFixture.cs
 │   │   │   ├── InMemorySecurityForwardCurveProvider.cs
 │   │   │   ├── InstrumentTypeDescriptorDomainLabelTests.cs
 │   │   │   ├── InstrumentTypeDescriptorMultiplierTests.cs
@@ -12879,6 +12883,7 @@ Meridian-main
 │   │   │   ├── SecurityValuationServiceTests.cs
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
+│   │   │   ├── StructuredCashFlowScheduleRowVersionTests.cs
 │   │   │   ├── SwapLegRoundTripTests.cs
 │   │   │   ├── UnitizedLotTests.cs
 │   │   │   └── ValuationTestSecurities.cs

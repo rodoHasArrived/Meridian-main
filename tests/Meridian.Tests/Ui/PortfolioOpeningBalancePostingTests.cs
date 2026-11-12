@@ -39,8 +39,21 @@ public sealed partial class PortfolioOpeningBalancePostingTests
     public Task MixedTaxOpening_ClosedSourcePreparesAndPostsCurrentPeriodInverseAndRebook()
         => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Tax, JournalEntryLifecycleActionDto.Rebook);
 
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task PriorPeriodAdjustment_PostedPrimaryJournalCanLockAfterTargetClose_WithoutAdmittingNewPostings()
+        => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Primary, JournalEntryLifecycleActionDto.Reverse,
+            closeInitialPriorPeriod: true);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task PriorPeriodAdjustment_PostedTaxJournalCanLockAfterTargetClose_WithoutAdmittingNewPostings()
+        => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Tax, JournalEntryLifecycleActionDto.Rebook,
+            closeInitialPriorPeriod: true);
+
     private static async Task PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto basis,
-        JournalEntryLifecycleActionDto? correctionAction = null, OpeningRebookScenario? openRebook = null)
+        JournalEntryLifecycleActionDto? correctionAction = null, OpeningRebookScenario? openRebook = null,
+        bool closeInitialPriorPeriod = false)
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var root = Path.Combine(Path.GetTempPath(), "meridian-opening-post-" + Guid.NewGuid().ToString("N"));
@@ -227,22 +240,28 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                 var appendMissingLine = () => database.JournalStore.AppendAsync(missingLine);
                 await appendMissingLine.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Each opening instrument line*");
 
-                var correctionEvidence = Evidence(postedInverse);
-                var correction = (await workbench.ApplyLifecycleActionAsync(new(postedInverse.JournalEntryId, fund, action,
-                    "correction-preparer", postedInverse.Version, "Correct the posted current-period inverse.",
-                    EvidenceLinks: [correctionEvidence], LedgerBookId: book, TenantId: tenant, CompanyId: company)))
-                    .GeneratedJournalEntries.Single();
-                var postedCorrection = await ReviewAndPostAsync(correction);
-                postedCorrection.AccountingBasis.Should().Be(basis);
-                AssertPerLineIdentity(capturingTarget.LastWrite!.Entry);
-                var current = await database.JournalStore.GetByPeriodAsync(nextPeriod);
-                current.Should().HaveCount(2).And.OnlyContain(row => row.AccountingBasis == basis);
-                var balances = current.SelectMany(row => row.Entry.Lines).GroupBy(line => line.Account)
-                    .ToDictionary(group => group.Key, group => group.Sum(line => line.Debit - line.Credit));
-                foreach (var originalLine in retained.Lines)
-                    balances[originalLine.Account].Should().Be(action == JournalEntryLifecycleActionDto.Reverse
-                        ? 0m : originalLine.Credit - originalLine.Debit,
-                        "a reversal nets the inverse to zero; an unchanged rebook replaces it without counting twice");
+                if (closeInitialPriorPeriod)
+                    await CloseTargetAndLockAsync(postedInverse);
+                else
+                {
+                    var correctionEvidence = Evidence(postedInverse);
+                    var correction = (await workbench.ApplyLifecycleActionAsync(new(postedInverse.JournalEntryId, fund, action,
+                        "correction-preparer", postedInverse.Version, "Correct the posted current-period inverse.",
+                        EvidenceLinks: [correctionEvidence], LedgerBookId: book, TenantId: tenant, CompanyId: company)))
+                        .GeneratedJournalEntries.Single();
+                    var postedCorrection = await ReviewAndPostAsync(correction);
+                    postedCorrection.AccountingBasis.Should().Be(basis);
+                    AssertPerLineIdentity(capturingTarget.LastWrite!.Entry);
+                    var current = await database.JournalStore.GetByPeriodAsync(nextPeriod);
+                    current.Should().HaveCount(2).And.OnlyContain(row => row.AccountingBasis == basis);
+                    var balances = current.SelectMany(row => row.Entry.Lines).GroupBy(line => line.Account)
+                        .ToDictionary(group => group.Key, group => group.Sum(line => line.Debit - line.Credit));
+                    foreach (var originalLine in retained.Lines)
+                        balances[originalLine.Account].Should().Be(action == JournalEntryLifecycleActionDto.Reverse
+                            ? 0m : originalLine.Credit - originalLine.Debit,
+                            "a reversal nets the inverse to zero; an unchanged rebook replaces it without counting twice");
+                    await CloseTargetAndLockAsync(postedCorrection);
+                }
                 (await database.JournalStore.GetByPeriodAsync(period)).Should().ContainSingle()
                     .Which.Entry.Should().BeEquivalentTo(retained);
                 (await database.JournalStore.GetPeriodAsync(period))!.Status.Should().Be("HardClosed");
@@ -253,6 +272,15 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                     => $"evidence://review-correction/tenant/{tenant}/company/{company}/book/{book:D}/journal/{item.JournalEntryId:D}/approval-posting";
 
                 async Task<ManualJournalEntryDraftDto> ReviewAndPostAsync(ManualJournalEntryDraftDto item)
+                {
+                    var approvedItem = await ReviewAndApproveAsync(item);
+                    return (await workbench.ApplyLifecycleActionAsync(new(item.JournalEntryId, fund,
+                        JournalEntryLifecycleActionDto.Post, "independent-controller", approvedItem.Version,
+                        Notes: "Post the independently approved correction.", EvidenceLinks: [Evidence(item)],
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company))).JournalEntry;
+                }
+
+                async Task<ManualJournalEntryDraftDto> ReviewAndApproveAsync(ManualJournalEntryDraftDto item)
                 {
                     var validation = await workbench.ValidateDraftAsync(new(item, item.PreparedBy,
                         LedgerBookId: book, TenantId: tenant, CompanyId: company));
@@ -265,10 +293,57 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                         JournalEntryLifecycleActionDto.Approve, "independent-controller", submit.Version,
                         Notes: "Review each native-currency source leg.", EvidenceLinks: [evidence],
                         LedgerBookId: book, TenantId: tenant, CompanyId: company));
-                    return (await workbench.ApplyLifecycleActionAsync(new(item.JournalEntryId, fund,
-                        JournalEntryLifecycleActionDto.Post, "independent-controller", approve.JournalEntry.Version,
-                        Notes: "Post the independently approved correction.", EvidenceLinks: [evidence],
-                        LedgerBookId: book, TenantId: tenant, CompanyId: company))).JournalEntry;
+                    return approve.JournalEntry;
+                }
+
+                async Task CloseTargetAndLockAsync(ManualJournalEntryDraftDto item)
+                {
+                    var pending = (await preparation.PrepareAsync(new(book, id, nextPeriod, new(2026, 12, 1),
+                        $"pending-close-{item.JournalEntryId:N}", "Prepare a separate adjustment before the period closes."),
+                        "adjustment-preparer", tenant, company)).Created.Single();
+                    var pendingApproved = await ReviewAndApproveAsync(pending);
+                    var journalsBeforeClose = await database.JournalStore.GetByPeriodAsync(nextPeriod);
+                    var target = (await database.JournalStore.GetPeriodAsync(nextPeriod))!;
+                    var closed = await database.JournalStore.SaveHardClosedPeriodAsync(target with
+                    {
+                        Status = "HardClosed",
+                        ClosedAt = DateTimeOffset.UtcNow
+                    }, target.Version, new(Guid.NewGuid(), nextPeriod, "Open", "HardClosed", "close-controller",
+                        "Close the reviewed prior-period adjustments.", DateTimeOffset.UtcNow));
+                    closed.Status.Should().Be("HardClosed");
+                    var closeEvidence = Evidence(item) + $"/close/period/{nextPeriod:D}";
+                    var closeRequest = new JournalEntryLifecycleActionRequestDto(item.JournalEntryId, fund,
+                        JournalEntryLifecycleActionDto.LockAfterClose, "close-controller", item.Version,
+                        CorrelationId: $"prior-period-close:{item.JournalEntryId:D}",
+                        Notes: "Lock the posted adjustment against the retained hard-close evidence.", EvidenceLinks: [closeEvidence],
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company);
+                    var locked = await workbench.ApplyLifecycleActionAsync(closeRequest);
+                    locked.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
+                    locked.JournalEntry.PriorPeriodAdjustmentSource.Should().BeEquivalentTo(item.PriorPeriodAdjustmentSource);
+                    (await workbench.ApplyLifecycleActionAsync(closeRequest)).JournalEntry.Version.Should().Be(locked.JournalEntry.Version);
+
+                    var postPending = () => workbench.ApplyLifecycleActionAsync(new(pendingApproved.JournalEntryId, fund,
+                        JournalEntryLifecycleActionDto.Post, "independent-controller", pendingApproved.Version,
+                        Notes: "A close-lock capability cannot grant new posting admission.", EvidenceLinks: [Evidence(pendingApproved)],
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company));
+                    await postPending.Should().ThrowAsync<InvalidOperationException>().WithMessage("*period is locked after close*");
+                    var lockUnposted = () => workbench.ApplyLifecycleActionAsync(closeRequest with
+                    {
+                        JournalEntryId = pendingApproved.JournalEntryId,
+                        Version = pendingApproved.Version,
+                        EvidenceLinks = [Evidence(pendingApproved) + $"/close/period/{nextPeriod:D}"]
+                    });
+                    await lockUnposted.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires status 'Posted'*");
+                    var prepareAfterClose = () => preparation.PrepareAsync(new(book, id, nextPeriod, new(2026, 12, 1),
+                        "after-close-not-admitted", "The closed target cannot accept new adjustment drafts."), "adjustment-preparer", tenant, company);
+                    await prepareAfterClose.Should().ThrowAsync<InvalidOperationException>().WithMessage("*later open period*");
+                    var readonlyValidation = await workbench.ValidateDraftAsync(new(item, "close-controller",
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company));
+                    readonlyValidation.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.prior-period-authority-required");
+                    (await drafts.GetAsync(fund, pendingApproved.JournalEntryId, tenantId: tenant, companyId: company))!.Status
+                        .Should().Be(ManualJournalEntryStatusDto.Approved);
+                    (await database.JournalStore.GetByPeriodAsync(nextPeriod)).Should().BeEquivalentTo(journalsBeforeClose,
+                        "close-lock records governance state and must not append or mutate journal economics");
                 }
 
                 void AssertPerLineIdentity(JournalEntry journal)

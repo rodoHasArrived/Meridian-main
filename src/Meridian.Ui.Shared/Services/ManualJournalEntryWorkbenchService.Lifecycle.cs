@@ -505,7 +505,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
-        var priorPeriodReason = await ValidatePriorPeriodAdjustmentAsync(draft, ct).ConfigureAwait(false);
+        var priorPeriodReason = await ValidatePriorPeriodAdjustmentAsync(draft, ct, allowHardClosedCloseLock).ConfigureAwait(false);
         if (priorPeriodReason is not null)
             issues.Add(Issue("manual-je.prior-period-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
                 priorPeriodReason, "priorPeriodAdjustmentSource", "Prepare a fresh source-linked correction in an explicitly selected open period."));

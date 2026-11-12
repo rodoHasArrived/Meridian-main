@@ -23,14 +23,20 @@ public sealed class PostedStrategyRunLedgerSource(
             || !TenantReadPredicate.IsResolvedTenant(scope.CompanyId))
             return null;
 
-        var declaredAccountId = ReadGuid(run, "accountScopeId", "accountId");
+        // These metadata aliases also carry opaque legacy display scopes. Scan all UUID
+        // candidates first so a label cannot conceal contradictory authoritative identities.
+        var (bookId, hasLegacyBookLabel) = ReadScopeBinding(run, "ledgerBookId", "bookId", "ledgerBookScopeId", "bookScopeId");
+        if (run.FundAccountId == Guid.Empty)
+            throw new InvalidDataException("The retained run has an empty authoritative fund account identity.");
+        var (declaredAccountId, hasLegacyAccountLabel) = ReadScopeBinding(run, "accountScopeId", "accountId");
         var accountId = run.FundAccountId is { } account && account != Guid.Empty
             ? account : declaredAccountId;
         if (declaredAccountId is not null && declaredAccountId != accountId)
             throw new InvalidDataException("The retained run has contradictory accounting account identities.");
-        if (accountId is null)
+        // A typed fund account can coexist with old presentation labels. Do not guess how
+        // labels map to posted books/accounts or make an authorized retained run unreadable.
+        if (hasLegacyBookLabel || hasLegacyAccountLabel || accountId is null)
             return null;
-        var bookId = ReadGuid(run, "ledgerBookId", "bookId", "ledgerBookScopeId", "bookScopeId");
         IReadOnlyList<LedgerBookRecord> books;
         if (bookId is { } selectedBook)
         {
@@ -48,6 +54,7 @@ public sealed class PostedStrategyRunLedgerSource(
         }
 
         var result = new Meridian.Ledger.Ledger();
+        var periods = new Dictionary<Guid, LedgerAccountingPeriod?>();
         foreach (var book in books)
         {
             if (book.FundStructureNodeId != accountId
@@ -67,7 +74,11 @@ public sealed class PostedStrategyRunLedgerSource(
                 if (entry.Metadata.Tags?.TryGetValue("strategy.runId", out var sourceRunId) != true
                     || !string.Equals(sourceRunId, run.RunId, StringComparison.Ordinal))
                     continue;
-                var period = await journals.GetPeriodAsync(record.PeriodId, ct).ConfigureAwait(false);
+                if (!periods.TryGetValue(record.PeriodId, out var period))
+                {
+                    period = await journals.GetPeriodAsync(record.PeriodId, ct).ConfigureAwait(false);
+                    periods.Add(record.PeriodId, period);
+                }
                 if (period?.LedgerBookId != book.LedgerBookId)
                     throw new InvalidDataException("The posted run journal belongs to a different accounting book.");
                 if (!string.Equals(entry.Metadata.StrategyId, run.StrategyId, StringComparison.Ordinal)
@@ -85,18 +96,24 @@ public sealed class PostedStrategyRunLedgerSource(
         return result.Journal.Count > 0 ? result : null;
     }
 
-    private static Guid? ReadGuid(StrategyRunEntry run, params string[] keys)
+    private static (Guid? Id, bool HasLegacyLabel) ReadScopeBinding(StrategyRunEntry run, params string[] keys)
     {
         Guid? result = null;
+        var hasLegacyLabel = false;
         foreach (var key in keys)
         {
-            if (run.ParameterSet?.TryGetValue(key, out var value) == true)
+            if (run.ParameterSet is null || !run.ParameterSet.TryGetValue(key, out var value))
+                continue;
+            if (!Guid.TryParse(value, out var id))
             {
-                if (!Guid.TryParse(value, out var id) || id == Guid.Empty || (result is not null && result != id))
-                    throw new InvalidDataException("The retained run has invalid or contradictory accounting scope metadata.");
-                result = id;
+                hasLegacyLabel = true;
+                continue;
             }
+            if (id == Guid.Empty || (result is not null && result != id))
+                throw new InvalidDataException("The retained run has invalid or contradictory accounting scope metadata.");
+            result = id;
         }
-        return result;
+        return (result, hasLegacyLabel);
     }
+
 }
