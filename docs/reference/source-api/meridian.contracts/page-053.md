@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernanceReportArtifactFormatDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportArtifactFormatDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L25).
+
+```csharp
+public enum GovernanceReportArtifactFormatDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Json = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L27) |  |
+| <code>Csv = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L28) |  |
+| <code>Xlsx = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L29) |  |
+| <code>Html = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L30) |  |
+| <code>Pdf = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L31) |  |
+
+## GovernanceReportKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L8).
+
+```csharp
+public enum GovernanceReportKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TrialBalance = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L10) |  |
+| <code>NavSummary = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L11) |  |
+| <code>AssetAllocation = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L12) |  |
+| <code>ReconciliationPack = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L13) |  |
+| <code>PerformanceReport = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L14) |  |
+| <code>HoldingsReport = 5</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L15) |  |
+| <code>CapitalAccountStatement = 6</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L16) |  |
+| <code>InvestorStatement = 7</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L17) |  |
+| <code>BoardPacket = 8</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L18) |  |
+| <code>AuditPackage = 9</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L19) |  |
+| <code>CertifiedDataset = 10</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L20) |  |
+| <code>CustomReport = 11</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L21) |  |
+
 ## GovernanceReportPackContract
 
 Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportPackContract</code>. Kind: `class`.
@@ -683,30 +730,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountScopeDto? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L24) | The exact posted source boundary when this source supports a generated report amount. |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? SourceSubjectId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L27) |  |
-
-## LedgerAmountProvenanceDetailDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:707](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L707).
-
-```csharp
-public sealed record LedgerAmountProvenanceDetailDto(Guid ReportId, string ScopeKey, string AccountName, string? Symbol, decimal Amount, string Currency, IReadOnlyList<LedgerAmountProvenanceEvidenceDto> Evidence, LedgerAmountSecurityMasterLinkDto? SecurityMaster, LedgerAmountReconciliationStateDto Reconciliation, LedgerAmountApprovalStateDto Approval, LedgerAmountReportUsageDto ReportUsage, IReadOnlyList<string> Warnings, IReadOnlyList<LedgerAmountStrategyRunLinkDto>? StrategyRuns = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAmountScopeDto? Scope { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:722](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L722) |  |
-| <code>public EvidenceStatusDto ProofStatus { get; init; } = EvidenceStatusDto.ReviewRequired;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:723](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L723) |  |
-
-## LedgerAmountProvenanceEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:610](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L610).
-
-```csharp
-public sealed record LedgerAmountProvenanceEvidenceDto(string EvidenceType, string EvidenceId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, IReadOnlyList<string>? RelatedEvidenceIds = null, int? EvidenceCount = null, decimal? Amount = null, DateTimeOffset? CapturedAt = null, string? ProviderEventId = null, string? ProviderEventType = null, string? ProviderEvidenceSource = null, string? RequiredFeed = null, string? SecurityId = null, string? LedgerEffectKind = null, decimal? PrincipalAmount = null, decimal? IncomeAmount = null, int? JournalPreviewLineCount = null, DateOnly? EffectiveDate = null, decimal? Factor = null, decimal? CashAmount = null, string? Currency = null);
-```

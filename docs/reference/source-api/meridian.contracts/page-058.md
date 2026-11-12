@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderLedgerReconciliationBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:338](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L338).
+
+```csharp
+public sealed record ProviderLedgerReconciliationBreakDto(string BreakId, string CheckId, string Code, ReconciliationBreakCategory Category, ReconciliationBreakSeverity Severity, string ExpectedSource, string ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason, string? Symbol = null, string? EvidenceLink = null, string? BreakKey = null, string? Owner = null, decimal? Tolerance = null, DateTimeOffset? FirstObservedAt = null, DateTimeOffset? LastObservedAt = null, int AgeMinutes = 0, ProviderLedgerReconciliationBreakSignOffStateDto SignOffState = ProviderLedgerReconciliationBreakSignOffStateDto.Open, string? SignedOffBy = null, DateTimeOffset? SignedOffAt = null);
+```
+
+## ProviderLedgerReconciliationBreakSignOffStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationBreakSignOffStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:300](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L300).
+
+```csharp
+public enum ProviderLedgerReconciliationBreakSignOffStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Open = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:302](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L302) |  |
+| <code>Assigned = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:303](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L303) |  |
+| <code>SignedOff = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:304](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L304) |  |
+
 ## ProviderLedgerReconciliationCheckDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationCheckDto</code>. Kind: `record`.
@@ -752,25 +780,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:717](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L717) | Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only preserves the established command constructor and deconstruction ABI. |
-
-## ReconciliationCaseworkOperationResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:915](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L915).
-
-API-safe terminal receipt for a single reconciliation casework attempt. HTTP success only means the command was evaluated; callers must use Outcome to determine whether its postconditions were satisfied, blocked, or failed.
-
-```csharp
-public sealed record ReconciliationCaseworkOperationResult(string TransitionStatus, ReconciliationBreakQueueItem? Item, VerifiedOperationOutcome Outcome, string? Error = null, string? ErrorCode = null, IReadOnlyList<string>? ValidationIssues = null);
-```
-
-## ReconciliationCompletedRunObservation
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L40).
-
-```csharp
-public sealed record ReconciliationCompletedRunObservation(string RunId, ReconciliationRunObservationScope Scope, DateTimeOffset ObservedAt, bool Succeeded, bool CompletePopulation, IReadOnlyList<ReconciliationBreakObservation> Breaks);
-```

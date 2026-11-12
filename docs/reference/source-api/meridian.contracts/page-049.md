@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BulkResolveSecurityMasterConflictsRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.BulkResolveSecurityMasterConflictsRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:635](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L635).
+
+```csharp
+public sealed record BulkResolveSecurityMasterConflictsRequest(IReadOnlyList<Guid> ConflictIds, string ResolvedBy, string? Reason, string? FundProfileId);
+```
+
+## BulkResolveSecurityMasterConflictsResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.BulkResolveSecurityMasterConflictsResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:641](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L641).
+
+```csharp
+public sealed record BulkResolveSecurityMasterConflictsResult(int Requested, int Eligible, int Resolved, int Skipped, IReadOnlyList<Guid> ResolvedConflictIds, IReadOnlyDictionary<Guid, string> SkippedReasons);
+```
+
 ## CanonicalizationAssuranceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CanonicalizationAssuranceDto</code>. Kind: `record`.
@@ -598,43 +618,3 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:344](../../.
 ```csharp
 public sealed record EvidenceAssuranceComponentDto(string ComponentId, string Label, int Score, EvidenceStatusDto Status, string Detail);
 ```
-
-## EvidenceCompletenessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceCompletenessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:636](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L636).
-
-```csharp
-public sealed record EvidenceCompletenessDto(int Score, EvidenceStatusDto Status, IReadOnlyList<string> RequiredIds, IReadOnlyList<string> ReadyIds, IReadOnlyList<string> MissingIds, IReadOnlyList<string> StaleIds, IReadOnlyList<string> BlockingWorkItemIds)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;EvidenceValidationIssueDto&gt; ValidationIssues { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:645](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L645) |  |
-| <code>public int BlockingIssueCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:646](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L646) |  |
-| <code>public int WarningIssueCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:647](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L647) |  |
-| <code>public IReadOnlyList&lt;string&gt; OrphanEvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:648](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L648) |  |
-| <code>public IReadOnlyList&lt;EvidenceSlaPolicyDto&gt; SlaPolicies { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:649](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L649) |  |
-| <code>public IReadOnlyList&lt;EvidenceSlaAssessmentDto&gt; SlaAssessments { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:650](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L650) |  |
-| <code>public MeridianAssuranceScoreDto AssuranceScore { get; init; } = new (Score : 0, Status : EvidenceStatusDto.Unknown, Components :[], SlaAssessments :[]);</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:651](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L651) |  |
-
-## EvidenceCompletenessSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceCompletenessSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:152](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L152).
-
-```csharp
-public sealed record EvidenceCompletenessSummaryDto(TradingAcceptanceGateStatusDto Status, int ReadyGateCount, int TotalGateCount, int CriticalWorkItemCount, int WarningWorkItemCount, int ScorePercent, IReadOnlyList<string> BlockingGateIds, IReadOnlyList<string> ReviewGateIds, IReadOnlyList<string> MissingEvidenceIds, IReadOnlyList<string>? ReadyGateIds = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int BlockingIssueCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:164](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L164) |  |
-| <code>public int WarningIssueCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L165) |  |
-| <code>public IReadOnlyList&lt;string&gt; OrphanEvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L166) |  |
