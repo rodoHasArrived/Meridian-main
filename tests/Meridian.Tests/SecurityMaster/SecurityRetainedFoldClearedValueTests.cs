@@ -240,6 +240,39 @@ public sealed class SecurityRetainedFoldClearedValueTests
     }
 
     [Fact]
+    public void AValueTheRebuildDerivesFromAnotherKey_IsNotTreatedAsCarried()
+    {
+        // A structured-credit row stores the pool id, and the rebuild derives the issuer name from
+        // it. A document whose issuer name differs from its pool id never had that name on the
+        // row, so clearing the pool id must not take the retained issuer name with it.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "StructuredCredit", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["StructuredCredit"]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", original));
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document["esg"] = JsonNode.Parse(Esg);
+        var poolId = document["structuredProduct"]!["poolIdentifier"]!.GetValue<string>();
+        document["issuer"]!.AsObject()["issuerName"] = "Meridian Securitization Trust 2026-1";
+        poolId.Should().NotBe("Meridian Securitization Trust 2026-1", "precondition: the two values differ");
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = ToElement(document), LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _).Should().BeTrue();
+
+        var amendedTerms = JsonNode.Parse(original.GetRawText())!.AsObject();
+        amendedTerms["poolId"] = null;
+        var amended = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            replayed,
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", ToElement(amendedTerms)));
+
+        var next = SecurityEconomicDefinitionAdapter.ToEconomicRecord(amended).EconomicTerms;
+
+        next.GetProperty("issuer").GetProperty("issuerName").GetString().Should().Be("Meridian Securitization Trust 2026-1",
+            "the row never held this issuer name, so the retained document still supplies it");
+        next.GetProperty("structuredProduct").GetProperty("poolIdentifier").ValueKind.Should().Be(JsonValueKind.Null,
+            "the row held the pool id, so clearing it is not undone");
+    }
+
+    [Fact]
     public void ADerivedValue_DoesNotFoldBack_AfterTheTermsThatDerivedItChange()
     {
         // The coupon module's scalar rate is derived from a fixed coupon structure. Amending the
