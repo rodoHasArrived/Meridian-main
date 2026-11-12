@@ -1520,6 +1520,28 @@ function PortfolioDrillInChartInner({
   const labels = points.map((point) => point.date);
   const timestamps = useMemo(() => points.map((point) => Date.parse(point.date)), [points]);
   const sync = useChartCrosshairSync(timestamps);
+  // Stable reference: the chart re-renders on every crosshair move, the table should not.
+  const accessibleData = useMemo(
+    () => ({
+      caption: `Equity and drawdown by date for ${runTitle}`,
+      columns: ["Date", "Equity", "Drawdown"],
+      rows: points.map((point) => [
+        point.date,
+        formatRunAmount(point.totalEquity),
+        // `|| 0` keeps a zero drawdown from rendering as "-0.00%".
+        formatPercent(-Math.abs(point.drawdownFromPeakPercent * 100) || 0, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      ])
+    }),
+    [points, runTitle]
+  );
+
+  const maxDrawdownLabel = formatRatioAsPercent(-Math.abs(profile.maxDrawdownPercent), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 
   return (
     <div className="space-y-3">
@@ -1530,7 +1552,7 @@ function PortfolioDrillInChartInner({
           { label: "Final equity", value: formatRunAmount(profile.finalEquity) },
           {
             label: "Max drawdown",
-            value: formatRatioAsPercent(-Math.abs(profile.maxDrawdownPercent), { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            value: maxDrawdownLabel,
             color: "var(--chart-drawdown, #B54B42)"
           },
           { label: "Sharpe", value: formatNumber(profile.sharpeRatio, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
@@ -1539,6 +1561,15 @@ function PortfolioDrillInChartInner({
         style={{ flexShrink: 0 }}
       >
         <EquityCurve
+          ariaLabel={`Equity and drawdown curve for ${runTitle}`}
+          ariaDescription={
+            points.length > 0
+              ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${formatRunAmount(
+                  profile.finalEquity
+                )}, maximum drawdown ${maxDrawdownLabel}.`
+              : undefined
+          }
+          accessibleData={accessibleData}
           series={[{ label: "Equity", color: "var(--chart-equity, #2E7655)", points: equity }]}
           drawdown={drawdown}
           labels={labels}
@@ -1585,6 +1616,7 @@ function PortfolioDrillInReturnDistribution({
   }
 
   const { returns, mean, best, worst, positiveShare } = stats;
+  const positiveShareLabel = formatPercent(positiveShare, { maximumFractionDigits: 0 });
 
   return (
     <ChartCard
@@ -1598,12 +1630,16 @@ function PortfolioDrillInReturnDistribution({
         },
         { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #2E7655)" },
         { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #B54B42)" },
-        { label: "Positive days", value: formatPercent(positiveShare, { maximumFractionDigits: 0 }) }
+        { label: "Positive days", value: positiveShareLabel }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
     >
       <Histogram
+        ariaLabel={`Daily return distribution for ${runTitle}`}
+        ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
+          best
+        )}, worst ${drillInSignedPercent(worst)}, ${positiveShareLabel} positive days.`}
         values={returns}
         signed
         showMean

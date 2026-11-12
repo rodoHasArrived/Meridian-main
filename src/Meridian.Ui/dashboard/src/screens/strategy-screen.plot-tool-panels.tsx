@@ -456,8 +456,9 @@ export function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsStat
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+            <div className="h-[180px] w-full">
               <Histogram
+                ariaLabel={vm.distributionChart.ariaLabel}
                 bins={vm.distributionChart.bars.map((bar, index) => ({
                   x0: index,
                   x1: index + 1,
