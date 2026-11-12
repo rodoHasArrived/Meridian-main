@@ -18,6 +18,11 @@ does not create paired postings, settlement or agreement-level consolidation. Th
 boundary validates supplied references and historical reversals. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`StructuredNoteAccountingTemplate` recognizes dated fair-value gains and losses in profit or loss
+through the existing governed daily-valuation drafts. It converts face quantities and raw percentage
+quotes through the shared lot model, applies currency minor units, and retains template/convention
+evidence with its retry identity. Structured notes do not enter the bond coupon-accrual route.
+
 `LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
 
 Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
@@ -299,10 +304,9 @@ ledger journal entry.
 `LedgerJournalReversal` is the general correction primitive: it books a balanced reversing entry
 for any posted journal by swapping every line's debit and credit under a new journal id, linking
 back to the original via a `reversal.of` tag — so corrections stay immutable (reverse/rebook) rather
-than mutating posted history. The Application-layer `SecurityMasterLedgerBridge` uses it (opt-in via
-`CorporateActionLedgerPostingContext.AutoReverseSupersededPostings`) to automatically reverse a
-previously-posted corporate action when it is cancelled, and to reverse-then-rebook when it is
-amended.
+than mutating posted history. The retired direct corporate-action poster is retained only as a
+historical test fixture. Current corporate actions use governed accounting candidates and their
+canonical lot instructions.
 `IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
 projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
 while durable implementations can append the same approved projection to the governed journal

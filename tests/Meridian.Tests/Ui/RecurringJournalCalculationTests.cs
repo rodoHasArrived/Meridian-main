@@ -678,6 +678,49 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         draft.Memo.Should().Contain("holding changed during the window");
     }
 
+    [Theory]
+    [InlineData("DirectLoan")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("Deposit")]
+    [InlineData("StructuredCredit")]
+    [InlineData("StructuredNote")]
+    [InlineData("UnknownClass")]
+    public async Task FixedIncome_NonBondClass_BlocksBeforeDrafting(string assetClass)
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
+        var lot = new LedgerTaxLot("lot-1", new(2025, 12, 31), 10_000m, 100m, SecurityId)
+        { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
+        var fixture = await CreateFixtureAsync(lots: [lot], assetClass: assetClass);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("supports Bond only");
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FixedIncome_MultiplierChangesDuringTheWindow_UsesEachDaysEconomicFace()
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position },
+            endsOn: JanuaryEnd);
+        // Same stored quantity, different economic face. Grouping by id and quantity alone
+        // would keep the earlier face for the entire month.
+        LedgerTaxLot Lot(decimal multiplier) => new("lot-1", new(2025, 12, 31), 10_000m, 100m, SecurityId)
+        { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = multiplier };
+        var fixture = await CreateFixtureAsync(lotsOn: date =>
+            [Lot(date < new DateOnly(2026, 1, 11) ? 100m : 50m)]);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        draft.TotalDebits.Should().Be(1_612.90m + 1_693.55m);
+        draft.Memo.Should().Contain("holding changed during the window");
+    }
+
     [Fact]
     public async Task FixedIncome_WithoutABookPosition_IsBlockedAndReportedAsAMissingInput()
     {
@@ -792,11 +835,11 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         => new(new FixedAssetRecord(id, name, "USD", cost, 0m, inService, months, DepreciationMethod.StraightLine),
             Tenant, Company, Fund, Book, "controller", Registered, "evidence://fixed-asset-invoice");
 
-    private static ISecurityMasterQueryService Securities(string currency)
+    private static ISecurityMasterQueryService Securities(string currency, string assetClass)
     {
         var service = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
         service.Setup(value => value.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SecurityDetailDto(SecurityId, "Bond", SecurityStatusDto.Active, Ticker, currency, default, default, [], [], 1,
+            .ReturnsAsync(new SecurityDetailDto(SecurityId, assetClass, SecurityStatusDto.Active, Ticker, currency, default, default, [], [], 1,
                 Registered, null));
         return service.Object;
     }
@@ -804,7 +847,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     private async Task<Fixture> CreateFixtureAsync(IReconciliationFxRateProvider? rates = null,
         IReadOnlyList<LedgerTaxLot>? lots = null, ISecurityMasterCashFlowService? cashFlows = null,
         IFixedAssetRegister? assets = null, string bondCurrency = "USD",
-        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null)
+        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null, string assetClass = "Bond")
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, Book,
@@ -845,7 +888,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new FixedAssetDepreciationCalculation(assets),
             new FixedIncomeAccrualCalculation(inputs,
                 new SecurityMasterAmortizationLedgerBridge(cashFlowService, NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance),
-                cashFlowService, Securities(bondCurrency)),
+                cashFlowService, Securities(bondCurrency, assetClass)),
             new FxRevaluationCalculation(inputs, rates ?? Rates([]))
         ]);
         return new(runner, drafts, workbench, inputs);
