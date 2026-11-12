@@ -8,47 +8,26 @@ using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
 using DomainLedger = Meridian.Ledger.Ledger;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Tests.SecurityMaster;
 
-/// <summary>
-/// Posts Security Master corporate action events into a <see cref="Ledger"/>
-/// using <see cref="LedgerViewKind.SecurityMaster"/>, enabling reconciliation between
-/// contractual flows (declared in the Security Master) and actual cash movements.
-/// </summary>
-[PostingCalculationNotYetConnected("Posts straight into a ledger rather than drafting for approval, so it must not be wired to the general ledger. Dividends are already drafted by CorporateActionDividendEventProducer, factor paydowns by the governed lot mutation, and return of capital by the corporate-action accounting case lane; redemptions still need a lot-relieving governed path. Its golden scenarios pin known defects CA-DEF-002 and CA-DEF-006 for the planned entitlement engine.")]
-public interface ISecurityMasterLedgerBridge
-{
-    /// <summary>
-    /// Posts contractual corporate action flows for <paramref name="securityId"/> into
-    /// <paramref name="ledger"/> using <see cref="LedgerViewKind.SecurityMaster"/>.
-    /// Idempotent: entries whose <see cref="CorporateActionDto.CorpActId"/> already appear
-    /// as a <see cref="JournalEntry.JournalEntryId"/> in the ledger are skipped.
-    /// </summary>
-    Task PostCorporateActionsAsync(
-        Guid securityId,
-        string ticker,
-        DomainLedger ledger,
-        CancellationToken ct = default);
-}
-
-public sealed record CorporateActionLedgerPostingContext(
+internal sealed record HistoricalCorporateActionPostingContext(
     decimal PositionQuantity = 0m,
     decimal WithholdingTaxRate = 0m,
     string? FinancialAccountId = null,
     bool AutoReverseSupersededPostings = false);
 
 /// <summary>
-/// Default implementation of <see cref="ISecurityMasterLedgerBridge"/>.
+/// Historical characterization of the retired direct poster. Production accounting uses governed case drafts.
 /// </summary>
-public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
+internal sealed class HistoricalCorporateActionLedgerFixture
 {
     private readonly ISecurityMasterQueryService _queryService;
-    private readonly ILogger<SecurityMasterLedgerBridge> _logger;
+    private readonly ILogger<HistoricalCorporateActionLedgerFixture> _logger;
     private readonly IFactorPaydownProjectionService _factorPaydownProjector;
 
-    public SecurityMasterLedgerBridge(
+    public HistoricalCorporateActionLedgerFixture(
         ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterLedgerBridge> logger,
+        ILogger<HistoricalCorporateActionLedgerFixture> logger,
         IFactorPaydownProjectionService? factorPaydownProjector = null)
     {
         _queryService = queryService;
@@ -56,7 +35,6 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         _factorPaydownProjector = factorPaydownProjector ?? new FactorPaydownProjectionService();
     }
 
-    /// <inheritdoc />
     public async Task PostCorporateActionsAsync(
         Guid securityId,
         string ticker,
@@ -66,14 +44,14 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             securityId,
             ticker,
             ledger,
-            CorporateActionLedgerPostingContextDefaults.Empty,
+            HistoricalCorporateActionPostingContextDefaults.Empty,
             ct).ConfigureAwait(false);
 
     public async Task PostCorporateActionsAsync(
         Guid securityId,
         string ticker,
         DomainLedger ledger,
-        CorporateActionLedgerPostingContext? context,
+        HistoricalCorporateActionPostingContext? context,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(ledger);
@@ -119,7 +97,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     if (!TryResolveCashDistribution(amendedTerms, postingContext.PositionQuantity, security, out _, out var amendmentSkipReason))
                     {
                         _logger.LogWarning(
-                            "SecurityMasterLedgerBridge left the original posting of amended corporate action {CorporateActionId} for {Ticker} in place because the amended terms cannot post: {SkipReason}",
+                            "HistoricalCorporateActionLedgerFixture left the original posting of amended corporate action {CorporateActionId} for {Ticker} in place because the amended terms cannot post: {SkipReason}",
                             action.CorpActId,
                             normalizedTicker,
                             amendmentSkipReason);
@@ -135,7 +113,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                 if (priorPosted && !postingContext.AutoReverseSupersededPostings)
                 {
                     _logger.LogWarning(
-                        "SecurityMasterLedgerBridge: corporate action {CorporateActionId} for {Ticker} was cancelled after a prior posting; reversal requires the governed restatement path.",
+                        "HistoricalCorporateActionLedgerFixture: corporate action {CorporateActionId} for {Ticker} was cancelled after a prior posting; reversal requires the governed restatement path.",
                         action.CorpActId, normalizedTicker);
                 }
 
@@ -148,7 +126,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             if (priorPosted && !postingContext.AutoReverseSupersededPostings)
             {
                 _logger.LogWarning(
-                    "SecurityMasterLedgerBridge: corporate action {CorporateActionId} for {Ticker} was amended after a prior posting; correction requires the governed restatement path.",
+                    "HistoricalCorporateActionLedgerFixture: corporate action {CorporateActionId} for {Ticker} was amended after a prior posting; correction requires the governed restatement path.",
                     action.CorpActId, normalizedTicker);
                 continue;
             }
@@ -156,7 +134,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             if (!CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor))
             {
                 _logger.LogDebug(
-                    "SecurityMasterLedgerBridge: skipping unhandled event type {EventType} for {Ticker}",
+                    "HistoricalCorporateActionLedgerFixture: skipping unhandled event type {EventType} for {Ticker}",
                     action.EventType, normalizedTicker);
                 continue;
             }
@@ -183,7 +161,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     if (!TryResolveCashDistribution(cashTerms, postingContext.PositionQuantity, security, out var distribution, out var skipReason))
                     {
                         _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped dividend {CorporateActionId} for {Ticker}: {SkipReason}",
+                            "HistoricalCorporateActionLedgerFixture skipped dividend {CorporateActionId} for {Ticker}: {SkipReason}",
                             action.CorpActId,
                             normalizedTicker,
                             skipReason);
@@ -227,7 +205,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     if (!projection.ProducesPostingCandidate)
                     {
                         _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped factor paydown {CorporateActionId} for {Ticker}: {Issues}",
+                            "HistoricalCorporateActionLedgerFixture skipped factor paydown {CorporateActionId} for {Ticker}: {Issues}",
                             action.CorpActId,
                             normalizedTicker,
                             string.Join("; ", projection.Issues.Select(static issue => issue.Message)));
@@ -243,7 +221,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     if (postingContext.PositionQuantity <= 0m)
                     {
                         _logger.LogWarning(
-                            "SecurityMasterLedgerBridge skipped redemption {CorporateActionId} for {Ticker} because no held face amount was supplied.",
+                            "HistoricalCorporateActionLedgerFixture skipped redemption {CorporateActionId} for {Ticker} because no held face amount was supplied.",
                             action.CorpActId,
                             normalizedTicker);
                         break;
@@ -261,7 +239,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
                 default:
                     _logger.LogDebug(
-                        "SecurityMasterLedgerBridge: skipping unhandled event type {EventType} for {Ticker}",
+                        "HistoricalCorporateActionLedgerFixture: skipping unhandled event type {EventType} for {Ticker}",
                         eventType, normalizedTicker);
                     break;
             }
@@ -269,7 +247,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
         if (posted > 0)
             _logger.LogInformation(
-                "SecurityMasterLedgerBridge posted {Count} corporate action entries for {Ticker}",
+                "HistoricalCorporateActionLedgerFixture posted {Count} corporate action entries for {Ticker}",
                 posted, normalizedTicker);
     }
 
@@ -373,7 +351,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
         if (reversed > 0)
             _logger.LogInformation(
-                "SecurityMasterLedgerBridge auto-reversed {Count} superseded posting(s) for {Ticker} ahead of {CorporateActionId}.",
+                "HistoricalCorporateActionLedgerFixture auto-reversed {Count} superseded posting(s) for {Ticker} ahead of {CorporateActionId}.",
                 reversed, ticker, state.Effective.CorpActId);
 
         return reversed;
@@ -419,7 +397,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         DomainLedger ledger,
         CorporateActionDto action,
         string ticker,
-        CorporateActionLedgerPostingContext context,
+        HistoricalCorporateActionPostingContext context,
         decimal withholding)
     {
         var ts = ToUtcStartOfDay(action.PayDate ?? action.ExDate);
@@ -449,7 +427,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         DomainLedger ledger,
         CorporateActionDto action,
         string ticker,
-        CorporateActionLedgerPostingContext context,
+        HistoricalCorporateActionPostingContext context,
         decimal grossAmount,
         decimal withholding)
     {
@@ -564,7 +542,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         CorporateActionDto action,
         decimal factorDelta,
         string ticker,
-        CorporateActionLedgerPostingContext context,
+        HistoricalCorporateActionPostingContext context,
         DateTimeOffset occurredAtUtc)
     {
         var positionId = DeriveJournalId(action.SecurityId, $"factor-position:{ticker}");
@@ -651,9 +629,9 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         ledger.Post(entry);
     }
 
-    private static CorporateActionLedgerPostingContext NormalizeContext(CorporateActionLedgerPostingContext? context)
+    private static HistoricalCorporateActionPostingContext NormalizeContext(HistoricalCorporateActionPostingContext? context)
     {
-        var value = context ?? CorporateActionLedgerPostingContextDefaults.Empty;
+        var value = context ?? HistoricalCorporateActionPostingContextDefaults.Empty;
         if (value.WithholdingTaxRate < 0m || value.WithholdingTaxRate > 1m)
             throw new ArgumentOutOfRangeException(nameof(context), "WithholdingTaxRate must be between 0 and 1.");
 
@@ -666,8 +644,8 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     private static Guid DeriveJournalId(Guid corporateActionId, string suffix)
         => new(MD5.HashData(Encoding.UTF8.GetBytes($"{corporateActionId:D}:{suffix}")));
 
-    private static class CorporateActionLedgerPostingContextDefaults
+    private static class HistoricalCorporateActionPostingContextDefaults
     {
-        public static CorporateActionLedgerPostingContext Empty { get; } = new();
+        public static HistoricalCorporateActionPostingContext Empty { get; } = new();
     }
 }

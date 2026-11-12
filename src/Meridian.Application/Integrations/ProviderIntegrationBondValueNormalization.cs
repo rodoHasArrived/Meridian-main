@@ -18,7 +18,7 @@ internal static class ProviderIntegrationBondValueNormalization
         record.Remove("bondValueReconciliation");
         var assetClass = Text(record, "security.assetClass") ?? Text(record, "assetClass");
         if (record["bond"] is not JsonObject &&
-            !SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure &&
+            !(SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor) && descriptor.CarriesBondCouponStructure) &&
             !string.Equals(assetClass, "FixedIncome", StringComparison.OrdinalIgnoreCase))
         {
             return false;

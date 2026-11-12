@@ -691,6 +691,15 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         AssetAccountingEventKindDto eventKind)
     {
         var fixture = BuildFixture(eventKind);
+        if (eventKind == AssetAccountingEventKindDto.Disposal)
+        {
+            var lot = BuildAdjustedDisposalLot(fixture, face: true, adjustedBasis: fixture.Request.EventAmount);
+            fixture = fixture with
+            {
+                Request = fixture.Request with
+                { Disposal = BuildDisposalInstruction(fixture, lot, lot.OpenQuantity, fixture.Request.EventAmount, "Fifo") }
+            };
+        }
         var eventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
         eventStore.AppendAsync(
                 Arg.Any<AssetAccountingEventSpineDto>(), Arg.Any<long>(), fixture.Position.Version, Arg.Any<CancellationToken>())
@@ -728,6 +737,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         var result = await service.ProjectAsync(fixture.Request);
 
         result.WasReplay.Should().BeFalse();
+        result.Spine.Disposal.Should().Be(fixture.Request.Disposal);
         result.Spine.Stages.Select(static stage => stage.Stage).Should().Equal(
             AssetAccountingLifecycleStageDto.Expected,
             AssetAccountingLifecycleStageDto.Projected);
@@ -1191,6 +1201,133 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         return fixture with { Request = fixture.Request with { EventAmount = basis, ProjectedEffect = projected } };
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RedemptionDisposal_RetainsExactPlanAcrossRestartAndRefusesReplacement(bool replace)
+    {
+        const decimal basis = 360m;
+        var fixture = BuildDisposalFixture(basis);
+        var lot = BuildAdjustedDisposalLot(fixture, face: true, adjustedBasis: basis);
+        var instruction = BuildDisposalInstruction(fixture, lot, lot.OpenQuantity, basis, "Fifo")
+            with
+        { DisposalSalePrice = 45m };
+        fixture = fixture with { Request = fixture.Request with { Disposal = instruction } };
+        var (service, builder) = BuildDisposalService(fixture, [lot], [lot]);
+        if (replace)
+        {
+            var act = () => service.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+            { LotMutation = instruction with { PolicyRevision = "unreviewed-replacement" } });
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*exact reviewed lot instruction*");
+            var dropped = () => service.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with { LotMutation = null });
+            var missingInstruction = await dropped.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*complete Dispose lot instruction*");
+            missingInstruction.Which.ParamName.Should().Be("LotMutation");
+            await builder.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+        }
+        else
+        {
+            var result = await service.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with { LotMutation = instruction });
+            JsonSerializer.Serialize(result.Spine.Disposal).Should().Be(JsonSerializer.Serialize(instruction));
+            JsonSerializer.Serialize(result.Spine.DraftedLotMutation).Should().Be(JsonSerializer.Serialize(instruction));
+            var retained = JsonSerializer.Deserialize<AssetAccountingEventSpineDto>(JsonSerializer.Serialize(result.Spine))!;
+            AssetAccountingEventSpineValidator.Validate(retained).Should().BeEmpty();
+            var tampered = retained with { Disposal = instruction with { PolicyRevision = "changed-after-restart" } };
+            AssetAccountingEventSpineValidator.Validate(tampered).Should().Contain(issue => issue.Contains("cannot be dropped or replaced"));
+        }
+    }
+
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(2, false)]
+    [InlineData(2, true)]
+    public async Task Redemption_ActualMapperOutputPassesProjectedAndDraftedDisposalAuthority(int lotCount, bool retainUnsortedPlan)
+    {
+        var mapRequest = new CorporateActionAssetAccountingEventMapperTests().CreateRedemptionMap(
+            CorporateActionAccountingTypeDto.CallRedemption, lotCount);
+        var originalPlan = mapRequest.Redemption!;
+        var submittedInstruction = originalPlan.Disposal with
+        { DisposalSelections = originalPlan.Disposal.DisposalSelections.Reverse().ToArray() };
+        mapRequest = mapRequest with { Redemption = originalPlan with { Disposal = submittedInstruction } };
+        var mapper = new CorporateActionAssetAccountingEventMapper();
+        var mapped = mapper.Map(mapRequest).Projection!;
+        var canonicalInstruction = mapped.LotMutation!;
+        canonicalInstruction.DisposalSelections.Select(selection => selection.SelectionOrdinal)
+            .Should().Equal(Enumerable.Range(0, lotCount));
+        var canonicalMap = mapper.Map(mapRequest with { Redemption = originalPlan }).Projection!;
+        mapped.PostingIdempotencyKey.Should().Be(canonicalMap.PostingIdempotencyKey);
+        JsonSerializer.Serialize(mapped.Event).Should().Be(JsonSerializer.Serialize(canonicalMap.Event));
+        var retainedEvent = retainUnsortedPlan ? mapped.Event with { Disposal = submittedInstruction } : mapped.Event;
+        var baseline = BuildFixture(AssetAccountingEventKindDto.Disposal);
+        var scope = mapped.Event.Scope;
+        var fixture = baseline with
+        {
+            Request = retainedEvent,
+            Security = baseline.Security with { AssetClass = "Bond" },
+            Position = baseline.Position with
+            {
+                Version = scope.ExpectedBookPositionVersion,
+                BookContext = baseline.Position.BookContext with
+                {
+                    LedgerBookId = scope.LedgerBookId,
+                    PeriodId = scope.PeriodId,
+                    Dimensions = scope.Dimensions
+                },
+                OriginEvent = mapped.Event.EconomicEvent,
+                ProjectionLineage = mapped.Event.ProjectionLineage,
+                RetainedEvidence = mapped.Event.RetainedEvidence
+            },
+            Book = baseline.Book with { LedgerBookId = scope.LedgerBookId },
+            Period = baseline.Period with
+            {
+                PeriodId = scope.PeriodId,
+                LedgerBookId = scope.LedgerBookId,
+                Version = mapped.Event.ExpectedPeriodVersion,
+                PeriodNo = 8,
+                Label = "August 2026",
+                StartDate = new DateOnly(2026, 8, 1),
+                EndDate = new DateOnly(2026, 8, 31)
+            }
+        };
+        var lots = mapRequest.Redemption!.Lots.Select(canonical =>
+        {
+            var selection = canonicalInstruction.DisposalSelections.Single(item => item.TaxLotRecordId == canonical.TaxLotRecordId);
+            return new LedgerTaxLotRecord(canonical.TaxLotRecordId, scope.LedgerBookId,
+                new LedgerAccount(canonicalInstruction.AssetAccountId!, LedgerAccountType.Asset), canonical.LotId,
+                canonical.AcquiredDate, 1m, 1m, selection.ExpectedUnitCost, "USD",
+                mapped.Event.ProjectedAtUtc, mapped.Event.ProjectedAtUtc, Version: canonical.Version,
+                SecurityId: canonical.SecurityId, BookPositionId: canonical.BookPositionId,
+                OriginalFace: canonical.OriginalQuantity, BookedFactor: 1m, ParBasis: 100m, Acquisition: canonical.Acquisition);
+        }).ToArray();
+        var (service, _) = BuildDisposalService(fixture, lots, lots);
+        var projected = await service.ProjectAsync(fixture.Request);
+        var replay = await service.ProjectAsync(JsonSerializer.Deserialize<ProjectAssetAccountingEventRequestDto>(
+            JsonSerializer.Serialize(fixture.Request))!);
+        var drafted = await service.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with { LotMutation = submittedInstruction });
+        var retriedDraft = await service.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with { LotMutation = canonicalInstruction });
+
+        projected.Spine.EventKind.Should().Be(AssetAccountingEventKindDto.Disposal);
+        replay.WasReplay.Should().BeTrue();
+        // Retained unsorted Projected receipts stay immutable. Only instruction comparisons and
+        // new mapper output use ordinal order; every row field remains exact through drafting.
+        JsonSerializer.Serialize(drafted.Spine.Disposal).Should().Be(JsonSerializer.Serialize(retainedEvent.Disposal));
+        drafted.Spine.DraftedLotMutation!.DisposalSelections.Should().OnlyContain(item => item.Quantity == item.ExpectedOpenQuantity);
+        JsonSerializer.Serialize(drafted.Spine.DraftedCandidate!.AssetLotMutation)
+            .Should().Be(JsonSerializer.Serialize(canonicalInstruction));
+        JsonSerializer.Serialize(retriedDraft.Spine.DraftedLotMutation)
+            .Should().Be(JsonSerializer.Serialize(canonicalInstruction));
+        AssetAccountingEventSpineValidator.Validate(drafted.Spine).Should().BeEmpty();
+        var tampered = drafted.Spine with
+        {
+            Disposal = retainedEvent.Disposal! with
+            {
+                DisposalSelections = retainedEvent.Disposal!.DisposalSelections.Select((selection, index) =>
+                index == 0 ? selection with { ExpectedCostBasis = selection.ExpectedCostBasis + 0.01m } : selection).ToArray()
+            }
+        };
+        AssetAccountingEventSpineValidator.Validate(tampered).Should().Contain(issue => issue.Contains("cannot be dropped or replaced"));
+    }
+
     private static LedgerTaxLotRecord BuildAdjustedDisposalLot(Fixture fixture, bool face, decimal adjustedBasis)
     {
         var lotId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -1256,7 +1393,9 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         var builder = Substitute.For<IAccountingPostingCandidateAuthorityBuilder>();
         builder.BuildAuthoritativeCandidateWriteAsync(Arg.Any<PostingRuleJournalCandidateRequestDto>(),
                 Arg.Any<AssetAccountingCandidateAuthorityContext>(), Arg.Any<CancellationToken>())
-            .Returns(call => BuildPreApprovedCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0)));
+            .Returns(call => fixture.Request.Disposal is null
+                ? BuildPreApprovedCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0))
+                : BuildRedemptionCandidateWrite(call.ArgAt<PostingRuleJournalCandidateRequestDto>(0), fixture));
         var ledger = Substitute.For<ILedgerJournalStore>();
         ledger.GetTaxLotsByIdsAsync(fixture.Book.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(),
             Arg.Any<CancellationToken>()).Returns(selectedLots);
@@ -1307,7 +1446,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             request.ProjectionLineage,
             request.RetainedEvidence,
             [expectedStage, projectedStage],
-            request.ProjectedEffect);
+            request.ProjectedEffect)
+        { Disposal = request.Disposal };
     }
 
     private static string ComputeFingerprint(AssetAccountingEventSpineDto spine)
@@ -1401,15 +1541,29 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             ],
             GeneratedLines: [],
             ValidationIssues: [],
-            GeneratedPostingLines:
-            [
-                new GeneratedPostingLineDto(
-                    "L1", projected.Lines[0].AccountId, AccountingTemplateLineSideDto.Debit, "amount",
-                    projected.Lines[0].Debit, projected.Lines[0].Currency, projected.Lines[0].Dimensions),
-                new GeneratedPostingLineDto(
-                    "L2", projected.Lines[1].AccountId, AccountingTemplateLineSideDto.Credit, "amount",
-                    projected.Lines[1].Credit, projected.Lines[1].Currency, projected.Lines[1].Dimensions)
-            ]);
+            GeneratedPostingLines: projected.Lines.Select((line, index) => new GeneratedPostingLineDto(
+                $"L{index + 1}", line.AccountId,
+                line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+                "amount", line.Debit + line.Credit, line.Currency, line.Dimensions)).ToArray());
+    }
+
+    private static AccountingPostingCandidateWriteResult BuildRedemptionCandidateWrite(
+        PostingRuleJournalCandidateRequestDto request, Fixture fixture)
+    {
+        var baseline = BuildPreApprovedCandidateWrite(request);
+        var entry = baseline.Write!.Entry;
+        var generated = BuildMatchingDryRun(fixture).GeneratedPostingLines;
+        var lines = fixture.Request.ProjectedEffect.Lines.Select(line => new LedgerEntry(Guid.NewGuid(),
+            entry.JournalEntryId, entry.Timestamp, new LedgerAccount(line.AccountId,
+                line.AccountId == "RealizedGain" ? LedgerAccountType.Revenue : LedgerAccountType.Asset),
+            line.Debit, line.Credit, entry.Description,
+            currency: new LedgerEntryCurrency("USD", "USD", line.Debit, line.Credit, 1m))).ToArray();
+        return new AccountingPostingCandidateWriteResult(baseline.Candidate with { GeneratedPostingLines = generated },
+            baseline.Write! with
+            {
+                Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp,
+                entry.Description, lines, entry.Metadata)
+            });
     }
 
     private static AccountingPostingCandidateWriteResult BuildPreApprovedCandidateWrite(
