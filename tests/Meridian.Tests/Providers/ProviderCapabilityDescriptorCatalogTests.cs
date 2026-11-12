@@ -114,15 +114,20 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         module.Register(services, new DataSourceRegistry());
 
-        // The module registers both declared capability implementations, plus the rate-observation
-        // contract, which forwards to the same historical provider instance.
         services.Should().HaveCount(3);
         services.Select(service => service.ServiceType).Should().BeEquivalentTo(
             descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
-            "both historical and search capability implementations must have module-owned factories");
+            "historical and search implementations and the observed-rate alias must have module-owned factories");
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
             "the module must own concrete factory construction and container lifetime");
+
+        using var client = new HttpClient();
+        var historical = new FredHistoricalDataProvider("synthetic-key", client);
+        services.AddSingleton(historical);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(historical,
+            "rate observations must reuse the same late-gated historical implementation");
     }
 
     [Fact]

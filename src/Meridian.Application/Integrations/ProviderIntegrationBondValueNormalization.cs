@@ -17,10 +17,8 @@ internal static class ProviderIntegrationBondValueNormalization
         // This is derived evidence, never a provider-supplied normalization assertion.
         record.Remove("bondValueReconciliation");
         var assetClass = Text(record, "security.assetClass") ?? Text(record, "assetClass");
-        // A bond is identified by its catalog fact, not its class name.
-        var isBondClass = SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor) && descriptor.CarriesBondCouponStructure;
         if (record["bond"] is not JsonObject &&
-            !isBondClass &&
+            !(SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor) && descriptor.CarriesBondCouponStructure) &&
             !string.Equals(assetClass, "FixedIncome", StringComparison.OrdinalIgnoreCase))
         {
             return false;

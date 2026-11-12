@@ -4,6 +4,45 @@ namespace Meridian.Instruments.AssetOperations;
 
 public sealed partial class CorporateActionAccountingProjectionService
 {
+    private static ProjectionComputation BindCanonicalRedemptionLots(
+        ProjectionComputation computation, IReadOnlyList<CorporateActionLotMutationDto> lots,
+        ICollection<CorporateActionProjectionBlockerDto> blockers)
+    {
+        var intent = computation.LotMutations.Single();
+        try
+        {
+            if (lots.Any(lot => lot.Kind != CorporateActionLotMutationKindDto.Dispose
+                    || lot.SecurityId != intent.SecurityId || lot.TargetLotId is not null || lot.TargetSecurityId is not null
+                    || lot.SourceAfter is not null)
+                || lots.Sum(lot => lot.Quantity ?? 0m) != intent.Quantity
+                || lots.Sum(lot => lot.CarryingAmount ?? 0m) != intent.CarryingAmount)
+                blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.redemption-lot-intent-mismatch",
+                    "Canonical redemption lots must fully close and sum to the projected security quantity and carrying basis."));
+            foreach (var blocker in CorporateActionLotMutationPlanValidator.Validate(lots))
+                blockers.Add(blocker);
+            return blockers.Count == 0 ? computation with { LotMutations = lots.ToArray() } : computation;
+        }
+        catch (OverflowException)
+        {
+            blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.amount-overflow",
+                "The canonical redemption lot quantities or bases exceed the supported decimal range."));
+            return computation;
+        }
+    }
+
+    private static ProjectionComputation ProjectCanonicalRedemption(
+        CorporateActionAccountingProjectionRequest request, string currency,
+        List<CorporateActionProjectionBlockerDto> blockers)
+    {
+        AddIf(blockers, request.ActionType is not (CorporateActionAccountingTypeDto.CallRedemption
+            or CorporateActionAccountingTypeDto.PutRedemption) || request.CanonicalLotTransferJournal
+            || request.Economics.AccruedIncome is not (null or 0m) || request.Economics.IsMakeWhole,
+            "corporate-action.canonical-redemption-unsupported",
+            "Canonical redemption supports principal-only calls and puts; accrued or make-whole income requires a separate reviewed workflow.");
+        return blockers.Count > 0 ? ProjectionComputation.Empty
+            : ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.Redemption);
+    }
+
     private static ProjectionComputation ProjectCanonicalSplitTransfer(
         CorporateActionAccountingProjectionRequest request, string currency,
         List<CorporateActionProjectionBlockerDto> blockers, decimal positionQuantity, decimal splitRatio)

@@ -104,12 +104,17 @@ public sealed record StructuredCashFlowScheduleEntry(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }
 
-    // The interval a legacy calculated row's interest was measured over. Never serialized: the
-    // legacy projection's wire shape is retained in calculation receipts, and adding members to it
-    // would stop those receipts replaying. Declared projections state AccrualStart/AccrualEnd.
-    [JsonIgnore]
+    /// <summary>
+    /// Stored row contract. Zero denotes the frozen legacy shape; version 1 retains measured
+    /// interest intervals. Calculated projections explicitly stamp their output version.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int RowVersion { get; init; }
+
+    /// <summary>The measured interest interval on calculated rows without declared accrual dates.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DateOnly? InterestMeasuredFrom { get; init; }
-    [JsonIgnore]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DateOnly? InterestMeasuredTo { get; init; }
 
     /// <summary>The start of the interval this row's interest accrues over, when it is known.</summary>
@@ -119,20 +124,6 @@ public sealed record StructuredCashFlowScheduleEntry(
     /// <summary>The end of the interval this row's interest accrues over, when it is known.</summary>
     [JsonIgnore]
     public DateOnly? InterestAccrualEnd => AccrualEnd ?? InterestMeasuredTo;
-
-    // Two rows are the same row when their serialized members agree. The unserialized measured
-    // interval is working data for accruals and must not make a replayed row differ from the
-    // retained row it reproduces. Every serialized member must be compared here;
-    // StructuredCashFlowScheduleEntryEqualityTests fails when a member is added without it.
-    public bool Equals(StructuredCashFlowScheduleEntry? other)
-        => other is not null && PeriodDate == other.PeriodDate && PrincipalAmount == other.PrincipalAmount &&
-           InterestAmount == other.InterestAmount && Factor == other.Factor &&
-           UnadjustedStart == other.UnadjustedStart && UnadjustedEnd == other.UnadjustedEnd &&
-           AccrualStart == other.AccrualStart && AccrualEnd == other.AccrualEnd &&
-           EqualityComparer<Meridian.Contracts.FixedIncome.BondFloatingRateEvidence?>.Default.Equals(RateEvidence, other.RateEvidence);
-
-    public override int GetHashCode()
-        => HashCode.Combine(PeriodDate, PrincipalAmount, InterestAmount, Factor, UnadjustedStart, UnadjustedEnd, AccrualStart, AccrualEnd);
 }
 
 /// <summary>How a cash-flow leg's rate is determined.</summary>
@@ -320,48 +311,6 @@ public sealed record StructuredCashFlowProjectionDto(
     /// <summary>Exact dependencies selected by the context-aware calculation path.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<Meridian.Contracts.FixedIncome.BondCalculationInput>? InputManifest { get; init; }
-}
-
-/// <summary>
-/// One balanced ledger journal line projected from a structured cash flow accrual.
-/// </summary>
-public sealed record StructuredCashFlowLedgerLine(
-    string Account,
-    string AccountType,
-    string? Symbol,
-    string? FinancialAccountId,
-    decimal Debit,
-    decimal Credit);
-
-/// <summary>
-/// A balanced journal projection for one coupon-accrual period, ready to be routed to the ledger.
-/// </summary>
-public sealed record StructuredCashFlowLedgerPosting(
-    DateTimeOffset PeriodDate,
-    string Description,
-    decimal TotalDebits,
-    decimal TotalCredits,
-    bool IsBalanced,
-    IReadOnlyList<StructuredCashFlowLedgerLine> Lines);
-
-/// <summary>
-/// Result of converting a structured cash flow projection into ledger-ready coupon-accrual postings.
-/// When <see cref="IsPostable"/> is <see langword="false"/>, <see cref="BlockedReason"/> explains
-/// the gate that stopped posting (stale source, non-base scenario, or no accruable periods) and
-/// <see cref="Postings"/> is empty.
-/// </summary>
-public sealed record StructuredCashFlowLedgerPostingResult(
-    Guid SecurityId,
-    bool IsPostable,
-    string? BlockedReason,
-    IReadOnlyList<StructuredCashFlowLedgerPosting> Postings)
-{
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public SecurityCashFlowBlockerDto? Blocker { get; init; }
-
-    /// <summary>Creates a blocked result carrying the gate reason and no postings.</summary>
-    public static StructuredCashFlowLedgerPostingResult Blocked(Guid securityId, string reason)
-        => new(securityId, false, reason, Array.Empty<StructuredCashFlowLedgerPosting>());
 }
 
 /// <summary>

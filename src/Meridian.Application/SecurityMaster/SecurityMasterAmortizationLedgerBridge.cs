@@ -35,9 +35,8 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// <summary>
 /// Position-level context for posting projected cash flows. Coupon and principal amounts are
 /// taken from the projection as-is (in the projection's own par basis); the premium/discount is
-/// derived from the actual open tax lots (cost of quantity × <see cref="LedgerTaxLot.UnitCost"/>
-/// against the face the lot states as quantity × <see cref="LedgerTaxLot.Multiplier"/>; only
-/// face-value lots are accepted) and amortized by the projection's own day-count year fraction — the same
+/// derived from the actual open tax lots (bond lots record <see cref="LedgerTaxLot.UnitCost"/> as a
+/// price per 100 of par) and amortized by the projection's own day-count year fraction — the same
 /// method the cost-basis relief engine uses — so GL postings and cost-basis relief tie by
 /// construction instead of amortizing a caller-supplied purchase price on a different schedule.
 /// </summary>
@@ -68,6 +67,7 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// accrual dates is recognized whole when its period date falls in the window. Consecutive
 /// windows therefore accrue every coupon exactly once, a little each period.
 /// </param>
+/// <param name="QuoteConvention">The class's declared price convention. Null uses the shared lot unit's default convention.</param>
 public sealed record AmortizationLedgerPostingContext(
     IReadOnlyList<LedgerTaxLot>? OpenLots = null,
     string? FinancialAccountId = null,
@@ -76,7 +76,8 @@ public sealed record AmortizationLedgerPostingContext(
     DateTimeOffset? ProjectionAsOf = null,
     DateOnly? AmortizedThrough = null,
     AmortizationAccrualWindow? AccrualWindow = null,
-    decimal? CouponPrincipalBasis = null);
+    decimal? CouponPrincipalBasis = null,
+    SecurityQuoteConvention? QuoteConvention = null);
 
 /// <summary>An inclusive range of accounting dates whose accrual is posted as one entry.</summary>
 public sealed record AmortizationAccrualWindow
@@ -132,9 +133,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         }
 
         // Shared freshness/scenario gate: never post a stale source or a rate-shocked what-if
-        // projection to the general ledger, matching the preview bridge's posting rules. Evaluated
-        // before the empty-schedule check, because a blocked projection (a negative rate, say)
-        // can carry no rows and must be reported as blocked, not as having nothing to post.
+        // projection to the general ledger.
         if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blockReason)
         {
             _logger.LogWarning(
@@ -146,10 +145,13 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         if (projection.Schedule.Count == 0)
         {
             _logger.LogDebug(
-                "SecurityMasterAmortizationLedgerBridge: cash flow projection for {SecurityId} under scenario {Scenario} has no scheduled periods.",
+                "SecurityMasterAmortizationLedgerBridge: no cash flow projection for {SecurityId} under scenario {Scenario}.",
                 securityId, postingContext.Scenario);
             return 0;
         }
+
+        if (postingContext.QuoteConvention is { } quoteConvention && !Enum.IsDefined(quoteConvention))
+            throw new ArgumentOutOfRangeException(nameof(context), "A defined quote convention is required.");
 
         var normalizedTicker = ticker.Trim().ToUpperInvariant();
         var financialAccountId = string.IsNullOrWhiteSpace(postingContext.FinancialAccountId)
@@ -170,7 +172,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         var convention = DayCountConventions.Parse(projection.TermsUsed?.DayCountConvention);
         var maturity = projection.TermsUsed?.MaturityDate
             ?? DateOnly.FromDateTime(schedule[^1].PeriodDate.UtcDateTime.Date);
-        var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity);
+        var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity, postingContext.QuoteConvention);
 
         var allocatedPremiumDiscount = postingContext.AmortizedThrough is { } amortizedThrough
             ? RoundCash(amortizingLots.Sum(lot => lot.Total * lot.WeightThrough(convention, amortizedThrough)))
@@ -275,18 +277,15 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             if (lot.SecurityId != securityId || lot.AcquiredDate > window.End)
                 continue;
 
-            var share = FaceOf(lot) / principalBasis;
+            // Quantity already carries the lot's face (including any applied factor); its
+            // explicit multiplier converts legacy par units as well as canonical face units.
+            var share = LotQuantity.Of(lot).EconomicUnits / principalBasis;
             total += schedule.Sum(entry => CouponAccruedInWindow(entry, convention, window, share, lot.AcquiredDate));
         }
 
         return total;
     }
 
-    /// <summary>
-    /// The part of one coupon period's interest that accrues inside <paramref name="window"/>: the
-    /// rounded amount accrued through the window's end less the rounded amount accrued through
-    /// the day before it starts, so the shares of consecutive windows sum to the coupon exactly.
-    /// </summary>
     private static decimal CouponAccruedInWindow(
         StructuredCashFlowScheduleEntry entry, DayCountConvention convention, AmortizationAccrualWindow window,
         decimal share, DateOnly? heldFrom)
@@ -428,7 +427,8 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         IReadOnlyList<LedgerTaxLot>? openLots,
         Guid securityId,
         DayCountConvention convention,
-        DateOnly maturity)
+        DateOnly maturity,
+        SecurityQuoteConvention? quoteConvention)
     {
         if (openLots is null || openLots.Count == 0)
             return Array.Empty<AmortizingLot>();
@@ -441,10 +441,14 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             if (lot.SecurityId != securityId || lot.AcquiredDate >= maturity)
                 continue;
 
-            // The ledger engines cost a lot at quantity × unit cost, and the shared lot shape states
-            // its face as quantity × multiplier, so their difference is the lot's signed premium
-            // (positive) or discount (negative) in money, whatever unit the lot was booked in.
-            var total = lot.Quantity * lot.UnitCost - FaceOf(lot);
+            // Quote convention converts acquisition price to money; it does not determine held
+            // face. CostBasis is current carrying basis, not the acquisition premium distributed
+            // over this lifetime schedule.
+            var quantity = LotQuantity.Of(lot);
+            var basis = quoteConvention is { } quote
+                ? quantity.ValueAtPrice(lot.UnitCost, quote)
+                : quantity.ValueAtPrice(lot.UnitCost);
+            var total = basis - quantity.EconomicUnits;
             if (total == 0m)
                 continue;
 
@@ -456,24 +460,6 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         }
 
         return lots;
-    }
-
-    /// <summary>
-    /// The face amount a lot holds, read from the shared lot shape (quantity × multiplier) instead
-    /// of assuming the bond convention of one unit per 100 of par, so a loan, deposit or CD booked
-    /// one unit per currency unit of face earns its true share. A lot that is not face-denominated
-    /// has no face share of a coupon or par to amortize toward, so it is refused rather than guessed.
-    /// </summary>
-    private static decimal FaceOf(LedgerTaxLot lot)
-    {
-        if (lot.UnitKind != SecurityLotUnitKind.FaceValue)
-        {
-            throw new InvalidOperationException(
-                $"Lot '{lot.LotId}' is held in {lot.UnitKind} units, not face value; coupon accrual and " +
-                "premium/discount amortization need a face-denominated lot.");
-        }
-
-        return LotQuantity.Of(lot).EconomicUnits;
     }
 
     private static DateTimeOffset ToUtcStartOfDay(DateOnly date)

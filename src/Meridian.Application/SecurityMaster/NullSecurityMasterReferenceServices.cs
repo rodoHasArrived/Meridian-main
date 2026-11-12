@@ -81,10 +81,7 @@ public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowS
         Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default)
         => Task.FromResult<StructuredCashFlowProjectionDto?>(null);
 
-    public Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
-        Guid securityId, string? financialAccountId = null, DateOnly? through = null, CancellationToken ct = default)
-        => Task.FromResult(StructuredCashFlowLedgerPostingResult.Blocked(
-            securityId, "Security Master is not configured; no cash flow projections are available to post."));
+
 }
 
 /// <summary>
