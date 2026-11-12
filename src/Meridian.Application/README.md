@@ -11,6 +11,37 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
+The W14 cash-dividend lane is a separate preparer-attestation path, not an exception inside
+ordinary approval. `CorporateActionCaseAccountingService.CashDividend.cs` composes the retained
+case, exact accounting projection, complete-book entitlement authority and native declaration /
+budget store. It binds the confirmation to the server's entitlement digest and uses the
+`PreparerAttested` case state. Posting requires the producer-owned native lease and the dedicated
+spine posting authority; no ordinary `ApprovalId` or `Approved` lifecycle evidence is manufactured.
+The bounded treatment recognizes a regular mandatory USD dividend on its source ex-date with
+dividend receivable and income, capped at USD 10,000 gross for the complete related event and
+USD 100,000 for the book's source-ex-date calendar month. A book declaration and explicit domain
+grants remain separate, and the runtime feature defaults off. Historical command replay does not
+depend on current write grants; new writes still require them. Ordinary maker-checker behavior
+is unchanged.
+
+`CorporateActionCashDividendEligibilityResolver` derives materiality from every retained long-held
+unit lot in the selected book, including other financial accounts. It compares pre-ex and record-date
+quantities, requires current accepted source terms and reviewed source evidence, and composes the
+existing promoted native rule with active chart accounts. The explicit declaration binds those
+existing accounts to dividend receivable and income; names are not inferred from account paths.
+An explicit record date strictly before the server's current UTC date bounds the completed
+unchanged-holdings window. A unique active canonical ticker must match the retained candidate,
+all holdings and any explicit chart mappings. Complete retained case
+facts must contain no options, elections, custom methodology or unclassified typed metadata.
+Every held account also requires current retained external reconciliation support. Missing canonical
+inventory, source, reconciliation, scope or rule authority excludes the case. Its immutable snapshot
+retains exact source, holdings, reconciliation and rule evidence and stays stable when only the
+preparer-attestation lifecycle stage is appended.
+
+Security asset-profile approval and rollback reject reserved W14 preparer-attestation references
+before changing profile state. Existing actor-separation and governed version checks still apply;
+other opaque reference strings retain their existing validation limits.
+
 Subscription application trims symbol names and keeps the first declaration when names repeat
 case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
 hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
@@ -87,6 +118,11 @@ previews keep their existing signed model; explicit v1/v2 receipt replay retains
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
+New Security calculation runs may carry a server-stamped W14 draft-check context when the separate
+default-off draft feature is enabled. The store preserves that tenant/company/preparer/origin binding
+and refuses a retry that would reassign it. Older packets omit the nullable context and remain
+ineligible for preparer draft checks; no ledger, approval or posting authority is added.
+
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
 it revalidates one retained tenant/connection/account/environment under the configuration lease before
@@ -124,6 +160,10 @@ former Application-side prototype factory (with a common-calendar fallback) was 
 for the declared engine and remaining 5b work.
 Cash-flow service composition no longer accepts the retired whole-coupon bridge. Its remaining
 constructors support calendar, policy and calculation-receipt composition.
+The retired path is `StructuredCashFlowLedgerBridge` and the service's `BuildLedgerPostingsAsync`
+facade. The separate `SecurityMasterAmortizationLedgerBridge` remains: the recurring Bond accrual
+calculation uses it on a scratch ledger to prepare a governed draft, retaining ordinary approval
+and posting controls rather than directly booking a projected schedule.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
@@ -1518,6 +1558,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-APP -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |

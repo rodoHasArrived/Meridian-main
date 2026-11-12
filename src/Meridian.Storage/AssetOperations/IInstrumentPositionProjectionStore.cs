@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Storage.AssetOperations;
 
@@ -159,6 +160,8 @@ internal static class InstrumentPositionProjectionRules
     {
         ArgumentNullException.ThrowIfNull(role);
         ArgumentNullException.ThrowIfNull(approval);
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approval.ApprovalReference, nameof(approval.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approval.Actor, nameof(approval.Actor));
         if (role.RoleId == Guid.Empty || role.SecurityId == Guid.Empty || role.Version <= 0 ||
             string.IsNullOrWhiteSpace(role.OwnerScopeId) || string.IsNullOrWhiteSpace(role.OwnerScopeKind) ||
             string.IsNullOrWhiteSpace(role.RoleKind) || string.IsNullOrWhiteSpace(role.AccountingSide) ||

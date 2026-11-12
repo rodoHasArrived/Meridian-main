@@ -24,6 +24,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
     private readonly ILogger<FileReconciliationBreakQueueRepository> _logger;
     private readonly IReconciliationSlaPolicyProvider? _slaPolicyProvider;
     private readonly IReconciliationSlaCalendarResolver? _slaCalendarResolver;
+    private readonly IPreparerAttestationReferenceClassifier? _preparerAttestationReferences;
     private readonly Func<string, string, CancellationToken, Task> _stateWriter;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private static readonly JsonSerializerOptions AuditValidationJsonOptions = CreateJsonOptions();
@@ -44,12 +45,14 @@ public sealed partial class FileReconciliationBreakQueueRepository :
         ILogger<FileReconciliationBreakQueueRepository> logger,
         IReconciliationSlaPolicyProvider? slaPolicyProvider = null,
         Func<string, string, CancellationToken, Task>? stateWriter = null,
-        IReconciliationSlaCalendarResolver? slaCalendarResolver = null)
+        IReconciliationSlaCalendarResolver? slaCalendarResolver = null,
+        IPreparerAttestationReferenceClassifier? preparerAttestationReferences = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _slaPolicyProvider = slaPolicyProvider;
         _slaCalendarResolver = slaCalendarResolver;
+        _preparerAttestationReferences = preparerAttestationReferences;
         _stateWriter = stateWriter ?? ((path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct));
 
         Directory.CreateDirectory(dataDirectory);
@@ -1217,7 +1220,8 @@ public sealed partial class FileReconciliationBreakQueueRepository :
             }
 
             var validation = ValidateCloseScopeMutation(item, command)
-                ?? ValidateCaseworkCommand(item, command);
+                ?? ValidateCaseworkCommand(item, command)
+                ?? await ValidatePreparerApprovalReferenceAsync(item, command, ct).ConfigureAwait(false);
             if (validation is not null)
             {
                 try
@@ -1466,7 +1470,8 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                         command,
                         _items,
                         pendingSupersessionEdges)
-                    ?? ValidateCaseworkCommand(item, command);
+                    ?? ValidateCaseworkCommand(item, command)
+                    ?? await ValidatePreparerApprovalReferenceAsync(item, command, ct).ConfigureAwait(false);
                 if (validation is null &&
                     command.Action == ReconciliationCaseworkAction.Supersede &&
                     !string.IsNullOrWhiteSpace(command.SupersedingBreakId))

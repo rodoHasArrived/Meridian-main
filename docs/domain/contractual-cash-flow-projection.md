@@ -98,6 +98,15 @@ temporary file and write-once rename; conflicting identity retries return 409, w
 return the retained packet before looking up live terms or curves. Back up these packets with the
 data root. Hashes establish consistency, not an externally anchored tamper-proof audit chain.
 
+With `SinglePrincipalAttestation:EnableDraftChecks` explicitly enabled, newly retained Security
+runs bind the authenticated tenant, company, preparer and action origin. This optional context is
+omitted from older packets; it is never inferred from a legacy actor string. A W14 draft check
+requires a separately granted human preparer, an explicit version-2 declaration and the exact
+non-postable run/source revision. It remains a preparer assertion with no approval, posting or
+Verified Coverage authority. Direct-lending runs are outside this provider. Disabling the host
+feature preserves historical packets and permits authorized corrective revocation of existing
+assertions; it does not turn an old packet into a newly scoped draft.
+
 This calculation lane does not execute exercises, record actual notices/payments, post forecasts,
 change amortization accounting v1/v2/v3, value optimal exercise/OAS, model behavioral prepayment,
 or calculate deal waterfalls. Those operations retain their existing authorities and gates.
