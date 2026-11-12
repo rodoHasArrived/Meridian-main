@@ -1007,8 +1007,12 @@ back. So the question is asked of the document itself. On the write path
 (`SecurityEconomicDefinitionAdapter.FieldsTheFlatRowCarried`) the retained document is flattened
 for the row's class, exactly as the replay that attached it did, and rebuilt with no carry. A
 field that rebuild populates was on the row, so a revision that has it empty cleared it and the
-fold leaves it empty. A field the rebuild leaves empty was never on the row and is filled as
-before. The static stage-3 list is kept and unioned with this, and a document that cannot be
+fold leaves it empty. A field the rebuild leaves empty, or fills with a different value, was
+never on the row and is filled as before. The second case matters where the rebuild derives a
+field from another key: a structured-credit row stores only the pool id and derives the issuer
+name from it, so a document whose issuer name differs from its pool id keeps that name folding
+back when the pool id is cleared. (Found in automated review; pinned by
+`AValueTheRebuildDerivesFromAnotherKey_IsNotTreatedAsCarried`.) The static stage-3 list is kept and unioned with this, and a document that cannot be
 flattened or rebuilt names no field, which leaves the fold exactly as it was.
 
 With no amendment the rebuild and the row are the same thing, so nothing a replay produces
