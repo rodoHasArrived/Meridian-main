@@ -98,10 +98,10 @@ internal static partial class SecurityEconomicDefinitionAdapter
     /// <summary>
     /// The module fields of a retained economic document that its own flat row held: the document
     /// is flattened for the row's class, as the replay that attached it did, and rebuilt with no
-    /// retained carry. A field that rebuild populates is one the flat family carried for this
-    /// document, so a later revision that has it empty cleared it. A field the rebuild leaves
-    /// empty is one the row never held (a historical or hand-shaped value the decode does not
-    /// reproduce) and keeps the fill. A document that cannot be flattened or rebuilt names no
+    /// retained carry. A field that rebuild reproduces exactly is one the flat family carried for
+    /// this document, so a later revision that has it empty cleared it. A field the rebuild leaves
+    /// empty, or fills with another value (derived from a different key), is one the row never
+    /// held (a historical or hand-shaped value the decode does not reproduce) and keeps the fill. A document that cannot be flattened or rebuilt names no
     /// field, which leaves the fold as it was.
     /// </summary>
     private static IReadOnlyList<(string Module, string Field)> FieldsTheFlatRowCarried(
@@ -125,11 +125,22 @@ internal static partial class SecurityEconomicDefinitionAdapter
                     continue;
                 }
 
+                if (!retained.TryGetProperty(module.Name, out var retainedModule)
+                    || retainedModule.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
                 foreach (var field in module.Value.EnumerateObject())
                 {
                     var empty = field.Value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
                                 || (field.Value.ValueKind == JsonValueKind.Array && field.Value.GetArrayLength() == 0);
-                    if (!empty)
+                    // Populated is not enough: the rebuild can fill a field from another key the
+                    // row carries (a structured-credit issuer name derived from the pool id). The
+                    // retained value was on the row only when the rebuild reproduces it.
+                    if (!empty
+                        && retainedModule.TryGetProperty(field.Name, out var retainedValue)
+                        && JsonElement.DeepEquals(field.Value, retainedValue))
                     {
                         carried.Add((module.Name, field.Name));
                     }
