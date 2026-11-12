@@ -23,8 +23,25 @@ public sealed class LedgerEventAuditPostgresTests
         await store.AppendAsync(write, ct);
         var reversal = Write(book, period, "correction-controller", write.Entry.JournalEntryId);
         await store.AppendAsync(reversal, ct);
-        var replay = () => GovernedStore(database).AppendAsync(write, ct);
-        await replay.Should().ThrowAsync<PostgresException>();
+        var beforeReplay = await store.VerifyLedgerEventAuditAsync(ct);
+        var retainedOriginal = (await store.GetByPeriodAsync(period.PeriodId, ct))
+            .Single(entry => entry.Entry.JournalEntryId == write.Entry.JournalEntryId);
+        await GovernedStore(database).AppendAsync(write, ct);
+        (await store.VerifyLedgerEventAuditAsync(ct)).Should().Be(beforeReplay);
+        var afterReplay = await store.GetByPeriodAsync(period.PeriodId, ct);
+        afterReplay.Should().HaveCount(2);
+        afterReplay.Single(entry => entry.Entry.JournalEntryId == retainedOriginal.Entry.JournalEntryId)
+            .GlobalSequence.Should().Be(retainedOriginal.GlobalSequence);
+        var altered = write with
+        {
+            Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+                write.Entry.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp,
+                    line.Account, line.Debit > 0m ? line.Debit + 1m : 0m, line.Credit > 0m ? line.Credit + 1m : 0m,
+                    line.Description, line.Dimensions, line.Currency)).ToArray(), write.Entry.Metadata)
+        };
+        var changedReplay = () => GovernedStore(database).AppendAsync(altered, ct);
+        await changedReplay.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
+        (await store.VerifyLedgerEventAuditAsync(ct)).Should().Be(beforeReplay);
 
         var soft = await store.SavePeriodAsync(period with { Status = "SoftClosed" }, period.Version,
             Close(period, "SoftClosed", "soft-close-controller"), ct);
