@@ -80,4 +80,3 @@ export function StrategyRunEquityPathCompare({ runs, children }: { runs: Strateg
     </SelectionCompareProvider>
   );
 }
-
