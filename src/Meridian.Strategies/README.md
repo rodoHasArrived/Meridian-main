@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-03
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Strategies
@@ -14,6 +14,12 @@ last_reviewed: 2026-08-03
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
 and book independently; terminal metrics are not required. Backtests retain their recorded books.
+
+Reconciliation casework rejects reserved preparer-attestation references as ordinary approval.
+The optional scoped receipt classifier also recognizes retained legacy receipt IDs; client command
+and assertion IDs never become approval denials. Single and bulk commands validate this boundary
+before mutation, retain existing maker-checker rules, and fail closed if configured receipt history
+cannot be read. No attestation grants waiver, supersession, material-break suppression or sign-off.
 
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
 
@@ -312,6 +318,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-STRATEGIES -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |

@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 258,
-    "warning": 258
+    "total": 269,
+    "warning": 269
   },
   "failed": false,
   "findings": [
@@ -1024,6 +1024,66 @@
       },
       "message": "Business table security_master.bond_projection does not have a table comment.",
       "object": "security_master.bond_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_declaration_history"
+      },
+      "message": "Business table security_master.cash_dividend_attestation_declaration_history does not have a table comment.",
+      "object": "security_master.cash_dividend_attestation_declaration_history",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_declarations"
+      },
+      "message": "Business table security_master.cash_dividend_attestation_declarations does not have a table comment.",
+      "object": "security_master.cash_dividend_attestation_declarations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_event_aliases"
+      },
+      "message": "Business table security_master.cash_dividend_attestation_event_aliases does not have a table comment.",
+      "object": "security_master.cash_dividend_attestation_event_aliases",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_postings"
+      },
+      "message": "Business table security_master.cash_dividend_attestation_postings does not have a table comment.",
+      "object": "security_master.cash_dividend_attestation_postings",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_reservations"
+      },
+      "message": "Business table security_master.cash_dividend_attestation_reservations does not have a table comment.",
+      "object": "security_master.cash_dividend_attestation_reservations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_dividend_attestations"
+      },
+      "message": "Business table security_master.cash_dividend_attestations does not have a table comment.",
+      "object": "security_master.cash_dividend_attestations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2127,6 +2187,76 @@
     {
       "details": {
         "columns": [
+          "projection_id"
+        ],
+        "constraint": "cash_dividend_attestation_postings_projection_id_fkey",
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_postings"
+      },
+      "message": "Foreign key security_master.cash_dividend_attestation_postings.cash_dividend_attestation_postings_projection_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.cash_dividend_attestation_postings.cash_dividend_attestation_postings_projection_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "case_id"
+        ],
+        "constraint": "cash_dividend_attestation_reservations_case_id_fkey",
+        "schema": "security_master",
+        "table": "cash_dividend_attestation_reservations"
+      },
+      "message": "Foreign key security_master.cash_dividend_attestation_reservations.cash_dividend_attestation_reservations_case_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.cash_dividend_attestation_reservations.cash_dividend_attestation_reservations_case_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "case_id"
+        ],
+        "constraint": "cash_dividend_attestations_case_id_fkey",
+        "schema": "security_master",
+        "table": "cash_dividend_attestations"
+      },
+      "message": "Foreign key security_master.cash_dividend_attestations.cash_dividend_attestations_case_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.cash_dividend_attestations.cash_dividend_attestations_case_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "projection_id"
+        ],
+        "constraint": "cash_dividend_attestations_projection_id_fkey",
+        "schema": "security_master",
+        "table": "cash_dividend_attestations"
+      },
+      "message": "Foreign key security_master.cash_dividend_attestations.cash_dividend_attestations_projection_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.cash_dividend_attestations.cash_dividend_attestations_projection_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "reservation_id"
+        ],
+        "constraint": "cash_dividend_attestations_reservation_id_fkey",
+        "schema": "security_master",
+        "table": "cash_dividend_attestations"
+      },
+      "message": "Foreign key security_master.cash_dividend_attestations.cash_dividend_attestations_reservation_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.cash_dividend_attestations.cash_dividend_attestations_reservation_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_event_id"
         ],
         "constraint": "cash_transaction_source_event_id_fkey",
@@ -2843,5 +2973,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "d957e9de9834978de6d40ee01efcf7f8e63d106711cc2f5547c7d897ea7802ca"
+  "fingerprint": "2d413adcce8f1e8eb696b061aeeb7d46eb27b4d14c73d105830ca3c700afdf01"
 }

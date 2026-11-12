@@ -98,7 +98,7 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         services.AddLogging();
         services.AddSingleton(new CoreConfigStore(configPath));
 
-        services.AddWorkstationSharedServices();
+        services.AddWorkstationSharedServices(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
 
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<PromotionRecordStoreOptions>().RootDirectory

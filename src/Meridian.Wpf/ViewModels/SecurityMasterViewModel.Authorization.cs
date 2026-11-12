@@ -109,6 +109,11 @@ public sealed partial class SecurityMasterViewModel
     // left open across a logout must not stay visually enabled for the next operator.
     private void OnAuthenticationSessionAuthenticationChanged(object? sender, EventArgs e)
     {
+        // Discard the prior principal's C2 workspace/capabilities even when the selected
+        // security remains on screen; a new read must resolve the current session again.
+        CashDividendAttestation.SetSecurity(null);
+        CashDividendAttestation.SetSecurity(SelectedSecurity?.SecurityId);
+        _passportEditor.CashFlowScenarios?.DraftCheck.SetRetainedTarget(null, null);
         CreateNewCommand.NotifyCanExecuteChanged();
         EditSelectedCommand.NotifyCanExecuteChanged();
         DeactivateSelectedCommand.NotifyCanExecuteChanged();

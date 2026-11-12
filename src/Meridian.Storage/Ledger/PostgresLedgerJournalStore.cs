@@ -86,6 +86,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        await AcquireAppendEntitlementBookAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         if (await TryRecoverAgreementPostingAsync(connection, transaction, entry, ct).ConfigureAwait(false))
         {
             await transaction.CommitAsync(ct).ConfigureAwait(false);
@@ -153,7 +154,8 @@ public sealed partial class PostgresLedgerJournalStore :
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct,
-        bool verifiedAmortizationReversal = false)
+        bool verifiedAmortizationReversal = false,
+        bool verifiedCashDividendAttestation = false)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);
@@ -162,8 +164,9 @@ public sealed partial class PostgresLedgerJournalStore :
         ArgumentNullException.ThrowIfNull(entry.Entry);
         entry = AccountingPostingCommandValidator.NormalizeAndValidate(
             entry,
-            _options.RequireGovernedPostingCommand,
-            _options.RequireExpectedVersion);
+            _options.RequireGovernedPostingCommand || verifiedCashDividendAttestation,
+            _options.RequireExpectedVersion || verifiedCashDividendAttestation,
+            allowPreparerAttestation: verifiedCashDividendAttestation);
 
         if (entry.AggregateId == Guid.Empty)
         {
@@ -180,12 +183,14 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
+        var entitlementBookId = await AcquireAppendEntitlementBookAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(
                 connection,
                 transaction,
                 entry.PeriodId,
-                forUpdate: _options.EnablePeriodLocking || IsPriorPeriodAdjustment(entry) || IsPortfolioOpeningCorrection(entry),
+                forUpdate: _options.EnablePeriodLocking || verifiedCashDividendAttestation
+                    || IsPriorPeriodAdjustment(entry) || IsPortfolioOpeningCorrection(entry),
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
@@ -193,6 +198,8 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
         }
+        if (period.LedgerBookId != entitlementBookId)
+            throw new LedgerValidationException("The accounting period's ledger book changed while acquiring entitlement authority; reload the posting scope.");
 
         if (entry.PostingCommand?.ExpectedVersion is { } expectedVersion && expectedVersion != period.Version)
         {
@@ -220,6 +227,27 @@ public sealed partial class PostgresLedgerJournalStore :
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,
             entry.PostingCommand?.Intent == AccountingPostingIntentDto.Reversal ? "JournalReversed" : "JournalPosted",
             entry.PostingCommand?.Actor, closeEvent: null, ct).ConfigureAwait(false);
+    }
+
+    private async Task<Guid?> AcquireAppendEntitlementBookAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct)
+    {
+        // This lookup deliberately takes no row lock: the complete-book barrier must precede
+        // period and book rows. Aggregate identity need not equal the retained ledger book.
+        var period = await LoadPeriodAsync(connection, transaction, entry.PeriodId, forUpdate: false,
+            callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false);
+        if (period is null)
+        {
+            if (_tenantScope.IsFailClosed)
+                throw new UnauthorizedAccessException("The retained ledger scope is unavailable to this tenant.");
+            throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
+        }
+        var declaredBookId = entry.LedgerBookId ?? entry.PostingCommand?.LedgerBookId;
+        if (declaredBookId.HasValue && declaredBookId != period.LedgerBookId)
+            throw new LedgerValidationException("The posting ledger book does not match its retained accounting period.");
+        await CashDividendEntitlementLock.AcquireAsync(connection, transaction,
+            period.LedgerBookId ?? entry.AggregateId, false, ct).ConfigureAwait(false);
+        return period.LedgerBookId;
     }
 
     public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
@@ -785,6 +813,7 @@ public sealed partial class PostgresLedgerJournalStore :
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await CashDividendEntitlementLock.AcquireAsync(connection, transaction, book.LedgerBookId, false, ct).ConfigureAwait(false);
         await EnsureFundWriteAuthorityAsync(connection, transaction, book.FundProfileId, ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, transaction, "ledger_books", "ledger_book_id", book.LedgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
