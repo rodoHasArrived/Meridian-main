@@ -26,6 +26,7 @@ public static class AccountingPostingCommandValidator
     {
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
+        ValidateAgreementTagTargets(write.Entry);
 
         ConsolidationPostingEvidenceGuard.Validate(write);
 
@@ -45,6 +46,14 @@ public static class AccountingPostingCommandValidator
                     "A typed accounting posting command is required at the production ledger append boundary.");
             }
 
+            if (write.Entry.Metadata.Tags?.Keys.Any(key => key.EndsWith(".intercompanyAgreementId", StringComparison.OrdinalIgnoreCase)
+                    || key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) == true)
+            {
+                var lines = NormalizeLineDimensions(write.Entry.Lines, write.Entry.Metadata.Tags, null, null, null);
+                write = write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
+                    write.Entry.Description, lines, write.Entry.Metadata) };
+            }
+            IntercompanyAgreementPostingGuard.ValidateShape(write.Entry);
             return write;
         }
 
@@ -144,7 +153,8 @@ public static class AccountingPostingCommandValidator
         ValidateTypedAssertions(command);
 
         var entry = NormalizeEntryMetadata(write.Entry, command);
-        return write with
+        IntercompanyAgreementPostingGuard.ValidateShape(entry);
+        var normalizedWrite = write with
         {
             Entry = entry,
             CommandId = command.CommandId,
@@ -156,10 +166,28 @@ public static class AccountingPostingCommandValidator
                 ? LedgerPostingKindDto.Adjustment
                 : write.PostingKind
         };
+        IntercompanyAgreementPostingGuard.ValidateAccountingDate(normalizedWrite);
+        return normalizedWrite;
     }
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
+
+    private static void ValidateAgreementTagTargets(JournalEntry entry)
+    {
+        if (entry.Metadata.Tags is not { } tags)
+            return;
+        var validKeys = entry.Lines.SelectMany(line => new[]
+        {
+            $"lineDimensions.{line.EntryId:N}.intercompanyAgreementId",
+            $"lineDimensions.{line.EntryId:N}.intercompanyAgreementVersion"
+        }).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in tags.Keys)
+            if (key.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase) &&
+                (key.EndsWith(".intercompanyAgreementId", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) && !validKeys.Contains(key))
+                throw new LedgerValidationException("Agreement line-dimension tags must identify an existing journal line using its canonical line identity.");
+    }
 
     /// <summary>
     /// Data-provenance evidence gate (fail closed): a figure whose evidence declares a simulated,
@@ -670,6 +698,21 @@ public static class AccountingPostingCommandValidator
             var line = lines[index];
             var dimensions = line.Dimensions ??
                 (tags is null ? null : BuildLineDimensions(line.EntryId, tags));
+            if (tags is not null)
+            {
+                var prefix = $"lineDimensions.{line.EntryId:N}.";
+                var agreementId = ReadAgreementId(tags, prefix);
+                var agreementVersion = ReadAgreementVersion(tags, prefix);
+                if ((agreementId.HasValue && dimensions?.IntercompanyAgreementId is { } retainedId && retainedId != agreementId) ||
+                    (agreementVersion.HasValue && dimensions?.IntercompanyAgreementVersion is { } retainedVersion && retainedVersion != agreementVersion))
+                    throw new LedgerValidationException("Agreement line-dimension tags conflict with the explicit journal dimensions.");
+                if (agreementId.HasValue || agreementVersion.HasValue)
+                    dimensions = (dimensions ?? new LedgerLineDimensionSet()) with
+                    {
+                        IntercompanyAgreementId = agreementId ?? dimensions?.IntercompanyAgreementId,
+                        IntercompanyAgreementVersion = agreementVersion ?? dimensions?.IntercompanyAgreementVersion
+                    };
+            }
 
             var isReviewedSuccessor = corporateAction is not null && corporateAction.Successors.Any(target =>
                 target.Lot.SecurityId == dimensions?.InstrumentId && target.Lot.BookPositionId == dimensions?.PositionId);
@@ -760,7 +803,9 @@ public static class AccountingPostingCommandValidator
             VendorId: GetLineDimensionTag(tags, prefix, "vendorId"),
             ProjectId: GetLineDimensionTag(tags, prefix, "projectId"))
         {
-            PositionId = GetLineDimensionGuidTag(tags, prefix, "positionId")
+            PositionId = GetLineDimensionGuidTag(tags, prefix, "positionId"),
+            IntercompanyAgreementId = ReadAgreementId(tags, prefix),
+            IntercompanyAgreementVersion = ReadAgreementVersion(tags, prefix)
         };
 
         return HasAnyLineDimension(dimensions) ? dimensions : null;
@@ -800,6 +845,8 @@ public static class AccountingPostingCommandValidator
            || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
            || dimensions.InstrumentId.HasValue
            || dimensions.PositionId.HasValue
+           || dimensions.IntercompanyAgreementId.HasValue
+           || dimensions.IntercompanyAgreementVersion.HasValue
            || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
            || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
            || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
@@ -811,6 +858,18 @@ public static class AccountingPostingCommandValidator
            || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
            || !string.IsNullOrWhiteSpace(dimensions.VendorId)
            || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+
+    private static Guid? ReadAgreementId(IReadOnlyDictionary<string, string> tags, string prefix)
+    {
+        try { return LedgerAgreementDimensions.ReadId(tags, prefix); }
+        catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message, exception); }
+    }
+
+    private static int? ReadAgreementVersion(IReadOnlyDictionary<string, string> tags, string prefix)
+    {
+        try { return LedgerAgreementDimensions.ReadVersion(tags, prefix); }
+        catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message, exception); }
+    }
 
     private static IReadOnlyList<JournalEvidenceReference> MergeEvidence(
         IReadOnlyList<JournalEvidenceReference> existing,

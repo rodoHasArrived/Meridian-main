@@ -6,10 +6,17 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ledger
+
+`LedgerLineDimensionSet` retains optional `IntercompanyAgreementId` and approved version as a pair.
+Canonicalization, grouping and replay preserve the distinction between agreement revisions without
+changing legacy signatures when references are absent. Agreement provenance explains a line; it
+does not create paired postings, settlement or agreement-level consolidation. The durable storage
+boundary validates supplied references and historical reversals. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 `LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
 

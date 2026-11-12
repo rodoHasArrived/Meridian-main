@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { Input } from "@/components/ui/input";
+import { IntercompanyJournalReference } from "@/components/accounting/intercompany-journal-reference";
 
 export function focusManualJournalCell(lineId: string, column: string): void {
   const existing = document.getElementById(`manual-je-${column}-${lineId}`);
@@ -143,6 +144,8 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
             <DimensionField label="Cost center" value={view.draft.dimensions?.costCenterId ?? ""} placeholder="Journal-level cost center" onChange={(value) => view.updateDraftDimensions({ costCenterId: value })} />
           </div>
           <p className="text-xs text-muted-foreground">Blank line values inherit journal scope where available. Dimension edits invalidate the current validation and are autosaved as draft changes.</p>
+          <IntercompanyJournalReference key={`${selectedLine.lineId}:${selectedLine.dimensions?.intercompanyAgreementId ?? ""}:${selectedLine.dimensions?.intercompanyAgreementVersion ?? ""}`} line={selectedLine}
+            entityId={selectedLine.entityId ?? view.draft.entityId ?? ""} onApply={patch => view.updateLine(selectedLine.lineId, patch)} />
           <TechnicalDetails label="Line system details">
             <dl className="grid gap-2 text-xs">
               <div><dt className="text-muted-foreground">Line ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.lineId}</dd></div>

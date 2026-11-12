@@ -36,7 +36,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 
 | Blueprint | Home | Lane | Design scope |
 |---|---|---|---|
-| [P1: Intercompany Agreement Registry](intercompany-agreement-registry.md) | `docs/engineering/blueprints/` | Entity management / Accounting and Ledger | Draft design: approved agreement revisions, effective-dated authority, evidence, journal provenance and shared operator workflows |
+| [P1: Intercompany Agreement Registry](intercompany-agreement-registry.md) | `docs/engineering/blueprints/` | Entity management / Accounting and Ledger | Implemented source slice: approved revisions, effective-dated authority, evidence, guarded journal provenance and shared operator workflows; focused validation tracked in the blueprint |
 | [Repo Engine, Depreciation Schedule, and Borrower-Side Debt](financing-liabilities-depreciation-blueprint.md) | `docs/engineering/blueprints/` | Ledger / financing | Repo agreements, fixed-asset depreciation, and borrower-side debt workflows |
 | [Direct Lending: Term-Driven Excess Payment Application](direct-lending-excess-payment-application.md) | `docs/engineering/blueprints/` | Direct lending / ledger | Excess-payment rule on loan terms, prepaid-interest and unapplied-cash balances, split payment journals (`PRD-115`) |
 | [Direct Lending: PIK Capitalization Policy and Floating-Rate Reset Scheduling](direct-lending-pik-capitalization-and-rate-resets.md) | `docs/engineering/blueprints/` | Direct lending / ledger | Declared-unit PIK capitalization policy and reset schedule on loan terms, index-fixing store, worker ordering, PIK receivable journals (direct-lending migration 011) |

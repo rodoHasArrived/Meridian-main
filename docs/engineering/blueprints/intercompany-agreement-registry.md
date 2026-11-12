@@ -1,6 +1,6 @@
 # P1: Intercompany Agreement Registry
 
-**Status:** draft
+**Status:** active
 **Owner:** Accounting and Ledger
 **Reviewed:** 2026-11-12
 **Audience:** implementers of entity management, financial operations, ledger storage and operator workstations
@@ -9,11 +9,41 @@ Give intercompany activity an approved source of terms and evidence. An operator
 open a journal line, identify the two legal entities, inspect the exact agreement revision cited at
 posting, and see later amendments without changing the meaning of that journal.
 
-This is a proposed technical design, based on source inspection at commit `3fb526b73e`. No agreement
-registry, approval workflow or ledger integration is delivered by this document. The document's
-review date describes source inspection, not executed feature tests. The
-[blueprints register](README.md) indexes this design; the [roadmap registry](../../roadmap/README.md)
-continues to own delivery status. P1 is the proposal label, not a new roadmap item ID.
+The original design was grounded in source inspection at commit `3fb526b73e`. The P1 implementation
+now adds the registry, approval workflow, journal guards and shared operator surfaces described
+below. The [domain guide](../../domain/intercompany-agreements.md) defines the current vocabulary
+and configuration. The [blueprints register](README.md) indexes this design; the
+[roadmap registry](../../roadmap/README.md) continues to own delivery status. P1 is the proposal
+label, not a new roadmap item ID. Source implementation is separate from executed validation and
+native workstation acceptance.
+
+### Implementation record — 2026-11-12
+
+- `IntercompanyAgreementService` and its shared FundStructure contracts implement draft snapshots,
+  independent review, retained evidence, exact command replay, effective chronology and historical
+  knowledge queries. Access covers all legal entities disclosed by retained history, including
+  parties changed during pre-approval drafts.
+- `PostgresIntercompanyAgreementStore` uses fund-structure migration `006`, immutable full command
+  snapshots and separate approved revision/audit/receipt tables. A mutable head advances once per
+  command under entity/head authority locks. Command IDs are unique within a tenant.
+- Optional journal ID/version dimensions flow through mappings, JSON, hashes and structural replay.
+  Manual review and the durable PostgreSQL append boundary validate supplied references; standalone
+  append holds registry authority through commit. Unsupported external transactions refuse them.
+- Shared routes include advisory journal-line drill-through with exact transaction/functional
+  amounts. Browser Accounting Configure and the desktop Fund Operations Agreements tab use shared
+  contracts and server capabilities. Coverage does not alter consolidation matching or balances.
+- `MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED` defaults off and gates browser reference
+  authoring after compatible writers are deployed. It never disables validation of supplied refs.
+
+Validation record: the isolated real-PostgreSQL migration apply/reapply smoke passed. Targeted .NET
+runs passed 43 contract tests, 14 application tests, 27 shared desktop workspace/transport tests and
+332 backend tests, including real PostgreSQL approval-to-posting, concurrency, reversal/replay,
+authorization and consolidation regressions; none were skipped. The Windows-targeted WPF build
+passed with zero errors. Browser validation passed the canonical build, 195 regression tests and
+six focused tests after the final receipt-recovery change; Chromium exercised synthetic API
+workflows at 1440×900 and 1366×768. These are local results, not hosted CI or production
+certification. Full CI and native WPF interaction tests were not run; Windows is required for that
+runtime acceptance. The test matrix in section 8 remains the behavior contract.
 
 ## 1. Outcome and boundaries
 
@@ -46,20 +76,20 @@ master expansion. Those remain separate work, including proposals P2–P5.
 | [Ledger dimension DTO](../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs) and [domain dimensions](../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs) | Add agreement ID and approved version together. Existing counterparty attribution remains required when a reference is supplied. |
 | [Consolidation design](../../domain/intercompany-consolidation.md) and [fund-structure authority lease](../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs) | Follow the existing authority-lease lifetime pattern. Structure and ledger databases can differ; do not assume a shared transaction or cross-database foreign key. |
 
-The existing journal and operations approval flows are subject-specific. P1 needs an agreement-owned
+The existing journal and operations approval flows are subject-specific. P1 adds an agreement-owned
 workflow following their evidence, distinct-reviewer and concurrency conventions; it is not a
 configuration-only addition to a generic agreement-capable approval service.
 
 ## 3. Contracts and business meaning
 
-Add proposed wire types in `Meridian.Contracts.FundStructure`, and a separate
+Wire types live in `Meridian.Contracts.FundStructure`, with a separate
 `IIntercompanyAgreementService` in `Meridian.Contracts.Services`. Contracts remains a leaf project;
 do not reference Ledger or Storage domain types from its DTOs. Register all requests, results, enums
 and collections in `FundStructureContractsJsonContext`.
 
 ### Agreement and revision identity
 
-`IntercompanyAgreementDto` exposes the stable agreement ID, display code/name, two parties, type,
+`IntercompanyAgreementDetailDto` exposes the stable agreement ID, display code/name, two parties, type,
 currency, aggregate concurrency version, latest approved version and any pending proposal summary.
 Detail responses also expose the revision applicable to the requested date. The latest approval is
 not necessarily the revision applicable today.
@@ -192,7 +222,7 @@ transition. Evidence reads retain their own tenant/scope checks after agreement 
 
 ## 5. Application, persistence and HTTP interfaces
 
-Implement `IntercompanyAgreementService` in the application layer with proposed
+`IntercompanyAgreementService` lives in the application layer with
 `IIntercompanyAgreementStore` / `PostgresIntercompanyAgreementStore` storage support. Keep agreement
 state out of whole-graph snapshot upserts. Shared endpoints and read models serve both workstations;
 clients do not calculate authority or effective status independently.
@@ -204,29 +234,30 @@ Tenant identity is server-owned and cannot be reassigned by a mutation. Unknown 
 agreement/party IDs must have indistinguishable lookup outcomes; list filters, counts, history and
 selectors must not disclose the second party to a caller authorized for only one.
 
-The proposed atomic operation is
-`AppendApprovedVersionAsync(tenantScope, agreementId, expectedAggregateVersion, submittedProposal, approvalCommand)`.
-In one local PostgreSQL transaction, lock the tenant-qualified agreement head, validate the command
-receipt and expected version, stabilize/recheck party records and submitted proposal, append the
-revision and decision, advance the head and commit the receipt. Concurrent amendments cannot both
-advance the same expected head. Draft and other transitions also retain their audit/receipt with
-their head change. Application semaphores alone are insufficient across service instances.
+The implementation uses `IIntercompanyAgreementStore.ExecuteAsync` and a transaction-scoped `Save`
+instead of a dedicated approval-only append method. In one local PostgreSQL transaction, stabilize
+entity authority, lock the tenant-qualified agreement head, validate the receipt and expected version,
+recheck the submitted proposal, append the immutable snapshot/revision/decision and advance the head
+with its receipt. Concurrent amendments cannot both advance the same expected head. Draft and other
+transitions also retain their audit/receipt with their head change. Application semaphores alone are
+insufficient across service instances.
 
-Add a new SQL migration through `FundStructureMigrationRunner`, using its configured schema and
-`__SCHEMA__` substitution. Choose the next unoccupied migration number at implementation time; this
-document reserves none. Preserve applied scripts and enforce refusal of updates/deletes to approved
-revisions and decisions in the database; do not use `ON CONFLICT UPDATE` on their payloads. Use the
-repository's shared numeric precision convention if storing rate columns.
-No foreign key may cross into a separately configured ledger database.
+`FundStructureMigrationRunner` applies additive migration `006_intercompany_agreements.sql` using
+its configured schema and `__SCHEMA__` substitution. Earlier applied scripts are unchanged. Database
+guards refuse updates/deletes/truncation of retained snapshots, approved revisions, decisions and
+receipts; their payloads do not use `ON CONFLICT UPDATE`. Journal dimensions use the existing JSON
+storage shape and need no new ledger columns. No foreign key crosses into a separately configured
+ledger database. Future rate columns follow the repository's shared numeric precision convention.
 
-Add `/intercompany-agreements` route constants under the existing `/api/fund-structure` prefix:
+The `/intercompany-agreements` routes use the existing `/api/fund-structure` prefix:
 
-| Method and suffix | Proposed behavior |
+| Method and suffix | Behavior |
 | --- | --- |
 | `GET /` | Authorized list, filtered by entity, type, effective status and `asOf`; stable cursor pagination. |
 | `GET /{id}` | Detail, selected effective revision, latest approval, pending proposal and server-computed capabilities. |
 | `GET /{id}/versions/{version}` | Exact immutable approved revision. |
 | `GET /{id}/history` | Ordered proposal snapshots, review decisions and approved history, with effective and recorded times. |
+| `GET /{id}/journal-lines` | Authorized entity-book source lines with exact amounts, pinned references and advisory coverage; no agreement matching or totals. |
 | `POST /` | Create an activation draft. |
 | `POST /{id}/proposals` | Create an amendment or termination proposal. |
 | `PUT /{id}/proposals/{proposalId}` | Save a draft with its expected aggregate version. |
@@ -242,8 +273,8 @@ rather than UI guesses, determine available review actions.
 
 ## 6. Journal provenance and append authority
 
-Add nullable init properties `Guid? IntercompanyAgreementId` and
-`int? IntercompanyAgreementVersion` to `LedgerDimensionSetDto` and `LedgerLineDimensionSet`, avoiding
+Nullable init properties `Guid? IntercompanyAgreementId` and
+`int? IntercompanyAgreementVersion` extend `LedgerDimensionSetDto` and `LedgerLineDimensionSet`, avoiding
 changes to existing positional constructors. Both must be absent or present together. A supplied
 version must be positive. Do not silently infer or substitute a version from the agreement ID.
 
@@ -332,7 +363,7 @@ models. P1 implementation acceptance includes both surfaces; this documentation 
 neither. New recurring-journal agreement bindings are deferred: when added, they must resolve an
 approved version for each generated accounting date rather than silently use a mutable latest ID.
 
-## 8. Delivery sequence and acceptance evidence
+## 8. Implementation sequence and acceptance evidence
 
 Implement in reviewable slices, retaining the nullable compatibility boundary:
 
@@ -355,7 +386,8 @@ posted provenance. Log agreement
 transition/append refusals with scoped IDs and reason codes, without document contents; expose stale
 authority, evidence failures and unknown coverage to operators.
 
-The following are required feature tests, not tests executed for this design document:
+The following are required feature scenarios. Test sources now cover these areas; the implementation
+verification report records the executed subset and any remaining platform limitations:
 
 | Area | Acceptance cases |
 | --- | --- |
@@ -373,7 +405,8 @@ workflows when those surfaces land. Existing consolidation tests remain regressi
 Required hosted checks retain their normal authority; source inspection or an AI review does not
 constitute executed feature validation or production certification.
 
-For this documentation-only change, validate documentation structure, internal links, DocFX
-navigation and whitespace, and obtain a separate agent review of temporal, ledger and persistence
-invariants. Record actual command outcomes in the change report. No feature tests, migration or live
-provider access is required to claim the design document itself is written.
+Validate documentation structure, internal links, DocFX navigation and whitespace alongside the
+focused implementation checks. Separate agent reviews inspect temporal, ledger, persistence and
+authorization invariants; they are not independent human approval. Record actual command outcomes
+and unresolved platform limits in the implementation report. Live-provider access is not required
+for this synthetic registry and accounting verification.

@@ -6,10 +6,17 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+Intercompany agreement contracts retain bilateral party roles, descriptive terms, proposal state,
+immutable approved versions, evidence hashes and shared capabilities. Authenticated call context
+supplies tenant and actor separately from command bodies. Optional ledger agreement ID/version
+properties travel together; their conditional signature suffix preserves legacy hashes when absent.
+`FundStructureContractsJsonContext` registers the shared registry wire types. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in

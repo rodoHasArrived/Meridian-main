@@ -153,6 +153,14 @@ public static class WorkstationServiceCollectionExtensions
         // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
         // request each time, so singleton accounting guards can consume it without capturing a scope.
         services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // Agreement writes require durable tenant-partitioned authority. An unconfigured local
+        // fund-structure graph must not silently become a production agreement registry.
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(Meridian.Storage.FundStructure.IIntercompanyAgreementStore)))
+        {
+            services.TryAddSingleton<IIntercompanyAgreementAccessAuthority, HttpContextIntercompanyAgreementAccessAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, WorkstationIntercompanyAgreementEvidenceAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementService, IntercompanyAgreementService>();
+        }
         // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
         // otherwise HTTP scope must take precedence over any ambient background authority.
         services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
