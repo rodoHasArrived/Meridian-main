@@ -24,8 +24,10 @@ public static partial class SecurityMasterEndpoints
         group.MapGet(route, async (Guid securityId, [FromServices] ISecurityMasterQueryService query,
             [FromServices] IBondObservedFixingStore store, CancellationToken ct) =>
         {
-            if (await query.GetByIdAsync(securityId, ct).ConfigureAwait(false) is null) return Results.NotFound();
-            try { return Results.Json(await store.ListAsync(securityId, ct).ConfigureAwait(false), jsonOptions); }
+            if (await query.GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound();
+            try
+            { return Results.Json(await store.ListAsync(securityId, ct).ConfigureAwait(false), jsonOptions); }
             catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or JsonException)
             { return Results.Conflict(new { error = "Retained observed fixing evidence is unavailable or corrupt. Restore the retained receipts before selecting fixings." }); }
         }).WithName("ListObservedBondFixings")
@@ -35,9 +37,11 @@ public static partial class SecurityMasterEndpoints
             [FromServices] ISecurityMasterQueryService query, [FromServices] IBondObservedFixingStore store, CancellationToken ct) =>
         {
             var authorization = RequireSecurityMasterMutationPermission(context);
-            if (authorization is not null) return authorization;
+            if (authorization is not null)
+                return authorization;
             var security = await query.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-            if (security is null) return Results.NotFound();
+            if (security is null)
+                return Results.NotFound();
             if (security.Version != request.ExpectedSecurityVersion)
                 return Results.Conflict(new { error = "Security terms changed. Reload the authoritative security and review the fixing again." });
             try

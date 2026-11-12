@@ -1326,8 +1326,9 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the same opening outstanding principal used by calculated cash flows. Dated factors
-include only payments through their evidence date; later contractual payments completed before
+quote by the same opening outstanding principal used by calculated cash flows. Dirty quotations
+block with `PriceBasisRequiresNormalization` until settlement-aware clean/dirty normalization is
+reviewed. Dated factors include only payments through their evidence date; later contractual payments completed before
 the valuation date reduce the balance. Without an applicable factor, all completed in-window
 contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
 twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.
