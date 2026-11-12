@@ -1403,13 +1403,20 @@ describe("PortfolioScreen", () => {
     await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
 
     // Equity/drawdown curve renders for a multi-point profile.
-    expect(await screen.findByRole("img", { name: "Equity performance curve" })).toBeDefined();
+    const equityChart = await screen.findByRole("img", { name: "Equity and drawdown curve for Mean Reversion" });
+    expect(equityChart).toHaveAccessibleDescription(/5 points from 2026-05-01 to 2026-05-05\. Final equity 101,900, maximum drawdown -0\.80%\./);
+    // The same points are available to assistive technology as a hidden table, and the
+    // crosshair slider is exposed beside (not inside) the image.
+    const equityTable = screen.getByRole("table", { name: "Equity and drawdown by date for Mean Reversion" });
+    expect(within(equityTable).getByRole("row", { name: "2026-05-03 100,390 -0.80%" })).toBeDefined();
+    expect(equityChart.contains(screen.getByRole("slider"))).toBe(false);
 
     // The daily-return distribution reuses the same fetched points — no extra request — and
     // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the
     // readout assertions to the distribution card so a matching value elsewhere (e.g. the equity
     // card's max-drawdown readout) cannot satisfy them.
-    const distribution = await screen.findByRole("img", { name: "Distribution histogram" });
+    const distribution = await screen.findByRole("img", { name: "Daily return distribution for Mean Reversion" });
+    expect(distribution).toHaveAccessibleDescription(/daily returns\. Mean \+0\.38%, best \+2\.00%, worst -0\.80%/);
     const distributionCard = distribution.closest("div")!.parentElement!;
     expect(within(distributionCard).getByText("Daily return distribution")).toBeDefined();
     expect(within(distributionCard).getByText("+0.38%")).toBeDefined();
