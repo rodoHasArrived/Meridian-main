@@ -163,8 +163,8 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
                 manifest,
                 connection,
                 """
-                cusip,isin,ticker,issuer,description,coupon,maturity_date,currency,rating,sector,naic_designation
-                9128285M8,US9128285M81,UST,US Treasury,US Treasury Note,4.25,2031-06-16,usd,AA+,Government,1
+                cusip,isin,ticker,issuer,description,coupon,coupon_units,coupon_cash_basis,payment_frequency,day_count,issue_date,maturity_date,currency,currency_review,payment_calendars,business_day_convention,accrual_adjusted,settlement_days,settlement_convention,settlement_calendars,call_schedule,factor_history,rating,sector,naic_designation
+                9128285M8,US9128285M81,UST,US Treasury,US Treasury Note,4.25,Percent,Level,SemiAnnual,30/360,2026-06-16,2031-06-16,usd,Reviewed,"[""WEEKENDS""]",Following,false,1,Following,"[""WEEKENDS""]",[],[],AA+,Government,1
                 """,
                 ProviderCapabilityKindDto.SecurityReferenceData));
 
@@ -177,6 +177,11 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         mapped.GetProperty("security").GetProperty("coupon").GetDecimal().Should().Be(4.25m);
         mapped.GetProperty("security").GetProperty("maturityDate").GetString().Should().Be("2031-06-16");
         mapped.GetProperty("security").GetProperty("currency").GetString().Should().Be("USD");
+        mapped.GetProperty("security").GetProperty("currencyReview").GetString().Should().Be("Reviewed");
+        mapped.GetProperty("security").GetProperty("paymentCalendars").EnumerateArray()
+            .Select(calendar => calendar.GetString()).Should().Equal("WEEKENDS");
+        decimal.Parse(mapped.GetProperty("fixedIncomePaymentPreview").GetProperty("sampleCouponPayment").GetString()!,
+            System.Globalization.CultureInfo.InvariantCulture).Should().Be(2125m);
         staged.Single().SourceRecordId.Should().Be("9128285M8");
         staged.Single().DedupeKey.Should().Contain("9128285M8");
     }
@@ -339,6 +344,116 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         (await store.ListStagingRecordsAsync("sync-run-1")).Should().BeEmpty();
         (await store.ListQuarantinedRecordsAsync("sync-run-1")).Should().BeEmpty();
     }
+
+    [Theory]
+    [InlineData("Clean", "Clean", "1", "98500", "98500", "98620")]
+    [InlineData("Clean", "Dirty", "0.8", "78920", "78800", "78920")]
+    [InlineData("Dirty", "Clean", "0.8", "78680", "78680", "78800")]
+    [InlineData("Dirty", "Dirty", "0.8", "78800", "78680", "78800")]
+    public async Task RunManualCsvDryRunAsync_ReconcilesBondFaceFactorAndConsiderationBasis(
+        string priceBasis, string valueBasis, string factor, string providerValue, string clean, string dirty)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateBondValueManifest();
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationDryRunService(store);
+
+        var result = await service.RunManualCsvDryRunAsync(CreateRequest(manifest, connection,
+            "account_id,cusip,quantity,as_of,source_id,face,factor,quote,provider_value,interest,price_basis,value_basis,currency,interest_currency\n" +
+            $"A-100,9128285M8,1,2026-06-16,POS-1,100000,{factor},98.50,{providerValue},120,{priceBasis},{valueBasis},USD,USD"));
+
+        result.RecordsAccepted.Should().Be(1);
+        result.Issues.Should().BeEmpty();
+        var preview = result.MappedRecordPreviews.Should().ContainSingle().Subject.GetProperty("bondValueReconciliation");
+        preview.GetProperty("providerValue").ValueKind.Should().Be(JsonValueKind.String);
+        decimal.Parse(preview.GetProperty("normalizedValue").GetString()!, System.Globalization.CultureInfo.InvariantCulture)
+            .Should().Be(decimal.Parse(providerValue, System.Globalization.CultureInfo.InvariantCulture));
+        decimal.Parse(preview.GetProperty("cleanConsideration").GetString()!, System.Globalization.CultureInfo.InvariantCulture)
+            .Should().Be(decimal.Parse(clean, System.Globalization.CultureInfo.InvariantCulture));
+        decimal.Parse(preview.GetProperty("dirtyConsideration").GetString()!, System.Globalization.CultureInfo.InvariantCulture)
+            .Should().Be(decimal.Parse(dirty, System.Globalization.CultureInfo.InvariantCulture));
+        decimal.Parse(preview.GetProperty("variance").GetString()!, System.Globalization.CultureInfo.InvariantCulture).Should().Be(0);
+        var staged = (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle().Subject;
+        staged.MappedRecord.GetProperty("bondValueReconciliation").GetProperty("status").GetString().Should().Be("Matched");
+        var raw = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
+        raw!.RawPayload.ToString().Should().NotContain("bondValueReconciliation");
+    }
+
+    [Fact]
+    public async Task RunManualCsvDryRunAsync_RetainsBondProviderNormalizedAndVarianceWhenQuarantined()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateBondValueManifest();
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var result = await new ProviderIntegrationDryRunService(store).RunManualCsvDryRunAsync(CreateRequest(manifest, connection,
+            "account_id,cusip,quantity,as_of,source_id,face,factor,quote,provider_value,interest,price_basis,value_basis,currency,interest_currency\n" +
+            "A-100,9128285M8,100000,2026-06-16,POS-1,100000,1,98.50,98525,0,Clean,Clean,USD,USD"));
+
+        result.RecordsQuarantined.Should().Be(1);
+        result.Issues.Should().Contain(issue => issue.Code == "market-value.tolerance.exceeded");
+        var evidence = (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Single().MappedRecord!.Value
+            .GetProperty("bondValueReconciliation");
+        evidence.GetProperty("providerValue").GetString().Should().Be("98525");
+        decimal.Parse(evidence.GetProperty("normalizedValue").GetString()!, System.Globalization.CultureInfo.InvariantCulture).Should().Be(98500);
+        decimal.Parse(evidence.GetProperty("variance").GetString()!, System.Globalization.CultureInfo.InvariantCulture).Should().Be(25);
+    }
+
+    [Theory]
+    [InlineData("", "1", "120", "USD")]
+    [InlineData("100000", "", "120", "USD")]
+    [InlineData("100000", "1", "", "USD")]
+    [InlineData("100000", "1", "120", "EUR")]
+    public async Task RunManualCsvDryRunAsync_BlocksAmbiguousBondUnitsWithoutUsingQuantityFallback(
+        string face, string factor, string interest, string interestCurrency)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateBondValueManifest();
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var result = await new ProviderIntegrationDryRunService(store).RunManualCsvDryRunAsync(CreateRequest(manifest, connection,
+            "account_id,cusip,quantity,as_of,source_id,face,factor,quote,provider_value,interest,price_basis,value_basis,currency,interest_currency\n" +
+            $"A-100,9128285M8,100000,2026-06-16,POS-1,{face},{factor},98.50,98500,{interest},Clean,Clean,USD,{interestCurrency}"));
+
+        result.RecordsQuarantined.Should().Be(1);
+        result.Issues.Should().Contain(issue => issue.Code == "bond-value.conventions.incomplete");
+        result.MappedRecordPreviews.Single().GetProperty("bondValueReconciliation")
+            .GetProperty("normalizedValue").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    private static ProviderIntegrationManifestDto CreateBondValueManifest()
+    {
+        var manifest = CreateManifest();
+        return manifest with
+        {
+            FieldMappings =
+            [
+                .. manifest.FieldMappings,
+                new FieldMappingDto(ProviderCapabilityKindDto.Positions, "$.asset_class", "security.assetClass", null,
+                    false, ProviderMappingConfidenceDto.Approved, null, "Bond"),
+                BondValueMapping("face", "bond.originalFace", "decimal"),
+                BondValueMapping("factor", "bond.currentFactor", "decimal"),
+                BondValueMapping("quote", "price.amount", "decimal"),
+                BondValueMapping("provider_value", "marketValue.amount", "decimal"),
+                BondValueMapping("currency", "marketValue.currency"),
+                BondValueMapping("interest", "bond.accruedInterest.amount", "decimal"),
+                BondValueMapping("interest_currency", "bond.accruedInterest.currency"),
+                BondValueMapping("price_basis", "bond.priceBasis"),
+                BondValueMapping("value_basis", "bond.marketValueBasis"),
+                new FieldMappingDto(ProviderCapabilityKindDto.Positions, "$.quotation", "bond.quotationConvention", null,
+                    false, ProviderMappingConfidenceDto.Approved, null, "Per100")
+            ]
+        };
+    }
+
+    private static FieldMappingDto BondValueMapping(string source, string target, string? transform = null)
+        => new(ProviderCapabilityKindDto.Positions, $"$.{source}", target,
+            transform is null ? null : new TransformRuleDto(transform, new Dictionary<string, string>()),
+            false, ProviderMappingConfidenceDto.Approved, null, null);
 
     private static ManualCsvProviderIntegrationDryRunRequestDto CreateRequest(
         ProviderIntegrationManifestDto manifest,

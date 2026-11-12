@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getBondAnalytics } from "./bond-analytics.api";
+import { getBondAnalytics, getBondRetainedObservations } from "./bond-analytics.api";
 import { previewBondMigration, previewBondMigrationBatch, stageBondMigration } from "./bond-migration.api";
 
 describe("bond calculation API adapters", () => {
@@ -31,6 +31,15 @@ describe("bond calculation API adapters", () => {
     expect(options.signal).toBe(controller.signal);
   });
 
+  it("loads dated retained observations and keeps decimal response text exact", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('[{"goldenCopyPrice":"98.123456789012345678"}]', { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const rows = await getBondRetainedObservations("bond", { asOf: "2026-10-29T00:00:00Z", priceAccountId: "account-a" });
+    expect(rows[0].goldenCopyPrice).toBe("98.123456789012345678");
+    expect(fetchMock.mock.calls[0][0]).toContain("/price-golden-copy/observations?");
+    expect(fetchMock.mock.calls[0][0]).toContain("accountId=account-a");
+  });
+
   it.each(["bond-analytics-v1", "bond-analytics-v2"] as const)("retains explicit %s requests", async (calculationVersion) => {
     const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
@@ -43,6 +52,28 @@ describe("bond calculation API adapters", () => {
     const params = new URL(String(fetchMock.mock.calls[0][0]), "https://meridian.invalid").searchParams;
     expect(params.get("calculationVersion")).toBe(calculationVersion);
     expect(params.get("yield")).toBe("0.03");
+  });
+
+  it("combines the floating model with an account-scoped retained receipt without copying decimal operands", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await getBondAnalytics("bond", {
+      asOf: "2026-11-12T00:00:00Z",
+      settlementDate: "2026-11-13",
+      knownAt: "2026-11-12T12:00:00Z",
+      calculationVersion: "bond-analytics-v3",
+      selectionReceiptId: "retained-receipt",
+      observedFixingReceiptIds: "fixing-a,fixing-b",
+      priceAccountId: "account-a"
+    });
+    const params = new URL(String(fetchMock.mock.calls[0][0]), "https://meridian.invalid").searchParams;
+    expect(params.get("calculationVersion")).toBe("bond-analytics-v3");
+    expect(params.get("selectionReceiptId")).toBe("retained-receipt");
+    expect(params.get("observedFixingReceiptIds")).toBe("fixing-a,fixing-b");
+    expect(params.get("priceAccountId")).toBe("account-a");
+    expect(params.get("knownAt")).toBe("2026-11-12T12:00:00Z");
+    expect(params.has("cleanPrice")).toBe(false);
+    expect(params.has("yield")).toBe(false);
   });
 
   it("passes authoritative errors through instead of returning seeded analytics", async () => {

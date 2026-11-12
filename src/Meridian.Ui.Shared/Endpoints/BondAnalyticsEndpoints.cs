@@ -14,6 +14,7 @@ public static class BondAnalyticsEndpoints
 {
     public static void MapBondAnalyticsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         // Analytics read retained Security Master terms, so the same tenant scope that gates the
         // migration routes applies here; an unscoped request is refused rather than served globally.
         var group = app.MapGroup(string.Empty).RequireWorkstationTenantScope();
@@ -35,7 +36,10 @@ public static class BondAnalyticsEndpoints
             [FromQuery] decimal? cleanPrice,
             [FromQuery(Name = "yield")] decimal? annualYield,
             [FromQuery] string? yieldConvention,
+            [FromQuery] Guid? selectionReceiptId,
+            [FromQuery] string? priceAccountId,
             [FromQuery] string? calculationVersion,
+            [FromQuery] string? observedFixingReceiptIds,
             [FromServices] IBondAnalyticsService service,
             CancellationToken ct) =>
         {
@@ -55,15 +59,30 @@ public static class BondAnalyticsEndpoints
             {
                 return Results.BadRequest(new { error = "asOf and knownAt must be explicit UTC timestamps." });
             }
-            if (cleanPrice.HasValue == annualYield.HasValue)
+            if ((cleanPrice.HasValue ? 1 : 0) + (annualYield.HasValue ? 1 : 0) + (selectionReceiptId.HasValue ? 1 : 0) != 1)
             {
-                return Results.BadRequest(new { error = "Supply exactly one of cleanPrice per 100 face or annual fractional yield." });
+                return Results.BadRequest(new { error = "Supply exactly one retained selectionReceiptId, cleanPrice per 100 face, or annual fractional yield." });
+            }
+
+            IReadOnlyList<Guid>? fixingIds = null;
+            if (!string.IsNullOrWhiteSpace(observedFixingReceiptIds))
+            {
+                var tokens = observedFixingReceiptIds.Split(',', StringSplitOptions.TrimEntries);
+                if (tokens.Length > 64 || tokens.Any(token => !Guid.TryParse(token, out var id) || id == Guid.Empty))
+                    return Results.BadRequest(new { error = "observedFixingReceiptIds must contain at most 64 distinct receipt UUIDs." });
+                fixingIds = tokens.Select(Guid.Parse).ToArray();
+                if (fixingIds.Distinct().Count() != fixingIds.Count)
+                    return Results.BadRequest(new { error = "Select each observed fixing receipt once." });
             }
 
             var result = await service.CalculateAsync(new BondAnalyticsRequest(
-                securityId, new BondCalculationContext(asOf, settlementDate, knownAt),
+                securityId, new BondCalculationContext(asOf, settlementDate, knownAt) { ObservedFixingReceiptIds = fixingIds },
                 cleanPrice, annualYield, convention)
-            { CalculationVersion = calculationVersion }, ct).ConfigureAwait(false);
+            {
+                SelectionReceiptId = selectionReceiptId,
+                PriceAccountId = priceAccountId,
+                CalculationVersion = calculationVersion
+            }, ct).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithTags("BondAnalytics")

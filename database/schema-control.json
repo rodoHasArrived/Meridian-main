@@ -386,7 +386,8 @@
     {
       "connection_variables": [
         "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
-        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA"
+        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
       ],
       "directory": "src/Meridian.Storage/Workstation/Migrations",
       "display_name": "Operator Triage",
