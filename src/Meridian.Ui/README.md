@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui
 
+The served Accounting configuration bundle includes the intercompany agreement registry, immutable
+revision/evidence inspection and governed proposal review over shared tenant-scoped APIs. Optional
+journal-line reference editing follows the server's rollout capability; the browser retains exact
+rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
 The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
 preserve exact decimal text from fixed-income responses; calculation and review authority remains
