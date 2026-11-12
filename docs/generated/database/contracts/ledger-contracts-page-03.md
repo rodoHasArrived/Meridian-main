@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 367. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 368. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -609,6 +609,8 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto["LedgerAdjustmentApprovalStatusDto"] {
     }
+    class Meridian_Contracts_Ledger_LedgerAgreementDimensions["LedgerAgreementDimensions"] {
+    }
     class Meridian_Contracts_Ledger_LedgerBookDto["LedgerBookDto"] {
         +AccountingBasisKindDto AccountingBasis
         +string AccountingPolicyId
@@ -622,12 +624,6 @@ classDiagram
         +FundStructureNodeKindDto FundStructureNodeKind
         +Guid LedgerBookId
         +DateTimeOffset UpdatedAt
-    }
-    class Meridian_Contracts_Ledger_LedgerBookQuery["LedgerBookQuery"] {
-        +AccountingBasisKindDto? AccountingBasis
-        +string? FundProfileId
-        +Guid? FundStructureNodeId
-        +FundStructureNodeKindDto? FundStructureNodeKind
     }
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
