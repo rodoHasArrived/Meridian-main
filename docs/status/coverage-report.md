@@ -5,214 +5,25 @@
 
 ## Overall Coverage
 
-**1855 / 10567** items documented (**17.6%**) &mdash; Grade: **F**
+**10653 / 10653** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
-[====----------------] 17.6%
+[====================] 100.0%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1746 | 10049 | 17.4% | F |
-| API Endpoints | 108 | 365 | 29.6% | F |
-| Configuration Options | 1 | 142 | 0.7% | F |
+| Public Classes / Interfaces | 10128 | 10128 | 100.0% | A |
+| API Endpoints | 372 | 372 | 100.0% | A |
+| Configuration Options | 142 | 142 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
-| ADR Implementations | 0 | 11 | 0.0% | F |
-
-## Undocumented Items
-
-### Public Classes / Interfaces (8303 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `MarkToMarketPosition` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:13` |
-| `MarkPriceQuote` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:32` |
-| `MarkPriceQualityPolicy` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:69` |
-| `MarkPriceRejection` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:102` |
-| `IMarkPriceSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:114` |
-| `MarkToMarketCarryingValueKey` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:124` |
-| `MarkToMarketCarryingValue` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:158` |
-| `MarkToMarketCarryingValueRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:187` |
-| `IMarkToMarketCarryingValueSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:200` |
-| `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:210` |
-| `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:227` |
-| `DailyMarkToMarketService` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:262` |
-| `HistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/HistoricalCloseMarkPriceSource.cs:15` |
-| `RegisteredHistoricalCloseMarkPriceSource` | `src/Meridian.Application/Accounting/RegisteredHistoricalCloseMarkPriceSource.cs:10` |
-| `PriceSourceTier` | `src/Meridian.Application/Accounting/WaterfallMarkPriceSource.cs:16` |
-| `WaterfallMarkPriceSource` | `src/Meridian.Application/Accounting/WaterfallMarkPriceSource.cs:25` |
-| `AutoRemediationOutcome` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:15` |
-| `AutoRemediationTriggerSource` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:25` |
-| `IDataQualityGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:37` |
-| `AutoGapRemediationRequestResult` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:48` |
-| `AutoGapRemediationPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:84` |
-| `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:124` |
-| `BackfillRemediationSlaDecision` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:130` |
-| `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:142` |
-| `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:150` |
-| `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:159` |
-| `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:176` |
-| `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:195` |
-| `QualityAlertRemediationSignal` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:277` |
-| `AutoGapRemediationService` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:300` |
-| `BackfillCoordinator` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:36` |
-| `BackfillCoordinatorExecutionGateway` | `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs:8` |
-| `BackfillCostEstimator` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:12` |
-| `BackfillCostRequest` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:237` |
-| `BackfillCostEstimate` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:247` |
-| `ProviderCostEstimate` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:271` |
-| `BackfillPartitionEstimate` | `src/Meridian.Application/Backfill/BackfillPartitionPlanner.cs:147` |
-| `BackfillPreviewResult` | `src/Meridian.Application/Backfill/BackfillPreview.cs:9` |
-| `SymbolPreview` | `src/Meridian.Application/Backfill/BackfillPreview.cs:24` |
-| `ExistingDataInfo` | `src/Meridian.Application/Backfill/BackfillPreview.cs:35` |
-| `BackfillRequest` | `src/Meridian.Application/Backfill/BackfillRequest.cs:32` |
-| `CrossSourceBackfillReconciliationService` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:10` |
-| `CrossSourceBackfillReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:473` |
-| `CrossSourceBackfillBatchReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:482` |
-| `CrossSourceBackfillReconciliationResult` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:491` |
-| `CrossSourceBackfillBatchReconciliationResult` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:511` |
-| `CrossSourceBackfillClosureStatus` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:525` |
-| `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
-| `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
-| `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 8253 more | |
-
-### API Endpoints (257 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `/api/brokerage-connections/robinhood/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:21` |
-| `/api/brokerage-connections/robinhood/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:37` |
-| `/api/brokerage-connections/robinhood/callback` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:53` |
-| `/api/brokerage-connections/robinhood` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:69` |
-| `/api/brokerage-connections/alpaca/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:88` |
-| `/api/brokerage-connections/alpaca/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:102` |
-| `/api/brokerage-connections/alpaca` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:116` |
-| `/api/compliance/approval-requests` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:18` |
-| `/api/compliance/approval-requests/{approvalRequestId}/decisions` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:29` |
-| `/api/compliance/actions/evaluate` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:51` |
-| `/api/compliance/audit/extract` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:69` |
-| `/api/compliance/controls/attestation` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:73` |
-| `/api/compliance/access-reviews/assess` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:88` |
-| `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:104` |
-| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:126` |
-| `/api/loans/{loanId}/projections/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:44` |
-| `/api/loans` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:66` |
-| `/api/loans/{loanId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:96` |
-| `/api/loans/{loanId}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:111` |
-| `/api/loans/{loanId}/history` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:126` |
-| `/api/loans/{loanId}/rebuild-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:140` |
-| `/api/loans/{loanId}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:158` |
-| `/api/loans/{loanId}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:172` |
-| `/api/loans/{loanId}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:186` |
-| `/api/loans/{loanId}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:217` |
-| `/api/loans/{loanId}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:240` |
-| `/api/loans/{loanId}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:255` |
-| `/api/loans/{loanId}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:270` |
-| `/api/loans/{loanId}/projections/revisions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:284` |
-| `/api/loans/{loanId}/projections/accruals` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:298` |
-| `/api/loans/{loanId}/drawdowns` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:312` |
-| `/api/loans/{loanId}/rate-resets` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:343` |
-| `/api/loans/{loanId}/payments/principal` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:374` |
-| `/api/loans/{loanId}/accruals/daily` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:405` |
-| `/api/loans/{loanId}/payments` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:436` |
-| `/api/loans/{loanId}/cash-transactions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:463` |
-| `/api/loans/{loanId}/payment-allocations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:471` |
-| `/api/loans/{loanId}/fees` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:479` |
-| `/api/loans/{loanId}/fee-balances` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:506` |
-| `/api/loans/operations` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:514` |
-| `/api/loans/servicer-statements/preview` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:527` |
-| `/api/loans/servicer-statements/import` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:551` |
-| `/api/loans/servicer-statements/{batchId}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:575` |
-| `/api/loans/servicer-statements/{batchId}/rows` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:585` |
-| `/api/loans/servicer-statements/{batchId}/apply` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:595` |
-| `/api/loans/{loanId}/collateral` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:619` |
-| `/api/loans/{loanId}/collateral/remove` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:659` |
-| `/api/loans/{loanId}/collateral/value` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:689` |
-| `/api/loans/{loanId}/status-transitions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:719` |
-| `/api/loans/{loanId}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:749` |
-| ... and 207 more | |
-
-### Configuration Options (141 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `$schema` | `config/appsettings.sample.json` |
-| `TenantScopeEnforcement` | `config/appsettings.sample.json` |
-| `DataRoot` | `config/appsettings.sample.json` |
-| `Tracing` | `config/appsettings.sample.json` |
-| `Tracing.Enabled` | `config/appsettings.sample.json` |
-| `Tracing.EnableConsoleExporter` | `config/appsettings.sample.json` |
-| `Tracing.EnableOtlpExporter` | `config/appsettings.sample.json` |
-| `Tracing.OtlpEndpoint` | `config/appsettings.sample.json` |
-| `Tracing.SamplingRatio` | `config/appsettings.sample.json` |
-| `Tracing.ServiceName` | `config/appsettings.sample.json` |
-| `Tracing.ServiceVersion` | `config/appsettings.sample.json` |
-| `Tracing.Environment` | `config/appsettings.sample.json` |
-| `Tracing.FlushTimeoutMilliseconds` | `config/appsettings.sample.json` |
-| `ApiHost` | `config/appsettings.sample.json` |
-| `ApiHost.DeploymentMode` | `config/appsettings.sample.json` |
-| `ApiHost.Urls` | `config/appsettings.sample.json` |
-| `ApiHost.AllowedOrigins` | `config/appsettings.sample.json` |
-| `ApiHost.AllowInsecureTransportForReverseProxy` | `config/appsettings.sample.json` |
-| `ApiHost.ServeWorkstationAssets` | `config/appsettings.sample.json` |
-| `Compress` | `config/appsettings.sample.json` |
-| `DataSource` | `config/appsettings.sample.json` |
-| `Coordination` | `config/appsettings.sample.json` |
-| `Coordination.Enabled` | `config/appsettings.sample.json` |
-| `Coordination.Mode` | `config/appsettings.sample.json` |
-| `Coordination.InstanceId` | `config/appsettings.sample.json` |
-| `Coordination.LeaseTtlSeconds` | `config/appsettings.sample.json` |
-| `Coordination.RenewIntervalSeconds` | `config/appsettings.sample.json` |
-| `Coordination.TakeoverDelaySeconds` | `config/appsettings.sample.json` |
-| `Coordination.RootPath` | `config/appsettings.sample.json` |
-| `SecurityMasterWorkbench` | `config/appsettings.sample.json` |
-| `SecurityMasterWorkbench.SourcePrecedence` | `config/appsettings.sample.json` |
-| `SecurityMasterWorkbench.GoldenCopySource` | `config/appsettings.sample.json` |
-| `SecurityMasterWorkbench.RequireIndependentReviewer` | `config/appsettings.sample.json` |
-| `SecurityMasterWorkbench.MaxBulkResolveBatch` | `config/appsettings.sample.json` |
-| `Synthetic` | `config/appsettings.sample.json` |
-| `Synthetic.Enabled` | `config/appsettings.sample.json` |
-| `Synthetic.Seed` | `config/appsettings.sample.json` |
-| `Synthetic.Priority` | `config/appsettings.sample.json` |
-| `Synthetic.EventsPerSecond` | `config/appsettings.sample.json` |
-| `Synthetic.HistoricalTradeDensityPerDay` | `config/appsettings.sample.json` |
-| `Synthetic.HistoricalQuoteDensityPerDay` | `config/appsettings.sample.json` |
-| `Synthetic.DefaultDepthLevels` | `config/appsettings.sample.json` |
-| `Synthetic.IncludeCorporateActions` | `config/appsettings.sample.json` |
-| `Synthetic.IncludeReferenceData` | `config/appsettings.sample.json` |
-| `Synthetic.UniverseSymbols` | `config/appsettings.sample.json` |
-| `Synthetic.DefaultHistoryStart` | `config/appsettings.sample.json` |
-| `Synthetic.DefaultHistoryEnd` | `config/appsettings.sample.json` |
-| `Backfill` | `config/appsettings.sample.json` |
-| `Backfill.Enabled` | `config/appsettings.sample.json` |
-| `Backfill.Provider` | `config/appsettings.sample.json` |
-| ... and 91 more | |
-
-### ADR Implementations (11 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `ADR-001` | `src/Meridian.Application/Backfill/BackfillCoordinator.cs:36` |
-| `ADR-007` | `src/Meridian.Application/Pipeline/DeadLetterSink.cs:31` |
-| `ADR-010` | `src/Meridian.Application/Services/ConnectivityProbeService.cs:16` |
-| `ADR-006` | `src/Meridian.Domain/Collectors/OptionDataCollector.cs:15` |
-| `ADR-015` | `src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs:29` |
-| `ADR-013` | `src/Meridian.Execution/OrderManagementSystem.cs:20` |
-| `ADR-004` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:40` |
-| `ADR-005` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:41` |
-| `ADR-014` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:45` |
-| `ADR-002` | `src/Meridian.Storage/Packaging/PortableDataPackager.cs:19` |
-| `ADR-016` | `src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:18` |
+| ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 8303 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
-2. **API Endpoints**: 257 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
-3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
-4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
+1. All categories are fully documented. Great job!
 
 ---
 

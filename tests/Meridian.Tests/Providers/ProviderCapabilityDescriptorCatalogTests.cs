@@ -155,10 +155,13 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     {
         var services = new ServiceCollection();
         new FredProviderModule().Register(services, new DataSourceRegistry());
+        var observedRates = services.Single(service => service.ServiceType == typeof(ISecurityRateObservationProvider));
         using var client = new HttpClient();
-        var historical = new FredHistoricalDataProvider("synthetic-key", client);
+        using var historical = new FredHistoricalDataProvider("synthetic-key", client);
         services.AddSingleton(historical);
         using var provider = services.BuildServiceProvider();
+        observedRates.ImplementationFactory!(provider).Should().BeSameAs(historical,
+            "rate observations must reuse the module's existing historical singleton, never construct a parallel adapter");
         provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(historical,
             "rate observations must reuse the same late-gated historical implementation");
     }

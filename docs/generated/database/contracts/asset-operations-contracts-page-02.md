@@ -2,11 +2,13 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-135 of 135. References crossing pages remain available in the dependency manifest.
+Objects 81-137 of 137. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_CorporateActionPostingComponentKindDto["CorporateActionPostingComponentKindDto"] {
+    }
     class Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineAllocationDto["CorporateActionPostingComponentLineAllocationDto"] {
         +decimal ComponentAmount
         +int EffectLineIndex
@@ -252,6 +254,16 @@ classDiagram
         +decimal? ParAmount
         +Guid PositionId
     }
+    class Meridian_Contracts_AssetOperations_PostAttestedCashDividendPostingCandidateRequestDto["PostAttestedCashDividendPostingCandidateRequestDto"] {
+        +Meridian_Contracts_Workstation_OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +Guid AttestationId
+        +Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto Candidate
+        +string CompanyId
+        +string? CorrelationId
+        +string Reason
+        +string TenantId
+    }
     class Meridian_Contracts_AssetOperations_PostedJournalImpactDto["PostedJournalImpactDto"] {
         +AccountingBasisKindDto AccountingBasis
         +string Currency
@@ -357,6 +369,7 @@ classDiagram
         +decimal OriginalFace
         +string? PoolId
     }
+    Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineMappingDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentKindDto
     Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineMappingDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineAllocationDto
     Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceRoleDto
     Meridian_Contracts_AssetOperations_CorporateActionSuccessorAllocationDto --> Meridian_Contracts_AssetOperations_CorporateActionSuccessorRoleDto

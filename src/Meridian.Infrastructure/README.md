@@ -25,6 +25,14 @@ as zero rates or discount factors. Missing observations remain missing, malforme
 populations refuse, and source evidence never includes credentials. Provider verification here is
 synthetic; live FRED access remains untested.
 
+Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
+Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
+
+HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
+for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
+failures. Caller cancellation is also excluded from circuit-breaker failures.
+
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.

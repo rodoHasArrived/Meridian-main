@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 135. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 137. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -214,6 +214,17 @@ classDiagram
         +string Reason
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingPreparationRevisionValidator["AssetAccountingPreparationRevisionValidator"] {
+    }
+    class Meridian_Contracts_AssetOperations_AssetAccountingPreparerAttestationDto["AssetAccountingPreparerAttestationDto"] {
+        +string CompanyId
+        +string DraftedCandidateFingerprint
+        +Guid EventId
+        +long EventVersion
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +string PostingIntentHash
+        +CorporateActionCashDividendAttestationDto Receipt
+        +string TenantId
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingStageEvidenceDto["AssetAccountingStageEvidenceDto"] {
         +DateTimeOffset AttestedAtUtc
@@ -628,8 +639,6 @@ classDiagram
         +string? Description
         +CorporateActionPostingComponentKindDto Kind
     }
-    class Meridian_Contracts_AssetOperations_CorporateActionPostingComponentKindDto["CorporateActionPostingComponentKindDto"] {
-    }
     Meridian_Contracts_AssetOperations_AccountCashFlowDto --> Meridian_Contracts_AssetOperations_AccountCashFlowStatus
     Meridian_Contracts_AssetOperations_AccountCashFlowDto --> Meridian_Contracts_AssetOperations_AccountCashProvenanceDto
     Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto --> Meridian_Contracts_AssetOperations_AccountCashFlowDto
@@ -652,6 +661,7 @@ classDiagram
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventKindDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventScopeDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingPreparationRevisionDto
+    Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingPreparerAttestationDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingStageEvidenceDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto
     Meridian_Contracts_AssetOperations_AssetAccountingPostingCandidateDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto
@@ -703,5 +713,4 @@ classDiagram
     Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionCashRecognitionDto
     Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionExchangeOfferMethodDto
     Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionMergerRecognitionDto
-    Meridian_Contracts_AssetOperations_CorporateActionPostingComponentDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentKindDto
 ```

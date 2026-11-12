@@ -6,10 +6,14 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Reporting
+
+New reconciliation receipt creation rejects reserved W14 preparer-assertion references in ordinary
+approval fields. Historical receipt validation preserves the retained classification and bytes;
+opaque reference text does not authenticate an independent reviewer.
 
 ## Purpose
 
@@ -222,6 +226,7 @@ released notice and delivered notice are distinct states.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-REPORTING -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->

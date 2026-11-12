@@ -1465,7 +1465,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
     private void LoadState()
     {
-        if (_persistencePath is null || !File.Exists(_persistencePath))
+        if (_persistencePath is null)
         {
             return;
         }
@@ -1474,22 +1474,34 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             var json = File.ReadAllText(_persistencePath);
             var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
-            if (state is null)
+            if (state is null || state.Version != 1 || state.Accounts is null)
             {
-                return;
+                throw new InvalidDataException("The fund-account snapshot is empty or has an unsupported format.");
             }
 
             foreach (var account in state.Accounts)
             {
-                _accounts[account.Summary.AccountId] = NormalizeStoredAccount(account);
+                if (account?.Summary is null || !_accounts.TryAdd(account.Summary.AccountId, NormalizeStoredAccount(account)))
+                {
+                    throw new InvalidDataException("The fund-account snapshot contains missing or duplicate account records.");
+                }
             }
 
             _stateVersion = 1;
             _persistedVersion = 1;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            // Preserve startup availability for malformed or missing local snapshots.
+            // A new local store has no snapshot yet.
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or JsonException or UnauthorizedAccessException)
+        {
+            Serilog.Log.ForContext<InMemoryFundAccountService>().Error(ex,
+                "Cannot load fund-account snapshot {PersistencePath}; startup refused and the file left unchanged",
+                _persistencePath);
+            throw new InvalidDataException(
+                $"Cannot load fund-account snapshot '{_persistencePath}'. Restore or repair it before restarting; the file has been left unchanged.",
+                ex);
         }
     }
 

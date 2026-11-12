@@ -69,6 +69,11 @@ otherwise the tenant-guarded local snapshot service. `IFundAccountService`,
 enforcement refuses unpartitioned local snapshots; explicit deployment-boundary compatibility is
 required for reviewed local migration access.
 
+Local snapshots fail startup if they are unreadable, malformed, use an unsupported format, or
+contain missing or duplicate account records. The error is logged and the original file remains
+unchanged. Restore a known-good snapshot or repair the retained file before restarting; only a
+missing file initializes a new empty local store.
+
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.

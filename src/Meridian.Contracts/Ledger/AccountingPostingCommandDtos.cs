@@ -22,7 +22,8 @@ public enum AccountingPostingApprovalStateDto
     NotRequired = 0,
     Pending = 1,
     Approved = 2,
-    Rejected = 3
+    Rejected = 3,
+    PreparerAttested = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<AccountingPostingEvidenceKindDto>))]
@@ -87,6 +88,9 @@ public sealed record AccountingPostingCommandDto(
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Actor { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPreparerAttestationDto? CashDividendAttestation { get; init; }
 
     public IReadOnlyList<AccountingPostingEvidenceReferenceDto> Evidence { get; init; } =
         Evidence ?? [];

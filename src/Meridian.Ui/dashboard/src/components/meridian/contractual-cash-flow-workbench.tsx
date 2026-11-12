@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { PreparerDraftCheckPanel } from "@/components/meridian/preparer-draft-check-panel";
 import { describeApiError } from "@/lib/api-errors";
 import {
   compareContractualCashFlowRuns,
@@ -419,6 +420,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           </div>
         ) : null}
       </div>
+      {subjectKind === "Security" && (loadedRun ?? run)?.subjectKind === "Security" && (loadedRun ?? run)?.result.isPostable === false ? (
+        <PreparerDraftCheckPanel securityId={(loadedRun ?? run)!.subjectId} runId={(loadedRun ?? run)!.runId} />
+      ) : null}
     </section>
   );
 }

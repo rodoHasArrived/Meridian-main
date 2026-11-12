@@ -3,6 +3,13 @@ using Meridian.Contracts.Domain.Enums;
 
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>Canonical class identities for policies that require exact Security Master classes.</summary>
+public static class SecurityAssetClassNames
+{
+    public const string Equity = "Equity";
+    public const string Bond = "Bond";
+}
+
 /// <summary>
 /// Shared Security Master asset-class metadata used by edit workflows, projections,
 /// and workstation capability summaries so asset support does not drift across surfaces.
@@ -28,7 +35,7 @@ public static class SecurityAssetClassCatalog
     private static readonly IReadOnlyList<SecurityAssetClassDescriptor> Descriptors =
     [
         new(
-            AssetClass: "Equity",
+            AssetClass: SecurityAssetClassNames.Equity,
             SupportsEquityClassification: true,
             AssetPackIds: ["public-equity-etf"],
             InstrumentTypes: [InstrumentType.Equity],
@@ -88,7 +95,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]) { AccountingOutsideSlice = true, SettlesDailyVariationMargin = true },
         new(
-            AssetClass: "Bond",
+            AssetClass: SecurityAssetClassNames.Bond,
             CarriesBondCouponStructure: true,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
