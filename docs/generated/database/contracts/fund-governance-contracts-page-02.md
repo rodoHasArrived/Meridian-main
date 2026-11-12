@@ -2,11 +2,70 @@
 
 # `fund-governance-contracts` data objects - page 2 of 3
 
-Objects 81-160 of 166. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 174. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_FundStructureSetupOrganizationDraftDto["FundStructureSetupOrganizationDraftDto"] {
+        +string BaseCurrency
+        +string Code
+        +string? Description
+        +string Name
+        +Guid? OrganizationId
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupOwnershipLinkDraftDto["FundStructureSetupOwnershipLinkDraftDto"] {
+        +FundStructureSetupNodeAlias Child
+        +bool IsPrimary
+        +string? Notes
+        +Guid? OwnershipLinkId
+        +decimal? OwnershipPercent
+        +FundStructureSetupNodeAlias Parent
+        +OwnershipRelationshipTypeDto RelationshipType
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupPreviewDto["FundStructureSetupPreviewDto"] {
+        +IReadOnlyList~FundStructureNodeDto~ Nodes
+        +IReadOnlyList~FundStructureSetupPreviewLinkDto~ OwnershipLinks
+        +FundStructureSetupValidationSummaryDto ValidationSummary
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupPreviewLinkDto["FundStructureSetupPreviewLinkDto"] {
+        +FundStructureSetupNodeAlias Child
+        +bool IsPrimary
+        +string? Notes
+        +decimal? OwnershipPercent
+        +FundStructureSetupNodeAlias Parent
+        +OwnershipRelationshipTypeDto RelationshipType
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupResultDto["FundStructureSetupResultDto"] {
+        +FundStructureAssignmentDto AccountHandoffAssignment
+        +BusinessSummaryDto BusinessLane
+        +ClientSummaryDto? Client
+        +FundSummaryDto? Fund
+        +FundStructureGraphDto Graph
+        +InvestmentPortfolioSummaryDto InvestmentPortfolio
+        +LegalEntitySummaryDto LegalEntity
+        +OrganizationSummaryDto Organization
+        +IReadOnlyList~OwnershipLinkDto~ OwnershipLinks
+        +FundStructureSetupValidationSummaryDto ValidationSummary
+        +VehicleSummaryDto Vehicle
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupValidationIssueDto["FundStructureSetupValidationIssueDto"] {
+        +string Code
+        +string FieldPath
+        +bool IsBlocking
+        +string Message
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupValidationSummaryDto["FundStructureSetupValidationSummaryDto"] {
+        +IReadOnlyList~FundStructureSetupValidationIssueDto~ Issues
+        +bool IsValid
+    }
+    class Meridian_Contracts_FundStructure_FundStructureSetupVehicleDraftDto["FundStructureSetupVehicleDraftDto"] {
+        +string BaseCurrency
+        +string Code
+        +string? Description
+        +string Name
+        +Guid? VehicleId
+    }
     class Meridian_Contracts_FundStructure_FundStructureSharedDataAccessDto["FundStructureSharedDataAccessDto"] {
         +BackfillAccessSummaryDto Backfill
         +HistoricalPriceAccessSummaryDto HistoricalPrices
@@ -164,6 +223,7 @@ classDiagram
     class Meridian_Contracts_FundStructure_IngestCustodianStatementRequest["IngestCustodianStatementRequest"] {
         +Guid AccountId
         +DateOnly AsOfDate
+        +CustodianStatementAuthorityDto? Authority
         +Guid BatchId
         +string CustodianName
         +bool IsBackfill
@@ -604,85 +664,18 @@ classDiagram
         +decimal? SecuritiesMarketValue
         +string Source
     }
-    class Meridian_Contracts_FundStructure_RecordAccountSyncHistoryRequest["RecordAccountSyncHistoryRequest"] {
-        +Guid AccountId
-        +DateTimeOffset? AttemptedAt
-        +string Capability
-        +DateTimeOffset? CompletedAt
-        +string? CorrelationId
-        +string? ExternalAccountId
-        +AccountSyncFailureKindDto FailureKind
-        +string? FailureMessage
-        +DateTimeOffset? FreshUntil
-        +string? ProjectionEvidencePath
-        +string? ProviderId
-        +AccountProviderLinkStatusDto ProviderLinkStatus
-    }
-    class Meridian_Contracts_FundStructure_RecordMarginSnapshotRequest["RecordMarginSnapshotRequest"] {
-        +Guid AccountId
-        +string? AgreementEvidencePath
-        +bool ApprovedForLiveMargin
-        +decimal? BuyingPower
-        +decimal? CollateralValue
-        +int ConcentrationLimitBreachCount
-        +string? CorrelationId
-        +decimal? CreditBalance
-        +string Currency
-        +decimal? DebitBalance
-        +DateTimeOffset EffectiveAt
-        +decimal? ExcessLiquidity
-    }
-    class Meridian_Contracts_FundStructure_ReplaceOwnershipLinkRequest["ReplaceOwnershipLinkRequest"] {
-        +Guid ChildNodeId
-        +DateTimeOffset EffectiveFrom
-        +bool IsPrimary
-        +string? Notes
-        +Guid OwnershipLinkId
-        +decimal? OwnershipPercent
-        +Guid ParentNodeId
-        +OwnershipRelationshipTypeDto RelationshipType
-        +string ReplacedBy
-        +DateTimeOffset? ReplacedEffectiveTo
-        +Guid ReplacementOwnershipLinkId
-    }
-    class Meridian_Contracts_FundStructure_SecurityMasterAccessSummaryDto["SecurityMasterAccessSummaryDto"] {
-        +string AvailabilityDescription
-        +bool EconomicDefinitionsAccessible
-        +bool InstrumentDefinitionsAccessible
-        +bool IsAvailable
-        +bool TradingParametersAccessible
-    }
-    class Meridian_Contracts_FundStructure_SleeveSummaryDto["SleeveSummaryDto"] {
-        +IReadOnlyList~Guid~ AccountIds
-        +string Code
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +Guid FundId
-        +IReadOnlyList~Guid~ InvestmentPortfolioIds
-        +bool IsActive
-        +string? Mandate
-        +string Name
-        +Guid SleeveId
-        +IReadOnlyList~Guid~ StrategyIds
-    }
-    class Meridian_Contracts_FundStructure_TransferMatchDto["TransferMatchDto"] {
-        +decimal? AmountVariance
-        +string? EvidencePath
-        +DateTimeOffset MatchedAt
-        +Guid? MatchedTransferId
-        +int? SettlementDateDeltaDays
-        +Guid SourceTransferId
-        +TransferMatchStatusDto Status
-        +Guid TransferMatchId
-    }
-    class Meridian_Contracts_FundStructure_TransferMatchStatusDto["TransferMatchStatusDto"] {
-    }
-    class Meridian_Contracts_FundStructure_UpdateBankAccountDetailsRequest["UpdateBankAccountDetailsRequest"] {
-        +BankAccountDetailsDto Details
-        +string UpdatedBy
-    }
+    Meridian_Contracts_FundStructure_FundStructureSetupOwnershipLinkDraftDto --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
+    Meridian_Contracts_FundStructure_FundStructureSetupPreviewDto --> Meridian_Contracts_FundStructure_FundStructureSetupPreviewLinkDto
+    Meridian_Contracts_FundStructure_FundStructureSetupPreviewDto --> Meridian_Contracts_FundStructure_FundStructureSetupValidationSummaryDto
+    Meridian_Contracts_FundStructure_FundStructureSetupPreviewLinkDto --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
+    Meridian_Contracts_FundStructure_FundStructureSetupResultDto --> Meridian_Contracts_FundStructure_FundStructureSetupValidationSummaryDto
+    Meridian_Contracts_FundStructure_FundStructureSetupResultDto --> Meridian_Contracts_FundStructure_FundSummaryDto
+    Meridian_Contracts_FundStructure_FundStructureSetupResultDto --> Meridian_Contracts_FundStructure_InvestmentPortfolioSummaryDto
+    Meridian_Contracts_FundStructure_FundStructureSetupResultDto --> Meridian_Contracts_FundStructure_LegalEntitySummaryDto
+    Meridian_Contracts_FundStructure_FundStructureSetupResultDto --> Meridian_Contracts_FundStructure_OrganizationSummaryDto
+    Meridian_Contracts_FundStructure_FundStructureSetupResultDto --> Meridian_Contracts_FundStructure_OwnershipLinkDto
+    Meridian_Contracts_FundStructure_FundStructureSetupValidationSummaryDto --> Meridian_Contracts_FundStructure_FundStructureSetupValidationIssueDto
     Meridian_Contracts_FundStructure_FundStructureSharedDataAccessDto --> Meridian_Contracts_FundStructure_HistoricalPriceAccessSummaryDto
-    Meridian_Contracts_FundStructure_FundStructureSharedDataAccessDto --> Meridian_Contracts_FundStructure_SecurityMasterAccessSummaryDto
     Meridian_Contracts_FundStructure_GovernanceCashFlowAccountViewDto --> Meridian_Contracts_FundStructure_FundStructureSharedDataAccessDto
     Meridian_Contracts_FundStructure_GovernanceCashFlowLadderDto --> Meridian_Contracts_FundStructure_GovernanceCashFlowBucketDto
     Meridian_Contracts_FundStructure_GovernanceCashFlowQuery --> Meridian_Contracts_FundStructure_GovernanceCashFlowScopeKindDto
@@ -753,12 +746,6 @@ classDiagram
     Meridian_Contracts_FundStructure_OrganizationStructureGraphDto --> Meridian_Contracts_FundStructure_LegalEntitySummaryDto
     Meridian_Contracts_FundStructure_OrganizationStructureGraphDto --> Meridian_Contracts_FundStructure_OrganizationSummaryDto
     Meridian_Contracts_FundStructure_OrganizationStructureGraphDto --> Meridian_Contracts_FundStructure_OwnershipLinkDto
-    Meridian_Contracts_FundStructure_OrganizationStructureGraphDto --> Meridian_Contracts_FundStructure_SleeveSummaryDto
     Meridian_Contracts_FundStructure_OwnershipGraphValidationResultDto --> Meridian_Contracts_FundStructure_OwnershipGraphValidationIssueDto
     Meridian_Contracts_FundStructure_OwnershipLinkDto --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
-    Meridian_Contracts_FundStructure_RecordMarginSnapshotRequest --> Meridian_Contracts_FundStructure_MarginCallStatusDto
-    Meridian_Contracts_FundStructure_RecordMarginSnapshotRequest --> Meridian_Contracts_FundStructure_MarginModelTypeDto
-    Meridian_Contracts_FundStructure_RecordMarginSnapshotRequest --> Meridian_Contracts_FundStructure_MarginRequirementDto
-    Meridian_Contracts_FundStructure_ReplaceOwnershipLinkRequest --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
-    Meridian_Contracts_FundStructure_TransferMatchDto --> Meridian_Contracts_FundStructure_TransferMatchStatusDto
 ```

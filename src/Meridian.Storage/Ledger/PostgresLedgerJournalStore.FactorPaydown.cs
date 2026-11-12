@@ -197,7 +197,8 @@ public sealed partial class PostgresLedgerJournalStore
                 var openings = new List<BondIncomeTerminalCouponOpeningDto>();
                 foreach (var inputs in scheduled.IncomeInstructions)
                 {
-                    if (!BondIncomeTerminalCoupon.HasCouponEconomics(inputs)) continue;
+                    if (!BondIncomeTerminalCoupon.HasCouponEconomics(inputs))
+                        continue;
                     var couponScope = BondIncomeTerminalCoupon.Scope(instruction, inputs);
                     var latest = await ReadCouponReceiptAsync(connection, transaction, couponScope,
                         inputs.ExpectedLot.TaxLotRecordId, null, ct).ConfigureAwait(false);
@@ -215,7 +216,8 @@ public sealed partial class PostgresLedgerJournalStore
                         continue;
                     }
                     var reconciled = BondIncomeTerminalCoupon.Reconcile(inputs, couponScope, latest);
-                    if (reconciled is not null) terminal.Add(reconciled);
+                    if (reconciled is not null)
+                        terminal.Add(reconciled);
                 }
                 BondIncomeTerminalCoupon.RequireEvidence(instruction, terminal, openings);
             }

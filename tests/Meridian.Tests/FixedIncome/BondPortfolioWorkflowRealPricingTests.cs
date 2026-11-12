@@ -19,22 +19,34 @@ public sealed class BondPortfolioWorkflowRealPricingTests
     [InlineData(true)]
     public async Task AcceptedHoldingQuote_DrivesRealSpreadRiskAndEveryScenario_AtActualCurrentFace(bool isShort)
     {
-        var account = Guid.NewGuid(); var securityId = Guid.NewGuid(); var batch = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        var securityId = Guid.NewGuid();
+        var batch = Guid.NewGuid();
         var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
-        var date = new DateOnly(2026, 1, 1); var maturity = new DateOnly(2028, 1, 1);
+        var date = new DateOnly(2026, 1, 1);
+        var maturity = new DateOnly(2028, 1, 1);
         var hash = Sha256Digest.ComputeUtf8("Synthetic accepted 0.8 factor holding at 103.125 per 100 current face");
         var scope = new AccountCashForecastScopeDto("synthetic-tenant", "synthetic-company", account.ToString("D"), Guid.NewGuid().ToString("D"), "USD");
         var security = new SecurityDetailDto(securityId, "Bond", SecurityStatusDto.Active, "Synthetic fixed bond", "USD",
             JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new
             {
-                assetClassTermsVersion = 2, issueDate = "2026-01-01", maturity = "2028-01-01",
-                couponType = "Fixed", couponRate = 5m, dayCount = "30/360", par = 100m,
-                paymentFrequency = "Annual", isCallable = false, currentFactor = 0.8m, factorDate = "2026-01-01",
+                assetClassTermsVersion = 2,
+                issueDate = "2026-01-01",
+                maturity = "2028-01-01",
+                couponType = "Fixed",
+                couponRate = 5m,
+                dayCount = "30/360",
+                par = 100m,
+                paymentFrequency = "Annual",
+                isCallable = false,
+                currentFactor = 0.8m,
+                factorDate = "2026-01-01",
                 scheduleConventions = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level" }
             }), [], [], 9, asOf, null);
         var securities = Substitute.For<ISecurityMasterQueryService>();
         securities.GetRecordedByIdAsOfAsync(securityId, asOf, Arg.Any<CancellationToken>()).Returns(security);
-        var curveId = Guid.NewGuid(); var versionId = Guid.NewGuid();
+        var curveId = Guid.NewGuid();
+        var versionId = Guid.NewGuid();
         var definition = new SecurityCurveDefinitionDto(curveId, "USD-SYNTHETIC-ACCEPTED-MARK", SecurityCurveKind.Discount,
             "USD", null, null, "ACT/365", SecurityCurveInterpolation.Linear, "synthetic", null, "operator", asOf);
         SecurityCurvePointDto[] points = [new(date, 1m), new(date.AddYears(1), 0.95m), new(maturity, 0.9m)];
@@ -93,7 +105,8 @@ public sealed class BondPortfolioWorkflowRealPricingTests
         {
             Calls.Add(request);
             var result = await inner.CalculateAsync(request, ct);
-            if (result is not null) Results.Add(result);
+            if (result is not null)
+                Results.Add(result);
             return result;
         }
         public Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,

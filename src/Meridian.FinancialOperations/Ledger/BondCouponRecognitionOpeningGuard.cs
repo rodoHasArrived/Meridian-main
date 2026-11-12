@@ -86,7 +86,8 @@ public static class BondCouponRecognitionOpeningGuard
                         || currency.FunctionalCurrency != scope.BaseCurrency || currency.FxRateToFunctional != 1m)))
                 throw new InvalidOperationException(Reconcile);
             native.Add(journal);
-            if (instruction.PreviousReceiptId is not { } prior) break;
+            if (instruction.PreviousReceiptId is not { } prior)
+                break;
             cursor = await receipts.GetCouponRecognitionReceiptAsync(scope, lot.TaxLotRecordId, prior, ct).ConfigureAwait(false)
                 ?? throw new InvalidOperationException(Reconcile);
         }

@@ -23,9 +23,11 @@ internal static class BondCouponRecognitionClosingHistory
             || physical.Account.FinancialAccountId != scope.AccountId)
             throw new InvalidOperationException("Coupon closing history requires exact lot, account and book authority.");
         var candidates = history.Where(row => row.PostingKind == LedgerPostingKindDto.ClosingEntry).ToArray();
-        if (candidates.Length == 0) return [];
+        if (candidates.Length == 0)
+            return [];
         var book = await ledger.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false);
-        if (book is null || book.LedgerBookId != bookId || book.BaseCurrency != scope.BaseCurrency) return [];
+        if (book is null || book.LedgerBookId != bookId || book.BaseCurrency != scope.BaseCurrency)
+            return [];
         var protectedAccounts = accounts.Where(row => row.Path == paths.Receivable || row.Path == paths.Payable || row.Path == paths.Cash).ToArray();
         var verified = new Dictionary<Guid, LedgerJournalEntryRecord>();
         foreach (var row in candidates.OrderBy(row => row.GlobalSequence))
@@ -35,15 +37,18 @@ internal static class BondCouponRecognitionClosingHistory
             if (period is null || period.LedgerBookId != bookId
                 || row.AccountingBasis != book.AccountingBasis
                 || row.AggregateId != bookId || row.GlobalSequence <= 0 || row.SourceJournalEntryId is not null
-                || row.Entry.Metadata.EffectiveDate != period.EndDate || !SafeLines(row.Entry, scope, protectedAccounts)) continue;
+                || row.Entry.Metadata.EffectiveDate != period.EndDate || !SafeLines(row.Entry, scope, protectedAccounts))
+                continue;
             var samePeriod = history.Where(prior => prior.PeriodId == row.PeriodId).ToArray();
             if (samePeriod.Any(prior => prior.GlobalSequence <= 0)
-                || samePeriod.Select(prior => prior.GlobalSequence).Distinct().Count() != samePeriod.Length) continue;
+                || samePeriod.Select(prior => prior.GlobalSequence).Distinct().Count() != samePeriod.Length)
+                continue;
             var prefix = samePeriod.Where(prior => prior.GlobalSequence < row.GlobalSequence).ToArray();
             // The shared period summary enriches its explicit line dimensions with the book's fund.
             // Metadata-only legacy dimensions cannot establish the exact original input here.
             if (prefix.SelectMany(prior => prior.Entry.Lines).Any(line =>
-                line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense && line.Dimensions is null)) continue;
+                line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense && line.Dimensions is null))
+                continue;
             var balances = prefix.SelectMany(prior => prior.Entry.Lines)
                 .Where(line => line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
                 .GroupBy(line => JsonSerializer.Serialize(new { line.Account, Dimensions = Dimensions(line.Dimensions, book.FundProfileId) }))
@@ -54,7 +59,8 @@ internal static class BondCouponRecognitionClosingHistory
             var projection = PeriodCloseProjector.Project(new PeriodCloseInput(period.PeriodId.ToString("D"), at, balances, "retained-close-proof"));
             var draft = PeriodCloseDraftBuilder.BuildDraft(projection);
             if (draft is null || row.Entry.Metadata.IdempotencyKey != draft.Metadata.IdempotencyKey
-                || !SameLines(row.Entry.Lines.Select(line => (line.Account, line.Debit, line.Credit, line.Dimensions)), projection.JournalLines)) continue;
+                || !SameLines(row.Entry.Lines.Select(line => (line.Account, line.Debit, line.Credit, line.Dimensions)), projection.JournalLines))
+                continue;
             verified.Add(row.Entry.JournalEntryId, row);
         }
         // A governed reopen does not clear coupon balances either. Only the exact approved inverse
@@ -73,7 +79,8 @@ internal static class BondCouponRecognitionClosingHistory
                 || !SafeLines(row.Entry, scope, protectedAccounts)
                 || !InverseCurrencies(row.Entry, source.Entry)
                 || !SameLines(row.Entry.Lines.Select(line => (line.Account, line.Credit, line.Debit, line.Dimensions)),
-                    source.Entry.Lines.Select(line => (line.Account, line.Debit, line.Credit, line.Dimensions)))) continue;
+                    source.Entry.Lines.Select(line => (line.Account, line.Debit, line.Credit, line.Dimensions))))
+                continue;
             verified.Add(row.Entry.JournalEntryId, row);
         }
         return verified.Values.ToArray();
@@ -112,10 +119,17 @@ internal static class BondCouponRecognitionClosingHistory
         IEnumerable<(LedgerAccount Account, decimal Debit, decimal Credit, LedgerLineDimensionSet? Dimensions)> right)
     {
         static string Key((LedgerAccount Account, decimal Debit, decimal Credit, LedgerLineDimensionSet? Dimensions) line)
-            => JsonSerializer.Serialize(new { line.Account, line.Debit, line.Credit,
+            => JsonSerializer.Serialize(new
+            {
+                line.Account,
+                line.Debit,
+                line.Credit,
                 Dimensions = line.Dimensions is null ? null : line.Dimensions with
-                { ExternalGlDimensions = line.Dimensions.ExternalGlDimensions.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-                    .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal) } });
+                {
+                    ExternalGlDimensions = line.Dimensions.ExternalGlDimensions.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                    .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal)
+                }
+            });
         return left.Select(Key).Order(StringComparer.Ordinal).SequenceEqual(right.Select(Key).Order(StringComparer.Ordinal));
     }
 }

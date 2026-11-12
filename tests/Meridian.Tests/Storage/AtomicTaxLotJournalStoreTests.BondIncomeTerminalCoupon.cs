@@ -57,7 +57,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var terminal = preview.Instruction.TerminalCashAuthority!;
         terminal.Mode.Should().Be("CashOnly");
         terminal.PrincipalMutationBatchId.Should().Be(principal.MutationBatchId);
-        terminal.EarnedReceipt.Should().BeEquivalentTo(earned);
+        AssertRetainedJsonUnchanged(terminal.EarnedReceipt, earned, "closed cash must retain the exact earned source receipt");
         preview.Instruction.IncomeInstruction.ExpectedLot.OpenQuantity.Should().Be(0m);
         preview.Instruction.Lines.Should().NotContain(line => line.AccountId == "TerminalIncome");
         await fixture.Physical.IncomeAuthority!.DidNotReceive().PreviewAsync(Arg.Any<BondIncomePreviewRequestDto>(), Arg.Any<CancellationToken>());
@@ -71,7 +71,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         // An exact run replay cannot consume the source cash or append a second journal.
         (await fixture.Service.PreviewAsync(fixture.Scope, cashRequest)).Fingerprint.Should().Be(cashReceipt.ReceiptId);
-        await fixture.Store.AppendAsync(cashWrite);
+        using var replayTarget = new DurableLedgerPostingTarget(fixture.Store);
+        var replay = await replayTarget.PostAsync(cashWrite);
+        replay.WasAppended.Should().BeFalse();
+        replay.JournalEntryId.Should().Be(cashWrite.Entry.JournalEntryId);
         (await fixture.Store.GetByPeriodAsync(fixture.Physical.Period.PeriodId)).Should().HaveCount(afterCash.Count);
         (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "terminal-bank-coupon")).Should().Be(sign * 1.24m);
         await fixture.Service.Invoking(service => service.PreviewAsync(fixture.Scope,
@@ -80,8 +83,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
         var inverseRequest = cashRequest with
         {
-            RunId = "inverse-closed-cash", KnownAt = DateTimeOffset.UtcNow, CashAllocations = [],
-            ReversesReceiptId = cashReceipt.ReceiptId, CorrectionRationale = "Correct the observed terminal coupon allocation"
+            RunId = "inverse-closed-cash",
+            KnownAt = DateTimeOffset.UtcNow,
+            CashAllocations = [],
+            ReversesReceiptId = cashReceipt.ReceiptId,
+            CorrectionRationale = "Correct the observed terminal coupon allocation"
         };
         var inverse = await fixture.Service.PreviewAsync(fixture.Scope, inverseRequest);
         inverse.Instruction.Lines.Select(line => (line.AccountId, line.Debit, line.Credit)).Should()
@@ -95,9 +101,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await fixture.PostAsync(rebook.Instruction);
         (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "terminal-bank-coupon")).Should().Be(sign * 1.24m);
         var finalLot = (await fixture.Store.GetTaxLotsByIdsAsync(fixture.Physical.BookId, [zero.TaxLotRecordId])).Single();
-        finalLot.Should().BeEquivalentTo(zero, "coupon clearing and correction must preserve the actual closed-lot CAS outcome");
-        (await fixture.Store.GetCouponRecognitionReceiptAsync(fixture.Scope, zero.TaxLotRecordId, earned.ReceiptId))
-            .Should().BeEquivalentTo(earned, "the principal-bound earned source remains immutable after cash correction");
+        AssertRetainedJsonUnchanged(finalLot, zero, "coupon clearing and correction must preserve the actual closed-lot CAS outcome");
+        AssertRetainedJsonUnchanged(await fixture.Store.GetCouponRecognitionReceiptAsync(fixture.Scope, zero.TaxLotRecordId, earned.ReceiptId),
+            earned, "the principal-bound earned source remains immutable after cash correction");
     }
 
     [LedgerDatabaseFact]
@@ -152,8 +158,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 opening, fixture.Physical.Period.PeriodId);
             await fixture.Service.Invoking(service => service.VerifyTerminalOpeningAsync(fixture.Scope,
                 preview.Instruction.IncomeInstruction, opening with { AcquisitionJournalEntryId = Guid.NewGuid() },
-                fixture.Physical.Period.PeriodId)).Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage("*original acquisition changed*");
+                fixture.Physical.Period.PeriodId)).Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*pin the exact actual acquisition receipt and journal*");
             var principal = fixture.BindOpening(opening);
             var wrong = fixture.BindOpening(opening with { AcquisitionJournalEntryId = Guid.NewGuid() });
             await fixture.Physical.Store.Invoking(store => store.AppendAssetPostingAsync(wrong)).Should()
@@ -181,8 +187,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "terminal-bank-coupon")).Should().Be(sign * 1.24m);
             var inverse = await fixture.Service.PreviewAsync(fixture.Scope, request with
             {
-                RunId = "inverse-purchased-cash", KnownAt = DateTimeOffset.UtcNow, CashAllocations = [],
-                ReversesReceiptId = receipt.ReceiptId, CorrectionRationale = "Correct the seller accrued cash allocation"
+                RunId = "inverse-purchased-cash",
+                KnownAt = DateTimeOffset.UtcNow,
+                CashAllocations = [],
+                ReversesReceiptId = receipt.ReceiptId,
+                CorrectionRationale = "Correct the seller accrued cash allocation"
             });
             await fixture.PostAsync(inverse.Instruction);
             (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "terminal-bank-coupon")).Should().Be(0m);
@@ -191,8 +200,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             rebook.EarnedDelta.Should().Be(0m);
             await fixture.PostAsync(rebook.Instruction);
             (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "terminal-bank-coupon")).Should().Be(sign * 1.24m);
-            (await fixture.Store.GetTaxLotsByIdsAsync(fixture.Physical.BookId, [closed.TaxLotRecordId])).Single()
-                .Should().BeEquivalentTo(closed);
+            AssertRetainedJsonUnchanged((await fixture.Store.GetTaxLotsByIdsAsync(fixture.Physical.BookId, [closed.TaxLotRecordId])).Single(),
+                closed, "seller accrued cash clearing and correction must preserve the complete closed lot");
         }
     }
 
@@ -222,12 +231,16 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 .Should().ThrowAsync<InvalidOperationException>().WithMessage("*explicit retained opening reconciliation*");
             (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "terminal-bank-coupon")).Should().Be(0m,
                 "ordinary cash journal rows must never masquerade as native allocation claims");
-            (await fixture.Store.GetLatestCouponRecognitionAsync(fixture.Scope, before.TaxLotRecordId))
-                .Should().BeEquivalentTo(earned);
-            (await fixture.Store.GetTaxLotsByIdsAsync(fixture.Physical.BookId, [before.TaxLotRecordId])).Single()
-                .Should().BeEquivalentTo(before);
+            var retainedEarned = await fixture.Store.GetLatestCouponRecognitionAsync(fixture.Scope, before.TaxLotRecordId);
+            AssertRetainedJsonUnchanged(retainedEarned, earned, "manual journals must leave the complete retained earned receipt unchanged");
+            AssertRetainedJsonUnchanged((await fixture.Store.GetTaxLotsByIdsAsync(fixture.Physical.BookId, [before.TaxLotRecordId])).Single(),
+                before, "manual journal reconciliation must preserve the complete physical lot");
         }
     }
+
+    private static void AssertRetainedJsonUnchanged<T>(T actual, T expected, string because)
+        => JsonElement.DeepEquals(JsonSerializer.SerializeToElement(actual), JsonSerializer.SerializeToElement(expected))
+            .Should().BeTrue(because);
 
     private sealed class TerminalCouponFixture : IAsyncDisposable
     {
@@ -290,7 +303,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var lot = original.Lots.Single().ExpectedLot;
             var cutoff = DateTimeOffset.UtcNow;
             var coupon = new BondWorkflowCashFlow(_couponDate, _couponStart, _couponEnd, _rawCoupon,
-                0m, 0m, 1.2m, false, []) { PeriodUnits = 1m, AccrualFraction = 1m };
+                0m, 0m, 1.2m, false, [])
+            { PeriodUnits = 1m, AccrualFraction = 1m };
             var flows = new[] { coupon, new BondWorkflowCashFlow(FirstPaydown, FirstPaydown, FirstPaydown,
                 0m, 1_140_000m, 0m, 1.2m, false, []) };
             var projection = new BondWorkflowResult(lot.SecurityId, "USD", "bond-workflow-v1",
@@ -314,7 +328,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var projectedIncome = BondIncomeCalculator.Project(lot, income);
             income = income with { BookedTarget = projectedIncome.BookedTarget };
             var inputs = new OpenLotAmortizationInstructionDto(lot, Physical.Security, AmortSecurityEvidence(Physical.Security),
-                original.Scope.ExpectedBookPositionVersion, FirstPaydown, BondIncomeCalculator.ModelVersion) { BondIncome = income };
+                original.Scope.ExpectedBookPositionVersion, FirstPaydown, BondIncomeCalculator.ModelVersion)
+            { BondIncome = income };
             OpenLotAmortization.Project(inputs).TransactionMovement.Should().Be(0m);
             var receipt = BuildEvidence("terminal-principal-cash", 'e') with
             { EffectiveDate = FirstPaydown, SubjectType = "BondPrincipalCashReceipt", SubjectId = lot.TaxLotRecordId.ToString("D") };
@@ -339,10 +354,17 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     old.Description, dimensions, new("USD", "USD", 0m, 1_140_000m, 1m))
             };
             var posting = legacy.Journal.PostingCommand! with
-            { LotFactorPaydown = instruction, EconomicEvent = economic, ProjectionLineage = instruction.Lineage,
-                Evidence = evidence.Select(PostingEvidence).ToArray() };
-            Principal = ReplacePrincipal(legacy with { RetainedEvidence = evidence,
-                Journal = legacy.Journal with { Entry = new(old.JournalEntryId, old.Timestamp, old.Description, lines, old.Metadata), PostingCommand = posting } }, instruction);
+            {
+                LotFactorPaydown = instruction,
+                EconomicEvent = economic,
+                ProjectionLineage = instruction.Lineage,
+                Evidence = evidence.Select(PostingEvidence).ToArray()
+            };
+            Principal = ReplacePrincipal(legacy with
+            {
+                RetainedEvidence = evidence,
+                Journal = legacy.Journal with { Entry = new(old.JournalEntryId, old.Timestamp, old.Description, lines, old.Metadata), PostingCommand = posting }
+            }, instruction);
             var authority = Substitute.For<IBondIncomeService>();
             authority.PreviewAsync(Arg.Any<BondIncomePreviewRequestDto>(), Arg.Any<CancellationToken>()).Returns(new BondIncomePreviewDto(
                 Physical.BookId, lot.TaxLotRecordId, "retained", inputs, projectedIncome,
@@ -398,8 +420,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var evidence = BuildEvidence("terminal-bank-coupon", 'b') with
             { EffectiveDate = received, SubjectType = "AccountCashFlow", SubjectId = "terminal-bank-coupon", ReviewedAtUtc = now.AddSeconds(-2), RetainedAtUtc = now.AddSeconds(-1) };
             var provenance = new AccountCashProvenanceDto("Synthetic", "terminal-bank-coupon", evidence.ContentHashSha256, AccountCashEvidenceRole.Observation, evidence);
-            var deductions = provenance with { SourceEntityId = "terminal-allocation", Evidence = evidence with
-            { EvidenceId = "terminal-deductions", SubjectType = "AccountCashAllocation", SubjectId = "terminal-allocation" } };
+            var deductions = provenance with
+            {
+                SourceEntityId = "terminal-allocation",
+                Evidence = evidence with
+                { EvidenceId = "terminal-deductions", SubjectType = "AccountCashAllocation", SubjectId = "terminal-allocation" }
+            };
             var amount = _sign * 1.24m;
             var payment = new AccountCashFlowDto("terminal-bank-coupon", "terminal-bank-v1", Scope.AccountId, Scope.BookId,
                 AccountCashFlowStatus.Actual, "Coupon", amount, "USD", _couponDate, received, received, provenance, Physical.Security.SecurityId);
@@ -419,15 +445,22 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(14, 0)), TimeSpan.Zero);
             var hash = BondCouponRecognitionCalculator.Fingerprint(instruction);
             var source = BuildEvidence("terminal-coupon-" + instruction.Request.RunId, 'd') with
-            { EffectiveDate = date, SubjectType = AssetAccountingEvidenceSubjects.Event, SubjectId = instruction.EventId.ToString("D"),
-                ContentHashSha256 = hash, ReviewedAtUtc = at.AddMinutes(-10), RetainedAtUtc = at.AddMinutes(-5) };
+            {
+                EffectiveDate = date,
+                SubjectType = AssetAccountingEvidenceSubjects.Event,
+                SubjectId = instruction.EventId.ToString("D"),
+                ContentHashSha256 = hash,
+                ReviewedAtUtc = at.AddMinutes(-10),
+                RetainedAtUtc = at.AddMinutes(-5)
+            };
             var retained = lot.Acquisition.Evidence.Append(source).Distinct().ToArray();
             var economic = new EconomicEventReferenceDto(instruction.EventId, AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Income),
                 1, date, source.RetainedAtUtc, "BondCouponRecognition", source.SourceReference, SourceContentHash: hash)
             { SecurityId = lot.SecurityId, BookPositionId = lot.BookPositionId, RetainedEvidence = retained };
             var lineage = new ProjectionLineageDto(instruction.EventId, instruction.EventId, BondCouponRecognitionCalculator.ModelVersion,
                 BondCouponRecognitionCalculator.ModelVersion, BondCouponRecognitionCalculator.ModelVersion, "ObservedCouponRecognition", date,
-                at, "BondCouponRecognition", source.SourceReference, economic) { BookPositionId = lot.BookPositionId, RetainedEvidence = retained };
+                at, "BondCouponRecognition", source.SourceReference, economic)
+            { BookPositionId = lot.BookPositionId, RetainedEvidence = retained };
             var position = (await Physical.Positions.GetBookPositionAsync(lot.BookPositionId))!;
             var target = instruction.ReversalTarget;
             var posting = new AccountingPostingCommandDto(Guid.NewGuid(), Physical.BookId, Physical.Period.PeriodId, date, at,
@@ -435,16 +468,32 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 instruction.EventId, SourceJournalEntryId: target?.JournalEntryId, ExpectedVersion: Physical.Period.Version,
                 SourceEventType: economic.EventType, ApprovalState: AccountingPostingApprovalStateDto.Approved,
                 ApprovalId: "independent-terminal-coupon-review", Evidence: retained.Select(PostingEvidence).ToArray(), LedgerBookId: Physical.BookId)
-            { Actor = "terminal-coupon-controller", BookContext = position.BookContext with { PeriodId = Physical.Period.PeriodId },
-                BookPositionId = lot.BookPositionId, EconomicEvent = economic, ProjectionLineage = lineage,
-                RulePackReference = new("amort-policy", "1"), BondCouponRecognition = instruction };
+            {
+                Actor = "terminal-coupon-controller",
+                BookContext = position.BookContext with { PeriodId = Physical.Period.PeriodId },
+                BookPositionId = lot.BookPositionId,
+                EconomicEvent = economic,
+                ProjectionLineage = lineage,
+                RulePackReference = new("amort-policy", "1"),
+                BondCouponRecognition = instruction
+            };
             if (manual)
             {
                 economic = economic with { SourceDomain = "OrdinaryCashJournal", RetainedEvidence = [source] };
-                lineage = lineage with { ModelKey = "ordinary-cash", SourceDomain = economic.SourceDomain,
-                    TriggerEvent = economic, RetainedEvidence = [source] };
-                posting = posting with { BondCouponRecognition = null, EconomicEvent = economic,
-                    ProjectionLineage = lineage, Evidence = [PostingEvidence(source)] };
+                lineage = lineage with
+                {
+                    ModelKey = "ordinary-cash",
+                    SourceDomain = economic.SourceDomain,
+                    TriggerEvent = economic,
+                    RetainedEvidence = [source]
+                };
+                posting = posting with
+                {
+                    BondCouponRecognition = null,
+                    EconomicEvent = economic,
+                    ProjectionLineage = lineage,
+                    Evidence = [PostingEvidence(source)]
+                };
             }
             var id = Guid.NewGuid();
             var dimensions = new LedgerLineDimensionSet(BookId: Scope.BookId, AccountId: Scope.AccountId, InstrumentId: lot.SecurityId,
@@ -469,9 +518,15 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         {
             var old = command.Journal.Entry;
             var tags = new Dictionary<string, string>(old.Metadata.Tags!) { [OpenLotFactorPaydown.JournalFingerprintTag] = OpenLotFactorPaydown.Fingerprint(principal) };
-            return (command with { FactorPaydown = principal, Journal = command.Journal with
-            { Entry = new(old.JournalEntryId, old.Timestamp, old.Description, old.Lines, old.Metadata with { Tags = tags }),
-                PostingCommand = command.Journal.PostingCommand! with { LotFactorPaydown = principal } } }).WithComputedFingerprint();
+            return (command with
+            {
+                FactorPaydown = principal,
+                Journal = command.Journal with
+                {
+                    Entry = new(old.JournalEntryId, old.Timestamp, old.Description, old.Lines, old.Metadata with { Tags = tags }),
+                    PostingCommand = command.Journal.PostingCommand! with { LotFactorPaydown = principal }
+                }
+            }).WithComputedFingerprint();
         }
 
         private static AccountingPostingEvidenceReferenceDto PostingEvidence(RetainedEvidenceIdentityDto item)

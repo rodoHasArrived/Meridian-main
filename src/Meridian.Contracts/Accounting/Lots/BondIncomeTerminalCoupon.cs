@@ -69,14 +69,28 @@ public static class BondIncomeTerminalCoupon
         var targets = EarnedTargets(inputs);
         var coupons = BondIncomeCouponRounding.EarnedFlows(income)
             .GroupBy(f => (f.PaymentDate, f.AccrualStart, f.AccrualEnd)).OrderBy(g => g.Key.PaymentDate).ThenBy(g => g.Key.AccrualStart)
-            .Select(g => new { g.Key.PaymentDate, g.Key.AccrualStart, g.Key.AccrualEnd,
-                Cash = BondIncomeCouponRounding.AllocatedCash(inputs.ExpectedLot.TaxLotRecordId, income, g.Key.PaymentDate, g.Key.AccrualStart) }).ToArray();
+            .Select(g => new
+            {
+                g.Key.PaymentDate,
+                g.Key.AccrualStart,
+                g.Key.AccrualEnd,
+                Cash = BondIncomeCouponRounding.AllocatedCash(inputs.ExpectedLot.TaxLotRecordId, income, g.Key.PaymentDate, g.Key.AccrualStart)
+            }).ToArray();
         return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            ModelVersion, inputs.ExpectedLot.TaxLotRecordId, income.LedgerBookId, income.AccountId,
-            income.AccountingPolicyId, income.AccountingPolicyVersion, income.CurrentProjection.Currency,
-            income.AcquisitionAccruedInterest, targets.RawReceivableEarned, targets.RawPayableEarned,
-            targets.BookedReceivableEarned, targets.BookedPayableEarned, Coupons = coupons
+            ModelVersion,
+            inputs.ExpectedLot.TaxLotRecordId,
+            income.LedgerBookId,
+            income.AccountId,
+            income.AccountingPolicyId,
+            income.AccountingPolicyVersion,
+            income.CurrentProjection.Currency,
+            income.AcquisitionAccruedInterest,
+            targets.RawReceivableEarned,
+            targets.RawPayableEarned,
+            targets.BookedReceivableEarned,
+            targets.BookedPayableEarned,
+            Coupons = coupons
         }));
     }
 
@@ -89,7 +103,8 @@ public static class BondIncomeTerminalCoupon
         var targets = EarnedTargets(inputs);
         if (receipt is null)
         {
-            if (targets.BookedReceivableEarned == 0m && targets.BookedPayableEarned == 0m && !HasCashRights(inputs)) return null;
+            if (targets.BookedReceivableEarned == 0m && targets.BookedPayableEarned == 0m && !HasCashRights(inputs))
+                return null;
             throw new ArgumentException("Recognize and post the final earned coupon target before terminal principal; coupon cash may remain unpaid.");
         }
         var retained = receipt.Instruction;

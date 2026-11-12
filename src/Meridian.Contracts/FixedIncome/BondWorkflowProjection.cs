@@ -209,8 +209,10 @@ public static class BondWorkflowProjection
 
     private static decimal Clamp(decimal rate, BondWorkflowProjectionTerms terms)
     {
-        if (terms.Cap is { } cap) rate = Math.Min(rate, cap);
-        if (terms.Floor is { } floor) rate = Math.Max(rate, floor);
+        if (terms.Cap is { } cap)
+            rate = Math.Min(rate, cap);
+        if (terms.Floor is { } floor)
+            rate = Math.Max(rate, floor);
         return rate;
     }
 }

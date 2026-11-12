@@ -92,8 +92,15 @@ public sealed class BondPortfolioWorkflowServiceTests
     public async Task IndexedAcceptedHoldingBindsNominalCashOnceAndRetainsDatedStatementQuoteAuthority()
     {
         var row = Holding(SecurityId, 100m);
-        row = row with { Bond = row.Bond! with { InflationRatio = 1.2m,
-            InvoiceBasis = BondHoldingInvoiceBasis.IndexedPrincipal, Quote = 99m } };
+        row = row with
+        {
+            Bond = row.Bond! with
+            {
+                InflationRatio = 1.2m,
+                InvoiceBasis = BondHoldingInvoiceBasis.IndexedPrincipal,
+                Quote = 99m
+            }
+        };
         var calls = new List<BondWorkflowRequest>();
         var result = await RiskService([row], calls).CalculateAsync(Scope, new(Context));
         var position = result.Positions.Should().ContainSingle().Which;

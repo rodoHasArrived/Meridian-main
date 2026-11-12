@@ -13,10 +13,12 @@ internal static class BondIncomeTerminalCouponGuard
     {
         var proof = new List<BondIncomeTerminalCouponReceiptDto>();
         var openings = new List<BondIncomeTerminalCouponOpeningDto>();
-        if (principal.NewFactor != 0m || principal.ScheduledPrincipal is not { } scheduled) return new(proof, openings);
+        if (principal.NewFactor != 0m || principal.ScheduledPrincipal is not { } scheduled)
+            return new(proof, openings);
         foreach (var inputs in scheduled.IncomeInstructions)
         {
-            if (!BondIncomeTerminalCoupon.HasCouponEconomics(inputs)) continue;
+            if (!BondIncomeTerminalCoupon.HasCouponEconomics(inputs))
+                continue;
             var scope = BondIncomeTerminalCoupon.Scope(principal, inputs);
             var store = ledger as IBondCouponRecognitionStore
                 ?? throw new InvalidOperationException("Terminal principal requires authoritative posted coupon receipt history.");
@@ -35,7 +37,8 @@ internal static class BondIncomeTerminalCouponGuard
                 continue;
             }
             var reconciled = BondIncomeTerminalCoupon.Reconcile(inputs, scope, receipt);
-            if (reconciled is not null) proof.Add(reconciled);
+            if (reconciled is not null)
+                proof.Add(reconciled);
         }
         return new(proof, openings);
     }

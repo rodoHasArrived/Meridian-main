@@ -257,8 +257,14 @@ public sealed class BondWorkflowServiceTests
         var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
         terms["assetClassTermsVersion"] = 5;
         terms["bondWorkflow"] = new { exCouponBusinessDays = 10 };
-        terms["scheduleConventions"] = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level",
-            paymentCalendars = new[] { "WEEKENDS" }, businessDayConvention = "Following" };
+        terms["scheduleConventions"] = new
+        {
+            accrualAdjusted = false,
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" },
+            businessDayConvention = "Following"
+        };
         bond = bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
         var date = new DateOnly(2026, 12, 28);
         var result = (await Service(bond).CalculateIncomeScheduleAsync(new(Id,

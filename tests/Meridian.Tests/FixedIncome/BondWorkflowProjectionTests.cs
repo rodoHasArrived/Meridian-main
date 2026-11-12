@@ -144,9 +144,15 @@ public sealed class BondWorkflowProjectionTests
     [InlineData(-0.03, -0.02, false)]
     public void OvernightCapWithoutFloorLimitsCompoundedCouponCashIncludingNegativeCap(double index, double cap, bool binds)
     {
-        var terms = Terms() with { CouponKind = "Floating", DayCount = DayCountConvention.Actual360,
-            CouponCashBasis = "DayCount", Cap = (decimal)cap, Floor = null,
-            Overnight = new(BusinessDayCalendars.WeekendsOnly, 0, false, true, 0) };
+        var terms = Terms() with
+        {
+            CouponKind = "Floating",
+            DayCount = DayCountConvention.Actual360,
+            CouponCashBasis = "DayCount",
+            Cap = (decimal)cap,
+            Floor = null,
+            Overnight = new(BusinessDayCalendars.WeekendsOnly, 0, false, true, 0)
+        };
         var rows = BondWorkflowProjection.Project(Schedule(new(2026, 1, 2), new(2026, 1, 6), true),
             terms, new(2026, 1, 2), _ => new((decimal)index, true, "observed"));
         var rawCash = 100m * ((1m + (decimal)index * 3m / 360m) * (1m + (decimal)index / 360m) - 1m);

@@ -1128,8 +1128,11 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     Math.Max(IncomePurchasedAccrued, 0m), Math.Max(-IncomePurchasedAccrued, 0m),
                     old.Description, originalCash.Dimensions,
                     new("USD", "USD", Math.Max(IncomePurchasedAccrued, 0m), Math.Max(-IncomePurchasedAccrued, 0m), 1m));
-                journal = journal with { Entry = new(old.JournalEntryId, old.Timestamp, old.Description,
-                    old.Lines.Where(line => line.EntryId != originalCash.EntryId).Append(cash).Append(purchased).ToArray(), old.Metadata) };
+                journal = journal with
+                {
+                    Entry = new(old.JournalEntryId, old.Timestamp, old.Description,
+                    old.Lines.Where(line => line.EntryId != originalCash.EntryId).Append(cash).Append(purchased).ToArray(), old.Metadata)
+                };
             }
             var raw = new LedgerTaxLotRecord(id, BookId, account, lotId, acquired, quantity, quantity, pricePercentOfPar,
                 "USD", at, at, journal.Entry.JournalEntryId, source.EvidenceId, 1, batchId, batchId, Security.SecurityId, PositionId,

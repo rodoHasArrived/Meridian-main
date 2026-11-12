@@ -24,7 +24,8 @@ public sealed class BondCouponRecognitionNoncashHistoryTests
         var (ledger, scope, physical, paths, accounts, receipt) = Fixture(scenario);
         var actual = await BondCouponRecognitionNoncashHistory.ResolveAsync(ledger, scope, physical, paths, accounts);
         actual.Should().HaveCount(expected);
-        if (expected != 0) actual.Single().Should().Be(receipt.Journal);
+        if (expected != 0)
+            actual.Single().Should().Be(receipt.Journal);
     }
 
     [Fact]
@@ -56,13 +57,18 @@ public sealed class BondCouponRecognitionNoncashHistoryTests
         var target = OpenLotAmortization.Project(inputs);
         target.FunctionalMovement.Should().BeGreaterThan(0m);
         var batch = Guid.NewGuid();
-        var after = before with { Version = 2, LastMutationBatchId = batch,
+        var after = before with
+        {
+            Version = 2,
+            LastMutationBatchId = batch,
             BasisAdjustment = new(batch, OpenLotBasisAdjustmentReasons.Amortization, 1m,
-                target.TransactionCostBasis, target.FunctionalCostBasis, inputs) };
+                target.TransactionCostBasis, target.FunctionalCostBasis, inputs)
+        };
         var journalId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
         var dimensions = new LedgerLineDimensionSet(AccountId: owner, BookId: scope.BookId,
-            InstrumentId: lot.SecurityId, TaxLotId: lot.LotId) { PositionId = lot.BookPositionId };
+            InstrumentId: lot.SecurityId, TaxLotId: lot.LotId)
+        { PositionId = lot.BookPositionId };
         var counter = scenario switch
         {
             "receivable" => new LedgerAccount("Coupon receivable", LedgerAccountType.Asset, FinancialAccountId: owner),

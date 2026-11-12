@@ -288,7 +288,6 @@ classDiagram
         +decimal EventAmount
         +AssetAccountingEventKindDto EventKind
         +long ExpectedPeriodVersion
-        +Meridian_Contracts_Accounting_Lots_OpenLotFactorPaydownInstructionDto? FactorPaydown
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency

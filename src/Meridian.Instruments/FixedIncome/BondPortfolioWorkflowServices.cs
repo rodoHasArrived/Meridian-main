@@ -81,7 +81,8 @@ public sealed class BondPortfolioRiskService(IAccountBondHoldingsSource holdings
                 string? quoteIssue = null;
                 BondCalculationInput? quoteAuthority = null;
                 decimal observedDirty = 0m;
-                try { (calculation, quoteAuthority, observedDirty) = BondPortfolioHoldingQuote.Bind(calculation, snapshot, group.ToArray()); }
+                try
+                { (calculation, quoteAuthority, observedDirty) = BondPortfolioHoldingQuote.Bind(calculation, snapshot, group.ToArray()); }
                 catch (ArgumentException exception) { quoteIssue = exception.Message; }
                 var baseline = await bonds.CalculateAsync(calculation, ct).ConfigureAwait(false);
                 if (baseline is null)
@@ -95,10 +96,12 @@ public sealed class BondPortfolioRiskService(IAccountBondHoldingsSource holdings
                     calculation = calculation with { CleanPricePer100 = null, QuoteSettlementDate = null, ConfirmationEvidenceReference = null };
                     quoteAuthority = null;
                     baseline = await bonds.CalculateAsync(calculation, ct).ConfigureAwait(false);
-                    if (baseline is null) { issues.Add($"Security {group.Key} is unavailable."); continue; }
+                    if (baseline is null)
+                    { issues.Add($"Security {group.Key} is unavailable."); continue; }
                 }
                 var localIssues = baseline.Issues.Select(row => row.Code + ": " + row.Reason).ToList();
-                if (quoteIssue is not null) localIssues.Add(quoteIssue);
+                if (quoteIssue is not null)
+                    localIssues.Add(quoteIssue);
                 var refs = await reference.GetReferenceAsOfAsync(group.Key, date, ct).ConfigureAwait(false);
                 if (refs?.Version != baseline.Context.SecurityVersion)
                 {

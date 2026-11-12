@@ -42,7 +42,8 @@ public sealed class BondIncomeServiceTests
         books.GetBookAsync(book.LedgerBookId, Arg.Any<CancellationToken>()).Returns(book);
         books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([period]);
         var dimensions = new LedgerDimensionSetDto(FundId: book.FundProfileId, InstrumentId: f.Lot.SecurityId,
-            BookId: book.LedgerBookId.ToString("D")) { PositionId = f.Lot.BookPositionId };
+            BookId: book.LedgerBookId.ToString("D"))
+        { PositionId = f.Lot.BookPositionId };
         var economic = new EconomicEventReferenceDto(eventId, eventType, 1, f.Request.ThroughDate, at,
             "Meridian.BondIncome", "candidate", SourceContentHash: income.Fingerprint)
         { SecurityId = f.Lot.SecurityId, BookPositionId = f.Lot.BookPositionId };
@@ -70,9 +71,13 @@ public sealed class BondIncomeServiceTests
             AccountingBasisKindDto.Gaap, book.LedgerBookId, dimensions, SourceEventId: eventId,
             PolicyId: book.AccountingPolicyId, TreatmentKind: AccountingTreatmentKindDto.Amortization, EvidenceLinks: links)
         {
-            BookContext = f.Position.BookContext with { PeriodId = periodId }, BookPositionId = f.Lot.BookPositionId,
-            EconomicEvent = economic, ProjectionLineage = lineage, RetainedEvidence = evidence,
-            RulePackReference = new(pack, "v1", rule, "v1"), AssetLotMutation = income.LotMutation
+            BookContext = f.Position.BookContext with { PeriodId = periodId },
+            BookPositionId = f.Lot.BookPositionId,
+            EconomicEvent = economic,
+            ProjectionLineage = lineage,
+            RetainedEvidence = evidence,
+            RulePackReference = new(pack, "v1", rule, "v1"),
+            AssetLotMutation = income.LotMutation
         };
         var authority = new AssetAccountingCandidateAuthorityContext(eventId, 1, 2, 3, income.Fingerprint,
             AssetAccountingEventKindDto.DepreciationAmortization, f.Lot.SecurityId, f.Lot.BookPositionId,
@@ -100,8 +105,12 @@ public sealed class BondIncomeServiceTests
         var f = new Fixture(exCoupon: true);
         var seed = (await f.Service.PreviewAsync(f.Request)).Instruction.BondIncome!.AcquisitionProjection;
         f.Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
-            .Returns(call => seed with { Context = call.Arg<BondWorkflowRequest>().Context,
-                AccruedInterest = -0.1m, ContractualAccruedInterest = 4.9m });
+            .Returns(call => seed with
+            {
+                Context = call.Arg<BondWorkflowRequest>().Context,
+                AccruedInterest = -0.1m,
+                ContractualAccruedInterest = 4.9m
+            });
         var action = () => f.Service.PreviewAsync(f.Request);
         await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("*acquisition inside its ex-coupon window*opening entitlement reconciliation*");
         await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
@@ -123,10 +132,14 @@ public sealed class BondIncomeServiceTests
                 var inFirstPeriod = settlement > new DateOnly(2025, 1, 1) && settlement < new DateOnly(2026, 1, 1);
                 var held = inFirstPeriod ? coupon * (settlement.DayNumber - new DateOnly(2025, 1, 1).DayNumber) / 365m : 0m;
                 var detached = settlement >= new DateOnly(2025, 12, 22) && settlement < new DateOnly(2026, 1, 1);
-                return seed with { Context = input.Context, AccruedInterest = held - (detached ? coupon : 0m),
+                return seed with
+                {
+                    Context = input.Context,
+                    AccruedInterest = held - (detached ? coupon : 0m),
                     ContractualAccruedInterest = held,
                     CashFlows = seed.CashFlows.Where(flow => flow.PaymentDate > settlement).Select(flow => flow with
-                    { Interest = detached && flow.PaymentDate == new DateOnly(2026, 1, 1) ? 0m : coupon }).ToArray() };
+                    { Interest = detached && flow.PaymentDate == new DateOnly(2026, 1, 1) ? 0m : coupon }).ToArray()
+                };
             });
         var through = new DateOnly(2025, 12, 30);
         var preview = await f.Service.PreviewAsync(f.Request with { ThroughDate = through });
@@ -154,15 +167,27 @@ public sealed class BondIncomeServiceTests
         var terminal = f.Request.ThroughDate;
         var due = terminal.AddDays(2);
         var coupon = seed.CashFlows[0] with { PaymentDate = due, Interest = raw, Principal = 0m, OutstandingPrincipal = 0m };
-        var principal = coupon with { PaymentDate = terminal, AccrualStart = terminal, AccrualEnd = terminal,
-            Interest = 0m, Principal = 100m, PeriodUnits = 0m, AccrualFraction = 0m };
+        var principal = coupon with
+        {
+            PaymentDate = terminal,
+            AccrualStart = terminal,
+            AccrualEnd = terminal,
+            Interest = 0m,
+            Principal = 100m,
+            PeriodUnits = 0m,
+            AccrualFraction = 0m
+        };
         f.Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
             .Returns(call =>
             {
                 var input = call.Arg<BondWorkflowRequest>();
-                return seed with { Context = input.Context, CashFlows = [principal, coupon],
+                return seed with
+                {
+                    Context = input.Context,
+                    CashFlows = [principal, coupon],
                     AccruedInterest = input.Context.SettlementDate == terminal ? raw : 0m,
-                    ContractualAccruedInterest = input.Context.SettlementDate == terminal ? raw : 0m };
+                    ContractualAccruedInterest = input.Context.SettlementDate == terminal ? raw : 0m
+                };
             });
         var preview = await f.Service.PreviewAsync(f.Request);
         preview.Income.CouponIncome.Should().Be(raw > 0m ? 1.24m : -1.24m);

@@ -54,9 +54,11 @@ internal static class BondCouponRecognitionNoncashHistory
                         && mutation.LotAfter.ToOpenLot().OpenFunctionalCostBasis == restored.ToOpenLot().OpenFunctionalCostBasis
                         && Inverse(receipt.Journal.Entry, corrected.Journal.Entry);
                 }
-                if (permitted) result.Add(receipt.Journal);
+                if (permitted)
+                    result.Add(receipt.Journal);
             }
-            if (mutation.LotBefore is not { } predecessor) break;
+            if (mutation.LotBefore is not { } predecessor)
+                break;
             if (predecessor.TaxLotRecordId != physical.TaxLotRecordId || predecessor.LedgerBookId != physical.LedgerBookId
                 || predecessor.Version >= cursor.Version || predecessor.SecurityId != physical.SecurityId
                 || predecessor.BookPositionId != physical.BookPositionId || predecessor.Account != physical.Account)
@@ -71,7 +73,7 @@ internal static class BondCouponRecognitionNoncashHistory
     {
         if (receipt.MutationKind != AtomicTaxLotMutationKind.Amortization || mutation.MutationKind != AtomicTaxLotMutationKind.Amortization
             || mutation.LotBefore is not { } before || mutation.LotAfter.BasisAdjustment is not
-                { Reason: OpenLotBasisAdjustmentReasons.Amortization, Amortization: { } inputs } adjustment
+            { Reason: OpenLotBasisAdjustmentReasons.Amortization, Amortization: { } inputs } adjustment
             || adjustment.MutationBatchId != receipt.MutationBatchId || inputs.Reversal is not null
             || !OpenLotAmortization.SameLot(inputs.ExpectedLot, before.ToOpenLot())
             || mutation.LotAfter.Version != before.Version + 1 || mutation.LotAfter.OpenQuantity != before.OpenQuantity
@@ -81,7 +83,8 @@ internal static class BondCouponRecognitionNoncashHistory
             || receipt.Journal.SourceEventId != mutation.SourceEventId || receipt.Journal.Entry.Lines.Count != 2)
             return false;
         OpenLotAmortizationProjectionDto projected;
-        try { projected = OpenLotAmortization.Project(inputs); }
+        try
+        { projected = OpenLotAmortization.Project(inputs); }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or ArithmeticException) { return false; }
         var after = mutation.LotAfter.ToOpenLot();
         if (projected.FunctionalMovement == 0m || projected.TransactionCostBasis != after.OpenTransactionCostBasis

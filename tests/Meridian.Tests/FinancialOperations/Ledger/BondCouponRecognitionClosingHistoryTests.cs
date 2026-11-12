@@ -34,7 +34,8 @@ public sealed class BondCouponRecognitionClosingHistoryTests
         var result = await BondCouponRecognitionClosingHistory.ResolveAsync(fixture.Ledger, fixture.Scope,
             fixture.Lot, fixture.Paths, fixture.Accounts, fixture.History);
         result.Should().HaveCount(expected);
-        if (expected != 0) result.Single().Should().Be(fixture.History[1]);
+        if (expected != 0)
+            result.Single().Should().Be(fixture.History[1]);
     }
 
     [Theory]
@@ -79,8 +80,11 @@ public sealed class BondCouponRecognitionClosingHistoryTests
 
     private static Inputs Fixture(string scenario)
     {
-        var bookId = Guid.NewGuid(); var periodId = Guid.NewGuid(); var owner = Guid.NewGuid().ToString("D");
-        var security = Guid.NewGuid(); var position = Guid.NewGuid();
+        var bookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var owner = Guid.NewGuid().ToString("D");
+        var security = Guid.NewGuid();
+        var position = Guid.NewGuid();
         var at = new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var scope = new AccountCashForecastScopeDto("tenant", "company", owner, bookId.ToString("D"), "USD");
         var paths = new BondCouponBookAccountsDto("receivable", "payable", "income", "cash", "tax", "fees");
@@ -89,7 +93,8 @@ public sealed class BondCouponRecognitionClosingHistoryTests
         var lot = new LedgerTaxLotRecord(Guid.NewGuid(), bookId, new("Investment lots", LedgerAccountType.Asset, FinancialAccountId: owner),
             "lot", new(2026, 1, 1), 100m, 100m, 1m, "USD", at, at, SecurityId: security, BookPositionId: position);
         var dimensions = new LedgerLineDimensionSet(FundId: "fund", BookId: scope.BookId, AccountId: owner,
-            InstrumentId: security, TaxLotId: "lot", ExternalGlDimensions: new Dictionary<string, string> { ["desk"] = "A" }) { PositionId = position };
+            InstrumentId: security, TaxLotId: "lot", ExternalGlDimensions: new Dictionary<string, string> { ["desk"] = "A" })
+        { PositionId = position };
         var income = new LedgerAccount("Bond income", LedgerAccountType.Revenue, FinancialAccountId: owner);
         var amount = scenario == "negative" ? -100m : 100m;
         var prefixId = Guid.NewGuid();

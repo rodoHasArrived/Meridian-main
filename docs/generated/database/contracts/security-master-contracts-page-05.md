@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 525. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 526. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -205,8 +205,8 @@ classDiagram
         +string? IndexName
         +SecurityCurveInterpolation Interpolation
         +SecurityCurveKind Kind
+        +SecurityCurveRatePolicy RatePolicy
         +string Source
-        +string? Tenor
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation["SecurityCurveInterpolation"] {
     }
@@ -217,6 +217,8 @@ classDiagram
         +SecurityRatePointEvidenceDto? RateEvidence
         +string? Tenor
         +decimal Value
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy["SecurityCurveRatePolicy"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveRules["SecurityCurveRules"] {
     }
@@ -421,8 +423,6 @@ classDiagram
         +bool TracksPaydownFactor
         +SecurityLotUnitKind UnitKind
     }
-    class Meridian_Contracts_SecurityMaster_SecurityLotUnitKind["SecurityLotUnitKind"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
@@ -444,6 +444,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
+    Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
@@ -461,5 +462,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowGap
     Meridian_Contracts_SecurityMaster_SecurityInterestSupport --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto
-    Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
 ```

@@ -182,7 +182,8 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
                 { AcquisitionSettlementDate = holderLot.AcquiredDate, EntitlementInputs = entitlement.Inputs });
             }
             cashAllocations.Add(BondIncomeCouponRounding.Allocate(obligation.Key.PaymentDate, obligation.Key.AccrualStart,
-                obligation.Key.AccrualEnd, security.Currency, components) with { HolderSnapshotDate = holderDate });
+                obligation.Key.AccrualEnd, security.Currency, components) with
+            { HolderSnapshotDate = holderDate });
         }
         var resets = new List<BondIncomeResetDto>();
         if (policy.FloaterPolicy == BondIncomeFloaterPolicy.ProspectiveReset)
@@ -233,8 +234,11 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
                 || JsonSerializer.Serialize(birth.Mutations[0].LotAfter.Acquisition) != JsonSerializer.Serialize(lot.Acquisition)
                 || birth.Journal.CreatedAt > request.KnownAt || birth.Mutations[0].RecordedAt > request.KnownAt)
                 throw new InvalidOperationException("Purchased coupon separation requires exact retained canonical acquisition authority at the calculation cutoff.");
-            incomeInputs = incomeInputs with { PurchasedCouponTail = new(BondIncomePurchasedCouponTail.ModelVersion,
-                birthId, birthJournalId, coupon.PaymentDate, coupon.AccrualStart, coupon.AccrualEnd, acquisition.PurchasedAccruedInterest) };
+            incomeInputs = incomeInputs with
+            {
+                PurchasedCouponTail = new(BondIncomePurchasedCouponTail.ModelVersion,
+                birthId, birthJournalId, coupon.PaymentDate, coupon.AccrualStart, coupon.AccrualEnd, acquisition.PurchasedAccruedInterest)
+            };
         }
         var income = BondIncomeCalculator.Project(lot, incomeInputs);
         incomeInputs = incomeInputs with { BookedTarget = income.BookedTarget, AccountingYieldCertificate = income.AccountingYieldCertificate };

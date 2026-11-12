@@ -28,7 +28,8 @@ public static class BondIncomeCouponRounding
     public static IReadOnlyList<BondWorkflowCashFlow> EarnedFlows(BondIncomeInstructionDto income)
     {
         var flows = income.CurrentProjection.CashFlows.Where(f => f.PaymentDate > income.AcquisitionDate && f.Interest != 0m).ToArray();
-        if (income.TerminalEntitlement is not { } terminal) return flows.Where(f => f.PaymentDate <= income.ThroughDate).ToArray();
+        if (income.TerminalEntitlement is not { } terminal)
+            return flows.Where(f => f.PaymentDate <= income.ThroughDate).ToArray();
         var lastPrincipal = income.CurrentProjection.CashFlows.Where(f => f.Principal > 0m).OrderBy(f => f.PaymentDate).LastOrDefault();
         if (terminal.ModelVersion != TerminalEntitlementModelVersion || terminal.PrincipalDate > income.ThroughDate
             || lastPrincipal is null || lastPrincipal.PaymentDate != terminal.PrincipalDate || lastPrincipal.OutstandingPrincipal != 0m

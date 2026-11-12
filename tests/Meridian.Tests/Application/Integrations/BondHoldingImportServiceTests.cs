@@ -21,13 +21,18 @@ public sealed class BondHoldingImportServiceTests
             var manifests = new FileProviderIntegrationManifestStore(root);
             var store = manifests.ForTenant(tenant);
             var accounts = new InMemoryFundAccountService();
-            var accountId = Guid.NewGuid(); var securityId = Guid.NewGuid(); var now = DateTimeOffset.UtcNow;
+            var accountId = Guid.NewGuid();
+            var securityId = Guid.NewGuid();
+            var now = DateTimeOffset.UtcNow;
             await accounts.CreateAccountAsync(new(accountId, AccountTypeDto.Custody, "SYNTHETIC", "CSV bonds", "USD",
                 now.AddDays(-1), "synthetic"));
             var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-fixed-income-security-master-v2", 2)!;
-            manifest = manifest with { FieldMappings = [.. manifest.FieldMappings,
+            manifest = manifest with
+            {
+                FieldMappings = [.. manifest.FieldMappings,
                 new(ProviderCapabilityKindDto.Holdings, "$.account_id", "internalAccountId", null, true,
-                    ProviderMappingConfidenceDto.Approved, null, null)] };
+                    ProviderMappingConfidenceDto.Approved, null, null)]
+            };
             await store.SaveManifestAsync(manifest);
             await store.SaveConnectionAsync(new(connectionId, manifest.ProviderId, manifest.ManifestId, "Reviewed CSV",
                 "synthetic", ProviderIntegrationActivationStateDto.Draft, "synthetic-no-secret",

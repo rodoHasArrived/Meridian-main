@@ -1207,7 +1207,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
                                      && mapping.Scale is null
                                      && ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal))
             .Select(static mapping => mapping.Sources[0]);
-        var workflowFields = assetClass == "Bond"
+        var workflowFields = SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure
             ? SecurityAssetTermsSchema.ElementFields("Bond", "bondWorkflow").Select(field => ("bondWorkflow", field.Key))
             : [];
         return structural.Concat(copied).Concat(workflowFields).Distinct().ToArray();

@@ -95,8 +95,10 @@ internal static class BondCouponClosedLotAuthority
             || JsonSerializer.Serialize(origin.Acquisition) != JsonSerializer.Serialize(current.Acquisition))
             throw new InvalidOperationException("Closed coupon clearing requires unchanged principal-bound earned terms and booked targets.");
         var proofReceipts = new List<BondCouponRecognitionReceiptDto>();
-        if (earned is not null) proofReceipts.Add(earned);
-        if (previous is not null) proofReceipts.Add(previous);
+        if (earned is not null)
+            proofReceipts.Add(earned);
+        if (previous is not null)
+            proofReceipts.Add(previous);
         foreach (var receipt in proofReceipts.DistinctBy(row => row.JournalEntryId))
         {
             var journal = (await ledger.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: current.LedgerBookId,

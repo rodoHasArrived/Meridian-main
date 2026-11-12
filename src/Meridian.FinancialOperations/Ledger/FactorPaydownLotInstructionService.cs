@@ -186,9 +186,14 @@ public sealed class FactorPaydownLotInstructionService(
         if (scheduled && request.NewFactor == 0m)
         {
             var terminal = await BondIncomeTerminalCouponGuard.ResolveAsync(lotStore, instruction, couponAuthority?.Invoke(), ct).ConfigureAwait(false);
-            instruction = instruction with { ScheduledPrincipal = instruction.ScheduledPrincipal! with
-                { TerminalCouponReceipts = terminal.Receipts.Count == 0 ? null : terminal.Receipts,
-                    TerminalCouponOpenings = terminal.Openings.Count == 0 ? null : terminal.Openings } };
+            instruction = instruction with
+            {
+                ScheduledPrincipal = instruction.ScheduledPrincipal! with
+                {
+                    TerminalCouponReceipts = terminal.Receipts.Count == 0 ? null : terminal.Receipts,
+                    TerminalCouponOpenings = terminal.Openings.Count == 0 ? null : terminal.Openings
+                }
+            };
         }
         if (instruction.ScheduledPrincipal is { } adopted)
             instruction = instruction with { Lots = BondIncomeScheduledPrincipal.Allocate(instruction, adopted) };

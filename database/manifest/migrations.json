@@ -568,6 +568,15 @@
       "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
     },
     {
+      "filename": "066_security_curve_rate_policy.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 66,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_security_curve_rate_policy.sql",
+      "schema": "security_master",
+      "sha256": "65ece037c876aafba9dbe039c3a21e8b7ae21737d5cc5b0c2a70a98c8bc12457"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1189,6 +1198,15 @@
       "sha256": "ffd9c31c13791ac9f7e2c36f3b9f81d1c80cbc5ec81a13571a9eb2e9d310ee5b"
     },
     {
+      "filename": "V_ledger_055__bond_coupon_recognition.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_055__bond_coupon_recognition.sql",
+      "schema": "ledger",
+      "sha256": "0805f0d84b7e11dd086e8a93e08417307c8e831611538edf61ddcc4af13e1c57"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1313,6 +1331,15 @@
       "path": "src/Meridian.Storage/FundAccounts/Migrations/008_plaid_transaction_feed_backfill.sql",
       "schema": "fund_accounts",
       "sha256": "4fc0e5464b31d9a5a068f7f8b0114001a25e72848e1ec185f3deb7930e0f48f4"
+    },
+    {
+      "filename": "009_custodian_snapshot_authority.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/009_custodian_snapshot_authority.sql",
+      "schema": "fund_accounts",
+      "sha256": "45207b1ce0f3618d05aa953a1cf117fc8c60df055d549d06500143b973b329e0"
     },
     {
       "filename": "001_banking.sql",
@@ -1487,7 +1514,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "e8e355d9a50dbc932fd4eef9d989e19b8a0de26ae0636266facb613699ec478a",
+  "fingerprint": "a2224c965dd6d4e1de2294a8f7ee00fb0476ef3b0f97bf24758076fa773e7e34",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1749,7 +1776,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 165,
+    "files": 168,
     "migration_sets": 11,
     "waivers": 30,
     "warnings": 0

@@ -44,7 +44,8 @@ public sealed partial class AccountingPostingCandidateService
 
     private static JournalEntry WithAdoptedIncomeCurrency(JournalEntry entry, LedgerTaxLotRecord? lot)
     {
-        if (lot is null) return entry;
+        if (lot is null)
+            return entry;
         var acquisition = lot.Acquisition!;
         if (acquisition.AcquisitionCurrency != acquisition.FunctionalCurrency || acquisition.AcquisitionFxRateToFunctional != 1m)
             throw new InvalidOperationException("Governed bond-income candidates require a same-currency lot and adopted dated FX authority for any translation.");

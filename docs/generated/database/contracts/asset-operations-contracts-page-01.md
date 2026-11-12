@@ -179,7 +179,6 @@ classDiagram
         +PostingRuleJournalCandidateResultDto? DraftedCandidateResult
         +string? DraftedCandidateResultFingerprint
         +AssetLotMutationInstructionDto? DraftedLotMutation
-        +string? DraftedLotMutationFingerprint
     }
     class Meridian_Contracts_AssetOperations_AssetAccountingEventSpineValidator["AssetAccountingEventSpineValidator"] {
     }

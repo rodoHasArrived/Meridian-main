@@ -27,9 +27,13 @@ internal static class BondPortfolioHoldingQuote
         var nominalQuote = invoices.Sum(row => row.Clean) / current * 100m;
         if (nominalQuote < 0m)
             throw new ArgumentException("Accepted holding quotation does not establish a nonnegative nominal clean price.");
-        var selected = request with { CleanPricePer100 = nominalQuote, QuoteSettlementDate = snapshot.AsOfDate,
+        var selected = request with
+        {
+            CleanPricePer100 = nominalQuote,
+            QuoteSettlementDate = snapshot.AsOfDate,
             PriceBasis = BondWorkflowPriceBasis.NominalClean,
-            ConfirmationEvidenceReference = $"accepted-holdings:{snapshot.BatchId:D}:{snapshot.SourceContentHash}" };
+            ConfirmationEvidenceReference = $"accepted-holdings:{snapshot.BatchId:D}:{snapshot.SourceContentHash}"
+        };
         var authority = new BondCalculationInput("AcceptedHoldingInvoice", snapshot.BatchId.ToString("D"),
             ContentSha256: snapshot.SourceContentHash,
             AsOf: new DateTimeOffset(snapshot.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero));
