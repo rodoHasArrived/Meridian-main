@@ -46,6 +46,8 @@ function routeFocusSearch(pathname: string, search: string): string {
   const isReporting = normalizedPath === WORKSTATION_ROUTE_CATALOG.reporting;
   const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
   const isMarketData = normalizedPath === WORKSTATION_ROUTE_CATALOG.dataQuotes;
+  const isIncomeComparison = normalizedPath === WORKSTATION_ROUTE_CATALOG.reportingRunStatus
+    || normalizedPath === WORKSTATION_ROUTE_CATALOG.reportingRunDetail;
   const isReconciliation = normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingReconciliation
     || normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingExceptions;
   const taskKeys = normalizedPath === WORKSTATION_ROUTE_CATALOG.strategy
@@ -54,7 +56,7 @@ function routeFocusSearch(pathname: string, search: string): string {
       ? ["dataJob", "dataTask"]
       : normalizedPath === WORKSTATION_ROUTE_CATALOG.settings
         ? ["settingsTask"] : [];
-  if (!isReporting && !isPortfolio && !isMarketData && !isReconciliation && taskKeys.length === 0) return search;
+  if (!isReporting && !isPortfolio && !isMarketData && !isReconciliation && !isIncomeComparison && taskKeys.length === 0) return search;
 
   // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
@@ -63,6 +65,13 @@ function routeFocusSearch(pathname: string, search: string): string {
     for (const key of taskKeys) {
       params.delete(key);
       params.delete(`${key}Search`);
+    }
+  } else if (isIncomeComparison) {
+    // The retained comparison and support sheet share this screen. In particular,
+    // opening/closing support must leave focus restoration to the sheet rather
+    // than navigating focus to the workbench. Host runId and financial scope stay.
+    for (const key of ["incomeBaseline", "incomeCurrent", "incomeGrid", "incomeMetric", "incomeComparison", "incomeContribution"]) {
+      params.delete(key);
     }
   } else if (isReconciliation) {
     for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {

@@ -118,6 +118,11 @@ precision with journal-ID links, no invented Strategy metrics, and a masthead ac
 leaves once setup is complete. No shared contract changed; entity display names still need a
 shared seam before the ledger can show them.
 
+Dashboard source includes signed report-value summaries, a retained investment-income movement
+waterfall with exact-decimal bridge checks, and position-table display graphics. Financial strings,
+missing observations, shared mark assessments and retained supporting-record paths remain visible.
+The host-served bundle is rebuilt from these dashboard changes.
+
 ## Purpose
 
 Meridian.Ui contains the browser workstation source folder and built host-served workstation assets.

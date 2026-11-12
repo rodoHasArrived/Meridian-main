@@ -84,6 +84,28 @@ Use native labelled input/select controls, existing focus indicators, and wrappi
 at laptop widths/browser zoom. Search URL updates must not move focus or scroll the workbench.
 Copy link and Save view capture table controls through the existing view envelope.
 
+### Financial scanning aids and retained bridges
+
+Keep exact values primary when adding graphics inside dense tables. `PositionValueGraphic` in the
+browser workstation uses an exposure-magnitude bar and a signed P&L bar with a visible zero marker.
+The scale belongs to all loaded positions before filters, separately for each column and source
+currency. Rows without a currency remain a separate display-only group; the dollar-format limitation
+is disclosed. Unsupported formats are unavailable,
+never zero. Pair large displayed exposure with the shared mark-review state using explicit text;
+bar color alone must not carry review meaning. Do not use rounded display ratios for concentration,
+approval, financial totals, FX conversion, or accounting decisions.
+
+`ReportWriterChartPreview` is a **Signed value summary**, labeled separately from the configured
+chart type. Direct series labels, exact reported values, a common zero baseline and explicit
+unavailable observations preserve sign and missingness. Keep the retained grid alongside it.
+
+`IncomeMovementWaterfall` follows the start/delta/total bridge pattern with dashed level connectors.
+Keep currency, basis, period and population beside the chart, and exact amounts below each stage.
+Contribution buttons open retained support and restore focus on close. Missing, incompatible or
+internally inconsistent bridges withhold the drawing while preserving the exact evidence. Use
+exact decimal arithmetic before deriving drawing coordinates; never fold unexplained records into
+the residual twice or treat offsetting unsupported records as verified evidence.
+
 ### Selection inputs — which control?
 
 | Situation | Use |
