@@ -9394,6 +9394,7 @@ Meridian-main
 │   │   │   │   ├── startup-appearance.test.ts
 │   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.assets.test.ts
 │   │   │   │   ├── vite-config.font-licenses.test.ts
 │   │   │   │   ├── vite-config.scenarios.test.ts
 │   │   │   │   ├── vite-config.test.ts
