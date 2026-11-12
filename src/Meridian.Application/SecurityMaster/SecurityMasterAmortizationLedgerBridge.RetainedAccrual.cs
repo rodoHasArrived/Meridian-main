@@ -53,7 +53,7 @@ public sealed partial class SecurityMasterAmortizationLedgerBridge
         var segments = schedule.SelectMany(row => row.InterestSegments ?? []).ToArray();
         if (segments.Length == 0)
             throw new InvalidOperationException("Retained accrual requires interest principal segment evidence, including zero-coupon intervals.");
-        if (segments.Any(segment => segment.ReferencePrincipal != projection.TermsUsed.PrincipalFace * segment.Factor))
+        if (segments.Any(segment => segment.Factor != segment.ReferencePrincipal / projection.TermsUsed.PrincipalFace))
             throw new InvalidOperationException("Interest principal segments disagree with the source's original face and factor.");
         var byDay = holdings.ToLookup(holding => holding.Date);
         // Validate the complete history before posting anything, including zero-interest periods.
