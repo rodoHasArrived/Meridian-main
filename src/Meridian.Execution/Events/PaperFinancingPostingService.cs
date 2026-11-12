@@ -14,6 +14,7 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
 {
     private readonly TradeFillLedgerPostingContext _context;
     private readonly ITradeFillLedgerPostingTarget _target;
+    private readonly Func<Guid, CancellationToken, Task<LedgerAccountingPeriod?>> _readPeriod;
     private readonly string _snapshotPath;
     private readonly string _initializationMarkerPath;
     private readonly WriteAheadLog _wal;
@@ -28,10 +29,12 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
     public TradeFillLedgerPostingContext PostingContext => _context;
 
     public PaperFinancingPostingService(string rootDirectory, TradeFillLedgerPostingContext context,
-        ITradeFillLedgerPostingTarget target)
+        ITradeFillLedgerPostingTarget target,
+        Func<Guid, CancellationToken, Task<LedgerAccountingPeriod?>> readPeriod)
     {
         _context = (context ?? throw new ArgumentNullException(nameof(context))).Validate();
         _target = target ?? throw new ArgumentNullException(nameof(target));
+        _readPeriod = readPeriod ?? throw new ArgumentNullException(nameof(readPeriod));
         var root = Path.Combine(new TradeFillPostingStoreOptions(rootDirectory, context).ScopeDirectory, "financing");
         Directory.CreateDirectory(root);
         // The snapshot and WAL have one owner. A second host must fail before it can
@@ -53,17 +56,22 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
     public async Task<bool> PostAsync(PaperFinancingCharge charge, CancellationToken ct = default)
     {
         charge.Validate();
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        { await _gate.WaitAsync(ct).ConfigureAwait(false); }
+        catch (OperationCanceledException cancellation)
+        {
+            throw new PaperFinancingAdmissionException(cancellation);
+        }
         try
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             await (_initialization ??= InitializeCoreAsync()).ConfigureAwait(false);
-            ct.ThrowIfCancellationRequested();
             var isNew = !_charges.TryGetValue(charge.SourceEventId, out var state);
             if (!isNew && state!.Charge != charge)
                 throw new InvalidDataException($"Financing source '{charge.SourceEventId}' was reused with different content.");
             if (isNew)
             {
+                await ValidateNewAssessmentAsync(charge, ct).ConfigureAwait(false);
                 state = new(charge, Posted: false);
                 await RetainAsync(state, "FinancingAccepted").ConfigureAwait(false);
             }
@@ -72,6 +80,34 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
             return isNew;
         }
         finally { _gate.Release(); }
+    }
+
+    private async Task ValidateNewAssessmentAsync(PaperFinancingCharge charge, CancellationToken ct)
+    {
+        try
+        {
+            // New assessments must fit the authoritative numeric(38,10) amount exactly.
+            // Do not retain a zero-rounded/overflowing leg or diverge from session cash.
+            if (charge.Amount >= 10000000000000000000000000000m
+                || decimal.Round(charge.Amount, 10, MidpointRounding.AwayFromZero) != charge.Amount)
+                throw new LedgerValidationException("The financing amount must fit the journal's numeric(38,10) precision exactly.");
+            var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildWrite(charge),
+                requirePostingCommand: true, requireExpectedVersion: true);
+            var period = await _readPeriod(_context.PeriodId, ct).ConfigureAwait(false)
+                ?? throw new LedgerValidationException("The financing accounting period is unavailable.");
+            if (period.PeriodId != _context.PeriodId || period.LedgerBookId != _context.LedgerBookId)
+                throw new LedgerValidationException("The financing accounting period does not belong to the bound ledger scope.");
+            if (period.Version != _context.ExpectedPeriodVersion)
+                throw new LedgerValidationException("The financing accounting period version differs from the bound posting context.");
+            LedgerPeriodPostingGuard.Validate(write, period);
+            ct.ThrowIfCancellationRequested();
+        }
+        catch (Exception error)
+        {
+            // Nothing has entered the WAL or snapshot. The session owner must preserve the
+            // original refusal/cancellation without latching an unaccepted source as pending.
+            throw new PaperFinancingAdmissionException(error);
+        }
     }
 
     /// <summary>Replays pending assessments before exposing a rebuilt session book.</summary>
@@ -280,3 +316,11 @@ internal sealed record PaperFinancingInitializationMarker(int Version, TradeFill
 internal sealed record PaperFinancingWalPayload(TradeFillLedgerPostingContext Scope, PaperFinancingPostingState State);
 internal sealed record PaperFinancingPostingSnapshot(int Version, TradeFillLedgerPostingContext Scope,
     long Sequence, IReadOnlyList<PaperFinancingPostingState> States);
+
+/// <summary>This call failed before accepting a new durable source. An earlier acceptance can
+/// still exist on a retry. The original error preserves validation, cancellation and availability.</summary>
+public sealed class PaperFinancingAdmissionException : Exception
+{
+    internal PaperFinancingAdmissionException(Exception error)
+        : base("The financing assessment was not accepted.", error) { }
+}

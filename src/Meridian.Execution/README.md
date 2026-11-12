@@ -108,6 +108,14 @@ under that identity fail closed. Accepted assessments survive interrupted postin
 recovered before a session book is exposed. They debit margin-interest expense and credit cash
 without increasing the loan principal. The authoritative journal remains in the configured
 ledger store; the outbox retains source evidence and delivery state.
+Before retaining a new source, admission reads the authoritative period and validates the exact
+book, dates, open status and expected version, normalizes the complete posting command, and requires
+an amount represented exactly by the journal's numeric(38,10) storage. A rejected assessment creates
+no pending source and does not block the next valid assessment. Existing accepted-source retries keep
+their immutable context and can confirm already-posted journals after the period closes.
+This admission read does not lock the period across the local WAL and database append. A close that
+races after acceptance remains subject to the authoritative posting guard; the source stays pending
+and requires governed recovery instead of deletion or automatic period reassignment.
 If confirmation fails, the current session refuses further fills, settlements and close until
 the same source is successfully retried or startup recovers the pending assessment. Order history
 and cancellation evidence remain recordable while recovery is pending.
@@ -119,6 +127,12 @@ unbound and require an explicit migration before accepting these charges. Sessio
 merges financing and settlements into fill replay, preserving paid charges when subsequent fills
 rebuild the projection. This endpoint serves single-account paper sessions; account-level charge
 allocation to promoted strategy runs requires a retained run allocation and is not inferred.
+
+The financing service owns one immutable posting context. The session catalog validates that
+binding for closed historical sessions as well as active sessions. Reconfiguring the period,
+expected period version, book or policy against the same catalog therefore blocks initialization
+until prior-scope ownership is retained, catalogs are explicitly isolated, or a reviewed migration
+preserves the historical bindings. Automatic multi-period catalog resolution is not implemented.
 
 Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
 

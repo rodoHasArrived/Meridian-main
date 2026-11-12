@@ -8968,6 +8968,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto"
     },
     {
@@ -24400,6 +24406,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto"
     },
     {
@@ -37715,6 +37727,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
+      "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
     },
     {
       "kind": "contract-reference",
@@ -58388,7 +58406,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "24d116229e62e2feb129f6c16d4033ca35147bbadeb0150a04c60f68dad89010",
+  "fingerprint": "b6796595afac5c806761c430674b9eca33fb229f40de9d1d27fb33c3ac734341",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -67404,6 +67422,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
     },
     {
       "classification": "dto",
@@ -85587,11 +85611,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3702,
-    "contract_set_memberships": 4654,
-    "edges": 9701,
+    "contract_references": 3703,
+    "contract_set_memberships": 4656,
+    "edges": 9704,
     "foreign_keys": 165,
     "logical_references": 6,
-    "nodes": 4720
+    "nodes": 4721
   }
 }

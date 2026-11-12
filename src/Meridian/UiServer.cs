@@ -226,7 +226,8 @@ public sealed class UiServer : IAsyncDisposable
                     });
                 builder.Services.AddSingleton(sp => new PaperFinancingPostingService(
                     tradeFillStoreRoot, postingContext,
-                    sp.GetRequiredService<ITradeFillLedgerPostingTarget>()));
+                    sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
+                    sp.GetRequiredService<ILedgerJournalStore>().GetPeriodAsync));
             }
 
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));

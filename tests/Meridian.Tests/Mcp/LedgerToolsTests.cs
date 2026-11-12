@@ -14,7 +14,7 @@ public sealed class LedgerToolsTests
     {
         var handler = new RecordingHandler(HttpStatusCode.OK);
         using var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost:8080/") };
-        var tools = new LedgerTools(new LedgerApiClient(client));
+        var tools = new LedgerTools(new LedgerApiClient(client, new("synthetic-operator", "synthetic-password")));
         await tools.GetRunningBalanceAsync("run-1", "Cash&other=value", financialAccountId: "");
         handler.Request!.Method.Should().Be(HttpMethod.Get);
         handler.Request.RequestUri!.AbsolutePath.Should().Be("/api/workstation/runs/run-1/ledger/running-balance");
@@ -27,7 +27,7 @@ public sealed class LedgerToolsTests
     public async Task ReadTools_PropagateAuthorizationRefusalAndRejectTraversal()
     {
         using var client = new HttpClient(new RecordingHandler(HttpStatusCode.Forbidden)) { BaseAddress = new Uri("http://localhost/") };
-        var tools = new LedgerTools(new LedgerApiClient(client));
+        var tools = new LedgerTools(new LedgerApiClient(client, new("synthetic-operator", "synthetic-password")));
         await Assert.ThrowsAsync<HttpRequestException>(() => tools.GetAccountsAsync("run-1"));
         await Assert.ThrowsAsync<ArgumentException>(() => tools.GetAccountsAsync("../other"));
         await Assert.ThrowsAsync<ArgumentException>(() => tools.GetSymbolLedgerAsync("run-1", ".."));
@@ -38,6 +38,12 @@ public sealed class LedgerToolsTests
         public HttpRequestMessage? Request { get; private set; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
+            if (request.RequestUri!.AbsolutePath == "/api/auth/login")
+            {
+                var login = new HttpResponseMessage(HttpStatusCode.OK);
+                login.Headers.Add("Set-Cookie", $"mdc-session={new string('A', 64)}; Path=/; HttpOnly");
+                return Task.FromResult(login);
+            }
             Request = request;
             return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent("[]") });
         }

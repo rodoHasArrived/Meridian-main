@@ -827,6 +827,12 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             // Past this boundary, cancellation cannot discard a retained financial event.
             try
             { await _financing.PostAsync(charge, ct).ConfigureAwait(false); }
+            catch (PaperFinancingAdmissionException refusal)
+            {
+                // This call accepted no new source. Preserve an existing retry latch, but do
+                // not create a recovery obligation for a rejected/cancelled assessment.
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(refusal.InnerException!).Throw();
+            }
             catch
             {
                 // The source may already be durable. Refuse subsequent changes until this

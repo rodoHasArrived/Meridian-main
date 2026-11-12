@@ -15,6 +15,8 @@ last_reviewed: 2026-11-11
 closed period, original effective date, explicitly selected open target period, operator reason,
 intent identity and expected inverse lines. Workbench saves retain this server-produced authority;
 it does not reopen or modify the source period or grant approval/posting authority.
+Its optional `Correction` identifies the immediate posted adjustment being reversed or rebooked,
+preserving the original closed-period source as the root across later corrections.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

@@ -38,6 +38,14 @@ Restart replay of an incomplete running claim returns the same draft identity. P
 changes under the same schedule identity conflict. Scheduling never approves or posts a journal.
 New native workbench journals retain explicit identity currency on every leg.
 
+Posted prior-period adjustments can themselves enter the ordinary reversal or rebook lifecycle
+while their target period stays open. Generated corrections retain the original closed-period
+root and a server-bound immediate predecessor, with new approval and posting identities. A rebook
+contains the predecessor's inverse plus the reviewed replacement; unchanged terms have zero net
+effect. Validation compares the materialized inverse accounts, amounts, native currency and
+dimensions with the immutable posted predecessor, so a later chart-mapping change blocks rather
+than redirecting the reversal. Serialized draft saves cannot replace that authority or lineage.
+
 Focused coverage: `PeriodAdjustmentPreparationTests`, the governed mark-to-preparation case in
 `AccountingConfigurationServiceTests.PeriodAdjustmentPreparation`, and `LedgerPeriodCloseSnapshotTests`.
 

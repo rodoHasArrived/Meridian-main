@@ -48,7 +48,6 @@ public sealed class PostedStrategyRunLedgerSource(
         }
 
         var result = new Meridian.Ledger.Ledger();
-        var authorized = false;
         foreach (var book in books)
         {
             if (book.FundStructureNodeId != accountId
@@ -59,7 +58,6 @@ public sealed class PostedStrategyRunLedgerSource(
             if (owner is null || !owner.IsHeldBy(scope.TenantId)
                 || !string.Equals(owner.CompanyId, scope.CompanyId, StringComparison.OrdinalIgnoreCase))
                 continue;
-            authorized = true;
             var records = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId), ct)
                 .ConfigureAwait(false);
             foreach (var record in records)
@@ -80,7 +78,11 @@ public sealed class PostedStrategyRunLedgerSource(
                 result.Post(entry);
             }
         }
-        return authorized ? result : null;
+        // Book access proves ownership, not that its journal can reconstruct this run. Historical
+        // immutable postings may predate run attribution, and a new run may have no posts yet.
+        // Preserve the retained-run fallback (or its missing-ledger warning) until at least one
+        // independently validated journal establishes an attributed population for this run.
+        return result.Journal.Count > 0 ? result : null;
     }
 
     private static Guid? ReadGuid(StrategyRunEntry run, params string[] keys)

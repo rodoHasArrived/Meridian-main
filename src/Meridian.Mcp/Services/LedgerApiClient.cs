@@ -1,10 +1,25 @@
 using System.Net.Http;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace Meridian.Mcp.Services;
 
 /// <summary>Read-only bridge to the workstation's authenticated, tenant-scoped ledger API.</summary>
-public sealed class LedgerApiClient(HttpClient client)
+public sealed class LedgerApiClient
 {
+    private const string SessionCookieName = "mdc-session";
+    private readonly HttpClient client;
+    private readonly LedgerApiCredentials? _credentials;
+    private readonly CookieContainer _cookies = new();
+    private readonly SemaphoreSlim _signInGate = new(1, 1);
+
+    public LedgerApiClient(HttpClient client, LedgerApiCredentials? credentials = null)
+    {
+        this.client = client ?? throw new ArgumentNullException(nameof(client));
+        ValidateAddress(client.BaseAddress);
+        _credentials = credentials;
+    }
+
     public async Task<string> ReadAsync(string runId, string view, IReadOnlyDictionary<string, string?>? query, CancellationToken ct)
     {
         ValidateSegment(runId, nameof(runId));
@@ -44,12 +59,84 @@ public sealed class LedgerApiClient(HttpClient client)
 
     private async Task<string> SendReadAsync(string path, CancellationToken ct)
     {
+        var session = await EnsureSessionAsync(rejectedSession: null, ct).ConfigureAwait(false);
+        using var first = await SendSessionReadAsync(path, ct).ConfigureAwait(false);
+        if (first.StatusCode != HttpStatusCode.Unauthorized)
+        {
+            first.EnsureSuccessStatusCode();
+            return await first.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        }
+
+        // A revoked/expired server session may be replaced once. Permission/scope refusals never
+        // trigger another sign-in or a fallback identity, and concurrent reads reuse a renewed cookie.
+        await EnsureSessionAsync(session, ct).ConfigureAwait(false);
+        using var renewed = await SendSessionReadAsync(path, ct).ConfigureAwait(false);
+        renewed.EnsureSuccessStatusCode();
+        return await renewed.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<HttpResponseMessage> SendSessionReadAsync(string path, CancellationToken ct)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
-        if (Environment.GetEnvironmentVariable("MDC_API_KEY") is { Length: > 0 } key)
-            request.Headers.Add("X-Api-Key", key);
-        using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        request.Headers.Add("Cookie", _cookies.GetCookieHeader(client.BaseAddress!));
+        return await client.SendAsync(request, ct).ConfigureAwait(false);
+    }
+
+    private async Task<string> EnsureSessionAsync(string? rejectedSession, CancellationToken ct)
+    {
+        await _signInGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var token = _cookies.GetCookies(client.BaseAddress!)[SessionCookieName]?.Value;
+            if (!string.IsNullOrWhiteSpace(token) && token != rejectedSession)
+                return token;
+            var credentials = _credentials ?? LedgerApiCredentials.FromEnvironment();
+            if (!string.IsNullOrEmpty(credentials.SessionToken) && credentials.SessionToken != rejectedSession)
+            {
+                if (credentials.SessionToken.Length != 64 || !credentials.SessionToken.All(char.IsAsciiHexDigit))
+                    throw new InvalidOperationException("MDC_LEDGER_SESSION_TOKEN must contain only the issued session token, without a cookie name or headers.");
+                _cookies.Add(client.BaseAddress!, new Cookie(SessionCookieName, credentials.SessionToken, "/")
+                { Secure = client.BaseAddress!.Scheme == Uri.UriSchemeHttps, HttpOnly = true });
+                return credentials.SessionToken;
+            }
+            if (string.IsNullOrWhiteSpace(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
+                throw new HttpRequestException("The configured Meridian operator session was refused or expired. Supply a new issued session token or configure operator sign-in credentials.",
+                    null, HttpStatusCode.Unauthorized);
+            using var request = new HttpRequestMessage(HttpMethod.Post, "api/auth/login")
+            {
+                Content = JsonContent.Create(new LedgerApiLoginRequest(credentials.Username, credentials.Password),
+                    LedgerApiAuthenticationJsonContext.Default.LedgerApiLoginRequest)
+            };
+            // Some deployments protect the login transport with their existing API-key policy.
+            // It is never forwarded on ledger reads and never supplies their company/tenant scope.
+            if (!string.IsNullOrEmpty(credentials.ApiKey))
+                request.Headers.Add("X-Api-Key", credentials.ApiKey);
+            using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException("Meridian ledger sign-in failed. Check the configured ledger operator credentials and server login policy.",
+                    null, response.StatusCode);
+            try
+            {
+                if (response.Headers.TryGetValues("Set-Cookie", out var cookies))
+                    foreach (var cookie in cookies)
+                        _cookies.SetCookies(client.BaseAddress!, cookie);
+            }
+            catch (CookieException)
+            {
+                throw new InvalidOperationException("Meridian login returned invalid session cookies.");
+            }
+            token = _cookies.GetCookies(client.BaseAddress!)[SessionCookieName]?.Value;
+            if (string.IsNullOrWhiteSpace(token) && client.BaseAddress!.Scheme == Uri.UriSchemeHttp)
+            {
+                var httpsOrigin = new UriBuilder(client.BaseAddress) { Scheme = Uri.UriSchemeHttps }.Uri;
+                if (_cookies.GetCookies(httpsOrigin)[SessionCookieName]?.Secure == true)
+                    throw new InvalidOperationException("Meridian issued a Secure session cookie. Use HTTPS in MDC_API_URL; loopback HTTP sign-in requires the server's declared LocalWorkstation posture and loopback connection. The Secure cookie will not be sent over HTTP.");
+            }
+            if (string.IsNullOrWhiteSpace(token) || token == rejectedSession)
+                throw new InvalidOperationException("Meridian login did not issue a usable session cookie. A configured operator login is required for scoped ledger reads.");
+            return token;
+        }
+        finally { _signInGate.Release(); }
     }
 
     internal static void ValidateSegment(string value, string parameter)
@@ -61,14 +148,21 @@ public sealed class LedgerApiClient(HttpClient client)
     public static HttpClient CreateHttpClient()
     {
         var address = Environment.GetEnvironmentVariable("MDC_API_URL") ?? "http://localhost:8080/";
-        if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttps && !(uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback)) ||
-            uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0)
-            throw new InvalidOperationException("MDC_API_URL must be an HTTPS API origin or a loopback HTTP origin, without credentials, query or fragment.");
-        return new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
+        if (!Uri.TryCreate(address, UriKind.Absolute, out var uri))
+            throw new InvalidOperationException("MDC_API_URL must be an absolute API URL.");
+        ValidateAddress(uri);
+        return new HttpClient(new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false })
         {
             BaseAddress = new Uri(uri.AbsoluteUri.TrimEnd('/') + "/"),
             Timeout = TimeSpan.FromSeconds(30)
         };
+    }
+
+    private static void ValidateAddress(Uri? uri)
+    {
+        if (uri is null || !uri.IsAbsoluteUri ||
+            (uri.Scheme != Uri.UriSchemeHttps && !(uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback)) ||
+            uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0)
+            throw new InvalidOperationException("MDC_API_URL must be an HTTPS API origin or a loopback HTTP origin, without credentials, query or fragment.");
     }
 }

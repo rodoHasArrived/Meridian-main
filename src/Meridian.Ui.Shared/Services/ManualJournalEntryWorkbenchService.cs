@@ -349,9 +349,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
                 : existing.RecurringJournalEvidenceDigest,
             ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
-            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
-            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Reversal : request.Draft.Reversal,
-            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Rebook : request.Draft.Rebook,
+            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
+            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.Reversal : request.Draft.Reversal,
+            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.Rebook : request.Draft.Rebook,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
                 existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
                 RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
@@ -1027,6 +1027,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                     : null));
         }
 
+        // Compare the final materialized accounts as well: the chart can change between
+        // draft validation and this independently loaded posting configuration.
+        await EnsureMaterializedPriorPeriodInverseAsync(draft, lines, ct).ConfigureAwait(false);
         var entry = new JournalEntry(
             draft.JournalEntryId,
             timestamp,
@@ -1140,6 +1143,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             AddMetadataTag(tags, "prior-period.intentId", priorPeriod.IntentId);
             AddMetadataTag(tags, "prior-period.reason", priorPeriod.Reason);
             AddMetadataTag(tags, "prior-period.reversalPolicy", priorPeriod.ReversePeriodEndMark ? "reverse-period-end-mark" : "reviewed-prior-period-correction");
+            if (priorPeriod.Correction is { } priorCorrection)
+            {
+                AddMetadataTag(tags, "prior-period.correctionJournalEntryId", priorCorrection.JournalEntryId.ToString("D"));
+                AddMetadataTag(tags, "prior-period.correctionAction", priorCorrection.ReverseSides ? "Reverse" : "Rebook");
+                AddMetadataTag(tags, "prior-period.correctionReason", priorCorrection.Reason);
+            }
         }
         AddMetadataTag(tags, "tenantId", draft.TenantId);
         AddMetadataTag(tags, "companyId", draft.CompanyId);
@@ -1534,6 +1543,20 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                     EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
                 })
                 .ToArray();
+        if (!reverseSides && posted.PriorPeriodAdjustmentSource is not null)
+        {
+            // A prior-period rebook replaces the already posted adjustment. Retain its exact
+            // inverse and the reviewed replacement in one balanced draft; appending replacement
+            // lines alone would count the earlier adjustment twice. Unchanged terms net to zero.
+            var inverse = posted.Lines.Select((line, index) => line with
+            {
+                LineId = $"rebook-inverse-{index + 1}",
+                Side = ReverseSide(line.Side),
+                EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
+            });
+            correctionLines = inverse.Concat(correctionLines.Select((line, index) => line with
+            { LineId = $"rebook-replacement-{index + 1}" })).ToArray();
+        }
         var toStatus = reverseSides
             ? ManualJournalEntryStatusDto.Reversed
             : ManualJournalEntryStatusDto.Rebooked;
@@ -1588,6 +1611,19 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Reversal = reversal,
             Rebook = rebook
         };
+        if (posted.PriorPeriodAdjustmentSource is { } priorPeriodSource)
+        {
+            correction = correction with
+            {
+                PriorPeriodAdjustmentSource = priorPeriodSource with
+                {
+                    ExpectedLines = correctionLines,
+                    Correction = new PriorPeriodAdjustmentCorrectionDto(posted.JournalEntryId, reverseSides, reason)
+                },
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = $"prior-period|book={posted.LedgerBookId:N}|source={priorPeriodSource.SourceJournalEntryId:N}|intent={Uri.EscapeDataString(priorPeriodSource.IntentId)}|correction={correctionId:N}" }
+            };
+        }
         if (IsOpeningBalanceDraft(posted))
         {
             correction = correction with
@@ -1611,6 +1647,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         {
             throw new InvalidOperationException("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
         }
+        if (correction.PriorPeriodAdjustmentSource is { } normalizedPriorPeriod)
+            correction = correction with { PriorPeriodAdjustmentSource = normalizedPriorPeriod with { ExpectedLines = correction.Lines } };
 
         // The source transition and its source-linked correction are one accounting mutation.
         // Retaining either draft without the other creates an unrecoverable workbench state, so

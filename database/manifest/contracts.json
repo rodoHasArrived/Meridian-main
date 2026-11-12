@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "86ae937c63f1837a292341548850fd56e4dba19b72202a3eb084fad9502982fc",
+      "fingerprint": "740486606cb01687f78faeb3e705fe3465d71f774a11c959bbb571927593cc05",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1505,6 +1505,7 @@
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
         "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest",
         "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
         "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
@@ -3854,7 +3855,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "8ed912f759c13e51ad7cb4b38ab790407a8b9d36b327b6ea58e244e66f860984",
+      "fingerprint": "47fd68dd2ecf1693f8217b6adbb11867823c9ad4c99e7a5a403ad299d3737e2a",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -4174,6 +4175,7 @@
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
         "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest",
         "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
         "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
@@ -4816,7 +4818,7 @@
       ]
     }
   ],
-  "fingerprint": "123d29dc198b414d74bb1d237ef61c67706815a3e765bf9a4a3b142a603ac3aa",
+  "fingerprint": "2cc27d961bb7e6fb27f73c70667092ccd0f348a2a6047bfd9f1303e217fc8946",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6451,7 +6453,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "d0f6b00421a9a133fe71c23281c51ffce213e75d0f0ecc1c05508d08fad2b683",
+      "fingerprint": "31790ef907dbefdea51f4cb6825bd01be3b9cb38af06eb563d24acee94f26116",
       "mapped_schemas": [
         "ledger"
       ],
@@ -6704,6 +6706,7 @@
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
         "Meridian.Contracts.Ledger.PreviewJournalTemplateRequest",
         "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
         "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto",
         "Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes",
@@ -208918,7 +208921,88 @@
         "ledger-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "64f438e12f3d5a49a202c48be8aaf5d2586359efed25ddc660f998063407b93e",
+      "fingerprint": "17719aa8f14e356586384a453090700a2ad41a86db96daee9d47eda3a76457f0",
+      "full_name": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
+      "id": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "JournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 26,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Reason",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 28,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReverseSides",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 27,
+          "type": "bool"
+        }
+      ],
+      "name": "PriorPeriodAdjustmentCorrectionDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
+      "references": [],
+      "source": {
+        "line": 25,
+        "path": "src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 25,
+          "path": "src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "2bd706787ba5293fc0e4b58c0680ab57c6529fde26a867a53834ca28db071f69",
       "full_name": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
       "id": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
       "kind": "record",
@@ -208939,6 +209023,20 @@
           "raw_type": "DateOnly",
           "source_line": 9,
           "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Correction",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "PriorPeriodAdjustmentCorrectionDto?",
+          "source_line": 22,
+          "type": "PriorPeriodAdjustmentCorrectionDto?"
         },
         {
           "collection": true,
@@ -209058,7 +209156,8 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto",
       "references": [
-        "Meridian.Contracts.Ledger.ManualJournalEntryLineDto"
+        "Meridian.Contracts.Ledger.ManualJournalEntryLineDto",
+        "Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
       ],
       "source": {
         "line": 4,

@@ -7094,6 +7094,7 @@ Meridian-main
 │   │   │   └── TemplateResources.cs
 │   │   ├── Services
 │   │   │   ├── LedgerApiClient.cs
+│   │   │   ├── LedgerApiCredentials.cs
 │   │   │   └── RepoPathService.cs
 │   │   ├── Tools
 │   │   │   ├── AdrTools.cs
@@ -13296,6 +13297,7 @@ Meridian-main
 │   │   │   ├── PostedLedgerAmountProvenanceTests.cs
 │   │   │   ├── PostedPeriodComparisonTests.cs
 │   │   │   ├── PostedStrategyRunLedgerSourceTests.cs
+│   │   │   ├── PriorPeriodAdjustmentCorrectionTests.cs
 │   │   │   ├── PrivateCapitalBankObservationServiceTests.cs
 │   │   │   ├── PrivateCapitalEndpointsTests.cs
 │   │   │   ├── PrivateCapitalEventIntakeTests.cs
@@ -13435,6 +13437,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.LedgerRoleReachability.cs
 │   │   │   ├── WorkstationEndpointsTests.ManualJournalFixtures.cs
 │   │   │   ├── WorkstationEndpointsTests.MarkPreview.cs
+│   │   │   ├── WorkstationEndpointsTests.McpAuthentication.cs
 │   │   │   ├── WorkstationEndpointsTests.MetricTransport.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorScopePreference.cs

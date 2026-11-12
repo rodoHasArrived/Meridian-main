@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 368. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 369. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -689,8 +689,14 @@ classDiagram
         +string PeriodId
         +string? Purpose
     }
+    class Meridian_Contracts_Ledger_PriorPeriodAdjustmentCorrectionDto["PriorPeriodAdjustmentCorrectionDto"] {
+        +Guid JournalEntryId
+        +string Reason
+        +bool ReverseSides
+    }
     class Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto["PriorPeriodAdjustmentSourceDto"] {
         +DateOnly AccountingDate
+        +PriorPeriodAdjustmentCorrectionDto? Correction
         +IReadOnlyList~ManualJournalEntryLineDto~ ExpectedLines
         +string IntentId
         +DateOnly OriginalEffectiveDate
@@ -747,19 +753,6 @@ classDiagram
         +string PlanHash
         +string? Purpose
         +PrivateCapitalScopeDto Scope
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallLineDto["PrivateCapitalCallLineDto"] {
-        +decimal Amount
-        +string CapitalAccountId
-        +string CommitmentId
-        +int CommitmentRevision
-        +decimal FundedAmount
-        +string InstallmentId
-        +string InvestorId
-        +Guid? IssuanceJournalEntryId
-        +decimal IssuedAmount
-        +decimal UncalledAfter
-        +decimal UncalledBefore
     }
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
@@ -825,6 +818,6 @@ classDiagram
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto
     Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_ManualJournalEntryLineDto
+    Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_PriorPeriodAdjustmentCorrectionDto
     Meridian_Contracts_Ledger_PrivateCapitalActivityProjectionDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowDto
-    Meridian_Contracts_Ledger_PrivateCapitalCallDto --> Meridian_Contracts_Ledger_PrivateCapitalCallLineDto
 ```
