@@ -2,11 +2,33 @@
 
 # `security-master-contracts` data objects - page 7 of 7
 
-Objects 481-527 of 527. References crossing pages remain available in the dependency manifest.
+Objects 481-530 of 530. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto["SecurityValidationSnapshotDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +DateTimeOffset RecordedAtUtc
+        +SecurityValidationReportDto Report
+        +string ReportHashSha256
+        +string Scope
+        +Guid? SecurityId
+        +Guid SnapshotId
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto["SecurityValidationSnapshotRequestDto"] {
+        +string? Actor
+        +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
+        +string Reason
+        +SecurityValidationWorkflowDto Workflow
+        +string? WorkflowReference
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto["SecurityValuationBlockerDto"] {
         +string Code
         +string Reason
@@ -375,6 +397,8 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
+    Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput
     Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto

@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 527. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 530. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcNovationData["OtcNovationData"] {
+        +Guid SuccessorContractId
+    }
+    class Meridian_Contracts_SecurityMaster_OtcRateResetData["OtcRateResetData"] {
+        +DateOnly FixingDate
+        +string IndexName
+        +decimal IndexRate
+        +string LegId
+    }
+    class Meridian_Contracts_SecurityMaster_OtcValuationBlockerCodes["OtcValuationBlockerCodes"] {
+    }
     class Meridian_Contracts_SecurityMaster_OtcValuationBlockerDto["OtcValuationBlockerDto"] {
         +string Code
         +string Reason
@@ -489,16 +500,6 @@ classDiagram
         +IReadOnlyList~SecurityAssetProfilePromotionSignalDto~ Signals
         +string? SubType
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto["SecurityAssetProfilePromotionReadinessDto"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto["SecurityAssetProfilePromotionSignalDto"] {
-        +string Code
-        +string Detail
-        +string Label
-        +SecurityAssetProfilePromotionSignalSeverityDto Severity
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto["SecurityAssetProfilePromotionSignalSeverityDto"] {
-    }
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnit
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnitResolution
     Meridian_Contracts_SecurityMaster_RateUnitResolution_OutOfRange --> Meridian_Contracts_SecurityMaster_RateUnitSource
@@ -540,7 +541,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
 ```

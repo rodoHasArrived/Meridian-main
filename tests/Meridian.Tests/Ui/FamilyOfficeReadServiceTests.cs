@@ -195,10 +195,44 @@ public sealed class FamilyOfficeReadServiceTests
         Assert.Contains(historical.Readiness.Blockers, reason => reason.Contains("financial population remains current"));
     }
 
+    [Theory]
+    [InlineData("Source absent.")]
+    [InlineData("Input malformed.")]
+    [InlineData("File unreadable.")]
+    public async Task GetOverviewAsync_UnavailablePrivateSourceCannotClaimCompleteEvidenceFromEmptyLists(string warning)
+    {
+        var now = DateTimeOffset.Parse("2026-11-01T12:00:00Z");
+        var accounts = new InMemoryFundAccountService();
+        var structure = new InMemoryFundStructureService(accounts);
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        await structure.CreateOrganizationAsync(new(organizationId, "ORG", "Family Office", "USD", now.AddYears(-1), "test"));
+        await structure.CreateBusinessAsync(new(businessId, organizationId, BusinessKindDto.Hybrid, "BUS", "Advisers", "USD", now.AddYears(-1), "test"));
+        await structure.CreateClientAsync(new(familyId, businessId, "FAM", "Household", "USD", now.AddYears(-1), "test", ClientSegmentKind: ClientSegmentKind.FamilyOffice));
+        var service = new FamilyOfficeReadService(structure, accounts, timeProvider: new FixedTimeProvider(now),
+            privateCapitalSource: new UnavailablePrivateSource(warning));
+        var overview = await service.GetOverviewAsync();
+        Assert.Empty(overview.CapitalCommitments);
+        Assert.Equal("Partial", overview.BalanceSheet.EvidenceCompleteness);
+        Assert.Equal("Partial", overview.Readiness.EvidenceCompleteness);
+        Assert.Equal("NeedsReview", overview.BalanceSheet.ReconciliationStatus);
+        Assert.Contains(warning, overview.Readiness.Blockers);
+    }
+
+    private sealed class UnavailablePrivateSource(string warning) : IPrivateCapitalLifecycleSource
+    {
+        public Task<PrivateCapitalLifecycleRead> ReadAsync(string familyOfficeId, IReadOnlySet<string> entityIds,
+            DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default,
+            Func<DateOnly, CancellationToken, Task<IReadOnlySet<string>>>? historicalEntityScope = null)
+            => Task.FromResult(new PrivateCapitalLifecycleRead([], [], [warning], IsAvailable: false));
+    }
+
     private sealed class RetainedPrivateSource(string familyId, string entityId) : IPrivateCapitalLifecycleSource
     {
         public Task<PrivateCapitalLifecycleRead> ReadAsync(string familyOfficeId, IReadOnlySet<string> entityIds,
-            DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default)
+            DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default,
+            Func<DateOnly, CancellationToken, Task<IReadOnlySet<string>>>? historicalEntityScope = null)
         {
             Assert.Equal(familyId, familyOfficeId);
             Assert.Contains(entityId, entityIds);

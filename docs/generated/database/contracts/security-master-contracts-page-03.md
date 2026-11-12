@@ -2,11 +2,17 @@
 
 # `security-master-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 527. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 530. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService["ISecurityCorporateActionsQueryService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityCoverageSymbolSource["ISecurityCoverageSymbolSource"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityCurveStore["ISecurityCurveStore"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider["ISecurityForwardCurveProvider"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService["ISecurityIdentityQueryService"] {
@@ -406,17 +412,7 @@ classDiagram
         +OtcMasterAgreementDto MasterAgreement
         +OtcNettingSetDto NettingSet
     }
-    class Meridian_Contracts_SecurityMaster_OtcNovationData["OtcNovationData"] {
-        +Guid SuccessorContractId
-    }
-    class Meridian_Contracts_SecurityMaster_OtcRateResetData["OtcRateResetData"] {
-        +DateOnly FixingDate
-        +string IndexName
-        +decimal IndexRate
-        +string LegId
-    }
-    class Meridian_Contracts_SecurityMaster_OtcValuationBlockerCodes["OtcValuationBlockerCodes"] {
-    }
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService
     Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorCatalog --> Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelException
@@ -460,6 +456,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcMasterAgreementDto
     Meridian_Contracts_SecurityMaster_OtcNettingSetViewDto --> Meridian_Contracts_SecurityMaster_OtcNettingSetDto
-    Meridian_Contracts_SecurityMaster_OtcNovationData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
-    Meridian_Contracts_SecurityMaster_OtcRateResetData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
 ```

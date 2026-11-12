@@ -10630,6 +10630,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionEventTypeCount"
     },
     {
@@ -13883,6 +13901,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.AuditTrailObjectKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AuditTrailSourceStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -25415,6 +25439,24 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionEffectiveStateProjector"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
     },
     {
       "kind": "contract-set-member",
@@ -39514,6 +39556,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxEntryDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxEntryDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalActionAvailabilityDto"
     },
     {
@@ -39521,6 +39569,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionEffectiveState",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
     },
     {
       "kind": "contract-reference",
@@ -39605,6 +39659,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseSourceSnapshotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto"
     },
     {
       "kind": "contract-reference",
@@ -42011,6 +42071,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ApproveWorkflow",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AuditTrailExplorerResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.AuditTrailSourceStatusDto"
     },
     {
       "kind": "contract-reference",
@@ -58703,7 +58769,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0c56545a744ee6a54e5b41740593195b014a1a07566347695683d523c36f0cbc",
+  "fingerprint": "fc0da722b81dbb382627b3089c2cf936cea6f7fd7296c2de7ede9096c3d4772b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69383,6 +69449,24 @@
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionEffectiveStateProjector"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionEventTypeCount",
       "kind": "contract-type",
@@ -72639,6 +72723,12 @@
       "id": "contract:Meridian.Contracts.Workstation.AuditTrailObjectKindDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.AuditTrailObjectKindDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AuditTrailSourceStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AuditTrailSourceStatusDto"
     },
     {
       "classification": "dto",
@@ -86003,11 +86093,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3725,
-    "contract_set_memberships": 4697,
-    "edges": 9754,
+    "contract_references": 3729,
+    "contract_set_memberships": 4704,
+    "edges": 9765,
     "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4735
+    "nodes": 4739
   }
 }

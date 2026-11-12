@@ -46,4 +46,23 @@ describe("private-capital lifecycle", () => {
     expect(screen.getByText(/numeric placeholders do not represent zero/)).toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
   });
+
+  it("names the owning entity and keeps exact retained identities behind source disclosure", async () => {
+    const user = userEvent.setup();
+    const entityId = "22222222-2222-2222-2222-222222222222";
+    const hash = "ABCDEF".repeat(10) + "ABCD";
+    render(<PrivateCapitalLifecycle commitments={[vehicle({ entityId, sourceSystem: "fund-structure-assignment", sourceContentSha256: hash,
+      recordedAtUtc: "2026-11-01T12:00:00Z" })]} entities={[{ entityId, displayName: "Ridgeline Family Trust" }]} asOfDate="2026-11-01" />);
+    expect(screen.getByText("Growth · Ridgeline Family Trust")).toBeVisible();
+    expect(screen.getByRole("row", { name: /Growth Fund/ })).not.toHaveTextContent(entityId);
+    expect(screen.getByText(entityId)).not.toBeVisible();
+    expect(screen.getByText("fund-structure-assignment")).not.toBeVisible();
+    const disclosure = screen.getByText("Technical and source details").closest("details") as HTMLDetailsElement;
+    expect(disclosure).not.toHaveAttribute("open");
+    await user.click(screen.getByText("Technical and source details"));
+    expect(disclosure).toHaveAttribute("open");
+    for (const value of [entityId, "fund-a", "fund-structure-assignment", "statement-a", "snapshot-a", hash, "2026-11-01T12:00:00Z", "2"]) {
+      expect(within(disclosure).getByText(value, { exact: true })).toBeVisible();
+    }
+  });
 });

@@ -1,5 +1,8 @@
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Serialization;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Meridian.Tests.Ui;
 
@@ -26,6 +29,72 @@ public sealed class PrivateCapitalLifecycleSourceTests
         Assert.Equal(2, row.SourceRevision);
         Assert.Equal(64, row.SourceContentSha256?.Length);
         Assert.Empty(FilePrivateCapitalLifecycleSource.Project(new(1, [first], []), "other-family", Entities, AsOf, KnownAt).Commitments);
+    }
+
+    [Fact]
+    public void Project_PreservesSnapshotDigestBytesAndUppercaseWireEncoding()
+    {
+        var snapshot = Snapshot("snapshot-1", 1, 90m, AsOf);
+        var original = JsonSerializer.SerializeToUtf8Bytes(snapshot, FamilyOfficeJsonContext.Default.PrivateCapitalSnapshotDto);
+        var expected = Convert.ToHexString(SHA256.HashData(original));
+        var row = Assert.Single(FilePrivateCapitalLifecycleSource.Project(new(1, [snapshot], []), "family-a", Entities, AsOf, KnownAt).Commitments);
+        Assert.Equal(expected, row.SourceContentSha256);
+        Assert.Matches("^[0-9A-F]{64}$", row.SourceContentSha256!);
+        Assert.Equal(original, JsonSerializer.SerializeToUtf8Bytes(snapshot, FamilyOfficeJsonContext.Default.PrivateCapitalSnapshotDto));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Project_ActivityWithoutCommitmentIdentityIsUnavailableInsteadOfThrowing(string? commitmentId)
+    {
+        var activity = new CapitalActivityDto("activity-a", commitmentId!, "entity-a", "Distribution", "USD", 15m,
+            AsOf, null, null, "Settled", "manager-statement", "document-a", AsOf, null, "Complete", "NotReconciled", null, null);
+        var result = FilePrivateCapitalLifecycleSource.Project(new(1, [Snapshot("snapshot-1", 1, 90m, AsOf)],
+            [new("family-a", KnownAt, activity)]), "family-a", Entities, AsOf, KnownAt);
+        Assert.False(result.IsAvailable);
+        Assert.Empty(result.Commitments);
+        Assert.Empty(result.Activities);
+        Assert.Contains(result.Warnings, warning => warning.Contains("invalid or duplicate source identities"));
+    }
+
+    [Fact]
+    public async Task ReadAsync_AuthenticatedHistoricalScopeDoesNotPoisonCurrentBalancesOrPublishEndedEntities()
+    {
+        var historicDate = new DateOnly(2026, 9, 30);
+        var current = Snapshot("current-snapshot", 1, 90m, AsOf);
+        var historical = Snapshot("historical-snapshot", 1, 120m, historicDate) with
+        { Commitment = current.Commitment with { CommitmentId = "ended-commitment", EntityId = "ended-entity", AsOfDate = historicDate, ValuationDate = historicDate } };
+        var activity = new CapitalActivityDto("ended-activity", "ended-commitment", "ended-entity", "Distribution", "USD", 15m,
+            historicDate, null, null, "Settled", "manager-statement", "document-a", historicDate, null, "Complete", "NotReconciled", null, null);
+        var document = new PrivateCapitalLifecycleDocumentDto(1, [historical, current], [new("family-a", KnownAt, activity)]);
+        var json = JsonSerializer.Serialize(document, FamilyOfficeJsonContext.Default.PrivateCapitalLifecycleDocumentDto);
+        var directory = Path.Combine(Path.GetTempPath(), $"meridian-private-history-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(directory, "family-office"));
+            var path = Path.Combine(directory, "family-office", "private-capital-lifecycle.json");
+            await File.WriteAllTextAsync(path, json);
+            var read = await new FilePrivateCapitalLifecycleSource(directory).ReadAsync("family-a", Entities, AsOf, KnownAt,
+                historicalEntityScope: (date, _) =>
+                {
+                    Assert.Equal(historicDate, date);
+                    return Task.FromResult<IReadOnlySet<string>>(new HashSet<string>(["ended-entity"]));
+                });
+            Assert.True(read.IsAvailable);
+            Assert.Equal("commitment-a", Assert.Single(read.Commitments).CommitmentId);
+            Assert.Equal(90m, Assert.Single(read.Commitments).CurrentNav);
+            Assert.Empty(read.Activities);
+            Assert.Equal(json, await File.ReadAllTextAsync(path)); // Immutable retained history is not rewritten.
+            var unverified = await new FilePrivateCapitalLifecycleSource(directory).ReadAsync("family-a", Entities, AsOf, KnownAt);
+            Assert.False(unverified.IsAvailable);
+            var foreign = await new FilePrivateCapitalLifecycleSource(directory).ReadAsync("family-a", Entities, AsOf, KnownAt,
+                historicalEntityScope: (_, _) => Task.FromResult<IReadOnlySet<string>>(new HashSet<string>(["other-family-entity"])));
+            Assert.False(foreign.IsAvailable);
+            Assert.Empty(foreign.Commitments);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
 
     [Fact]
@@ -71,11 +140,13 @@ public sealed class PrivateCapitalLifecycleSourceTests
         {
             var source = new FilePrivateCapitalLifecycleSource(directory);
             var missing = await source.ReadAsync("family-a", Entities, AsOf, KnownAt);
+            Assert.False(missing.IsAvailable);
             Assert.Empty(missing.Commitments);
             Assert.Contains(missing.Warnings, value => value.Contains("unavailable"));
             Directory.CreateDirectory(Path.Combine(directory, "family-office"));
             await File.WriteAllTextAsync(Path.Combine(directory, "family-office", "private-capital-lifecycle.json"), "{invalid");
             var malformed = await source.ReadAsync("family-a", Entities, AsOf, KnownAt);
+            Assert.False(malformed.IsAvailable);
             Assert.Empty(malformed.Commitments);
             Assert.Contains(malformed.Warnings, value => value.Contains("validated"));
         }
@@ -99,6 +170,7 @@ public sealed class PrivateCapitalLifecycleSourceTests
             Assert.Equal("123456789012345.6789", Assert.Single(read.Commitments).ExactBalances?.CurrentNav);
             await File.WriteAllTextAsync(file, json.Replace("\"calledAmount\":80,", "", StringComparison.Ordinal));
             var incomplete = await source.ReadAsync("family-a", Entities, AsOf, KnownAt);
+            Assert.False(incomplete.IsAvailable);
             Assert.Empty(incomplete.Commitments);
             Assert.Contains(incomplete.Warnings, value => value.Contains("validated"));
         }

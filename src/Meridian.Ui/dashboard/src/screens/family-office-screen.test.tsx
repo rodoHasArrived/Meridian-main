@@ -40,6 +40,8 @@ describe("FamilyOfficeScreen", () => {
 
     await waitFor(() => expect(screen.getByLabelText("Family office summary panels")).toBeInTheDocument());
     expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent("Ridgeline Family Office");
+    expect(screen.getByText("PrivateMarkets · Ridgeline Family Trust")).toBeVisible();
+    expect(within(screen.getByRole("region", { name: "Selected private-capital vehicle" })).getByText("Ridgeline Family Trust", { exact: true })).toBeVisible();
     expect(getFamilyOfficeOverview).toHaveBeenCalledTimes(1);
   });
 

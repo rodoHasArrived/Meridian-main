@@ -426,7 +426,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         </CardContent>
       </Card>
       ) : null}
-      {resolvedStructure?.capitalLifecycle ? <PrivateCapitalLifecycle {...resolvedStructure.capitalLifecycle} /> : null}
+      {resolvedStructure?.capitalLifecycle ? <PrivateCapitalLifecycle {...resolvedStructure.capitalLifecycle} entities={resolvedStructure.entities} /> : null}
     </ScreenLayout>
   );
 }

@@ -3318,17 +3318,32 @@ The browser analytical views consume additive shared contracts; WPF is not modif
 
 An activity row is `{ "familyOfficeId": "...", "recordedAtUtc": "...Z", "activity": <CapitalActivityDto> }`.
 Activity IDs and source evidence must be retained, with matching entity/commitment/currency identity.
+Missing, null or blank activity commitment identities are refused as unavailable source evidence
+before any lookup; they never become an unhandled dictionary failure.
 The example above is synthetic and is not installed as financial data.
 
 Provisioners must atomically replace the document while retaining immutable prior revisions. There
 is no new ingestion, approval or financial mutation endpoint. A commitment ID cannot silently change
 entity or currency. The reader selects the latest eligible as-of/revision under the known-at read cut,
 rejects invalid/duplicate evidence, and excludes future records. Missing or invalid sources publish
-unavailable balances rather than manufacturing zero. Genuine zero and signed NAV remain valid source
+unavailable balances rather than manufacturing zero. `PrivateCapitalLifecycleRead.IsAvailable`
+explicitly carries missing, malformed and unreadable source state into household evidence and
+reconciliation assessment; empty result lists cannot imply complete evidence, and warning wording
+is not an authority signal. Genuine zero and signed NAV remain valid source
 facts. All five balances are required; exact decimal strings accompany chart positioning values for
-inspection. `sourceContentSha256` carries the canonical source-context snapshot digest alongside
-snapshot ID, revision and recorded-at metadata. Authoritative unfunded is preserved independently of commitment minus called capital.
+inspection. `sourceContentSha256` is computed through `Sha256Digest` over canonical source-context
+snapshot serialization, preserving this read contract's original 64-character uppercase hex
+encoding alongside snapshot ID, revision and recorded-at metadata. Authoritative unfunded is
+preserved independently of commitment minus called capital.
 Other currencies are not silently incorporated into base-currency household scalars.
+
+Current financial projection membership is separate from retained historical membership. For
+records belonging to an entity outside the current perimeter, the default reader obtains a
+date-specific historical entity set from the structure service through a cached read callback.
+That lookup remains bound to the same selected family identity and current caller/tenant
+authorization. Valid balances and activities for an entity that has since left the perimeter remain
+immutable in the source but are omitted from the current view. A source's family label cannot
+authorize an unknown or cross-family entity; unverifiable historical membership remains unavailable.
 
 ### Actual corporate-action election cutoffs
 

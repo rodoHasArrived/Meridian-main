@@ -103,13 +103,26 @@ public sealed class FamilyOfficeReadService
         var publicAssets = BuildPublicAssets(accountContexts, warnings);
         var privateAssets = BuildPrivateAssets(relevant, asOfDate, warnings);
         var source = _privateCapitalSource is null
-            ? new PrivateCapitalLifecycleRead([], [], ["No retained private-capital lifecycle source is registered; balances are unavailable."])
+            ? new PrivateCapitalLifecycleRead([], [], ["No retained private-capital lifecycle source is registered; balances are unavailable."], IsAvailable: false)
             : await _privateCapitalSource.ReadAsync(familyClient.ClientId.ToString("D"),
-                entities.Select(static entity => entity.EntityId).ToHashSet(StringComparer.Ordinal), asOfDate, generatedAt, ct).ConfigureAwait(false);
+                entities.Select(static entity => entity.EntityId).ToHashSet(StringComparer.Ordinal), asOfDate, generatedAt, ct,
+                historicalEntityScope: async (date, token) =>
+                {
+                    var historicalAt = date < today
+                        ? new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc)) : generatedAt;
+                    var historical = await _fundStructureService.GetOrganizationStructureAsync(
+                        new OrganizationStructureQuery(ActiveOnly: false, AsOf: historicalAt), token).ConfigureAwait(false);
+                    // The structure service applies current identity/tenant authorization even for
+                    // historical reads. A source's family label never grants historical membership.
+                    var client = historical.Clients.FirstOrDefault(value => value.ClientId == familyClient.ClientId);
+                    return client is null ? new HashSet<string>(StringComparer.Ordinal)
+                        : BuildEntities(SelectRelevantGraph(historical, client), [])
+                            .Select(static entity => entity.EntityId).ToHashSet(StringComparer.Ordinal);
+                }).ConfigureAwait(false);
         warnings.AddRange(source.Warnings);
         var commitments = BuildCommitments(relevant, asOfDate, source.Commitments, warnings);
         AddEvidenceAndReconciliationWarnings(accounts, publicAssets, privateAssets, commitments, warnings);
-        var balanceSheet = BuildBalanceSheet(familyClient, accountContexts, privateAssets, commitments, warnings, generatedAt, asOfDate);
+        var balanceSheet = BuildBalanceSheet(familyClient, accountContexts, privateAssets, commitments, source.IsAvailable, warnings, generatedAt, asOfDate);
         var readiness = BuildReadiness(warnings, evidenceLinks, generatedAt, accounts, entities.Count, balanceSheet);
 
         return new FamilyOfficeOverviewDto(
@@ -579,6 +592,7 @@ public sealed class FamilyOfficeReadService
         IReadOnlyList<AccountContext> accounts,
         IReadOnlyList<PrivateAssetSummaryDto> privateAssets,
         IReadOnlyList<CapitalCommitmentDto> commitments,
+        bool privateCapitalSourceAvailable,
         List<string> warnings,
         DateTimeOffset generatedAt,
         DateOnly asOfDate)
@@ -616,12 +630,13 @@ public sealed class FamilyOfficeReadService
             SourceDocumentId: null,
             AsOfDate: latestAsOf,
             ValuationDate: latestAsOf == FallbackAsOfDate ? null : latestAsOf,
-            EvidenceCompleteness: accounts.All(static account => account.Summary.EvidenceCompleteness == "Complete")
+            EvidenceCompleteness: privateCapitalSourceAvailable
+                && accounts.All(static account => account.Summary.EvidenceCompleteness == "Complete")
                 && privateAssets.All(static asset => asset.EvidenceCompleteness == "Complete")
                 && commitments.All(commitment => commitment.BalancesAvailable && commitment.EvidenceCompleteness == "Complete"
-                    && commitment.Currency.Equals(familyClient.BaseCurrency, StringComparison.Ordinal))
-                && !warnings.Any(static warning => warning.Contains("private-capital lifecycle source", StringComparison.OrdinalIgnoreCase)) ? "Complete" : "Partial",
-            ReconciliationStatus: accounts.All(static account => account.Summary.ReconciliationStatus == "Reconciled")
+                    && commitment.Currency.Equals(familyClient.BaseCurrency, StringComparison.Ordinal)) ? "Complete" : "Partial",
+            ReconciliationStatus: privateCapitalSourceAvailable
+                && accounts.All(static account => account.Summary.ReconciliationStatus == "Reconciled")
                 && privateAssets.All(static asset => asset.ReconciliationStatus == "Reconciled")
                 && commitments.All(static commitment => commitment.BalancesAvailable && commitment.ReconciliationStatus == "Reconciled") ? "Reconciled" : "NeedsReview",
             LastReviewedBy: null,

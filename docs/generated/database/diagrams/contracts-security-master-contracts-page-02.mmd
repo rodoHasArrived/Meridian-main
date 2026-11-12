@@ -1,5 +1,17 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionNotFoundException["CorporateActionNotFoundException"] {
+        +Guid ResourceId
+        +string ResourceType
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionOperationException["CorporateActionOperationException"] {
+        +string Code
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionPayloadFieldDescriptor["CorporateActionPayloadFieldDescriptor"] {
+        +string Key
+        +bool RequiredForAcceptance
+        +CorporateActionPayloadValueType ValueType
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaCatalog["CorporateActionPayloadSchemaCatalog"] {
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaDescriptor["CorporateActionPayloadSchemaDescriptor"] {
@@ -28,10 +40,10 @@ classDiagram
         +Guid CorporateActionId
         +DateTimeOffset CreatedAtUtc
         +string CreatedBy
+        +CorporateActionElectionCalendarDto? ElectionCalendar
         +string? MethodologyProfileId
         +Guid ProposalId
         +CorporateActionCaseScopeDto Scope
-        +Guid SecurityId
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto["CorporateActionProcessingOptionDto"] {
         +IReadOnlyList~string~ Blockers
@@ -446,21 +458,26 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityCashFlowReceiptStore["ISecurityCashFlowReceiptStore"] {
     }
-    class Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService["ISecurityCorporateActionsQueryService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityCoverageSymbolSource["ISecurityCoverageSymbolSource"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityCurveStore["ISecurityCurveStore"] {
-    }
+    Meridian_Contracts_SecurityMaster_CorporateActionNotFoundException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionPayloadFieldDescriptor --> Meridian_Contracts_SecurityMaster_CorporateActionPayloadValueType
+    Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaDescriptor --> Meridian_Contracts_SecurityMaster_CorporateActionPayloadFieldDescriptor
+    Meridian_Contracts_SecurityMaster_CorporateActionPermissionDeniedException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionPersistenceUnavailableException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
+    Meridian_Contracts_SecurityMaster_CorporateActionScopeMismatchException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionSourceConflictException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDecisionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceDisplayMetadataDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalActionAvailabilityDto
+    Meridian_Contracts_SecurityMaster_CorporateActionStateConflictException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionTermsIncompleteException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionValidationException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionVersionConflictException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
     Meridian_Contracts_SecurityMaster_DataQualityRuleViolationDto --> Meridian_Contracts_SecurityMaster_DataQualityRuleCategory
     Meridian_Contracts_SecurityMaster_DataQualityRuleViolationDto --> Meridian_Contracts_SecurityMaster_DataQualityRuleSeverity
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorDataType

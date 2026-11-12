@@ -1,5 +1,7 @@
 import { useId, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { DetailTechnicalFields } from "@/components/meridian/detail-pane";
 import type { CapitalActivity, CapitalCommitment } from "@/types/family-office.types";
 import { formatNumber } from "@/lib/format";
 import { groupPrivateCapital, hasPrivateCapitalBalances, PRIVATE_CAPITAL_METRICS, privateCapitalRowKey } from "./private-capital-lifecycle.view-model";
@@ -8,12 +10,13 @@ export interface PrivateCapitalLifecycleProps {
   commitments: CapitalCommitment[];
   activities?: CapitalActivity[];
   asOfDate: string;
+  entities?: ReadonlyArray<{ entityId: string; displayName: string }>;
 }
 
 const money = (amount: number, currency: string) => `${formatNumber(amount, { maximumFractionDigits: 2 })} ${currency}`;
 
 /** Read-only retained lifecycle balances; distributions and remaining NAV are independent measures. */
-export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate }: PrivateCapitalLifecycleProps) {
+export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate, entities = [] }: PrivateCapitalLifecycleProps) {
   const id = useId();
   const [grouping, setGrouping] = useState<"vintage" | "strategy">("vintage");
   const [currencyChoice, setCurrencyChoice] = useState("");
@@ -25,6 +28,7 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
   const selected = rows.find((row) => privateCapitalRowKey(row) === selectedKey) ?? rows[0];
   const selectedActivity = selected ? activities.filter((row) => row.commitmentId === selected.commitmentId
     && row.entityId === selected.entityId && row.currency === selected.currency) : [];
+  const entityName = (entityId: string) => entities.find((entity) => entity.entityId === entityId)?.displayName ?? "Entity name unavailable";
 
   return <Card>
     <CardHeader>
@@ -59,7 +63,7 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
               return <tr key={key} className={`border-b border-border ${selected && privateCapitalRowKey(selected) === key ? "bg-secondary/40" : ""}`}>
                 <th scope="row" className="p-2 text-left font-normal"><button type="button" className="text-left font-semibold underline decoration-border underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                   aria-pressed={selected && privateCapitalRowKey(selected) === key} onClick={() => setSelectedKey(key)}>{row.vehicleName}</button>
-                  <span className="block text-xs text-muted-foreground">{row.strategy} · {row.entityId}</span></th>
+                  <span className="block text-xs text-muted-foreground">{row.strategy} · {entityName(row.entityId)}</span></th>
                 {PRIVATE_CAPITAL_METRICS.map(({ key: metric, label }) => <td key={metric} className="p-2 text-right font-mono text-xs">
                   <span>{available ? money(row[metric], row.currency) : "Unavailable"}</span>
                   <svg aria-hidden="true" viewBox="0 0 100 8" className="mt-1 h-2 w-full" preserveAspectRatio="none"><rect width="100" height="8" fill="var(--chart-grid, #E4E3DE)" />
@@ -78,14 +82,21 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
         {!hasPrivateCapitalBalances(selected) ? <p role="status">Balances are unavailable for this assignment. Its numeric placeholders do not represent zero commitments or zero NAV.</p> : null}
         <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs lg:grid-cols-4">
           {[
-            ["Commitment identity", selected.commitmentId], ["Entity", selected.entityId], ["Currency", selected.currency],
+            ["Entity", entityName(selected.entityId)], ["Currency", selected.currency],
             ["Balance status", selected.balanceStatus ?? "Retained"], ["Balance date", selected.asOfDate], ["NAV valuation date", selected.valuationDate ?? "Unavailable"],
-            ["Source", selected.sourceSystem], ["Source document", selected.sourceDocumentId ?? "Unavailable"],
-            ["Snapshot", selected.snapshotId ?? "Not supplied"], ["Revision", selected.sourceRevision?.toString() ?? "Not supplied"],
-            ["Snapshot content SHA-256", selected.sourceContentSha256 ?? "Not supplied"],
-            ["Recorded at", selected.recordedAtUtc ?? "Not supplied"], ["Evidence / reconciliation", `${selected.evidenceCompleteness} / ${selected.reconciliationStatus}`]
+            ["Evidence", selected.evidenceCompleteness],
+            ["Reconciliation", selected.reconciliationStatus === "NotReconciled" ? "Not reconciled" : selected.reconciliationStatus === "OpenBreaks" ? "Open breaks" : selected.reconciliationStatus === "NeedsReview" ? "Needs review" : selected.reconciliationStatus]
           ].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="break-words font-mono">{value}</dd></div>)}
         </dl>
+        <TechnicalDetails key={privateCapitalRowKey(selected)} label="Technical and source details" description="Retained identifiers and source evidence for the selected vehicle.">
+          <DetailTechnicalFields fields={[
+            { label: "Commitment identity", value: selected.commitmentId }, { label: "Entity identity", value: selected.entityId },
+            { label: "Source system", value: selected.sourceSystem }, { label: "Source document", value: selected.sourceDocumentId ?? "Unavailable" },
+            { label: "Snapshot", value: selected.snapshotId ?? "Not supplied" }, { label: "Source revision", value: selected.sourceRevision?.toString() ?? "Not supplied" },
+            { label: "Snapshot content SHA-256", value: selected.sourceContentSha256 ?? "Not supplied" }, { label: "Recorded at", value: selected.recordedAtUtc ?? "Not supplied" },
+            { label: "Retained reconciliation status", value: selected.reconciliationStatus }, { label: "Retained evidence status", value: selected.evidenceCompleteness }
+          ]} />
+        </TechnicalDetails>
         {hasPrivateCapitalBalances(selected) ? <dl className="grid grid-cols-2 gap-3 text-xs lg:grid-cols-5" aria-label="Selected vehicle exact balances">
           {PRIVATE_CAPITAL_METRICS.map(({ key, label }) => <div key={key}><dt className="text-muted-foreground">{label}</dt><dd className="break-words font-mono">{selected.exactBalances?.[key] ?? selected[key].toString()} {selected.currency}</dd></div>)}
         </dl> : null}
@@ -93,7 +104,11 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
         {selectedActivity.length === 0 ? <p className="text-xs text-muted-foreground">No retained activity supplied for this vehicle. This does not establish that no calls or distributions occurred.</p> : <div className="overflow-x-auto"><table className="w-full text-xs">
           <caption className="sr-only">Capital activity for {selected.vehicleName}</caption>
           <thead><tr className="text-left">{["Effective date", "Activity", "Amount", "Status", "Source evidence"].map((heading) => <th key={heading} scope="col" className="p-2">{heading}</th>)}</tr></thead>
-          <tbody>{selectedActivity.map((activity) => <tr key={activity.activityId} className="border-t border-border"><td className="p-2">{activity.effectiveDate}</td><td className="p-2">{activity.activityType}</td><td className="p-2 font-mono">{money(activity.amount, activity.currency)}</td><td className="p-2">{activity.status}</td><td className="p-2">{activity.sourceSystem} · {activity.sourceDocumentId ?? "Unavailable"}</td></tr>)}</tbody>
+          <tbody>{selectedActivity.map((activity) => <tr key={activity.activityId} className="border-t border-border"><td className="p-2">{activity.effectiveDate}</td><td className="p-2">{activity.activityType}</td><td className="p-2 font-mono">{money(activity.amount, activity.currency)}</td><td className="p-2">{activity.status}</td><td className="p-2"><TechnicalDetails label="Activity source details"><DetailTechnicalFields fields={[
+            { label: "Activity identity", value: activity.activityId }, { label: "Commitment identity", value: activity.commitmentId },
+            { label: "Entity identity", value: activity.entityId }, { label: "Source system", value: activity.sourceSystem },
+            { label: "Source document", value: activity.sourceDocumentId ?? "Unavailable" }
+          ]} /></TechnicalDetails></td></tr>)}</tbody>
         </table></div>}
       </section> : null}
     </CardContent>

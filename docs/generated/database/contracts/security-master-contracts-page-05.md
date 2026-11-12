@@ -2,11 +2,21 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 527. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 530. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto["SecurityAssetProfilePromotionReadinessDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto["SecurityAssetProfilePromotionSignalDto"] {
+        +string Code
+        +string Detail
+        +string Label
+        +SecurityAssetProfilePromotionSignalSeverityDto Severity
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto["SecurityAssetProfilePromotionSignalSeverityDto"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileRollbackRequestDto["SecurityAssetProfileRollbackRequestDto"] {
         +string ApprovalReference
         +string? CorrelationId
@@ -412,17 +422,7 @@ classDiagram
         +string FieldPath
         +string Message
     }
-    class Meridian_Contracts_SecurityMaster_SecurityLotModel["SecurityLotModel"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor["SecurityLotUnitDescriptor"] {
-        +bool AmortizesBySchedule
-        +Type? CanonicalLotType
-        +string QuantityMeaning
-        +bool TracksPaydownFactor
-        +SecurityLotUnitKind UnitKind
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityLotUnitKind["SecurityLotUnitKind"] {
-    }
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
@@ -461,5 +461,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowGap
     Meridian_Contracts_SecurityMaster_SecurityInterestSupport --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto
-    Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
 ```
