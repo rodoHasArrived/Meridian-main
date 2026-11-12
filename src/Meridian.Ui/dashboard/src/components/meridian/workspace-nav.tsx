@@ -63,10 +63,13 @@ export function WorkspaceNav({
             to={viewModel.today.route}
             aria-current={viewModel.today.ariaCurrent}
             aria-label={viewModel.today.ariaLabel}
-            title="Today: Daily Control Tower"
+            title={withAttentionTitle("Today: Daily Control Tower", viewModel.today.attentionTitle)}
+            // Today has no expand chevron, so its link spans the whole row. The badge is drawn
+            // at the row's end and lets pointer events through; spanning puts the link under it,
+            // so hovering the badge shows this title and clicking it opens Today.
             className={cn(
               designSystemNavRailClasses.item,
-              "operator-nav-today",
+              "operator-nav-today col-span-full",
               FOCUS_VISIBLE_RING_CLASS,
               viewModel.today.active && designSystemNavRailClasses.itemActive,
               viewModel.today.attentionCount > 0 && "operator-nav-item--with-count"
@@ -76,7 +79,7 @@ export function WorkspaceNav({
             <CalendarCheck className={designSystemNavRailClasses.itemIcon} width={16} height={16} aria-hidden="true" />
             <span className="operator-nav-label truncate font-medium">{viewModel.today.label}</span>
           </Link>
-          <AttentionCount count={viewModel.today.attentionCount} title={viewModel.today.attentionTitle} />
+          <AttentionCount count={viewModel.today.attentionCount} />
         </div>
       </div>
       <div className={designSystemNavRailClasses.section}>{viewModel.navEyebrow}</div>
@@ -116,8 +119,8 @@ export function WorkspaceNav({
                   aria-current={item.ariaCurrent}
                   aria-label={item.ariaLabel}
                   // Product maturity moved from a rail pill into the tooltip; the link's name
-                  // already states it.
-                  title={`${item.label} · ${item.maturity} product maturity`}
+                  // already states it. The tooltip also names the badge's unit.
+                  title={withAttentionTitle(`${item.label} · ${item.maturity} product maturity`, item.attentionTitle)}
                   className={cn(
                     designSystemNavRailClasses.item,
                     FOCUS_VISIBLE_RING_CLASS,
@@ -135,7 +138,7 @@ export function WorkspaceNav({
                   />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
                 </Link>
-                <AttentionCount count={item.attentionCount} title={item.attentionTitle} />
+                <AttentionCount count={item.attentionCount} />
                 {item.subItems.length > 0 ? (
                   <button
                     type="button"
@@ -195,16 +198,25 @@ export function WorkspaceNav({
  * Queue count badge. It sits beside the link, not inside it, and is hidden from assistive
  * technology: the link's visible text stays exactly its label, so the accessible name (which
  * carries "N items need attention") still contains the visible label (WCAG 2.5.3 Label in Name).
- * The title is only a pointer hint naming the unit ("6 items in Today's finance queue"); the
- * link's accessible name already carries the count.
+ * The badge takes no pointer events (workspace-nav.css), so it carries no title of its own: the
+ * unit hint is in the title of the link underneath (see withAttentionTitle).
  */
-function AttentionCount({ count, title }: { count: number; title: string | null }) {
+function AttentionCount({ count }: { count: number }) {
   if (count <= 0) {
     return null;
   }
   return (
-    <span className="operator-nav-count" aria-hidden="true" title={title ?? undefined}>
+    <span className="operator-nav-count" aria-hidden="true">
       {count > 99 ? "99+" : count}
     </span>
   );
+}
+
+/**
+ * The link tooltip, followed by the badge's unit when the row has a badge ("Today: Daily Control
+ * Tower · 6 items in Today's finance queue"). The hint lives on the link because the pointer lands
+ * there: the badge is drawn over the link and lets pointer events through.
+ */
+function withAttentionTitle(linkTitle: string, attentionTitle: string | null): string {
+  return attentionTitle ? `${linkTitle} · ${attentionTitle}` : linkTitle;
 }

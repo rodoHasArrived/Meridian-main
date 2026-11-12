@@ -51,7 +51,7 @@ export interface WorkspaceNavItemViewModel {
   ariaLabel: string;
   /** Control Tower queue items owned by this workspace; 0 renders no badge. */
   attentionCount: number;
-  /** Pointer hint for the badge, naming its unit; null when there is no badge. */
+  /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
   attentionTitle: string | null;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
@@ -79,7 +79,7 @@ export interface WorkspaceNavTodayViewModel {
   ariaCurrent: "page" | undefined;
   ariaLabel: string;
   attentionCount: number;
-  /** Pointer hint for the badge, naming its unit; null when there is no badge. */
+  /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
   attentionTitle: string | null;
 }
 
