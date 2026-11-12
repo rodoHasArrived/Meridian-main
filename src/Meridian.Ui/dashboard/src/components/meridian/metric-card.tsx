@@ -27,10 +27,16 @@ function MetricSnapshotCardComponent(metric: MetricSnapshot) {
       deltaAriaLabel={vm.deltaAriaLabel ?? undefined}
       freshnessLabel={vm.freshnessLabel ?? undefined}
       provenance={vm.provenanceText ?? undefined}
-      // An undeclared basis is not repeated on every card; the figure passport states it.
-      basis={hasDeclaredMetricBasis(metric) ? metricBasisLabel(metric) : undefined}
+      // An undeclared basis is not repeated on every card; the figure passport states it. A
+      // top-level as-of time stays visible on its own, since the provenance line does not carry it.
+      basis={hasDeclaredMetricBasis(metric) ? metricBasisLabel(metric) : metricAsOfLine(metric)}
     />
   );
+}
+
+function metricAsOfLine(metric: MetricSnapshot): string | undefined {
+  const asOf = metric.asOf?.trim();
+  return asOf ? `As of ${asOf}` : undefined;
 }
 
 const metricSnapshotTone: Record<MetricSnapshot["tone"], MetricCardTone> = {

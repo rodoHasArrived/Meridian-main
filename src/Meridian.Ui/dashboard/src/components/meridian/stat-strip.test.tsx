@@ -234,6 +234,10 @@ describe("StatStrip", () => {
     expect(within(strip).getAllByText("Not declared by source")).toHaveLength(1);
     expect(strip).not.toHaveTextContent(/unavailable/i);
     expect(within(strip).queryByText(/^Basis not declared by source/)).not.toBeInTheDocument();
+    // The shared value is not self-describing, so each figure is described by term and value.
+    for (const value of ["$1", "2"]) {
+      expect(within(strip).getByText(value).closest("dd")).toHaveAccessibleDescription("Basis Not declared by source");
+    }
   });
 
   it("states a declared basis the figures share once and ties each figure to it", () => {
@@ -253,9 +257,13 @@ describe("StatStrip", () => {
     expect(shared.tagName).toBe("DD");
     expect(within(strip).getAllByText("Posted GAAP book · as of 2026-11-10")).toHaveLength(1);
     const sharedId = shared.getAttribute("id");
+    const termId = within(strip).getByText("Basis", { selector: "dt" }).getAttribute("id");
     expect(sharedId).toBeTruthy();
+    expect(termId).toBeTruthy();
     for (const value of ["$1", "$2"]) {
-      expect(within(strip).getByText(value).closest("dd")).toHaveAttribute("aria-describedby", sharedId);
+      const figure = within(strip).getByText(value).closest("dd");
+      expect(figure).toHaveAttribute("aria-describedby", `${termId} ${sharedId}`);
+      expect(figure).toHaveAccessibleDescription("Basis Posted GAAP book · as of 2026-11-10");
     }
   });
 

@@ -22,12 +22,23 @@ describe("MetricSnapshotCard", () => {
 
 describe("MetricSnapshotCard basis", () => {
   it("does not repeat an undeclared basis on the card", () => {
-    render(<MetricSnapshotCard id="cash" label="Cash" value="$100" delta="" tone="default" asOf="2026-11-10" />);
+    render(<MetricSnapshotCard id="cash" label="Cash" value="$100" delta="" tone="default" />);
 
     const card = screen.getByRole("group", { name: /Cash metric/ });
     expect(card).not.toHaveTextContent(/basis/i);
     expect(card).not.toHaveTextContent(/unavailable/i);
     expect(card).not.toHaveTextContent("Not declared by source");
+    // Only the label and value lines: no basis paragraph.
+    expect(card.querySelectorAll(":scope > p")).toHaveLength(2);
+  });
+
+  it("keeps a top-level as-of time on the card when the basis is undeclared", () => {
+    render(<MetricSnapshotCard id="cash" label="Cash" value="$100" delta="" tone="default" asOf="2026-11-10" />);
+
+    const card = screen.getByRole("group", { name: /Cash metric/ });
+    expect(card).toHaveTextContent("As of 2026-11-10");
+    expect(card).not.toHaveTextContent(/basis/i);
+    expect(card).not.toHaveTextContent(/unavailable/i);
   });
 
   it("shows a declared basis with its as-of time", () => {

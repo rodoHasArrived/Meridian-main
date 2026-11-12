@@ -37,8 +37,16 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
   fundAccountId?: string;
   /**
    * The trading read model's `brokerage.environment`, which the server writes as `"live"` or
-   * `"paper"`. With no fund account in a known non-live environment, the panel shows a neutral
-   * setup state instead of the recovery block. Missing or `"live"` keeps the block (fail closed).
+   * `"paper"`. With no fund account in scope and any other non-blank value, the panel shows a
+   * neutral setup state instead of the recovery block. Missing, blank or `"live"` keeps the block
+   * (fail closed).
+   *
+   * This is not a deployment signal. The server takes it from the strategy run it prefers (a paper
+   * run first) and writes `"paper"` when no run resolves; it does not read the brokerage gateway
+   * or `LiveExecutionEnabled`. So a live-enabled host with no runs, or with any paper run, also
+   * gets the setup state. That state unblocks nothing (it still says live trading stays off); it
+   * only shows a lower severity. Follow-up: the read model should derive the value from the
+   * gateway configuration and send null when it cannot tell.
    */
   brokerageEnvironment?: string | null;
   busy: boolean;
@@ -64,7 +72,8 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
     || reconciliation?.status !== "Ready" || !reconciliation.brokerConnected || !reconciliation.brokerHealthy
     || reconciliation.breakCount !== 0 || reconciliation.breaks.length !== 0 || recovery.blockingReasons.length !== 0;
   const environment = brokerageEnvironment?.trim().toLowerCase() ?? "";
-  // Choosing an account is setup, not recovery. Fail closed when the environment is unknown or live.
+  // Choosing an account is setup, not recovery. Fail closed when the read model reports live or
+  // nothing; see the prop's note on how the server derives the value.
   const needsAccountSetup = !fundAccountId && !error && environment !== "" && environment !== "live";
   const discrepancies = (reconciliation?.breaks ?? []).map((item, index) => ({ ...item, rowId: `${item.kind}:${index}` }));
   const reasons = [...new Set([...(recovery?.blockingReasons ?? []), ...(portfolio?.warnings ?? [])])];
@@ -148,8 +157,8 @@ export function BrokerageRecoveryPanel({ readiness, fundAccountId, brokerageEnvi
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* With no account in a known non-live environment the empty state below is the status:
-            nothing has failed, so no danger banner above it. */}
+        {/* With no account and a reported non-live environment the empty state below is the
+            status: nothing has failed, so no danger banner above it. */}
         {needsAccountSetup ? null : (
           <StatusBanner tone={blocked ? "danger" : "success"} role="status" aria-label="Brokerage recovery readiness" aria-live="polite"
             title={blocked ? "Live trading blocked — recovery required" : "Brokerage evidence reconciled"}
