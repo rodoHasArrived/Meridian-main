@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalAuthorityRules
+
+Qualified name: <code>Meridian.Ledger.PrivateCapitalAuthorityRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:6](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L6).
+
+Shared admission rules; storage repeats them so direct callers cannot bypass workflow validation.
+
+```csharp
+public static class PrivateCapitalAuthorityRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Id(string? value, string name);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:8](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L8) |  |
+| <code>public static PrivateCapitalScopeDto NormalizeScope(PrivateCapitalScopeDto scope);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:15](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L15) |  |
+| <code>public static void ValidateCommitment(PrivateCapitalCommitmentDto value);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:36](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L36) |  |
+| <code>public static string LockKey(PrivateCapitalScopeDto scope, string commitmentId);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:54](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L54) |  |
+| <code>public static string? FindIssuanceTimelineViolation(string commitmentId, IEnumerable&lt;PrivateCapitalCommitmentDto&gt; revisions, IEnumerable&lt;(DateOnly EffectiveDate, decimal Amount)&gt; postedIssuances, DateOnly? candidateDate = null, decimal candidateAmount = 0m);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:61](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L61) | Checks every effective revision and issuance date, including approved future reductions. |
+
+## PrivateCapitalCallPlanHash
+
+Qualified name: <code>Meridian.Ledger.PrivateCapitalCallPlanHash</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs:8](../../../../src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs#L8).
+
+Versioned digest of the reviewed allocation, excluding audit clock and subsequent posting observations.
+
+```csharp
+public static class PrivateCapitalCallPlanHash
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Compute(PrivateCapitalCallDto call);</code> | [src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs:10](../../../../src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs#L10) |  |
+
 ## PrivateCapitalFundEventApprovalState
 
 Qualified name: <code>Meridian.Ledger.PrivateCapitalFundEventApprovalState</code>. Kind: `enum`.
@@ -360,6 +400,68 @@ Immutable audit record of a locked accounting period being reopened, capturing t
 public sealed record ReopenedAccountingPeriod(LockedAccountingPeriod Period, DateTimeOffset ReopenedAtUtc, string ReopenedBy, PeriodReopenEvidence Evidence);
 ```
 
+## SecurityTradePosting
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePosting</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/SecurityTradePosting.cs:10](../../../../src/Meridian.Ledger/SecurityTradePosting.cs#L10).
+
+Exact monetary facts retained by the lot book for one opening or closing leg. Carrying value is relieved long basis or the original proceeds of a covered short. Opening legs carry zero; financing remains separate from securities basis.
+
+```csharp
+public sealed record SecurityTradePosting(SecurityTradePostingKind Kind, decimal Quantity, decimal GrossValue, decimal? CarryingValue = null, decimal BorrowedAmount = 0m, decimal LoanRepaid = 0m)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/SecurityTradePosting.cs:19](../../../../src/Meridian.Ledger/SecurityTradePosting.cs#L19) |  |
+
+## SecurityTradePostingKind
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePostingKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/SecurityTradePostingKind.cs:4](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L4).
+
+The economic leg of an execution, independent of its buy/sell order side.
+
+```csharp
+public enum SecurityTradePostingKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OpenLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:6](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L6) |  |
+| <code>CloseLong</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L7) |  |
+| <code>OpenShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:8](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L8) |  |
+| <code>CoverShort</code> | [src/Meridian.Ledger/SecurityTradePostingKind.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingKind.cs#L9) |  |
+
+## SecurityTradePostingProjector
+
+Qualified name: <code>Meridian.Ledger.SecurityTradePostingProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/SecurityTradePostingProjector.cs:7](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L7).
+
+Shared double-entry projection for simulated, paper, and durable execution fills. Callers supply retained lot economics; this service does not select lots or infer position direction.
+
+```csharp
+public static class SecurityTradePostingProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Project(SecurityTradePosting posting, string symbol, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:9](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L9) |  |
+| <code>public static void Validate(SecurityTradePosting posting);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:84](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L84) | Validates exact trade facts without resolving or mutating any accounts. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; Commission(decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:110](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L110) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; VariationMargin(string symbol, decimal amount, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:127](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L127) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; ShortCollateral(decimal amount, bool release, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:143](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L143) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount Account, decimal Debit, decimal Credit)&gt; MarginFinancing(decimal borrowed, decimal repaid, string? financialAccountId = null, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePostingProjector.cs:162](../../../../src/Meridian.Ledger/SecurityTradePostingProjector.cs#L162) | Projects the financing cash movement separately from the security trade for statement attribution. |
+
 ## ShadowNavOverrideDraft
 
 Qualified name: <code>Meridian.Ledger.ShadowNavOverrideDraft</code>. Kind: `record`.
@@ -656,6 +758,26 @@ Declared public members:
 | <code>public StalePricePolicy EnsureValid();</code> | [src/Meridian.Ledger/StalePricePolicy.cs:37](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L37) | Validates the age bound. |
 | <code>public StalePriceAssessment Assess(DateOnly priceAsOf, DateOnly valuationDate);</code> | [src/Meridian.Ledger/StalePricePolicy.cs:48](../../../../src/Meridian.Ledger/StalePricePolicy.cs#L48) | Assesses a price observed on priceAsOf against a valuationDate. A future observation always blocks because it was not observable at valuation time. |
 
+## StandardChartOfAccounts
+
+Qualified name: <code>Meridian.Ledger.StandardChartOfAccounts</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/StandardChartOfAccounts.cs:10](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L10).
+
+Explicit posting-account registry. Retains existing account identities so historical journals, balances and durable fill retries remain compatible. The hierarchical ChartOfAccounts remains a reporting rollup, rather than a source of inferred posting accounts.
+
+```csharp
+public sealed class StandardChartOfAccounts : IChartOfAccounts
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StandardChartOfAccounts Instance { get; } = new ();</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:12](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L12) |  |
+| <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:60](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L60) |  |
+| <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:69](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L69) |  |
+
 ## StructuredNoteAccountingTemplate
 
 Qualified name: <code>Meridian.Ledger.StructuredNoteAccountingTemplate</code>. Kind: `class`.
@@ -713,6 +835,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static TaxCharacter Classify(DateOnly holdingPeriodStart, DateOnly disposalDate) =&gt; …;</code> | [src/Meridian.Ledger/TaxCharacter.cs:36](../../../../src/Meridian.Ledger/TaxCharacter.cs#L36) | Classifies a disposal by holding period under IRC §1222/§1223: the holding period starts the day after acquisition and must exceed one year to be long-term, so a lot acquired on 2025-01-01 becomes long-term only when sold on 2026-01-02 or later. The comparison uses calendar years rather than a 365-day count so a holding period spanning a leap day is not silently promoted a day early. |
 | <code>public static int HoldingPeriodDays(DateOnly holdingPeriodStart, DateOnly disposalDate) =&gt; …;</code> | [src/Meridian.Ledger/TaxCharacter.cs:44](../../../../src/Meridian.Ledger/TaxCharacter.cs#L44) | Whole days held, measured from the effective holding-period start to the disposal date. Reported alongside Classify so an operator can see how close a lot sits to the long-term boundary. Negative spans (a disposal dated before the start) clamp to zero. |
+
+## TradeFillAccountingEvidence
+
+Qualified name: <code>Meridian.Ledger.TradeFillAccountingEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:10](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L10).
+
+Immutable per-fill accounting facts captured under the portfolio&#x27;s lot-book lock. A fill crossing zero retains both its closing and opening leg. No monetary basis is reconstructed from an average quote, order side, or realized result.
+
+```csharp
+public sealed record TradeFillAccountingEvidence(SecurityTradePosting? Closing = null, SecurityTradePosting? Opening = null, decimal Fees = 0m, decimal SlippageCost = 0m, decimal ShortCollateralHeld = 0m, decimal ShortCollateralReleased = 0m, bool SettlesVariationMargin = false, decimal VariationMarginPnl = 0m, string? FinancialAccountId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:22](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L22) |  |
 
 ## UnitTransaction
 
@@ -795,129 +935,3 @@ Immutable input facts retained with each security/account valuation journal.
 ```csharp
 public sealed record ValuationMarkEvidence(string FundId, string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, decimal Price, DailyPortfolioPriceConfidence Confidence, int MaximumAgeDays, DailyPortfolioPriceConfidence MinimumConfidence, string PolicyVersion, string EvidenceReference, string? EntityId = null);
 ```
-
-## ValuationMarkEvidenceGuard
-
-Qualified name: <code>Meridian.Ledger.ValuationMarkEvidenceGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/ValuationMarkEvidence.cs:26](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L26).
-
-Reassesses retained inputs at submit, approve and post. Review notes and arbitrary override tags never replace a dated mark. Historical valuations are compared to their valuation date.
-
-```csharp
-public static class ValuationMarkEvidenceGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string EvidenceTag = &quot;valuation.markEvidence.v1&quot;;</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:28](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L28) |  |
-| <code>public const string DigestTag = &quot;valuation.markEvidence.sha256&quot;;</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:29](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L29) |  |
-| <code>public static bool IsValuation(string? idempotencyKey) =&gt; …;</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:31](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L31) |  |
-| <code>public static string? Validate(string? json, string fundId, DateOnly valuationDate, Guid? securityId, string? financialAccountId, string? symbol = null, string? expectedDigest = null, string? entityId = null);</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:34](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L34) |  |
-| <code>public static void EnsureValid(AutomatedJournalDraft draft);</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:69](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L69) |  |
-
-## ValuationProvenanceTag
-
-Qualified name: <code>Meridian.Ledger.ValuationProvenanceTag</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/ValuationProvenanceTag.cs:16](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L16).
-
-The journal tag that carries a fair-value draft&#x27;s data provenance, and the reader that recovers it from posted entries.
-
-```csharp
-public static class ValuationProvenanceTag
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Key = &quot;valuation.dataProvenance&quot;;</code> | [src/Meridian.Ledger/ValuationProvenanceTag.cs:19](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L19) | Journal metadata tag key written by DailyPortfolioPricingDraftBuilder. |
-| <code>public static DataProvenance Read(JournalEntryMetadata? metadata);</code> | [src/Meridian.Ledger/ValuationProvenanceTag.cs:26](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L26) | Origin declared by one journal entry&#x27;s valuation tag. An entry with no tag is not a valuation entry and contributes DataProvenance.Real; an entry carrying an unrecognized token degrades to DataProvenance.Simulated rather than to real. |
-| <code>public static DataProvenance Strongest(IEnumerable&lt;JournalEntry&gt; entries);</code> | [src/Meridian.Ledger/ValuationProvenanceTag.cs:42](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L42) | Strongest non-real origin declared across a set of posted entries — the mark any figure derived from them must carry. |
-
-## WashSaleBasisIncrease
-
-Qualified name: <code>Meridian.Ledger.WashSaleBasisIncrease</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/WashSale.cs:119](../../../../src/Meridian.Ledger/WashSale.cs#L119).
-
-A cost-basis increase applied to a replacement lot to carry a deferred wash-sale loss forward. The replacement lot&#x27;s holding period is also extended to include the sold shares&#x27; holding period (HoldingPeriodCarryDate is the sold lots&#x27; earliest acquisition date).
-
-```csharp
-public sealed record WashSaleBasisIncrease(string ReplacementLotId, decimal Amount, DateOnly HoldingPeriodCarryDate, LedgerAccount? ReplacementAccount = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WashSalePolicy? AppliedPolicy { get; init; }</code> | [src/Meridian.Ledger/WashSale.cs:126](../../../../src/Meridian.Ledger/WashSale.cs#L126) | Exact policy settings and configured revision that explain this adjustment. |
-| <code>public IReadOnlyList&lt;WashSaleSourceAllocation&gt; SourceAllocations { get; init; } = [];</code> | [src/Meridian.Ledger/WashSale.cs:129](../../../../src/Meridian.Ledger/WashSale.cs#L129) | Loss-lot contributions, including matched shares whose amount rounds to zero. |
-
-## WashSaleOutcome
-
-Qualified name: <code>Meridian.Ledger.WashSaleOutcome</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/WashSale.cs:104](../../../../src/Meridian.Ledger/WashSale.cs#L104).
-
-The outcome of applying a WashSalePolicy to a loss-generating relief. Present on a projection only when a wash sale was detected.
-
-```csharp
-public sealed record WashSaleOutcome(decimal DisallowedLoss, decimal AllowedLoss, decimal MatchedReplacementQuantity, IReadOnlyList<WashSaleBasisIncrease> BasisIncreases);
-```
-
-## WashSalePolicy
-
-Qualified name: <code>Meridian.Ledger.WashSalePolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/WashSale.cs:40](../../../../src/Meridian.Ledger/WashSale.cs#L40).
-
-Wash-sale deferral policy applied when relieving a tax lot at a loss (US IRC §1091 and equivalent regimes). When enabled, a realized loss that coincides with the acquisition of a substantially-identical security within WindowDays days before or after the sale is disallowed in proportion to the replacement quantity; the disallowed amount is capitalized into the replacement lot&#x27;s cost basis rather than recognized as a realized loss.
-
-```csharp
-public sealed record WashSalePolicy(bool Enabled, int WindowDays = 30, WashSaleReplacementScope Scope = WashSaleReplacementScope.LedgerBook, DateOnly? EffectiveDate = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? PolicyId { get; init; }</code> | [src/Meridian.Ledger/WashSale.cs:47](../../../../src/Meridian.Ledger/WashSale.cs#L47) | The configured tax-lot policy revision; null for an unversioned ad-hoc policy. |
-| <code>public static WashSalePolicy Disabled { get; } = new (false);</code> | [src/Meridian.Ledger/WashSale.cs:50](../../../../src/Meridian.Ledger/WashSale.cs#L50) | No wash-sale deferral; realized losses are always recognized in full. |
-| <code>public static WashSalePolicy UnitedStates { get; } = new (true, 30);</code> | [src/Meridian.Ledger/WashSale.cs:53](../../../../src/Meridian.Ledger/WashSale.cs#L53) | The US IRC §1091 default: enabled with a 30-day symmetric replacement window. |
-| <code>public WashSalePolicy EnsureValid();</code> | [src/Meridian.Ledger/WashSale.cs:56](../../../../src/Meridian.Ledger/WashSale.cs#L56) | Validates the window magnitude and scope. |
-| <code>public bool AppliesOn(DateOnly saleDate) =&gt; …;</code> | [src/Meridian.Ledger/WashSale.cs:69](../../../../src/Meridian.Ledger/WashSale.cs#L69) | True when this policy governs a sale on saleDate. A dated policy leaves sales before its effective date untouched so historical report packs stay reproducible. |
-
-## WashSaleReplacementAcquisition
-
-Qualified name: <code>Meridian.Ledger.WashSaleReplacementAcquisition</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/WashSale.cs:89](../../../../src/Meridian.Ledger/WashSale.cs#L89).
-
-A candidate replacement purchase considered for wash-sale matching against a loss-generating sale. The relief engine filters these to acquisitions that fall within the policy window and match the security being sold; callers supply recent purchases of the position without having to pre-apply the window themselves.
-
-```csharp
-public sealed record WashSaleReplacementAcquisition(string LotId, DateOnly AcquiredDate, decimal Quantity, Guid? SecurityId = null, LedgerAccount? Account = null);
-```
-
-## WashSaleReplacementLookup
-
-Qualified name: <code>Meridian.Ledger.WashSaleReplacementLookup</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:40](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L40).
-
-What a IWashSaleReplacementResolver found for one disposal.
-
-```csharp
-public sealed record WashSaleReplacementLookup(IReadOnlyList<WashSaleReplacementAcquisition> Replacements, IReadOnlyList<LedgerTaxLotBasisAdjustment> PriorDeferrals)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WashSaleReplacementLookup Empty { get; } = new ([], []);</code> | [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:45](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L45) | Nothing found; relief proceeds exactly as if wash-sale matching were disabled. |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:48](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L48) | True when neither a replacement nor a prior deferral affects this disposal. |

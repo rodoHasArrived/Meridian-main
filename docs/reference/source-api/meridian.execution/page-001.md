@@ -267,8 +267,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IServiceCollection AddBrokerageExecution(this IServiceCollection services, Action&lt;BrokerageConfiguration&gt;? configure = null);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:29](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L29) | Registers the brokerage execution layer services. |
 | <code>public static IServiceCollection AddTradeFillLedgerPosting(this IServiceCollection services, TradeFillLedgerPostingContext postingContext, Func&lt;IServiceProvider, ITradeFillLedgerPostingTarget&gt; postingTargetFactory, Func&lt;IServiceProvider, ITradeFillPostingStore&gt; postingStoreFactory, Func&lt;IServiceProvider, ITradeFillHandoffFailureStore&gt; handoffFailureStoreFactory, Func&lt;IServiceProvider, Ledger.Ledger?&gt;? projectionLedgerFactory = null, Action&lt;TradeFillLedgerPostingOptions&gt;? configure = null);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:123](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L123) | Explicitly composes accepted execution fills into one caller-owned ledger scope. This registration deliberately requires an authoritative durable posting target and durable handoff store because brokerage execution cannot infer or fake an accounting book. An in-memory ledger is optional and is updated only as a projection after persistence. |
-| <code>public static IServiceCollection AddBrokerageGateway&lt;TGateway&gt;(this IServiceCollection services, string gatewayId) where TGateway : class, IBrokerageGateway;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:247](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L247) | Registers a specific IBrokerageGateway implementation as a keyed named gateway. Use the same gatewayId when configuring BrokerageConfiguration.Gateway. |
-| <code>public static IServiceCollection AddBrokerageGateway(this IServiceCollection services, string gatewayId, Func&lt;IServiceProvider, IBrokerageGateway&gt; factory);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:268](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L268) | Registers a factory-created IBrokerageGateway as a keyed named gateway. |
+| <code>public static IServiceCollection AddBrokerageGateway&lt;TGateway&gt;(this IServiceCollection services, string gatewayId) where TGateway : class, IBrokerageGateway;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:248](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L248) | Registers a specific IBrokerageGateway implementation as a keyed named gateway. Use the same gatewayId when configuring BrokerageConfiguration.Gateway. |
+| <code>public static IServiceCollection AddBrokerageGateway(this IServiceCollection services, string gatewayId, Func&lt;IServiceProvider, IBrokerageGateway&gt; factory);</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:269](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L269) | Registers a factory-created IBrokerageGateway as a keyed named gateway. |
 
 ## DerivativeKind
 
@@ -525,24 +525,25 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Events.LedgerPostingConsumer</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:27](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L27).
+Source: [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:29](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L29).
 
 Background consumer that listens to TradeExecutedEvent instances and posts corresponding double-entry journal entries to an attached Ledger.
 
 ```csharp
-public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDisposable
+public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetainedTradeEventPublisher, IAsyncDisposable
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string PostingScope =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:71](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L71) |  |
-| <code>public TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:74](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L74) |  |
-| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:97](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L97) | Initialises a new LedgerPostingConsumer bound to one durable accounting scope. |
-| <code>public void Publish(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:176](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L176) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it blocks until the consumer frees space. |
-| <code>public async Task PublishAsync(TradeExecutedEvent tradeEvent);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:191](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L191) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it awaits until the consumer frees space. Intentionally not cancellable: once called, the fill must reach the durable store. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:255](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L255) | Stops accepting fills, gives accepted fills one bounded drain window, and then applies a bounded cancellation fallback. Repeated calls await the same shutdown operation. Once the method returns, no in-flight validation can cross the posting boundary into the ledger. |
+| <code>public string PostingScope =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:75](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L75) |  |
+| <code>public TradeFillPostingScopeIdentity ScopeIdentity =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:78](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L78) |  |
+| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null) : this(postingTarget, logger, postingStore, postingContext, false, projectionLedger, channelCapacity, securityValidationGate, requireSecurityMasterPostingGate, drainTimeout, cancellationTimeout);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:101](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L101) | Initialises a new LedgerPostingConsumer bound to one durable accounting scope. |
+| <code>public LedgerPostingConsumer(ITradeFillLedgerPostingTarget postingTarget, ILogger&lt;LedgerPostingConsumer&gt; logger, ITradeFillPostingStore postingStore, TradeFillLedgerPostingContext postingContext, bool requireCurrentAccountingEvidence, Ledger.Ledger? projectionLedger = null, int channelCapacity = 10_000, ISecurityValidationGateService? securityValidationGate = null, bool requireSecurityMasterPostingGate = true, TimeSpan? drainTimeout = null, TimeSpan? cancellationTimeout = null);</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:122](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L122) | Creates a consumer with explicit admission policy. Production composition requires current evidence on newly accepted fills; recovery still reads exact retained legacy events. |
+| <code>public void Publish(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:203](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L203) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it blocks until the consumer frees space. |
+| <code>public Task PublishAsync(TradeExecutedEvent tradeEvent) =&gt; …;</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:218](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L218) | Durably accepts a TradeExecutedEvent for asynchronous ledger posting. Returning means the fill can replay after restart. While the channel has capacity the call returns after the WAL append; when full it awaits until the consumer frees space. Intentionally not cancellable: once called, the fill must reach the durable store. |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/LedgerPostingConsumer.cs:296](../../../../src/Meridian.Execution/Events/LedgerPostingConsumer.cs#L296) | Stops accepting fills, gives accepted fills one bounded drain window, and then applies a bounded cancellation fallback. Repeated calls await the same shutdown operation. Once the method returns, no in-flight validation can cross the posting boundary into the ledger. |
 
 ## PendingTradeFillPosting
 
@@ -572,7 +573,7 @@ public sealed record RetainedTradeFillHandoffFailure(TradeExecutedEvent TradeEve
 
 Qualified name: <code>Meridian.Execution.Events.TradeExecutedEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:46](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L46).
+Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:48](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L48).
 
 Canonical event for an accepted execution fill. For an OMS-tracked paper order it is published after the portfolio mutation; live fills can carry zero realized P&amp;L when no portfolio accounting context is attached. An order manager publishes it only for tracked orders and when an ITradeEventPublisher is explicitly composed for the owning ledger scope; merely enabling paper or live execution does not create an accounting book implicitly.
 
@@ -584,7 +585,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:72](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L72) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:72](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L72) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:80](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L80) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
+| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:90](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L90) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
 
 ## TradeFillHandoffFailureStoreOptions
 
@@ -714,14 +717,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WalTradeFillPostingStore(TradeFillPostingStoreOptions options, ILogger&lt;WalTradeFillPostingStore&gt; logger);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:180](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L180) |  |
-| <code>public string PostingScope { get; }</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:201](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L201) |  |
-| <code>public TradeFillPostingScopeIdentity ScopeIdentity { get; }</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:203](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L203) |  |
-| <code>public async Task&lt;TradeFillPostingAcceptance&gt; AcceptAsync(TradeExecutedEvent tradeEvent, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:205](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L205) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PendingTradeFillPosting&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:294](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L294) |  |
-| <code>public async Task MarkPostedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:310](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L310) |  |
-| <code>public async Task RecordFailureAsync(Guid fillId, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:389](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L389) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:473](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L473) |  |
+| <code>public WalTradeFillPostingStore(TradeFillPostingStoreOptions options, ILogger&lt;WalTradeFillPostingStore&gt; logger);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:182](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L182) |  |
+| <code>public string PostingScope { get; }</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:203](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L203) |  |
+| <code>public TradeFillPostingScopeIdentity ScopeIdentity { get; }</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:205](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L205) |  |
+| <code>public async Task&lt;TradeFillPostingAcceptance&gt; AcceptAsync(TradeExecutedEvent tradeEvent, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:207](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L207) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PendingTradeFillPosting&gt;&gt; LoadPendingAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:299](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L299) |  |
+| <code>public async Task MarkPostedAsync(Guid fillId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:315](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L315) |  |
+| <code>public async Task RecordFailureAsync(Guid fillId, string failure, CancellationToken ct = default);</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:394](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L394) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Events/TradeFillPostingStore.cs:478](../../../../src/Meridian.Execution/Events/TradeFillPostingStore.cs#L478) |  |
 
 ## UnsupportedOrderRequestException
 
