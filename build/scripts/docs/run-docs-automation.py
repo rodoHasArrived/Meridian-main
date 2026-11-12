@@ -90,7 +90,15 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
-        "args": ["--output", "docs/status/doc-health-dashboard.md", "--json-output", "docs/status/doc-health-dashboard.json"],
+        # Line counts go only to the ignored artifacts/ tree; see generate-health-dashboard.py.
+        "args": [
+            "--output",
+            "docs/status/doc-health-dashboard.md",
+            "--json-output",
+            "docs/status/doc-health-dashboard.json",
+            "--volatile-json-output",
+            "artifacts/docs/doc-health-line-metrics.json",
+        ],
         "output": "docs/status/doc-health-dashboard.md",
     },
     "repair-links": {

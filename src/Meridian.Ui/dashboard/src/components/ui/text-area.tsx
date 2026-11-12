@@ -1,5 +1,6 @@
 import { forwardRef, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: ReactNode;
@@ -19,11 +20,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         rows={rows}
         aria-invalid={error ? true : undefined}
         className={cn(
-          "w-full rounded-[2px] border bg-[var(--ws-surface-raised)] px-2.5 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70",
-          "transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+          "w-full rounded-[var(--radius-button)] border bg-[var(--ws-surface-raised)] px-2.5 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70",
+          "transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
           "disabled:cursor-not-allowed disabled:opacity-55",
           "resize-y",
-          error ? "border-danger/60 focus-visible:ring-danger/40" : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
+          error ? "border-danger/60 focus-visible:ring-[var(--interaction-focus)]" : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-[var(--interaction-focus)]",
           className
         )}
         {...props}
@@ -37,7 +38,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     return (
       <label className="block">
         {label ? (
-          <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
             {label}
           </span>
         ) : null}

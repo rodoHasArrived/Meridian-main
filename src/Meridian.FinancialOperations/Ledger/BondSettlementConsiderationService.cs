@@ -56,7 +56,7 @@ public sealed class BondSettlementConsiderationService(IBondAnalyticsService ana
                 result.Context, yieldConvention, request.OriginalFace, request.BookedFactor, cleanPrice, accruedPrice,
                 clean, accrued, request.Fees, clean + accrued + request.Fees, request.ObservedDirtyCash,
                 request.SourceEvidenceId, request.CashAccountId, request.AccruedInterestAccountId, request.FeesAccountId,
-                result.Inputs.ToArray());
+                result.Inputs.ToArray(), request.FunctionalCurrency?.Trim().ToUpperInvariant(), request.SettlementFxRateToFunctional);
             var issues = BondSettlementConsideration.Validate(receipt);
             return issues.Count == 0 ? new(receipt, [])
                 : new(null, issues.Select(issue => new BondAnalyticsBlocker("SettlementNotReconciled", issue)).ToArray());

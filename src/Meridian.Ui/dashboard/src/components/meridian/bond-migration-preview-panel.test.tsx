@@ -91,7 +91,9 @@ describe("bond migration preview", () => {
     });
     fireEvent.submit(screen.getByRole("form", { name: "Stage reviewed bond migration" }));
     expect(await screen.findByText("Governed revision created")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Governed bond migration result" })).toHaveFocus();
+    // Focus moves in an effect after the result renders, so wait for it rather than racing it.
+    await waitFor(() =>
+      expect(screen.getByRole("region", { name: "Governed bond migration result" })).toHaveFocus());
     expect(stage).toHaveBeenCalledTimes(1);
     expect(stage.mock.calls[0][0]).toMatchObject({
       previewSha256: "preview-hash",

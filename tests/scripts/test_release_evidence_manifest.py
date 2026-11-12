@@ -57,7 +57,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
         ])
 
     def test_manifest_records_artifact_hashes_and_validation_lanes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             artifact_root = root / "artifacts" / "release" / "win-x64"
             artifact_root.mkdir(parents=True)
@@ -97,7 +97,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(manifest["files"][0]["sha256"], expected_hash)
 
     def test_main_writes_manifest_json(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             artifact_root = root / "publish"
             artifact_root.mkdir()
@@ -128,7 +128,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
         self.assertNotIn("postgresqlPayloads", payload)
 
     def test_manifest_embeds_complete_receipts_and_their_hashes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             receipts = []
             for index in range(2):
@@ -155,7 +155,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
                 })
 
     def test_consumer_and_installed_startup_evidence_require_payload_receipt(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             for extra in ((), ("--project", "web-workstation", "--validation-lane", "web-workstation-installed-startup")):
                 with self.subTest(extra=extra), self.assertRaisesRegex(ValueError, "receipt is required"):
@@ -164,7 +164,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
             self.assertNotIn("postgresqlPayloads", manifest)
 
     def test_unavailable_or_unreadable_json_receipt_does_not_write_manifest(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             path = root / "postgresql.json"
             args = [
@@ -196,7 +196,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
         canonical = "".join(f"{entry['sha256']}  {entry['path']}\n" for entry in ordered)
         receipt["payloadSha256"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
         receipt["files"] = list(reversed(ordered))
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "postgresql.json"
             path.write_text(json.dumps(receipt), encoding="utf-8")
             embedded = MODULE.load_postgresql_payload_receipt(path, "win-x64")
@@ -211,7 +211,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
             ("approvalSha256", "not a hash"), ("payloadSha256", "b" * 64),
             ("files", []), ("files", [{}]), ("runner", {}), ("tools", []),
         ]
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "postgresql.json"
             for field, value in cases:
                 with self.subTest(field=field, value=value):
@@ -252,7 +252,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
         altered["tools"].pop()
         cases.append(("missing required tool", altered))
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "postgresql.json"
             for name, altered in cases:
                 with self.subTest(name=name):
@@ -261,7 +261,7 @@ class ReleaseEvidenceManifestTests(unittest.TestCase):
                         MODULE.load_postgresql_payload_receipt(path, "win-x64")
 
     def test_receipt_runtime_must_match_manifest(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             path = root / "postgresql.json"
             path.write_text(json.dumps(self.payload_receipt()), encoding="utf-8")

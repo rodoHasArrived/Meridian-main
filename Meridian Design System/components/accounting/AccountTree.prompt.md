@@ -12,3 +12,5 @@ Chart-of-accounts tree — expandable hierarchy with roll-up balances (a parent 
 ```
 
 Parents render bold, leaves muted; balances are mono/right-aligned. Pair with `KeyValueGrid` in a `Drawer` for a selected-account inspector.
+
+An explicit finite parent balance takes precedence over child balances. Otherwise a parent roll-up is available only when every child balance is known; an unavailable/invalid leaf is Missing, never zero.

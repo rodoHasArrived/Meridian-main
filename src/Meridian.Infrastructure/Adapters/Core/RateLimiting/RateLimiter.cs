@@ -14,6 +14,7 @@ public sealed class RateLimiter : IDisposable
     private readonly ConcurrentQueue<DateTimeOffset> _requestTimestamps = new();
     private sealed record Limits(int MaxRequests, TimeSpan Window, TimeSpan MinDelay);
     private Limits _limits;
+    private readonly object _cleanupLock = new();
     private readonly ILogger _log;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
@@ -130,10 +131,13 @@ public sealed class RateLimiter : IDisposable
 
     private void CleanupOldTimestamps()
     {
-        var cutoff = _timeProvider.GetUtcNow() - Volatile.Read(ref _limits).Window;
-        while (_requestTimestamps.TryPeek(out var oldest) && oldest <= cutoff)
+        // Peek and dequeue must stay together: another cleanup could otherwise dequeue a
+        // fresh entry after both callers peeked the same expired timestamp.
+        lock (_cleanupLock)
         {
-            _requestTimestamps.TryDequeue(out _);
+            var cutoff = _timeProvider.GetUtcNow() - Volatile.Read(ref _limits).Window;
+            while (_requestTimestamps.TryPeek(out var oldest) && oldest <= cutoff)
+                _requestTimestamps.TryDequeue(out _);
         }
     }
 

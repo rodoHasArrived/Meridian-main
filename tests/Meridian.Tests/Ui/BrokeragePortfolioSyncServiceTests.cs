@@ -390,6 +390,63 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task RunSyncAsync_RetainsDeduplicatedActivityHistoryAcrossSyncs()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var activity = new SequencedCashActivityAdapter("alpaca");
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                activity,
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-001",
+                    "Primary Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests"),
+                cts.Token);
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-123", "ops-review");
+
+            // The provider's window moves on: the second sync repeats "cash-2" and no longer
+            // returns "cash-1".
+            activity.CashTransactionIds = ["cash-1", "cash-2"];
+            await service.RunSyncAsync(fundAccountId, request, cts.Token);
+            activity.CashTransactionIds = ["cash-2", "cash-3"];
+            await service.RunSyncAsync(fundAccountId, request, cts.Token);
+
+            (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().NotBeNull();
+            var history = await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token);
+            history.Select(static cash => cash.TransactionId).Should().BeEquivalentTo(["cash-1", "cash-2", "cash-3"]);
+            (await service.GetActivityAsync(fundAccountId, cts.Token))!.CashTransactions
+                .Select(static cash => cash.TransactionId)
+                .Should().BeEquivalentTo(["cash-2", "cash-3"], "the projection stays the latest provider snapshot");
+            (await service.GetCashTransactionHistoryAsync(Guid.NewGuid(), cts.Token)).Should().BeEmpty();
+
+            // After a relink the retained rows belong to the previous external account and must
+            // not be served as the new account's activity.
+            await service.LinkAccountAsync(fundAccountId,
+                new BrokerageAccountLinkRequestDto("alpaca", "PA-RELINKED", "Relinked account", "tests"), cts.Token);
+            (await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
+            (await service.GetFillHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
+            // The projection still holds the previous account's snapshot until the next sync.
+            (await service.GetActivityAsync(fundAccountId, cts.Token)).Should().NotBeNull();
+            (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_BrokerageSyncSuccess_RecordsSharedAccountSyncHistoryWithEvidence()
     {
         var root = CreateTempRoot();
@@ -976,6 +1033,59 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAccountsAsync_LinkRetainedUnderAProviderAlias_StillMatchesItsCatalogEntry()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            const string providerId = "alpaca";
+            const string accountNumber = "PA3ALPACA01";
+            const string retainedUuid = "d23b8f95-7654-4c6e-8bf8-b0d4ed1796c2";
+            // The catalog names the account by its account number and declares the UUID an alias.
+            var catalog = new FixedAccountCatalog(providerId,
+            [
+                BuildExternalAccount(providerId, accountNumber) with
+                {
+                    Metadata = new Dictionary<string, string> { [BrokerageExternalAccountMetadata.AccountIdAliases] = retainedUuid }
+                },
+                BuildExternalAccount(providerId, "PA9SOMEONEELSE") with
+                {
+                    Metadata = new Dictionary<string, string> { [BrokerageExternalAccountMetadata.AccountIdAliases] = "another-uuid" }
+                }
+            ]);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: true,
+                catalogs: [catalog]);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(fundAccountId, AccountTypeDto.Brokerage, "BRK-ALIAS", "BRK-ALIAS", "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1), "tests"),
+                cts.Token);
+            await service.LinkAccountAsync(
+                fundAccountId,
+                new BrokerageAccountLinkRequestDto(providerId, retainedUuid, "Retained under the UUID", "tests"),
+                cts.Token);
+
+            var authorized = await service.DiscoverAccountsAsync(
+                (_, _) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { fundAccountId }), ct: cts.Token);
+            var unauthorized = await service.DiscoverAccountsAsync(
+                (_, _) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>()), ct: cts.Token);
+
+            authorized.Should().ContainSingle("only the account behind the caller's own link is visible")
+                .Which.AccountId.Should().Be(accountNumber);
+            unauthorized.Should().BeEmpty("an alias never widens the authorization filter");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task DiscoverAccountsAsync_ReturnsOnlyAuthorizedLinkedAccountsInOneBatch()
     {
         var root = CreateTempRoot();
@@ -1368,6 +1478,70 @@ public sealed class BrokeragePortfolioSyncServiceTests
             DeleteTempRoot(root);
         }
     }
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RunSyncAsync_FailedOrPartialSyncKeepsLastGoodPositionsAndSuccessTimestamp(
+        bool portfolioFails, bool activityFails)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var fundAccountId = Guid.NewGuid();
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-KEEP", "ops-review");
+            var (goodService, goodProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            await goodProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-KEEP",
+                "Keep last good brokerage",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-10),
+                "tests"));
+            var good = await goodService.RunSyncAsync(fundAccountId, request);
+            var goodPositions = await goodService.GetPositionsAsync(fundAccountId);
+            goodPositions.Should().NotBeEmpty();
+            good.LastSuccessfulSyncAt.Should().NotBeNull();
+
+            var (failingService, _) = CreateService(
+                root,
+                portfolioFails ? new ThrowingPortfolioAdapter("alpaca", "portfolio unavailable") : new FixedPortfolioAdapter("alpaca"),
+                activityFails ? new ThrowingActivityAdapter("alpaca", "activity unavailable") : new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var status = await failingService.RunSyncAsync(fundAccountId, request);
+
+            status.Health.Should().Be(activityFails
+                ? WorkstationBrokerageSyncHealth.Failed
+                : WorkstationBrokerageSyncHealth.Degraded);
+            var view = await failingService.GetViewAsync(fundAccountId);
+            view!.Positions.Select(static position => position.Symbol)
+                .Should().Equal(goodPositions.Select(static position => position.Symbol),
+                    "a failed portfolio fetch is not evidence that the account holds nothing");
+            view.Balance.Should().NotBeNull();
+            status.PositionCount.Should().Be(goodPositions.Count);
+            status.Warnings.Should().Contain(warning => warning.Contains("carried forward", StringComparison.OrdinalIgnoreCase));
+            // Reconciliation judges provider freshness from the sync time and this flag alone,
+            // so carried-forward state must not look like a new observation.
+            good.IsStale.Should().BeFalse();
+            status.IsStale.Should().BeTrue("carried-forward balances and positions are not a fresh provider observation");
+            view.Status.IsStale.Should().BeTrue();
+            if (activityFails)
+            {
+                status.LastSuccessfulSyncAt.Should().Be(good.LastSuccessfulSyncAt,
+                    "a fully failed attempt must not erase when the account last synced");
+                view.Fills.Should().NotBeEmpty();
+            }
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,
@@ -1518,6 +1692,36 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         Currency: mismatch == "position-currency" ? "EUR" : "USD")
                 ],
                 DateTimeOffset.UtcNow));
+        }
+    }
+
+    private sealed class SequencedCashActivityAdapter(string providerId) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public IReadOnlyList<string> CashTransactionIds { get; set; } = [];
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new BrokerageActivitySnapshotDto(
+                ProviderId,
+                externalAccountId,
+                DateTimeOffset.UtcNow,
+                [],
+                [],
+                CashTransactionIds
+                    .Select(static id => new BrokerageCashTransactionDto(
+                        id,
+                        "DIV",
+                        12m,
+                        "USD",
+                        DateTimeOffset.UtcNow.AddHours(-1),
+                        "AAPL"))
+                    .ToArray()));
         }
     }
 

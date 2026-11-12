@@ -57,7 +57,7 @@ public sealed record BacktestMetrics(
     decimal MaxDrawdownPercent,
     int MaxDrawdownRecoveryDays,
     [property: JsonConverter(typeof(UnavailableMetricJsonConverter))] double ProfitFactor,
-    [property: JsonConverter(typeof(UnavailableMetricJsonConverter))] double WinRate,
+    [property: JsonConverter(typeof(UnavailableWinRateJsonConverter))] double WinRate,
     int TotalTrades,
     int WinningTrades,
     int LosingTrades,

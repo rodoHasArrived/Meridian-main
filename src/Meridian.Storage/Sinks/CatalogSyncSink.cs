@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Meridian.Contracts.Catalog;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -98,19 +99,31 @@ public sealed class CatalogSyncSink : IStorageSink
                 var fullPath = Path.IsPathRooted(path) ? path : Path.Combine(_rootPath, path);
                 var relativePath = Path.GetRelativePath(_rootPath, fullPath);
 
-                if (!File.Exists(fullPath))
+                if (!JsonlArchiveFiles.Exists(fullPath))
                 {
                     _logger.LogDebug("Skipping catalog sync for missing file {Path}", relativePath);
                     continue;
                 }
+
+                // A late JSONL append may extend the published gzip instead of recreating
+                // the policy's plain path. Resolve through the same retained-generation
+                // reader used by replay, including interrupted compression cleanup checks.
+                await using var retainedFile = await JsonlArchiveFiles.OpenReadAsync(fullPath, ct).ConfigureAwait(false);
+                fullPath = retainedFile.Name;
+                relativePath = Path.GetRelativePath(_rootPath, fullPath);
+                var logicalPath = JsonlArchiveFiles.LogicalPath(relativePath);
+                var priorRepresentations = _catalog.GetFilesForSymbol(tracker.Symbol ?? string.Empty)
+                    .Where(entry => string.Equals(JsonlArchiveFiles.LogicalPath(entry.RelativePath),
+                        logicalPath, StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 if (!tracker.BaselineLoaded)
                 {
                     // Seed from the retained catalog, including after a process restart. Keep
                     // this baseline on failure: UpdateFileEntryAsync may publish its in-memory
                     // entry before persistence fails, so adding the delta again would overcount.
-                    var previous = _catalog.GetFilesForSymbol(tracker.Symbol ?? string.Empty)
-                        .FirstOrDefault(e => string.Equals(e.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase));
+                    var previous = priorRepresentations.FirstOrDefault(entry =>
+                            string.Equals(entry.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase))
+                        ?? priorRepresentations.FirstOrDefault();
                     tracker.IncludeBaseline(previous);
                 }
 
@@ -146,6 +159,14 @@ public sealed class CatalogSyncSink : IStorageSink
 
                 _catalogSavePending = true;
                 await _catalog.UpdateFileEntryAsync(entry, ct).ConfigureAwait(false);
+                // Publish the surviving generation before retiring metadata for a name
+                // compression removed, so a failed retry never loses its baseline counts.
+                foreach (var previous in priorRepresentations)
+                {
+                    if (!string.Equals(previous.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase) &&
+                        !File.Exists(Path.Combine(_rootPath, previous.RelativePath)))
+                        await _catalog.RemoveFileEntryAsync(previous.RelativePath, ct).ConfigureAwait(false);
+                }
                 _dirty.TryRemove(path, out _);
             }
             catch (Exception ex)

@@ -46,6 +46,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISmService _service;
     private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
     private readonly WpfServices.IDesktopMutationAuthorization _mutationAuthorization;
+    private readonly Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? _governedTermAmendmentPolicy;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -1025,8 +1026,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ? "Packet unavailable"
         : $"SM-{SelectedTrustSnapshot.Security.SecurityId.ToString()[..8].ToUpperInvariant()}-V{SelectedTrustSnapshot.EconomicDefinition.Version}";
 
-    public string PrintGeneratedAtText => SelectedTrustSnapshot?.RetrievedAtUtc.LocalDateTime.ToString("g")
-        ?? "Not generated";
+    public string PrintGeneratedAtText => FormatHelpers.FormatUtcTimestamp(SelectedTrustSnapshot?.RetrievedAtUtc, "Not generated");
 
     public string PrintDistributionText => SelectedTrustSnapshot?.DownstreamImpact.IsScoped == true
         ? $"Deliver to {SelectedTrustSnapshot.DownstreamImpact.FundProfileId} packet queue"
@@ -1278,7 +1278,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 ? string.Empty
                 : $" - {reason}";
             var asOfText = asOf.HasValue
-                ? $" - {asOf.Value.LocalDateTime:g}"
+                ? $" - {FormatHelpers.FormatUtcTimestamp(asOf.Value)}"
                 : string.Empty;
 
             return $"Source {sourceSystem}{sourceRecordText} - updated by {updatedBy}{asOfText}{reasonText}";
@@ -1304,7 +1304,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 return _selectedTradingParameters is null
                     ? "Trading-parameter coverage could not be confirmed."
-                    : $"Trading parameters complete as of {_selectedTradingParameters.AsOf.LocalDateTime:g}.";
+                    : $"Trading parameters complete as of {FormatHelpers.FormatUtcTimestamp(_selectedTradingParameters.AsOf)}.";
             }
 
             return $"Trading parameters incomplete: missing {string.Join(", ", missingTradingFields)}.";
@@ -1325,7 +1325,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         {
             if (_latestHistoryEvent is not null)
             {
-                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {_latestHistoryEvent.EventTimestamp.LocalDateTime:g} by {_latestHistoryEvent.Actor}";
+                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {FormatHelpers.FormatUtcTimestamp(_latestHistoryEvent.EventTimestamp)} by {_latestHistoryEvent.Actor}";
             }
 
             if (string.IsNullOrWhiteSpace(HistoryText) || HistoryText == "(no history)")
@@ -1369,7 +1369,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectedConflictDetectedText => SelectedConflictEntry is null
         ? "Detection time appears after a conflict is selected."
-        : $"Detected {SelectedConflictEntry.Conflict.DetectedAt.LocalDateTime:g} - {SelectedConflictEntry.Conflict.ConflictKind}";
+        : $"Detected {FormatHelpers.FormatUtcTimestamp(SelectedConflictEntry.Conflict.DetectedAt)} - {SelectedConflictEntry.Conflict.ConflictKind}";
 
     public string AcceptPrimaryConflictLabel => SelectedConflictEntry is null
         ? "Accept A"
@@ -1543,10 +1543,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ISmQueryService queryService,
         ISmService service,
         WpfServices.DesktopAuthenticationSession? authenticationSession = null,
-        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null)
+        WpfServices.IWorkstationContractualCashFlowApiClient? cashFlowClient = null,
+        Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null)
     {
         _loggingService = loggingService;
         _cashFlowClient = cashFlowClient;
+        _governedTermAmendmentPolicy = governedTermAmendmentPolicy;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
@@ -1673,7 +1675,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         if (!TryAuthorizeSecurityMasterMutation("create a security", out _))
             return;
 
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization, _governedTermAmendmentPolicy);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -1703,7 +1705,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization, _governedTermAmendmentPolicy);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -2780,7 +2782,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Primary provider", primaryProvider is null ? "Unavailable" : $"{primaryProvider.Provider} {primaryProvider.MappingKind} {primaryProvider.Symbol}"),
             new SecurityMasterPresentationField("Pricing", $"{passport.Pricing.Status}: {passport.Pricing.Summary}"),
             new SecurityMasterPresentationField("Usage", passport.Usage.Summary),
-            new SecurityMasterPresentationField("Retrieved", passport.RetrievedAtUtc.LocalDateTime.ToString("g"))
+            new SecurityMasterPresentationField("Retrieved", FormatHelpers.FormatUtcTimestamp(passport.RetrievedAtUtc))
         };
 
         if (passport.OperatingModel is { } operatingModel)
@@ -3269,6 +3271,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
             new SecurityMasterPresentationField("Source", SecurityMasterTextHelpers.FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
         ]);
+        AppendSchedulePolicyEvidence(snapshot);
 
         ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
         ReplaceCollection(ScheduleBookFactorHistory, scheduleBook.FactorHistory.OrderByDescending(item => item.EffectiveDate));
@@ -3296,7 +3299,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Contract multiplier", SecurityMasterPresentation.FormatNullableDecimal(readModel.ContractMultiplier)),
             new SecurityMasterPresentationField("Current factor", SecurityMasterPresentation.FormatNullableDecimal(readModel.CurrentFactor)),
             new SecurityMasterPresentationField("Current factor date", SecurityMasterPresentation.FormatNullableDate(readModel.CurrentFactorDate)),
-            new SecurityMasterPresentationField("As of", readModel.AsOfUtc.LocalDateTime.ToString("g")),
+            new SecurityMasterPresentationField("As of", FormatHelpers.FormatUtcTimestamp(readModel.AsOfUtc)),
             new SecurityMasterPresentationField("Face value", readModel.UsesFaceValue ? "Uses face value" : "Quantity only"),
             new SecurityMasterPresentationField("Factor-adjusted exposure", readModel.SupportsFactorAdjustedExposure ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Resolved ID required", readModel.RequiresResolvedSecurityId ? "Required" : "Not required")
@@ -3543,7 +3546,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 RightsPerShare: null);
 
             var result = (await ApiClientService.Instance
-                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .PostWithResponseAsync<SecurityMasterCorporateActionAppendResultDto>(UiApiRoutes.WithParam(UiApiRoutes.SecurityMasterCorporateActions, "securityId", securityId.ToString()), dto, ct)
                 .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)
@@ -3701,7 +3704,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
-        WorkflowRetrievedAtText = status.RetrievedAtUtc.LocalDateTime.ToString("g");
+        WorkflowRetrievedAtText = FormatHelpers.FormatUtcTimestamp(status.RetrievedAtUtc);
         if (status.IsImportActive && status.ActiveImport is not null)
         {
             WorkflowStatusText = $"Active ingest {status.ActiveImport.Processed}/{status.ActiveImport.Total} via {status.ActiveImport.FileExtension}.";
@@ -3712,7 +3715,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         if (status.LastCompleted is not null)
         {
-            WorkflowStatusText = $"Last ingest completed {status.LastCompleted.CompletedAtUtc.LocalDateTime:g}.";
+            WorkflowStatusText = $"Last ingest completed {FormatHelpers.FormatUtcTimestamp(status.LastCompleted.CompletedAtUtc)}.";
             ImportSessionSummary =
                 $"Last ingest: {status.LastCompleted.Imported} imported • {status.LastCompleted.Skipped} skipped • {status.LastCompleted.Failed} failed • {status.LastCompleted.ConflictsDetected} conflicts.";
             return;
@@ -3911,7 +3914,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             missingFields.Add("trading hours");
         }
 
-        if (SecurityMasterPresentation.RequiresContractMultiplier(SelectedAssetClass) &&
+        if (InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(SelectedAssetClass) &&
             _selectedTradingParameters?.ContractMultiplier is null or <= 0)
         {
             missingFields.Add("contract multiplier");

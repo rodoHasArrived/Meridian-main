@@ -390,6 +390,95 @@ public static class InstrumentTypeDescriptorCatalog
     private static readonly IReadOnlyDictionary<InstrumentType, InstrumentTypeDescriptor> ByInstrumentType =
         Descriptors.ToDictionary(static descriptor => descriptor.InstrumentType);
 
+    /// <summary>
+    /// The descriptor placeholder for "no specific domain family". It is a descriptor-taxonomy
+    /// label, not an F# <c>AssetFamily</c> name: the domain carries an unlisted family as
+    /// <c>OtherFamily "value"</c>, stored as the bare caller value.
+    /// </summary>
+    public const string UnclassifiedAssetFamilyLabel = "OtherFamily";
+
+    /// <summary>The descriptor placeholder for "no specific domain sub-type"; see <see cref="UnclassifiedAssetFamilyLabel"/>.</summary>
+    public const string UnclassifiedSubTypeLabel = "OtherSubType";
+
+    /// <summary>
+    /// Every descriptor family/sub-type label that is intentionally NOT an F# domain
+    /// <c>familyName</c>/<c>subTypeName</c> value. All other descriptor labels map one-to-one onto
+    /// the domain label of the same text (see <see cref="ResolveDomainAssetFamilyLabel"/>); a
+    /// coverage test fails when a descriptor label is neither. The descriptor values themselves are
+    /// unchanged and still surface as passport fallbacks, so this reconciliation changes no output.
+    /// <para>
+    /// Some matching labels are reviewed approximations rather than identities: Warrant uses
+    /// <c>OptionContract</c>, FX spot uses the <c>BankProduct</c> family and Deposit uses
+    /// <c>DemandDeposit</c>, because the domain declares no closer case. They are listed in
+    /// <see cref="ApproximateDomainLabelMappings"/>.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<InstrumentTypeDescriptorLabelException> DomainLabelExceptions { get; } =
+    [
+        new(InstrumentType.Forex, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel,
+            "The domain declares no FX spot sub-type; FX spot records carry OtherSubType with a caller value."),
+        new(InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel,
+            "The domain declares no commodity family."),
+        new(InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel,
+            "The domain declares no commodity sub-type."),
+        new(InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel,
+            "The domain declares no digital-asset family."),
+        new(InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel,
+            "The domain declares no digital-asset sub-type."),
+        new(InstrumentType.Index, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel,
+            "A reference-only index has no domain security family."),
+        new(InstrumentType.Index, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel,
+            "A reference-only index has no domain security sub-type."),
+        new(InstrumentType.CFD, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel,
+            "The domain declares no contract-for-difference sub-type.")
+    ];
+
+    /// <summary>
+    /// Descriptor labels that equal a domain label but approximate its meaning (see
+    /// <see cref="DomainLabelExceptions"/>). Recorded so the approximation is a reviewed decision
+    /// rather than an implied identity; nothing consumes them as classification authority.
+    /// </summary>
+    public static IReadOnlyList<InstrumentTypeDescriptorLabelException> ApproximateDomainLabelMappings { get; } =
+    [
+        new(InstrumentType.Warrant, InstrumentTypeDescriptorLabelField.SubType, "OptionContract",
+            "The domain declares no warrant sub-type; a warrant is recorded as an option contract."),
+        new(InstrumentType.Forex, InstrumentTypeDescriptorLabelField.AssetFamily, "BankProduct",
+            "The domain declares no FX family; FX spot is grouped with bank products."),
+        new(InstrumentType.Deposit, InstrumentTypeDescriptorLabelField.SubType, "DemandDeposit",
+            "A generic deposit descriptor defaults to the demand-deposit sub-type; time deposits use TimeDeposit.")
+    ];
+
+    /// <summary>
+    /// Maps a descriptor's family label onto the domain family label: the same text, or
+    /// <c>null</c> when the descriptor label is a listed <see cref="DomainLabelExceptions"/>
+    /// placeholder that names no domain family.
+    /// </summary>
+    public static string? ResolveDomainAssetFamilyLabel(InstrumentTypeDescriptor descriptor)
+        => ResolveDomainLabel(descriptor, InstrumentTypeDescriptorLabelField.AssetFamily, descriptor.SecurityMasterAssetFamily);
+
+    /// <summary>Maps a descriptor's sub-type label onto the domain sub-type label; see <see cref="ResolveDomainAssetFamilyLabel"/>.</summary>
+    public static string? ResolveDomainSubTypeLabel(InstrumentTypeDescriptor descriptor)
+        => ResolveDomainLabel(descriptor, InstrumentTypeDescriptorLabelField.SubType, descriptor.SecurityMasterSubType);
+
+    private static string? ResolveDomainLabel(
+        InstrumentTypeDescriptor descriptor,
+        InstrumentTypeDescriptorLabelField field,
+        string? label)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return null;
+        }
+
+        return DomainLabelExceptions.Any(exception =>
+                exception.InstrumentType == descriptor.InstrumentType
+                && exception.Field == field
+                && string.Equals(exception.Label, label, StringComparison.Ordinal))
+            ? null
+            : label;
+    }
+
     public static IReadOnlyList<InstrumentTypeDescriptor> All => Descriptors;
 
     public static InstrumentTypeDescriptor? Find(InstrumentType instrumentType) =>
@@ -397,6 +486,27 @@ public static class InstrumentTypeDescriptorCatalog
 
     public static bool TryGet(InstrumentType instrumentType, out InstrumentTypeDescriptor descriptor) =>
         ByInstrumentType.TryGetValue(instrumentType, out descriptor!);
+
+    /// <summary>
+    /// True when a descriptor whose PRIMARY asset class is <paramref name="assetClass"/> declares a
+    /// contract multiplier among its required economic terms (listed options and futures; not swaps,
+    /// warrants or FX forwards). Compatible-class lists are deliberately not consulted: they let a
+    /// class be recorded under a related instrument type (an equity as a single-stock future, a spot
+    /// commodity as a future), which must not make every record of that class require a multiplier.
+    /// Clients use this instead of matching the asset-class name so they cannot diverge.
+    /// </summary>
+    public static bool RequiresContractMultiplier(string? assetClass)
+    {
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            return false;
+        }
+
+        var normalized = assetClass.Trim();
+        return Descriptors.Any(descriptor =>
+            descriptor.SecurityMasterAssetClass.Equals(normalized, StringComparison.OrdinalIgnoreCase)
+            && descriptor.RequiredEconomicTerms.Contains("multiplier", StringComparer.OrdinalIgnoreCase));
+    }
 
     public static IReadOnlyList<InstrumentTypeDescriptor> FindBySecurityMasterAssetClass(string? assetClass)
     {
@@ -413,6 +523,20 @@ public static class InstrumentTypeDescriptorCatalog
             .ToArray();
     }
 }
+
+/// <summary>Which descriptor classification label an exception or mapping entry describes.</summary>
+public enum InstrumentTypeDescriptorLabelField
+{
+    AssetFamily,
+    SubType
+}
+
+/// <summary>A reviewed descriptor label whose relationship to the domain label is recorded explicitly.</summary>
+public sealed record InstrumentTypeDescriptorLabelException(
+    InstrumentType InstrumentType,
+    InstrumentTypeDescriptorLabelField Field,
+    string Label,
+    string Reason);
 
 public sealed record InstrumentTypeDescriptor(
     InstrumentType InstrumentType,

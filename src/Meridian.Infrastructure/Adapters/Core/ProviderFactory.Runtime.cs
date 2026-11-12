@@ -175,10 +175,35 @@ public sealed partial class ProviderFactory
 
     internal IOptionsChainProvider CreateAlpacaOptionsProvider()
     {
-        var options = ResolveAlpacaOptions();
+        var options = ResolveAlpacaOptions(out var context);
         return new AlpacaOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
-            options.KeyId, options.SecretKey, log: _log);
+            options.KeyId, options.SecretKey, log: _log,
+            useSandbox: SelectedAlpacaReferenceEnvironment(context));
     }
+
+    /// <summary>
+    /// The trading environment of the selected Alpaca credentials for order routing: the stored
+    /// or module record's own environment when it has one, otherwise the canonical environment
+    /// contract.
+    /// </summary>
+    internal static string ResolveAlpacaTradingEnvironment(ICredentialContext context, AlpacaOptions? options = null)
+        => context.CredentialEnvironment is { } selectedEnvironment
+            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment)
+            : AlpacaCredentialEnvironment.Resolve(options).Environment;
+
+    /// <summary>
+    /// The paper/live choice a selected credential record makes for Trading API reference
+    /// lookups (assets, option contracts), or <see langword="null"/> when the record names no
+    /// environment. A key pair authenticates only against its own environment's host, so a
+    /// record's choice is followed exactly; without one the adapter keeps the live host these
+    /// lookups always used unless the environment variable or a paper key says otherwise.
+    /// <c>Alpaca:UseSandbox</c> is deliberately not consulted: it selects the market-data
+    /// sandbox, not the trading environment.
+    /// </summary>
+    internal static bool? SelectedAlpacaReferenceEnvironment(ICredentialContext context)
+        => context.CredentialEnvironment is { } selectedEnvironment
+            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment) != AlpacaCredentialEnvironment.LiveEnvironment
+            : null;
 
     internal IOptionsChainProvider CreatePolygonOptionsProvider()
     {
@@ -200,9 +225,7 @@ public sealed partial class ProviderFactory
         var options = ResolveAlpacaOptions(out var context);
         // Keep the selected credentials fixed across REST requests and WebSocket reconnects.
         // The legacy direct-construction path may still resolve environment credentials itself.
-        var environment = context.CredentialEnvironment is { } selectedEnvironment
-            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(selectedEnvironment)
-            : AlpacaCredentialEnvironment.Resolve(options).Environment;
+        var environment = ResolveAlpacaTradingEnvironment(context, options);
         var credentials = new AlpacaCredentialSnapshot(options.KeyId, options.SecretKey, environment,
             UseSandbox: environment != AlpacaCredentialEnvironment.LiveEnvironment);
         var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(),

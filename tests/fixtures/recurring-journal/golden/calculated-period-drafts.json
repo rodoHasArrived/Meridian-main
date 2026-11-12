@@ -1,0 +1,102 @@
+{
+  "2026-01-31": [
+    {
+      "memo": "Management fee accrual for golden-fund period 00000000-0000-4000-8000-000020260001 (16986.30 on 31/365 days); rate 0.02 on net assets 10000000.00 at 2025-12-31, accrual 2026-01-01 to 2026-01-31",
+      "status": "Draft",
+      "lines": [
+        {
+          "accountPath": "Expenses:Management Fee Expense",
+          "side": "Debit",
+          "amount": 16986.30
+        },
+        {
+          "accountPath": "Liabilities:Management Fee Payable",
+          "side": "Credit",
+          "amount": 16986.30
+        }
+      ]
+    },
+    {
+      "memo": "Performance fee accrual for golden-fund period 00000000-0000-4000-8000-000020260001 (200000.00 on 1000000.00 above high-water mark); net asset value before fee 11000000.00 at 2026-01-31, high-water mark 10000000.00, hurdle 0.00, rate 0.2, already accrued 0.00",
+      "status": "Draft",
+      "lines": [
+        {
+          "accountPath": "Expenses:Performance Fee Expense",
+          "side": "Debit",
+          "amount": 200000.00
+        },
+        {
+          "accountPath": "Liabilities:Performance Fee Payable",
+          "side": "Credit",
+          "amount": 200000.00
+        }
+      ]
+    },
+    {
+      "memo": "Unrealized FX revaluation at 2026-01-31 for 1 account(s), 2000.00; EUR/USD 1.1 dated 2026-01-31 (direct, golden-rates rev-1)",
+      "status": "Draft",
+      "lines": [
+        {
+          "accountPath": "Assets:Cash EUR",
+          "side": "Debit",
+          "amount": 2000.00
+        },
+        {
+          "accountPath": "Revenue:Unrealized FX Gain",
+          "side": "Credit",
+          "amount": 2000.00
+        }
+      ]
+    }
+  ],
+  "2026-02-28": [
+    {
+      "memo": "Management fee accrual for golden-fund period 00000000-0000-4000-8000-000020260002 (16546.87 on 28/365 days); rate 0.02 on net assets 10785013.70 at 2026-01-31, accrual 2026-02-01 to 2026-02-28",
+      "status": "Draft",
+      "lines": [
+        {
+          "accountPath": "Expenses:Management Fee Expense",
+          "side": "Debit",
+          "amount": 16546.87
+        },
+        {
+          "accountPath": "Liabilities:Management Fee Payable",
+          "side": "Credit",
+          "amount": 16546.87
+        }
+      ]
+    },
+    {
+      "memo": "Performance fee accrual reversal for golden-fund period 00000000-0000-4000-8000-000020260002 (2997.26: cumulative 197002.74 less 200000.00 already accrued); net asset value before fee 10985013.70 at 2026-02-28, high-water mark 10000000.00, hurdle 0.00, rate 0.2, already accrued 200000.00",
+      "status": "Draft",
+      "lines": [
+        {
+          "accountPath": "Liabilities:Performance Fee Payable",
+          "side": "Debit",
+          "amount": 2997.26
+        },
+        {
+          "accountPath": "Expenses:Performance Fee Expense",
+          "side": "Credit",
+          "amount": 2997.26
+        }
+      ]
+    },
+    {
+      "memo": "Unrealized FX revaluation at 2026-02-28 for 1 account(s), 1000.00; EUR/USD 1.09 dated 2026-02-28 (direct, golden-rates rev-1)",
+      "status": "Draft",
+      "lines": [
+        {
+          "accountPath": "Expenses:Unrealized FX Loss",
+          "side": "Debit",
+          "amount": 1000.00
+        },
+        {
+          "accountPath": "Assets:Cash EUR",
+          "side": "Credit",
+          "amount": 1000.00
+        }
+      ]
+    }
+  ]
+}

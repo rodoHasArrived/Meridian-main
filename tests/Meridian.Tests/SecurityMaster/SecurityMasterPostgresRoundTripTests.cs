@@ -1389,4 +1389,57 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             null,
             "create competing ticker claims"));
     }
+
+    /// <summary>
+    /// Pins the store's single-aggregate retirement-gate count (ADR-024 decision 5, remediation
+    /// slice 9) to the C# declared-format verdict, row by row: a stamped payload is tagged; a
+    /// payload with no <c>termsFormat</c>, a non-string tag, or an inactive status with either
+    /// counts exactly as <c>SecurityTermsEnvelope.GetDeclaredFormat</c> says, without loading a
+    /// projection.
+    /// </summary>
+    [SecurityMasterDatabaseFact]
+    public async Task CountUntaggedAssetSpecificTerms_MatchesTheDeclaredFormatVerdict_RowByRow()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var baseline = await store.CountUntaggedAssetSpecificTermsAsync();
+
+        var stamped = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
+            """{"maturity":"2031-03-31"}""", "Bond")).RootElement.Clone();
+        await store.UpsertProjectionAsync(GateCountRow("Bond", stamped, SecurityStatusDto.Active));
+        await store.UpsertProjectionAsync(GateCountRow(
+            "Bond", JsonSerializer.SerializeToElement(new { maturity = "2030-01-01" }), SecurityStatusDto.Active));
+        await store.UpsertProjectionAsync(GateCountRow(
+            "Bond", JsonSerializer.SerializeToElement(new { maturity = "2029-06-30" }), SecurityStatusDto.Inactive));
+        await store.UpsertProjectionAsync(GateCountRow(
+            "Bond", JsonSerializer.SerializeToElement(new { termsFormat = 123, maturity = "2028-12-31" }), SecurityStatusDto.Active));
+
+        var count = await store.CountUntaggedAssetSpecificTermsAsync();
+        count.Should().Be(baseline + 3, "the stamped row is tagged; the untagged active, untagged inactive and non-string-tag rows are not");
+
+        var rows = await store.LoadAllAsync();
+        count.Should().Be(
+            rows.Count(static row => SecurityTermsEnvelope.GetDeclaredFormat(row.AssetSpecificTerms) is null),
+            "the SQL aggregate and the C# declared-format verdict must agree over every stored row");
+    }
+
+    private static SecurityProjectionRecord GateCountRow(string assetClass, JsonElement terms, SecurityStatusDto status)
+    {
+        var securityId = Guid.NewGuid();
+        return new SecurityProjectionRecord(
+            SecurityId: securityId,
+            AssetClass: assetClass,
+            Status: status,
+            DisplayName: $"Gate count {securityId:N}",
+            Currency: "USD",
+            PrimaryIdentifierKind: "Ticker",
+            PrimaryIdentifierValue: $"GC{securityId.ToString("N")[..8].ToUpperInvariant()}",
+            CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
+            AssetSpecificTerms: terms,
+            Provenance: JsonSerializer.SerializeToElement(new { }),
+            Version: 1,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-1),
+            EffectiveTo: null,
+            Identifiers: Array.Empty<SecurityIdentifierDto>(),
+            Aliases: Array.Empty<SecurityAliasDto>());
+    }
 }

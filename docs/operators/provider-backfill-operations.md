@@ -81,10 +81,19 @@ mode:
   provider calls or validation rows.
 - When concurrency is greater than `1`, completion order is not a stable ordering contract. Use
   per-symbol validation signals and checkpoints rather than task completion order as evidence.
-- `ResumeFromCheckpoint=true` skips fully covered symbols, advances partial symbols to the day after
-  the recorded checkpoint, and emits warning signals when checkpoint bar-count evidence is missing.
-- Fresh runs without the resume flag clear matching-granularity checkpoints before writing new
-  checkpoint evidence; they do not clear checkpoints recorded for another granularity.
+- `ResumeFromCheckpoint=true` skips only dates recorded as durably written by the same provider and
+  feed (`_status/backfill-symbol-coverage.json`, written after the pipeline flush succeeds). It
+  fetches every uncovered part of the requested range: dates before the recorded coverage, gaps
+  inside it, and dates after it. A symbol is skipped only when the whole requested range is
+  covered; a warning signal is emitted when that coverage has no bar-count evidence.
+- Coverage is recorded per symbol, granularity, provider and feed (for Alpaca, the feed and price
+  adjustment). Changing the provider or feed fetches the range again. Coverage ends at the newest
+  bar written, so later sessions are still requested.
+- Date-only checkpoints (`_status/backfill-symbol-checkpoints.json`) are still written for status
+  surfaces, but they are never used to skip or advance. After upgrading, the first resume of a
+  range that only has such a checkpoint fetches the range again once.
+- Fresh runs without the resume flag clear matching-granularity checkpoints and coverage before
+  writing new evidence; they do not clear another granularity's.
 - Automatic gap-analyzer remediation batches same-provider, same-window scan gaps into one
   deterministic request with symbols normalized to uppercase and sorted lexically before execution
   history is retained. Data-quality and quality-alert triggers remain single-symbol remediation

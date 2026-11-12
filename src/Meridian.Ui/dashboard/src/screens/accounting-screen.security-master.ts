@@ -11,6 +11,7 @@ import {
   type ReferenceDataWorkbenchCoverage
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { formatCount as formatCountValue } from "@/lib/format";
 import { type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import type {
   CorporateAction,
@@ -731,7 +732,10 @@ export function useSecurityMasterViewModel(
       error: trustSnapshotError,
       factorHistoryCount: trustSnapshot?.scheduleBook?.factorHistory.length ?? 0,
       provenanceCount: trustSnapshot?.scheduleBook?.provenanceHistory.length ?? 0,
-      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null
+      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null,
+      declaredExercise: trustSnapshot?.scheduleBook?.declaredExercise ?? trustSnapshot?.scheduleSummary?.declaredExercise ?? null,
+      governance: trustSnapshot?.governance ?? null,
+      cashFlowBlocker: trustSnapshot?.cashFlowBlocker ?? null
     }),
     [
       identity?.assetClass,
@@ -1029,7 +1033,7 @@ export function buildSecurityMasterPageViewState({
     : referenceDataLoading
       ? "Refreshing endpoint coverage for the selected record."
       : referenceDataCoverage
-        ? `${referenceRouteCounts.readyCount.toLocaleString()} ready · ${referenceRouteCounts.reviewCount.toLocaleString()} need review · ${referenceRouteCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${referenceRouteCounts.totalCount.toLocaleString()} total.`
+        ? `${formatCountValue(referenceRouteCounts.readyCount)} ready · ${formatCountValue(referenceRouteCounts.reviewCount)} need review · ${formatCountValue(referenceRouteCounts.deferredOrBlockedCount)} deferred or blocked · ${formatCountValue(referenceRouteCounts.totalCount)} total.`
         : selectedSecurityId
           ? "Reference coverage is queued for the selected record."
           : "Select a security to inspect source coverage.";
@@ -1178,7 +1182,7 @@ export function buildSecurityMasterPageViewState({
       {
         id: "conflicts",
         label: "Open conflicts",
-        value: conflictsLoading ? "Loading" : openConflictCount.toLocaleString(),
+        value: conflictsLoading ? "Loading" : formatCountValue(openConflictCount),
         detail: conflictsLoading
           ? "Refreshing provider conflict evidence."
           : openConflictCount > 0

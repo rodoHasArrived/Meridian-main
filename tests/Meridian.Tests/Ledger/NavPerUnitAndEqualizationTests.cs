@@ -24,6 +24,24 @@ public sealed class NavPerUnitAndEqualizationTests
         NavPerUnitCalculator.CashForRedemption(2_500m, 118.50m).Should().Be(296_250m);
     }
 
+    [Theory]
+    [InlineData("JPY", 1.5, 10_000.333333, 15_000)]
+    [InlineData("KWD", 1.5, 10.333333, 15.5)]
+    [InlineData("USD", 1.5, 10.333333, 15.5)]
+    public void CashForRedemption_RoundsToClassCurrencyMinorUnits(string currency, decimal units, decimal nav, decimal expected)
+    {
+        // 2-decimal rounding for every class invented sub-yen cash for JPY and truncated KWD's
+        // third decimal; the class currency decides the precision.
+        NavPerUnitCalculator.CashForRedemption(units, nav, currency).Should().Be(expected);
+    }
+
+    [Fact]
+    public void CashForRedemption_ThreeDecimalCurrency_KeepsThirdDecimal()
+    {
+        NavPerUnitCalculator.CashForRedemption(1m, 2.3456m, "KWD").Should().Be(2.346m);
+        NavPerUnitCalculator.CashForRedemption(1m, 2.3456m, "USD").Should().Be(2.35m);
+    }
+
     [Fact]
     public void Equalisation_CreditAboveHighWater()
     {

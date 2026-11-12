@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-15
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Wpf
@@ -17,12 +17,36 @@ selection, asynchronous commands and mutable workflow state; the presentation he
 same financial labels, evidence links and authorization-independent formatting. Existing view-model
 tests exercise these projections through the operator-facing properties and commands.
 
+Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
+evaluation date, retained security version, window count, coded blockers and notice diagnostics.
+It also displays the host's effective governance profile, source, restart latch, enforced edit and
+review requirements and ignored contradictory configuration from the trust snapshot. Missing host
+governance evidence is shown as unavailable. `SecurityMasterViewModelTests` covers this composition;
+Windows execution is required to verify the native view.
+An independent typed cash-flow calculation blocker appears alongside schedule-date evidence, so a
+resolved call/put schedule cannot hide unsupported signed interest.
+
+Direct Lending refresh resumes on the caller's context after its two reads, so the loan collection and status notifications are updated on the UI thread. Fund Operations awaits the whole dispatcher-run load (`InvokeAsync(...).Task.Unwrap()`), so the method no longer returns, or loses an exception, while that load is still running.
+
+Data Quality "Acknowledge All" removes only alerts the server acknowledged and reports partial failures; its action continuations stay on the UI thread. Data Browser CSV export writes the whole filtered result with RFC 4180 quoting and invariant-culture numbers.
+
+The credential vault moves an unreadable vault file aside (`credentials.enc.unreadable-*.bak`) before the next save and writes through a flushed temp file plus atomic rename. The environment designer rejects drafts missing `definition`/`name` and reports save failures instead of crashing.
+
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
 The Security Master passport editor offers the browser's bond analytics and convention-migration
 review for Bond/CD passports (`ViewModels/SecurityMaster/`): server-calculated, explicitly dated
 analytics shown as exact decimals, and a hash-bound migration preview that stages an ordinary
 governed draft. The desktop never prices locally and resubmits digests, not displayed amounts.
+
+The analytics model selector defaults to `bond-analytics-v2` for fixed/zero-coupon bonds and retains
+legacy v1; explicitly select v3 for a typed floating bond with a named index. V3 shows projected-flow
+yield (not discount margin), yield DV01 and coupon-spread `SpreadDv01` separately, and a reset-evidence
+table with observed/forecast fixings, source, rates and spread units. Missing fixing/forward-curve
+refusals clear calculated values; no request falls back to another model. Model changes also discard
+pending or prior results. `BondAnalyticsViewModelTests`, `BondAnalyticsFloatingViewTests`, and
+`WorkstationBondAnalyticsApiClientTests` cover the selection, transport, display and refusal paths.
+Windows execution is required to verify the native WPF view.
 
 Credential management offers the browser's ownership administration (`ViewModels/Settings/
 ProviderOwnershipAdministrationViewModel` over `WorkstationProviderOwnershipApiClient`): create an
@@ -42,6 +66,12 @@ over `WorkstationContractualCashFlowApiClient`): hypothetical valuation date, kn
 horizon, rate shock, eligibility-driven exercise selections and one prepayment assumption; the event
 ladder, blockers and evidence hashes as exact server decimals; retained runs under a client-generated
 identity that any edit renews; and replay verification of a loaded run by output hash.
+
+The Security Master conflict lane routes each open conflict by
+`SecurityMasterConflictFieldCategories` (Contracts): whole field-path segments are matched against
+declared identifier, trading-parameter, lifecycle, corporate-action, classification, currency and
+display names, so a profile field such as `transferRestrictions` is no longer misread as a RIC
+identifier conflict.
 
 The Security Master page's "Bond Ladders" tab (`ViewModels/SecurityMaster/BondReferenceLadderViewModel`)
 pages issuer and maturity ladders through the bounded keyset routes behind an explicit "Load more";
@@ -499,7 +529,10 @@ without page-specific registration, while pages that set their own DataContext r
 Runtime desktop capability toggles are declared by feature modules and surfaced in Settings through
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
-provenance, and open-lot review sections.
+provenance, and open-lot review sections. For a Bond that declares a call or put schedule the
+schedule grid shows the server's `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows with
+their reason text, and a blocked declared schedule is reported in the schedule book's Summary and
+Source fields.
 Security Master create, edit, deactivate, and file-import commands require an active desktop actor
 with `ModifySecurityMaster`; trading-parameter backfill requires `TriggerBackfill`. WPF resolves
 actor and permission together again at the in-process application-service boundary, and configured
@@ -507,6 +540,10 @@ anonymous roles use the shared `RolePermissions` mapping rather than inheriting 
 local-development access.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
+The Direct Lending loan inspector shows prepaid interest and unapplied cash (PRD-115) from the shared
+`LoanSummaryDto`, the same values the browser loan book shows; both are owed to the borrower and are
+listed beside the receivables, not in exposure.
+
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
 statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
 panel is read-only over imported position/remittance batches; preview, validation, evidence
@@ -850,8 +887,28 @@ now follows that focused attribution pattern: the oversized hero is replaced by 
 retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
 rail plus Security Master lookup readiness.
 The desktop shell visual system now targets a light institutional workstation frame with a
-near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
-workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
+graphite global app bar, paper page bands, compact filter bars, and dense table chrome. Colors in
+`Styles/ThemeTokens.xaml` follow the Meridian Design System 4.3.0 palette shared with the browser
+workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
+`ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
+(`ConsoleAccentCyan`) is the brand signal only. Paper simulation uses slate (`ModePaperColor`),
+independent of live red and fixture amber; actual chart traces use graphite. `OnAccentTextColor` is
+the dark ink the package puts on a terracotta fill (4.7:1; white is 4.0:1). Brand art in
+`Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
+window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
+the package reserves the light mark for graphite surfaces and WPF does not load SVG directly.
+Retained SVG text declarations follow the package's IBM Plex Sans identity; canonical asset
+copies stay byte-aligned with the package.
+IBM Plex Sans now supplies display and body text; IBM Plex Mono supplies financial values, code,
+identifiers, and keyboard labels. All ten package faces and both OFL licenses are embedded from
+`Assets/Fonts/`, so no installed fonts or network access are required. Window and Page roots set
+an inherited body default; existing mono declarations use `MeridianDataFontFamily`. Symbol glyphs
+retain Segoe MDL2 Assets. `ThemeTypography.xaml` loads before `AppStyles.xaml` so shared families
+resolve before their consumers, with existing font sizes, weights, and density retained.
+`DesignSystemResourceTests` verifies embedded face resolution, canonical binary/license parity,
+body inheritance, preserved symbol fonts, primary control rendering, and selection/environment roles.
+These tests require Windows; Linux builds of the WPF projects are stubs and do not validate fonts
+or XAML. Workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
 `WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and
 inspector host primitives before adding page-local cards or dark terminal styling. The Data shell is
@@ -979,12 +1036,33 @@ collections through `WorkspaceDecisionQueueControl`, preserving existing page ta
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
 
-The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds and the regulatory
+derivatives kinds (`UTI`, `UPI`, `Markit RED entity (RED6)`, `Markit RED pair (RED9)`), and the Strategy
 feature module registers the canonical write scope next to the Security Master service.
 
 The desktop passport editor loads the asset-class registry definition and offers a term picker,
 a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
 pre-check; the free-text field path remains available.
+
+## Security Master governance controls (2026-11)
+
+- **Desktop honours governed term amendments.** The desktop binds the `SecurityMasterWorkbench` configuration section and calls `AddSecurityMasterGovernanceRequirements`, which registers the shared requirements seam, `IGovernedTermAmendmentPolicy` over it, and the startup guard that refuses a configuration contradicting the governance profile ahead of the shell. When governed term amendments are required (`RequireGovernedTermAmendments` on, `GovernanceProfile` set to `Institutional`, or a production composition of the desktop's own service collection; once Institutional, the desktop stays Institutional until it restarts), `SecurityMasterEditViewModel` refuses a direct amendment with the shared guidance instead of bypassing the gate the web API enforces. The service enforces the requirement too, and the editor reports that refusal, so a desktop composed without the policy still cannot write directly.
+- **Contract-multiplier requirement.** `SecurityMasterViewModel` uses `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier` rather than matching "Option"/"Future"/"Derivative" in the asset-class name.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+**Event-handler failures.** `async void` handlers that do not carry their own whole-body
+try/catch run their bodies through `AsyncHandlerGuard`: a
+failure is logged and shown as a notification (at most one per handler per minute), cancellation is
+ignored, and fatal runtime exceptions still propagate. **Blocking calls.**
+`FeatureCapabilityGateService.SetEnabledAsync` applies an override in memory and persists it off the
+UI thread; `WorkspaceService` writes the workspace file and reads and saves state tokens outside
+its state gate, and preloads the workspace file before taking it. A preload that failed, or that
+was read before a change made in the meantime, is not applied: the load then reads behind the
+persistence gate, under the state gate, so a reload cannot roll back a concurrent change. **Live data routes.** Order book, ticker strip, quote float, live data
+viewer and corporate-action recording call routes built from `UiApiRoutes`;
+`DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
+apart from three listed exceptions (`/api/logs`, `/api/watchlists`, `/api/archive/health`).
 
 ## Diagrams
 
@@ -1083,3 +1161,12 @@ summary/journal arrivals, missing summaries, basis preservation, scope resets, a
 pending proof invalidation.
 
 Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-amount-provenance.md).
+
+### Posted-ledger account postings
+
+`PostedLedgerViewModel.SelectedTrialBalanceRow` loads the selected account's postings for the
+period into `AccountPostings` through `ILedgerReportsApiClient.GetAccountRunningBalanceAsync`,
+the same shared running-balance route the browser workstation uses. A response for a row or period
+that is no longer selected is discarded, and reloading the trial balance clears the selection.
+The request carries the selected row's symbol, financial account and dimension set, so the postings
+and ending balance are those of that row only.

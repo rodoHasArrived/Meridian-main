@@ -29,7 +29,7 @@ namespace Meridian.Contracts.SecurityMaster;
 /// next write, so data the flat keys cannot hold survives a replay-then-amend cycle.
 /// </para>
 /// </summary>
-public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchemaUpcaster<SecurityAssetSpecificTerms>
+public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchemaUpcaster<SecurityAssetSpecificTerms>
 {
     /// <summary>Shared stateless instance for callers that resolve the upcaster outside DI.</summary>
     public static SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster Instance { get; } = new();
@@ -42,17 +42,55 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public const string FlattenedFromMarkerProperty = "flattenedFromEconomicTermsSchemaVersion";
 
+    /// <summary>
+    /// The flat dated factor-schedule array StructuredCredit declares
+    /// (<see cref="SecurityAssetTermsSchema"/>), and the economic serializer's key for the same
+    /// list inside its <c>structuredProduct</c> module. ADR-027 stage 1 increment 4 recovers the
+    /// economic list into the flat home.
+    /// </summary>
+    private const string FactorScheduleEntriesKey = "factorScheduleEntries";
+
+    /// <summary>The economic module that carries <see cref="FactorScheduleEntriesKey"/>.</summary>
+    private const string StructuredProductModule = "structuredProduct";
+
+    /// <summary>
+    /// The economic module that carries a profile-backed custom asset's envelope and its governed
+    /// terms document (ADR-027 stage 3, S3-E4).
+    /// </summary>
+    private const string ProfileEnvelopeModule = "profileEnvelope";
+
     /// <summary>The economic-terms modules this conversion reads. Order is the flattening order.</summary>
     public static IReadOnlyList<string> BridgedModules { get; } =
         ["maturity", "coupon", "payment", "accrual", "discount"];
 
     /// <summary>
+    /// The module keys the economic serializer gained after the identity gate (ADR-027 stage 1
+    /// increment 6) shipped: the S3-E module homes, in emission order. An image document written
+    /// before a key existed lacks it. Some homes emit null when unset; newer exact homes omit
+    /// the key until populated. <c>SecurityEconomicDefinitionAdapter</c>'s gate treats exactly
+    /// that absent-versus-null difference as none, so serializer growth does not re-age every
+    /// stored image into carrying its retained document again; every other difference still
+    /// fails closed. A module added to the serializer from here on joins this list.
+    /// </summary>
+    public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
+        ["exercise", "currencyPair", "notional", ProfileEnvelopeModule, "creditProtection", "structuredPayoff", "privateAssetValuation", "listingDetail",
+         "bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "rateConvention", "contractualRate", "underlyingSwap", "debtClassification", "bondRedemption", "commodityContract", "digitalAsset", "underlyingExposure", "settlement", "classificationDetail", "fundShare", "referenceDataSource", "equityCapital", "trancheContract", "declaredSchedule"];
+
+    /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
     /// here, rather than left implicit, so the loss is enumerated in code and in the coverage test
     /// (<c>SecurityEconomicTermsV2BridgeCoverageTests</c>) instead of discovered in a restatement.
+    /// Eleven joined when ADR-027 stage 1 increment 5 taught the serializer to emit them, and the
+    /// S3-E module homes (<c>exercise</c> onward) follow them; the class-aware flattening recovers
+    /// parts of some dropped modules into declared flat homes (call schedules, accrual
+    /// conventions, factor entries, the S3-E scalar homes), and the rest ride in
+    /// <c>retainedEconomicTerms</c> until their own recovery step.
     /// </summary>
     public static IReadOnlyList<string> DroppedModules { get; } =
-        ["redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct"];
+        ["redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct",
+         "floatingRate", "tradingParameters", "creditRating", "depositaryReceipt", "dividendSchedule", "covenants",
+         "esg", "venue", "multiCalendar", "inflationLinked", "sinkingFund",
+         .. ModulesAddedAfterIdentityGate];
 
     /// <summary>
     /// Every module key an economic-terms document can carry: the union of the bridged and dropped
@@ -61,6 +99,19 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static IReadOnlyList<string> EconomicTermsModules { get; } =
         [.. BridgedModules, .. DroppedModules];
+
+    /// <summary>
+    /// The module keys the historical shape rule consults: exactly the modules the economic
+    /// serializer wrote before <see cref="SecurityTermsEnvelope.FormatKey"/> existed. Untagged
+    /// payloads predate the tag, so only these keys can mark one as economic; modules serialized
+    /// later (ADR-027 stage 1 increment 5) never appear untagged and are deliberately not
+    /// consulted — the rule stays frozen with the population it classifies, as does migration
+    /// 042's SQL mirror of it. This list never grows; it retires with the shape rule itself
+    /// (ADR-024 decision 5).
+    /// </summary>
+    public static IReadOnlyList<string> ShapeRuleModules { get; } =
+        ["maturity", "coupon", "payment", "accrual", "discount",
+         "redemption", "call", "auction", "sweep", "financing", "issuer", "equityBehavior", "fund", "structuredProduct"];
 
     public int FromSchemaVersion => EconomicTermsSchema.Current;
 
@@ -98,7 +149,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// <summary>
     /// The historical shape rule for untagged payloads: an object stamped
     /// <see cref="EconomicTermsSchema.Current"/> that carries at least one of the
-    /// <see cref="EconomicTermsModules"/> keys. The two payload families share one
+    /// <see cref="ShapeRuleModules"/> keys. The two payload families share one
     /// <c>schemaVersion</c> key, so the integer alone cannot tell a v2 economic-terms document from
     /// a (reserved, never declared) flat v2; the module keys can, because the economic serializer
     /// always writes them and a flat document never does. Payloads written after
@@ -112,7 +163,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             return false;
         }
 
-        foreach (var module in EconomicTermsModules)
+        foreach (var module in ShapeRuleModules)
         {
             if (payload.TryGetProperty(module, out _))
             {
@@ -143,7 +194,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms)
     {
-        EnsureScheduleModulesRecoverable(economicTerms);
+        EnsureScheduleModulesRecoverable(economicTerms, callSchedulesRecoverable: false, accrualConventionsRecoverable: false);
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -194,13 +245,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// written (<c>SecurityEconomicTermsV2BridgeCoverageTests</c> asserts it), so the result reads like
     /// an original v1 write for that class.
     /// <para>
-    /// What remains lost is what the economic-terms document never carried: an option's strike and
-    /// put/call, a swap's legs, a bond's subclass and schedules, the scheduleConventions block
-    /// (whose business-day convention and joint payment calendar the Accrual module carries), and the
-    /// callSchedule and putSchedule arrays (whose dates and prices the Call module's lists carry). The
-    /// readable-only terms travel whole in the retained flat terms until a contract step maps them.
-    /// Economic-only documents that declare the lost schedule modules are refused instead of
-    /// presenting their flattened projection as an undeclared bullet.
+    /// What remains lost is what the economic-terms document never carried: a swap's legs, a
+    /// bond's subclass, an option's listing detail (the S3-E module homes carry strikes, currency
+    /// pairs, notionals and the custom-asset profile document). Since ADR-027 stage 1 increments 1 and 2,
+    /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
+    /// and the Accrual module's business-day convention and joint payment calendar land in the
+    /// scheduleConventions block, for a class that declares those homes — stamped at the held
+    /// terms' versions, with the members the economic family never carried left null under
+    /// ADR-025's declared read defaults. Economic-only documents that declare schedule content a
+    /// class has no home for, that the flat readers could not decode, or that use non-canonical
+    /// spellings are refused instead of presenting their flattened projection as an undeclared,
+    /// unadjusted bullet.
     /// Those keys are listed by
     /// <see cref="UnrecoverableKeys"/> and the result keeps the <see cref="FlattenedFromMarkerProperty"/>
     /// marker. When <paramref name="assetClass"/> is not a declared class (or is <see langword="null"/>)
@@ -209,6 +264,20 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms, string? assetClass)
     {
+        // ADR-027 stage 3 (S3-E4): a class that must pin a custom profile carries its whole
+        // governed terms document on the profile-envelope module. That document IS the row's
+        // asset-specific terms, so it is returned as stored — no flattening, no marker and no
+        // retained carry, because nothing was reconstructed and nothing is left behind. A
+        // document written before the module existed has no such module and takes the routes
+        // below unchanged.
+        if (TryRecoverProfileDocument(economicTerms, assetClass, out var profileDocument))
+        {
+            return SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(profileDocument);
+        }
+
+        if (TryRecoverEquityCapital(economicTerms, assetClass, out var equityDocument))
+            return SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(equityDocument);
+
         if (!TryGetClassFlattening(assetClass, out var mappings))
         {
             return Convert(economicTerms);
@@ -225,16 +294,184 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
         }
 
-        EnsureScheduleModulesRecoverable(economicTerms);
+        // ADR-027 stage 1, increments 1 and 2: a class that declares the flat
+        // callSchedule/putSchedule arrays recovers the Call module's lists, and a class that
+        // declares the scheduleConventions block recovers the Accrual module's business-day
+        // convention and joint payment calendar, instead of refusing them. The entries and block
+        // carry what the economic family carried; everything it never carried stays null and
+        // reads under ADR-025's declared defaults, so the flattened record declares its calls and
+        // conventions rather than silently running an unadjusted bullet.
+        var callScheduleSince = SecurityAssetTermsSchema.Field(assetClass!, SecurityVersionedTerms.CallScheduleKey)?.SinceTermsVersion;
+        var conventionsSince = SecurityAssetTermsSchema.Field(assetClass!, SecurityVersionedTerms.ScheduleConventionsKey)?.SinceTermsVersion;
+        EnsureScheduleModulesRecoverable(
+            economicTerms,
+            callSchedulesRecoverable: callScheduleSince is not null,
+            accrualConventionsRecoverable: conventionsSince is not null);
+
+        var exactDeclaredSchedule = ReadExactDeclaredSchedule(economicTerms, assetClass!);
+        var callModule = GetObject(economicTerms, "call");
+        IReadOnlyList<JsonElement> callEntries = [];
+        IReadOnlyList<JsonElement> putEntries = [];
+        if (callScheduleSince is not null)
+        {
+            (callEntries, putEntries) = CollectScheduleEntries(callModule);
+        }
+
+        var writeSchedules = callEntries.Count > 0 || putEntries.Count > 0;
+
+        (string? BusinessDayConvention, IReadOnlyList<string> PaymentCalendars) conventions = (null, []);
+        if (conventionsSince is not null)
+        {
+            conventions = CollectAccrualConventions(GetObject(economicTerms, "accrual"));
+        }
+
+        var writeConventions = conventions.BusinessDayConvention is not null || conventions.PaymentCalendars.Count > 0;
+
+        // ADR-027 stage 1, increment 4: a class that declares the typed factorScheduleEntries
+        // array (StructuredCredit, Since 1) recovers the economic structured-product module's
+        // dated factor observations instead of dropping them into the retained document while the
+        // flat row — and every projection built from it — silently loses the schedule.
+        IReadOnlyList<(string AsOfDate, decimal Factor)> factorEntries = [];
+        if (SecurityAssetTermsSchema.Field(assetClass!, FactorScheduleEntriesKey) is not null)
+        {
+            factorEntries = CollectFactorScheduleEntries(economicTerms);
+        }
+
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetStampFloor(assetClass));
+            var stamp = SecurityAssetClassCatalog.GetStampFloor(assetClass);
+            if (writeSchedules)
+            {
+                stamp = Math.Max(stamp, callScheduleSince!.Value);
+            }
+
+            if (writeConventions)
+            {
+                stamp = Math.Max(stamp, conventionsSince!.Value);
+            }
+
+            // Structural legs retain the complete convention block. Raise the outer codec
+            // version before emitting it, so replay cannot erase a leg declaration as a stray key.
+            if (GetObject(economicTerms, "swapLegs") is { } structuralSwap
+                && structuralSwap.TryGetProperty("legs", out var structuralLegs)
+                && structuralLegs.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var leg in structuralLegs.EnumerateArray())
+                {
+                    if (leg.ValueKind != JsonValueKind.Object
+                        || !leg.TryGetProperty(SecurityVersionedTerms.ScheduleConventionsKey, out var block)
+                        || block.ValueKind != JsonValueKind.Object)
+                        continue;
+                    if (block.EnumerateObject().Any(static member => member.Value.ValueKind != JsonValueKind.Null
+                        && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0)))
+                    {
+                        var field = SecurityAssetTermsSchema.ElementFields(assetClass!, "legs")
+                            .SingleOrDefault(static field => field.Key == SecurityVersionedTerms.ScheduleConventionsKey)
+                            ?? throw new InvalidOperationException($"{assetClass} cannot recover declared swap-leg conventions.");
+                        stamp = Math.Max(stamp, field.SinceTermsVersion);
+                    }
+                }
+            }
+
+            if (SecurityAssetTermsSchema.Field(assetClass!, "rateUnit") is { } rateUnitField
+                && GetObject(economicTerms, "rateConvention") is { } rateConvention
+                && rateConvention.TryGetProperty("rateUnit", out var unit) && unit.ValueKind != JsonValueKind.Null)
+                stamp = Math.Max(stamp, rateUnitField.SinceTermsVersion);
+
+            if (exactDeclaredSchedule is { } exactSchedule)
+                foreach (var field in exactSchedule.EnumerateObject())
+                    stamp = Math.Max(stamp, SecurityAssetTermsSchema.Field(assetClass!, field.Name)!.SinceTermsVersion);
+            WriteFlatEnvelope(writer, stamp);
+
+            // The frozen fill: at or above its Since the block key is present, null when nothing
+            // is declared; below it the key is absent (ADR-024 decision 3).
+            if (conventionsSince is not null && stamp >= conventionsSince.Value && !HasExactScheduleField(exactDeclaredSchedule, SecurityVersionedTerms.ScheduleConventionsKey))
+            {
+                WriteScheduleConventions(writer, conventions);
+            }
+
+            if ((writeSchedules || (callScheduleSince is { } schedulesVersion && stamp >= schedulesVersion)) && !HasExactScheduleField(exactDeclaredSchedule, SecurityVersionedTerms.CallScheduleKey))
+            {
+                WriteCallSchedule(writer, callEntries, callModule);
+                WritePutSchedule(writer, putEntries);
+            }
+
+            if (factorEntries.Count > 0)
+            {
+                writer.WritePropertyName(FactorScheduleEntriesKey);
+                writer.WriteStartArray();
+                foreach (var (asOfDate, factor) in factorEntries)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("asOfDate", asOfDate);
+                    writer.WriteNumber("factor", factor);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+            }
+
+            // Structural module fields supersede the scalar compatibility mappings. Only a
+            // class-declared flat key may cross this codec boundary.
+            var structuralKeys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var moduleName in StructuralModules)
+            {
+                var declarations = economicTerms.EnumerateObject().Where(property => property.NameEquals(moduleName)).ToArray();
+                if (declarations.Length > 1)
+                    throw new InvalidOperationException($"Repeated economic module {moduleName}.");
+                if (declarations.Length == 0 || declarations[0].Value.ValueKind == JsonValueKind.Null)
+                    continue;
+                var module = declarations[0].Value;
+                if (module.ValueKind != JsonValueKind.Object)
+                    throw new InvalidOperationException($"Economic structural module {moduleName} must be an object or null.");
+                var allowed = StructuralModuleKeys(assetClass!, moduleName);
+                if (allowed.Count == 0)
+                    throw new InvalidOperationException($"{assetClass} cannot recover structural module {moduleName}.");
+                foreach (var property in module.EnumerateObject())
+                {
+                    if (moduleName == "contractualRate" && property.Value.ValueKind == JsonValueKind.Null
+                        && !allowed.Contains(property.Name, StringComparer.Ordinal))
+                        continue;
+                    if (!allowed.Contains(property.Name, StringComparer.Ordinal)
+                        || SecurityAssetTermsSchema.Field(assetClass!, property.Name) is null)
+                        throw new InvalidOperationException($"{assetClass} cannot recover structural field {moduleName}.{property.Name}.");
+                    if (!structuralKeys.Add(property.Name))
+                        throw new InvalidOperationException($"Repeated structural field {moduleName}.{property.Name}.");
+                    EnsureStructuralSummaryAgrees(economicTerms, assetClass!, moduleName, property, mappings);
+                    writer.WritePropertyName(property.Name);
+                    property.Value.WriteTo(writer);
+                }
+            }
 
             foreach (var mapping in mappings)
             {
+                if (structuralKeys.Contains(mapping.FlatKey))
+                    continue;
                 if (mapping.LabelFromFlags is { } flags)
                 {
+                    // A canonical raw classification, including explicit null, supersedes the
+                    // historical flag inference. A family such as Clo may also be an IO strip.
+                    var wroteCanonical = false;
+                    foreach (var (module, field) in mapping.Sources)
+                    {
+                        var declarations = economicTerms.EnumerateObject().Where(property => property.NameEquals(module)).ToArray();
+                        if (declarations.Length > 1)
+                            throw new InvalidOperationException($"Repeated economic module {module}.");
+                        if (declarations.Length == 0 || declarations[0].Value.ValueKind == JsonValueKind.Null)
+                            continue;
+                        var source = declarations[0].Value;
+                        if (source.ValueKind != JsonValueKind.Object || !source.TryGetProperty(field, out var value)
+                            || value.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                            throw new InvalidOperationException($"Economic classification field {module}.{field} must be a string or explicit null.");
+                        writer.WritePropertyName(mapping.FlatKey);
+                        value.WriteTo(writer);
+                        wroteCanonical = true;
+                        break;
+                    }
+                    if (wroteCanonical)
+                        continue;
+
                     foreach (var (module, field, label) in flags)
                     {
                         if (GetObject(economicTerms, module) is JsonElement flagSource
@@ -296,11 +533,91 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
     }
 
+    private static void EnsureStructuralSummaryAgrees(JsonElement economics, string assetClass,
+        string moduleName, JsonProperty authoritative, IReadOnlyList<FlatTermMapping> mappings)
+    {
+        foreach (var mapping in mappings.Where(mapping => mapping.FlatKey == authoritative.Name))
+        {
+            foreach (var (module, field) in mapping.Sources)
+            {
+                if (GetObject(economics, module) is not { } summary
+                    || !summary.TryGetProperty(field, out var value)
+                    || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                    continue;
+
+                bool agrees;
+                if (mapping.Scale is { } scale)
+                {
+                    // Compare in the summary's unit. A raw basis-point amount can carry more
+                    // precision than its decimal fraction; multiplying the rounded summary back
+                    // would falsely reject the exact authoritative amount.
+                    agrees = authoritative.Value.ValueKind == JsonValueKind.Number
+                        && authoritative.Value.TryGetDecimal(out var raw)
+                        && value.ValueKind == JsonValueKind.Number
+                        && value.TryGetDecimal(out var normalized)
+                        && normalized == raw / scale;
+                }
+                else if (mapping.EqualsLabel is { } label)
+                {
+                    agrees = authoritative.Value.ValueKind is JsonValueKind.True or JsonValueKind.False
+                        && authoritative.Value.GetBoolean() == (value.ValueKind == JsonValueKind.String
+                            && string.Equals(value.GetString(), label, StringComparison.Ordinal));
+                }
+                else if (moduleName == "contractualRate" && authoritative.Name == "paymentFrequency"
+                    && assetClass is "CreditDefaultSwap" or "StructuredNote")
+                {
+                    // The historical coupon summary parses cadence labels by trimming them.
+                    // The canonical raw field retains the original spelling, including whitespace.
+                    agrees = authoritative.Value.ValueKind == JsonValueKind.String
+                        && value.ValueKind == JsonValueKind.String
+                        && string.Equals(value.GetString(), authoritative.Value.GetString()!.Trim(), StringComparison.Ordinal);
+                }
+                else
+                {
+                    agrees = JsonElement.DeepEquals(authoritative.Value, value);
+                }
+
+                if (!agrees)
+                    throw new InvalidOperationException(
+                        $"Economic structural field {moduleName}.{authoritative.Name} conflicts with compatibility summary {module}.{field}.");
+            }
+        }
+    }
+
+    private static bool TryRecoverProfileDocument(JsonElement economicTerms, string? assetClass, out JsonElement document)
+    {
+        document = default;
+        if (string.IsNullOrWhiteSpace(assetClass)
+            || !SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresProfileReference
+            || GetObject(economicTerms, ProfileEnvelopeModule) is not JsonElement envelope
+            || !envelope.TryGetProperty("terms", out var terms)
+            || terms.ValueKind != JsonValueKind.Object
+            || !terms.TryGetProperty("customProfileId", out var profileId)
+            || profileId.ValueKind != JsonValueKind.String
+            || string.IsNullOrWhiteSpace(profileId.GetString()))
+        {
+            return false;
+        }
+
+        document = terms;
+        return true;
+    }
+
     // An economic-only event cannot recover the complete flat schedule declaration: Accrual
     // lacks roll, unit, lag and accrual-adjustment terms; Call lists lack windows and notice terms.
     // Retaining those modules under an ignored key would let projection/amortization run a bullet.
     // Only conversion uses this guard. Retained flat rows keep their established replay path.
-    private static void EnsureScheduleModulesRecoverable(JsonElement economicTerms)
+    // Since ADR-027 stage 1 increments 1 and 2, a class whose schema declares the flat
+    // callSchedule and putSchedule arrays passes callSchedulesRecoverable, and one that declares
+    // the scheduleConventions block passes accrualConventionsRecoverable: the Call module's lists
+    // and the Accrual module's conventions land in those declared homes instead of being refused.
+    // Only the serializer's canonical module spellings are recoverable; case variants keep the old
+    // refusal, and the class-independent route keeps refusing everything: it has no declared keys
+    // to map onto.
+    private static void EnsureScheduleModulesRecoverable(
+        JsonElement economicTerms,
+        bool callSchedulesRecoverable,
+        bool accrualConventionsRecoverable)
     {
         if (economicTerms.ValueKind != JsonValueKind.Object)
             return;
@@ -308,7 +625,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         {
             if (module.Value.ValueKind != JsonValueKind.Object)
                 continue;
-            if (module.Name.Equals("accrual", StringComparison.OrdinalIgnoreCase))
+            if (module.Name.Equals("accrual", StringComparison.OrdinalIgnoreCase)
+                && (!accrualConventionsRecoverable || !module.Name.Equals("accrual", StringComparison.Ordinal)))
             {
                 foreach (var member in module.Value.EnumerateObject())
                 {
@@ -318,8 +636,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                         throw UnrecoverableSchedule();
                 }
             }
-            else if (module.Name.Equals("call", StringComparison.OrdinalIgnoreCase))
+            else if (module.Name.Equals("call", StringComparison.OrdinalIgnoreCase)
+                     && (!callSchedulesRecoverable || !module.Name.Equals("call", StringComparison.Ordinal)))
             {
+                // Only the serializer's canonical `call` module is recoverable; a case-variant
+                // module is not the economic writer's shape, the conversion will not read it, and
+                // letting it pass would silently drop a declared schedule.
                 foreach (var member in module.Value.EnumerateObject())
                 {
                     if ((member.Name.Equals(SecurityVersionedTerms.CallScheduleKey, StringComparison.OrdinalIgnoreCase)
@@ -332,9 +654,491 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         }
     }
 
+    /// <summary>
+    /// The dated call and put entries of the economic Call module, validated under the frozen
+    /// written form's rules: a schedule member that is not an array (or null) is malformed and
+    /// refuses like any other unrecoverable schedule; a JSON-null or all-null entry is unset and
+    /// skipped ("a re-serialization drops it"); an entry with content but no date is populated and
+    /// refuses, exactly as a flat write would. Member names match the old guard's tolerance
+    /// (ordinal-ignore-case), so a case-variant key cannot smuggle a schedule past validation.
+    /// </summary>
+    private static (IReadOnlyList<JsonElement> Calls, IReadOnlyList<JsonElement> Puts) CollectScheduleEntries(JsonElement? callModule)
+    {
+        if (callModule is not JsonElement module)
+        {
+            return ([], []);
+        }
+
+        var calls = new List<JsonElement>();
+        var puts = new List<JsonElement>();
+        foreach (var member in module.EnumerateObject())
+        {
+            if (member.Name.Equals(SecurityVersionedTerms.CallScheduleKey, StringComparison.OrdinalIgnoreCase))
+            {
+                RefuseUnlessCanonicalSpelling(member, SecurityVersionedTerms.CallScheduleKey);
+                CollectDatedEntries(member.Value, "callDt", calls);
+            }
+            else if (member.Name.Equals(SecurityVersionedTerms.PutScheduleKey, StringComparison.OrdinalIgnoreCase))
+            {
+                RefuseUnlessCanonicalSpelling(member, SecurityVersionedTerms.PutScheduleKey);
+                CollectDatedEntries(member.Value, "putDt", puts);
+            }
+        }
+
+        return (calls, puts);
+    }
+
+    /// <summary>
+    /// The Accrual module's recoverable conventions (ADR-027 stage 1, increment 2): the
+    /// business-day convention, which must decode under the flat reader's own parser
+    /// (<see cref="SecurityTermConventions.TryParseBusinessDayConvention"/>) and is kept in its
+    /// verbatim spelling, and the joint calendar id, which inverts
+    /// <c>BusinessDayCalendars.JointCalendarId</c> exactly: the <c>+</c>-joined parts become the
+    /// block's payment calendars (the forward rule already canonicalized trim, case-dedup and
+    /// order, so the inversion is lossless for the canonical form). A declared value the flat
+    /// side could not decode — a non-string, a blank calendar part, an unrecognized convention
+    /// spelling, or a case-variant member that declares content — refuses, exactly as the old
+    /// guard did, instead of being recovered as text the schedule kernel would later reject or a
+    /// variant the conversion would ignore.
+    /// </summary>
+    private static (string? BusinessDayConvention, IReadOnlyList<string> PaymentCalendars) CollectAccrualConventions(JsonElement? accrualModule)
+    {
+        if (accrualModule is not JsonElement module)
+        {
+            return (null, []);
+        }
+
+        string? businessDayConvention = null;
+        IReadOnlyList<string> paymentCalendars = [];
+        foreach (var member in module.EnumerateObject())
+        {
+            if (member.Name.Equals("businessDayConvention", StringComparison.OrdinalIgnoreCase))
+            {
+                RefuseUnlessCanonicalScalarSpelling(member, "businessDayConvention");
+                if (member.Value.ValueKind == JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                if (member.Value.ValueKind != JsonValueKind.String
+                    || !SecurityTermConventions.TryParseBusinessDayConvention(member.Value.GetString(), out _))
+                {
+                    throw UnrecoverableSchedule();
+                }
+
+                businessDayConvention = member.Value.GetString();
+            }
+            else if (member.Name.Equals("holidayCalendar", StringComparison.OrdinalIgnoreCase))
+            {
+                RefuseUnlessCanonicalScalarSpelling(member, "holidayCalendar");
+                if (member.Value.ValueKind == JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                if (member.Value.ValueKind != JsonValueKind.String)
+                {
+                    throw UnrecoverableSchedule();
+                }
+
+                var parts = member.Value.GetString()!.Split('+');
+                if (parts.Length == 0 || parts.Any(static part => string.IsNullOrWhiteSpace(part)))
+                {
+                    throw UnrecoverableSchedule();
+                }
+
+                paymentCalendars = parts.Select(static part => part.Trim()).ToArray();
+            }
+        }
+
+        return (businessDayConvention, paymentCalendars);
+    }
+
+    private static void RefuseUnlessCanonicalScalarSpelling(JsonProperty member, string canonicalKey)
+    {
+        if (!member.Name.Equals(canonicalKey, StringComparison.Ordinal)
+            && member.Value.ValueKind is not JsonValueKind.Null)
+        {
+            throw UnrecoverableSchedule();
+        }
+    }
+
+    /// <summary>
+    /// The structured-product module's dated factor observations (ADR-027 stage 1, increment 4),
+    /// validated under the flat schema's own rules before they land in the declared
+    /// <c>factorScheduleEntries</c> home: each entry carries the canonical <c>asOfDate</c>
+    /// (decodable ISO <c>yyyy-MM-dd</c>) and <c>factor</c> (a number in [0, 1]); dates are
+    /// distinct and, ordered by date, factors never increase — the same invariants the domain
+    /// validation (<c>structured_credit_factor_schedule_invalid</c>) enforces on a flat write.
+    /// A JSON-null or all-null entry is unset and skipped. Anything else that declares content —
+    /// a non-array list, a non-object entry, an undecodable date, an out-of-range or missing
+    /// factor, a member the economic serializer never writes, or a case-variant module or key
+    /// spelling — refuses instead of being recovered as a schedule the flat readers would reject
+    /// or silently drop.
+    /// </summary>
+    private static IReadOnlyList<(string AsOfDate, decimal Factor)> CollectFactorScheduleEntries(JsonElement economicTerms)
+    {
+        if (economicTerms.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        var entries = new List<(DateOnly Date, string AsOfDate, decimal Factor)>();
+        foreach (var module in economicTerms.EnumerateObject())
+        {
+            if (!module.Name.Equals(StructuredProductModule, StringComparison.OrdinalIgnoreCase)
+                || module.Value.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var canonicalModule = module.Name.Equals(StructuredProductModule, StringComparison.Ordinal);
+            foreach (var member in module.Value.EnumerateObject())
+            {
+                if (!member.Name.Equals(FactorScheduleEntriesKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var declaresContent = member.Value.ValueKind != JsonValueKind.Null
+                    && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0);
+                if (!canonicalModule || !member.Name.Equals(FactorScheduleEntriesKey, StringComparison.Ordinal))
+                {
+                    // A case-variant module or key is not the economic serializer's shape: the
+                    // conversion only reads the canonical spelling, so a variant that declares
+                    // content refuses instead of passing while its schedule is silently ignored.
+                    if (declaresContent)
+                    {
+                        throw UnrecoverableFactorSchedule();
+                    }
+
+                    continue;
+                }
+
+                CollectFactorEntries(member.Value, entries);
+            }
+        }
+
+        if (entries.Count > 1)
+        {
+            var ordered = entries.OrderBy(static entry => entry.Date).ToArray();
+            for (var i = 1; i < ordered.Length; i++)
+            {
+                if (ordered[i].Date == ordered[i - 1].Date || ordered[i].Factor > ordered[i - 1].Factor)
+                {
+                    throw UnrecoverableFactorSchedule();
+                }
+            }
+        }
+
+        return entries.Select(static entry => (entry.AsOfDate, entry.Factor)).ToArray();
+    }
+
+    private static void CollectFactorEntries(JsonElement list, List<(DateOnly Date, string AsOfDate, decimal Factor)> entries)
+    {
+        if (list.ValueKind == JsonValueKind.Null)
+        {
+            return;
+        }
+
+        if (list.ValueKind != JsonValueKind.Array)
+        {
+            throw UnrecoverableFactorSchedule();
+        }
+
+        foreach (var entry in list.EnumerateArray())
+        {
+            if (entry.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                throw UnrecoverableFactorSchedule();
+            }
+
+            DateOnly? date = null;
+            string? asOfDate = null;
+            decimal? factor = null;
+            var populated = false;
+            foreach (var member in entry.EnumerateObject())
+            {
+                if (member.Value.ValueKind is JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                populated = true;
+                if (member.Name.Equals("asOfDate", StringComparison.Ordinal)
+                    && member.Value.ValueKind == JsonValueKind.String
+                    && DateOnly.TryParseExact(member.Value.GetString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                {
+                    date = parsed;
+                    asOfDate = member.Value.GetString();
+                }
+                else if (member.Name.Equals("factor", StringComparison.Ordinal)
+                         && member.Value.ValueKind == JsonValueKind.Number
+                         && member.Value.TryGetDecimal(out var value)
+                         && value is >= 0m and <= 1m)
+                {
+                    factor = value;
+                }
+                else
+                {
+                    // A populated member the frozen written form cannot carry — a variant or
+                    // foreign key, an undecodable date, an out-of-range or non-numeric factor —
+                    // would be silently dropped by the flat write, so it refuses instead.
+                    throw UnrecoverableFactorSchedule();
+                }
+            }
+
+            if (!populated)
+            {
+                continue;
+            }
+
+            if (date is not { } entryDate || asOfDate is null || factor is not { } entryFactor)
+            {
+                throw UnrecoverableFactorSchedule();
+            }
+
+            entries.Add((entryDate, asOfDate, entryFactor));
+        }
+    }
+
+    /// <summary>
+    /// Writes the flat <c>scheduleConventions</c> block in the frozen ADR-024 form: null when
+    /// nothing is declared, otherwise all twelve members in alphabetical order with null or []
+    /// for an unset one. The economic family carried only the business-day convention and the
+    /// joint calendar; the schedule-build members it never carried stay null and read under
+    /// ADR-025's declared defaults.
+    /// </summary>
+    private static void WriteScheduleConventions(Utf8JsonWriter writer, (string? BusinessDayConvention, IReadOnlyList<string> PaymentCalendars) conventions)
+    {
+        writer.WritePropertyName(SecurityVersionedTerms.ScheduleConventionsKey);
+        if (conventions.BusinessDayConvention is null && conventions.PaymentCalendars.Count == 0)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        writer.WriteStartObject();
+        writer.WriteNull("accrualAdjusted");
+        WriteStringOrNull(writer, "businessDayConvention", conventions.BusinessDayConvention);
+        writer.WriteNull("couponCashBasis");
+        writer.WriteNull("couponRateUnit");
+        writer.WriteNull("direction");
+        writer.WriteNull("endOfMonthRule");
+        writer.WriteNull("firstRegularDate");
+        writer.WriteNull("lastRegularDate");
+        writer.WritePropertyName("paymentCalendars");
+        writer.WriteStartArray();
+        foreach (var calendar in conventions.PaymentCalendars)
+        {
+            writer.WriteStringValue(calendar);
+        }
+
+        writer.WriteEndArray();
+        writer.WriteNull("paymentLagBusinessDays");
+        writer.WriteNull("rollConvention");
+        writer.WriteNull("stubPolicy");
+        writer.WriteEndObject();
+    }
+
+    /// <summary>
+    /// A case-variant schedule key is not the economic serializer's shape: the conversion only
+    /// reads the canonical spelling, so a variant that declares content refuses — exactly the old
+    /// guard's rule — instead of passing while its schedule is silently ignored.
+    /// </summary>
+    private static void RefuseUnlessCanonicalSpelling(JsonProperty member, string canonicalKey)
+    {
+        if (member.Name.Equals(canonicalKey, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        if (member.Value.ValueKind != JsonValueKind.Null
+            && (member.Value.ValueKind != JsonValueKind.Array || member.Value.GetArrayLength() > 0))
+        {
+            throw UnrecoverableSchedule();
+        }
+    }
+
+    private static void CollectDatedEntries(JsonElement list, string dateField, List<JsonElement> entries)
+    {
+        if (list.ValueKind == JsonValueKind.Null)
+        {
+            return;
+        }
+
+        if (list.ValueKind != JsonValueKind.Array)
+        {
+            throw UnrecoverableSchedule();
+        }
+
+        foreach (var entry in list.EnumerateArray())
+        {
+            if (entry.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                throw UnrecoverableSchedule();
+            }
+
+            // The date must decode under the flat reader's frozen semantics (ISO yyyy-MM-dd): an
+            // entry whose date string the flat side would drop is a populated schedule term that
+            // cannot be recovered, so it refuses below instead of being emitted and silently lost.
+            var hasDate = entry.TryGetProperty(dateField, out var date)
+                && date.ValueKind == JsonValueKind.String
+                && DateOnly.TryParseExact(date.GetString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _);
+            if (hasDate)
+            {
+                entries.Add(entry);
+                continue;
+            }
+
+            foreach (var member in entry.EnumerateObject())
+            {
+                if (member.Value.ValueKind is not JsonValueKind.Null)
+                {
+                    // Populated but dateless: a flat write refuses it, so the conversion does too.
+                    throw UnrecoverableSchedule();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes the flat <c>callSchedule</c> array in the frozen ADR-024 form (every member, in
+    /// alphabetical order, null when unset) from the economic Call module's entries
+    /// (<c>callDt</c>, <c>callPx</c>, <c>isParCall</c>, <c>callType</c>). The conversion rules are
+    /// the increment's declared semantics: <c>callPx</c> is documented as a percentage of par, so a
+    /// written price carries <c>priceBasis = "PercentOfPar"</c>; a par call without a price writes
+    /// 100 at that basis, which is what a par call means; <c>callType</c> "MakeWhole" is a price
+    /// type (with the module-level <c>makeWholeSpreadBps</c>), while every other label is an
+    /// exercise style carried back verbatim — the flat field preserves undeclared style strings
+    /// (<c>WithVerbatimUndeclaredValue</c>) and the economic upgrade copies them into
+    /// <c>callType</c> unchanged, so the recovery keeps them rather than dropping them. Members
+    /// the economic family never carried (windows, notice terms, partial redemption) stay null
+    /// and read under ADR-025's declared defaults.
+    /// </summary>
+    private static void WriteCallSchedule(Utf8JsonWriter writer, IReadOnlyList<JsonElement> entries, JsonElement? callModule)
+    {
+        var makeWholeSpreadBps = callModule is JsonElement module
+            && module.TryGetProperty("makeWholeSpreadBps", out var spread)
+            && spread.ValueKind == JsonValueKind.Number
+                ? spread.GetDecimal()
+                : (decimal?)null;
+
+        writer.WritePropertyName(SecurityVersionedTerms.CallScheduleKey);
+        writer.WriteStartArray();
+        foreach (var entry in entries)
+        {
+            var callType = entry.TryGetProperty("callType", out var type) && type.ValueKind == JsonValueKind.String
+                ? type.GetString()
+                : null;
+            // The economic writer's own inverse (SecurityMasterLegacyUpgrade.economicCalls):
+            // callType carries "MakeWhole" when the flat entry priced that way, else the flat
+            // entry's exerciseStyle verbatim — including labels outside the declared vocabulary,
+            // which the flat field preserves (WithVerbatimUndeclaredValue). Dropping an
+            // undeclared label here would lose it on the recovery round-trip, so every
+            // non-MakeWhole label goes back to exerciseStyle unchanged.
+            var isMakeWhole = string.Equals(callType, "MakeWhole", StringComparison.Ordinal);
+            var isExerciseStyle = callType is not null && !isMakeWhole;
+            var callPrice = entry.TryGetProperty("callPx", out var price) && price.ValueKind == JsonValueKind.Number
+                ? price.GetDecimal()
+                : entry.TryGetProperty("isParCall", out var par) && par.ValueKind == JsonValueKind.True
+                    ? 100m
+                    : (decimal?)null;
+
+            writer.WriteStartObject();
+            writer.WritePropertyName("callDate");
+            entry.GetProperty("callDt").WriteTo(writer);
+            writer.WriteNull("callEndDate");
+            WriteNumberOrNull(writer, "callPrice", callPrice);
+            writer.WriteNull("exerciseFrequency");
+            WriteStringOrNull(writer, "exerciseStyle", isExerciseStyle ? callType : null);
+            WriteNumberOrNull(writer, "makeWholeSpreadBps", isMakeWhole ? makeWholeSpreadBps : null);
+            writer.WriteNull("maximumNoticeDays");
+            writer.WriteNull("minimumNoticeDays");
+            writer.WriteNull("noticeDayType");
+            writer.WriteNull("partialRedemption");
+            WriteStringOrNull(writer, "priceBasis", callPrice is null ? null : "PercentOfPar");
+            WriteStringOrNull(writer, "priceType", isMakeWhole ? "MakeWhole" : callPrice is null ? null : "Fixed");
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+    }
+
+    /// <summary>
+    /// Writes the flat <c>putSchedule</c> array in the frozen ADR-024 form from the economic Call
+    /// module's put entries (<c>putDt</c>, <c>putPx</c>); <c>putPx</c> follows <c>callPx</c>'s
+    /// percentage-of-par documentation. The flat writer emits both arrays together, so this is
+    /// written (as <c>[]</c> when no puts are declared) whenever the call schedule is.
+    /// </summary>
+    private static void WritePutSchedule(Utf8JsonWriter writer, IReadOnlyList<JsonElement> entries)
+    {
+        writer.WritePropertyName(SecurityVersionedTerms.PutScheduleKey);
+        writer.WriteStartArray();
+        foreach (var entry in entries)
+        {
+            var putPrice = entry.TryGetProperty("putPx", out var price) && price.ValueKind == JsonValueKind.Number
+                ? price.GetDecimal()
+                : (decimal?)null;
+
+            writer.WriteStartObject();
+            writer.WriteNull("exerciseFrequency");
+            writer.WriteNull("exerciseStyle");
+            writer.WriteNull("maximumNoticeDays");
+            writer.WriteNull("minimumNoticeDays");
+            writer.WriteNull("noticeDayType");
+            WriteStringOrNull(writer, "priceBasis", putPrice is null ? null : "PercentOfPar");
+            writer.WritePropertyName("putDate");
+            entry.GetProperty("putDt").WriteTo(writer);
+            writer.WriteNull("putEndDate");
+            WriteNumberOrNull(writer, "putPrice", putPrice);
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+    }
+
+    private static void WriteNumberOrNull(Utf8JsonWriter writer, string name, decimal? value)
+    {
+        if (value is { } number)
+        {
+            writer.WriteNumber(name, number);
+        }
+        else
+        {
+            writer.WriteNull(name);
+        }
+    }
+
+    private static void WriteStringOrNull(Utf8JsonWriter writer, string name, string? value)
+    {
+        if (value is { } text)
+        {
+            writer.WriteString(name, text);
+        }
+        else
+        {
+            writer.WriteNull(name);
+        }
+    }
+
     private static InvalidOperationException UnrecoverableSchedule()
         => new("Declared schedule economic replay requires retained legacy asset-specific terms; "
             + "the economic payload cannot reconstruct complete schedule conventions or exercise windows and notice terms.");
+
+    private static InvalidOperationException UnrecoverableFactorSchedule()
+        => new("Declared factor-schedule economic replay requires retained legacy asset-specific terms; "
+            + "the economic payload's factor entries cannot be recovered into the flat schedule the amortization readers trust.");
 
     /// <summary>
     /// The flat keys <see cref="Convert(JsonElement, string?)"/> can reconstruct for
@@ -342,8 +1146,86 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static IReadOnlyList<string> RecoverableKeys(string assetClass)
         => TryGetClassFlattening(assetClass, out var mappings)
-            ? mappings.Select(static mapping => mapping.FlatKey).ToArray()
+            ? mappings.Select(static mapping => mapping.FlatKey).Concat(StructuralKeys(assetClass)).Concat(SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.CallScheduleKey) is null ? [] : new[] { SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey }).Distinct(StringComparer.Ordinal).ToArray()
             : [];
+
+    /// <summary>
+    /// The structural modules: each member is a class-declared flat key, copied across the codec
+    /// boundary whole (<see cref="StructuralModuleKeys"/>).
+    /// </summary>
+    private static readonly string[] StructuralModules =
+        ["bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "contractualRate", "underlyingSwap", "declaredSchedule"];
+
+    /// <summary>
+    /// The module fields for which the flat row of <paramref name="assetClass"/> is the authority:
+    /// when a row rebuilt from flat terms has such a field empty, the flat revision cleared it, so
+    /// a retained economic document must not put the old value back
+    /// (<see cref="SecurityTermsEnvelope.FoldRetainedEconomicTerms"/>).
+    /// <para>
+    /// These are the stage-3 module homes the flat row carries exactly: every member of a
+    /// structural module the class recovers (<see cref="StructuralModuleKeys"/>), and every field a
+    /// flattening copies verbatim, one field to one flat key with no label-equality or scale
+    /// transform, from a module added after the identity gate
+    /// (<see cref="ModulesAddedAfterIdentityGate"/>). A flag fallback does not disqualify a
+    /// mapping: it is consulted only for a document that predates the module. A document holds
+    /// one of these fields only because the current serializer wrote it from the same record the
+    /// flat row is written from, so the row and the module always agree.
+    /// </para>
+    /// <para>
+    /// Two things are deliberately left out. The <c>declaredSchedule</c> module keeps the
+    /// existing rule that an empty declared call or put list is filled from the retained
+    /// document, because the older <c>call</c> summary module is filled the same way and the two
+    /// must not disagree. And fields the economic document carried before stage 3 keep the old
+    /// fill: historical and hand-shaped documents hold values there that the flat decode does not
+    /// reproduce.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<(string Module, string Field)> FlatAuthoritativeFields(string? assetClass)
+    {
+        if (!TryGetClassFlattening(assetClass, out var mappings))
+        {
+            return [];
+        }
+
+        var structural = StructuralModules
+            .Where(static module => module != "declaredSchedule")
+            .SelectMany(module => StructuralModuleKeys(assetClass!, module).Select(key => (module, key)));
+        var copied = mappings
+            .Where(static mapping => mapping.Sources.Length == 1
+                                     && mapping.EqualsLabel is null
+                                     && mapping.Scale is null
+                                     && ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal))
+            .Select(static mapping => mapping.Sources[0]);
+        return structural.Concat(copied).Distinct().ToArray();
+    }
+
+    private static IReadOnlyList<string> StructuralModuleKeys(string assetClass, string module) => (assetClass, module) switch
+    {
+        ("Bond" or "CertificateOfDeposit" or "StructuredCredit", "declaredSchedule") => [SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey],
+        ("CreditDefaultSwap", "contractualRate") => ["fixedCouponBps", "paymentFrequency", "dayCount"],
+        ("StructuredNote", "contractualRate") => ["couponRate", "paymentFrequency"],
+        ("CommitmentGuarantee", "contractualRate") => ["feeRate"],
+        ("CapFloor", "contractualRate") => ["dayCount"],
+        ("Swaption", "underlyingSwap") => ["underlyingMaturityDate", "floatingIndex", "fixedLegPaymentFrequency", "fixedLegDayCount"],
+        ("Bond", "bondCoupon") => ["couponType", "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount"],
+        ("Bond" or "DirectLoan", "principalSchedule") => ["principalSchedule"],
+        ("Swap", "swapLegs") => ["legs"],
+        ("DirectLoan" or "CommitmentGuarantee", "loanCovenants") => ["covenants"],
+        _ => []
+    };
+
+    private static IReadOnlyList<string> StructuralKeys(string assetClass) => assetClass switch
+    {
+        "Bond" => ["couponType", "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount", "principalSchedule"],
+        "DirectLoan" => ["principalSchedule", "covenants"],
+        "Swap" => ["legs"],
+        "CommitmentGuarantee" => ["covenants", "feeRate"],
+        "CreditDefaultSwap" => ["fixedCouponBps", "paymentFrequency", "dayCount"],
+        "StructuredNote" => ["couponRate", "paymentFrequency"],
+        "CapFloor" => ["dayCount"],
+        "Swaption" => ["underlyingMaturityDate", "floatingIndex", "fixedLegPaymentFrequency", "fixedLegDayCount"],
+        _ => []
+    };
 
     /// <summary>
     /// The declared flat keys for <paramref name="assetClass"/> that no economic-terms module
@@ -373,7 +1255,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         {
             if (string.Equals(name, assetClass, StringComparison.OrdinalIgnoreCase))
             {
-                mappings = candidate;
+                mappings = SecurityAssetTermsSchema.Field(assetClass, "rateUnit") is not null
+                    ? [.. candidate, Map("rateUnit", ("rateConvention", "rateUnit"))]
+                    : candidate;
                 return true;
             }
         }
@@ -402,9 +1286,6 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// as the flat value; when no flag is set the key is left absent, because the economic document
     /// does not carry the label itself (a CLO's kind is not recoverable from its IO/PO flags).
     /// </summary>
-    private static FlatTermMapping LabelFromFlags(string flatKey, params (string Module, string Field, string Label)[] flags)
-        => new(flatKey, [], LabelFromFlags: flags);
-
     private static readonly (string Module, string Field) MaturityDate = ("maturity", "maturityDate");
 
     /// <summary>
@@ -415,9 +1296,38 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     private static readonly IReadOnlyList<(string AssetClass, IReadOnlyList<FlatTermMapping> Mappings)> ClassFlattenings =
     [
-        ("Equity", [Map("shareClass", ("equityBehavior", "shareClass")), Map("votingRightsCat", ("equityBehavior", "votingRights"))]),
-        ("Option", [Map("expiry", MaturityDate)]),
-        ("Future", [Map("expiry", MaturityDate)]),
+        ("Equity", [Map("shareClass", ("equityCapital", "shareClass"), ("equityBehavior", "shareClass")), Map("votingRightsCat", ("equityBehavior", "votingRights"))]),
+        // ADR-027 stage 3 (S3-E): the exercise module (and the contract multiplier on
+        // tradingParameters) recovers the strike fields termsFromKind now feeds it from.
+        ("Option",
+        [
+            Map("underlyingId", ("exercise", "underlyingSecurityId")),
+            Map("putCall", ("exercise", "optionRight")),
+            Map("strike", ("exercise", "strikePrice")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier")),
+            Map("exerciseStyle", ("exercise", "exerciseStyle")),
+            Map("optChainId", ("listingDetail", "optChainId")),
+            Map("settlementType", ("listingDetail", "settlementType")),
+            Map("isAdjusted", ("listingDetail", "isAdjusted")),
+            Map("lastTradingDt", ("listingDetail", "lastTradingDt"))]),
+        ("Future", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier")),
+            Map("rootSymbol", ("listingDetail", "rootSymbol")),
+            Map("contractMonth", ("listingDetail", "contractMonth")),
+            Map("lastTradingDt", ("listingDetail", "lastTradingDt")),
+            Map("firstNoticeDt", ("listingDetail", "firstNoticeDt")),
+            Map("deliveryMonthDt", ("listingDetail", "deliveryMonthDt")),
+            Map("settlementType", ("listingDetail", "settlementType")),
+            Map("deliveryLocationCode", ("listingDetail", "deliveryLocationCode")),
+            Map("isRollTarget", ("listingDetail", "isRollTarget")),
+            Map("rollWindowDays", ("listingDetail", "rollWindowDays"))]),
+        ("FxSpot", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
+        ("CryptoCurrency", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("network", ("digitalAsset", "network"))]),
+        ("Commodity", [Map("commodityType", ("commodityContract", "commodityType")),
+            Map("denomination", ("commodityContract", "denomination")), Map("contractSize", ("commodityContract", "contractSize"))]),
+        ("Cfd", [Map("underlyingAssetClass", ("underlyingExposure", "underlyingAssetClass")),
+            Map("underlyingDescription", ("underlyingExposure", "underlyingDescription")), Map("leverage", ("underlyingExposure", "leverage"))]),
         ("Bond",
         [
             Map("maturity", MaturityDate),
@@ -428,7 +1338,13 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("paymentFrequency", ("coupon", "paymentFrequency"), ("payment", "paymentFrequency")),
             Map("isCallable", ("call", "isCallable")),
             Map("callDate", ("call", "firstCallDate")),
-            Map("issuerName", ("issuer", "issuerName"))
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("subclass", ("debtClassification", "subclass")),
+            Map("seniority", ("debtClassification", "seniority")),
+            Map("par", ("bondRedemption", "par")),
+            Map("legalFinalMaturity", ("bondRedemption", "legalFinalMaturity")),
+            Map("preRefundDate", ("bondRedemption", "preRefundDate")),
+            Map("mandatoryPutDate", ("bondRedemption", "mandatoryPutDate"))
         ]),
         ("Deposit",
         [
@@ -488,12 +1404,23 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         ]),
         ("OtherSecurity",
         [
+            Map("category", ("classificationDetail", "category")),
+            Map("subType", ("classificationDetail", "subType")),
             Map("maturity", MaturityDate),
             Map("issuerName", ("issuer", "issuerName")),
             Map("settlementType", ("issuer", "issuerProgram"))
         ]),
         ("Swap", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
-        ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate)]),
+        ("DirectLoan",
+        [
+            Map("borrower", ("issuer", "issuerName")),
+            Map("maturity", MaturityDate),
+            Map("currentCouponRate", ("coupon", "couponRate")),
+            Map("referenceIndex", ("floatingRate", "referenceIndex")),
+            Map("spreadBps", ("floatingRate", "spreadBps")),
+            Map("resetFrequency", ("floatingRate", "resetFrequency")),
+            Map("pricingSource", ("referenceDataSource", "pricingSource"))
+        ]),
         ("StructuredCredit",
         [
             Map("tranche", ("structuredProduct", "trancheClass")),
@@ -509,29 +1436,80 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("weightedAverageCoupon", ("structuredProduct", "weightedAvgCoupon")),
             Map("weightedAverageMaturityMonths", ("structuredProduct", "weightedAvgMaturityMonths")),
             Map("weightedAverageLoanAgeMonths", ("structuredProduct", "weightedAvgLoanAgeMos")),
-            LabelFromFlags(
-                "structuredCreditKind",
-                ("structuredProduct", "isInterestOnly", "InterestOnly"),
-                ("structuredProduct", "isPrincipalOnly", "PrincipalOnly"))
+            Map("seniority", ("trancheContract", "seniority")),
+            Map("attachmentPoint", ("trancheContract", "attachmentPoint")),
+            Map("detachmentPoint", ("trancheContract", "detachmentPoint")),
+            Map("reinvestmentPeriodEnd", ("trancheContract", "reinvestmentPeriodEnd")),
+            Map("nonCallPeriodEnd", ("trancheContract", "nonCallPeriodEnd")),
+            new FlatTermMapping(
+                "structuredCreditKind", [("trancheContract", "structuredCreditKind")],
+                LabelFromFlags: [("structuredProduct", "isInterestOnly", "InterestOnly"),
+                    ("structuredProduct", "isPrincipalOnly", "PrincipalOnly")])
         ]),
-        ("PrivateFundInterest", [Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")), Map("strategy", ("issuer", "issuerProgram"))]),
+        ("PrivateFundInterest",
+        [
+            Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")),
+            Map("strategy", ("issuer", "issuerProgram")),
+            Map("commitment", ("notional", "committedAmount")),
+            Map("fundedAmount", ("notional", "fundedAmount")),
+            Map("unfundedAmount", ("notional", "unfundedAmount")),
+            Map("vintage", ("privateAssetValuation", "vintage")),
+            Map("navDate", ("privateAssetValuation", "navDate")),
+            Map("lockup", ("privateAssetValuation", "lockup"))]),
         ("PrivateCompanyEquity",
         [
             Map("issuer", ("issuer", "issuerName")),
-            Map("shareClass", ("equityBehavior", "shareClass")),
-            Map("round", ("issuer", "issuerProgram"))
-        ]),
-        ("RealEstateHolding", [Map("propertyType", ("issuer", "issuerProgram")), Map("sponsor", ("issuer", "issuerName"))]),
+            Map("shareClass", ("equityCapital", "shareClass"), ("equityBehavior", "shareClass")),
+            Map("round", ("issuer", "issuerProgram")),
+            Map("ownershipPercent", ("privateAssetValuation", "ownershipPercent")),
+            Map("costBasis", ("privateAssetValuation", "costBasis")),
+            Map("latestValuation", ("privateAssetValuation", "latestValuation")),
+            Map("transferRestrictions", ("privateAssetValuation", "transferRestrictions"))]),
+        ("RealEstateHolding", [Map("propertyType", ("issuer", "issuerProgram")), Map("sponsor", ("issuer", "issuerName")),
+            Map("ownershipPercent", ("privateAssetValuation", "ownershipPercent")),
+            Map("addressOrMarket", ("privateAssetValuation", "addressOrMarket")),
+            Map("appraisalValue", ("privateAssetValuation", "appraisalValue")),
+            Map("valuationDate", ("privateAssetValuation", "valuationDate")),
+            Map("debtStack", ("privateAssetValuation", "debtStack"))]),
         ("CommitmentGuarantee",
         [
             Map("counterparty", ("issuer", "issuerName")),
             Map("beneficiary", ("issuer", "issuerProgram")),
+            Map("collateral", ("financing", "collateralType")),
             Map("effectiveDate", ("maturity", "effectiveDate")),
-            Map("expiryDate", MaturityDate)
+            Map("expiryDate", MaturityDate),
+            Map("committedAmount", ("notional", "committedAmount")),
+            Map("unfundedAmount", ("notional", "unfundedAmount"))
         ]),
-        ("Warrant", [Map("expiry", MaturityDate)]),
-        ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
-        ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("Warrant",
+        [
+            Map("underlyingId", ("exercise", "underlyingSecurityId")),
+            Map("warrantType", ("exercise", "optionRight")),
+            Map("strike", ("exercise", "strikePrice")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier"))
+        ]),
+        ("FxForward",
+        [
+            Map("baseCurrency", ("currencyPair", "baseCurrency")),
+            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("notional", ("notional", "notional")),
+            Map("tradeDate", ("maturity", "effectiveDate")),
+            Map("valueDate", MaturityDate),
+            Map("settlementType", ("settlement", "settlementType"))
+        ]),
+        ("NonDeliverableForward",
+        [
+            Map("baseCurrency", ("currencyPair", "baseCurrency")),
+            Map("quoteCurrency", ("currencyPair", "quoteCurrency")),
+            Map("settlementCurrency", ("currencyPair", "settlementCurrency")),
+            Map("forwardRate", ("currencyPair", "forwardRate")),
+            Map("notional", ("notional", "notional")),
+            Map("fixingDate", ("maturity", "effectiveDate")),
+            Map("valueDate", MaturityDate),
+            Map("fixingSource", ("referenceDataSource", "fixingSource"))
+        ]),
         ("CreditDefaultSwap",
         [
             Map("effectiveDate", ("maturity", "effectiveDate")),
@@ -539,19 +1517,57 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("paymentFrequency", ("coupon", "paymentFrequency")),
             Map("dayCount", ("coupon", "dayCount")),
             // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
-            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
+            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m),
+            Map("notional", ("notional", "notional")),
+            Map("referenceEntity", ("creditProtection", "referenceEntity")),
+            Map("referenceObligation", ("creditProtection", "referenceObligation")),
+            Map("protectionSide", ("creditProtection", "protectionSide")),
+            Map("seniority", ("creditProtection", "seniority")),
+            Map("restructuringClause", ("creditProtection", "restructuringClause")),
+            Map("upfrontPoints", ("creditProtection", "upfrontPoints")),
+            Map("recoveryRateAssumption", ("creditProtection", "recoveryRateAssumption")),
+            Map("indexName", ("creditProtection", "indexName"))]),
+        ("Swaption",
+        [
+            Map("payerReceiver", ("exercise", "optionRight")),
+            Map("exerciseStyle", ("exercise", "exerciseStyle")),
+            Map("strikeRate", ("exercise", "strikeRate")),
+            Map("expiry", MaturityDate),
+            Map("underlyingEffectiveDate", ("maturity", "effectiveDate")),
+            Map("notional", ("notional", "notional")),
+            Map("settlementType", ("settlement", "settlementType"))
         ]),
-        ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
-        ("CapFloor", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("CapFloor",
+        [
+            Map("effectiveDate", ("maturity", "effectiveDate")),
+            Map("maturityDate", MaturityDate),
+            // ADR-027 stage 1 increment 6: the floatingRate module (serialized since increment 5)
+            // recovers the flat keys termsFromKind feeds it from.
+            Map("referenceIndex", ("floatingRate", "referenceIndex")),
+            Map("capStrike", ("floatingRate", "capRate")),
+            Map("floorStrike", ("floatingRate", "floorRate")),
+            Map("resetFrequency", ("floatingRate", "resetFrequency")),
+            Map("capFloorType", ("exercise", "optionRight")),
+            Map("premiumAmount", ("exercise", "premiumAmount")),
+            Map("notional", ("notional", "notional"))
+        ]),
         ("StructuredNote",
         [
             Map("maturity", MaturityDate),
             Map("issueDate", ("maturity", "issueDate")),
             Map("issuerName", ("issuer", "issuerName")),
             Map("couponRate", ("coupon", "couponRate")),
-            Map("paymentFrequency", ("coupon", "paymentFrequency"))
-        ]),
-        ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
+            Map("paymentFrequency", ("coupon", "paymentFrequency")),
+            Map("denomination", ("notional", "denomination")),
+            Map("underlyingDescription", ("structuredPayoff", "underlyingDescription")),
+            Map("principalProtectionPct", ("structuredPayoff", "principalProtectionPct")),
+            Map("participationRate", ("structuredPayoff", "participationRate")),
+            Map("returnCap", ("structuredPayoff", "returnCap")),
+            Map("barrierLevel", ("structuredPayoff", "barrierLevel"))]),
+        ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily")),
+            Map("fundType", ("fundShare", "fundType")), Map("navCurrency", ("fundShare", "navCurrency")),
+            Map("distributionPolicy", ("fundShare", "distributionPolicy")), Map("isStableNav", ("fundShare", "isStableNav")),
+            Map("pricingSource", ("referenceDataSource", "pricingSource"))])
     ];
 
     /// <summary>

@@ -11,6 +11,7 @@ using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Contracts.Integrity;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -2866,7 +2867,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         PostingRuleRows.ReplaceWith(workspace.PostingRules.Select(rule =>
             new AccountingWorkbenchRow(rule.RuleId, rule.SourceEventType, rule.DisplayName, rule.TemplateId)));
         AuditRows.ReplaceWith(workspace.AuditTrail.Take(20).Select(audit =>
-            new AccountingWorkbenchRow(audit.Action, audit.Actor, audit.RecordedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture), audit.CorrelationId ?? string.Empty)));
+            new AccountingWorkbenchRow(audit.Action, audit.Actor, UtcFormat.FormatUtcTimestamp(audit.RecordedAtUtc), audit.CorrelationId ?? string.Empty)));
         ApplySetupReadinessRows(workspace);
         ApplyLedgerBookRows(workspace);
         ApplyManualJournalValidationRows(workspace.ValidationIssues);
@@ -3095,7 +3096,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             ? $"Tenant {AccountingWorkbenchPresentation.FormatReadinessScope(profile.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; ledger book {profile.LedgerBookId:D}."
             : $"Tenant {AccountingWorkbenchPresentation.FormatReadinessScope(profile.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; fund-level scope.";
         ProductionCertificationProfileUpdatedText =
-            $"Last retained by {profile.UpdatedBy} at {profile.UpdatedAtUtc.ToLocalTime():g}.";
+            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatUtcTimestamp(profile.UpdatedAtUtc)}.";
         ProductionCertificationProfileStatusText = statusText;
         NotifyProductionCertificationSaveStateChanged();
     }
@@ -3185,7 +3186,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         TenantAdministrationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
         TenantAdministrationProfileScopeText = $"Tenant {profile.TenantId}; company {profile.CompanyId}.";
         TenantAdministrationProfileUpdatedText =
-            $"Last retained by {profile.UpdatedBy} at {profile.UpdatedAtUtc.ToLocalTime():g}.";
+            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatUtcTimestamp(profile.UpdatedAtUtc)}.";
         TenantAdministrationProfileStatusText = statusText;
         ImplementationSandboxProofStatusText = ImplementationSandboxConfigured
             ? "Implementation sandbox proof retained with fixture and ledger-book validation evidence."
@@ -3621,7 +3622,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         ProductionReadinessStatusText = $"{readiness.Status} | {readiness.Score}/100";
         ProductionReadinessScoreText = $"{readiness.Score}/100";
         ProductionReadinessDetailText =
-            $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {readiness.GeneratedAtUtc.ToLocalTime():g}.";
+            $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {UtcFormat.FormatUtcTimestamp(readiness.GeneratedAtUtc)}.";
         ProductionReadinessLedgerBookText = readiness.LedgerBookRollout is null
             ? "Ledger-book rollout assessment is unavailable."
             : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 10} workflow control(s).";
@@ -3674,7 +3675,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             .Select(artifact => new AccountingWorkbenchRow(
                 AccountingWorkbenchPresentation.FormatMigrationArtifactKind(artifact.Kind),
                 artifact.Status.ToString(),
-                $"{AccountingWorkbenchPresentation.FormatMigrationArtifactScope(artifact)}; {artifact.MigratedRecordCount:N0} record(s), {artifact.IssueCount:N0} issue(s); started {artifact.StartedAtUtc.ToLocalTime():g}{(artifact.CompletedAtUtc.HasValue ? $", completed {artifact.CompletedAtUtc.Value.ToLocalTime():g}" : string.Empty)}.",
+                $"{AccountingWorkbenchPresentation.FormatMigrationArtifactScope(artifact)}; {artifact.MigratedRecordCount:N0} record(s), {artifact.IssueCount:N0} issue(s); started {UtcFormat.FormatUtcTimestamp(artifact.StartedAtUtc)}{(artifact.CompletedAtUtc.HasValue ? $", completed {UtcFormat.FormatUtcTimestamp(artifact.CompletedAtUtc.Value)}" : string.Empty)}.",
                 artifact.EvidenceReferences.Count > 0
                     ? string.Join("; ", artifact.EvidenceReferences)
                     : AccountingWorkbenchPresentation.FormatLedgerDimensionSet(artifact.Dimensions),
@@ -3834,7 +3835,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             new(
                 result.Transition.Action.ToString(),
                 $"{result.Transition.FromStatus} -> {result.Transition.ToStatus}",
-                $"{result.Transition.Actor} at {result.Transition.RecordedAtUtc.ToLocalTime():g}",
+                $"{result.Transition.Actor} at {UtcFormat.FormatUtcTimestamp(result.Transition.RecordedAtUtc)}",
                 $"{result.Transition.EvidenceLinks.Count} evidence link(s); {result.Transition.Notes ?? "no notes"}",
                 result.Transition.TransitionId)
         };
@@ -3851,7 +3852,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             .Select(transition => new AccountingWorkbenchRow(
                 transition.Action.ToString(),
                 $"{transition.FromStatus} -> {transition.ToStatus}",
-                $"{transition.Actor} at {transition.RecordedAtUtc.ToLocalTime():g}",
+                $"{transition.Actor} at {UtcFormat.FormatUtcTimestamp(transition.RecordedAtUtc)}",
                 $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
                 transition.TransitionId)));
 
@@ -3911,7 +3912,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             .Select(transition => new AccountingWorkbenchRow(
                 transition.Action.ToString(),
                 $"{transition.FromStatus} -> {transition.ToStatus}",
-                $"{transition.Actor} at {transition.RecordedAtUtc.ToLocalTime():g}",
+                $"{transition.Actor} at {UtcFormat.FormatUtcTimestamp(transition.RecordedAtUtc)}",
                 $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
                 transition.TransitionId)));
     }
@@ -4002,7 +4003,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         {
             var published = lineage.PublishedAtUtc is null
                 ? lineage.ReportWorkflowState ?? "not published"
-                : $"{lineage.ReportWorkflowState ?? "Published"} by {lineage.PublishedBy ?? "unknown"} at {lineage.PublishedAtUtc.Value.ToLocalTime():g}";
+                : $"{lineage.ReportWorkflowState ?? "Published"} by {lineage.PublishedBy ?? "unknown"} at {UtcFormat.FormatUtcTimestamp(lineage.PublishedAtUtc.Value)}";
             var restatement = lineage.HasRestatementLineage
                 ? $"{lineage.RestatementReasonCode ?? "Restated"} | {lineage.RestatementChangedLineCount} changed line(s) | {lineage.RestatementEvidenceLinkCount} evidence"
                 : lineage.RestatementStatus;

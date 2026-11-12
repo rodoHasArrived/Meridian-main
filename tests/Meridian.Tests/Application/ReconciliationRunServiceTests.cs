@@ -194,7 +194,7 @@ public sealed class ReconciliationRunServiceTests
                         DayCountConvention: "ACT/365",
                         PaymentFrequencyPerYear: 2,
                         NextCouponDate: new DateOnly(2026, 1, 31),
-                        AccrualStartDate: new DateOnly(2026, 1, 1)),
+                        AccrualStartDate: new DateOnly(2026, 1, 1)) { CouponRateUnit = RateUnit.Fraction },
                     new SecurityAccountingRule("AvailableForSale", "GAAP"))
             ],
             Positions:
@@ -252,7 +252,7 @@ public sealed class ReconciliationRunServiceTests
             // Period end is EXCLUSIVE (the adapter supplies the next month's first day), so the
             // 2026-01-31 coupon below is IN this period.
             PeriodEnd: new DateOnly(2026, 2, 1),
-            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND2", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND2", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)) { CouponRateUnit = RateUnit.Fraction }, new SecurityAccountingRule("AvailableForSale", "GAAP"))],
             Positions: [new SecurityMasterAccountingPosition("BOND2", securityId, "acct-1", 100_000m)]);
 
         var service = CreateService(
@@ -281,7 +281,7 @@ public sealed class ReconciliationRunServiceTests
             RunId: "run-sm-factor-par",
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
-            Securities: [new SecurityMasterAccountingSecurity(securityId, "MBS1", "MortgageBacked", "USD", new SecurityFixedIncomeTerms(0.03m, "Fixed", "30/360", 12, CurrentFactor: 1.00m, RequiresFactorSchedule: true), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "MBS1", "MortgageBacked", "USD", new SecurityFixedIncomeTerms(0.03m, "Fixed", "30/360", 12, CurrentFactor: 1.00m, RequiresFactorSchedule: true) { CouponRateUnit = RateUnit.Fraction }, new SecurityAccountingRule("AvailableForSale", "GAAP"))],
             Positions: [new SecurityMasterAccountingPosition("MBS1", securityId, "acct-1", 100_000m, PositionId: Guid.Parse("55555555-3333-4333-8333-333333333334"))],
             FactorSchedule: [new SecurityFactorObservation(
                 securityId,
@@ -321,7 +321,7 @@ public sealed class ReconciliationRunServiceTests
             // Period end is EXCLUSIVE (the adapter supplies the next month's first day), so the
             // 2026-01-31 coupon below is IN this period.
             PeriodEnd: new DateOnly(2026, 2, 1),
-            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND3", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
+            Securities: [new SecurityMasterAccountingSecurity(securityId, "BOND3", "Bond", "USD", new SecurityFixedIncomeTerms(0.06m, "Fixed", "ACT/365", 2, NextCouponDate: new DateOnly(2026, 1, 31), AccrualStartDate: new DateOnly(2026, 1, 1)) { CouponRateUnit = RateUnit.Fraction }, new SecurityAccountingRule("AvailableForSale", "GAAP"))],
             Positions: [new SecurityMasterAccountingPosition("BOND3", securityId, "acct-1", 100_000m)],
             ActualActivity: [new SecurityActualCashActivity("custodian", "coupon-row-mismatch", "acct-1", securityId, "BOND3", 1m, 0m, 1m, new DateOnly(2026, 1, 31), "Income")]);
 
@@ -2344,6 +2344,21 @@ public sealed class ReconciliationRunServiceTests
             && item.Provenance.Contains("forged-legacy-evidence", StringComparison.Ordinal));
     }
 
+    private static JsonElement? DeclaredFractionCouponTerms(string typeName)
+    {
+        if (!SecurityAssetClassCatalog.TryGet(typeName, out var descriptor)
+            || SecurityAssetTermsSchema.Field(descriptor.AssetClass, SecurityVersionedTerms.ScheduleConventionsKey) is not { } field)
+        {
+            return null;
+        }
+
+        return JsonSerializer.SerializeToElement(new
+        {
+            assetClassTermsVersion = field.SinceTermsVersion,
+            scheduleConventions = new { couponRateUnit = "Fraction" }
+        });
+    }
+
     private static SecurityEconomicDefinitionRecord CreateEconomicDefinition(
         Guid securityId,
         string symbol,
@@ -2440,10 +2455,14 @@ public sealed class ReconciliationRunServiceTests
                     new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero))
             ],
             LegacyAssetClass: null,
+            // Review D10, slice 4: the 0.06 economic coupon posts only under a declared unit, so the
+            // retained flat terms declare couponRateUnit "Fraction" in their scheduleConventions block.
             LegacyAssetSpecificTerms: typedFactorEntries is null && profileFieldsFactorEntries is null
-                ? null
+                ? DeclaredFractionCouponTerms(typeName)
                 : JsonSerializer.SerializeToElement(new
                 {
+                    assetClassTermsVersion = 3,
+                    scheduleConventions = new { couponRateUnit = "Fraction" },
                     factorSchedule = "trustee-report-2026-03",
                     factorScheduleEntries = typedFactorEntries?.Select(static entry => new
                     {

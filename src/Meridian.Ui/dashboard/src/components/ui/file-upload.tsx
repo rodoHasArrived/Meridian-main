@@ -1,6 +1,7 @@
 import { type ReactNode, useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface FileUploadProps {
   label?: ReactNode;
@@ -13,7 +14,7 @@ export interface FileUploadProps {
 
 /**
  * Drag-and-drop file input (also click-to-browse). Concrete: flat dashed hairline drop zone
- * that shifts to the accent on drag, 2px corners; selected files list as hairline-bordered
+ * that shifts to the interaction selection on drag, shared control corners; selected files list as hairline-bordered
  * rows with a dim-red remove control.
  */
 export function FileUpload({
@@ -48,7 +49,7 @@ export function FileUpload({
   return (
     <div className={cn("w-full", className)}>
       {label ? (
-        <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </span>
       ) : null}
@@ -71,9 +72,9 @@ export function FileUpload({
         }}
         onDragLeave={() => setDragging(false)}
         className={cn(
-          "flex w-full flex-col items-center gap-2 rounded-[2px] border-2 border-dashed px-5 py-5 text-center transition-colors",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-          dragging ? "border-primary bg-primary/10" : "border-border bg-[var(--ws-surface-raised)] hover:border-[var(--ws-border-hover)]",
+          "flex w-full flex-col items-center gap-2 rounded-[var(--radius-button)] border-2 border-dashed px-5 py-5 text-center transition-colors",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
+          dragging ? "border-[var(--interaction-selected)] bg-[var(--interaction-selected-surface)]" : "border-border bg-[var(--ws-surface-raised)] hover:border-[var(--ws-border-hover)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
       >
@@ -106,7 +107,7 @@ export function FileUpload({
                 type="button"
                 aria-label={`Remove ${file.name}`}
                 onClick={() => removeFile(index)}
-                className="text-danger transition-colors hover:text-danger/80 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="text-danger transition-colors hover:text-danger/80 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
               >
                 <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>

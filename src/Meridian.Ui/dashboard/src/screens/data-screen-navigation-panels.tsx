@@ -1,17 +1,26 @@
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useDataViewModel, type DataOperationsRouteFocusCardState } from "@/screens/data-screen.view-model";
+import { eyebrowClassName } from "@/design-system/label-case";
+import { pluralizeCount } from "@/lib/format";
+import { DesignSystemStatus, worstDesignSystemSeverity } from "@/design-system/status";
+import { ProviderFreshnessChart } from "@/components/meridian/workstation-evidence-charts";
+import type { ProviderConnectionRow, ProviderRoutingConnection } from "@/types";
+import { ProviderVerificationTimeline } from "@/components/meridian/provider-verification-timeline";
 
 export function DataOverviewHub({
   vm,
-  degradedPanelCount
+  degradedPanelCount,
+  providerEvidence = [],
+  connections = []
 }: {
   vm: ReturnType<typeof useDataViewModel>;
   degradedPanelCount: number;
+  providerEvidence?: ProviderConnectionRow[];
+  connections?: ProviderRoutingConnection[];
 }) {
   const routes = [
     {
@@ -26,21 +35,21 @@ export function DataOverviewHub({
       title: "Import retained files",
       description: "Choose a governed template and preview a retained source before validation handoff.",
       href: WORKSTATION_ROUTE_CATALOG.dataImport,
-      status: `${vm.uploadPanelState.templateOptions.length} templates`
+      status: pluralizeCount(vm.uploadPanelState.templateOptions.length, "template")
     },
     {
       id: "backfills",
       title: "Backfill queue",
       description: "Inspect historical repair pressure and selected job evidence.",
       href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
-      status: `${vm.backfillSection.rows.length} jobs`
+      status: pluralizeCount(vm.backfillSection.rows.length, "job")
     },
     {
       id: "exports",
       title: "Export packages",
       description: "Review retained export records and downstream handoff posture.",
       href: WORKSTATION_ROUTE_CATALOG.dataExports,
-      status: `${vm.exportSection.rows.length} packages`
+      status: pluralizeCount(vm.exportSection.rows.length, "package")
     },
     {
       id: "query",
@@ -76,10 +85,41 @@ export function DataOverviewHub({
     <section className="space-y-3" aria-label="Data operations workbench">
       <div role="status" className="workspace-task-health">
         <strong>Data operations</strong>
-        <Badge variant={degradedPanelCount > 0 ? "warning" : "success"}>
-          {degradedPanelCount > 0 ? `${degradedPanelCount} diagnostics unavailable` : "Diagnostics ready"}
-        </Badge>
+        <DesignSystemStatus status={worstDesignSystemSeverity([
+          ...vm.providerSection.rows.map((provider) => provider.status),
+          degradedPanelCount > 0 ? "action" : "ready",
+          vm.providerSection.rows.length === 0 ? "review" : "ready"
+        ])}>
+          {vm.providerSection.statusLabel}{degradedPanelCount > 0 ? ` · ${degradedPanelCount} diagnostics unavailable` : ""}
+        </DesignSystemStatus>
       </div>
+      <section aria-label="Provider health overview" className="space-y-3">
+        <h2 className="text-sm font-semibold">Provider health</h2>
+        {vm.providerSection.rows.length === 0 ? (
+          <p role="status" className="text-sm text-muted-foreground">No provider evidence is loaded. <Link to={WORKSTATION_ROUTE_CATALOG.dataProviders} className="underline underline-offset-4">Review provider connections</Link>.</p>
+        ) : (
+          <div className="grid gap-3 lg:grid-cols-2">
+            {vm.providerSection.rows.map((provider) => (
+              <article key={provider.rowId} aria-label={`${provider.provider} health`} className="min-w-0 border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-sm font-medium">{provider.provider}</h3>
+                  <DesignSystemStatus status={provider.status}>{provider.status}</DesignSystemStatus>
+                </div>
+                <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-xs">
+                  <dt className="text-muted-foreground">Last successful evidence</dt><dd>{provider.lastSuccessfulText}</dd>
+                  <dt className="text-muted-foreground">Verification</dt><dd>{provider.verificationText}</dd>
+                  <dt className="text-muted-foreground">Latency</dt><dd>{provider.latencyText}</dd>
+                  <dt className="text-muted-foreground">Affected workflows</dt><dd>{provider.affectedWorkflowsText}</dd>
+                </dl>
+                <p className="mt-3 text-xs leading-5 text-muted-foreground">{provider.recommendedActionText}</p>
+                <Link to={provider.actionHref} className="mt-2 inline-block text-xs text-foreground underline decoration-dotted underline-offset-4">{provider.actionLabel}</Link>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      <ProviderFreshnessChart providers={providerEvidence} />
+      <ProviderVerificationTimeline connections={connections} />
       <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery workstream." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
       <details className="workspace-task-disclosure">
         <summary>Data tools and connections</summary>
@@ -93,7 +133,7 @@ export function RouteFocusCard({ state }: { state: DataOperationsRouteFocusCardS
   return (
     <Card id={state.id} role={state.role} aria-label={state.ariaLabel} className="panel-surface-strong">
       <CardHeader>
-        <div className="eyebrow-label">{state.eyebrow}</div>
+        <div className={eyebrowClassName(state.eyebrow)}>{state.eyebrow}</div>
         <CardTitle>{state.title}</CardTitle>
         <CardDescription>{state.description}</CardDescription>
       </CardHeader>

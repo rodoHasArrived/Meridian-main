@@ -284,6 +284,7 @@ public partial class MeridianDockingManager : UserControl
         var window = new Window
         {
             Title = title,
+            FontFamily = (FontFamily)FindResource("MeridianBodyFontFamily"),
             Width = 960,
             Height = 720,
             MinWidth = 640,

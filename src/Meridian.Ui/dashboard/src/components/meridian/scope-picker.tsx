@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { describeOperatingScope, operatingScopeKey } from "@/lib/operating-scope/recent-scopes";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -31,12 +32,33 @@ export interface ScopePickerProps {
   fundAccounts: ScopeFundAccountOption[];
   onApply: (next: AppShellOperatingScopeInput) => void;
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
+  /** Recently applied scopes, newest first (C1); choosing one loads it into the draft. */
+  recentScopes?: AppShellOperatingScopeInput[];
+  /** The signed-in operator's saved default scope, or null when none is saved. */
+  defaultScope?: AppShellOperatingScopeInput | null;
+  /** Saves the draft as the operator's default (null clears it). Omit to hide the default controls. */
+  onSaveDefault?: (scope: AppShellOperatingScopeInput | null) => Promise<void> | void;
+  /** On-demand workflow detail shown under the scope controls; following a link in it closes the picker. */
+  workflowContext?: ReactNode;
   /** Overridable for tests. */
   searchSymbols?: typeof searchSymbolsQuery;
 }
 
 /** Draft-only editing: all scope dimensions remain inspectable, and only Apply changes scope. */
-export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, scopeDimensionsInEffect, searchSymbols = searchSymbolsQuery }: ScopePickerProps) {
+export function ScopePicker({
+  open,
+  onOpenChange,
+  scope,
+  fundAccounts,
+  onApply,
+  scopeDimensionsInEffect,
+  recentScopes = [],
+  defaultScope = null,
+  onSaveDefault,
+  workflowContext,
+  searchSymbols = searchSymbolsQuery
+}: ScopePickerProps) {
+  const [defaultStatus, setDefaultStatus] = useState<string | null>(null);
   const [symbol, setSymbol] = useState("");
   const [fundAccountId, setFundAccountId] = useState("");
   const [provider, setProvider] = useState("");
@@ -68,6 +90,7 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
     setClearStaged(false);
     setDismissed(false);
     setActiveIndex(-1);
+    setDefaultStatus(null);
     setSearch({ query: "", status: "idle", records: [] });
   }, [open, scope.symbol, scope.fundAccountId, scope.provider, scope.runId, scope.from, scope.to, scope.date, scope.asOf]);
 
@@ -102,7 +125,7 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
     setActiveIndex(-1);
     symbolRef.current?.focus();
   };
-  const apply = () => {
+  const draftScope = (): AppShellOperatingScopeInput => {
     const next = {
       symbol: normalizeOperatingContextSymbol(symbol),
       fundAccountId: fundAccountId.trim() || null,
@@ -113,8 +136,30 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
       date: retained.date ?? null,
       asOf: retained.asOf ?? null
     };
-    onApply(Object.values(next).some(Boolean) ? next : {});
+    return Object.values(next).some(Boolean) ? next : {};
+  };
+  const apply = () => {
+    onApply(draftScope());
     onOpenChange(false);
+  };
+  // A recent or default scope only loads into the draft; Apply stays the one action that changes scope.
+  const loadDraft = (next: AppShellOperatingScopeInput) => {
+    setSymbol(next.symbol ?? "");
+    setFundAccountId(next.fundAccountId ?? "");
+    setProvider(next.provider ?? "");
+    setRetained({ runId: next.runId, from: next.from, to: next.to, date: next.date, asOf: next.asOf });
+    setClearStaged(false);
+    setDismissed(true);
+    setActiveIndex(-1);
+  };
+  const saveDefault = async (next: AppShellOperatingScopeInput | null) => {
+    if (!onSaveDefault) return;
+    try {
+      await onSaveDefault(next);
+      setDefaultStatus(next ? "Saved as your default scope." : "Default scope cleared.");
+    } catch {
+      setDefaultStatus("Your default scope could not be saved. Your current scope is unchanged.");
+    }
   };
   const clearAll = () => {
     setSymbol("");
@@ -225,6 +270,40 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
               </dl>
             </section>
           ) : null}
+          {recentScopes.length > 0 || onSaveDefault ? (
+            <section aria-label="Saved scopes" className="space-y-3 rounded-sm border border-border p-3">
+              {recentScopes.length > 0 ? (
+                <div>
+                  <h3 className="text-sm font-medium">Recent scopes</h3>
+                  <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                    {recentScopes.map((recent) => (
+                      <li key={operatingScopeKey(recent)}>
+                        <Button type="button" size="sm" variant="outline" onClick={() => loadDraft(recent)} aria-label={`Use recent scope ${describeOperatingScope(recent)}`}>
+                          {describeOperatingScope(recent)}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {onSaveDefault ? (
+                <div>
+                  <h3 className="text-sm font-medium">My default</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {defaultScope
+                      ? `${describeOperatingScope(defaultScope)}. Applied when you open the workstation with no scope in the link.`
+                      : "No default saved. Save one to start every session, on any machine, with this scope."}
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {defaultScope ? <Button type="button" size="sm" variant="ghost" onClick={() => loadDraft(defaultScope)}>Use my default</Button> : null}
+                    <Button type="button" size="sm" variant="ghost" onClick={() => void saveDefault(draftScope())}>Save as my default</Button>
+                    {defaultScope ? <Button type="button" size="sm" variant="ghost" onClick={() => void saveDefault(null)}>Clear default</Button> : null}
+                  </div>
+                  {defaultStatus ? <p role="status" className="mt-1 text-xs text-muted-foreground">{defaultStatus}</p> : null}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
           {clearStaged ? <p role="status" className="text-sm text-muted-foreground">Scope reset staged, including date and run context. Apply scope to save these changes, or Cancel to keep the current scope.</p> : null}
           <div className="flex items-center justify-between gap-3 pt-2">
             <Button type="button" size="sm" variant="ghost" onClick={clearAll}>Clear scope</Button>
@@ -234,6 +313,16 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
             </div>
           </div>
         </div>
+        {workflowContext ? (
+          <div
+            className="scope-picker-workflow-context"
+            onClick={(event) => {
+              if ((event.target as Element).closest("a")) onOpenChange(false);
+            }}
+          >
+            {workflowContext}
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

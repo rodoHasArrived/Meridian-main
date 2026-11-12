@@ -30,7 +30,7 @@ export function AccountingWorkbenchContext({
       className="min-w-0"
     >
       <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-        {taskMode.label}
+        {taskMode.title}
       </h2>
       <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">{taskMode.description}</p>
     </section>

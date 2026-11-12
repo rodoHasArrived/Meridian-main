@@ -78,7 +78,8 @@ public sealed class PolygonSecurityMasterIngestProviderTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = respond(request, ++Requests);
-            if (response.Content is TrackingContent content) Contents.Add(content);
+            if (response.Content is TrackingContent content)
+                Contents.Add(content);
             return Task.FromResult(response);
         }
     }

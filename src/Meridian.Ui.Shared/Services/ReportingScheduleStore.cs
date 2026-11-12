@@ -700,11 +700,12 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             throw new InvalidDataException("Reporting schedule is structurally invalid.");
         }
 
-        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
-            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
+            || !CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, timeZone) is null)
         {
             throw new InvalidDataException(
-                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or time zone, or no future occurrence.");
         }
     }
 

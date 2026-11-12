@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import {
   approveSecurityAssetProfile,
   assignLedgerMapping,
@@ -47,10 +48,14 @@ import {
   upsertOperationsCloseCalendarItem
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
-import { formatNumber as formatNumberAmount } from "@/lib/format";
+import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { formatNumber as formatNumberAmount, formatUtcDate } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { settingsProviderAdvancedRoute, settingsProviderSetupRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { SettingsMutationConfirmDialog, type SettingsMutationConfirmation } from "@/screens/settings-mutation-confirm-dialog";
 import { resolveSettingsRouteState, SETTINGS_ROUTE_VIEW_COPY, type SettingsRouteViewId } from "@/screens/settings-route-state";
 import {
@@ -314,7 +319,6 @@ function settingsStorageHealthTone(
   return "default";
 }
 
-
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
   warning: "border-warning/35 bg-warning/10 text-warning",
@@ -323,14 +327,14 @@ const requirementToneClass = {
 
 const environmentOptionClass = {
   paper: {
-    selected: "border-paper/40 bg-paper/10 text-paper",
+    selected: "border-paper/40 bg-paper/10 text-[var(--state-paper-fg)]",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-paper/35 hover:bg-paper/10",
-    badge: "border-paper/30 bg-paper/10 text-paper"
+    badge: "border-paper/30 bg-paper/10 text-[var(--state-paper-fg)]"
   },
   live: {
     selected: "border-live-env/40 bg-live-env/10 text-live-env",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
-    badge: "border-live-env/35 bg-live-env/10 text-live-env"
+    badge: "border-live-env/35 bg-live-env/10 text-[var(--state-live-fg)]"
   }
 } as const;
 
@@ -513,9 +517,18 @@ export function SettingsScreen({
   workspaceErrors = {}
 }: SettingsScreenProps) {
   const location = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
+  const figureContext = useWorkspaceFigureContext();
+  const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
+  // Provider health is not an overview figure: it comes from the shared cross-screen counts, or
+  // from the Data rows when those counts are unavailable. It states that payload's evidence, so a
+  // failed counts reload shows as stale here even when the overview reloaded.
+  const providerHealthFromSharedCounts = Boolean(sharedCounts?.providers);
+  const providerHealthEvidence = resolveFigureEvidence(figureContext, providerHealthFromSharedCounts ? "crossScreenCounts" : "data");
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
+    crossScreenCounts: sharedCounts,
     strategy,
     trading,
     portfolio,
@@ -784,13 +797,23 @@ export function SettingsScreen({
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
   const settingsStatMetrics = [
     {
-      id: "providers-online",
-      label: "Providers online",
-      value: overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—",
+      id: "providers-healthy",
+      label: "Providers healthy",
+      value: providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—",
       delta: "",
-      tone: overview
-        ? overview.providersOnline === overview.providersTotal ? "success" as const : "warning" as const
-        : "default" as const
+      tone: !providerHealth
+        ? "default" as const
+        : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" as const : "warning" as const,
+      ...(providerHealth
+        ? {
+            provenance: {
+              source: providerHealthFromSharedCounts ? "Cross-screen counts" : "Data workspace",
+              // Outside the shell the counts payload's own as-of time is the only one it carries.
+              asOf: providerHealthEvidence.asOf ?? (providerHealthFromSharedCounts ? sharedCounts?.asOf ?? null : null)
+            },
+            ...(providerHealthEvidence.freshness ? { freshness: providerHealthEvidence.freshness } : {})
+          }
+        : {})
     },
     { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
     { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
@@ -2299,8 +2322,7 @@ export function SettingsScreen({
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
-
+      {/* Route heading first ("where am I?"); workspace-wide metrics follow. */}
       <section
         id="settings-overview"
         role="region"
@@ -2317,7 +2339,9 @@ export function SettingsScreen({
         </div>
       </section>
 
-      {showChooserSection ? <SettingsTaskChooser /> : null}
+      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
+
+      {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
 
       {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
@@ -2330,7 +2354,7 @@ export function SettingsScreen({
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="eyebrow-label">Profile and authentication</div>
+                <div className="eyebrow-label eyebrow-label--sentence">Profile and authentication</div>
                 <CardTitle className="mt-2 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
                   {vm.profileAuthenticationPanel.title}
@@ -2397,7 +2421,7 @@ export function SettingsScreen({
             </div>
 
             <div className="grid gap-2">
-              <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+              <h3 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.profileAuthenticationPanel.stepsTitle) && "uppercase")}>
                 {vm.profileAuthenticationPanel.stepsTitle}
               </h3>
               <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
@@ -2428,7 +2452,7 @@ export function SettingsScreen({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <SettingsChip label="Providers" value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"} />
+              <SettingsChip label="Providers healthy" value={providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—"} />
               <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
               <SettingsChip label="Positions" value={overview ? String(overview.openPositions) : "—"} />
               <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />
@@ -4160,7 +4184,7 @@ export function SettingsScreen({
             ) : null}
             <div className="grid gap-2">
               <div className="min-w-0">
-                <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+                <h3 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.alpacaConnectionPanel.setupChecklistTitle) && "uppercase")}>
                   {vm.alpacaConnectionPanel.setupChecklistTitle}
                 </h3>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -4663,7 +4687,7 @@ function EndpointReference({
         <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
           {endpoint.href}
         </span>
-        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+        <span className={cn("mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] text-muted-foreground", usesTrackedCaps(endpoint.interactionLabel) && "uppercase")}>
           {endpoint.interactionLabel}
         </span>
       </span>
@@ -4726,7 +4750,7 @@ function RecentEventDetailPanel({
           <div role="region" aria-label={detail.ariaLabel} className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="eyebrow-label">{detail.eyebrow}</div>
+                <div className={eyebrowClassName(detail.eyebrow)}>{detail.eyebrow}</div>
                 <h3 className="mt-2 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
@@ -4740,7 +4764,7 @@ function RecentEventDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dt className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
                   <dd className={cn("mt-1 break-words font-mono text-xs", itemToneClass[field.tone])}>
                     {field.value}
                   </dd>
@@ -4871,8 +4895,13 @@ function normalizeAssetProfileId(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Today as an asset-profile `effectiveFrom`. Deliberately the UTC calendar day, the same day
+ * `isWriteSelectableAssetProfile` compares effective windows against, so a profile approved here
+ * is selectable for writes straight away for every operator.
+ */
 function todayDateOnly(): string {
-  return new Date().toISOString().slice(0, 10);
+  return utcToday();
 }
 
 function createBrowserGuid(): string {
@@ -4980,12 +5009,7 @@ function formatScopedAccessDate(value?: string | null): string | null {
     return value;
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(parsed);
+  return formatUtcDate(parsed);
 }
 
 function filterProviderRow(

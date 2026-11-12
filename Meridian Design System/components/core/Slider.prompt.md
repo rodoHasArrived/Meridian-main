@@ -6,3 +6,5 @@ Single-value range control — flat square thumb over a filled institutional tra
 ```
 
 Arrow keys, Home/End, Page Up/Down, and the focus ring all come from the native element — only the visuals are overridden. The thumb is a flat 12×16px rectangle (`border-radius: 0`), never a circle. `marks` renders tick labels under the track for display only — it doesn't snap the thumb.
+
+A11y (3.5): the visible `label` is associated via `aria-labelledby`; `valueFmt` output ships as `aria-valuetext` so "0.35Δ" is announced, not the bare number.

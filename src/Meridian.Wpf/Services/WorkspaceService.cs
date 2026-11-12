@@ -39,8 +39,26 @@ public sealed class WorkspaceService
     private readonly Dictionary<string, IServiceScope> _workspaceScopes = new(StringComparer.OrdinalIgnoreCase);
     private readonly WorkspaceStateTokenStore _workspaceStateTokenStore = new();
     private readonly SemaphoreSlim _stateGate = new(1, 1);
+    // File writes are serialized here, outside the state gate. Synchronous readers on the UI
+    // thread wait on the state gate, so it must only ever be held for in-memory work.
+    private readonly SemaphoreSlim _persistGate = new(1, 1);
+    private string? _pendingSaveJson;
+    // State tokens queued under the state gate and saved to the token store after it is released.
+    private readonly System.Collections.Concurrent.ConcurrentQueue<WorkspaceStateToken> _pendingStateTokens = new();
+    // The workspace state as read before the state gate was taken, for the load to consume. One
+    // immutable object, published and taken atomically: the preload runs under the persistence
+    // gate and the load under the state gate, so separate fields could be mixed between two
+    // overlapping reloads.
+    private PreloadedWorkspaceText? _preload;
+    // Counts queued saves, i.e. changes to in-memory state. A preload records the count it
+    // started from, so a load can tell whether the text it read predates a later change.
+    private long _stateRevision;
+
+    /// <param name="Json">The state text, or <see langword="null"/> when no file exists.</param>
+    /// <param name="Revision">The state revision the read started from.</param>
+    private sealed record PreloadedWorkspaceText(string? Json, long Revision);
     private IServiceScopeFactory? _serviceScopeFactory;
-    private bool _isInitialized;
+    private volatile bool _isInitialized;
 
     public static WorkspaceService Instance => _instance.Value;
 
@@ -67,6 +85,7 @@ public sealed class WorkspaceService
 
     private async Task WithStateLockAsync(Func<Task> action, CancellationToken ct = default)
     {
+        await PreloadIfNeededAsync(ct).ConfigureAwait(false);
         await _stateGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -75,11 +94,15 @@ public sealed class WorkspaceService
         finally
         {
             _stateGate.Release();
+            // Persist whatever the action queued only after the state gate is free, but still
+            // before the operation completes, so callers keep "awaited means saved".
+            await FlushPendingSaveAsync().ConfigureAwait(false);
         }
     }
 
     private async Task<T> WithStateLockAsync<T>(Func<Task<T>> action, CancellationToken ct = default)
     {
+        await PreloadIfNeededAsync(ct).ConfigureAwait(false);
         await _stateGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -88,6 +111,166 @@ public sealed class WorkspaceService
         finally
         {
             _stateGate.Release();
+            await FlushPendingSaveAsync().ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Reads the workspace file before the state gate is taken, when the service has not loaded
+    /// yet. The load then consumes this text instead of reading the disk while holding the gate
+    /// that synchronous readers wait on.
+    /// </summary>
+    private Task PreloadIfNeededAsync(CancellationToken ct)
+        => _isInitialized || Volatile.Read(ref _preload) is not null ? Task.CompletedTask : PreloadWorkspaceFileAsync(ct);
+
+    private async Task PreloadWorkspaceFileAsync(CancellationToken ct)
+    {
+        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            // The revision is read first, so a change made at any point after this line makes
+            // the preload stale. A change queued before it but not yet written is newer than the
+            // file: holding the persistence gate means no flush is mid-write, so that change is
+            // either still queued here or already in the file.
+            var revision = Volatile.Read(ref _stateRevision);
+            var json = Volatile.Read(ref _pendingSaveJson)
+                ?? await ReadWorkspaceFileTextAsync(ct).ConfigureAwait(false);
+            Volatile.Write(ref _preload, new PreloadedWorkspaceText(json, revision));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Leave nothing preloaded: the load falls back to reading the file itself and
+            // handles the failure through its existing resilient path.
+            Volatile.Write(ref _preload, null);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Returns the preloaded workspace file text (null when the file does not exist). Only when
+    /// nothing was preloaded does it read the file here, under the state gate.
+    /// </summary>
+    private async Task<string?> TakeWorkspaceFileTextAsync()
+    {
+        // The preload was read without the state gate. If state changed after it started,
+        // applying it would roll that change back in memory, and the next save would persist the
+        // rollback. Use it only when nothing has changed since; the revision compared is the one
+        // carried by this preload, never one published by another reload.
+        if (Interlocked.Exchange(ref _preload, null) is { } preloaded
+            && preloaded.Revision == Volatile.Read(ref _stateRevision))
+        {
+            return preloaded.Json;
+        }
+
+        // Nothing usable was preloaded. Read behind the persistence gate so no write is in
+        // flight: a change that is queued but not yet written is the newest state, and
+        // otherwise the file is. This is the one path that waits on storage under the state gate.
+        //
+        // Not cancellable: the load treats every failure as "start from defaults" and then
+        // marks the service initialised, so a cancelled read here would leave it initialised
+        // with empty state, and the next save would overwrite the workspace file with that.
+        await _persistGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        try
+        {
+            return Volatile.Read(ref _pendingSaveJson)
+                ?? await ReadWorkspaceFileTextAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
+
+    private async Task<string?> ReadWorkspaceFileTextAsync(CancellationToken ct)
+    {
+        var filePath = GetSettingsFilePath();
+        if (PersistReaderForTests is { } reader)
+        {
+            return await reader(filePath).ConfigureAwait(false);
+        }
+
+        return File.Exists(filePath)
+            ? await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false)
+            : null;
+    }
+
+    /// <summary>
+    /// Writes the most recently queued workspace snapshot to disk, then saves any queued state
+    /// tokens. Runs outside the state gate so slow storage never blocks a synchronous reader;
+    /// writers are serialized and always write the latest snapshot, so the file ends as the
+    /// newest state whatever order operations finish.
+    /// </summary>
+    private async Task FlushPendingSaveAsync()
+    {
+        // Always pass through the persistence gate, even when nothing looks pending. Another
+        // operation's flush may already have taken this operation's snapshot or token and still
+        // be writing it; returning early then would complete the caller before its change is on
+        // disk. Waiting for the gate means every write that could carry this operation's change
+        // has finished.
+        await _persistGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            await WritePendingWorkspaceFileAsync().ConfigureAwait(false);
+            await SavePendingStateTokensAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
+
+    private async Task SavePendingStateTokensAsync()
+    {
+        while (_pendingStateTokens.TryDequeue(out var token))
+        {
+            try
+            {
+                await _workspaceStateTokenStore.SaveAsync(token).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Session-state persistence is best-effort; disk failures must not crash the caller.
+                LoggingService.Instance.LogDebug(
+                    "Failed to persist workspace session state.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
+            }
+        }
+    }
+
+    private async Task WritePendingWorkspaceFileAsync()
+    {
+        try
+        {
+            var json = Interlocked.Exchange(ref _pendingSaveJson, null);
+            if (json is null)
+            {
+                return;
+            }
+
+            // Write beside the target and rename, so an interrupted write cannot truncate the
+            // existing workspace file.
+            var filePath = GetSettingsFilePath();
+            if (PersistWriterForTests is { } writer)
+            {
+                await writer(filePath, json).ConfigureAwait(false);
+                return;
+            }
+
+            var temporaryPath = filePath + ".tmp";
+            await File.WriteAllTextAsync(temporaryPath, json).ConfigureAwait(false);
+            File.Move(temporaryPath, filePath, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            // Workspace persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist workspaces.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -193,17 +376,20 @@ public sealed class WorkspaceService
         public Dictionary<string, string> DockLayouts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
-    public Task LoadWorkspacesAsync(CancellationToken ct = default)
-        => WithStateLockAsync(() => LoadWorkspacesCoreAsync(ct), ct);
+    public async Task LoadWorkspacesAsync(CancellationToken ct = default)
+    {
+        // An explicit (re)load always reads the file afresh, and does so before taking the gate.
+        await PreloadWorkspaceFileAsync(ct).ConfigureAwait(false);
+        await WithStateLockAsync(() => LoadWorkspacesCoreAsync(ct), ct).ConfigureAwait(false);
+    }
 
     private async Task LoadWorkspacesCoreAsync(CancellationToken ct = default)
     {
         try
         {
-            var filePath = GetSettingsFilePath();
-            if (File.Exists(filePath))
+            var json = await TakeWorkspaceFileTextAsync().ConfigureAwait(false);
+            if (json is not null)
             {
-                var json = await File.ReadAllTextAsync(filePath);
                 var data = JsonSerializer.Deserialize<WorkspaceData>(json, UiServices.DesktopJsonOptions.Compact);
 
                 if (data != null)
@@ -311,8 +497,10 @@ public sealed class WorkspaceService
                 DockLayouts = new Dictionary<string, string>(_dockLayouts, StringComparer.OrdinalIgnoreCase)
             };
 
-            var json = JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint);
-            File.WriteAllText(GetSettingsFilePath(), json);
+            // Only the snapshot is taken here, under the state gate. The file write happens in
+            // FlushPendingSaveAsync once the gate is released.
+            Volatile.Write(ref _pendingSaveJson, JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint));
+            Interlocked.Increment(ref _stateRevision);
         }
         catch (OperationCanceledException)
         {
@@ -514,7 +702,7 @@ public sealed class WorkspaceService
 
                 PersistActiveWorkspaceSnapshot();
                 await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
-                await SaveWorkspaceStateTokenCoreAsync(state, normalizedFundProfileId, ct).ConfigureAwait(false);
+                QueueWorkspaceStateToken(state, normalizedFundProfileId);
             }
             catch (Exception ex)
             {
@@ -543,27 +731,47 @@ public sealed class WorkspaceService
             return BuildWorkspaceStateToken(state, workspaceId, NormalizeOptional(fundProfileId));
         }, ct);
 
-    public Task<WorkspaceStateRestoreResult?> RestoreWorkspaceStateTokenAsync(
+    public async Task<WorkspaceStateRestoreResult?> RestoreWorkspaceStateTokenAsync(
         string workspaceId,
         string pageTag,
         WorkspaceStateRestoreValidation? validation = null,
         CancellationToken ct = default)
-        => WithStateLockAsync(async () =>
+    {
+        // Only the in-memory lookup needs the state gate. The token store is read after it is
+        // released (and after any queued token saves have been flushed).
+        var resolvedWorkspaceId = await WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
             var normalizedWorkspaceId = NormalizeWorkspaceId(workspaceId) ?? workspaceId;
             var workspace = _workspaces.FirstOrDefault(candidate =>
                 string.Equals(candidate.Id, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase));
-            if (workspace is null ||
-                workspace.Pages.All(page => !string.Equals(page.PageTag, pageTag, StringComparison.OrdinalIgnoreCase)))
-            {
-                return null;
-            }
+            return workspace is null ||
+                workspace.Pages.All(page => !string.Equals(page.PageTag, pageTag, StringComparison.OrdinalIgnoreCase))
+                ? null
+                : workspace.Id;
+        }, ct).ConfigureAwait(false);
 
+        if (resolvedWorkspaceId is null)
+        {
+            return null;
+        }
+
+        // A token save dequeues its token before writing it, so an in-flight save is not
+        // visible as pending work. Read behind the persistence gate so the restore sees every
+        // save that started before it, not the store as it was before that save landed. The
+        // state gate is not held here, so synchronous readers are still not blocked.
+        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
             return await _workspaceStateTokenStore
-                .RestoreAsync(workspace.Id, pageTag, validation, ct)
+                .RestoreAsync(resolvedWorkspaceId, pageTag, validation, ct)
                 .ConfigureAwait(false);
-        }, ct);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
 
     public SessionState? GetLastSessionState() => WithStateLock(() => _lastSession);
 
@@ -910,10 +1118,11 @@ public sealed class WorkspaceService
         return changed;
     }
 
-    private async Task SaveWorkspaceStateTokenCoreAsync(
-        SessionState state,
-        string? normalizedFundProfileId,
-        CancellationToken ct)
+    /// <summary>
+    /// Builds the state token under the state gate and queues it; the token store is written by
+    /// <see cref="FlushPendingSaveAsync"/> once the gate is released.
+    /// </summary>
+    private void QueueWorkspaceStateToken(SessionState state, string? normalizedFundProfileId)
     {
         var workspaceId = state.ActiveWorkspaceId ?? _activeWorkspace?.Id;
         if (string.IsNullOrWhiteSpace(workspaceId))
@@ -921,8 +1130,7 @@ public sealed class WorkspaceService
             return;
         }
 
-        var token = BuildWorkspaceStateToken(state, workspaceId, normalizedFundProfileId);
-        await _workspaceStateTokenStore.SaveAsync(token, ct).ConfigureAwait(false);
+        _pendingStateTokens.Enqueue(BuildWorkspaceStateToken(state, workspaceId, normalizedFundProfileId));
     }
 
     private static WorkspaceStateToken BuildWorkspaceStateToken(
@@ -1079,10 +1287,26 @@ public sealed class WorkspaceService
         return session;
     }
 
+    /// <summary>
+    /// Replaces the workspace file write, so tests can hold a write open and observe what the
+    /// service does meanwhile. Receives the target path and the JSON to persist.
+    /// </summary>
+    internal Func<string, string, Task>? PersistWriterForTests { get; set; }
+
+    /// <summary>
+    /// Replaces the workspace file read done before a load, so tests can hold a read open.
+    /// Receives the file path and returns its text, or null for "no file".
+    /// </summary>
+    internal Func<string, Task<string?>>? PersistReaderForTests { get; set; }
+
     internal static void SetSettingsFilePathOverrideForTests(string? filePath)
     {
         SettingsFilePathOverride.Value = filePath;
     }
+
+    /// <summary>Sets the state-token store's I/O hook; see <see cref="WorkspaceStateTokenStore.BeforeIoForTests"/>.</summary>
+    internal void SetStateTokenStoreIoHookForTests(Func<Task>? hook)
+        => _workspaceStateTokenStore.BeforeIoForTests = hook;
 
     internal static void SetWorkspaceStateFilePathOverrideForTests(string? filePath)
         => WorkspaceStateTokenStore.SetFilePathOverrideForTests(filePath);
@@ -1091,6 +1315,11 @@ public sealed class WorkspaceService
         => WithStateLock(() =>
         {
             _isInitialized = false;
+            Volatile.Write(ref _preload, null);
+            Volatile.Write(ref _pendingSaveJson, null);
+            while (_pendingStateTokens.TryDequeue(out _))
+            {
+            }
             _activeWorkspace = null;
             _lastSession = null;
             LastSelectedFundProfileId = null;

@@ -66,3 +66,16 @@ it("does not request unscoped data", async () => {
   await waitFor(() => expect(screen.getByText(/Select a fund, ledger book and entity/)).toBeInTheDocument());
   expect(getRecurringJournalQueue).not.toHaveBeenCalled();
 });
+
+it("shows a calculated occurrence with nothing to post as a note, not a blocker", async () => {
+  vi.mocked(getRecurringJournalQueue).mockResolvedValue({ ...queue, occurrences: [{ ...queue.occurrences[0],
+    state: "NoDraftRequired", journalEntryId: null, approvalStatus: null,
+    blockers: ["Cumulative performance fee 0.00 needs no further accrual."]
+  }] });
+  render(<RecurringJournalQueue scope={scope} availableDraftIds={[]} onSelectDraft={vi.fn()} />);
+  expect(await screen.findByText("Nothing to post")).toBeInTheDocument();
+  const note = screen.getByText(/needs no further accrual/);
+  expect(note.closest("ul")).toHaveClass("text-muted-foreground");
+  expect(note.closest("ul")).not.toHaveClass("text-danger");
+  expect(screen.queryByText(/Draft /)).not.toBeInTheDocument();
+});

@@ -15,7 +15,7 @@ using Meridian.DataIntegration.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Tests.Reconciliation.Connectors;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Integration;

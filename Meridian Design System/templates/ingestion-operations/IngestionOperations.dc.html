@@ -1,18 +1,552 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Monitor · Ingestion Operations — Meridian</title>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Ingestion Operations" description="Data-pipeline operator view — provider freshness, backfill queue with inline progress, symbol×session coverage heat, and the raw run log" -->
+<!-- @template name="Monitor · Ingestion Operations" description="Data-pipeline operator view — provider freshness with per-provider filtering, a live backfill queue with inline controls, a job inspector drawer (stages, checkpoints, retry/pause/cancel), coverage heat that queues gap backfills, and a run log scoped to the selected job." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="ingestion-operations">
+<style>button[data-provider][aria-pressed="true"]{background:var(--brand-signal-ghost,#F6E6DF);border-color:var(--brand-signal,#C56343)}</style>
+<style>html,body{margin:0;padding:0;height:100%}</style>
 </helmet>
-<x-import component-from-global-scope="IngestionOperationsScreen" from="./screen.jsx" hint-size="100%,860px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Pipeline runs" hint-size="100%,780px">
+<div data-screen-label="Ingestion Operations" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Ingestion" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="ingestion" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;padding:14px;overflow-y:auto">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:0 0 auto">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Ingestion Operations</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="InReview" label="{{ runningLabel }}" hint-size="80px,18px"></x-import>
+<sc-if value="{{ hasStalled }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="Blocked" label="{{ stalledLabel }}" hint-size="80px,18px"></x-import>
+</sc-if>
+<div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onScan }}" hint-size="120px,28px">Run quality scan</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onNew }}" hint-size="120px,28px">New backfill</x-import>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;flex:0 0 auto">
+<sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="{{ m.label }}" value="{{ m.value }}" delta="{{ m.delta }}" context="{{ m.context }}" tone="{{ m.tone }}" hint-size="100%,92px"></x-import>
+</sc-for>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="flex:0 0 auto" hint-size="100%,110px">
+<div style="padding:12px">
+<div style="display:flex;align-items:baseline;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="100px,14px">Provider feeds</x-import>
+<span style="font-size:11px;color:var(--text-muted)">Click a provider to scope the queue and the log to it.</span>
+<sc-if value="{{ hasProviderFilter }}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{ onClearProvider }}" style="margin-left:auto;padding:0;background:transparent;border:0;font:inherit;font-size:11px;color:var(--link,#2A5F96);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Clear provider filter</button>
+</sc-if>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+<sc-for list="{{ providers }}" as="p" hint-placeholder-count="4">
+<button type="button" onClick="{{ p.select }}" aria-pressed="{{ p.active }}" data-provider="true" style="text-align:left;padding:8px 10px;cursor:pointer;font:inherit;background:transparent;border:1px solid var(--border-divider,#E2DED5)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FreshnessIndicator" source="{{ p.source }}" status="{{ p.status }}" last-seen="{{ p.lastSeen }}" time-format="relative" hint-size="140px,36px"></x-import>
+<span style="display:block;margin-top:4px;font:10px var(--font-data);color:var(--text-muted)">{{ p.meta }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="flex:0 0 auto" hint-size="100%,280px">
+<div style="padding:12px">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="100px,14px">Backfill queue</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ stateFilter }}" on-change="{{ onStateFilter }}" options="{{ stateOptions }}" hint-size="330px,26px"></x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">{{ queueLabel }}</span>
+<div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+<span style="font-size:11px;color:var(--text-muted)">{{ simLabel }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Toggle" checked="{{ simOn }}" on-change="{{ onSim }}" label="Stream progress" hint-size="140px,22px"></x-import>
+</div>
+</div>
+<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OptimisticProvider" commit="{{ optCommit }}" on-settle="{{ onOptSettle }}" hint-size="100%,220px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OptimisticRowBar" label="priority edits" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="id" columns="{{ queueCols }}" rows="{{ queueRows }}" active-key="{{ selId }}" on-row-click="{{ onQueueClick }}" empty-text="No jobs match this filter." hint-size="100%,220px"></x-import>
+</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="ingestion-operations" regions="{{ layoutRegions }}" layouts="{{ layoutPresets }}" slots="{{ layoutSlots }}" style="flex:0 0 auto;min-height:360px" hint-size="100%,360px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="min-width:0;height:100%;overflow:auto" hint-size="100%,330px">
+<div style="padding:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="160px,14px">Coverage · bars on disk</x-import>
+<div style="margin-top:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CoverageMatrix" rows="{{ covSyms }}" cols="{{ covCols }}" data="{{ covData }}" cell-size="{{ 18 }}" on-cell-click="{{ onCell }}" hint-size="100%,180px"></x-import>
+</div>
+<sc-if value="{{ noPick }}" hint-placeholder-val="{{ true }}">
+<p style="margin:10px 0 0;font:11px var(--font-data);color:var(--text-muted)">Click a cell to open its gap-scan.</p>
+</sc-if>
+<sc-if value="{{ picked }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:10px;padding:10px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:baseline;gap:8px">
+<span style="font:600 12px var(--font-data);color:var(--text-primary)">{{ pickedTitle }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ pickedBadge }}" label="{{ pickedStatus }}" hint-size="70px,18px"></x-import>
+<button type="button" onClick="{{ onClearPick }}" style="margin-left:auto;padding:0;background:transparent;border:0;font:inherit;font-size:11px;color:var(--text-muted);cursor:pointer">Dismiss</button>
+</div>
+<p style="margin:0;font:11px var(--font-data);color:var(--text-secondary)">{{ pickedDetail }}</p>
+<div style="display:flex;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ pickedResolved }}" on-click="{{ onQueueGap }}" hint-size="130px,28px">Queue backfill</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onMarkExpected }}" hint-size="130px,28px">Mark expected</x-import>
+</div>
+</div>
+</sc-if>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="min-width:0;height:100%;overflow:auto" hint-size="100%,330px">
+<div style="padding:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">Run log</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ logScope }}" on-change="{{ onLogScope }}" options="{{ logScopeOptions }}" hint-size="180px,26px"></x-import>
+</div>
+<div style="margin-top:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LogTail" title="{{ logTitle }}" height="{{ 250 }}" entries="{{ logEntries }}" hint-size="100%,250px"></x-import>
+</div>
+</div>
+</x-import>
+</x-import>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Drawer" open="{{ drawerOpen }}" on-close="{{ onCloseDrawer }}" side="right" size="440px" title="{{ drawerTitle }}" hint-size="0px,0px">
+<div style="padding:14px;display:flex;flex-direction:column;gap:14px;font-family:var(--font-body);font-size:13px;color:var(--text-secondary);overflow-y:auto">
+<sc-if value="{{ hasJob }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ jobBadge }}" label="{{ jobState }}" hint-size="80px,18px"></x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">{{ jobRowsLabel }}</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ProgressBar" value="{{ jobProgress }}" show-value="{{ true }}" variant="{{ jobVariant }}" hint-size="100%,16px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ jobItems }}" hint-size="100%,190px"></x-import>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ jobRetryOff }}" on-click="{{ onRetry }}" hint-size="150px,28px">Retry from checkpoint</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" disabled="{{ jobPauseOff }}" on-click="{{ onPause }}" hint-size="90px,28px">{{ pauseLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ jobPriorityOff }}" on-click="{{ onPriority }}" hint-size="110px,28px">Raise priority</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" disabled="{{ jobCancelOff }}" on-click="{{ onCancelJob }}" hint-size="80px,28px">Cancel</x-import>
+</div>
+<sc-if value="{{ jobActionsNoteShow }}" hint-placeholder-val="{{ false }}">
+<p style="margin:0;font-size:11px;line-height:1.45;color:var(--text-muted)">{{ jobActionsNote }}</p>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:6px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="80px,14px">Job stages</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EventTimeline" events="{{ jobEvents }}" dense="{{ true }}" group-by-day="{{ false }}" hint-size="100%,200px"></x-import>
+</div>
+</sc-if>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DialogForm" open="{{ formOpen }}" on-close="{{ onCloseForm }}" title="New backfill job" submit-label="Queue job" on-submit="{{ onSubmitForm }}" size="md" hint-size="0px,0px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Provider" value="{{ formProvider }}" on-change="{{ onFormProvider }}" options="{{ providerOptions }}" hint-size="100%,52px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Symbols" value="{{ formSymbols }}" on-change="{{ onFormSymbols }}" placeholder="AAPL, MSFT, NVDA" hint-size="100%,52px"></x-import>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Window start" value="{{ formFrom }}" on-change="{{ onFormFrom }}" placeholder="YYYY-MM-DD" hint-size="100%,52px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Window end" value="{{ formTo }}" on-change="{{ onFormTo }}" placeholder="YYYY-MM-DD" hint-size="100%,52px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Cadence" value="{{ formCadence }}" on-change="{{ onFormCadence }}" options="{{ cadenceOptions }}" hint-size="100%,52px"></x-import>
+<p style="margin:0;font-size:11px;line-height:1.45;color:var(--text-muted)">The job enters the queue behind anything already running. Priority can be raised from the job inspector.</p>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); this.startSim(); this._untick = window.MeridianWorld && window.MeridianWorld.tick(this); }
+  componentDidUpdate() { this.applyChrome(); }
+  componentWillUnmount() { clearInterval(this.timer); this._untick && this._untick(); }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  toast(kind, title, detail) { const t = window.MeridianToast; if (t && t[kind]) t[kind](title, detail); }
+
+  // Real clock base, so provider freshness and log ages stay honest whenever the screen is
+  // opened — a frozen date makes a live pipeline look days stale.
+  NOW = Date.now();
+  now() { return Date.now(); }
+  int(v) { return window.MeridianDesignSystem_205d17.Format.number(v, { decimals: 0 }); }
+  clockLabel() { return window.MeridianWorld ? window.MeridianWorld.clock() : new Date(this.NOW).toISOString().slice(11, 19) + " UTC"; }
+  // The coverage grid walks back over the eight most recent weekday sessions from today.
+  // Sessions are stamped on the UTC calendar by the providers, so the bucket is the UTC day — stated
+  // here rather than smuggled through toISOString() (C-02).
+  DAYS = (() => {
+    const utcDay = (d) => { const LD = (window.MeridianDesignSystem_205d17 || {}).LocalDate; return LD ? LD.utcDayOfInstant(d) : d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"); };
+    const out = [], d = new Date(Date.now());
+    d.setUTCDate(d.getUTCDate() - 1);
+    while (out.length < 8) {
+      const wd = d.getUTCDay();
+      if (wd !== 0 && wd !== 6) out.unshift(utcDay(d));
+      d.setUTCDate(d.getUTCDate() - 1);
+    }
+    return out;
+  })();
+  SYMS = ["AAPL", "MSFT", "NVDA", "SPY", "ESU6", "EURUSD"];
+  BADGE = { Complete: "Complete", Running: "InReview", Queued: "NeedsAttention", Stalled: "Blocked", Paused: "Pending", Cancelled: "NotStarted" };
+  VARIANT = { Complete: "success", Running: "accent", Queued: "accent", Stalled: "danger", Paused: "warning", Cancelled: "danger" };
+
+  providers = [
+    { source: "Polygon", status: "live", lastSeen: this.NOW - 2000, meta: "12.4k msg/s · 0 err" },
+    { source: "Databento", status: "live", lastSeen: this.NOW - 5000, meta: "8.1k msg/s · 2 err" },
+    { source: "IBKR", status: "stale", lastSeen: this.NOW - 61000, meta: "ws reconnecting · 3 retries" },
+    { source: "OPRA", status: "delayed", lastSeen: this.NOW - 900000, meta: "entitlement pending" },
+  ];
+
+  seedJobs = [
+    { id: "backfill-7742", provider: "Polygon", scope: "XNAS daily · 780 sym", window: this.DAYS[0] + ".." + this.DAYS[7], progress: 100, state: "Complete", eta: "—", rows: 6240, rowsTotal: 6240, retries: 0, priority: "normal", checkpoint: this.DAYS[7], started: this.NOW - 5400000, targets: [],
+      events: [
+        { ts: this.NOW - 5040000, action: "Complete", actor: "scheduler", severity: "success", detail: "6,240 bars · 0 gaps · verified against XNAS calendar" },
+        { ts: this.NOW - 5280000, action: "Verify pass", actor: "verify", severity: null, detail: "8 sessions · 780 symbols · 0 short-session mismatches" },
+        { ts: this.NOW - 5400000, action: "Job started", actor: "scheduler", severity: "accent", detail: "Polygon daily · window " + this.DAYS[0] + ".." + this.DAYS[7] }] },
+    { id: "backfill-7743", provider: "Databento", scope: "XNAS 1m · 120 sym", window: this.DAYS[4], progress: 64, state: "Running", eta: "2m 10s", rows: 29952, rowsTotal: 46800, retries: 1, priority: "normal", checkpoint: "NVDA · batch 77/120", started: this.NOW - 640000, targets: [["NVDA", this.DAYS[4]]],
+      events: [
+        { ts: this.NOW - 598000, action: "Calendar override applied", actor: "verify", severity: "warning", detail: "XNAS half-day " + this.DAYS[2] + " · expected bars 390 → 210" },
+        { ts: this.NOW - 640000, action: "Job started", actor: "scheduler", severity: "accent", detail: "Databento XNAS 1m · 120 symbols · resume token none" }] },
+    { id: "backfill-7744", provider: "Databento", scope: "XCME 1m · ES/NQ", window: this.DAYS[4], progress: 38, state: "Running", eta: "5m 40s", rows: 17480, rowsTotal: 46000, retries: 0, priority: "high", checkpoint: "ESU6 · 14:05Z", started: this.NOW - 410000, targets: [["ESU6", this.DAYS[4]]],
+      events: [{ ts: this.NOW - 410000, action: "Job started", actor: "scheduler", severity: "accent", detail: "Databento XCME 1m · ES/NQ · priority high" }] },
+    { id: "backfill-7745", provider: "Polygon", scope: "XNAS daily · AAPL", window: this.DAYS[7], progress: 0, state: "Queued", eta: "—", rows: 0, rowsTotal: 390, retries: 0, priority: "normal", checkpoint: "—", started: null, targets: [["AAPL", this.DAYS[7]]],
+      events: [{ ts: this.NOW - 120000, action: "Queued", actor: "r.alvarez", severity: null, detail: "Behind 2 running jobs · no slot until " + new Date(this.NOW + 240000).toISOString().slice(11, 16) + "Z" }] },
+    { id: "backfill-7746", provider: "IBKR", scope: "FX ticks · EURUSD", window: this.DAYS[3] + ".." + this.DAYS[4], progress: 12, state: "Stalled", eta: "—", rows: 4200, rowsTotal: 35000, retries: 3, priority: "normal", checkpoint: this.DAYS[3] + " 08:14Z", started: this.NOW - 1800000, targets: [["EURUSD", this.DAYS[3]]],
+      events: [
+        { ts: this.NOW - 1379000, action: "Stalled", actor: "conn", severity: "danger", detail: "IBKR ws disconnect at 12% · 3 retries exhausted · backoff 30s" },
+        { ts: this.NOW - 1800000, action: "Job started", actor: "scheduler", severity: "accent", detail: "IBKR FX ticks · EURUSD · 2 sessions" }] },
+  ];
+
+  seedLog = (() => {
+    const t0 = this.NOW - 640000;
+    return [
+      { ts: t0, level: "info", source: "fetch", jobId: "backfill-7743", text: "backfill-7743 · Databento XNAS 1m · 120 symbols · resume token none" },
+      { ts: t0 + 4200, level: "debug", source: "fetch", jobId: "backfill-7743", text: "batch 41/120 · 3.1s · 100 rps" },
+      { ts: t0 + 9900, level: "warn", source: "verify", jobId: "backfill-7743", text: "AAPL " + this.DAYS[2] + " short session · expected 210 bars, schedule says 390" },
+      { ts: t0 + 10400, level: "info", source: "verify", jobId: "backfill-7743", text: "calendar override applied · XNAS half-day " + this.DAYS[2] },
+      { ts: t0 + 21000, level: "error", source: "conn", jobId: "backfill-7746", text: "IBKR ws disconnect · backfill-7746 stalled at 12% · retry backoff 30s" },
+      { ts: t0 + 34000, level: "info", source: "fetch", jobId: "backfill-7744", text: "backfill-7744 · XCME 1m ES/NQ · priority high · slot 2" },
+      { ts: t0 + 41000, level: "info", source: "scan", jobId: null, text: "gap scan · NVDA " + this.DAYS[4] + " · 0/390 bars · provider outage window confirmed" },
+    ];
+  })();
+
+  seedCov = (() => {
+    const cov = {};
+    for (const s of ["AAPL", "MSFT", "NVDA", "SPY", "ESU6", "EURUSD"]) {
+      cov[s] = {};
+      for (const d of this.DAYS) cov[s][d] = "full";
+      if (s !== "EURUSD" && s !== "ESU6") cov[s][this.DAYS[2]] = { status: "partial", detail: "210/390 bars · half session" };
+    }
+    cov.NVDA[this.DAYS[4]] = { status: "gap", detail: "0/390 · provider outage" };
+    cov.ESU6[this.DAYS[4]] = { status: "partial", detail: "112/460 · recovering" };
+    cov.AAPL[this.DAYS[7]] = { status: "pending", detail: "backfill-7745 queued" };
+    cov.EURUSD[this.DAYS[3]] = { status: "gap", detail: "0/1440 · IBKR stalled" };
+    return cov;
+  })();
+
+  state = {
+    jobs: this.seedJobs, log: this.seedLog, cov: this.seedCov,
+    picked: null, sel: null, drawer: false, provider: null, stateFilter: "all",
+    logScope: "all", sim: true, formOpen: false, seq: 7747,
+    form: { provider: "Polygon", symbols: "", from: this.DAYS[4], to: this.DAYS[7], cadence: "1m" },
+  };
+
+  startSim() { clearInterval(this.timer); this.timer = setInterval(() => this.tick(), 1600); }
+
+  log(level, source, text, jobId) {
+    this.setState((s) => ({ log: [...s.log, { ts: this.now(), level, source, text, jobId: jobId || null }].slice(-120) }));
+  }
+
+  patch(id, fn, event) {
+    this.setState((s) => ({
+      jobs: s.jobs.map((j) => {
+        if (j.id !== id) return j;
+        const next = { ...j, ...fn(j) };
+        if (event) next.events = [event, ...(j.events || [])];
+        return next;
+      }),
+    }));
+  }
+
+  covSet(sym, day, cell) {
+    this.setState((s) => ({ cov: { ...s.cov, [sym]: { ...s.cov[sym], [day]: cell } } }));
+  }
+
+  tick() {
+    if (!this.state.sim) return;
+    const running = this.state.jobs.filter((j) => j.state === "Running");
+    if (!running.length) return;
+    for (const j of running) {
+      const stepPct = j.priority === "high" ? 9 : 6;
+      const progress = Math.min(100, j.progress + stepPct);
+      const rows = Math.round(j.rowsTotal * progress / 100);
+      if (progress >= 100) {
+        this.patch(j.id, () => ({ progress: 100, rows: j.rowsTotal, state: "Complete", eta: "—", checkpoint: "done" }),
+          { ts: this.now(), action: "Complete", actor: "scheduler", severity: "success", detail: this.int(j.rowsTotal) + " rows written · " + j.retries + " retr" + (j.retries === 1 ? "y" : "ies") });
+        this.log("info", "write", j.id + " complete · " + this.int(j.rowsTotal) + " rows · 0 gaps remaining", j.id);
+        (j.targets || []).forEach(([sym, day]) => this.covSet(sym, day, { status: "full", detail: "backfilled by " + j.id }));
+        this.toast("success", "Backfill complete", j.id + " · " + j.scope);
+      } else {
+        const secs = Math.max(5, Math.round((100 - progress) * (j.priority === "high" ? 1.4 : 2.2)));
+        this.patch(j.id, () => ({ progress, rows, eta: secs > 60 ? Math.floor(secs / 60) + "m " + (secs % 60) + "s" : secs + "s" }));
+        if (progress % 18 < stepPct) this.log("debug", "fetch", j.id + " · " + this.int(rows) + "/" + this.int(j.rowsTotal) + " rows · " + (90 + (progress % 7) * 4) + " rps", j.id);
+      }
+    }
+  }
+
+  queueGap(sym, day, reason) {
+    const id = "backfill-" + this.state.seq;
+    const provider = sym === "EURUSD" ? "IBKR" : sym === "ESU6" ? "Databento" : "Polygon";
+    const job = {
+      id, provider, scope: (sym === "EURUSD" ? "FX ticks · " : "1m bars · ") + sym, window: day, progress: 0, state: "Queued", eta: "—",
+      rows: 0, rowsTotal: sym === "EURUSD" ? 1440 : 390, retries: 0, priority: "normal", checkpoint: "—", started: null, targets: [[sym, day]],
+      events: [{ ts: this.now(), action: "Queued from gap-scan", actor: "r.alvarez", severity: "accent", detail: reason }],
+    };
+    this.setState((s) => ({ jobs: [...s.jobs, job], seq: s.seq + 1, sel: id, picked: null }));
+    this.covSet(sym, day, { status: "pending", detail: id + " queued" });
+    this.log("info", "scan", "gap-scan queued " + id + " · " + sym + " " + day + " · " + reason, id);
+    this.toast("info", "Backfill queued", id + " · " + sym + " " + day);
+  }
+
+  start(id) {
+    this.patch(id, () => ({ state: "Running", eta: "estimating…", started: this.now() }),
+      { ts: this.now(), action: "Job started", actor: "scheduler", severity: "accent", detail: "Slot acquired · streaming" });
+    this.log("info", "fetch", id + " started · slot acquired", id);
+  }
+
+  actionNote(job) {
+    if (!job) return "";
+    if (job.state === "Complete") return "Complete — this job is closed. Retry, pause and cancel apply to queued, running, stalled or cancelled jobs; re-check its coverage with a quality scan.";
+    if (job.state === "Cancelled") return "Cancelled — retry resumes from checkpoint " + job.checkpoint + ". Pause and cancel no longer apply.";
+    if (job.state === "Queued") return "Queued — pause becomes available once the job starts; retry applies after a stall.";
+    if (job.state === "Running" && job.priority === "high") return "Already at high priority — this job is at the front of the queue.";
+    if (job.state === "Running" || job.state === "Paused") return "Retry applies after a stall or a cancel.";
+    return "";
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const el = React.createElement;
+    const { ProgressBar, SeverityBadge, OptimisticCell } = this.ds();
+    const jobs = s.jobs;
+    const running = jobs.filter((j) => j.state === "Running");
+    const stalled = jobs.filter((j) => j.state === "Stalled");
+    const queued = jobs.filter((j) => j.state === "Queued");
+    const rowsToday = jobs.reduce((a, j) => a + j.rows, 0);
+    const gaps = [];
+    for (const sym of this.SYMS) for (const d of this.DAYS) { const c = s.cov[sym][d]; if (c && c.status === "gap") gaps.push([sym, d]); }
+    const filtered = jobs.filter((j) => (s.provider ? j.provider === s.provider : true) && (s.stateFilter === "all" ? true : j.state === s.stateFilter));
+    const job = jobs.find((j) => j.id === s.sel) || null;
+    const picked = s.picked;
+    const pickedCell = picked ? s.cov[picked.row][picked.col] : null;
+    const pickedStatus = pickedCell ? (typeof pickedCell === "string" ? pickedCell : pickedCell.status) : "";
+    const logRows = s.log.filter((l) => (s.logScope === "job" && job ? l.jobId === job.id : true) && (s.provider ? !l.jobId || (jobs.find((j) => j.id === l.jobId) || {}).provider === s.provider : true));
+    const pct = (n) => Math.round(n) + "%";
+    return {
+      dataState: this.props.dataState ?? "ready",
+      clockLabel: this.clockLabel(),
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      noop: () => {},
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      // 4.2 · persisted arrangement for the evidence pair (coverage ⇄ log); never the provider or job filter.
+      layoutRegions: [{ id: "coverage", size: 1 }, { id: "log", size: 1 }],
+      layoutPresets: [{ name: "Log first", regions: { coverage: { size: 0.7 }, log: { size: 1.6 } } }, { name: "Coverage only", regions: { log: { hidden: true } } }],
+      layoutSlots: [{ id: "coverage", label: "Coverage · bars on disk", minSize: 0.25 }, { id: "log", label: "Run log", minSize: 0.25 }],
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("ingestion") : []),
+      runningLabel: running.length + " running",
+      hasStalled: stalled.length > 0,
+      stalledLabel: stalled.length + " stalled",
+      onScan: () => { this.log("info", "scan", "quality scan started · " + this.SYMS.length + " symbols × " + this.DAYS.length + " sessions", null); this.toast("info", "Quality scan running", gaps.length + " open gap" + (gaps.length === 1 ? "" : "s") + " to re-verify"); },
+      onNew: () => this.setState({ formOpen: true }),
+      metrics: [
+        { label: "Rows written today", value: this.int(rowsToday), delta: "+" + Math.round(rowsToday / 1000) + "k", context: "across " + jobs.length + " jobs", tone: "neutral" },
+        { label: "Throughput", value: (running.length ? (running.length * 4.2).toFixed(1) : "0.0") + "k rows/s", delta: running.length ? "+0.4k" : "0", context: running.length + " slot" + (running.length === 1 ? "" : "s") + " active", tone: running.length ? "success" : "neutral" },
+        { label: "Open gap sessions", value: String(gaps.length), delta: gaps.length ? "" : "clear", context: gaps.length ? gaps.map((g) => g[0]).join(" · ") : "coverage complete", tone: gaps.length ? "warning" : "success" },
+        { label: "SLA breaches", value: String(stalled.length), delta: stalled.length ? "1h 05m late" : "none", context: stalled.length ? stalled[0].id : "all feeds within window", tone: stalled.length ? "danger" : "success" },
+      ],
+      providers: this.providers.map((p) => ({
+        ...p,
+        active: s.provider === p.source,
+        select: () => this.setState({ provider: s.provider === p.source ? null : p.source }),
+      })),
+      hasProviderFilter: !!s.provider,
+      onClearProvider: () => this.setState({ provider: null }),
+      stateFilter: s.stateFilter,
+      onStateFilter: (v) => this.setState({ stateFilter: v }),
+      stateOptions: [{ value: "all", label: "All" }, { value: "Running", label: "Running" }, { value: "Queued", label: "Queued" }, { value: "Stalled", label: "Stalled" }, { value: "Complete", label: "Complete" }],
+      queueLabel: filtered.length + " of " + jobs.length + " jobs" + (s.provider ? " · " + s.provider : ""),
+      simOn: s.sim, onSim: (v) => this.setState({ sim: typeof v === "boolean" ? v : !s.sim }),
+      simLabel: s.sim ? "live" : "paused",
+      queueCols: [
+        { key: "id", label: "Job" },
+        { key: "provider", label: "Provider" },
+        { key: "scope", label: "Scope" },
+        { key: "window", label: "Window", tier: "full" },
+        { key: "progress", label: "Progress", cell: (r) => el("div", { style: { minWidth: 140 } },
+          ProgressBar ? el(ProgressBar, { value: r.progress, showValue: true, variant: this.VARIANT[r.state], size: "sm" }) : pct(r.progress)) },
+        { key: "state", label: "State", cell: (r) => SeverityBadge ? el(SeverityBadge, { status: this.BADGE[r.state], label: r.state }) : r.state },
+        // 4.2 · B-2: priority is written from the row. Provisional until the scheduler confirms; a policy
+        // refusal restores the prior value with SCHED-2 attached; a confirmed change reverts with a reason.
+        { key: "priority", label: "Priority", cell: (r) => OptimisticCell
+          ? el(OptimisticCell, { rowId: r.id, field: "priority", value: r.priority, hint: "high · normal · low", disabled: r.state === "Complete",
+              validator: (v) => /^(high|normal|low)$/i.test(v.trim()) ? true : "high · normal · low",
+              format: (v) => el("span", { style: { fontVariant: "all-small-caps", letterSpacing: ".03em", color: String(v) === "high" ? "var(--brand-signal-text,#8E4730)" : "var(--text-muted)" } }, String(v)) })
+          : el("span", { style: { fontVariant: "all-small-caps", letterSpacing: ".03em", color: r.priority === "high" ? "var(--brand-signal-text,#8E4730)" : "var(--text-muted)" } }, r.priority) },
+        { key: "eta", label: "ETA", align: "right" },
+        { key: "act", label: "", cell: (r) => {
+          const label = r.state === "Stalled" ? "Retry" : r.state === "Queued" ? "Start now" : r.state === "Running" ? "Pause" : null;
+          if (!label) return el("span", { style: { color: "var(--text-disabled)" } }, "—");
+          return el("button", { type: "button", onClick: (e) => { e.stopPropagation(); if (r.state === "Stalled") this.retry(r.id); else if (r.state === "Queued") this.start(r.id); else this.pause(r.id); },
+            style: { padding: "1px 7px", font: "11px var(--font-body)", background: "transparent", border: "1px solid var(--border-strong)", color: "var(--text-secondary)", cursor: "pointer" } }, label);
+        } },
+      ],
+      queueRows: filtered,
+      optCommit: (edit) => new Promise((resolve, reject) => setTimeout(() => {
+        const v = String(edit.value).trim().toLowerCase();
+        const highs = this.state.jobs.filter((j) => j.id !== edit.rowId && j.priority === "high" && j.state !== "Complete").length;
+        if (v === "high" && highs >= 2) return reject(new Error("Two high-priority jobs already hold the slots · SCHED-2"));
+        resolve({ receipt: "sched-" + Date.now().toString(36) });
+      }, 600)),
+      onOptSettle: (edit) => {
+        const v = String(edit.value).trim().toLowerCase();
+        if (edit.status === "confirmed") {
+          this.patch(edit.rowId, () => ({ priority: v }), { ts: this.now(), action: "Priority " + edit.prior + " → " + v, actor: "r.alvarez", severity: v === "high" ? "warning" : null, detail: "set from the queue · receipt " + (edit.receipt || "—") });
+          this.log("warn", "sched", edit.rowId + " priority " + edit.prior + " → " + v + " by r.alvarez", edit.rowId);
+        } else if (edit.status === "reverted") {
+          this.patch(edit.rowId, () => ({ priority: edit.prior }), { ts: this.now(), action: "Priority reverted → " + edit.prior, actor: "r.alvarez", severity: null, detail: edit.reason || "no reason given" });
+          this.log("info", "sched", edit.rowId + " priority reverted to " + edit.prior + " · " + (edit.reason || ""), edit.rowId);
+        } else if (edit.status === "rejected") this.log("warn", "sched", edit.rowId + " priority change refused · " + edit.reason, edit.rowId);
+      },
+      selId: s.sel,
+      onQueueClick: (row) => this.setState({ sel: row.id, drawer: true }),
+      covSyms: this.SYMS,
+      covCols: this.DAYS.map((d) => ({ id: d, label: d.slice(5) })),
+      covData: s.cov,
+      onCell: (row, col) => this.setState({ picked: { row: row.id || row, col: col.id || col } }),
+      picked: !!picked, noPick: !picked,
+      pickedTitle: picked ? picked.row + " · " + picked.col : "",
+      pickedStatus,
+      pickedBadge: pickedStatus === "gap" ? "Blocked" : pickedStatus === "partial" ? "NeedsAttention" : pickedStatus === "pending" ? "InReview" : "Complete",
+      pickedDetail: picked ? (typeof pickedCell === "string" ? "Session complete · all expected bars on disk." : pickedCell.detail) : "",
+      pickedResolved: pickedStatus === "full" || pickedStatus === "pending",
+      onClearPick: () => this.setState({ picked: null }),
+      onQueueGap: () => picked && this.queueGap(picked.row, picked.col, (typeof pickedCell === "string" ? pickedCell : pickedCell.detail) || "operator-queued"),
+      onMarkExpected: () => {
+        if (!picked) return;
+        this.covSet(picked.row, picked.col, { status: "none", detail: "no session expected · marked by r.alvarez" });
+        this.log("info", "verify", picked.row + " " + picked.col + " marked expected-empty by r.alvarez", null);
+        this.setState({ picked: null });
+        this.toast("info", "Marked expected", picked.row + " " + picked.col + " excluded from gap counts");
+      },
+      logScope: s.logScope, onLogScope: (v) => this.setState({ logScope: v }),
+      logScopeOptions: [{ value: "all", label: "All jobs" }, { value: "job", label: "Selected job" }],
+      logTitle: s.logScope === "job" && job ? job.id + " · " + job.provider : "all jobs · " + (s.provider || "every provider"),
+      logEntries: logRows,
+      drawerOpen: s.drawer && !!job,
+      drawerTitle: job ? job.id : "Job",
+      onCloseDrawer: () => this.setState({ drawer: false }),
+      hasJob: !!job,
+      jobBadge: job ? this.BADGE[job.state] : "Pending",
+      jobState: job ? job.state : "",
+      jobVariant: job ? this.VARIANT[job.state] : "accent",
+      jobProgress: job ? job.progress : 0,
+      jobRowsLabel: job ? this.int(job.rows) + " of " + this.int(job.rowsTotal) + " rows" : "",
+      jobItems: job ? [
+        { label: "Provider", value: job.provider },
+        { label: "Scope", value: job.scope },
+        { label: "Window", value: job.window },
+        { label: "Priority", value: job.priority },
+        { label: "Checkpoint", value: job.checkpoint },
+        { label: "Retries", value: String(job.retries) },
+        { label: "ETA", value: job.eta },
+        { label: "Targets", value: (job.targets || []).length ? job.targets.map((t) => t[0] + " " + t[1].slice(5)).join(", ") : "—" },
+      ] : [],
+      // A disabled control with no stated reason reads as broken (STATES_AND_ANTIPATTERNS).
+      // Terminal and just-started jobs both dim most of this row, so say what the state permits.
+      jobActionsNote: this.actionNote(job), jobActionsNoteShow: !!this.actionNote(job),
+      jobRetryOff: !job || (job.state !== "Stalled" && job.state !== "Cancelled"),
+      jobPauseOff: !job || (job.state !== "Running" && job.state !== "Paused"),
+      pauseLabel: job && job.state === "Paused" ? "Resume" : "Pause",
+      jobPriorityOff: !job || job.priority === "high" || job.state === "Complete",
+      jobCancelOff: !job || job.state === "Complete" || job.state === "Cancelled",
+      jobEvents: job ? job.events : [],
+      onRetry: () => job && this.retry(job.id),
+      onPause: () => job && (job.state === "Paused" ? this.resume(job.id) : this.pause(job.id)),
+      onPriority: () => {
+        if (!job) return;
+        this.patch(job.id, () => ({ priority: "high" }), { ts: this.now(), action: "Priority raised", actor: "r.alvarez", severity: "warning", detail: "normal → high · takes the next free slot" });
+        this.log("warn", "sched", job.id + " priority raised to high by r.alvarez", job.id);
+        this.toast("info", "Priority raised", job.id + " will take the next free slot");
+      },
+      onCancelJob: () => {
+        if (!job) return;
+        this.patch(job.id, () => ({ state: "Cancelled", eta: "—" }), { ts: this.now(), action: "Cancelled", actor: "r.alvarez", severity: "danger", detail: "Stopped at " + job.progress + "% · checkpoint " + job.checkpoint + " retained" });
+        this.log("warn", "sched", job.id + " cancelled at " + job.progress + "% · checkpoint retained", job.id);
+        this.toast("warning", "Job cancelled", job.id + " · checkpoint retained for retry");
+      },
+      formOpen: s.formOpen,
+      onCloseForm: () => this.setState({ formOpen: false }),
+      formProvider: s.form.provider, onFormProvider: (v) => this.setState({ form: { ...s.form, provider: v } }),
+      formSymbols: s.form.symbols, onFormSymbols: (e) => this.setState({ form: { ...s.form, symbols: e.target.value } }),
+      formFrom: s.form.from, onFormFrom: (e) => this.setState({ form: { ...s.form, from: e.target.value } }),
+      formTo: s.form.to, onFormTo: (e) => this.setState({ form: { ...s.form, to: e.target.value } }),
+      formCadence: s.form.cadence, onFormCadence: (v) => this.setState({ form: { ...s.form, cadence: v } }),
+      providerOptions: this.providers.map((p) => ({ value: p.source, label: p.source })),
+      cadenceOptions: [{ value: "1m", label: "1-minute bars" }, { value: "daily", label: "Daily bars" }, { value: "ticks", label: "Ticks" }],
+      onSubmitForm: () => {
+        const f = s.form;
+        const syms = f.symbols.split(/[,\s]+/).filter(Boolean);
+        const id = "backfill-" + s.seq;
+        const job = {
+          id, provider: f.provider, scope: (f.cadence === "daily" ? "daily · " : f.cadence === "ticks" ? "ticks · " : "1m · ") + (syms.length ? syms.join(" ") : "watchlist"),
+          window: f.from === f.to ? f.from : f.from + ".." + f.to.slice(5), progress: 0, state: "Queued", eta: "—",
+          rows: 0, rowsTotal: Math.max(390, (syms.length || 12) * (f.cadence === "ticks" ? 1440 : f.cadence === "daily" ? 21 : 390)),
+          retries: 0, priority: "normal", checkpoint: "—", started: null, targets: syms.map((x) => [x, f.from]).filter(([x]) => this.SYMS.includes(x)),
+          events: [{ ts: this.now(), action: "Queued by operator", actor: "r.alvarez", severity: "accent", detail: f.provider + " · " + (syms.length ? syms.length + " symbols" : "full watchlist") + " · " + f.from + ".." + f.to }],
+        };
+        this.setState((st) => ({ jobs: [...st.jobs, job], seq: st.seq + 1, formOpen: false, sel: id, drawer: true, form: { ...st.form, symbols: "" } }));
+        this.log("info", "sched", id + " queued by r.alvarez · " + f.provider + " " + f.cadence, id);
+        this.toast("success", "Job queued", id + " · " + f.provider);
+      },
+      statusItems: [
+        { status: "ok", label: "ingest-gw", value: "streaming" },
+        { label: "Queue", value: (running.length + queued.length) + " active" },
+        { status: stalled.length ? "err" : "ok", label: "Stalled", value: String(stalled.length) },
+        { label: "Rows", value: this.int(rowsToday) },
+        { status: gaps.length ? "warn" : "ok", label: "Gaps", value: String(gaps.length) },
+        { status: "ok", label: "Lag", value: "1.2s", push: true },
+      ],
+    };
+  }
+
+  retry(id) {
+    const j = this.state.jobs.find((x) => x.id === id);
+    if (!j) return;
+    this.patch(id, (x) => ({ state: "Running", retries: x.retries + 1, eta: "estimating…" }),
+      { ts: this.now(), action: "Retry from checkpoint", actor: "r.alvarez", severity: "accent", detail: "Resuming at " + j.checkpoint + " · attempt " + (j.retries + 2) });
+    this.log("info", "fetch", id + " resumed from checkpoint " + j.checkpoint, id);
+    this.toast("info", "Retry sent", id + " resuming at " + j.checkpoint);
+  }
+
+  pause(id) {
+    this.patch(id, () => ({ state: "Paused", eta: "—" }), { ts: this.now(), action: "Paused", actor: "r.alvarez", severity: "warning", detail: "Slot released · checkpoint held" });
+    this.log("warn", "sched", id + " paused by r.alvarez · slot released", id);
+  }
+
+  resume(id) {
+    this.patch(id, () => ({ state: "Running", eta: "estimating…" }), { ts: this.now(), action: "Resumed", actor: "r.alvarez", severity: "accent", detail: "Slot re-acquired" });
+    this.log("info", "sched", id + " resumed", id);
+  }
+}
+</script>
 </body>
 </html>

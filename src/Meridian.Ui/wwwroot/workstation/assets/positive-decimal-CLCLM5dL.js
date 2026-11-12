@@ -1,0 +1,1 @@
+var e=/^(?:\d+(?:\.\d*)?|\.\d+)$/;function t(t){let n=String(t??``).trim();if(!e.test(n))return null;let r=Number(n);return Number.isFinite(r)&&r>0?r:null}export{t};

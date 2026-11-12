@@ -252,7 +252,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
 
     private async Task<AssetAccountingEventProjectionRecord?> ReadLatestAssetAccountingEventAsync(
         NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
+        NpgsqlTransaction? transaction,
         Guid eventId,
         long eventVersion,
         CancellationToken ct)

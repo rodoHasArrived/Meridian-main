@@ -40,7 +40,9 @@ public sealed class HistoricalBackfillSessionCoverageTests : IDisposable
         var nextSession = session.AddDays(1);
         await service.RunAsync(request with
         {
-            From = nextSession, To = nextSession, ResumeFromCheckpoint = true
+            From = nextSession,
+            To = nextSession,
+            ResumeFromCheckpoint = true
         }, pipeline);
 
         provider.RequestedFrom.Should().Contain(nextSession,

@@ -186,7 +186,8 @@ public sealed partial class OperationsContinuityWorkflowService
             entry.References,
             entry.PreviousHash,
             entry.CurrentHash,
-            entry.Outcome);
+            entry.Outcome)
+        { CloseChecklistSnapshot = entry.CloseChecklistSnapshot };
 
     private static string DisplayName(OperationsGateKeyDto gateKey) => gateKey switch
     {

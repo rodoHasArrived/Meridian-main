@@ -19,7 +19,8 @@ public sealed class StatusWriterTests : IDisposable
         File.WriteAllText(blockedDirectory, "a file temporarily occupies the output directory");
         var path = Path.Combine(blockedDirectory, "status.json");
         var clock = new ControlledDelayClock();
-        await using var writer = new StatusWriter(path, () => new AppConfig(), timeProvider: clock);
+        await using var writer = new StatusWriter(path, () => new AppConfig(),
+            new TestEventMetrics(published: 37), timeProvider: clock);
 
         writer.Start(TimeSpan.FromMinutes(1));
         var retry = await clock.NextTimerAsync();
@@ -30,7 +31,7 @@ public sealed class StatusWriterTests : IDisposable
         _ = await clock.NextTimerAsync(); // The next interval is scheduled only after the retried write finishes.
 
         using var document = JsonDocument.Parse(await File.ReadAllTextAsync(path));
-        document.RootElement.GetProperty("metrics").GetProperty("published").GetInt64().Should().Be(0);
+        document.RootElement.GetProperty("metrics").GetProperty("published").GetInt64().Should().Be(37);
     }
 
     [Fact]
@@ -58,9 +59,9 @@ public sealed class StatusWriterTests : IDisposable
         }
     }
 
-    private sealed class TestEventMetrics : IEventMetrics
+    private sealed class TestEventMetrics(long published = 0) : IEventMetrics
     {
-        public long Published => 0;
+        public long Published => published;
         public long Dropped => 0;
         public long Integrity => 0;
         public long Trades => 0;

@@ -21,13 +21,18 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Lifecycle supervisor and installer setup tests | Automatic Windows validation; release preflight remains |
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
+| Design-system package freshness, export integrity, dashboard asset projection and Chromium regressions (previously run by hand) | Design System Package `package-integrity`, path-filtered; not a required check |
+| Design-system whole-release validator and retained Python suite | Design System Package `release-governance`, path-filtered; exits with the gates' real status; not a required check |
 
 The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
 now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
-repository-structure output. Its existing rules/example/AI checks and diagram generation remain;
-a docs-only maintained-generation pass converges the full documentation sequence before freshness
-validation. New generated files and deletions are included in the drift check, with
-`artifacts/docs/generated-repair.patch` and `drift.json` retained alongside generation evidence.
+repository-structure output. Its existing rules and memory checks and the dashboard regression
+gate run on every event. The docs-only maintained-generation pass and freshness validation run
+once per event: Meridian CI `verify-docs` owns them for pull requests to `main`, `main` pushes and
+merge groups, and Documentation Automation runs the same catalog only for the events Meridian CI
+does not receive (pull requests to other branches and manual runs). New generated files and
+deletions are included in the drift check, with `artifacts/docs/generated-repair.patch` and
+`drift.json` retained alongside generation evidence by whichever workflow ran it.
 
 Maintenance PR/push runs delegate workflow hygiene, AI contract drift and navigation validation to
 the canonical lanes. Scheduled/manual Maintenance still repeats those checks; tooling metadata
@@ -59,6 +64,29 @@ existing certification artifact contract (90 days); CI companion evidence is ret
 Administrators may add `integration-gate` as a required companion check after human governance
 review and a successful PR/merge-group rollout. This change does not alter repository rulesets
 or replace the existing `quality-gate` requirement.
+
+### Design System Package
+
+`design-system-package.yml` runs when a pull request or `main` push changes
+`Meridian Design System/**`, the dashboard asset synchronization script, or the workflow itself.
+It adds hosted coverage that did not exist; it replaces no lane and leaves the four canonical
+`scripts/ci.sh` lanes, `quality-gate` and `integration-gate` unchanged. It uses `contents: read`,
+no secrets, and a checkout without persisted credentials.
+
+`package-integrity` runs `build:check`, `release:check`, the release integrity tests, the
+dashboard asset projection check and its tests, then the Chromium regressions (`test:patches`,
+`test:agency`, `test:browser`). Chromium comes from the Playwright version in the package
+lockfile, installed with up to three attempts and cached by lockfile hash. It runs no apt
+step, so a package-mirror outage cannot fail the job before a test starts.
+
+`release-governance` runs the whole-release validator and the retained Python suite and exits
+with their real status. It carries no `continue-on-error`, baseline or skip: a green result
+there has to mean the gates passed. Both passed with zero findings when this workflow was
+last revised.
+
+Neither job is a required check. Administrators may add `package-integrity` as a required
+check for design-system paths after human governance review, and `release-governance` once
+it has stayed green on `main`. Rollback is deleting the workflow file.
 
 ## Local verification execution
 
@@ -502,11 +530,15 @@ requeues. Repair commit markers suppress self-triggered loops only for an alread
 later base advances can repair the branch again. Publisher concurrency is scoped to each source
 run so an unrelated PR cannot evict pending repair work from a global group.
 
-On main pushes, daily at 05:23 UTC and on manual dispatch, the publisher also scans open
-same-repository PRs for a stale base. It dispatches at most ten new head/base pairs per run,
-deduplicates already requested pairs and reports the remaining backlog. Daily/manual scans continue
-remaining work. API pagination is bounded to 1,000 items and fails explicitly if that limit is
-reached. This is separate from each repair's two stale-ref retries.
+On PR merges into `main`, main pushes, daily at 05:23 UTC and on manual dispatch, the publisher
+scans all open same-repository PRs for a stale base, including drafts and conflicted PRs. Unmerged
+closures are excluded. Each scan reads the latest base, follows API pagination and dispatches every
+eligible head/base pair, pacing writes one second apart instead of leaving a daily backlog.
+Overlapping refresh jobs are serialized; pending scans can coalesce because each scans the latest
+base and all open PRs. Candidate publication retains independent per-source-run concurrency.
+Only active or successful trusted default-branch generation requests suppress duplicates; failed
+or cancelled requests remain eligible for a later scan. API failures are explicit. This discovery
+is separate from each repair's two stale-ref retries.
 
 Without App configuration, PR repair provides artifacts only. Forks, source/handwritten conflicts,
 uncertain reviewed module hashes, and changes to generators/dependencies/automation policy retain

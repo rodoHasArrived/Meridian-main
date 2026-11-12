@@ -26,9 +26,12 @@ public sealed class AlpacaHistoricalDataProviderTests
 
         Func<Task> fetch = kind switch
         {
-            "bars" => async () => { await sut.GetAdjustedDailyBarsAsync("AAPL", date, date, deadline.Token); },
-            "quotes" => async () => { await sut.GetHistoricalQuotesAsync(new[] { "AAPL" }, start, start.AddDays(1), ct: deadline.Token); },
-            "trades" => async () => { await sut.GetHistoricalTradesAsync(new[] { "AAPL" }, start, start.AddDays(1), ct: deadline.Token); },
+            "bars" => async () => { await sut.GetAdjustedDailyBarsAsync("AAPL", date, date, deadline.Token); }
+            ,
+            "quotes" => async () => { await sut.GetHistoricalQuotesAsync(new[] { "AAPL" }, start, start.AddDays(1), ct: deadline.Token); }
+            ,
+            "trades" => async () => { await sut.GetHistoricalTradesAsync(new[] { "AAPL" }, start, start.AddDays(1), ct: deadline.Token); }
+            ,
             _ => async () => { await sut.GetHistoricalAuctionsAsync(new[] { "AAPL" }, date, date, deadline.Token); }
         };
 

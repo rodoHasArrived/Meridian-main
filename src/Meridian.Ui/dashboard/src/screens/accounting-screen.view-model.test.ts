@@ -1696,7 +1696,7 @@ describe("accounting-screen view model", () => {
     });
     expect(state.rows[0]).toMatchObject({
       rowId: "journal-cash-1",
-      timestampLabel: "Jun 30, 14:30 UTC",
+      timestampLabel: "Jun 30, 2026, 14:30 UTC",
       amountLabel: "$120,500 debit / $120,500 credit",
       lineCountLabel: "2 lines",
       dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2",
@@ -2083,6 +2083,15 @@ describe("accounting-screen view model", () => {
     const corporateActionsState = buildCorporateActionsViewState("sec-1", [], null, false, displayError);
     expect(corporateActionsState.errorText).toBe("Fund account is required.");
     expect(corporateActionsState.errorDetails).toEqual(trialBalanceState.errorDetails);
+  });
+
+  it.each([
+    ["Put", "Holder put"],
+    ["CallNoticeDeadline", "Issuer call notice deadline"],
+    ["PutNoticeDeadline", "Holder put notice deadline"]
+  ])("labels declared schedule event %s for operators", (eventType, label) => {
+    const rows = buildSecurityScheduleRows(cashFlowSchedules.map((row) => ({ ...row, eventType })));
+    expect(rows[0].eventTypeLabel).toBe(label);
   });
 
   it("derives cash-flow and factor schedule rows with selected detail state", () => {

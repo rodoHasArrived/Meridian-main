@@ -283,8 +283,10 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd, Warrant, InvestmentFund,
 /// PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee) as pure
 /// declarations over their terms contract, so every catalog class except the profile-governed
-/// CustomAsset now has a projection — 25 of 26 — and the catalog's <c>ProjectionKind</c> says which
-/// path writes each one. Migration 046 adds the OTC derivative classes (FxForward,
+/// CustomAsset then had a projection — 25 of 26 — and the catalog's <c>ProjectionKind</c> says which
+/// path writes each one. CustomAsset is not a descriptor here: migration 064 gives it a
+/// profile-keyed table (one row per <c>profileFields</c> key) written by a specialized store writer,
+/// because its fields are governed per profile and have no fixed column set. Migration 046 adds the OTC derivative classes (FxForward,
 /// NonDeliverableForward, CreditDefaultSwap) and migration 047 the rate options and linked notes
 /// (Swaption, CapFloor, StructuredNote) as declarative projections from the day they are modeled.
 /// </para>
@@ -723,8 +725,10 @@ internal static partial class SecurityTermsProjectionRegistry
         // were reachable only by parsing the JSONB blob one security at a time. Each is a pure data
         // declaration over the terms contract — gates on the terms the schema marks Required, nullable
         // columns for the rest, NOT NULL DEFAULT FALSE for the one required flag — with no derived
-        // columns, so the registry's generic writer is the whole implementation. CustomAsset stays
-        // unprojected on purpose: its fields are governed per profile and have no fixed column set.
+        // columns, so the registry's generic writer is the whole implementation. CustomAsset is not
+        // declared here on purpose: its fields are governed per profile and have no fixed column
+        // set, so it projects one row per profile field through a specialized writer instead
+        // (PostgresSecurityMasterStore.CustomAssetProfileFields, migration 064).
         new(
             AssetClass: "CommercialPaper",
             TableName: "commercial_paper_projection",

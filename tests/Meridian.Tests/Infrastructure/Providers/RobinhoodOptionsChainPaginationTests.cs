@@ -159,7 +159,8 @@ public sealed class RobinhoodOptionsChainPaginationTests
             Hosts.Add(request.RequestUri!.Host);
             Authorizations.Add(request.Headers.Authorization?.ToString());
             var response = respond(request, ++Requests);
-            if (response.Content is TrackingContent content) Contents.Add(content);
+            if (response.Content is TrackingContent content)
+                Contents.Add(content);
             return Task.FromResult(response);
         }
     }

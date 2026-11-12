@@ -22,7 +22,7 @@ using Meridian.Reporting;
 using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 using Meridian.Tests.TestSupport;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;

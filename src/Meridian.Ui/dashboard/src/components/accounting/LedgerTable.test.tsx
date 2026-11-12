@@ -58,4 +58,22 @@ describe("LedgerTable", () => {
     await userEvent.keyboard("{Enter}");
     expect(onSort).toHaveBeenCalledWith("date", 1);
   });
+
+  it("makes the scroll region keyboard-focusable with an accessible name", () => {
+    render(<LedgerTable rows={rows} currency="USD" />);
+    const region = screen.getByRole("region", { name: "General ledger" });
+    expect(region).toHaveAttribute("tabindex", "0");
+  });
+
+  it("renders a single full-width empty row when there are no journal entries", () => {
+    render(<LedgerTable rows={[]} currency="USD" showAccount />);
+    const cell = screen.getByText("No journal entries");
+    expect(cell).toHaveAttribute("colspan", "7");
+    expect(cell.closest("tbody")?.querySelectorAll("tr")).toHaveLength(1);
+  });
+
+  it("does not render the empty row when entries exist", () => {
+    render(<LedgerTable rows={rows} currency="USD" />);
+    expect(screen.queryByText("No journal entries")).toBeNull();
+  });
 });

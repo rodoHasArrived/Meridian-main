@@ -38,6 +38,22 @@ export function stepCrosshairIndex(current: number | null, key: string, count: n
   }
 }
 
+/** True when a chart should render its interaction overlay (it has points and a listener). */
+export function isChartInteractive(
+  count: number,
+  onCrosshairChange?: (index: number | null) => void,
+  onPointActivate?: (index: number) => void
+): boolean {
+  return count > 0 && !!(onCrosshairChange || onPointActivate);
+}
+
+// Keyboard focus ring for the overlay. A stylesheet rule because `:focus-visible` cannot be
+// expressed inline; the negative offset keeps the ring inside the svg viewport, which clips.
+const OVERLAY_CLASS = "meridian-chart-overlay";
+const OVERLAY_FOCUS_CSS =
+  `.${OVERLAY_CLASS}{outline:none}` +
+  `.${OVERLAY_CLASS}:focus-visible{outline:var(--focus-ring, 2px solid var(--focus, #2D6FB3));outline-offset:-2px}`;
+
 export interface ChartInteractionOverlayProps {
   /** Plot-area geometry in SVG user units. */
   x: number;
@@ -57,7 +73,9 @@ export interface ChartInteractionOverlayProps {
  * Transparent, focusable overlay that turns pointer and keyboard input over a
  * chart's plot area into crosshair-move and point-activate events. Rendered last
  * (on top) so it captures events; its fill is transparent so chart visuals show
- * through. Exposes slider semantics keyed to the point index.
+ * through. Exposes slider semantics keyed to the point index, so it must not be nested
+ * inside a `role="img"` element (see `ChartSvg`), which would hide it from assistive
+ * technology.
  */
 export function ChartInteractionOverlay({
   x,
@@ -70,7 +88,7 @@ export function ChartInteractionOverlay({
   onPointActivate,
   ariaLabel
 }: ChartInteractionOverlayProps) {
-  if (count <= 0 || (!onCrosshairChange && !onPointActivate)) {
+  if (!isChartInteractive(count, onCrosshairChange, onPointActivate)) {
     return null;
   }
 
@@ -110,23 +128,27 @@ export function ChartInteractionOverlay({
   };
 
   return (
-    <rect
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      fill="transparent"
-      style={{ cursor: "crosshair", outline: "none" }}
-      tabIndex={0}
-      role="slider"
-      aria-label={ariaLabel}
-      aria-valuemin={0}
-      aria-valuemax={Math.max(0, count - 1)}
-      aria-valuenow={crosshairIndex ?? undefined}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={() => onCrosshairChange?.(null)}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-    />
+    <>
+      <style>{OVERLAY_FOCUS_CSS}</style>
+      <rect
+        className={OVERLAY_CLASS}
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill="transparent"
+        style={{ cursor: "crosshair" }}
+        tabIndex={0}
+        role="slider"
+        aria-label={ariaLabel}
+        aria-valuemin={0}
+        aria-valuemax={Math.max(0, count - 1)}
+        aria-valuenow={crosshairIndex ?? undefined}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={() => onCrosshairChange?.(null)}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+      />
+    </>
   );
 }

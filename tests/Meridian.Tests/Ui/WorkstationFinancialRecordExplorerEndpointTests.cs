@@ -964,6 +964,74 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplyColumnOnlyPersonalView()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-columns-view", withBreaks: false));
+        var full = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger", ServerJsonOptions);
+        full.Should().NotBeNull();
+        full!.Rows.Should().NotBeEmpty();
+
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "Column-only view", "Retains presentation without narrowing the run.", string.Empty,
+                [], ["accountName", "balance"]),
+            ServerJsonOptions);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
+        saved.Should().NotBeNull();
+        saved!.Filters.Should().BeEmpty();
+        saved.SearchText.Should().BeEmpty();
+        saved.ColumnIds.Should().Equal("accountName", "balance");
+
+        var selected = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?viewId={Uri.EscapeDataString(saved.ViewId)}",
+            ServerJsonOptions);
+        selected.Should().NotBeNull();
+        selected!.Rows.Select(row => row.RecordId).Should().Equal(full.Rows.Select(row => row.RecordId));
+        selected.SelectedRecord.Should().NotBeNull();
+        selected.SavedViews.Should().ContainSingle(view => view.ViewId == saved.ViewId && view.IsActive);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldNotApplyAnotherOperatorsPersonalView()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-private-view", withBreaks: false));
+
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "Private cash view", "Owned by the creating operator.", "Cash",
+                [new("account-type", "Account Type", "Asset")], ["accountName", "balance"]),
+            ServerJsonOptions);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
+        saved.Should().NotBeNull();
+
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "other-operator");
+        var foreign = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?viewId={Uri.EscapeDataString(saved!.ViewId)}",
+            ServerJsonOptions);
+
+        foreign.Should().NotBeNull();
+        foreign!.Rows.Should().BeEmpty("unresolved personal identities must remain fail closed");
+        foreign.SelectedRecord.Should().BeNull();
+        foreign.SavedViews.Should().NotContain(view => view.ViewId == saved.ViewId);
+        foreign.SavedViews.Should().NotContain(view => view.IsActive);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplyDimensionFilterOnServer()
     {
         await using var app = await CreateAppAsync(

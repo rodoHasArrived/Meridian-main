@@ -208,6 +208,74 @@ public sealed record PaperSessionFillAppendResult(
     string? ExistingCanonicalHash = null);
 
 /// <summary>
+/// One durable daily variation-margin settlement of a paper futures position. Its identity is the
+/// account, symbol and trading date, so a position settles at most once per trading day; replay
+/// applies it at <see cref="SettledAt"/> among the session's fills.
+/// </summary>
+/// <param name="SchemaVersion">Record schema version.</param>
+/// <param name="AccountId">The portfolio account holding the position.</param>
+/// <param name="Symbol">The futures symbol.</param>
+/// <param name="TradingDate">The trading day being settled.</param>
+/// <param name="SettlementPrice">The per-unit price the position is settled to.</param>
+/// <param name="SettledAt">When the settlement takes effect, ordered against fill timestamps.</param>
+public sealed record PaperSessionSettlementRecord(
+    int SchemaVersion,
+    string AccountId,
+    string Symbol,
+    DateOnly TradingDate,
+    decimal SettlementPrice,
+    DateTimeOffset SettledAt)
+{
+    /// <summary>The schema version written by this build.</summary>
+    public const int CurrentSchemaVersion = 1;
+
+    /// <summary>Creates a current-schema settlement record.</summary>
+    public static PaperSessionSettlementRecord Create(
+        string accountId,
+        string symbol,
+        DateOnly tradingDate,
+        decimal settlementPrice,
+        DateTimeOffset settledAt)
+    {
+        var record = new PaperSessionSettlementRecord(
+            CurrentSchemaVersion, accountId, symbol, tradingDate, settlementPrice, settledAt);
+        record.Validate();
+        return record;
+    }
+
+    /// <summary>The once-per-trading-day identity: account, normalized symbol and date.</summary>
+    public string Key => string.Create(
+        System.Globalization.CultureInfo.InvariantCulture,
+        $"{AccountId}|{Symbol.Trim().ToUpperInvariant()}|{TradingDate:yyyy-MM-dd}");
+
+    /// <summary>Throws <see cref="InvalidDataException"/> when the record cannot be applied.</summary>
+    public void Validate()
+    {
+        if (SchemaVersion != CurrentSchemaVersion)
+            throw new InvalidDataException($"Unsupported paper-session settlement schema version {SchemaVersion}.");
+        if (string.IsNullOrWhiteSpace(AccountId))
+            throw new InvalidDataException("A paper-session settlement requires an account.");
+        if (string.IsNullOrWhiteSpace(Symbol))
+            throw new InvalidDataException("A paper-session settlement requires a symbol.");
+        if (SettlementPrice <= 0m)
+            throw new InvalidDataException($"Paper-session settlement for '{Symbol}' has a non-positive price {SettlementPrice}.");
+    }
+}
+
+/// <summary>Outcome of an idempotent durable settlement append.</summary>
+public enum PaperSessionSettlementAppendStatus
+{
+    /// <summary>The settlement was appended.</summary>
+    Added = 0,
+
+    /// <summary>The same settlement (key and price) was already recorded.</summary>
+    ExistingSame = 1,
+
+    /// <summary>The key was already settled at a different price.</summary>
+    Conflict = 2
+}
+
+/// <summary>
 /// Storage abstraction for paper trading session persistence.
 /// Implementations may store session data in-memory, on the local file system,
 /// or in any other durable backend.
@@ -285,6 +353,28 @@ public interface IPaperSessionStore
 
     /// <summary>Returns the order-state history for <paramref name="sessionId"/>, in order.</summary>
     Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Durably appends a daily variation-margin settlement unless its key (account, symbol,
+    /// trading date) is already recorded. Implementations must serialize concurrent appends and
+    /// must not complete until the record is crash-durable. The default fails closed, so a store
+    /// that cannot persist settlements never lets one reach the portfolio.
+    /// </summary>
+    Task<PaperSessionSettlementAppendStatus> TryAppendSettlementAsync(
+        string sessionId,
+        PaperSessionSettlementRecord record,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            $"Paper-session store '{GetType().FullName}' does not persist variation-margin settlements.");
+
+    /// <summary>
+    /// Returns the recorded variation-margin settlements for <paramref name="sessionId"/>, in
+    /// append order. The default returns none, which is exact for stores that cannot append them.
+    /// </summary>
+    Task<IReadOnlyList<PaperSessionSettlementRecord>> LoadSettlementsAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PaperSessionSettlementRecord>>([]);
 
     /// <summary>
     /// Returns the persisted ledger journal entries for <paramref name="sessionId"/>.

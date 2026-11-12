@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution;
@@ -58,7 +59,7 @@ public sealed partial class OrderManagementSystem
             var matchedClientIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var brokerOrder in brokerOrders)
             {
-                if (IsTerminalStatus(brokerOrder.Status))
+                if (OrderStatusFacts.IsTerminal(brokerOrder.Status))
                     continue;
 
                 var matchingClientId = brokerIds.GetValueOrDefault(brokerOrder.OrderId);

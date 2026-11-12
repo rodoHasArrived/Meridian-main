@@ -12,4 +12,7 @@
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Meridian.Tests" />
+  </ItemGroup>
 </Project>

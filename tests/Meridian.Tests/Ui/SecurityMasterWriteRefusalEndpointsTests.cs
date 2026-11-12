@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Storage.SecurityMaster;
@@ -259,23 +260,23 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         // amendment carries over from the stored row. This answered 500 before.
         var securityId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
-        var terms = JsonNode.Parse(AheadOfWriteFixtures.SwapAtWriteVersion)!.AsObject();
-        terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
-        var swapTerms = JsonSerializer.SerializeToElement(terms);
+        // Bond retains the readable-before-writable envelope tier (v4 companion above v3).
+        // Swap v2 is now an admitted envelope; its leg conventions have their own authoring gate.
+        var terms = AheadOfWriteFixtures.BondTerms(stamp: 4, withBlock: false);
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(Detail(securityId, "Swap", swapTerms, version: 2));
+            .Returns(Detail(securityId, "Bond", terms, version: 2));
         using var harness = new CanonicalServiceHarness();
-        harness.Seed(securityId, "Swap", swapTerms);
+        harness.Seed(securityId, "Bond", terms);
         await using var app = await CreateAppAsync(queryService, harness.Service);
 
         using var response = await app.GetTestClient().PutAsJsonAsync(
-            $"/api/security-master/{securityId}/terms/legs",
-            TermBlockRequest(expectedVersion: 2, swapTerms.GetProperty("legs")),
+            $"/api/security-master/{securityId}/terms/principalSchedule",
+            TermBlockRequest(expectedVersion: 2, JsonSerializer.SerializeToElement(Array.Empty<object>())),
             WebJson);
 
         await AssertRefusedAsync(response,
-            "assetClassTermsVersion '2' for asset class 'Swap' is readable but not writable on this node: it reads " +
-            "versions 1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.");
+            "assetClassTermsVersion '4' for asset class 'Bond' is readable but not writable on this node: it reads " +
+            "versions 1 through 4 and writes version 3. Submit the terms at version 3, or apply the change from a node that writes version 4.");
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -409,6 +410,15 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         await harness.AssertNothingWrittenAsync();
     }
 
+    // These fault fixtures represent events written before exact equity-capital retention.
+    // A current event with a complete equityCapital module can safely replay without its flat copy.
+    private static SecurityEconomicDefinitionRecord WithoutHistoricalEquityReplayEvidence(SecurityEconomicDefinitionRecord stored)
+    {
+        var economic = JsonNode.Parse(stored.EconomicTerms.GetRawText())!.AsObject();
+        economic.Remove("equityCapital");
+        return stored with { LegacyAssetSpecificTerms = null, EconomicTerms = JsonSerializer.SerializeToElement(economic) };
+    }
+
     [Fact]
     public async Task Amend_OfAStoredEquityEventWithoutItsRetainedTerms_Returns500WithoutTheReason()
     {
@@ -420,7 +430,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             securityId,
             "Equity",
             JsonSerializer.SerializeToElement(new { schemaVersion = 1, shareClass = "A", classification = "Common" }),
-            stored => stored with { LegacyAssetSpecificTerms = null });
+            WithoutHistoricalEquityReplayEvidence);
         var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
         await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
 
@@ -708,7 +718,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             securityId,
             "Equity",
             StoredPreferredEquity,
-            stored => stored with { LegacyAssetSpecificTerms = null });
+            WithoutHistoricalEquityReplayEvidence);
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(PreferredEquityDetail(securityId));
         var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
@@ -769,6 +779,82 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
 
         var fault = await AssertServerFaultAsync(response, handlerLog, undisclosed: "sensitive implementation detail");
         fault.Should().BeSameAs(thrown);
+    }
+
+    [Theory]
+    [InlineData(AmendRoute)]
+    [InlineData(TermBlockRoute)]
+    [InlineData(PreferredEquityTermsRoute)]
+    [InlineData(ConvertibleEquityTermsRoute)]
+    [InlineData(LegacyPreferredTermsRoute)]
+    public async Task DirectTermWriteRoute_ServiceGovernedRefusal_Returns403WithTheSharedGuidance(string route)
+    {
+        // The service enforces RequireGovernedTermAmendments itself (remediation slice 1). Its refusal
+        // answers the same 403 problem as the routes' own early check, even when this host's copy of the
+        // setting still read off when the route checked it.
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        using var request = ArrangeServiceThrowing(
+            route, queryService, service, new Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException());
+        await using var app = await CreateAppAsync(queryService, service);
+
+        using var response = await app.GetTestClient().SendAsync(request);
+
+        // The host's shared Problem Details writer titles every 403 "Access Denied"; the guidance is the detail.
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("detail").GetString()
+            .Should().Be(Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail);
+    }
+
+    [Theory]
+    [InlineData(AmendRoute, false)]
+    [InlineData(TermBlockRoute, false)]
+    [InlineData(PreferredEquityTermsRoute, false)]
+    [InlineData(ConvertibleEquityTermsRoute, false)]
+    [InlineData(LegacyPreferredTermsRoute, false)]
+    [InlineData(AmendRoute, true)]
+    [InlineData(TermBlockRoute, true)]
+    [InlineData(PreferredEquityTermsRoute, true)]
+    [InlineData(ConvertibleEquityTermsRoute, true)]
+    [InlineData(LegacyPreferredTermsRoute, true)]
+    public async Task DirectTermWriteRoute_InstitutionalProfile_Returns403BeforeReachingTheService(
+        string route, bool byProductionComposition)
+    {
+        // RequireGovernedTermAmendments is not configured here: the Institutional profile, declared by
+        // the option or implied by a production composition, is what refuses the direct write.
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        using var request = ArrangeServiceThrowing(
+            route, queryService, service, new InvalidOperationException("the service must not be reached"));
+        await using var app = await CreateAppAsync(
+            queryService, service, institutionalByProductionComposition: byProductionComposition);
+
+        using var response = await app.GetTestClient().SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("detail").GetString()
+            .Should().Be(Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail);
+        service.ReceivedCalls().Should().BeEmpty("the route refuses before the amendment");
+        queryService.ReceivedCalls().Should().BeEmpty("and before it reads the request's security");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateRoute_InstitutionalProfile_IsNotATermAmendmentAndStillReachesTheService(bool byProductionComposition)
+    {
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        using var request = ArrangeServiceThrowing(
+            CreateRoute, queryService, service, new SecurityMasterWriteRefusedException("refusal reason"));
+        await using var app = await CreateAppAsync(
+            queryService, service, institutionalByProductionComposition: byProductionComposition);
+
+        using var response = await app.GetTestClient().SendAsync(request);
+
+        await AssertRefusedAsync(response, "refusal reason");
     }
 
     private static async Task AssertRefusedAsync(HttpResponseMessage response, string expectedDetail)
@@ -882,7 +968,8 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         ISecurityMasterQueryService queryService,
         ISecurityMasterService service,
-        ILogger<MeridianApiExceptionHandler>? handlerLog = null)
+        ILogger<MeridianApiExceptionHandler>? handlerLog = null,
+        bool? institutionalByProductionComposition = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -891,13 +978,29 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         builder.WebHost.UseTestServer();
 
         // The option is init-only, so bind it the way the host does. Off, the governed-route
-        // requirement lets the direct term-amendment routes through to the service.
-        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        // requirement lets the direct term-amendment routes through to the service. The Institutional
+        // cases leave the setting unconfigured and reach the profile by the option or by the posture.
+        builder.Configuration.AddInMemoryCollection(institutionalByProductionComposition switch
         {
-            [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments)}"] = "false"
+            null => new Dictionary<string, string?>
+            {
+                [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments)}"] = "false"
+            },
+            false => new Dictionary<string, string?>
+            {
+                [$"{SecurityMasterWorkbenchOptions.SectionName}:{nameof(SecurityMasterWorkbenchOptions.GovernanceProfile)}"] = "Institutional"
+            },
+            true => [],
         });
+        if (institutionalByProductionComposition == true)
+        {
+            builder.Services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        }
+
         builder.Services.Configure<SecurityMasterWorkbenchOptions>(
             builder.Configuration.GetSection(SecurityMasterWorkbenchOptions.SectionName));
+        // The seam the routes read the effective requirement from, registered as a host registers it.
+        builder.Services.AddSecurityMasterGovernanceRequirements();
         builder.Services.AddSingleton(queryService);
         builder.Services.AddSingleton(service);
         // The deployed host's Problem Details writer and exception handler, so a refusal and a fault

@@ -57,6 +57,10 @@ The Linux boundary is process-group based rather than cgroup based, so repositor
 not deliberately create a new session or otherwise detach themselves from the inherited process
 group.
 
+## Audit hardening (2026-11)
+
+- **Repository path boundary.** `RepoPathService.ResolveInsideRoot` compares paths case-sensitively except on Windows and macOS. It resolves symbolic links on every existing path component before checking containment, and tolerates a trailing separator in `MDC_REPO_ROOT`. A symlink inside the repository that points outside it is rejected.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

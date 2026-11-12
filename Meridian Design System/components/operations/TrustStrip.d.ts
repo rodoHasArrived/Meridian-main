@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Trust strip — mirrors `.workstation-trust-strip`. The masthead readiness band: a
  * row of label/value items tinted by `state` (ready · review · blocked · pending),
@@ -24,4 +25,4 @@ export interface TrustStripProps {
   items: TrustStripItem[];
   className?: string;
 }
-export declare function TrustStrip(props: TrustStripProps): JSX.Element;
+export declare function TrustStrip(props: TrustStripProps): React.JSX.Element;

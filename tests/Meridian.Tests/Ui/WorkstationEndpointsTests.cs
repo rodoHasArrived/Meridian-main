@@ -45,11 +45,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using IReconciliationApiService = Meridian.Contracts.Reconciliation.IReconciliationApiService;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
-using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
-using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
-using StatementImportSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportSummaryDto;
+using ReconciliationCaseSummaryDto = Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
+using ReconciliationQueueAccountStatusDto = Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
+using StatementImportSummaryDto = Meridian.Contracts.Reconciliation.StatementImportSummaryDto;
 
 namespace Meridian.Tests.Ui;
 
@@ -244,7 +244,11 @@ public sealed partial class WorkstationEndpointsTests
         research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
         research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
             .Should()
-            .Contain("workstation");
+            .Contain("Retained");
+        research.RootElement.GetProperty("plotTool").GetProperty("analyticsEvidenceStatus").GetString().Should().Be("Unavailable");
+        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("points").GetArrayLength().Should().Be(0);
+        research.RootElement.GetProperty("plotTool").GetProperty("statistics").GetProperty("distributionBars").GetArrayLength().Should().Be(0);
+        research.RootElement.GetProperty("plotTool").GetProperty("statistics").GetProperty("sampleRows").GetArrayLength().Should().Be(0);
         research.RootElement.GetProperty("plotTool").GetProperty("tabs").GetArrayLength().Should().Be(2);
 
         research.RootElement.GetProperty("metrics").EnumerateArray()
@@ -907,7 +911,7 @@ public sealed partial class WorkstationEndpointsTests
                 fundAccountId,
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+            .Returns(new Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
                 fundAccountId,
                 "test-fund-profile"));
         statementAuthority
@@ -915,7 +919,7 @@ public sealed partial class WorkstationEndpointsTests
                 "run-ops-1",
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new Meridian.Ui.Shared.Contracts.Reconciliation.StatementReconciliationRunAuthorization(
+            .Returns(new Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization(
                 "run-ops-1",
                 fundAccountId,
                 "test-fund-profile",
@@ -1718,6 +1722,8 @@ public sealed partial class WorkstationEndpointsTests
         var brokerageNotes = string.Join(" ", brokerage.GetProperty("notes").EnumerateArray().Select(n => n.GetString()));
         brokerageNotes.Should().Contain("blocked");
         brokerageNotes.Should().Contain("paper trading");
+        trading.RootElement.GetProperty("positions").GetArrayLength().Should().Be(0,
+            "an empty financial population must not contain an informational placeholder holding");
     }
 
     [Fact]

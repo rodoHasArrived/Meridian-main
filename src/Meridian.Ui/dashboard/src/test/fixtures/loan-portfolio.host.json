@@ -26,7 +26,9 @@
       "originationDate": "2026-03-22",
       "maturityDate": "2029-03-22",
       "lastAccrualDate": null,
-      "lastPaymentDate": null
+      "lastPaymentDate": null,
+      "prepaidInterest": 0,
+      "unappliedCash": 0
     },
     {
       "loanId": "00000000-0000-0000-0000-000000000002",
@@ -43,7 +45,9 @@
       "originationDate": "2026-03-22",
       "maturityDate": "2029-03-22",
       "lastAccrualDate": null,
-      "lastPaymentDate": null
+      "lastPaymentDate": null,
+      "prepaidInterest": 0,
+      "unappliedCash": 0
     }
   ],
   "currencyTotals": [

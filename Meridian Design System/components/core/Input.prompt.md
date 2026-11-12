@@ -1,4 +1,4 @@
-Mono text field on white paper — 34px tall, hairline border, copper focus ring. Optional small-caps label and error state.
+Mono text field on white paper — 34px tall, hairline border, terracotta focus ring. Optional small-caps label and error state.
 
 ```jsx
 <Input label="Symbol" placeholder="AAPL" />

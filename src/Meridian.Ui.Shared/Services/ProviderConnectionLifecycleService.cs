@@ -93,6 +93,26 @@ public sealed partial class ProviderConnectionLifecycleService
         };
     }
 
+    /// <summary>
+    /// Lists the retained connections of one provider family that <paramref name="tenantId"/> owns
+    /// completely (unique id, external account and environment). Other tenants' connections,
+    /// unassigned connections and ambiguous duplicate ids are never returned.
+    /// </summary>
+    public IReadOnlyList<OwnedProviderConnection> GetOwnedConnectionsForTenant(string tenantId, string providerId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        var descriptor = RequireDescriptor(providerId);
+        return (ConfigStore.LoadConfig(_configStore.ConfigPath).ProviderConnections?.Connections ?? [])
+            .GroupBy(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() == 1).Select(group => group.Single())
+            .Where(c => string.Equals(c.TenantId, tenantId, StringComparison.Ordinal) &&
+                !string.IsNullOrWhiteSpace(c.ExternalAccountId) && !string.IsNullOrWhiteSpace(c.CredentialEnvironment) &&
+                string.Equals(ProviderCredentialCatalog.NormalizeProviderId(c.ProviderFamilyId), descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(c => c.ConnectionId, StringComparer.OrdinalIgnoreCase)
+            .Select(c => new OwnedProviderConnection(c.ConnectionId, c.CredentialEnvironment!))
+            .ToArray();
+    }
+
     private ProviderConnectionConfig RequireOwnedConnection(string connectionId, string tenantId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
@@ -651,3 +671,6 @@ public sealed partial class ProviderConnectionLifecycleService
             => store.RecordScopedVerificationAsync(update, scope, ct);
     }
 }
+
+/// <summary>Identity of a retained connection one tenant owns; carries no credential material.</summary>
+public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);

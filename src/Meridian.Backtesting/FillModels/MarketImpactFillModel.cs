@@ -19,6 +19,14 @@ internal sealed class MarketImpactFillModel(
     decimal maxParticipationRate = 0m,
     FillConservatism conservatism = FillConservatism.Conservative) : IFillModel
 {
+    /// <summary>
+    /// Upper bound on the square-root impact fraction. Without a bound, a thin bar (for example
+    /// 200 shares against a volume of 2) yields impact of 100% or more, which drives a sell fill
+    /// price to zero or below and corrupts cash and P&amp;L. Half the base price is already far
+    /// beyond any realistic single-bar impact, so the cap only guards degenerate inputs.
+    /// </summary>
+    internal const decimal MaxImpactFraction = 0.5m;
+
     private readonly decimal _maxParticipationRate = Math.Clamp(maxParticipationRate, 0m, 1m);
 
     public OrderFillResult TryFill(Order order, MarketEvent evt)
@@ -46,11 +54,16 @@ internal sealed class MarketImpactFillModel(
 
         if (!TryResolveBaseFillPrice(bar, order, executableType.Value, isBuy, newlyTriggered, out var baseFillPrice))
         {
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
+        }
+
+        // A zero-volume bar has no traded liquidity to fill against. Treating it as volume 1
+        // turned any order into a huge participation rate (and unbounded impact), so leave the
+        // order working until a bar with volume arrives — the same outcome the participation cap
+        // already produces for such bars.
+        if (bar.Volume <= 0)
+        {
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
         var remainingAbsolute = order.RemainingQuantity;
@@ -58,26 +71,19 @@ internal sealed class MarketImpactFillModel(
 
         if (fillableAbsolute == 0)
         {
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
-        if (fillableAbsolute < remainingAbsolute && !order.AllowPartialFills)
+        if (fillableAbsolute < remainingAbsolute && !BarTimeInForce.AllowsPartialFill(order))
         {
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
         // Calculate participation rate and market impact
-        var barVolume = bar.Volume > 0 ? bar.Volume : 1L;
-        var participationRate = (decimal)fillableAbsolute / barVolume;
-        var impactFraction = impactCoefficient * (decimal)Math.Sqrt((double)participationRate);
+        var participationRate = (decimal)fillableAbsolute / bar.Volume;
+        var impactFraction = Math.Min(
+            MaxImpactFraction,
+            impactCoefficient * (decimal)Math.Sqrt((double)participationRate));
 
         // Determine number of partial fills based on order size vs. bar volume
         var numFills = participationRate > 0.05m
@@ -135,29 +141,38 @@ internal sealed class MarketImpactFillModel(
 
         if (fills.Count == 0)
         {
-            return new OrderFillResult(
-                order with { IsTriggered = triggered },
-                [],
-                RemoveOrder: false,
-                WasTriggered: triggered && !order.IsTriggered);
+            return BarTimeInForce.NoFillThisBar(order, triggered);
         }
 
         var totalFilled = fills.Sum(static f => f.FilledQuantity);
+        var isFullyFilled = order.RemainingQuantity - Math.Abs(totalFilled) == 0;
+
+        // Slices whose impact-adjusted price crossed the limit were skipped above, so the
+        // executed total can fall short even when the volume cap allowed the whole order. An
+        // order that disallows partial fills (or is fill-or-kill) must then take nothing.
+        if (!isFullyFilled && !BarTimeInForce.AllowsPartialFill(order))
+        {
+            return BarTimeInForce.NoFillThisBar(order, triggered);
+        }
+
+        // An immediate-or-cancel order keeps what filled and cancels the unfilled remainder
+        // instead of staying working across later bars.
+        var cancelRemainder = !isFullyFilled && BarTimeInForce.IsImmediate(order);
         var updated = order with
         {
             FilledQuantity = order.FilledQuantity + totalFilled,
             CommissionCharged = commissionOrder.CommissionCharged,
             FilledNotional = commissionOrder.FilledNotional,
-            Status = order.RemainingQuantity - Math.Abs(totalFilled) == 0
+            Status = isFullyFilled
                 ? OrderStatus.Filled
-                : OrderStatus.PartiallyFilled,
+                : cancelRemainder ? OrderStatus.Cancelled : OrderStatus.PartiallyFilled,
             IsTriggered = triggered
         };
 
         return new OrderFillResult(
             updated,
             fills,
-            RemoveOrder: updated.IsComplete,
+            RemoveOrder: updated.IsComplete || cancelRemainder,
             WasTriggered: triggered && !order.IsTriggered);
     }
 

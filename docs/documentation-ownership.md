@@ -98,3 +98,9 @@ after arranging LFS hosting, backup, and fresh-clone verification. This rewrites
 requires coordination with all consumers; it is not part of routine remediation. A new LFS
 rule cannot remove blobs already present in historical commits. Retained evidence must not
 be deleted merely to reduce the working tree or clone size.
+
+Synchronization with upstream `63e84bb978b5a8b8cffbce3820b6842aa907423f` retains 329 scoped PNGs
+(90,112,988 bytes). The upstream removal of 11 duplicate UI diagrams is preserved, and two new
+upstream screenshots are included. All retained image bytes match the newest upstream version;
+the inventory's `upstreamSynchronization` section records their verified local LFS hashes
+without rewriting the original 338-image capture. Remote LFS upload remains a publication step.

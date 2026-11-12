@@ -73,7 +73,7 @@ export function SkeletonCardRow({ cards = 4, className }: SkeletonCardRowProps) 
       {Array.from({ length: Math.max(1, cards) }).map((_, index) => (
         <div
           key={index}
-          className="space-y-3 rounded-[2px] border border-border bg-card p-4"
+          className="space-y-3 rounded-[var(--radius-card)] border border-border bg-card p-4"
         >
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-6 w-16" />
@@ -101,7 +101,7 @@ export function SkeletonGrid({ rows = 5, columns = 4, className, showHeader = tr
 
   return (
     <div
-      className={cn("overflow-hidden rounded-[2px] border border-border", className)}
+      className={cn("overflow-hidden rounded-[var(--radius-card)] border border-border", className)}
       aria-hidden="true"
     >
       {showHeader ? (
@@ -173,10 +173,10 @@ export function SkeletonForm({ fields = 4, className, showAction = true }: Skele
       {Array.from({ length: Math.max(1, fields) }).map((_, index) => (
         <div key={index} className="space-y-1.5">
           <Skeleton className="h-3 w-28" />
-          <Skeleton className="h-9 w-full rounded-[2px]" />
+          <Skeleton className="h-9 w-full rounded-[var(--radius-button)]" />
         </div>
       ))}
-      {showAction ? <Skeleton className="h-9 w-32 rounded-[2px]" /> : null}
+      {showAction ? <Skeleton className="h-9 w-32 rounded-[var(--radius-button)]" /> : null}
     </div>
   );
 }

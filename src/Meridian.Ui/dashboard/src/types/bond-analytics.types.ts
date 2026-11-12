@@ -1,6 +1,7 @@
 /** Shared bond analytics read contract. Monetary results are per 100 face; rates are annual fractions. */
 export type BondDecimal = number | string;
 export type BondYieldConvention = "NominalPeriodic" | "AnnualEffective" | "Simple";
+export type BondCalculationVersion = "bond-analytics-v1" | "bond-analytics-v2" | "bond-analytics-v3";
 
 export interface BondCalculationContext {
   asOf: string;
@@ -39,6 +40,8 @@ export interface BondAnalyticsResult {
   modifiedDuration: BondDecimal | null;
   convexity: BondDecimal | null;
   dv01: BondDecimal | null;
+  /** Dirty-price change per 100 face for +1 bp coupon spread at unchanged projected-flow yield. */
+  spreadDv01?: BondDecimal | null;
   yieldToWorst: BondDecimal | null;
   cashFlows: Array<{
     flowId: string;
@@ -48,6 +51,16 @@ export interface BondAnalyticsResult {
     interest: BondDecimal;
     principal: BondDecimal;
     timeInYears: BondDecimal;
+    /** Server-selected fixing evidence; absent for v1/v2. Index and coupon rates are annual fractions. */
+    floatingCoupon?: {
+      resetDate: string;
+      isObserved: boolean;
+      indexName: string;
+      indexRate: BondDecimal;
+      spreadBps: BondDecimal;
+      couponRate: BondDecimal;
+      source: string;
+    } | null;
   }>;
   exerciseYields: Array<{
     kind: string;
@@ -70,6 +83,7 @@ export interface BondAnalyticsResult {
 export interface BondAnalyticsQuery {
   asOf: string;
   settlementDate: string;
+  calculationVersion?: BondCalculationVersion;
   knownAt?: string;
   cleanPrice?: string;
   yield?: string;

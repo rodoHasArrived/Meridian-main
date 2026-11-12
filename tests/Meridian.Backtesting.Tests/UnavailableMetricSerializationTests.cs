@@ -34,6 +34,31 @@ public sealed class UnavailableMetricSerializationTests
         double.IsNaN(restored.ProfitFactor).Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    public void Metrics_InfiniteWinRateIsRejectedRatherThanPromotedToAValidOutcome(double value)
+    {
+        var metrics = EmptyMetrics() with { WinRate = value };
+
+        Action serialize = () => JsonSerializer.Serialize(metrics);
+
+        serialize.Should().Throw<JsonException>();
+    }
+
+    [Theory]
+    [InlineData("Infinity")]
+    [InlineData("-Infinity")]
+    public void Metrics_RetainedInfiniteWinRateIsRejected(string value)
+    {
+        var json = JsonSerializer.Serialize(EmptyMetrics() with { WinRate = 0 });
+        json = json.Replace("\"WinRate\":0", $"\"WinRate\":\"{value}\"", StringComparison.Ordinal);
+
+        Action deserialize = () => JsonSerializer.Deserialize<BacktestMetrics>(json);
+
+        deserialize.Should().Throw<JsonException>();
+    }
+
     private static BacktestMetrics EmptyMetrics() => BacktestMetricsEngine.Compute([], [], [],
         new BacktestRequest(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 2)));
 }

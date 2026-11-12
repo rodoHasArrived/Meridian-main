@@ -59,6 +59,43 @@ public sealed class OrderCommissionTests
         third.UpdatedOrder.FilledNotional.Should().Be(notional);
     }
 
+    [Theory]
+    [InlineData("bar")]
+    [InlineData("impact")]
+    public void ImmediateOrder_PartialFillChargesOneMinimumAndCancelsTheRemainder(string modelKind)
+    {
+        var model = CreateModel(modelKind, new PerShareCommissionModel(0.005m, 1m));
+        var order = MarketOrder(100) with { TimeInForce = TimeInForce.ImmediateOrCancel };
+
+        var result = model.TryFill(order, Event(modelKind, 100m));
+        var afterCancellation = model.TryFill(result.UpdatedOrder, Event(modelKind, 101m));
+
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Cancelled);
+        result.RemoveOrder.Should().BeTrue();
+        result.Fills.Sum(fill => fill.FilledQuantity).Should().Be(40);
+        result.Fills.Sum(fill => fill.Commission).Should().Be(1m);
+        result.UpdatedOrder.CommissionCharged.Should().Be(1m);
+        result.UpdatedOrder.FilledNotional.Should().Be(4_000m);
+        afterCancellation.Fills.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("bar")]
+    [InlineData("impact")]
+    public void FillOrKill_InsufficientLiquidityDoesNotConsumeCommissionMinimum(string modelKind)
+    {
+        var model = CreateModel(modelKind, new PerShareCommissionModel(0.005m, 1m));
+        var order = MarketOrder(100) with { TimeInForce = TimeInForce.FillOrKill };
+
+        var result = model.TryFill(order, Event(modelKind, 100m));
+
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Cancelled);
+        result.RemoveOrder.Should().BeTrue();
+        result.Fills.Should().BeEmpty();
+        result.UpdatedOrder.CommissionCharged.Should().Be(0m);
+        result.UpdatedOrder.FilledNotional.Should().Be(0m);
+    }
+
     private static IFillModel CreateModel(string kind, ICommissionModel commission) => kind switch
     {
         "bar" => new BarMidpointFillModel(commission, slippageBasisPoints: 0m, maxParticipationRate: 1m),

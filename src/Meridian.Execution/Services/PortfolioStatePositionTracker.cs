@@ -73,16 +73,21 @@ public sealed class PortfolioStatePositionTracker : IPositionTracker
 
     private static PositionState ToPositionState(IPosition position, DateTimeOffset asOf)
     {
-        var quantity = (decimal)position.Quantity;
+        // ExactQuantity, not the whole-share Quantity: rounding a 0.5-share holding to 0 would
+        // hide it from position limits and derive the mark from the wrong divisor below.
+        var quantity = position.ExactQuantity;
 
         // IPosition exposes unrealised P&L but not the current mark directly. Recover the mark from
-        // the identity UnrealizedPnl = (MarketPrice - AverageCostBasis) * Quantity so that the
-        // projected PositionState (whose MarketValue and UnrealizedPnl are derived from MarketPrice)
-        // stays internally consistent with the source portfolio. A flat position has no meaningful
+        // the identity UnrealizedPnl = (MarketPrice - AverageCostBasis) * Quantity * ContractMultiplier
+        // so that the projected PositionState (whose MarketValue and UnrealizedPnl are derived from
+        // MarketPrice) stays internally consistent with the source portfolio. The cost basis is a
+        // per-unit quote while the P&L is money, so an option's P&L must be divided back by its
+        // multiplier or the recovered mark is inflated by it. A flat position has no meaningful
         // mark, so fall back to the average cost basis.
+        var multiplier = position.ContractMultiplier > 0m ? position.ContractMultiplier : 1m;
         var marketPrice = quantity == 0m
             ? position.AverageCostBasis
-            : position.AverageCostBasis + (position.UnrealizedPnl / quantity);
+            : position.AverageCostBasis + (position.UnrealizedPnl / (quantity * multiplier));
 
         return new PositionState
         {
@@ -90,6 +95,9 @@ public sealed class PortfolioStatePositionTracker : IPositionTracker
             Quantity = quantity,
             AverageCostBasis = position.AverageCostBasis,
             MarketPrice = marketPrice,
+            // Carried so the projected money fields (UnrealizedPnl, MarketValue) stay on the
+            // same scale as the source portfolio instead of reverting to quote × quantity.
+            ContractMultiplier = multiplier,
             RealizedPnl = position.RealizedPnl,
             LastUpdated = asOf
         };

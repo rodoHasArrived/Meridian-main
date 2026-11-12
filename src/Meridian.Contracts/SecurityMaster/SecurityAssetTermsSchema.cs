@@ -92,6 +92,11 @@ public sealed record SecurityAssetTermField(
     SecurityAssetTermVocabularyEscape? Escape = null,
     bool CarriesUndeclaredValueVerbatim = false)
 {
+    /// <summary>False for readable calculation companions whose authoring has not been activated.</summary>
+    public bool AuthoringEnabled { get; init; } = true;
+
+    public SecurityAssetTermField ReadOnly() => this with { AuthoringEnabled = false };
+
     /// <summary>
     /// True when the field carries a CLOSED vocabulary: its value selects a domain case, and a value
     /// outside <see cref="AllowedValues"/> cannot be decoded back into the one it names. Fields whose
@@ -367,7 +372,7 @@ public static class SecurityAssetTermsSchema
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
                 Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4)
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4).ReadOnly()
             ],
             ["FxSpot"] =
             [
@@ -376,6 +381,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["Deposit"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 Req("depositType", SecurityAssetTermFieldType.String),
                 Req("institutionName", SecurityAssetTermFieldType.String),
                 Opt("maturity", SecurityAssetTermFieldType.Date),
@@ -392,6 +398,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["CertificateOfDeposit"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(5),
                 Req("issuerName", SecurityAssetTermFieldType.String),
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal),
@@ -403,10 +410,11 @@ public static class SecurityAssetTermsSchema
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
                 Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4)
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4).ReadOnly()
             ],
             ["CommercialPaper"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 Req("issuerName", SecurityAssetTermFieldType.String),
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("discountRate", SecurityAssetTermFieldType.Decimal),
@@ -415,6 +423,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["TreasuryBill"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("auctionDate", SecurityAssetTermFieldType.Date),
                 Opt("cusip", SecurityAssetTermFieldType.String),
@@ -422,6 +431,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["Repo"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 Req("counterparty", SecurityAssetTermFieldType.String),
                 Req("startDate", SecurityAssetTermFieldType.Date),
                 Req("endDate", SecurityAssetTermFieldType.Date),
@@ -431,6 +441,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["CashSweep"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 Req("programName", SecurityAssetTermFieldType.String),
                 Req("sweepVehicleType", SecurityAssetTermFieldType.String),
                 Opt("sweepFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
@@ -461,13 +472,15 @@ public static class SecurityAssetTermsSchema
             ],
             ["Swap"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(4),
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Req("maturityDate", SecurityAssetTermFieldType.Date),
                 Req("legs", SecurityAssetTermFieldType.Array, "swapLegs", "cashFlowLegs"),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(3)
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(3).ReadOnly()
             ],
             ["DirectLoan"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(3),
                 Req("borrower", SecurityAssetTermFieldType.String),
                 Opt("maturity", SecurityAssetTermFieldType.Date),
                 Opt("referenceIndex", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Index),
@@ -477,10 +490,11 @@ public static class SecurityAssetTermsSchema
                 Opt("pricingSource", SecurityAssetTermFieldType.String).AsOperational(),
                 Req("covenants", SecurityAssetTermFieldType.Array),
                 Req("principalSchedule", SecurityAssetTermFieldType.Array),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(2)
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(2).ReadOnly()
             ],
             ["StructuredCredit"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(6),
                 Req("tranche", SecurityAssetTermFieldType.String),
                 Opt("poolId", SecurityAssetTermFieldType.String),
                 Req("collateralType", SecurityAssetTermFieldType.String),
@@ -518,7 +532,7 @@ public static class SecurityAssetTermsSchema
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(4),
                 Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(4),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(5)
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(5).ReadOnly()
             ],
             ["PrivateFundInterest"] =
             [
@@ -629,6 +643,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["Swaption"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 ReqOneOf("payerReceiver", "Payer", "Receiver").WithVerbatimUndeclaredValue(),
                 OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
                 Req("strikeRate", SecurityAssetTermFieldType.Decimal, "strike", "fixedRate"),
@@ -643,6 +658,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["CapFloor"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 ReqOneOf("capFloorType", "Cap", "Floor", "Collar").WithVerbatimUndeclaredValue(),
                 Req("referenceIndex", SecurityAssetTermFieldType.String, "index", "floatingIndex").LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("capStrike", SecurityAssetTermFieldType.Decimal, "capRate"),
@@ -656,6 +672,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["StructuredNote"] =
             [
+                OptOneOf("rateUnit", "Fraction", "Percent", "BasisPoints").WithVerbatimUndeclaredValue().Since(2),
                 Req("issuerName", SecurityAssetTermFieldType.String, "issuer"),
                 Req("underlyingDescription", SecurityAssetTermFieldType.String, "underlying", "referenceAsset").LinksUnderlying(SecurityUnderlyingRole.Underlying),
                 Req("maturity", SecurityAssetTermFieldType.Date, "maturityDate"),
@@ -767,7 +784,7 @@ public static class SecurityAssetTermsSchema
                 Opt("resetSchedule", SecurityAssetTermFieldType.Array, "fixings"),
                 // The leg's own schedule conventions (asset-class terms version 2, readable before
                 // writable: ADR-024).
-                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2)
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2).ReadOnly()
             ],
             ["Swap.legs.notionalSchedule"] =
             [
@@ -880,6 +897,39 @@ public static class SecurityAssetTermsSchema
     }
 
     /// <summary>
+    /// Every spelling the schema declares for the top-level term <paramref name="key"/>: the key
+    /// itself first, then each alias any class's top-level field with that key declares, in class
+    /// declaration order, deduplicated case-insensitively. Element (array/nested) fields are not
+    /// consulted, so a swap leg's per-leg aliases never widen a top-level term's spellings.
+    /// Readers that accept "either spelling" of a term derive the list here instead of restating it.
+    /// </summary>
+    public static IReadOnlyList<string> DeclaredSpellings(string key)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        var spellings = new List<string> { key };
+        foreach (var fields in FieldsByAssetClass.Values)
+        {
+            foreach (var field in fields)
+            {
+                if (!string.Equals(field.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                foreach (var alias in field.Aliases)
+                {
+                    if (!spellings.Contains(alias, StringComparer.OrdinalIgnoreCase))
+                    {
+                        spellings.Add(alias);
+                    }
+                }
+            }
+        }
+
+        return spellings;
+    }
+
+    /// <summary>
     /// The declared fields of <paramref name="assetClass"/> a node writes: those introduced at or below
     /// its write version (<see cref="SecurityAssetClassCatalog.GetTermsVersion"/>). Authoring surfaces
     /// (the asset-class registry, term blocks, the field-edit validator) offer these, never a field
@@ -888,7 +938,7 @@ public static class SecurityAssetTermsSchema
     public static IReadOnlyList<SecurityAssetTermField> WritableFields(string assetClass)
     {
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
-        return Fields(assetClass).Where(field => field.SinceTermsVersion <= writes).ToArray();
+        return Fields(assetClass).Where(field => field.AuthoringEnabled && field.SinceTermsVersion <= writes).ToArray();
     }
 
     /// <summary>

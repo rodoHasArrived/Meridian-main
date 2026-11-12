@@ -9,6 +9,22 @@ namespace Meridian.Execution.Margin;
 /// margin is 25 % of the current market value (standard FINRA requirement).
 /// Short positions use 150 % of the short proceeds as initial margin.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Short rates follow the Reg T / FINRA 4210 convention: they are expressed against the
+/// <em>credit balance</em> (short proceeds plus deposited margin). A 150 % initial rate means
+/// the account must hold proceeds plus 50 %; a 130 % maintenance rate means the credit balance
+/// must cover 130 % of the current short market value.
+/// </para>
+/// <para>
+/// Every <see cref="MarginRequirement"/> this model returns is compared against <em>net</em>
+/// equity (long market value − short market value + cash), which has already subtracted the
+/// short liability. The short requirement is therefore reported on an equity basis:
+/// <c>(rate − 1) × |short market value|</c>, i.e. 50 % initial and 30 % maintenance with the
+/// defaults. Comparing the full 130 % against net equity would count the short liability twice
+/// and raise margin calls on compliant accounts.
+/// </para>
+/// </remarks>
 public sealed class RegTMarginModel : IMarginModel
 {
     /// <summary>
@@ -25,7 +41,8 @@ public sealed class RegTMarginModel : IMarginModel
     ///     Defaults to 1.50 (150 % — the broker retains the proceeds plus 50 %).
     /// </param>
     /// <param name="shortMaintenanceRate">
-    ///     Maintenance margin rate for short positions. Defaults to 1.30 (130 %).
+    ///     Maintenance margin rate for short positions, as a fraction of short market value that the
+    ///     credit balance must cover. Defaults to 1.30 (130 %), i.e. 30 % of net equity.
     /// </param>
     public RegTMarginModel(
         decimal longInitialRate = 0.50m,
@@ -90,21 +107,8 @@ public sealed class RegTMarginModel : IMarginModel
         decimal portfolioEquity)
     {
         ArgumentNullException.ThrowIfNull(position);
-        var notional = position.Quantity * lastPrice;
-
-        decimal initialMargin;
-        decimal maintenanceMargin;
-
-        if (!position.IsShort)
-        {
-            initialMargin = Math.Abs(notional) * LongInitialRate;
-            maintenanceMargin = Math.Abs(notional) * LongMaintenanceRate;
-        }
-        else
-        {
-            initialMargin = Math.Abs(notional) * ShortInitialRate;
-            maintenanceMargin = Math.Abs(notional) * ShortMaintenanceRate;
-        }
+        var notional = MarginPricing.EconomicQuantity(position) * lastPrice;
+        var (initialMargin, maintenanceMargin) = EquityBasisRequirement(notional);
 
         return new MarginRequirement(
             Symbol: position.Symbol,
@@ -127,24 +131,19 @@ public sealed class RegTMarginModel : IMarginModel
         var totalInitialMargin = 0m;
         var totalMaintenanceMargin = 0m;
 
+        MarginPricing.ThrowIfAnyUnpriced(positions, prices);
+
         foreach (var (symbol, position) in positions)
         {
-            if (!prices.TryGetValue(symbol, out var price))
+            if (position.ExactQuantity == 0m)
                 continue;
 
-            var notional = position.Quantity * price;
+            var notional = MarginPricing.EconomicQuantity(position) * prices[symbol];
             totalNotional += notional;
 
-            if (!position.IsShort)
-            {
-                totalInitialMargin += Math.Abs(notional) * LongInitialRate;
-                totalMaintenanceMargin += Math.Abs(notional) * LongMaintenanceRate;
-            }
-            else
-            {
-                totalInitialMargin += Math.Abs(notional) * ShortInitialRate;
-                totalMaintenanceMargin += Math.Abs(notional) * ShortMaintenanceRate;
-            }
+            var (initial, maintenance) = EquityBasisRequirement(notional);
+            totalInitialMargin += initial;
+            totalMaintenanceMargin += maintenance;
         }
 
         // Portfolio (account) equity = long market value + short market value + cash.
@@ -160,5 +159,18 @@ public sealed class RegTMarginModel : IMarginModel
             InitialMargin: totalInitialMargin,
             MaintenanceMargin: totalMaintenanceMargin,
             ExcessLiquidity: portfolioEquity - totalMaintenanceMargin);
+    }
+
+    /// <summary>
+    /// Returns the initial and maintenance requirement for a signed notional, expressed against
+    /// net equity. Short rates are credit-balance rates, so the short liability (100 %) that net
+    /// equity already carries is removed from them.
+    /// </summary>
+    private (decimal Initial, decimal Maintenance) EquityBasisRequirement(decimal signedNotional)
+    {
+        var gross = Math.Abs(signedNotional);
+        return signedNotional < 0m
+            ? (gross * (ShortInitialRate - 1m), gross * (ShortMaintenanceRate - 1m))
+            : (gross * LongInitialRate, gross * LongMaintenanceRate);
     }
 }

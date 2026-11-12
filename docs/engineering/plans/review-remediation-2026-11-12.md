@@ -89,7 +89,7 @@ CI changes are designated for **human governance review** before merge, as requi
 | Browser bundle / TypeScript | Passed; existing bundle-size warnings |
 | Chromium workflows | Setup, abort-on-navigation, provider filter/guided setup, AAPL search/identity selection; 1440×900 and 1366×768; no page errors |
 | Windows-targeted desktop compilation | Passed; WPF runtime execution requires Windows |
-| CI runner Python tests | 53 passed; three environment skips |
+| CI runner Python tests | 53 cases completed; three environment skips |
 | Main integration and boundary slice | 1,027 passed; zero failures/skips; actual HTTP credential masking, timing hotspots, reporting readers and assembly boundaries |
 | Connection-service and API-client regressions | 40 passed; zero failures/skips |
 | Documentation CI lane | `bash scripts/ci.sh --lane verify-docs` passed, including convergence, committed-output drift checks and 83 adapter-readiness automation tests |
@@ -108,3 +108,46 @@ though relocated type identities are forwarded. LFS objects are present locally 
 when publishing; no historical Git rewrite was performed. The large orchestration services still
 span multiple domains; extracted boundaries improve ownership without claiming a complete
 application-layer redesign.
+
+## Synchronization for publication
+
+The publication work merges upstream `63e84bb978b5a8b8cffbce3820b6842aa907423f` into the remediation
+branch. The validation table above describes the original local remediation revision; overlapping
+source changes require fresh validation after synchronization.
+
+The merged image inventory contains 329 scoped PNGs (90,112,988 bytes), all matching the newest
+upstream image bytes and verified local LFS objects. Upstream removed 11 duplicate UI diagrams
+and added two screenshots; those changes are retained. The original capture is preserved in
+`lfs-migration.json`, with a separate `upstreamSynchronization` inventory. Upload verification
+must complete before publication is considered ready; this record does not claim remote upload.
+
+The synchronized local worktree has additional validation evidence below. These results do not
+replace hosted checks on the eventual pull-request head, and browser slices may share cases.
+
+| Synchronized check | Outcome |
+| --- | --- |
+| Full Storage suite | 962 passed |
+| Full Execution suite | 1,109 passed |
+| Full Backtesting suite | 516 passed |
+| F# ledger slice | 57 passed |
+| Browser UI regression slices | 260 passed |
+| Browser ratchet checks | 21 passed; existing cap budgets retained |
+| Strategy-focused browser tests | 115 passed |
+| Browser artifacts | Rebuilt after strategy leaf extractions; cap budgets unchanged |
+| Windows-targeted desktop compilation | Passed with zero errors; Windows runtime execution remains separate |
+| Final main integration slice | 1,187 passed; zero failures/skips |
+| Saved-view and status-writer focused regressions | 37 passed; includes foreign-view rejection and column-only personal copies |
+| Provider-health UI service tests | 21 passed |
+| QuantScript worker boundary slice | 18 passed |
+| CI test-roster Python tests | 50 passed; three environment skips |
+
+Local synchronization is validated. Publication is blocked by the managed network policy rejecting
+the Git LFS verification host `lfs.github.com` (HTTP CONNECT 403). No LFS hook or repository rule
+was bypassed; uploading and clean-checkout verification remain prerequisites to publication.
+
+Saved-table-view reads and endpoints now share normalization, including default columns and an
+unknown-view-ID guard. Additional negative/default-column cases cover those boundaries. The
+status-writer retry test isolates static metrics; its change does not alter production behavior.
+The final C# formatting changes affect four test files only. Reviewed source hashes were refreshed
+only for `SRC-UI-SHARED`, `SRC-UI-DASHBOARD` and `SRC-UI` after these final changes; the accepted
+WPF source baseline remained stable.

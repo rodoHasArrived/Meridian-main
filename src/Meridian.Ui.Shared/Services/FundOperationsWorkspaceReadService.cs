@@ -1487,6 +1487,11 @@ public sealed partial class FundOperationsWorkspaceReadService
         return schemaVersion;
     }
 
+    // Preserve the internal export seam used by regression tests. Rows already carry decoded
+    // certified labels; the renderer must export them verbatim, including literal "None".
+    internal static byte[] BuildTrialBalanceCsv(IReadOnlyList<EnrichedLedgerRow> rows, CancellationToken ct)
+        => FundReportArtifactRenderer.BuildTrialBalanceCsv(rows, ct);
+
     private static IReadOnlyList<string> BuildReportPackWarnings(
         ReportPack report,
         ReconciliationSummary reconciliation,

@@ -552,6 +552,9 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
             family.RegisterCapability(
                 new ProviderCapabilityDescriptor(ProviderCapabilityKind.RealtimeMarketData, "Legacy streaming market data", SupportsFailover: true),
                 resolver: () => _providerRegistry.CreateStreamingClient(sourceId),
+                // Resolution is asynchronous, so read the credentials ahead of the construction
+                // instead of letting it wait on credential storage.
+                asyncResolver: async ct => await _providerRegistry.CreateStreamingClientAsync(sourceId, ct).ConfigureAwait(false),
                 tester: static (_, _) => Task.FromResult(new ProviderConnectionTestResult(true, ["Streaming factory is registered."], DateTimeOffset.UtcNow, "registered")));
         }
 
@@ -677,6 +680,7 @@ internal sealed class MutableProviderFamilyAdapter : IProviderFamilyAdapter
 {
     private readonly Dictionary<ProviderCapabilityKind, ProviderCapabilityDescriptor> _descriptors = new();
     private readonly Dictionary<ProviderCapabilityKind, Func<object?>?> _resolvers = new();
+    private readonly Dictionary<ProviderCapabilityKind, Func<CancellationToken, ValueTask<object?>>> _asyncResolvers = new();
     private Func<string, CancellationToken, Task<ProviderConnectionTestResult>>? _tester;
 
     public MutableProviderFamilyAdapter(string providerFamilyId, string displayName, string description)
@@ -714,18 +718,29 @@ internal sealed class MutableProviderFamilyAdapter : IProviderFamilyAdapter
     }
 
     public ValueTask<object?> ResolveCapabilityAsync(ProviderCapabilityKind capability, CancellationToken ct = default)
-        => ValueTask.FromResult(_resolvers.TryGetValue(capability, out var resolver) ? resolver?.Invoke() : null);
+        => _asyncResolvers.TryGetValue(capability, out var asyncResolver)
+            ? asyncResolver(ct)
+            : ValueTask.FromResult(_resolvers.TryGetValue(capability, out var resolver) ? resolver?.Invoke() : null);
 
+    /// <param name="asyncResolver">
+    /// Preferred over <paramref name="resolver"/> when both are given. Belongs to the same
+    /// registration: it is kept only when this call is the one that supplies the resolver.
+    /// </param>
     public void RegisterCapability(
         ProviderCapabilityDescriptor descriptor,
         Func<object?>? resolver,
-        Func<string, CancellationToken, Task<ProviderConnectionTestResult>>? tester = null)
+        Func<string, CancellationToken, Task<ProviderConnectionTestResult>>? tester = null,
+        Func<CancellationToken, ValueTask<object?>>? asyncResolver = null)
     {
         if (!_descriptors.ContainsKey(descriptor.Kind))
             _descriptors[descriptor.Kind] = descriptor;
 
         if (!_resolvers.ContainsKey(descriptor.Kind))
+        {
             _resolvers[descriptor.Kind] = resolver;
+            if (asyncResolver is not null)
+                _asyncResolvers[descriptor.Kind] = asyncResolver;
+        }
 
         _tester ??= tester;
     }

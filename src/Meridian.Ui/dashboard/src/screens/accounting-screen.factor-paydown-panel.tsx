@@ -8,8 +8,14 @@ import { ApiError, describeApiError } from "@/lib/api-errors";
 import { createFactorPaydownDraft, prepareFactorPaydown } from "@/lib/api/factor-paydown.api";
 import type { AccountingBasisKind } from "@/types";
 import type { FactorPaydownDraftResult, FactorPaydownPreview, FactorPaydownRequest } from "@/types/factor-paydown";
+import { TextArea } from "@/components/ui/text-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
-interface Props { periodVersion: number | null; bookId: string; periodId: string | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean }
+interface Props {
+  periodVersion: number | null; bookId: string; periodId: string | null; fundProfileId: string; accountingBasis?: AccountingBasisKind; active?: boolean;
+  /** Display names for the scope line. The identifiers above remain what is sent to the server. */
+  bookLabel?: string | null; periodLabel?: string | null;
+}
 const fields = [
   ["securityId", "Security ID"], ["bookPositionId", "Book position ID"],
   ["effectiveDate", "Paydown effective date", "date"],
@@ -33,7 +39,7 @@ export function FactorPaydownPanel(props: Props) {
   return <FactorPaydownScopePanel key={`${props.bookId}:${props.periodId}:${props.fundProfileId}:${props.accountingBasis}:${props.periodVersion}`} {...props} />;
 }
 
-function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileId, accountingBasis = "Primary" }: Props) {
+function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileId, accountingBasis = "Primary", bookLabel, periodLabel }: Props) {
   const id = useId();
   const [form, setForm] = useState<Form>(emptyForm);
   const [evidence, setEvidence] = useState("");
@@ -118,14 +124,14 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
     <CardHeader><CardTitle>Factor paydown</CardTitle><CardDescription>Prepare principal repayment and lot basis relief from a retained factor observation. Same-currency active long positions only. Retained drafts support review, independent approval and canonical posting when authenticated workflow capabilities permit.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!bookId || !periodId || periodVersion === null || !fundProfileId ? <p role="status">Select a ledger book and period to prepare a factor paydown.</p> : <>
-        <p className="break-all text-xs text-muted-foreground">Book {bookId} · Period {periodId} · {accountingBasis}</p>
+        <p className="break-words text-xs text-muted-foreground" title={`Book ${bookId} · Period ${periodId}`}>Book {bookLabel?.trim() || bookId} · Period {periodLabel?.trim() || periodId} · {accountingBasis}</p>
         <form onSubmit={(event) => { event.preventDefault(); void prepare(); }}>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Factor observation and posting accounts</legend>
             <FormGrid columns={3}>{fields.map(([field, label, type]) => <FormRow key={field} label={label} labelFor={`${id}-${field}`}>
               <Input id={`${id}-${field}`} value={form[field]} type={type ?? "text"} onChange={(event) => update(field, event.target.value)} />
             </FormRow>)}</FormGrid>
             <FormRow label="Retained factor evidence JSON" labelFor={`${id}-evidence`} hint="Paste existing retained evidence identities, including review and subject bindings. This form does not grant evidence authority.">
-              <textarea id={`${id}-evidence`} className="min-h-24 w-full rounded border border-border bg-background p-2 font-mono text-xs" value={evidence}
+              <TextArea rows={2} id={`${id}-evidence`} className="min-h-24 w-full font-mono text-xs" value={evidence}
                 onChange={(event) => { invalidate(); setEvidence(event.target.value); }} />
             </FormRow>
             <Button type="submit" disabled={busy !== null}>{busy === "prepare" ? "Preparing paydown…" : "Prepare factor paydown"}</Button>
@@ -137,7 +143,7 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
           <div className="overflow-x-auto"><table className="w-full text-left text-xs"><caption className="sr-only">Lot principal and remaining basis</caption><thead><tr><th scope="col">Lot</th><th scope="col">Principal repaid</th><th scope="col">Transaction basis after</th><th scope="col">Functional basis after</th></tr></thead><tbody>{preview.result.instruction.lots.map((lot) => <tr key={lot.expectedLot.lotId}><th scope="row" className="py-2 font-mono">{lot.expectedLot.lotId}</th><td>{String(lot.principal)}</td><td>{String(lot.transactionBasisAfter)}</td><td>{String(lot.functionalBasisAfter)}</td></tr>)}</tbody></table></div>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Review draft confirmation</legend>
             <FormRow label="Paydown journal description" labelFor={`${id}-description`}><Input id={`${id}-description`} value={description} onChange={(event) => { setDescription(event.target.value); setConfirmed(false); }} /></FormRow>
-            <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I reviewed the factor evidence, lot allocation and posting accounts.</label>
+            <Checkbox className="flex items-start gap-2 text-sm" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} label={<>I reviewed the factor evidence, lot allocation and posting accounts.</>} />
           </fieldset>
           <Button type="button" disabled={busy !== null || !confirmed || !description.trim() || !!draft} onClick={() => void createDraft()}>{busy === "draft" ? "Creating review draft…" : uncertain ? "Retry same review draft" : "Create paydown review draft"}</Button>
         </section> : null}

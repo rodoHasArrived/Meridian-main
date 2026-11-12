@@ -1064,7 +1064,7 @@ describe("OperationsContinuityScreen", () => {
   it("renders workflow list, detail gates, blockers, timeline, and enabled next action", async () => {
     renderScreen();
 
-    expect(await screen.findByRole("heading", { name: "Operations continuity" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Period close workflows" })).toBeInTheDocument();
     const workflows = await screen.findByRole("treegrid", { name: "Operations continuity workflows" });
     expect(within(workflows).getByText("2026-05 close")).toBeInTheDocument();
     expect(workflows).not.toHaveTextContent(fundAccountId);
@@ -1086,7 +1086,7 @@ describe("OperationsContinuityScreen", () => {
     });
     const gates = screen.getByRole("table", { name: "Operations continuity gates" });
     const brokerIntakeGate = within(gates).getByRole("row", { name: "Broker intake gate, Passed, 0 blockers" });
-    expect(within(brokerIntakeGate).getByText("May 08, 14:20 UTC by Operations user")).toBeInTheDocument();
+    expect(within(brokerIntakeGate).getByText("May 8, 2026, 14:20 UTC by Operations user")).toBeInTheDocument();
     const completionIdentity = within(brokerIntakeGate).getByText("Completion identity").closest("details");
     expect(completionIdentity).not.toHaveAttribute("open");
     expect(within(completionIdentity as HTMLElement).getByText("Actor ID: ops-user")).toBeInTheDocument();
@@ -1109,12 +1109,12 @@ describe("OperationsContinuityScreen", () => {
     const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
     expect(within(breakCases).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(breakCases).getByText("fund-controller")).toBeInTheDocument();
-    expect(within(breakCases).getByText("Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(breakCases).getByText("Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(breakCases).getByText("Expected 125,000.25 / Actual 124,998.25 / Variance -2")).toBeInTheDocument();
     expect(within(breakCases).getByText("1 retained evidence link")).toBeInTheDocument();
     expect(within(breakCases).getByRole("link", { name: "Open retained evidence for break recon-break-42" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
-    expect(within(breakCases).getByText("SLA Warning due May 09, 16:00 UTC")).toBeInTheDocument();
+    expect(within(breakCases).getByText("SLA Warning due May 9, 2026, 16:00 UTC")).toBeInTheDocument();
     expect(within(breakCases).getByText("Materiality 2")).toBeInTheDocument();
     expect(within(breakCases).getByText("Root cause Broker Cash Timing")).toBeInTheDocument();
     expect(within(breakCases).getByText("Approval Ready For Signoff")).toBeInTheDocument();
@@ -1227,7 +1227,7 @@ describe("OperationsContinuityScreen", () => {
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
     expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("approval-close-2026-05")).toHaveLength(2);
-    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
@@ -1314,7 +1314,7 @@ describe("OperationsContinuityScreen", () => {
     const workflowApprovalHistory = screen.getByRole("table", { name: "Operations continuity workflow approval history" });
     expect(within(workflowApprovalHistory).getByText("approval-close-2026-05")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Reviewer fund-controller / Operator ops-user")).toBeInTheDocument();
-    expect(within(workflowApprovalHistory).getByText("Submitted May 08, 15:05 UTC")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Submitted May 8, 2026, 15:05 UTC")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Decision pending")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Pending final ledger validation before close sign-off.")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByRole("link", { name: "Open approval evidence for workflow approval approval-close-2026-05" }))
@@ -1882,17 +1882,18 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const reopen = await screen.findByRole("button", { name: "Reopen governed period for 2026-05" });
-    fireEvent.change(await screen.findByLabelText("Incident id"), {
+    const reopenForm = screen.getByRole("form", { name: "Governed period reopen command" });
+    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen governed period for 2026-05" });
+    fireEvent.change(within(reopenForm).getByLabelText("Incident id"), {
       target: { value: "incident-2026-05-close-restatement" }
     });
-    fireEvent.change(screen.getByLabelText("Approval reference"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Approval reference"), {
       target: { value: "admin-approval-42" }
     });
-    fireEvent.change(screen.getByLabelText("Justification"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Justification"), {
       target: { value: "Controller approved restatement remediation." }
     });
-    fireEvent.change(screen.getByLabelText("Impact summary"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Impact summary"), {
       target: { value: "Ledger and report package will be regenerated with retained evidence." }
     });
     await user.click(reopen);
@@ -1957,7 +1958,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
+    const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
+    await user.click(await within(breakCases).findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
 
     await waitFor(() => {
       expect(assignOperationsContinuityBreakCase).toHaveBeenCalledWith(
@@ -1985,7 +1987,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Resolve break recon-break-42" }));
+    const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
+    await user.click(await within(breakCases).findByRole("button", { name: "Resolve break recon-break-42" }));
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("Break version conflict.")).toBeInTheDocument();

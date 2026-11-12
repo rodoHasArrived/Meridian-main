@@ -6,10 +6,15 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.DataIntegration
+
+`IProviderVerificationHistoryReader` projects existing verification audit events for an exact
+tenant, connection, external account and environment. It exposes only recording time and pass/fail,
+keeps the newest bounded observations in time order, and reports truncation. An unappended pending
+audit or malformed log refuses the read; chart reads neither probe providers nor repair the vault.
 
 `IProviderCredentialOwnershipMigration` moves a reviewed retained provider-wide record into an empty
 owned scope within the encrypted vault publication boundary. Non-secret receipts support restart
@@ -217,6 +222,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
   adapters. File-date filtering and date-range discovery inspect paths relative to the configured
   data root, so dated workspace or backup directories cannot replace the data's own session date.
+  A symbol must be a single path component: path separators, a colon, `.`/`..` and wildcards are
+  refused before any file discovery, and a discovered file that resolves outside the data root or
+  is reached through a symbolic link below it is refused. The configured root itself may be a link.
   File read failures return `Success=false` with relative source paths in `FileFailures`;
   `IsPartial` identifies recovered records/bars that are incomplete. Caller cancellation propagates
   during the only or final source file as well as between files.
@@ -309,6 +317,9 @@ Historical market-data JSONL query and OHLCV aggregation behavior lives in this 
 commands, execution simulation, diagnostics registration, UI endpoints, and fund-structure shared
 data access consume `Meridian.DataIntegration.Historical.HistoricalDataQueryService` instead of
 owning file-backed historical-data query logic.
+
+`DataQualityReportGenerator` exports daily and weekly reports as JSON, CSV, HTML, or Markdown; CSV
+text cells use the Storage `SpreadsheetFormulaGuard` and HTML text values are HTML-encoded.
 
 Provider data-quality validators, analyzers, freshness SLA monitoring, report generation,
 clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event schema

@@ -28,6 +28,69 @@ internal static class AlpacaEndpoints
 }
 
 /// <summary>
+/// REST hosts for the Alpaca Trading API, which also serves the reference lookups (assets,
+/// option contracts, corporate-action announcements) that are not on the market-data host.
+/// </summary>
+/// <remarks>
+/// Paper and live credentials are separate key pairs and each authenticates only against its
+/// own host: a paper key sent to the live host is answered 401. Reference lookups therefore
+/// follow the same trading environment as the brokerage gateway rather than a fixed host.
+/// </remarks>
+internal static class AlpacaTradingApi
+{
+    /// <summary>Paper Trading API origin.</summary>
+    public const string PaperBaseUrl = "https://paper-api.alpaca.markets";
+
+    /// <summary>Live Trading API origin.</summary>
+    public const string LiveBaseUrl = "https://api.alpaca.markets";
+
+    /// <summary>Returns the Trading API origin for the selected environment.</summary>
+    public static string BaseUrl(bool useSandbox) => useSandbox ? PaperBaseUrl : LiveBaseUrl;
+
+    /// <summary>
+    /// Returns the Trading API origin for reference lookups, in order of authority:
+    /// <list type="number">
+    ///   <item>an explicit environment (a selected credential record names its own);</item>
+    ///   <item><c>ALPACA_TRADING_ENVIRONMENT</c>, when it is set;</item>
+    ///   <item>a key ID that identifies itself as a paper key (<c>PK…</c>);</item>
+    ///   <item>the live host, where these lookups went before any environment was selectable.</item>
+    /// </list>
+    /// </summary>
+    /// <remarks>
+    /// The last two steps apply only when nothing selected an environment. They keep a
+    /// deployment that uses live keys and never set the variable on the live host, and stop a
+    /// paper key from being sent where it is always refused. A misjudged key reaches the other
+    /// Alpaca environment's host and is answered 401; it is never sent anywhere else.
+    /// </remarks>
+    public static string ResolveBaseUrl(bool? useSandbox, string? keyId)
+    {
+        if (useSandbox is { } selected)
+            return BaseUrl(selected);
+
+        var configured = Meridian.Core.Config.AlpacaCredentialEnvironment.ReadEnvironmentValue(
+            Meridian.Core.Config.AlpacaCredentialEnvironment.TradingEnvironmentName);
+        if (!string.IsNullOrWhiteSpace(configured))
+            return BaseUrl(IsPaper(configured));
+
+        return BaseUrl(IsPaperKeyId(keyId));
+    }
+
+    /// <summary>Whether a trading-environment name selects paper (anything that is not live).</summary>
+    public static bool IsPaper(string? tradingEnvironment) => !string.Equals(
+        Meridian.Core.Config.AlpacaCredentialEnvironment.NormalizeTradingEnvironment(tradingEnvironment),
+        Meridian.Core.Config.AlpacaCredentialEnvironment.LiveEnvironment,
+        StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Alpaca issues paper Trading API key IDs with a <c>PK</c> prefix.</summary>
+    public static bool IsPaperKeyId(string? keyId) =>
+        keyId?.TrimStart().StartsWith("PK", StringComparison.Ordinal) == true;
+
+    /// <summary>Names the environment of a Trading API origin for diagnostics.</summary>
+    public static string DescribeEnvironment(string baseUrl) =>
+        baseUrl.StartsWith(PaperBaseUrl, StringComparison.OrdinalIgnoreCase) ? "paper" : "live";
+}
+
+/// <summary>
 /// JSON action names used in Alpaca WebSocket protocol messages.
 /// </summary>
 internal static class AlpacaActions

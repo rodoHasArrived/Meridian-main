@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <title>Documentation — contract audit</title>
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 20px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
   .wrap { max-width: 940px; display: grid; gap: 16px; }
@@ -19,17 +20,17 @@
   .mono { font-family: var(--font-data); font-size: 10px; color: var(--text-secondary); }
   .pill { display: inline-block; font-family: var(--font-data); font-size: 8.5px; font-weight: 700; text-transform: uppercase;
     letter-spacing: .04em; padding: 2px 6px; border-radius: var(--radius-chip, 2px); border: 1px solid; white-space: nowrap; }
-  .pill--gap { color: var(--severity-blocked-fg); border-color: var(--severity-blocked-bd); background: var(--severity-blocked-bg); }
-  .pill--part { color: var(--severity-action-fg); border-color: var(--severity-action-bd); background: var(--severity-action-bg); }
-  .pill--ok { color: var(--severity-ready-fg); border-color: var(--severity-ready-bd); background: var(--severity-ready-bg); }
-  .pill--new { color: var(--severity-review-fg); border-color: var(--severity-review-bd); background: var(--severity-review-bg); }
+  .pill--gap { color:var(--red-dim); border-color: var(--severity-blocked-bd); background: var(--severity-blocked-bg); }
+  .pill--part { color:var(--orange-dim); border-color: var(--severity-action-bd); background: var(--severity-action-bg); }
+  .pill--ok { color:var(--green-dim); border-color: var(--severity-ready-bd); background: var(--severity-ready-bg); }
+  .pill--new { color:var(--text-primary); border-color: var(--severity-review-bd); background: var(--severity-review-bg); }
   ul { margin: 0; padding-left: 16px; font-size: 11.5px; line-height: 1.5; }
   li + li { margin-top: 4px; }
   .foot { font-size: 10.5px; color: var(--text-muted); }
   .foot code { font-family: var(--font-data); font-size: 10px; }
 </style>
 </head>
-<body class="meridian">
+<body class="meridian mds-specimen">
 <div class="wrap">
   <h1>Contract &amp; endpoint audit <small>Meridian.Ui.Shared · 2026-07-05 · full report in docs/CONTRACT_AUDIT.md</small></h1>
 

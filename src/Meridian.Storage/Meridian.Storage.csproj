@@ -6,27 +6,49 @@
     <RootNamespace>Meridian.Storage</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <!-- Allow unsafe code for Linux directory fsync operations in AtomicFileWriter.cs -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
   <ItemGroup>
+    <!-- Storage -->
     <PackageReference Include="Apache.Arrow" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Parquet.Net" />
+
+    <!-- Logging -->
     <PackageReference Include="Serilog" />
+
+    <!-- DI -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+
+    <!-- Versioned WAL cryptographic checksums -->
     <PackageReference Include="Blake3.Native" />
+
+    <!-- Compression -->
     <PackageReference Include="K4os.Compression.LZ4.Streams" />
     <PackageReference Include="ZstdSharp.Port" />
+
+    <!-- Monitoring -->
     <PackageReference Include="prometheus-net" />
+
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Workstation\Migrations\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="AssetOperations/**/*.cs" />
     <Compile Remove="Banking/**/*.cs" />

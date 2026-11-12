@@ -584,7 +584,7 @@ public sealed class JsonlStorageSink : IStorageSink
 
             try
             {
-                RepairTornJsonlTail(stream);
+                JsonlAppendWriter.RepairTornTail(stream);
                 stream.Position = stream.Length;
                 _stream = stream;
                 return stream;
@@ -757,38 +757,6 @@ public sealed class JsonlStorageSink : IStorageSink
                 stream.Position = startPosition;
                 throw;
             }
-        }
-
-        private static void RepairTornJsonlTail(FileStream stream)
-        {
-            if (stream.Length == 0)
-                return;
-
-            stream.Position = stream.Length - 1;
-            if (stream.ReadByte() == '\n')
-                return;
-
-            const int bufferSize = 4096;
-            var buffer = new byte[bufferSize];
-            var position = stream.Length;
-            while (position > 0)
-            {
-                var readLength = (int)Math.Min(bufferSize, position);
-                position -= readLength;
-                stream.Position = position;
-                stream.ReadExactly(buffer, 0, readLength);
-
-                for (var index = readLength - 1; index >= 0; index--)
-                {
-                    if (buffer[index] != '\n')
-                        continue;
-
-                    stream.SetLength(position + index + 1);
-                    return;
-                }
-            }
-
-            stream.SetLength(0);
         }
 
         // Compressed files are always written copy-on-write. Refuse to append to a legacy torn

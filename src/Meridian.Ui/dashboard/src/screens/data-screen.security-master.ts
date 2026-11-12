@@ -298,7 +298,7 @@ const baseIdentifierSections: SecurityMasterIdentifierSection[] = [
     id: "canonical",
     title: "Canonical identity",
     badge: "01",
-    meta: "Primary identifiers routed into order, accounting, and package lanes.",
+    meta: "Primary identifiers routed into order, accounting, and package workflows.",
     rows: [
       { id: "isin", label: "ISIN", value: "US38141G1040" },
       { id: "cusip", label: "CUSIP", value: "38141G104" },
@@ -936,7 +936,7 @@ export function buildSecurityMasterWorkspaceState({
     emptyState: visibleRecords.length === 0
       ? {
           title: "No matching securities",
-          description: "Try a ticker, ISIN, or issuer keyword. Security Master stays in the Data lane and keeps provider, backfill, and export evidence nearby."
+          description: "Try a ticker, ISIN, or issuer keyword. Security Master stays in Data and keeps provider, backfill, and export evidence nearby."
         }
       : null,
     results: visibleRecords.map((record) => buildSearchRowState(record, selectedRecord?.securityId ?? null)),

@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import {
   Activity,
   GitBranch,
@@ -8,10 +9,13 @@ import {
   ShieldCheck,
   Trash2
 } from "lucide-react";
+import { formatCount, formatUtcTimestamp } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { TextArea } from "@/components/ui/text-area";
 import { SeverityBadge } from "@/components/operations";
 import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import {
@@ -173,10 +177,7 @@ export function SettingsFieldRow({
   tone: keyof typeof itemToneClass;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <dt className="min-w-0 break-words text-xs text-muted-foreground">{label}</dt>
-      <dd className={cn("min-w-0 break-words text-right font-mono text-xs", itemToneClass[tone])}>{value}</dd>
-    </div>
+    <DetailFieldItem label={label} value={value} tone={tone} />
   );
 }
 
@@ -199,11 +200,11 @@ export function FilterSelect({
   return (
     <label className="grid gap-1 text-xs font-medium text-muted-foreground">
       {label}
-      <select
+      <Select
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
+        className="h-9 text-sm"
         aria-label={ariaLabel ?? label}
       >
         {options.map((option) => (
@@ -211,7 +212,7 @@ export function FilterSelect({
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }
@@ -938,7 +939,7 @@ export function ProviderIntegrationWorkbenchPanel({
     <section className="mt-3 rounded-md border border-border/60 bg-background/35 px-3 py-3" aria-label={`${row.displayName} guided provider integration workbench`}>
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Manifest and activation workbench</h6>
+          <h6 className="text-xs font-semibold text-foreground">Manifest and activation workbench</h6>
           <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Advanced template, dry-run, readiness, drift, and activation evidence stay on shared provider-integration endpoints.</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -963,20 +964,20 @@ export function ProviderIntegrationWorkbenchPanel({
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Template catalog
-          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-primary" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
+          <Select className="text-xs" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
             <option value={state.selectedManifestId}>{state.selectedManifestId || "No template selected"}</option>
             {(state.templates ?? []).map((template) => <option key={template.manifestId} value={template.manifestId}>{template.displayName}</option>)}
-          </select>
+          </Select>
         </label>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Manifest draft JSON
-          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
+          <TextArea className="min-h-36 font-mono text-[11px]" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Connection draft JSON
-          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
+          <TextArea className="min-h-36 font-mono text-[11px]" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
         </label>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -1027,12 +1028,12 @@ export function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Capability
-          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-primary" value={state.capability} onChange={(event) => setState((current) => {
+          <Select className="text-xs" value={state.capability} onChange={(event) => setState((current) => {
             const capability = event.target.value as ProviderIntegrationCapabilityKind;
             return { ...current, capability, endpointKey: providerIntegrationPreferredEndpointKey(current.manifest, capability, current.endpointKey), message: null, details: [], tone: "default" };
           })} disabled={busy} aria-label={`${row.displayName} provider integration dry-run capability`}>
             {capabilityOptions.map((capability) => <option key={capability} value={capability}>{capability}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Service key
@@ -1047,7 +1048,7 @@ export function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           CSV content
-          <textarea className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
+          <TextArea className="min-h-24 font-mono text-[11px]" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
         </label>
         <div className="grid gap-3">
           <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
@@ -1132,7 +1133,7 @@ export function ProviderOpenApiImportForm({
     >
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">OpenAPI import draft</h6>
+          <h6 className="text-xs font-semibold text-foreground">OpenAPI import draft</h6>
           <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
             Seed a draft manifest through the shared import endpoint; readiness, mapping, and runtime evidence stay service-owned.
           </p>
@@ -1224,8 +1225,8 @@ export function ProviderOpenApiImportForm({
       </div>
       <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
         OpenAPI JSON
-        <textarea
-          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-hidden focus:border-primary"
+        <TextArea rows={2}
+          className="min-h-24 font-mono text-xs"
           value={state.openApiDocumentJson}
           onChange={(event) => updateField("openApiDocumentJson", event.target.value)}
           disabled={state.busy}
@@ -1771,7 +1772,7 @@ export function providerRuntimePromotionVariant(status: string): "outline" | "su
 
 
 export function formatProviderRuntimeNumber(value: number): string {
-  return value.toLocaleString("en-US");
+  return formatCount(value);
 }
 
 
@@ -1785,16 +1786,8 @@ export function formatProviderRuntimeUtcMinute(value: string | Date | null | und
     return unavailableLabel;
   }
 
-  return `${PROVIDER_RUNTIME_UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padProviderRuntimeUtc(date.getUTCHours())}:${padProviderRuntimeUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
-
-
-export function padProviderRuntimeUtc(value: number): string {
-  return value.toString().padStart(2, "0");
-}
-
-
-export const PROVIDER_RUNTIME_UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 
 export const PROVIDER_OPEN_API_AUTH_OPTIONS: { value: ProviderIntegrationAuthType; label: string }[] = [

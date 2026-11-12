@@ -15,6 +15,7 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
+import { formatCount as formatCountValue } from "@/lib/format";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -1960,6 +1961,8 @@ export interface CloseCommandCenterBlockerViewModel {
   ownerLabel: string | null;
   dueLabel: string | null;
   evidenceLabel: string;
+  /** Raw identifiers of the records behind the blocker; shown only under audit details. */
+  sourceRecordIds?: string[];
   actionLabel: string;
   impactLabel: string;
 }
@@ -2984,6 +2987,17 @@ export function useAccountingReconciliationViewModel(
     }
   }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
+  // Bulk triage (C2) returns the committed cases from the governed bulk endpoint. Like the
+  // single-case handlers, the update is bound to the scope the action started in: a response that
+  // lands after the operator changed scope is not merged into (or prepended to) the new queue.
+  const beginBreakQueueUpdate = useCallback(() => {
+    const requestScope = activeScopeRef.current;
+    return (items: ReconciliationBreakQueueItem[]) => {
+      if (items.length === 0 || activeScopeRef.current !== requestScope) return;
+      setBreakQueue((current) => items.reduce((queue, item) => replaceBreakQueueItem(queue, item), current));
+    };
+  }, []);
+
   useEffect(() => {
     if (!selectionState?.replaceSelection || workstream !== "reconciliation"
       || breakQueueReadScope !== scopeRevision || statementRunsReadScope !== scopeRevision
@@ -3196,6 +3210,16 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    sourceRows: scopedBreakQueue,
+    applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
+      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
+        setBreakQueue((current) => {
+          const retained = current.find((item) => item.breakId === updated.breakId);
+          if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;
+          return replaceBreakQueueItem(current, updated);
+        });
+      }
+    },
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
@@ -3227,6 +3251,7 @@ export function useAccountingReconciliationViewModel(
     },
     assignBreak,
     resolveBreak,
+    beginBreakQueueUpdate,
     calibrationSummary,
     calibrationLoading,
     calibrationErrorText: calibrationError?.summary ?? null,
@@ -3637,7 +3662,7 @@ function buildLedgerJournalEvidenceRow(
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const money = (value: number) => (currency ? formatCurrencyForCode(value, currency) : formatCurrency(value));
   const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
-  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${line.lineCount.toLocaleString()} lines`;
+  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${formatCountValue(line.lineCount)} lines`;
 
   return {
     ...line,
@@ -3695,7 +3720,7 @@ function buildTrialBalanceRow(
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
   const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
-  const entryCountLabel = line.entryCount.toLocaleString();
+  const entryCountLabel = formatCountValue(line.entryCount);
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
@@ -3872,7 +3897,7 @@ function buildLedgerAccountFilteredCountLabel(
     return totalCount === 1 ? "1 GL account row" : `${totalCount} GL account rows`;
   }
 
-  return `${filteredCount.toLocaleString()} of ${totalCount.toLocaleString()} GL account rows`;
+  return `${formatCountValue(filteredCount)} of ${formatCountValue(totalCount)} GL account rows`;
 }
 
 function buildTrialBalanceDetail(

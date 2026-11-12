@@ -388,6 +388,32 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Disconnect_WaitsForInFlightTick_AndPublishesNothingAfterwards()
+    {
+        // Arrange — hold the first tick inside the publisher so a callback is provably in flight.
+        using var publisher = new BlockingFirstPublishPublisher();
+        await using var tickingClient = CreateFastTickingClient(publisher);
+        await tickingClient.ConnectAsync();
+        tickingClient.SubscribeTrades(new SymbolConfig("SPY"));
+        await publisher.FirstPublishEntered.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Act — disconnect while that tick is still publishing.
+        var disconnect = Task.Run(() => tickingClient.DisconnectAsync());
+        var finishedEarly = await Task.WhenAny(disconnect, Task.Delay(TimeSpan.FromMilliseconds(200))) == disconnect;
+        publisher.ReleaseFirstPublish();
+        await disconnect.WaitAsync(TimeSpan.FromSeconds(5));
+        var countAtDisconnect = publisher.PublishCount;
+        await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+        // Assert
+        finishedEarly.Should().BeFalse(
+            because: "DisconnectAsync must wait for a tick callback that is already publishing");
+        publisher.PublishCount.Should().Be(
+            countAtDisconnect,
+            because: "nothing may be published once DisconnectAsync has returned");
+    }
+
+    [Fact]
     public async Task TickGeneration_UnknownSymbol_UsesDefaultBasePrice()
     {
         // Arrange — subscribe to a symbol not in the well-known price table
@@ -520,4 +546,36 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
             enableAutoTicks: true,
             autoTickDueTime: TimeSpan.FromMilliseconds(10),
             autoTickPeriod: TimeSpan.FromMilliseconds(10));
+
+    /// <summary>Blocks the first publish until released, then counts every later publish.</summary>
+    private sealed class BlockingFirstPublishPublisher : IMarketEventPublisher, IDisposable
+    {
+        private readonly TaskCompletionSource _firstPublishEntered =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly ManualResetEventSlim _release = new(initialState: false);
+        private int _publishCount;
+
+        public Task FirstPublishEntered => _firstPublishEntered.Task;
+
+        public int PublishCount => Volatile.Read(ref _publishCount);
+
+        public bool TryPublish(in MarketEvent evt)
+        {
+            if (Interlocked.Increment(ref _publishCount) == 1)
+            {
+                _firstPublishEntered.TrySetResult();
+                _release.Wait(TimeSpan.FromSeconds(10));
+            }
+
+            return true;
+        }
+
+        public void ReleaseFirstPublish() => _release.Set();
+
+        public void Dispose()
+        {
+            _release.Set();
+            _release.Dispose();
+        }
+    }
 }

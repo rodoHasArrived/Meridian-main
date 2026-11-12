@@ -21,7 +21,7 @@ SPEC.loader.exec_module(guidance)
 
 class GuidanceTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.shared = b"<!-- shared-context:begin canonical -->\nShared instructions.\n<!-- shared-context:end -->"

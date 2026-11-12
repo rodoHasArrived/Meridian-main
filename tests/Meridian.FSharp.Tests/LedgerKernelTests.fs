@@ -52,6 +52,68 @@ let ``Ledger validation rejects unbalanced journal`` () =
     result.IsValid |> should equal false
     result.Errors[0].Contains("not balanced") |> should equal true
 
+let private validateAgainst (journalId: Guid) (entryLine: LedgerLineInput) (journalIds: seq<Guid>) (entryIds: seq<Guid>) =
+    LedgerInterop.ValidateJournalEntry(
+        journalId,
+        entryLine.Timestamp,
+        entryLine.Description,
+        [| entryLine; line 0m 100m |],
+        journalIds,
+        entryIds)
+
+[<Fact>]
+let ``Ledger validation detects already-posted ids in any id collection`` () =
+    let journalId = Guid.Parse("11111111-1111-1111-1111-111111111111")
+    let debit = line 100m 0m
+    let asHashSet (ids: Guid list) = System.Collections.Generic.HashSet<Guid>(ids) :> seq<Guid>
+    let asArray (ids: Guid list) = List.toArray ids :> seq<Guid>
+    let asLazySeq (ids: Guid list) = ids |> Seq.map id
+
+    for shape in [ asHashSet; asArray; asLazySeq ] do
+        (validateAgainst journalId debit (shape []) (shape [])).IsValid |> should equal true
+
+        let postedJournal = validateAgainst journalId debit (shape [ journalId ]) (shape [])
+        postedJournal.IsValid |> should equal false
+        postedJournal.Errors[0].Contains("has already been posted") |> should equal true
+
+        let postedEntry = validateAgainst journalId debit (shape []) (shape [ debit.EntryId ])
+        postedEntry.IsValid |> should equal false
+        postedEntry.Errors[0].Contains("Ledger entry") |> should equal true
+
+/// A posted-id set that answers membership but fails if anything enumerates it. The ledger posts
+/// against sets holding every id ever posted, so copying one per post is what made long runs slow.
+type private NonEnumerableIdSet(ids: Guid list) =
+    interface System.Collections.Generic.IReadOnlySet<Guid> with
+        member _.Contains(item) = List.contains item ids
+        member _.IsProperSubsetOf(_) = invalidOp "not used"
+        member _.IsProperSupersetOf(_) = invalidOp "not used"
+        member _.IsSubsetOf(_) = invalidOp "not used"
+        member _.IsSupersetOf(_) = invalidOp "not used"
+        member _.Overlaps(_) = invalidOp "not used"
+        member _.SetEquals(_) = invalidOp "not used"
+
+    interface System.Collections.Generic.IReadOnlyCollection<Guid> with
+        member _.Count = List.length ids
+
+    interface System.Collections.Generic.IEnumerable<Guid> with
+        member _.GetEnumerator() : System.Collections.Generic.IEnumerator<Guid> =
+            invalidOp "The posted-id set must be queried in place, not copied."
+
+    interface System.Collections.IEnumerable with
+        member _.GetEnumerator() : System.Collections.IEnumerator =
+            invalidOp "The posted-id set must be queried in place, not copied."
+
+[<Fact>]
+let ``Ledger validation queries the posted-id sets in place instead of copying them`` () =
+    let journalId = Guid.Parse("11111111-1111-1111-1111-111111111111")
+    let debit = line 100m 0m
+
+    let unposted = validateAgainst journalId debit (NonEnumerableIdSet []) (NonEnumerableIdSet [])
+    unposted.IsValid |> should equal true
+
+    let posted = validateAgainst journalId debit (NonEnumerableIdSet [ journalId ]) (NonEnumerableIdSet [])
+    posted.IsValid |> should equal false
+
 [<Fact>]
 let ``Ledger net balance uses debit normal for assets`` () =
     LedgerInterop.CalculateNetBalance(0, 100m, 25m) |> should equal 75m

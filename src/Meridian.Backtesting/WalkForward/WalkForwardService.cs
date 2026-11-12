@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Meridian.Backtesting.Engine;
+using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Sdk;
 
 namespace Meridian.Backtesting.WalkForward;
@@ -415,8 +416,8 @@ public sealed class WalkForwardService : IWalkForwardService
         var sharpe = std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(365.0);
 
         return new WalkForwardOosMetrics(
-            TotalReturn: (decimal)totalReturn,
-            AnnualizedReturn: (decimal)annualizedReturn,
+            TotalReturn: ReportedReturn.FromDouble(totalReturn),
+            AnnualizedReturn: ReportedReturn.FromDouble(annualizedReturn),
             SharpeRatio: sharpe,
             MaxDrawdownPercent: (decimal)maxDrawdown,
             TradingDays: dailyReturns.Count,

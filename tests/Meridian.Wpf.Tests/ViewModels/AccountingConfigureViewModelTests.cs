@@ -1405,7 +1405,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
 
         await harness.ViewModel.LoadAsync();
         await harness.ViewModel.SeedBaselineConfigurationAsync();
-        harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.CapitalCall;
+        // Exercise the generic journal lifecycle with a supported accrual. Capital calls require
+        // retained commitment/call authority and are covered by the governed capital intake tests.
+        harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.AccruedExpense;
         harness.ViewModel.DraftAmount = 275m;
         await harness.ViewModel.SaveManualJournalDraftAsync();
         await harness.ViewModel.ValidateManualJournalDraftAsync();

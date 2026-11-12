@@ -50,6 +50,26 @@ Captures go into ignored `artifacts/web-screenshots/captures`; setup failures ca
 committed catalog as newly rendered evidence. Only a fully validated run copies images into the
 requested catalog directory under `docs/screenshots/web` for the refresh PR.
 
+The capture script also reads each route's rendered main content and fails the route when it shows
+any of these (`findCaptureContentIssues`):
+
+| Rule | Fails on |
+|---|---|
+| `opaque-identifier` | a GUID-shaped identifier |
+| `singular-count-plural-noun` | a count of one before a phrase-ending plural noun ("1 rows") |
+| `api-path` | a request path such as `/api/ledger/...` |
+| `internal-term` | "lane", "payload", "mutation" or "caller-visible" |
+| `slug-identifier` | a slug-shaped record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`); ordinary compounds such as "as-of" and "read-only" pass |
+| `disabled-primary-without-reason` | a visible disabled primary button with no `title` or description saying why |
+| `status-contradiction` | a status bar that says "up to date" while the page's posture strip says its freshness needs review or is blocked |
+
+The first five read the rendered text; the last two read the DOM. Collapsed technical details,
+`title` attributes and form-field values are not rendered text, so identifiers and request paths
+kept there pass. A route that cannot comply yet lists the rule with a `reason` under
+`allowedContentIssues` in `scripts/dev/web-screenshot-routes.json`; an entry without a reason
+excuses nothing, and the manifest records each excused excerpt. Pass `--text-dir <dir>` to write
+each route's rendered main text as `<capture>.txt` when reviewing copy across the catalog.
+
 The capture script checkpoints its manifest after each completed route. Failed attempts remove
 rejected PNGs, and cleanup failures retain diagnostics and the original render error. An interrupted
 run may therefore retain a `running` manifest with completed routes and unattempted counts; it does

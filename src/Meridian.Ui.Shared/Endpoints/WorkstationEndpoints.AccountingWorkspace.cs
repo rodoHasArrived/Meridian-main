@@ -6,7 +6,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,8 +53,7 @@ public static partial class WorkstationEndpoints
                 ledgerBookId: requestedLedgerBookId,
                 ct: context.RequestAborted)
             .ConfigureAwait(false);
-        var scopedOpenBreaks = breakQueueItems.Count(static item =>
-            item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);
+        var scopedOpenBreaks = CrossScreenCountDefinitions.CountOpenBreaks(breakQueueItems);
         var visibleBreakQueueItems = readScope.BreakQueue
             ? breakQueueItems
             : (IReadOnlyList<ReconciliationBreakQueueItem>)[];

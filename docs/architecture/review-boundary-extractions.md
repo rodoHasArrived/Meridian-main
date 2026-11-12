@@ -29,7 +29,7 @@ must be rebuilt before deployment.
 `Meridian.Storage.Tests` owns the source-linked market-data storage primitive tests (WAL, sinks,
 maintenance primitives, catalog, conversion, buffers and file IO). Domain persistence and host
 composition integration tests remain in `Meridian.Tests`, where their shared PostgreSQL fixtures live.
-`Meridian.Execution.Tests` owns the execution unit/contract sources; the three host/UI composition tests
+`Meridian.Execution.Tests` owns the execution unit/contract sources; the four host/UI composition tests
 remain in the broad suite. Shared source manifests are imported by both projects and the broad suite,
 which removes exactly those files from compilation. Each test has one discovery owner.
 

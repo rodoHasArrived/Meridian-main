@@ -4,9 +4,12 @@ import { markDevelopmentFixtureUsage } from "@/lib/api";
 import { resolveDevSecurityScheduleEvents } from "@/lib/security-schedule-dev-fixtures";
 import { formatCount, formatDateTimeLabel } from "./accounting-screen.formatting";
 import { formatCorporateActionPayload } from "./accounting-screen.corporate-action-formatting";
+import { cashFlowBlockerEvidence, declaredExerciseEvidence, governanceEvidence, type SecurityMasterPolicyEvidence } from "./security-master-policy-evidence";
 import {
   formatFinanceFacingSourceSummary,
   formatSecurityDate,
+  formatSecurityScheduleEventType,
+  formatSecuritySchedulePostingStatus,
   referenceDataStatusBadgeVariant,
   referenceDataStatusLabel,
   referenceDataStatusTone,
@@ -20,11 +23,15 @@ import type {
   InstrumentPassportOperationsWorkbenchItem,
   InstrumentPassportOperationsWorkbenchPanel,
   InstrumentPassportProviderConfidence,
+  SecurityMasterDeclaredExerciseOutcome,
+  SecurityMasterGovernance,
   SecurityMasterOpenLot,
   SecurityMasterOpenLotReadModel,
+  SecurityMasterScheduleBlocker,
   SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
+import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -176,6 +183,9 @@ export interface SecuritySchedulesViewState {
   errorDetails: string[];
   hasRows: boolean;
   statusAnnouncement: string;
+  declaredExercise: SecurityMasterPolicyEvidence | null;
+  cashFlowBlocker: SecurityMasterPolicyEvidence | null;
+  governance: SecurityMasterPolicyEvidence;
 }
 
 
@@ -482,7 +492,10 @@ export function buildSecuritySchedulesViewState({
   error = null,
   factorHistoryCount = 0,
   provenanceCount = 0,
-  sourceSummary = null
+  sourceSummary = null,
+  declaredExercise = null,
+  governance = null,
+  cashFlowBlocker = null
 }: {
   securityId: string | null;
   displayName: string | null;
@@ -494,6 +507,9 @@ export function buildSecuritySchedulesViewState({
   factorHistoryCount?: number;
   provenanceCount?: number;
   sourceSummary?: string | null;
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
+  governance?: SecurityMasterGovernance | null;
+  cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
 }): SecuritySchedulesViewState {
   const normalizedError = normalizeApiErrorDisplay(error);
   const errorText = normalizedError?.summary ?? null;
@@ -507,6 +523,7 @@ export function buildSecuritySchedulesViewState({
   const pendingCount = rows.filter((row) => row.postingStatus === "Pending" || row.postingStatus === "Forecast").length;
   const varianceCount = rows.filter((row) => row.postingStatus === "Variance").length;
   const factorCount = rows.filter((row) => row.factorStart !== null || row.factorEnd !== null).length;
+  const exerciseEvidence = declaredExerciseEvidence(declaredExercise);
 
   return {
     securityId: displaySecurityId,
@@ -536,10 +553,17 @@ export function buildSecuritySchedulesViewState({
     errorText,
     errorDetails: normalizedError?.details ?? [],
     hasRows: eventCount > 0,
+    declaredExercise: exerciseEvidence,
+    cashFlowBlocker: cashFlowBlockerEvidence(cashFlowBlocker),
+    governance: governanceEvidence(governance),
     statusAnnouncement: errorText
       ? `Schedule book error: ${errorText}`
       : loading
         ? `Loading schedule book for ${displaySecurityId}.`
+        : cashFlowBlocker
+          ? `Cash-flow calculation blocked. ${cashFlowBlocker.code}: ${cashFlowBlocker.reason}`
+        : exerciseEvidence?.blocked
+          ? `${exerciseEvidence.title}. ${exerciseEvidence.messages.join(" ")}`
         : eventCount > 0
           ? `${eventCount} cash-flow schedule ${eventCount === 1 ? "event" : "events"} loaded for ${displaySecurityId}.`
           : ""
@@ -871,30 +895,30 @@ export function buildReferenceDataWorkbenchViewState({
       {
         id: "routes",
         label: "Mapped routes",
-        value: routeCounts.totalCount > 0 ? routeCounts.totalCount.toLocaleString() : "Pending",
+        value: routeCounts.totalCount > 0 ? formatCountValue(routeCounts.totalCount) : "Pending",
         detail: routeCounts.totalCount > 0
-          ? `${routeCounts.readyCount.toLocaleString()} ready · ${routeCounts.reviewCount.toLocaleString()} need review · ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${routeCounts.totalCount.toLocaleString()} total.`
+          ? `${formatCountValue(routeCounts.readyCount)} ready · ${formatCountValue(routeCounts.reviewCount)} need review · ${formatCountValue(routeCounts.deferredOrBlockedCount)} deferred or blocked · ${formatCountValue(routeCounts.totalCount)} total.`
           : "Select a security to build reference data checks.",
         tone: routeCounts.totalCount > 0 ? "default" : "warning"
       },
       {
         id: "ready",
         label: "Ready data",
-        value: routeCounts.readyCount.toLocaleString(),
+        value: formatCountValue(routeCounts.readyCount),
         detail: routeCounts.readyCount > 0 ? `${formatCount(routeCounts.readyCount, "reference route")} returned data.` : "No reference route has returned data yet.",
         tone: routeCounts.readyCount > 0 ? "success" : "default"
       },
       {
         id: "review",
         label: "Needs review",
-        value: routeCounts.reviewCount.toLocaleString(),
+        value: formatCountValue(routeCounts.reviewCount),
         detail: routeCounts.reviewCount > 0 ? `${formatCount(routeCounts.reviewCount, "data source")} returned empty, missing, or error status.` : "No checked data source is flagged for review.",
         tone: routeCounts.reviewCount > 0 ? "warning" : "success"
       },
       {
         id: "deferred",
         label: "Deferred / blocked",
-        value: routeCounts.deferredOrBlockedCount.toLocaleString(),
+        value: formatCountValue(routeCounts.deferredOrBlockedCount),
         detail: routeCounts.deferredOrBlockedCount > 0
           ? [
               routeCounts.deferredCount > 0 ? `${formatCount(routeCounts.deferredCount, "write-capable source")} intentionally deferred.` : null,
@@ -923,7 +947,7 @@ export function buildReferenceDataWorkbenchViewState({
       : loading
         ? `Loading multi-asset reference data coverage for ${displaySecurityId}.`
         : rows.length > 0
-          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${routeCounts.readyCount.toLocaleString()} ready, ${routeCounts.reviewCount.toLocaleString()} need review, and ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked.`
+          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${formatCountValue(routeCounts.readyCount)} ready, ${formatCountValue(routeCounts.reviewCount)} need review, and ${formatCountValue(routeCounts.deferredOrBlockedCount)} deferred or blocked.`
           : ""
   };
 }
@@ -1312,33 +1336,6 @@ export function buildTradingParametersViewState(
 }
 
 
-export function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
-  const labels: Record<string, string> = {
-    Coupon: "Coupon",
-    Principal: "Principal",
-    Paydown: "Paydown",
-    Maturity: "Maturity",
-    Call: "Call",
-    Distribution: "Distribution",
-    FactorUpdate: "Factor update"
-  };
-
-  return labels[eventType] ?? eventType;
-}
-
-
-export function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
-  const labels: Record<string, string> = {
-    Posted: "Posted",
-    Pending: "Pending",
-    Variance: "Variance review",
-    Forecast: "Forecast"
-  };
-
-  return labels[status] ?? status;
-}
-
-
 export function securitySchedulePostingTone(
   status: SecuritySchedulePostingStatus
 ): SecurityScheduleRowViewModel["postingStatusTone"] {
@@ -1370,10 +1367,7 @@ export function formatScheduleAmount(value: number | null, currency: string): st
   }
 
   const prefix = value >= 0 ? "" : "-";
-  const amount = Math.abs(value).toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 0
-  });
+  const amount = formatNumber(Math.abs(value), { maximumFractionDigits: 2, minimumFractionDigits: 0 });
   return `${prefix}${amount} ${currency}`;
 }
 
@@ -1388,7 +1382,7 @@ export function formatSignedScheduleAmount(value: number, currency: string): str
   }
 
   const sign = value > 0 ? "+" : "-";
-  return `${sign}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+  return `${sign}${formatNumber(Math.abs(value), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 
@@ -1397,7 +1391,7 @@ export function formatQuantity(value: number | null): string {
     return "—";
   }
 
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  return formatNumber(value, { maximumFractionDigits: 4 });
 }
 
 
@@ -1439,7 +1433,7 @@ export function formatScheduleVariance(expected: number | null, actual: number |
   }
 
   const sign = variance > 0 ? "+" : "-";
-  return `${sign}${Math.abs(variance).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+  return `${sign}${formatNumber(Math.abs(variance), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 

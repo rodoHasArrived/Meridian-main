@@ -3,6 +3,7 @@ import {
   buildDataProvenanceBadgeViewModel,
   type DataProvenanceKind
 } from "@/app-shell.data-provenance-badge";
+import type { SessionInfo } from "@/types";
 
 export interface DataProvenanceBannerProps {
   provenance: DataProvenanceKind;
@@ -10,25 +11,73 @@ export interface DataProvenanceBannerProps {
   /** Re-runs the demo-mode probe. Rendered as a retry control only for `unknown` provenance. */
   onRetryLiveData?: () => void;
   retryBusy?: boolean;
+  /**
+   * Session environment, or null while the session is still resolving. Compaction is decided
+   * against it: an unresolved environment and a LIVE session always get the full banner.
+   */
+  environment?: SessionInfo["environment"] | null;
+  /**
+   * The masthead environment badge already names this provenance beside PAPER / DEMO, so the
+   * banner shrinks to a thin top-edge stripe instead of repeating the label at full width.
+   */
+  labeledInMasthead?: boolean;
+  /** Persistent masthead chip. Its enclosing status disclosure owns recovery controls. */
+  compact?: boolean;
 }
 
 /**
- * Persistent, non-dismissable provenance badge. Rendered near the masthead so it rides above every
+ * Persistent, non-dismissable provenance label. Rendered near the masthead so it rides above every
  * workspace. There is deliberately no close control: whenever the workstation is showing simulated,
- * seeded, or sample data the operator keeps seeing the label. Real data renders nothing. The
- * `unknown` state — the probe never answered, so nothing was confirmed either way — renders as a
- * warning with a retry control instead of the simulated danger banner, so a transient probe failure
- * cannot brand a real install SIMULATED for the whole session.
+ * seeded, or sample data the operator keeps seeing the label. Real data renders nothing.
+ *
+ * With `labeledInMasthead`, the masthead environment badge carries the visible label
+ * ("PAPER · SEEDED"), so this renders as a thin stripe that keeps the same status role and full
+ * text for assistive technology. The full-width banner is kept for the cases where it says
+ * something the badge cannot: `unknown` provenance -- the probe never answered, so it carries the
+ * retry control and a warning rather than a false SIMULATED claim -- and any LIVE or unresolved
+ * session, where non-real data must not be easy to miss.
  */
 export function DataProvenanceBanner({
   provenance,
   detail,
   onRetryLiveData,
-  retryBusy
+  retryBusy,
+  environment = null,
+  labeledInMasthead = false,
+  compact = false
 }: DataProvenanceBannerProps) {
   const badge = buildDataProvenanceBadgeViewModel({ provenance, detail });
+  const stripe = labeledInMasthead
+    && badge.visible
+    && badge.provenance !== "unknown"
+    && environment !== null
+    && environment !== "live";
+
   if (!badge.visible) {
     return null;
+  }
+
+  if (stripe && !compact) {
+    const fullText = `${badge.label} — ${badge.headline}. ${badge.detail}`;
+    return <section aria-label="Data provenance" className="workstation-provenance workstation-provenance--stripe" data-compact="true">
+      <div className="workstation-provenance-stripe" data-tone="danger" data-testid={`data-provenance-${badge.provenance}`}
+        role={badge.role} aria-live={badge.ariaLive} title={fullText}><span className="sr-only">{fullText}</span></div>
+    </section>;
+  }
+
+  if (compact) {
+    return (
+      <span
+        className="workstation-provenance-chip"
+        role={badge.role}
+        aria-live={badge.ariaLive}
+        aria-label={badge.ariaLabel}
+        title={badge.ariaLabel}
+        data-testid={`data-provenance-${badge.provenance}`}
+      >
+        {badge.label}<span className="sr-only"> — {badge.headline}. {badge.detail}</span>
+      </span>
+    );
   }
 
   const showRetry = badge.provenance === "unknown" && typeof onRetryLiveData === "function";
