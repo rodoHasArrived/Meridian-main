@@ -6,10 +6,15 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Shared
+
+Recurring fixed-income accrual explicitly admits Bond only and passes the catalog quote convention
+to the shared bridge. Daily holding windows split on changes to the complete lot, including unit,
+multiplier and carrying inputs. Non-bond classes and factored lots remain blocked until their
+accounting behavior is supported; the bridge itself uses explicit lot exposure instead of par 100.
 
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review

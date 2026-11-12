@@ -3,7 +3,6 @@ using Meridian.Contracts.Calendars;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.SecurityMaster.Schedules;
-using Meridian.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -20,9 +19,8 @@ namespace Meridian.Application.SecurityMaster;
 /// <remarks>
 /// Economic terms are resolved once, up front, into a typed <see cref="StructuredCashFlowTerms"/> via
 /// <see cref="StructuredCashFlowTermsResolver"/> rather than probed inline; source freshness is
-/// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection; and a fresh
-/// base-scenario projection can be routed to the ledger through
-/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only. A record that declares
+/// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection. Governed recurring
+/// accruals use the amortization bridge's explicit accrual window. A record that declares
 /// schedule conventions (ADR-025) projects through the schedule kernel instead of the legacy coupon
 /// walk (SecurityMasterCashFlowService.DeclaredConventions.cs).
 /// </remarks>
@@ -31,7 +29,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     private readonly ISecurityMasterCashFlowStore _store;
     private readonly IReadOnlyList<IStructuredCashFlowProvider> _providers;
     private readonly ISecurityMasterQueryService _queryService;
-    private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
     private readonly ISecurityForwardCurveProvider? _forwardCurves;
     private readonly IBusinessDayCalendarSource? _calendars;
@@ -41,41 +38,15 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
-    /// <summary>Preserves the original compiled host-composition constructor.</summary>
     public SecurityMasterCashFlowService(
         ISecurityMasterCashFlowStore store,
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge,
-        ISecurityForwardCurveProvider? forwardCurves)
-        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
-    {
-    }
-
-    /// <summary>Preserves the compiled calendar-aware host-composition constructor.</summary>
-    public SecurityMasterCashFlowService(
-        IBusinessDayCalendarSource? calendars,
-        ISecurityMasterCashFlowStore store,
-        IEnumerable<IStructuredCashFlowProvider> providers,
-        ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge,
-        ISecurityForwardCurveProvider? forwardCurves)
-        : this(calendars, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
-    {
-    }
-
-    public SecurityMasterCashFlowService(
-        ISecurityMasterCashFlowStore store,
-        IEnumerable<IStructuredCashFlowProvider> providers,
-        ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
         ISecurityForwardCurveProvider? forwardCurves = null,
         IBondCalculationPolicy? bondPolicy = null,
         ISecurityCashFlowReceiptStore? receiptStore = null)
-        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, bondPolicy, receiptStore)
+        : this(null, store, providers, queryService, logger, forwardCurves, bondPolicy, receiptStore)
     {
     }
 
@@ -86,7 +57,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
         ISecurityForwardCurveProvider? forwardCurves = null,
         IBondCalculationPolicy? bondPolicy = null,
         ISecurityCashFlowReceiptStore? receiptStore = null,
@@ -97,7 +67,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         _providers = providers?.ToList() ?? [];
         _queryService = queryService;
         _logger = logger;
-        _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
         _forwardCurves = forwardCurves;
         _calendars = calendars;
         _bondPolicy = bondPolicy;
@@ -188,8 +157,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // Curves are read as of the projection date, not the wall clock, so a valuation as of
             // another date projects floating legs from the curve in force on that date.
             var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
-            var projection = BuildCalculatedProjectionCore(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves);
+            var projection = SecurityCashFlowScheduleRowCodec.Current(BuildCalculatedProjectionCore(
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves));
             if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
             {
                 // Coverage gaps are informational (ADR-025 decision 2): the schedule still projects.
@@ -239,27 +208,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             };
     }
 
-    [PostingCalculationNotYetConnected("Recognizes each coupon whole on its period date. Recurring accruals use the amortization bridge's day-weighted accrual window instead; repoint a caller to that or retire this.")]
-    public async Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
-        Guid securityId,
-        string? financialAccountId = null,
-        DateOnly? through = null,
-        CancellationToken ct = default)
-    {
-        // Accruals post from actual (base-scenario) cash flows only; rate-shocked scenarios are
-        // analysis-only and are additionally rejected by the bridge.
-        var projection = await GetProjectionAsync(securityId, StructuredCashFlowScenario.Base, ct).ConfigureAwait(false);
-        if (projection is null)
-        {
-            return StructuredCashFlowLedgerPostingResult.Blocked(
-                securityId, "No cash flow projection is available for this security.");
-        }
-
-        var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        var symbol = ResolveSymbol(security, securityId);
-        return _ledgerBridge.BuildCouponAccrualPostings(projection, symbol, financialAccountId, through);
-    }
-
     private static StructuredCashFlowStaleness EvaluateStaleness(DateTimeOffset? lastUpdatedUtc)
     {
         if (lastUpdatedUtc is not DateTimeOffset lastUpdated)
@@ -270,32 +218,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         return DateTimeOffset.UtcNow - lastUpdated > StalenessThreshold
             ? StructuredCashFlowStaleness.Stale
             : StructuredCashFlowStaleness.Fresh;
-    }
-
-    private static string ResolveSymbol(SecurityDetailDto? security, Guid securityId)
-    {
-        if (security is not null)
-        {
-            var ticker = security.Identifiers
-                .FirstOrDefault(i => i.Kind == SecurityIdentifierKind.Ticker)?.Value;
-            if (!string.IsNullOrWhiteSpace(ticker))
-            {
-                return ticker.Trim().ToUpperInvariant();
-            }
-
-            var anyIdentifier = security.Identifiers.FirstOrDefault()?.Value;
-            if (!string.IsNullOrWhiteSpace(anyIdentifier))
-            {
-                return anyIdentifier.Trim().ToUpperInvariant();
-            }
-
-            if (!string.IsNullOrWhiteSpace(security.DisplayName))
-            {
-                return security.DisplayName.Trim().ToUpperInvariant();
-            }
-        }
-
-        return securityId.ToString("N");
     }
 
     /// <summary>
@@ -519,8 +441,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 interest,
                 principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis))
             {
-                // The interval the interest was measured over, so it can be accrued by day. Kept
-                // off the wire: this row shape is retained in calculation receipts.
+                // Retained by the current row contract so daily accruals survive receipt replay.
                 InterestMeasuredFrom = accrualStart,
                 InterestMeasuredTo = date
             });

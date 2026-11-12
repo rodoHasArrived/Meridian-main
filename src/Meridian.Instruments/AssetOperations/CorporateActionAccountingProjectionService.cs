@@ -49,6 +49,9 @@ public sealed record CorporateActionAccountingProjectionRequest(
     /// <summary>Explicit reviewed split basis transfer; other callers retain the operational no-journal projection.</summary>
     public bool CanonicalLotTransferJournal { get; init; }
 
+    /// <summary>Principal-only canonical redemption through the governed disposal authority.</summary>
+    public bool CanonicalLotRedemptionJournal { get; init; }
+
     public IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> EvidenceManifest { get; init; } =
         EvidenceManifest ?? [];
 
@@ -117,10 +120,9 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
 
         if (blockers.Count == 0 && request.AuthoritativeLotMutations.Count > 0)
         {
-            computation = BindAuthoritativeLotMutations(
-                computation,
-                request.AuthoritativeLotMutations,
-                blockers);
+            computation = request.CanonicalLotRedemptionJournal
+                ? BindCanonicalRedemptionLots(computation, request.AuthoritativeLotMutations, blockers)
+                : BindAuthoritativeLotMutations(computation, request.AuthoritativeLotMutations, blockers);
         }
 
         if (blockers.Count > 0)
@@ -150,7 +152,8 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
                 request.ElectionId)
             {
                 SourceCorporateActionId = request.SourceCorporateActionId,
-                CanonicalLotTransferJournal = request.CanonicalLotTransferJournal
+                CanonicalLotTransferJournal = request.CanonicalLotTransferJournal,
+                CanonicalLotRedemptionJournal = request.CanonicalLotRedemptionJournal
             };
         }
 
@@ -238,7 +241,8 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             request.ElectionId)
         {
             SourceCorporateActionId = request.SourceCorporateActionId,
-            CanonicalLotTransferJournal = request.CanonicalLotTransferJournal
+            CanonicalLotTransferJournal = request.CanonicalLotTransferJournal,
+            CanonicalLotRedemptionJournal = request.CanonicalLotRedemptionJournal
         };
     }
 
@@ -358,7 +362,9 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         CorporateActionAccountingProjectionRequest request,
         string currency,
         List<CorporateActionProjectionBlockerDto> blockers)
-        => request.ActionType switch
+        => request.CanonicalLotRedemptionJournal
+            ? ProjectCanonicalRedemption(request, currency, blockers)
+            : request.ActionType switch
         {
             CorporateActionAccountingTypeDto.RegS144AExchange =>
                 ProjectBookValueExchange(request, currency, blockers, requireAllocatedSuccessors: false),

@@ -6,10 +6,16 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Instruments
+
+Canonical call/put redemption is an explicit principal-only long-lot disposal mode. It binds every
+selected lot's complete quantity and basis, retains the reviewed disposal instruction before
+drafting, and routes the resulting candidate through the existing atomic lot/journal writer.
+Accrued-interest, make-whole, short and mixed mutation cases refuse this bounded path. Historical
+corporate-action projections retain their original behavior unless this mode is selected.
 
 Floating analytics v3 returns each projected coupon's resolved fixing evidence without repricing
 in either workstation. Observed fixings and forecasts retain their distinct source and reset date;

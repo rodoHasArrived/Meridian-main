@@ -393,6 +393,9 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException("Security Master is unavailable, so the bond's currency cannot be confirmed; fixed-income accruals are blocked.");
         var security = await securities.GetByIdAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security Master holds no security for {ticker}; its currency cannot be confirmed.");
+        if (!SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor) || descriptor.AssetClass != "Bond")
+            throw new InvalidOperationException(
+                $"{ticker} is classified as '{security.AssetClass}'; recurring fixed-income accrual currently supports Bond only.");
         if (!string.Equals(security.Currency?.Trim(), context.Scope.Currency.Trim(), StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException(
                 $"{ticker} is denominated in {security.Currency}, not the book currency {context.Scope.Currency}; cross-currency bond accruals are not supported.");
@@ -450,7 +453,8 @@ public sealed class FixedIncomeAccrualCalculation(
                 heldLots, financialAccountId, StructuredCashFlowScenario.Base, ProjectionAsOf: projectionAsOf,
                 AmortizedThrough: start.AddDays(-1),
                 AccrualWindow: new AmortizationAccrualWindow(start, end),
-                CouponPrincipalBasis: principalFace), ct).ConfigureAwait(false);
+                CouponPrincipalBasis: principalFace,
+                QuoteConvention: descriptor.QuoteConvention), ct).ConfigureAwait(false);
             journals.AddRange(scratch.Journal.Where(journal => journal.Metadata.ActivityType == AmortizationActivity &&
                 journal.Metadata.EffectiveDate is { } date && InWindow(date, start, end)));
         }
@@ -482,8 +486,7 @@ public sealed class FixedIncomeAccrualCalculation(
     private static bool InWindow(DateOnly date, DateOnly start, DateOnly end) => date >= start && date <= end;
 
     private static bool SameHolding(LedgerTaxLot[] left, LedgerTaxLot[] right)
-        => left.Length == right.Length &&
-           left.Zip(right).All(static pair => pair.First.LotId == pair.Second.LotId && pair.First.Quantity == pair.Second.Quantity);
+        => left.SequenceEqual(right);
 }
 
 /// <summary>

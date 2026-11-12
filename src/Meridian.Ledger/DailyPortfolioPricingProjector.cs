@@ -34,11 +34,18 @@ public static class DailyPortfolioPricingProjector
 
     private static DailyPortfolioPricingLine BuildLine(DailyPortfolioPricingInput input, DailyPortfolioPriceMark mark)
     {
-        var costBasis = RoundCurrency(mark.Quantity * mark.CostPrice);
-        var marketValue = RoundCurrency(mark.Quantity * mark.MarkPrice);
+        var structuredNote = StructuredNoteAccountingTemplate.AppliesTo(mark.InstrumentType);
+        var costBasis = structuredNote
+            ? RoundCurrency(StructuredNoteAccountingTemplate.ValueAtQuote(mark, mark.CostPrice), input.BaseCurrency)
+            : RoundCurrency(mark.Quantity * mark.CostPrice);
+        var marketValue = structuredNote
+            ? RoundCurrency(StructuredNoteAccountingTemplate.ValueAtQuote(mark, mark.MarkPrice), input.BaseCurrency)
+            : RoundCurrency(mark.Quantity * mark.MarkPrice);
         var unrealizedGainOrLoss = marketValue - costBasis;
         var hasPriorCarryingValue = mark.PriorCarryingValue.HasValue;
-        var priorCarryingValue = RoundCurrency(mark.PriorCarryingValue ?? costBasis);
+        var priorCarryingValue = structuredNote
+            ? RoundCurrency(mark.PriorCarryingValue ?? costBasis, input.BaseCurrency)
+            : RoundCurrency(mark.PriorCarryingValue ?? costBasis);
         var markAdjustment = marketValue - priorCarryingValue;
 
         return new DailyPortfolioPricingLine(
@@ -92,6 +99,17 @@ public static class DailyPortfolioPricingProjector
                 EntityId: input.EntityId,
                 InstrumentId: line.SecurityId,
                 AccountId: line.FinancialAccountId);
+
+            if (StructuredNoteAccountingTemplate.AppliesTo(line.InstrumentType))
+            {
+                var template = StructuredNoteAccountingTemplate.Create(line.Symbol, line.FinancialAccountId,
+                    gain: line.MarkAdjustment > 0m);
+                var instance = template.Instantiate(new JournalTemplateInstantiation(input.AsOf,
+                    new Dictionary<string, decimal> { ["markAdjustment"] = Math.Abs(line.MarkAdjustment) }, dimensions));
+                journalLines.AddRange(instance.Lines.Select(posting => new DailyPortfolioPricingJournalLine(
+                    line, posting.account, posting.debit, posting.credit, posting.dimensions)));
+                continue;
+            }
 
             if (line.MarkAdjustment > 0m)
             {

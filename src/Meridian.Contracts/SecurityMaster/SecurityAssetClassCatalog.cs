@@ -684,12 +684,16 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cusip,
                 SecurityIdentifierKind.InternalCode
             ],
-            // Outside the accounting slice by explicit disposition (review D10, slice 4): the note's
-            // FixedIncome taxonomy must not route it into bond posting. Its accounting treatment is an
-            // open domain-owner decision (D3); no bond treatment is assigned here.
+            // The owner chose valuation-mark FVTPL (2026-11-11). This is deliberately outside the
+            // coupon/accrual event slice: FixedIncome taxonomy must not route it into bond posting.
             RequiresMaturity: true,
             TermsVersion: 2,
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            StampFloor = 1,
+            AccountingOutsideSlice = true,
+            ValuationAccountingTreatment = SecurityValuationAccountingTreatment.FairValueThroughProfitOrLoss
+        },
         new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
@@ -1294,6 +1298,12 @@ public sealed record SecurityAssetClassDescriptor(
     public bool AccountingOutsideSlice { get; init; }
 
     /// <summary>
+    /// Explicit valuation treatment, separate from admission to the coupon/accrual event slice.
+    /// The daily valuation projector consumes this declaration when selecting a mark template.
+    /// </summary>
+    public SecurityValuationAccountingTreatment ValuationAccountingTreatment { get; init; }
+
+    /// <summary>
     /// The declared accounting disposition: <see cref="SecurityAccountingDisposition.InSlice"/> when the
     /// class names an <see cref="AccountingInstrumentClass"/>, <see cref="SecurityAccountingDisposition.OutsideSlice"/>
     /// when it carries <see cref="AccountingOutsideSlice"/>, and <see cref="SecurityAccountingDisposition.Undeclared"/>
@@ -1364,6 +1374,13 @@ public enum SecurityAccountingDisposition
 
     /// <summary>The class is intentionally outside the slice and must not reach any posting by fallback.</summary>
     OutsideSlice
+}
+
+/// <summary>The declared mark-based accounting treatment for an asset class.</summary>
+public enum SecurityValuationAccountingTreatment
+{
+    Unspecified,
+    FairValueThroughProfitOrLoss
 }
 
 /// <summary>

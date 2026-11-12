@@ -6,10 +6,15 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+`StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
+interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
+row schema for historical receipts. The catalog declares StructuredNote valuation as fair value
+through profit or loss, independently of eligibility for coupon-accrual accounting.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

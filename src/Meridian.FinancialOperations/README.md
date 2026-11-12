@@ -6,10 +6,15 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.FinancialOperations
+
+The asset-accounting event spine freezes an optional canonical redemption disposal instruction
+at projection and requires the exact same instruction at drafting. Approved candidates reuse the
+existing atomic disposal authority to relieve full quantities and bases together with their
+journal. Historical events omit the optional member and preserve their retained fingerprints.
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
