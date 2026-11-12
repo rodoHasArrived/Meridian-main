@@ -141,7 +141,7 @@ public sealed partial class EvidenceWorkbenchViewModel
         && _attestationWorkspace is { CanAdministerDeclaration: true } workspace
         && KnownAttestationPolicy(workspace.State.PolicyVersion)
         && (workspace.State.PolicyEnabled || workspace.State.Declaration?.Enabled == true)
-        && (workspace.State.Declaration is null || SameAttestationActor(workspace.Actor, workspace.State.Declaration.PrincipalId));
+        && (workspace.State.Declaration is not { Enabled: true } || SameAttestationActor(workspace.Actor, workspace.State.Declaration.PrincipalId));
 
     private bool CanRecordAttestation() => CanEditAttestationInputs && IsAttestationConfirmed && HasAttestationReason(AttestationReason)
         && _attestationWorkspace is { CanAttest: true, State.PolicyEnabled: true } workspace

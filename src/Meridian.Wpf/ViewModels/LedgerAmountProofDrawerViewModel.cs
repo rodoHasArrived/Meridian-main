@@ -140,7 +140,9 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
 
             ScopeText = $"Tenant {proof.Scope.TenantId} · company {proof.Scope.CompanyId} · fund {proof.Scope.FundProfileId}"
                 + $" · book {proof.Scope.LedgerBookId:D} · period {proof.Scope.PeriodId:D}";
-            var accountingDetails = AccountingPreparerAttestationPresentation.Describe(proof, out var accountingSummary);
+            var reportContributorsMatch = selection.ReportScope is null || ReportContributorsMatch(selection, proof);
+            var accountingDetails = AccountingPreparerAttestationPresentation.Describe(proof, out var accountingSummary,
+                selection.ReportScope is not null && reportContributorsMatch ? selection.JournalEntryIds : null);
             AccountingAttestationSummaryText = accountingSummary;
             foreach (var detail in accountingDetails) AccountingAttestationDisclosures.Add(detail);
             var preparerProjection = packet.PreparerAttestations;
@@ -175,7 +177,7 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
                 return;
             }
 
-            if (selection.ReportScope is not null && !ReportContributorsMatch(selection, proof))
+            if (!reportContributorsMatch)
             {
                 ShowBlocked("Supporting journal identities do not match the retained report amount binding.");
                 return;

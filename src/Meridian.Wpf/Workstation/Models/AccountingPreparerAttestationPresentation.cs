@@ -5,7 +5,10 @@ namespace Meridian.Wpf.Workstation.Models;
 /// <summary>Displays native accounting decision classification without inferring review or coverage.</summary>
 public static class AccountingPreparerAttestationPresentation
 {
-    public static IReadOnlyList<string> Describe(LedgerAmountProofDto proof, out string summary)
+    // Report journal identities are supplied only after the drawer validates the retained
+    // selection's complete journal/line binding against the response.
+    public static IReadOnlyList<string> Describe(LedgerAmountProofDto proof, out string summary,
+        IReadOnlyList<Guid>? reportJournalEntryIds = null)
     {
         if (proof.AccountingPreparerAttestations is null)
         {
@@ -24,7 +27,7 @@ public static class AccountingPreparerAttestationPresentation
             : "Contributing accounting decisions have preparer or unavailable classification. No ordinary approval or Verified Coverage credit is inferred.";
         return proof.AccountingPreparerAttestations.Select(decision =>
         {
-            if (decision is null || decision.SourceScope != proof.Scope || decision.SchemaVersion != 1
+            if (decision is null || !MatchesSource(decision, proof, reportJournalEntryIds) || decision.SchemaVersion != 1
                 || decision.JournalEntryIds is null || decision.ValidationIssues is null
                 || decision.Classification != LedgerAmountApprovalClassification.PreparerAttestation
                 || decision.Disclosure != SinglePrincipalAttestationPolicy.Disclosure)
@@ -35,5 +38,26 @@ public static class AccountingPreparerAttestationPresentation
                 + $"policy {decision.PolicyVersion ?? "unavailable"}. Journals: {string.Join(", ", decision.JournalEntryIds)}. "
                 + (decision.ValidationIssues.Count == 0 ? "" : "Classification issues: " + string.Join("; ", decision.ValidationIssues));
         }).ToArray();
+    }
+
+    private static bool MatchesSource(AccountingPreparerAttestationDisclosureDto decision, LedgerAmountProofDto proof,
+        IReadOnlyList<Guid>? reportJournalEntryIds)
+    {
+        if (!proof.SubjectId.StartsWith("report:", StringComparison.Ordinal))
+            return reportJournalEntryIds is null && decision.SourceScope == proof.Scope;
+        var source = decision.SourceScope;
+        if (reportJournalEntryIds is not { Count: > 0 } || source is null || source.PeriodId == Guid.Empty
+            || (source with { PeriodId = proof.Scope.PeriodId }) != proof.Scope
+            || decision.JournalEntryIds is not { Count: > 0 })
+            return false;
+        return decision.JournalEntryIds.All(journal => journal != Guid.Empty && reportJournalEntryIds.Contains(journal)
+            && proof.Evidence.Any(item =>
+            {
+                var parts = item.SourceSubjectId?.Split(':');
+                return item.Kind != "ledger-record" && item.SourceScope == source && parts is { Length: 3 }
+                    && Guid.TryParseExact(parts[0], "D", out var sourceJournal) && sourceJournal == journal
+                    && Guid.TryParseExact(parts[1], "D", out var line) && line != Guid.Empty
+                    && parts[2] is "debit" or "credit";
+            }));
     }
 }

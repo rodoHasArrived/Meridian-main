@@ -250,6 +250,70 @@ public sealed partial class EvidenceWorkbenchViewModelTests
     }
 
     [Fact]
+    public async Task AttestationActions_EnableWithdrawnDeclarationForCurrentAuthorizedPrincipal()
+    {
+        var client = CreateAttestationActionClient();
+        var workspace = client.AttestationsResponse.Data!;
+        var withdrawn = workspace.State.Declaration! with { Enabled = false, PrincipalId = "previous-principal", Revision = 4 };
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Ok(workspace with
+        {
+            State = workspace.State with { Declaration = withdrawn, DeclarationHistory = [withdrawn] }
+        });
+        using var vm = new EvidenceWorkbenchViewModel(client);
+        await vm.RefreshAsync();
+        vm.DeclarationActionText.Should().Be("Enable declaration for myself");
+        vm.ToggleAttestationDeclarationCommand.CanExecute(null).Should().BeFalse("an explicit reason is required");
+        vm.DeclarationReason = "Declare responsibility for this scope after the prior principal withdrew";
+        vm.IsAttestationConfirmed = true;
+        vm.RecordAttestationCommand.CanExecute(null).Should().BeFalse("historical ownership does not authorize an assertion");
+        vm.ToggleAttestationDeclarationCommand.CanExecute(null).Should().BeTrue();
+
+        await vm.ToggleAttestationDeclarationCommand.ExecuteAsync(null);
+
+        var command = client.DeclarationRequests.Should().ContainSingle().Which;
+        command.Enabled.Should().BeTrue();
+        command.PrincipalId.Should().Be(workspace.Actor).And.NotBe(withdrawn.PrincipalId);
+        command.ExpectedRevision.Should().Be(withdrawn.Revision);
+        command.PolicyVersion.Should().Be(workspace.State.PolicyVersion);
+        command.Reason.Should().Be("Declare responsibility for this scope after the prior principal withdrew");
+        client.AttestationRequests.Should().BeEmpty("enabling a declaration does not attest any source");
+        vm.IsAttestationConfirmed.Should().BeFalse("a declaration change requires a fresh source confirmation");
+    }
+
+    [Theory]
+    [InlineData("active-foreign-declaration")]
+    [InlineData("no-administration-grant")]
+    [InlineData("policy-disabled")]
+    [InlineData("unknown-policy")]
+    public async Task AttestationActions_DeclarationReassignmentPreservesCurrentAuthorityChecks(string blocker)
+    {
+        var client = CreateAttestationActionClient();
+        var workspace = client.AttestationsResponse.Data!;
+        var declaration = workspace.State.Declaration! with
+        {
+            Enabled = blocker == "active-foreign-declaration", PrincipalId = "previous-principal"
+        };
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Ok(workspace with
+        {
+            CanAdministerDeclaration = blocker != "no-administration-grant",
+            State = workspace.State with
+            {
+                Declaration = declaration,
+                PolicyEnabled = blocker != "policy-disabled",
+                PolicyVersion = blocker == "unknown-policy" ? "unsupported-policy" : workspace.State.PolicyVersion
+            }
+        });
+        using var vm = new EvidenceWorkbenchViewModel(client);
+        await vm.RefreshAsync();
+        vm.DeclarationReason = "Attempt to bind the current principal";
+
+        vm.ToggleAttestationDeclarationCommand.CanExecute(null).Should().BeFalse();
+        await vm.ChangeAttestationDeclarationAsync();
+        client.DeclarationRequests.Should().BeEmpty();
+        client.AttestationRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task AttestationActions_OriginalProofRemainsReadableAfterWithdrawalAndRevocation()
     {
         var client = CreateLoadedClient();
