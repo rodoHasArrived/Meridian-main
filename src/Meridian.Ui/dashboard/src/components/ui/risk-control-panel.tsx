@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const toneClass = {
   success: "text-success",
@@ -74,9 +75,9 @@ export function RiskControlPanel() {
           </div>
         ) : null}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold uppercase text-muted-foreground">{vm.rowsLabel}</h4>
+          <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.rowsLabel) && "uppercase")}>{vm.rowsLabel}</h4>
           {vm.rows.map((row) => (
-            <article key={row.ruleName} className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+            <article key={row.ruleName} className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
               <div className="flex items-center justify-between gap-3">
                 <h4 className="font-semibold">{row.ruleName}</h4>
                 <span className={cn("text-xs font-semibold uppercase tracking-wide", toneClass[row.tone])}>
@@ -96,7 +97,7 @@ export function RiskControlPanel() {
           )}
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <label htmlFor={vm.drawdownField.id} className="text-sm font-semibold">
             {vm.drawdownField.label}
           </label>
@@ -135,7 +136,7 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <h4 className="text-sm font-semibold">Fat-finger limits</h4>
           <div className="mt-2 space-y-2">
             <div>
@@ -203,7 +204,7 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <h4 className="text-sm font-semibold">Price collar</h4>
           <div className="mt-2">
             <label htmlFor={vm.priceCollarField.id} className="text-sm font-semibold">
@@ -245,7 +246,7 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <h4 className="font-semibold">{vm.timelineLabel}</h4>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {vm.violationTimeline.slice(0, 10).map((item) => (

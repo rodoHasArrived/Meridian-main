@@ -523,6 +523,51 @@
       "sha256": "57b6128e514c884ac5bb41e5dcf667d38a241c36050b93e0a43c7572dedb3079"
     },
     {
+      "filename": "059_security_events_append_only_guard.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 59,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/059_security_events_append_only_guard.sql",
+      "schema": "security_master",
+      "sha256": "6ed00758a230f41d82245bde181a21d3b7b58bf74e6b624dfc6e661aca409a9f"
+    },
+    {
+      "filename": "060_security_master_revision_field_base.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 60,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/060_security_master_revision_field_base.sql",
+      "schema": "security_master",
+      "sha256": "eb76340fbeaec8bc84fdbe85e9d3754f4c6525315cf4d990e38b832b7b8ffe25"
+    },
+    {
+      "filename": "062_security_master_identifier_revisions.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 62,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
+      "schema": "security_master",
+      "sha256": "854966c2dac0552255eb40a0db4776c6c1fb50f1b4050bef9777d0630a800862"
+    },
+    {
+      "filename": "064_custom_asset_profile_field_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 64,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/064_custom_asset_profile_field_projection.sql",
+      "schema": "security_master",
+      "sha256": "3b66440592481b5d7743c7d37e52549dd0f9db1f046abf81db6a33ee94ffba2b"
+    },
+    {
+      "filename": "065_security_price_quotation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 65,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/065_security_price_quotation_evidence.sql",
+      "schema": "security_master",
+      "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -629,6 +674,24 @@
       "path": "src/Meridian.Storage/DirectLending/Migrations/009_direct_lending_cash_flow_identity.sql",
       "schema": "security_master",
       "sha256": "ecf4860c90bdc362b06f70b1c7a7f33779174d35e04ba83d337e5963d30ff506"
+    },
+    {
+      "filename": "010_direct_lending_excess_payment_balances.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
+      "schema": "security_master",
+      "sha256": "76df552080e6800a943811ca1c970880710a1383601affce5151a040a55f4328"
+    },
+    {
+      "filename": "011_direct_lending_pik_capitalization_and_rate_resets.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/011_direct_lending_pik_capitalization_and_rate_resets.sql",
+      "schema": "security_master",
+      "sha256": "a6c0e3895e65dfaa480f5bd5ac360a926f73b8499d9a1e6144f4f767e1b3002c"
     },
     {
       "filename": "001_asset_operations.sql",
@@ -1117,6 +1180,15 @@
       "sha256": "b9c89bdcb138c7de59d9b2e89e2f504a1be8d5102a31378796bbce7b59e8c32a"
     },
     {
+      "filename": "V_ledger_054__private_capital_authority.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_054__private_capital_authority.sql",
+      "schema": "ledger",
+      "sha256": "ffd9c31c13791ac9f7e2c36f3b9f81d1c80cbc5ec81a13571a9eb2e9d310ee5b"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1394,10 +1466,19 @@
       "path": "src/Meridian.Identity/Migrations/001_user_access_assignment.sql",
       "schema": "identity_access",
       "sha256": "58c0dcf87ba23c702f97f102778f3f8ff09b0e5c910a4e892f46157e43f2ce37"
+    },
+    {
+      "filename": "001_operator_triage.sql",
+      "immutable": true,
+      "migration_set_id": "operator-triage",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
+      "schema": "operator_triage",
+      "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
     }
   ],
   "findings": [],
-  "fingerprint": "c4b3ae17df99f23c67e100768a3c435d518b103db1b6a3ebd1875991ecce904c",
+  "fingerprint": "938494673270e97608bd6d2dd27d318fc615158542d54626255701360d99079c",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1631,13 +1712,37 @@
       "quote_schema": true,
       "schema": "identity_access",
       "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
+        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/Workstation/Migrations",
+      "display_name": "Operator Triage",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "operator-triage",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "operator_triage_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Workstation",
+      "quote_schema": false,
+      "schema": "operator_triage",
+      "track_ordinals": false
     }
   ],
   "summary": {
     "errors": 0,
-    "files": 155,
-    "migration_sets": 10,
-    "waivers": 27,
+    "files": 164,
+    "migration_sets": 11,
+    "waivers": 29,
     "warnings": 0
   },
   "waivers": [
@@ -1822,6 +1927,20 @@
       "reason": "Proposed exception submitted for independent human Security Master, cash-flow and schema/storage review; approval remains pending. Widens only direct_loan_principal_schedule_projection.amount and structured_credit_factor_schedule_projection.factor from bounded numeric typmods to unconstrained numeric, preserving every existing value and all accepted canonical decimal precision. No row, column or retained source document is removed. Apply through the transactional migration runner and advisory migration lock with a reviewed operational window for the ALTER TABLE locks; validate populated upgrade and fresh installation before rollout. Failed-upgrade rollback remains transactional. Do not downgrade after higher precision or larger principal values have been accepted. Previously rounded projection values are not reconstructed by this DDL; exact recovery requires separately governed replay from retained source terms.",
       "review_after": "2027-04-30",
       "rule_id": "migration-alter-column-type"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/059_security_events_append_only_guard.sql",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master economic event log (security_events); no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies refusal.",
+      "review_after": "2027-05-01",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
+      "reason": "Requires independent human schema/storage review. Authorized by the repository owner on 2026-11-11, who stated they had reviewed the migration and the findings of the agent-run technical review of 2026-11-10 (recorded in docs/architecture/security-master-extensibility-review.md). It found the DDL, the Baseline contents and the append-only guards sound and set three apply conditions: stop every Security Master writer while the migration runs, because the Baseline backfill can deadlock with a writer that holds a securities row lock; let no pre-062 binary write after it commits, because such a writer changes security_identifiers without recording a revision; and above about one million identifier rows raise the command timeout for that start. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated. The migration creates the table, one index, three comments, the rejection function and two triggers, and appends Baseline revisions for existing security_identifiers rows; it changes nothing in security_identifiers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests, SecurityMasterIdentifierRevisionMigrationTests) attempts update, delete and truncate, runs the backfill on a populated pre-062 schema across failure, retry and restart, and verifies refusal and retention.",
+      "review_after": "2027-05-04",
+      "rule_id": "migration-truncate"
     },
     {
       "category": "removed_migrations",

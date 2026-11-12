@@ -190,6 +190,8 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
             query.Add("yield=" + yield.ToString(CultureInfo.InvariantCulture));
         if (request.YieldConvention is { } convention)
             query.Add("yieldConvention=" + convention);
+        if (request.CalculationVersion is { } calculationVersion)
+            query.Add("calculationVersion=" + Uri.EscapeDataString(calculationVersion));
         return _apiClient.GetWithResponseAsync<BondAnalyticsResult>(
             SecurityIdRoute(UiApiRoutes.ReferenceDataBondAnalytics, request.SecurityId) + "?" + string.Join("&", query), ct);
     }

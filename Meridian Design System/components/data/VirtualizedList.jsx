@@ -11,11 +11,7 @@ export function VirtualizedList({
   renderRow,
   className = "",
   style = {},
-  tabIndex = 0,
-  role = "list",
   "aria-label": ariaLabel = "Virtualized list",
-  onScroll,
-  ...rest
 }) {
   const [scrollTop, setScrollTop] = React.useState(0);
   const total = items.length;
@@ -27,43 +23,40 @@ export function VirtualizedList({
 
   return (
     <div
-      {...rest}
       className={className}
-      tabIndex={tabIndex}
-      role={role}
-      aria-label={ariaLabel}
+      role="region" aria-label={ariaLabel} tabIndex={0}
       style={{
         height,
         overflowY: "auto",
         position: "relative",
-        border: "1px solid var(--border, #E4E3DE)",
-        background: "var(--bg-light, #FBFAF8)",
+        border: "1px solid var(--border, #D2CDC3)",
+        background: "var(--bg-light, #F8F7F3)",
         ...style,
       }}
-      onScroll={(e) => { setScrollTop(e.currentTarget.scrollTop); onScroll?.(e); }}
+      onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
     >
       {/* Spacer sets the true scroll height */}
       <div style={{ height: total * rowHeight, position: "relative" }}>
         {/* Offset the rendered window to its real position */}
-        <div style={{ position: "absolute", top: start * rowHeight, left: 0, right: 0 }}>
+        <div role="list" aria-label={ariaLabel} style={{ position: "absolute", top: start * rowHeight, left: 0, right: 0 }}>
           {slice.map((item, i) => {
             const index = start + i;
             return (
               <div
                 key={index}
-                role={role === "list" ? "listitem" : undefined}
-                aria-setsize={role === "list" ? total : undefined}
-                aria-posinset={role === "list" ? index + 1 : undefined}
+                role="listitem"
+                aria-setsize={total}
+                aria-posinset={index + 1}
                 style={{
                   height: rowHeight,
                   display: "flex",
                   alignItems: "center",
                   boxSizing: "border-box",
-                  borderBottom: "1px solid var(--border-divider, #DAD8D3)",
+                  borderBottom: "1px solid var(--border-divider, #E2DED5)",
                   padding: "0 12px",
                   fontFamily: "var(--font-data)",
                   fontSize: "13px",
-                  color: "var(--text-primary, #22252A)",
+                  color: "var(--text-primary, #20252B)",
                 }}
               >
                 {renderRow ? renderRow(item, index) : String(item)}

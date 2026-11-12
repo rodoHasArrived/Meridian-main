@@ -12,41 +12,41 @@
 
   .top { padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid var(--border-color);
          display: flex; align-items: baseline; justify-content: space-between; }
-  .top h1 { font-family: var(--font-display); font-size: 20px; color: var(--text-primary); margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+  .top h1 { font-family: var(--font-display); font-size: 20px; color: #FFF; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   .top .sub { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.16em; }
 
-  .panel { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-card); overflow: hidden; }
+  .panel { background: #201D19; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
   .phead { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
-           padding: 10px 16px; background: var(--bg-medium); border-bottom: 1px solid var(--border-color);
+           padding: 10px 16px; background: #100E0C; border-bottom: 1px solid var(--border-color);
            font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; }
-  .phead .num { color: var(--accent-dim); font-weight: 600; }
-  .phead .title { color: var(--text-primary); }
+  .phead .num { color: #D98A64; font-weight: 600; }
+  .phead .title { color: #FFF; }
   .phead .token { color: var(--fg-muted); }
 
   /* ----- State matrix: 7 states × 4 surfaces ----- */
   .matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
-  .matrix .col-head { padding: 10px 14px; background: var(--bg-medium); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
+  .matrix .col-head { padding: 10px 14px; background: #100E0C; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
   .matrix .col-head:last-child { border-right: 0; }
-  .matrix .cell { padding: 12px 14px; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--bg-medium); display: flex; flex-direction: column; gap: 8px; }
+  .matrix .cell { padding: 12px 14px; border-right: 1px solid var(--border-color); border-bottom: 1px solid #292520; display: flex; flex-direction: column; gap: 8px; }
   .matrix .cell:last-child, .matrix .cell:nth-child(4n) { border-right: 0; }
 
   /* State badge */
-  .sbadge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--radius-card); font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; }
+  .sbadge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; }
   .sbadge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
   /* State banner */
-  .sbanner { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius-card); font-size: 12px; border: 1px solid; }
+  .sbanner { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 4px; font-size: 12px; border: 1px solid; }
   .sbanner .icon { font-size: 12px; flex-shrink: 0; }
   .sbanner .body { display: flex; flex-direction: column; gap: 1px; }
   .sbanner .label { font-weight: 500; }
-  .sbanner .detail { font-family: var(--font-mono); font-size: 10px; }
+  .sbanner .detail { font-family: var(--font-mono); font-size: 10px; opacity: 0.75; }
 
   /* State row (table use) */
-  .srow { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; border-radius: var(--radius-card); font-size: 12px; }
+  .srow { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 3px; font-size: 12px; }
   .srow .bar { width: 2px; height: 20px; border-radius: 1px; }
 
   /* State KPI */
-  .skpi { padding: 10px 12px; border-radius: var(--radius-card); border: 1px solid; display: flex; flex-direction: column; gap: 4px; }
+  .skpi { padding: 10px 12px; border-radius: 4px; border: 1px solid; display: flex; flex-direction: column; gap: 4px; }
   .skpi .k { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; }
   .skpi .v { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; font-weight: 500; }
 
@@ -56,17 +56,17 @@
   /* ----- Focus ring demo ----- */
   .focus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px 14px; }
   .focus-item { display: flex; flex-direction: column; gap: 6px; }
-  .focus-demo { padding: 8px 12px; border-radius: var(--radius-card); font-family: var(--font-mono); font-size: 12px; color: var(--fg); }
+  .focus-demo { padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--fg); }
   .focus-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--fg-muted); }
 
   /* ----- Dense table demo ----- */
-  .table-wrap { border: 1px solid var(--border-color); border-radius: var(--radius-card); overflow: hidden; margin: 0; }
+  .table-wrap { border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; margin: 0; }
 
   /* ----- Workspace colors ----- */
   .ws-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; }
   .ws-cell { padding: 14px 16px; border-right: 1px solid var(--border-color); }
   .ws-cell:last-child { border-right: 0; }
-  .ws-cell .name { font-family: var(--font-display); font-size: 14px; color: var(--text-primary); font-weight: 600; margin-bottom: 8px; letter-spacing: -0.005em; }
+  .ws-cell .name { font-family: var(--font-display); font-size: 14px; color: #FFF; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.005em; }
   .ws-cell .accent { width: 100%; height: 3px; border-radius: 1px; margin-bottom: 10px; }
   .ws-cell .items { display: flex; flex-direction: column; gap: 4px; }
   .ws-cell .item { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); display: flex; align-items: center; gap: 6px; }
@@ -203,19 +203,19 @@
     <div class="focus-grid">
       <div class="focus-item">
         <div class="focus-label">Input · focus</div>
-        <div class="focus-demo" style="background:var(--bg); border:1px solid var(--accent-hover); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); border-radius: var(--radius-card); font-family:var(--font-mono); font-size:12px;">187.42<span style="display:inline-block;width:7px;height:13px;background:var(--accent-hover);vertical-align:middle;margin-left:2px;"></span></div>
+        <div class="focus-demo" style="background:#14120F; border:1px solid #E6A585; box-shadow:0 0 0 3px rgba(230,165,133,0.18); border-radius:4px; font-family:var(--font-mono); font-size:12px;">187.42<span style="display:inline-block;width:7px;height:13px;background:#E6A585;vertical-align:middle;margin-left:2px;"></span></div>
       </div>
       <div class="focus-item">
         <div class="focus-label">Button · focus</div>
-        <div style="padding:8px 12px; border-radius: var(--radius-card); background:var(--accent); color:var(--text-on-fill); font-family:var(--font-mono); font-size:11px; display:inline-block; outline:2px solid var(--accent-hover); outline-offset:2px;">Submit order</div>
+        <div style="padding:8px 12px; border-radius:4px; background:#D98A64; color:#100E0C; font-family:var(--font-mono); font-size:11px; display:inline-block; outline:2px solid #E6A585; outline-offset:2px;">Submit order</div>
       </div>
       <div class="focus-item">
         <div class="focus-label">Nav item · focus</div>
-        <div style="padding:8px 12px; border-radius: var(--radius-card); background:color-mix(in srgb, var(--accent) 10%, transparent); border:1px solid color-mix(in srgb, var(--accent) 30%, transparent); font-size:12px; color:var(--text-primary); outline:2px solid var(--accent-hover); outline-offset:1px;">Trading</div>
+        <div style="padding:8px 12px; border-radius:4px; background:rgba(217,138,100,0.10); border:1px solid rgba(217,138,100,0.30); font-size:12px; color:#FFF; outline:2px solid #E6A585; outline-offset:1px;">Trading</div>
       </div>
       <div class="focus-item">
         <div class="focus-label">Select · focus</div>
-        <div style="padding:7px 10px; border-radius: var(--radius-card); background:var(--bg); border:1px solid var(--accent-hover); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); font-family:var(--font-mono); font-size:12px; color:var(--fg-muted);">Market ▾</div>
+        <div style="padding:7px 10px; border-radius:4px; background:#14120F; border:1px solid #E6A585; box-shadow:0 0 0 3px rgba(230,165,133,0.18); font-family:var(--font-mono); font-size:12px; color:var(--fg-muted);">Market ▾</div>
       </div>
     </div>
   </div>
@@ -229,72 +229,72 @@
     </div>
     <div class="ws-grid">
       <div class="ws-cell">
-        <div class="accent" style="background:var(--accent);"></div>
+        <div class="accent" style="background:#D98A64;"></div>
         <div class="name">Trading</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--accent);"></div><span>Nav inset: copper</span></div>
-          <div class="item"><div class="sw" style="background:var(--accent);"></div><span>Badge: --live</span></div>
-          <div class="item"><div class="sw" style="background:var(--accent);"></div><span>Icon: primary</span></div>
+          <div class="item"><div class="sw" style="background:#D98A64;"></div><span>Nav inset: copper</span></div>
+          <div class="item"><div class="sw" style="background:#D98A64;"></div><span>Badge: --live</span></div>
+          <div class="item"><div class="sw" style="background:#D98A64;"></div><span>Icon: primary</span></div>
         </div>
         <div class="token">--workspace-trading</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:var(--accent-dim);"></div>
+        <div class="accent" style="background:#E39A77;"></div>
         <div class="name">Portfolio</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--accent-dim);"></div><span>Nav inset: copper-dim</span></div>
-          <div class="item"><div class="sw" style="background:var(--accent-dim);"></div><span>Badge: paper</span></div>
-          <div class="item"><div class="sw" style="background:var(--accent-dim);"></div><span>Icon: copper-dim</span></div>
+          <div class="item"><div class="sw" style="background:#E39A77;"></div><span>Nav inset: copper-dim</span></div>
+          <div class="item"><div class="sw" style="background:#E39A77;"></div><span>Badge: paper</span></div>
+          <div class="item"><div class="sw" style="background:#E39A77;"></div><span>Icon: copper-dim</span></div>
         </div>
         <div class="token">--workspace-portfolio</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:var(--green);"></div>
+        <div class="accent" style="background:#5FA37C;"></div>
         <div class="name">Accounting</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--green);"></div><span>Nav inset: green</span></div>
-          <div class="item"><div class="sw" style="background:var(--green);"></div><span>Badge: healthy</span></div>
-          <div class="item"><div class="sw" style="background:var(--green);"></div><span>Icon: success</span></div>
+          <div class="item"><div class="sw" style="background:#5FA37C;"></div><span>Nav inset: green</span></div>
+          <div class="item"><div class="sw" style="background:#5FA37C;"></div><span>Badge: healthy</span></div>
+          <div class="item"><div class="sw" style="background:#5FA37C;"></div><span>Icon: success</span></div>
         </div>
         <div class="token">--workspace-accounting</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:var(--orange);"></div>
+        <div class="accent" style="background:#C29A4A;"></div>
         <div class="name">Reporting</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--orange);"></div><span>Nav inset: amber</span></div>
-          <div class="item"><div class="sw" style="background:var(--orange);"></div><span>Badge: warn</span></div>
-          <div class="item"><div class="sw" style="background:var(--orange);"></div><span>Icon: accent</span></div>
+          <div class="item"><div class="sw" style="background:#C29A4A;"></div><span>Nav inset: amber</span></div>
+          <div class="item"><div class="sw" style="background:#C29A4A;"></div><span>Badge: warn</span></div>
+          <div class="item"><div class="sw" style="background:#C29A4A;"></div><span>Icon: accent</span></div>
         </div>
         <div class="token">--workspace-reporting</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:var(--purple);"></div>
+        <div class="accent" style="background:#9089B5;"></div>
         <div class="name">Strategy</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--purple);"></div><span>Nav inset: violet</span></div>
-          <div class="item"><div class="sw" style="background:var(--purple);"></div><span>Badge: pending</span></div>
-          <div class="item"><div class="sw" style="background:var(--purple);"></div><span>Icon: violet</span></div>
+          <div class="item"><div class="sw" style="background:#9089B5;"></div><span>Nav inset: violet</span></div>
+          <div class="item"><div class="sw" style="background:#9089B5;"></div><span>Badge: pending</span></div>
+          <div class="item"><div class="sw" style="background:#9089B5;"></div><span>Icon: violet</span></div>
         </div>
         <div class="token">--workspace-strategy</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:var(--text-secondary);"></div>
+        <div class="accent" style="background:#B5AEA4;"></div>
         <div class="name">Data</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--text-secondary);"></div><span>Nav inset: slate</span></div>
-          <div class="item"><div class="sw" style="background:var(--text-secondary);"></div><span>Badge: research</span></div>
-          <div class="item"><div class="sw" style="background:var(--text-secondary);"></div><span>Icon: data</span></div>
+          <div class="item"><div class="sw" style="background:#B5AEA4;"></div><span>Nav inset: slate</span></div>
+          <div class="item"><div class="sw" style="background:#B5AEA4;"></div><span>Badge: research</span></div>
+          <div class="item"><div class="sw" style="background:#B5AEA4;"></div><span>Icon: data</span></div>
         </div>
         <div class="token">--workspace-data</div>
       </div>
       <div class="ws-cell">
-        <div class="accent" style="background:var(--text-muted);"></div>
+        <div class="accent" style="background:#9A9289;"></div>
         <div class="name">Settings</div>
         <div class="items">
-          <div class="item"><div class="sw" style="background:var(--text-muted);"></div><span>Nav inset: muted</span></div>
-          <div class="item"><div class="sw" style="background:var(--text-muted);"></div><span>Badge: inactive</span></div>
-          <div class="item"><div class="sw" style="background:var(--text-muted);"></div><span>Icon: muted</span></div>
+          <div class="item"><div class="sw" style="background:#9A9289;"></div><span>Nav inset: muted</span></div>
+          <div class="item"><div class="sw" style="background:#9A9289;"></div><span>Badge: inactive</span></div>
+          <div class="item"><div class="sw" style="background:#9A9289;"></div><span>Icon: muted</span></div>
         </div>
         <div class="token">--workspace-settings</div>
       </div>

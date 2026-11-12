@@ -5,18 +5,23 @@
   <meta charset="UTF-8" />
   <title>Depth ladder & instrument chips</title>
   <link rel="stylesheet" href="../../styles.css" />
-  <script src="../../scripts/demo-runtime.js"></script>
-<script src="../../_ds_bundle.js"></script>
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+<style>
+.depth-grid{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+@media(max-width:900px){.depth-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
-<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);">
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const { DepthLadder, InstrumentChip } = window.MeridianDesignSystem_4f61be;
+const { DepthLadder, InstrumentChip } = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 function Section({ title, children }) {
   return (
-    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16 }}>
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16, minWidth:0 }}>
       <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
         color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
       {children}
@@ -39,7 +44,7 @@ function Demo() {
   const [selected, setSelected] = useState("AAPL");
   const [picked, setPicked] = useState(null);
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, maxWidth:840, alignItems:"start" }}>
+    <div className="depth-grid" style={{ display:"grid", gap:16, maxWidth:840, alignItems:"start" }}>
 
       <Section title="InstrumentChip · watchlist identity">
         <div style={{ display:"flex", flexDirection:"column", gap:8, alignItems:"flex-start" }}>

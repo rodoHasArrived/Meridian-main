@@ -4,7 +4,7 @@
 
 const {
   PanelSurface, Input, Button, Badge, Stepper, Select, StatusBar, StatusBanner,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const ENVS = [
@@ -30,8 +30,8 @@ function EnvOption({ env, selected, onSelect }) {
       <span aria-hidden="true" style={{
         flex: "none", width: 12, height: 12, boxSizing: "border-box", borderRadius: "50%",
         border: `1px solid var(${selected ? env.mode : "--border-strong"})`,
-        display: "grid", placeItems: "center",
-      }}>{selected ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: `var(${env.mode})` }} /> : null}</span>
+        background: selected ? `radial-gradient(circle at center, var(${env.mode}) 0 3.5px, transparent 4px)` : "transparent",
+      }}></span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 12, fontWeight: 600, fontVariant: "all-small-caps",
           letterSpacing: ".05em", color: "var(--text-primary)" }}>{env.name}</span>
@@ -81,7 +81,7 @@ function SessionStartScreen({ environment = "PAPER", requireMfa = true }) {
           <PanelSurface style={{ padding: 0 }}>
             <div style={{ padding: "13px 20px", borderBottom: "1px solid var(--border)",
               display: "flex", alignItems: "baseline", gap: 10 }}>
-              <h1 style={{ margin: 0, font: "600 16px var(--font-display)", color: "var(--text-primary)" }}>Sign in</h1>
+              <span style={{ font: "600 16px var(--font-display)", color: "var(--text-primary)" }}>Sign in</span>
               <div style={{ flex: 1 }}></div>
               <span style={{ ...mono, fontSize: 10.5, color: "var(--text-muted)" }}>auth.meridian.internal</span>
             </div>
@@ -156,7 +156,7 @@ function SessionStartScreen({ environment = "PAPER", requireMfa = true }) {
               </span>
             ))}
           </div>
-          <div style={{ textAlign: "center", ...mono, fontSize: 10, color: "var(--text-muted)" }}>
+          <div style={{ textAlign: "center", ...mono, fontSize: 10, color: "var(--text-disabled)" }}>
             Meridian 1.18.0 · us-east-1 · TLS 1.3 · Last sign-in 2026-07-04 21:18:42Z from 10.4.18.22
           </div>
         </div>

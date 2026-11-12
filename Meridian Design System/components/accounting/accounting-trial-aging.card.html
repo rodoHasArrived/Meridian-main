@@ -5,20 +5,24 @@
 <meta charset="UTF-8">
 <title>Accounting — trial balance & aging</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
   body { margin: 0; padding: 16px; background: var(--bg); }
   .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
     letter-spacing: .03em; color: var(--text-muted); margin: 0 0 8px; }
-  .col { display: flex; flex-direction: column; gap: 8px; }
-  .grid { display: grid; grid-template-columns: 480px 1fr; gap: 20px; align-items: start; }
+  .col { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .grid { display: grid; grid-template-columns: minmax(0,480px) minmax(0,1fr); gap: 20px; align-items: start; }
+</style>
+<style>
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
-const { TrialBalance, AgingTable } = window.MeridianDesignSystem_4f61be;
+const { TrialBalance, AgingTable } = window.MeridianDesignSystem_205d17;
 ReactDOM.createRoot(document.getElementById("root")).render(
   <div className="grid">
     <div className="col">

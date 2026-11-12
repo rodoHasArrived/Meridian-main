@@ -1,75 +1,76 @@
-# Meridian — What a consumer loads
+# Meridian — What a consumer pays
 
-**Status:** active
-**Measured:** 2026-11-12
+Load-behavior reference for consuming projects. The byte figures below are
+historical July 2026 measurements, not measurements of this expanded export.
+Use `release-build.json` and `export-inventory.json` for current asset bytes, and
+the generated [Metrics](METRICS.md) for current source counts. Measure the built
+assets and complete CSS/font closure before setting a payload budget.
 
-Measurements below cover the deterministic package with 160 public references. They are source
-byte counts and Node 24 gzip level-9 estimates, not a claim about a particular web server's wire encoding.
-The [July measurements](../../archive/docs/design-system/2026-11-12/performance-july-reference.md)
-remain historical evidence; they do not describe the current bundle.
+---
 
-## Package payload
+## 1. The three things a page loads
 
-| Asset | Source bytes | Gzip estimate | Scope |
-| --- | ---: | ---: | --- |
-| `_ds_bundle.js` | 787,344 (768.9 KiB) | 160,725 (157.0 KiB) | All public references and internal helpers; React is a peer |
-| `styles.css` and its token import closure | 65,990 (64.4 KiB) | 18,887 (18.4 KiB) | Ten local CSS files; gzip estimate sums independently compressed files |
-| React/React DOM peers | Not included above | Depends on selected peer build | Reference demos retain pinned React 18 peers; the browser application has its own version |
+| Asset | Raw | Gzip (wire) | Notes |
+| --- | --- | --- | --- |
+| `styles.css` + token closure (`tokens/*.css`) | 38 KB | **13 KB** | 10 files via `@import`; tokens, fonts, elevation, dark, print, forced-colors |
+| `_ds_bundle.js` | 1,141 KB | **~247 KB** | All components, compiled; loads once, cached |
+| React 18 UMD (peer, not bundled) | — | ~45 KB | The bundle expects `React`/`ReactDOM` globals; it ships **no** React copy |
 
-Fonts resolve from installed Windows and system stacks. No Google Fonts or other external font
-request is made. Local Segoe UI, Cascadia, JetBrains Mono and system fallbacks require no font
-payload. React/Babel dependencies used by reference demos are separate from these package totals;
-the acceptance harness resolves declared versions through its verified local cache.
+The historical first-visit estimate was approximately **305 KB** gzip, plus fonts.
+It is not a current export budget. IBM Plex Sans and Mono are now self-hosted:
+`tokens/fonts.css` uses `local()` first, then ten TTFs in `assets/fonts/`, with both
+OFL licenses beside them. No font CDN is required. Include font payloads and
+cache behavior when measuring a first visit on a machine without installed Plex
+faces. The optional local preview React runtime is a separate asset; existing
+React applications should use their own peer rather than downloading both.
 
-## Runtime behavior
+## 2. How component CSS works (and what it costs)
 
-Components inject their scoped CSS at first render, guarded once per component family. Theme,
-brand, density and appearance changes restyle existing token-backed rules without replacing
-component CSS. The JavaScript parser still processes the whole package; CSS rules reach the
-browser's stylesheet parser when the corresponding component mounts.
+- Components **inject their own scoped CSS at first render** — a guarded, run-once
+  `<style data-mds="…">` per component family. Render two `DepthLadder`s or a hundred:
+  one style tag.
+- Injected CSS is roughly a quarter of the bundle's **1,141 KB raw**. It compresses well
+  (repetitive token references) and is inert until a component actually renders — pages
+  pay parse cost only for what they mount.
+- **Verified: zero exact-duplicate CSS blocks** across the 95 injection sites (checked
+  July 2026). Shared visual patterns (small-caps labels, hairline rules) intentionally
+  repeat *token references*, not rule blocks — deduping them into a shared stylesheet
+  would couple component releases and break copy-one-component consumption.
+- All injected rules resolve through tokens, so theme/brand/density/dark flips restyle
+  already-injected CSS with **zero JS work**.
 
-The namespace bundle does not tree-shake by consumer usage. A page loading it for Button also
-loads the accounting and chart implementations. Load the React peer before `_ds_bundle.js`, then
-consumer code. Templates do this through their existing bootstrap; do not add a second bundle
-script. The production browser workstation retains its own code-split native adapters.
+## 3. The monolith trade-off (deliberate)
 
-Reference tables can automatically window large datasets. Native workstation tables deliberately
-retain their own row cap and explicit virtualization. These are separate behavior contracts;
-printing a current view does not fetch virtualized offscreen records.
+The bundle is one file by design: workstations mount 20–40 components per screen, so
+per-component files would mean dozens of requests and no meaningful savings after gzip.
+The costs to know about:
 
-## Re-measuring
+- **No tree-shaking.** A page using only `Button` still downloads the accounting tables.
+  Its current byte cost must be measured after rebuilding. Keep this operational
+  component bundle scoped to consumers that need its workstation capabilities.
+- **Load order matters:** React UMD → `_ds_bundle.js` → your code. `defer` all three or
+  put them at the end of `<body>`.
+- **Load it once.** Templates load it via `ds-base.js`; don't add a second `<script>` —
+  the bundle is idempotent but you'd pay double parse.
 
-Run this JavaScript with Node from the repository root after `npm run design:build`:
+## 4. Runtime notes
+
+- Tables self-window past 500 rows (`DataGrid`) and
+  `VirtualizedList`/`AsyncCombobox` window unconditionally — payload, not rendering, is
+  the thing to budget.
+- No entrance animations, no springs: first paint is the final paint.
+- `guidelines/PATTERNS.md › Performance` covers render-time guidance (density, chart heights).
+
+## 5. Re-measuring
 
 ```js
-const { readFileSync } = await import('node:fs');
-const { resolve, dirname } = await import('node:path');
-const { gzipSync } = await import('node:zlib');
-const base = resolve('Meridian Design System');
-const visited = new Set();
-function closure(file) {
-  file = resolve(file);
-  if (visited.has(file)) return;
-  visited.add(file);
-  const text = readFileSync(file, 'utf8');
-  for (const match of text.matchAll(/@import\s+["']([^"']+)["']/g)) {
-    closure(resolve(dirname(file), match[1]));
-  }
-}
-closure(resolve(base, 'styles.css'));
-for (const [name, files] of [
-  ['bundle', [resolve(base, '_ds_bundle.js')]],
-  ['CSS import closure', [...visited]]
-]) {
-  const bytes = files.map(file => readFileSync(file));
-  console.log(name, {
-    files: files.length,
-    raw: bytes.reduce((sum, value) => sum + value.length, 0),
-    gzip: bytes.reduce((sum, value) => sum + gzipSync(value, { level: 9 }).length, 0)
-  });
-}
+// in a browser console on any page of this project
+const gz = async (u) => { const b = await (await fetch(u)).blob();
+  const g = await new Response(b.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+  console.log(u, b.size, '→', g.size, 'gzip'); };
+['styles.css', '_ds_bundle.js'].forEach(gz);
 ```
 
-`npm run design:check` verifies generated freshness, source policy, contrast and component contracts.
-Payload size is measured evidence rather than an arbitrary pass/fail ceiling; rerun the snippet
-and update these figures when changing package code or token layers.
+CI-adjacent checks: `scripts/check_contrast.py` (token contrast), `tests/` (unit suite).
+A size regression has no automated gate yet — compare against this file when reviewing
+large component additions.

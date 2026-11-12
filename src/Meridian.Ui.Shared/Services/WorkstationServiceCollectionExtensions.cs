@@ -46,6 +46,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Instruments.AssetOperations;
+using Meridian.Ledger;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
@@ -111,6 +112,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IBResultQueryService>();
 
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
+        services.AddOperatorTriageStorage(configuration, isProductionComposition);
 
         services.TryAddSingleton<ConfigStore>(sp =>
         {
@@ -280,6 +282,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
         services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
+        services.TryAddSingleton<BondExerciseNoticeReadService>();
         // Durable account forecast state is explicitly provisioned by operations, never on reads or capture.
         services.TryAddSingleton<FileAccountCashForecastStore>(sp =>
             new FileAccountCashForecastStore(sp.GetRequiredService<StorageOptions>().RootPath));
@@ -488,9 +491,10 @@ public static class WorkstationServiceCollectionExtensions
                 // triggers. Against a live broker no matcher decides the fill, and the feed cache
                 // keeps prints indefinitely, so preferring a print there can measure a trigger
                 // against a price the market left hours ago.
+                // The OMS routes through IExecutionGateway; IOrderGateway is only a read-only view.
                 paperMatchingIsAuthoritative: () =>
-                    sp.GetService<Meridian.Execution.Interfaces.IOrderGateway>()
-                        is Meridian.Execution.Adapters.PaperTradingGateway,
+                    sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()
+                        is Meridian.Execution.PaperTradingGateway,
                 livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
@@ -544,7 +548,9 @@ public static class WorkstationServiceCollectionExtensions
                 rules.Add(new Meridian.Risk.Rules.PositionLimitRule(
                     positionTracker,
                     () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
-                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>()));
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>(),
+                    // Resolved per evaluation: the order manager depends on this validator.
+                    () => sp.GetService<Meridian.Execution.Sdk.IOrderManager>()));
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
@@ -615,6 +621,10 @@ public static class WorkstationServiceCollectionExtensions
         services
             .AddOptions<Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions>()
             .BindConfiguration(Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions.SectionName);
+        // The governance requirements seam: SecurityMasterService enforces the governed-amendment
+        // policy over it on its operator-direct path, the command service reads independent review
+        // from it, and the routes consult it so they can refuse before reading the request's security.
+        services.AddSecurityMasterGovernanceRequirements();
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the
@@ -867,7 +877,13 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportingRunCertificationService>(),
                 sp.GetService<IReportingGovernanceEndpointCoordinator>(),
                 sp.GetService<IReportingRecipientDestinationResolver>(),
-                sp.GetRequiredService<IReportingDeploymentReadinessService>()));
+                sp.GetRequiredService<IReportingDeploymentReadinessService>())
+            {
+                // Period-close schedules take their accounting period from the durable ledger.
+                PeriodResolver = sp.GetService<ILedgerJournalStore>() is { } journalStore
+                    ? new LedgerReportingSchedulePeriodResolver(journalStore)
+                    : null
+            });
         services.TryAddSingleton(ReportingScheduleWorkerOptions.Default);
         services.TryAddSingleton<ReportingScheduleWorkerReadinessState>();
         services.TryAddEnumerable(
@@ -943,7 +959,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
             new SecurityMasterAccountingEventSourceAdapter(
                 sp.GetService<ContractSecurityMasterQueryService>(),
-                sp.GetService<IAssetOperationsQueryService>()));
+                sp.GetService<IAssetOperationsQueryService>(),
+                sp.GetService<ISecurityActualCashActivitySource>()
+                    ?? (sp.GetService<BrokeragePortfolioSyncService>() is { } brokerageSync
+                        ? new BrokerageSyncActualCashActivitySource(brokerageSync.GetActivityForActiveLinkAsync, brokerageSync.GetCashTransactionHistoryAsync)
+                        : null)));
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));
@@ -1028,6 +1048,43 @@ public static class WorkstationServiceCollectionExtensions
             new PositionSnapshotAutomatedJournalDividendPositionResolver(
                 sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.TryAddSingleton<PrivateCapitalLifecycleService>(sp =>
+            sp.GetService<IPrivateCapitalStore>() is { } store
+                ? new PrivateCapitalLifecycleService(store, sp.GetRequiredService<TimeProvider>()) : null!);
+        services.TryAddSingleton<PrivateCapitalBankObservationService>(sp =>
+        {
+            var ledger = sp.GetService<LedgerJournalStoreOptions>();
+            var banking = sp.GetService<Meridian.Storage.Banking.BankingStoreOptions>();
+            var vault = sp.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>();
+            if (ledger is null || banking is null || vault is null
+                || sp.GetService<Meridian.Storage.Banking.IBankingStore>() is not Meridian.Storage.Banking.PostgresBankingStore store)
+                return null!;
+            // A different banking database cannot participate in the final journal/source lock.
+            var ledgerConnection = new Npgsql.NpgsqlConnectionStringBuilder(ledger.ConnectionString);
+            var bankConnection = new Npgsql.NpgsqlConnectionStringBuilder(banking.ConnectionString);
+            if (!string.Equals(ledgerConnection.Host, bankConnection.Host, StringComparison.OrdinalIgnoreCase)
+                || ledgerConnection.Port != bankConnection.Port
+                || !string.Equals(ledgerConnection.Database, bankConnection.Database, StringComparison.Ordinal)
+                || !string.Equals(ledger.PrivateCapitalBankingSchema, banking.Schema, StringComparison.Ordinal))
+                return null!;
+            return new PrivateCapitalBankObservationService(vault, store, sp.GetRequiredService<TimeProvider>());
+        });
+        services.TryAddSingleton<CapitalCallNoticeSourceValidator>(sp =>
+            sp.GetService<IPrivateCapitalStore>() is { } store
+                ? new CapitalCallNoticeSourceValidator(store,
+                    sp.GetService<Microsoft.Extensions.Configuration.IConfiguration>()?
+                        .GetSection("PrivateCapital:NoticeRecipients")
+                        .Get<CapitalCallNoticeRecipientBinding[]>()) : null!);
+        services.TryAddSingleton<CapitalCallNoticeReportingService>(sp =>
+            sp.GetService<CapitalCallNoticeSourceValidator>() is { } source &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<ReportingRunCommandService>() is { } reporting
+                ? new CapitalCallNoticeReportingService(source, journals, reporting,
+                    sp.GetService<Meridian.Reporting.IReportingRunStore>(),
+                    sp.GetService<Meridian.Reporting.IReportingGovernanceRepository>(),
+                    sp.GetService<Meridian.Reporting.IReportingDeliveryStore>(),
+                    sp.GetService<IReportingAuthoritativeSource>(),
+                    sp.GetService<Meridian.Reporting.IReportingReconciliationEvidenceRetentionStore>()) : null!);
         services.TryAddSingleton<ConsolidationService>(sp =>
             sp.GetService<IFundStructureService>() is PostgresFundStructureService structure &&
             sp.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore ledger &&
@@ -1062,7 +1119,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IConsolidationDraftGuard>(),
                 sp.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>(),
                 assetCandidatePostingFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService>(),
-                assetAccountingSourceFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>()));
+                assetAccountingSourceFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>(),
+                privateCapitalStore: sp.GetService<IPrivateCapitalStore>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1092,7 +1150,10 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
                 sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
                 sp.GetRequiredService<TimeProvider>(),
-                sp.GetService<IManualJournalEntryWorkbenchService>());
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<IPrivateCapitalStore>(),
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
+                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>());
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when
@@ -1119,6 +1180,31 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
         services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
         services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        // Posting calculations a calculated recurring template can name. Each reads authoritative
+        // inputs and yields one approval draft per occurrence; none submits, approves or posts.
+        services.TryAddSingleton<IRecurringJournalCalculationInputs>(sp =>
+            new LedgerRecurringJournalCalculationInputs(sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(), sp.GetService<TimeProvider>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, ManagementFeeAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, PerformanceFeeAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FundExpenseAccrualCalculation>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IFixedAssetRegister>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileFixedAssetRegister(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "registers")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileDistributionRegister(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "registers")));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedAssetDepreciationCalculation>(sp =>
+            new FixedAssetDepreciationCalculation(sp.GetService<Meridian.FinancialOperations.FundAdministration.IFixedAssetRegister>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedIncomeAccrualCalculation>(sp =>
+            new FixedIncomeAccrualCalculation(
+                sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
+                sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
+            new FxRevaluationCalculation(
+                sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
+                sp.GetService<Meridian.FinancialOperations.Reconciliation.IReconciliationFxRateProvider>())));
         services.TryAddSingleton<RecurringJournalRunner>();
         services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
@@ -1136,7 +1222,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
-                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+                sp.GetService<IAutomatedJournalScheduleStatusSource>(),
+                sp.GetService<IRecurringJournalQueueSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(
@@ -1181,7 +1268,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<SecurityMasterExceptionCaseworkService>>()));
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(sp =>
+        services.TryAddSingleton<Meridian.Contracts.Reconciliation.IReconciliationApiService>(sp =>
             new ReconciliationApiService(
                 sp.GetRequiredService<IStatementRunWorkflowService>(),
                 sp.GetService<IAccountQueryService>(),
@@ -1193,7 +1280,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerBookService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IStatementRunWorkflowService>(),
-                sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
+                sp.GetService<Meridian.Contracts.Reconciliation.IReconciliationApiService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
                 sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>(),
@@ -1203,7 +1290,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReconciliationRunService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
-                sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>()));
+                sp.GetService<Meridian.Contracts.Reconciliation.IReconciliationApiService>()));
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
 
@@ -1560,6 +1647,7 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
             tenancyRegistry,
             fundStructure,
             _services.GetService<TimeProvider>(),
-            journalStore);
+            journalStore,
+            capitalCallNotices: _services.GetService<CapitalCallNoticeSourceValidator>());
     }
 }

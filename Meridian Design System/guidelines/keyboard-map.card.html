@@ -2,17 +2,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Keyboard Map</title>
 <meta charset="utf-8">
 <link rel="stylesheet" href="../styles.css">
-<script src="../scripts/demo-runtime.js"></script>
+<link rel="stylesheet" href="../docs/specimen-layout.css">
+
+
+
+
+<script src="../_preview_runtime.js"></script>
+<script src="../_preview_jsx.js"></script>
 <script src="../_ds_bundle.js"></script>
 </head>
-<body style="margin:0;padding:22px;background:var(--bg,var(--bg));font-family:var(--font-body);color:var(--text-primary);">
+<body style="margin:0;padding:22px;background:var(--bg,#F2F0EB);font-family:var(--font-body);color:var(--text-primary);" class="mds-specimen">
 <div id="root"></div>
 <script type="text/babel">
-const { Kbd, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const { Kbd, Eyebrow } = window.MeridianDesignSystem_205d17;
 const { useState, useEffect } = React;
 
 const MAP = [
@@ -65,8 +70,8 @@ function Demo() {
         <span style={{ fontFamily: "var(--font-data)", fontSize: 12, color: "var(--text-muted)" }}>documented operator shortcuts</span>
       </div>
 
-      <div style={{ background: "var(--bg-light)", border: "1px solid var(--accent)", borderRadius: 2, padding: "14px 16px",
-        display: "flex", alignItems: "center", gap: 14, boxShadow: "inset 0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)" }}>
+      <div style={{ background: "var(--bg-light)", border: "1px solid var(--brand-signal,#C56343)", borderRadius: 2, padding: "14px 16px",
+        display: "flex", alignItems: "center", gap: 14, boxShadow: "inset 0 0 0 1px color-mix(in srgb,var(--brand-signal,#C56343) 22%,transparent)" }}>
         <Eyebrow>Live tester</Eyebrow>
         <span style={{ fontFamily: "var(--font-data)", fontSize: 13, color: "var(--text-secondary)" }}>
           Press any key combination:

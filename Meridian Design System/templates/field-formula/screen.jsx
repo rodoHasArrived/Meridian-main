@@ -4,7 +4,7 @@
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
   SegmentedControl, Combobox, Kbd, Callout, KeyValueGrid
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NAV = [
@@ -65,21 +65,18 @@ function FieldFormulaScreen() {
   const [mode, setMode] = useState("formula");
   const s = SUGGESTIONS[sel];
   const lhs = "Let current_yield = ";
-  function browseSuggestion(event, index) {
-    let next;
-    if (event.key === "ArrowDown") next = (index + 1) % SUGGESTIONS.length;
-    else if (event.key === "ArrowUp") next = (index + SUGGESTIONS.length - 1) % SUGGESTIONS.length;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = SUGGESTIONS.length - 1;
-    else return;
+  const browseSuggestion = (event, index) => {
+    const keys = { ArrowUp: (index + SUGGESTIONS.length - 1) % SUGGESTIONS.length, ArrowDown: (index + 1) % SUGGESTIONS.length, Home: 0, End: SUGGESTIONS.length - 1 };
+    if (!(event.key in keys)) return;
     event.preventDefault();
+    const next = keys[event.key];
     setSel(next);
     event.currentTarget.parentElement.querySelectorAll(".mds-field-suggestion")[next]?.focus();
-  }
+  };
 
   return (
     <React.Fragment>
-      <style>{`.mds-field-suggestion:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}`}</style>
+      <style>{`.mds-field-suggestion:focus-visible{outline:var(--focus-ring);outline-offset:-2px}`}</style>
       <WorkstationTopbar moduleLabel="Field & Formula" environment="PAPER" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="fields" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
@@ -114,11 +111,11 @@ function FieldFormulaScreen() {
                   <span style={{ font: "11px var(--font-data)", color: "var(--text-muted)" }}>1 : {lhs.length + s.formula.length}</span>
                 </div>
                 <div style={{ display: "flex", font: "14px var(--font-data)", minHeight: 96 }}>
-                  <div style={{ width: 40, padding: "12px 0", textAlign: "center", color: "var(--text-muted)", background: "var(--bg-medium)", borderRight: "1px solid var(--border)" }}>1</div>
+                  <div style={{ width: 40, padding: "12px 0", textAlign: "center", color: "var(--text-disabled)", background: "var(--bg-medium)", borderRight: "1px solid var(--border)" }}>1</div>
                   <div style={{ padding: "12px 14px", color: "var(--text-primary)", lineHeight: 1.7 }}>
                     <span style={{ color: "var(--purple-dim)" }}>Let </span>
                     <span>current_yield = </span>
-                    <span style={{ color: "var(--accent)" }}>{s.formula}</span>
+                    <span style={{ color: "var(--brand-signal-ink)" }}>{s.formula}</span>
                     <span style={{ display: "inline-block", width: 2, height: 18, background: "var(--accent)", verticalAlign: "-3px", marginLeft: 1 }}></span>
                   </div>
                 </div>
@@ -153,7 +150,7 @@ function FieldFormulaScreen() {
               <PanelSurface raised style={{ padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Eyebrow>Signature</Eyebrow>
-                  <code style={{ font: "13px var(--font-data)", color: "var(--accent)" }}>{s.formula}</code>
+                  <code style={{ font: "13px var(--font-data)", color: "var(--brand-signal-ink)" }}>{s.formula}</code>
                   <Badge variant={CAT_TONE[s.cat]}>{s.cat}</Badge>
                 </div>
                 <KeyValueGrid columns={1} items={[

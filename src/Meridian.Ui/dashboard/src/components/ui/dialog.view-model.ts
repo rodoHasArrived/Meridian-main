@@ -51,7 +51,7 @@ export function useDialogInteractionViewModel({ open, onOpenChange }: DialogInte
       return;
     }
 
-    // Expanded comboboxes and calendars own their first Escape; the next closes the dialog.
+    // Expanded calendars and comboboxes own their first Escape.
     if (event.key === "Escape" && event.target instanceof Element &&
       (event.target.closest('[role="combobox"][aria-expanded="true"]') ||
         event.target.closest('[data-date-field-open="true"]'))) {
@@ -129,7 +129,7 @@ export function buildDialogContentViewModel(tabIndex = -1): DialogContentViewMod
     className: [
       "w-full max-w-lg",
       "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
-      "rounded-[2px] border border-border bg-card p-5 text-card-foreground shadow-float",
+      "rounded-[var(--radius-dialog)] border border-border bg-card p-5 text-card-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
       "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
     ].join(" ")
   };
@@ -149,7 +149,7 @@ export function buildDialogCloseButtonViewModel({
     disabled,
     iconAriaHidden: true,
     className: [
-      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border [outline-offset:-2px]",
+      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-button)] border [outline-offset:-2px]",
       "border-border bg-transparent text-muted-foreground transition-colors duration-150",
       "hover:border-[var(--ws-border-hover)] hover:bg-[var(--ws-row-hover)] hover:text-foreground",
       "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -172,7 +172,7 @@ export function getFocusableDialogElements(root: HTMLElement | null): HTMLElemen
   }
 
   return Array.from(root.querySelectorAll<HTMLElement>(focusableSelector))
-    .filter(isDialogElementFocusable);
+    .filter((element) => element.tabIndex >= 0 && isDialogElementAvailable(element));
 }
 
 export function resolveInitialDialogFocus(
@@ -183,12 +183,13 @@ export function resolveInitialDialogFocus(
     return null;
   }
 
-  if (isHTMLElement(activeElement) && root.contains(activeElement) && activeElement !== root) {
+  if (isHTMLElement(activeElement) && root.contains(activeElement) && activeElement !== root && isDialogElementAvailable(activeElement)) {
     return activeElement;
   }
 
   const preferred = root.querySelector<HTMLElement>("[data-dialog-autofocus], [autofocus]");
-  if (preferred && isDialogElementFocusable(preferred)) {
+  if (preferred && isDialogElementAvailable(preferred) &&
+    (preferred.tabIndex >= 0 || preferred.hasAttribute("tabindex") || preferred.isContentEditable)) {
     return preferred;
   }
 
@@ -234,34 +235,21 @@ function getActiveElement(): HTMLElement | null {
   return isHTMLElement(document.activeElement) ? document.activeElement : null;
 }
 
-function isDialogElementFocusable(element: HTMLElement): boolean {
+function isDialogElementAvailable(element: HTMLElement): boolean {
   if (element.matches(":disabled") || element.closest("[hidden], [inert], [aria-hidden='true']")) {
     return false;
   }
 
   const view = element.ownerDocument.defaultView;
-  const visibility = view?.getComputedStyle(element).visibility;
-  if (visibility === "hidden" || visibility === "collapse") {
-    return false;
-  }
-
-  // Inspect ancestors as well: descendants of display:none and closed details can
-  // retain tabIndex=0, but focusing them does nothing in the browser. Using layout
-  // geometry here would also exclude valid fixed-position controls and jsdom nodes.
   for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
     const style = view?.getComputedStyle(ancestor);
-    if (style?.display === "none" || style?.contentVisibility === "hidden") {
-      return false;
-    }
+    if (style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse" || style?.contentVisibility === "hidden") return false;
     if (ancestor.tagName === "DETAILS" && !ancestor.hasAttribute("open") && ancestor !== element) {
       const summary = Array.from(ancestor.children).find((child) => child.tagName === "SUMMARY");
-      if (!summary?.contains(element)) {
-        return false;
-      }
+      if (!summary?.contains(element)) return false;
     }
   }
-
-  return element.tabIndex >= 0 || element.hasAttribute("autofocus") || element.hasAttribute("data-dialog-autofocus");
+  return true;
 }
 
 function isHTMLElement(value: unknown): value is HTMLElement {

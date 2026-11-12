@@ -18,7 +18,6 @@ export interface DensityToggleProps {
 }
 
 const LEVELS: Array<{ value: Density; label: string; gap: number }> = [
-  { value: "terminal", label: "Terminal", gap: 0.5 },
   { value: "compact", label: "Compact", gap: 1 },
   { value: "default", label: "Default", gap: 2 },
   { value: "spacious", label: "Spacious", gap: 4 }
@@ -54,7 +53,7 @@ function Glyph({ gap }: { gap: number }) {
 }
 
 /**
- * Operator control for the terminal, compact, default, and spacious density scopes.
+ * Operator control for the density token scopes (`data-theme-density="compact"|"spacious"`).
  * Writes the attribute to a target element (`document.body` by default) and can `persist` the
  * choice. Concrete segmented look — flat, hairline, 2px corners.
  */
@@ -70,7 +69,6 @@ export function DensityToggle({
   fullWidth = false,
   className
 }: DensityToggleProps) {
-  const buttons = useRef(new Map<Density, HTMLButtonElement>());
   const isControlled = controlled != null;
   const [internal, setInternal] = useState<Density>(() => {
     if (isControlled) {
@@ -80,11 +78,12 @@ export function DensityToggle({
       try {
         const saved = localStorage.getItem(persist);
         if (isDensity(saved)) return saved;
-      } catch { /* Storage is optional; keep the usable default. */ }
+      } catch { /* The control remains usable when storage is unavailable. */ }
     }
     return defaultValue;
   });
   const value = isControlled ? controlled : internal;
+  const buttons = useRef(new Map<Density, HTMLButtonElement>());
 
   useEffect(() => {
     if (!apply) {
@@ -99,7 +98,7 @@ export function DensityToggle({
     }
     if (persist) {
       try { localStorage.setItem(persist, next); }
-      catch { /* The choice still applies when persistence is unavailable. */ }
+      catch { /* Applying a view preference does not require persistence. */ }
     }
     onChange?.(next);
   };
@@ -126,7 +125,7 @@ export function DensityToggle({
       aria-label="Display density"
       aria-orientation="horizontal"
       className={cn(
-        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-card p-0.5",
+        "inline-flex items-stretch gap-0.5 rounded-[var(--radius-button)] border border-border bg-card p-0.5",
         fullWidth && "flex w-full",
         className
       )}
@@ -148,8 +147,8 @@ export function DensityToggle({
             title={level.label}
             onClick={() => select(level.value)}
             className={cn(
-              "inline-flex min-h-6 flex-1 items-center justify-center gap-1.5 rounded-[2px] font-medium leading-none transition-colors",
-              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+              "inline-flex min-h-6 flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-button)] font-medium leading-none transition-colors",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"

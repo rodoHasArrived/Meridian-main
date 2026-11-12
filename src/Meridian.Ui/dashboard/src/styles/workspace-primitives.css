@@ -70,6 +70,11 @@
   color: var(--ws-text-muted);
 }
 
+.workspace-filter-search:focus-within {
+  outline: 2px solid var(--interaction-focus);
+  outline-offset: 2px;
+}
+
 .workspace-filter-segments,
 .workspace-filter-actions {
   flex-wrap: wrap;
@@ -81,9 +86,9 @@
 }
 
 .workspace-filter-segment.active {
-  border-color: color-mix(in srgb, var(--ws-accent) 34%, transparent);
-  background: var(--ws-row-selected);
-  color: var(--ws-accent-pressed);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
+  color: var(--ws-text);
 }
 
 .workspace-filter-fields {
@@ -132,8 +137,8 @@
 }
 
 .workspace-tab.active {
-  border-bottom-color: var(--cyan-primary);
-  color: var(--ws-accent-pressed);
+  border-bottom-color: var(--interaction-selected);
+  color: var(--ws-text);
 }
 
 .workspace-tab-panel {
@@ -141,7 +146,7 @@
 }
 
 .workspace-tab-panel:focus-visible {
-  outline: 2px solid var(--cyan-focus);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
@@ -184,7 +189,7 @@
 .workspace-document-page {
   min-height: 36rem;
   border: 1px solid var(--ws-border);
-  background: var(--ws-surface);
+  background: var(--ws-surface-raised);
   box-shadow: var(--shadow-float);
 }
 

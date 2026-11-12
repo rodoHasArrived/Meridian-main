@@ -32,7 +32,7 @@ python build/scripts/docs/validate-design-module-conformance.py --summary
 | `Meridian.Workflow` | `src/Meridian.Workflow` | runbook definitions, JSON-backed runbook storage, deterministic runbook execution, and fund workflow command-state handling now live in `src/Meridian.Workflow`; remaining workflow definitions, operator actions, presets, continuity flows, browser, and WPF adapters still bridge through application/UI owners |
 | `Meridian.Audit` | `src/Meridian.Audit` | compliance policy checks, sensitive-action contracts, immutable audit hash chains, and access-review records now live in `src/Meridian.Audit`; remaining evidence packets, retained manifests, lineage, archival, export verification, storage, and shared UI adapters still bridge through source-backed owners |
 | `Meridian.Reporting` | `src/Meridian.Reporting` | reporting template metadata, run contracts, deterministic section rendering, orchestration, approval transition, audit-entry, and run-store seams now live in `src/Meridian.Reporting`; remaining report packs, governed exports, publication, restatement, distribution evidence, UI services, browser, and WPF workflows still bridge through shared UI and UI owners |
-| `Meridian.Documents` | `src/Meridian.Documents` | financial report PDF/XLSX rendering, Evidence Vault storage-quota policy, durable reservations, and recovery leases now live in `src/Meridian.Documents`; retained document intake, attachments, manifests, and publication remain in contracts, storage, and shared UI adapters |
+| `Meridian.Documents` | `src/Meridian.Documents` | retained document attachments and evidence manifests inside contracts, storage, and shared UI services |
 
 ## Migration Rules
 

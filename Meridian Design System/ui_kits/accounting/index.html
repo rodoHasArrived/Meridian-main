@@ -6,9 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Accounting</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
   html, body { margin: 0; height: 100%; }
@@ -23,13 +22,13 @@
   .acct-tab:hover { color: var(--text-primary); }
   .acct-tab--on { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--accent); }
   .acct-tab__count { font-family: var(--font-data); font-size: 10px; color: var(--text-muted);
-    border: 1px solid var(--border); border-radius: var(--radius-card); padding: 0 5px; line-height: 1.5; }
+    border: 1px solid var(--border); border-radius: 3px; padding: 0 5px; line-height: 1.5; }
 
-  .acct-overlay { position: fixed; inset: 0; background: color-mix(in srgb, var(--topbar-bg) 42%, transparent); z-index: 40;
+  .acct-overlay { position: fixed; inset: 0; background: rgba(26,23,18,.42); z-index: 40;
     display: flex; justify-content: flex-end; animation: acct-fade .14s ease; }
   @keyframes acct-fade { from { opacity: 0; } }
   .acct-drawer { width: 660px; max-width: 92vw; height: 100%; background: var(--bg); overflow-y: auto;
-    box-shadow: -12px 0 32px color-mix(in srgb, var(--topbar-bg) 18%, transparent); display: flex; flex-direction: column;
+    box-shadow: -12px 0 32px rgba(26,23,18,.18); display: flex; flex-direction: column;
     animation: acct-slide .18s cubic-bezier(.2,.7,.3,1); }
   @keyframes acct-slide { from { transform: translateX(28px); opacity: .6; } }
   .acct-drawer__hd { display: flex; align-items: center; justify-content: space-between;
@@ -50,7 +49,7 @@
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, MetricCard,
   AmountCell, LedgerTable, AccountTree, StatementTable, ReconciliationPanel, JournalEntryForm, TaxLotTable
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 /* ───────────────────────── data ───────────────────────── */

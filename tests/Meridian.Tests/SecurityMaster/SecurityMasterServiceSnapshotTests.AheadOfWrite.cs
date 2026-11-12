@@ -220,6 +220,16 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         var harness = new ServiceHarness();
         harness.Seed(securityId, assetClass, terms);
 
+        if (operation == AmendWithoutTermsPatch && assetClass == "Swap")
+        {
+            await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))
+                .Should().ThrowExactlyAsync<SecurityMasterWriteRefusedException>()
+                .WithMessage("*Declared leg schedule conventions require a later per-leg contract step*");
+            harness.Appended.Should().BeEmpty();
+            harness.Upserted.Should().BeEmpty();
+            return;
+        }
+
         if (operation == AmendWithoutTermsPatch && assetClass is "CertificateOfDeposit" or "StructuredCredit")
         {
             await FluentActions.Invoking(() => RunAsync(harness, securityId, operation))

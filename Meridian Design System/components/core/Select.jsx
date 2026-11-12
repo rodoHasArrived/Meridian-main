@@ -1,4 +1,9 @@
 // Meridian Select — functional only. No radius, no shadows, no transitions.
+// Full listbox keyboard contract: arrows/Home/End/typeahead, Enter/Space select,
+// Esc close, aria-activedescendant; flips above the trigger near the viewport edge.
+// A11y (3.5): a fully named select-only combobox — trigger role="combobox" named by its label
+// AND current value (APG pattern), aria-controls wired to the listbox, `ariaLabel` fallback so
+// an unlabeled instance is never anonymous.
 import React from "react";
 
 let injected = false;
@@ -8,26 +13,27 @@ function inject() {
   const css = `
 .mds-sel-wrap{position:relative;display:inline-block;width:100%;}
 .mds-sel-btn{width:100%;height:32px;padding:7px 32px 7px 10px;
-  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
-  color:var(--text-primary,#22252A);font-family:var(--font-data);font-size:13px;
+  border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
+  color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;
   text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-sel-btn:hover{border-color:var(--border-hover,#C6C3BB);}
-.mds-sel-btn:focus,.mds-sel-btn[aria-expanded="true"]{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-sel-btn--placeholder{color:var(--text-disabled,#94999F);}
-.mds-sel-caret{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted,#5E666F);}
-.mds-sel-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;
-  background:var(--bg-light,#FBFAF8);border:1px solid var(--border,#E4E3DE);
-  overflow:hidden;max-height:240px;overflow-y:auto;}
+.mds-sel-btn:hover{border-color:var(--border-hover,#BEB8AD);}
+.mds-sel-btn:focus,.mds-sel-btn[aria-expanded="true"]{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:var(--focus-ring-offset,1px);}
+.mds-sel-btn:disabled{background:var(--bg-medium,#EBE8E1);color:var(--text-disabled,#A4ABB2);cursor:not-allowed;}
+.mds-sel-btn--placeholder{color:var(--text-disabled,#A4ABB2);}
+.mds-sel-caret{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted,#606870);}
+.mds-sel-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:var(--z-dropdown,100);
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);
+  max-height:240px;overflow-y:auto;}
+.mds-sel-menu--above{top:auto;bottom:calc(100% + 4px);}
 .mds-sel-opt{padding:8px 12px;font-family:var(--font-data);font-size:12px;
-  color:var(--text-primary,#22252A);cursor:pointer;display:flex;align-items:center;gap:8px;}
-.mds-sel-opt[aria-disabled="true"]{opacity:.5;cursor:not-allowed;}
-.mds-sel-opt:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
-.mds-sel-opt:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-sel-opt--active{background:var(--bg-active,#F2E3DB);color:var(--accent-dim,#8C4429);font-weight:600;}
+  color:var(--text-primary,#20252B);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.mds-sel-opt--focus{background:var(--bg-hover,#EDEFF0);}
+.mds-sel-opt--active{background:var(--bg-active,#E7EDF2);color:var(--interaction-selected,#496C8F);font-weight:600;}
 .mds-sel-opt--active::after{content:"✓";margin-left:auto;font-size:11px;}
-.mds-sel-divider{height:1px;background:var(--border,#E4E3DE);margin:4px 0;}
+.mds-sel-opt--disabled{color:var(--text-disabled,#A4ABB2);cursor:not-allowed;}
+.mds-sel-divider{height:1px;background:var(--border,#D2CDC3);margin:4px 0;}
 .mds-sel-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds","select");
@@ -35,90 +41,123 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function Select({ label, options = [], value, onChange, placeholder = "Select…", disabled = false,
-  id, "aria-label": ariaLabel, "aria-labelledby": ariaLabelledBy, "aria-describedby": ariaDescribedBy, "aria-invalid": ariaInvalid }) {
+export function Select({ label, options = [], value, onChange, placeholder = "Select…", disabled = false, ariaLabel, id, ...rest }) {
   inject();
-  const identity = React.useId();
-  const controlId = id || `${identity}-control`;
-  const labelId = `${identity}-label`;
-  const valueId = `${identity}-value`;
-  const menuId = `${identity}-options`;
+  const generatedId = React.useId();
+  const uid = id || generatedId;
+  const buttonId = id || `${uid}-btn`;
   const [open, setOpen] = React.useState(false);
-  const [active, setActive] = React.useState(0);
+  const [above, setAbove] = React.useState(false);
   const ref = React.useRef(null);
-  const trigger = React.useRef(null);
-  const optionRefs = React.useRef(new Map());
-  const enabled = options.map((option, index) => ({ option, index })).filter(({ option }) => option !== "---" && !option.disabled);
+  const menuRef = React.useRef(null);
+  const typeahead = React.useRef({ str: "", t: 0 });
+
+  // Flat model: keep original indices so ids stay stable; dividers aren't options.
+  const items = options.map((opt, i) => opt === "---"
+    ? { divider: true, i }
+    : { i, value: opt.value ?? opt, label: opt.label ?? opt, disabled: !!opt.disabled });
+  const enabled = items.filter(it => !it.divider && !it.disabled);
+  const selIdx = enabled.findIndex(it => it.value === value);
+  const [focusIdx, setFocusIdx] = React.useState(-1); // index into `enabled`
 
   React.useEffect(() => {
-    const handler = (event) => { if (ref.current && !ref.current.contains(event.target)) setOpen(false); };
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-  React.useEffect(() => { if (open) optionRefs.current.get(active)?.focus(); }, [open, active]);
 
-  const selected = options.find((option) => option !== "---" && (option.value ?? option) === value);
-  const displayLabel = selected ? (selected.label ?? selected) : null;
-  const labelledBy = ariaLabelledBy || (!ariaLabel && label ? `${labelId} ${valueId}` : undefined);
-  const close = () => { setOpen(false); trigger.current?.focus(); };
-  const show = (edge = "selected") => {
-    if (disabled || enabled.length === 0) return;
-    const selectedIndex = enabled.find(({ option }) => (option.value ?? option) === value)?.index;
-    setActive(edge === "last" ? enabled[enabled.length - 1].index : edge === "first" ? enabled[0].index : selectedIndex ?? enabled[0].index);
+  const openMenu = () => {
+    if (disabled) return;
+    setFocusIdx(selIdx >= 0 ? selIdx : 0);
+    const r = ref.current?.getBoundingClientRect();
+    setAbove(!!r && window.innerHeight - r.bottom < 260 && r.top > 260);
     setOpen(true);
   };
-  const choose = (index) => {
-    const option = options[index];
-    if (option == null || option === "---" || option.disabled) return;
-    onChange?.(option.value ?? option);
-    close();
+
+  // Keep the focused option in view while arrowing.
+  React.useEffect(() => {
+    if (!open || focusIdx < 0 || !menuRef.current) return;
+    const el = menuRef.current.querySelector(`[data-eidx="${focusIdx}"]`);
+    if (!el) return;
+    const m = menuRef.current;
+    if (el.offsetTop < m.scrollTop) m.scrollTop = el.offsetTop;
+    else if (el.offsetTop + el.offsetHeight > m.scrollTop + m.clientHeight)
+      m.scrollTop = el.offsetTop + el.offsetHeight - m.clientHeight;
+  }, [open, focusIdx]);
+
+  const commit = (it) => { if (disabled) return; onChange?.(it.value); setOpen(false); };
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
+
+  const handleKey = (e) => {
+    if (disabled) return;
+    if (!open) {
+      if (["Enter", " ", "ArrowDown", "ArrowUp"].includes(e.key)) { e.preventDefault(); openMenu(); }
+      return;
+    }
+    switch (e.key) {
+      case "Escape": e.preventDefault(); setOpen(false); break;
+      case "Tab": setOpen(false); break;
+      case "ArrowDown": e.preventDefault(); setFocusIdx(i => Math.min(i + 1, enabled.length - 1)); break;
+      case "ArrowUp": e.preventDefault(); setFocusIdx(i => Math.max(i - 1, 0)); break;
+      case "Home": e.preventDefault(); setFocusIdx(0); break;
+      case "End": e.preventDefault(); setFocusIdx(enabled.length - 1); break;
+      case "Enter": case " ": e.preventDefault(); if (enabled[focusIdx]) commit(enabled[focusIdx]); break;
+      default: {
+        if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          const now = Date.now();
+          const ta = typeahead.current;
+          ta.str = (now - ta.t < 600 ? ta.str : "") + e.key.toLowerCase();
+          ta.t = now;
+          const hit = enabled.findIndex(it => String(it.label).toLowerCase().startsWith(ta.str));
+          if (hit >= 0) setFocusIdx(hit);
+        }
+      }
+    }
   };
-  const onTriggerKeyDown = (event) => {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault(); show(event.key === "ArrowUp" ? "last" : "selected");
-    } else if (event.key === "Escape" && open) { event.preventDefault(); close(); }
-  };
-  const onMenuKeyDown = (event) => {
-    const index = Math.max(0, enabled.findIndex((entry) => entry.index === active));
-    let next;
-    if (event.key === "ArrowDown") next = (index + 1) % enabled.length;
-    else if (event.key === "ArrowUp") next = (index - 1 + enabled.length) % enabled.length;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = enabled.length - 1;
-    else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(active); return; }
-    else if (event.key === "Escape") { event.preventDefault(); close(); return; }
-    else if (event.key === "Tab") { close(); return; }
-    else return;
-    event.preventDefault(); setActive(enabled[next].index);
-  };
+
+  const displayLabel = items.find(it => !it.divider && it.value === value)?.label ?? null;
+  const activeId = open && focusIdx >= 0 && enabled[focusIdx] ? `${uid}-opt-${enabled[focusIdx].i}` : undefined;
 
   return (
     <div ref={ref}>
-      {label && <label id={labelId} htmlFor={controlId} className="mds-sel-label">{label}</label>}
+      {label && <span className="mds-sel-label" id={`${uid}-label`}>{label}</span>}
       <div className="mds-sel-wrap">
-        <button id={controlId} ref={trigger} type="button"
+        <button
+          type="button"
+          {...rest}
+          id={buttonId}
           className={`mds-sel-btn${!displayLabel ? " mds-sel-btn--placeholder" : ""}`}
-          aria-label={ariaLabel} aria-labelledby={labelledBy} aria-describedby={ariaDescribedBy} aria-invalid={ariaInvalid}
-          aria-expanded={open} aria-haspopup="listbox" aria-controls={open ? menuId : undefined}
-          disabled={disabled || enabled.length === 0}
-          onClick={() => open ? close() : show()} onKeyDown={onTriggerKeyDown}>
-          <span id={valueId}>{displayLabel ?? placeholder}</span>
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-controls={`${uid}-menu`}
+          aria-labelledby={label ? `${uid}-label ${buttonId}` : rest["aria-labelledby"]}
+          aria-label={!label ? (ariaLabel || rest["aria-label"] || (id ? undefined : placeholder)) : undefined}
+          aria-activedescendant={activeId}
+          disabled={disabled}
+          onClick={() => (open ? setOpen(false) : openMenu())}
+          onKeyDown={handleKey}
+        >
+          {displayLabel ?? placeholder}
         </button>
         <span className="mds-sel-caret" aria-hidden="true">▾</span>
         {open && (
-          <div id={menuId} className="mds-sel-menu" role="listbox"
-            aria-label={ariaLabel || label || "Options"} aria-labelledby={ariaLabelledBy}
-            onKeyDown={onMenuKeyDown}>
-            {options.map((option, index) => {
-              if (option === "---") return <div key={index} className="mds-sel-divider" aria-hidden="true" />;
-              const optionValue = option.value ?? option;
-              return <div key={index} role="option" aria-selected={optionValue === value} aria-disabled={option.disabled || undefined}
-                tabIndex={option.disabled ? -1 : active === index ? 0 : -1}
-                ref={(element) => { if (element) optionRefs.current.set(index, element); else optionRefs.current.delete(index); }}
-                className={`mds-sel-opt${optionValue === value ? " mds-sel-opt--active" : ""}`}
-                onFocus={() => setActive(index)} onClick={() => choose(index)}>
-                {option.label ?? option}
-              </div>;
+          <div ref={menuRef} id={`${uid}-menu`} className={`mds-sel-menu${above ? " mds-sel-menu--above" : ""}`}
+            role="listbox" aria-labelledby={label ? `${uid}-label` : undefined} aria-label={!label ? (ariaLabel || placeholder) : undefined}>
+            {items.map((it) => {
+              if (it.divider) return <div key={it.i} className="mds-sel-divider" />;
+              const eidx = enabled.indexOf(it);
+              const cls = `mds-sel-opt${it.value === value ? " mds-sel-opt--active" : ""}${eidx === focusIdx ? " mds-sel-opt--focus" : ""}${it.disabled ? " mds-sel-opt--disabled" : ""}`;
+              return (
+                <div key={it.i} id={`${uid}-opt-${it.i}`} role="option"
+                  aria-selected={it.value === value} aria-disabled={it.disabled || undefined}
+                  data-eidx={eidx >= 0 ? eidx : undefined} className={cls}
+                  onMouseEnter={() => eidx >= 0 && setFocusIdx(eidx)}
+                  onClick={() => { if (!it.disabled) commit(it); }}
+                >
+                  {it.label}
+                </div>
+              );
             })}
           </div>
         )}

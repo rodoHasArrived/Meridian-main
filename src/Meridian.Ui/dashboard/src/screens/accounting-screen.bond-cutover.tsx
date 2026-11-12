@@ -185,7 +185,7 @@ export function BondCutoverConsolePanel({ api = {} }: BondCutoverConsolePanelPro
       label: "Declared conventions",
       render: (row) => row.hasDeclaredConventions
         ? <span>Declared</span>
-        : <span className="text-[var(--state-warn-fg)] dark:text-[var(--state-warn-fg)]">{row.blockedReason ?? "Undeclared"}</span>
+        : <span className="text-amber-700 dark:text-amber-300">{row.blockedReason ?? "Undeclared"}</span>
     },
     {
       id: "block",

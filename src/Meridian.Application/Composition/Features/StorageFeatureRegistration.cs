@@ -107,6 +107,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
+        services.TryAddSingleton<FileBondExerciseNoticeStore>();
+        services.TryAddSingleton<Meridian.Contracts.CashFlows.IBondExerciseNoticeStore>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
+        services.TryAddSingleton<Meridian.Contracts.CashFlows.IExerciseNoticeVerifier>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
         services.TryAddScoped<Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService, ContractualCashFlowPreviewService>();
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IContractualCashFlowRunStore, FileContractualCashFlowRunStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
@@ -185,6 +188,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ScopedAccessService>();
         services.TryAddSingleton<IScopedAccessAssignmentService>(sp => sp.GetRequiredService<ScopedAccessService>());
         services.TryAddSingleton<IScopedAuthorizationService>(sp => sp.GetRequiredService<ScopedAccessService>());
+        // Registered before the profile governance service so its composed constructor, which reads
+        // the effective independent-approver requirement, is the one the container selects.
+        services.AddSecurityMasterGovernanceRequirements();
         services.TryAddSingleton<ISecurityAssetProfileGovernanceService, SecurityAssetProfileGovernanceService>();
         services.TryAddSingleton<ISecurityAssetProfileCatalog>(sp => sp.GetRequiredService<ISecurityAssetProfileGovernanceService>());
         services.TryAddSingleton(sp => AssetClassValidatorRegistry.CreateDefault(sp.GetRequiredService<ISecurityAssetProfileCatalog>()));
@@ -257,6 +263,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
                 sp.GetRequiredService<DurableAutomatedJournalPoster>());
             services.AddSingleton<PostgresAccountingConfigurationStore>();
+            services.AddSingleton<Meridian.Ledger.IPrivateCapitalStore, PostgresPrivateCapitalStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<PostgresFundProfileTenancyRegistry>();
@@ -309,6 +316,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            // Read-only view of the identifier history the projection store appends (migration 062).
+            services.AddSingleton<ISecurityIdentifierHistoryStore, PostgresSecurityMasterStore>();
             services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
             services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
             services.AddSingleton<IOtcCollateralStore, PostgresOtcCollateralStore>();
@@ -325,6 +334,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
             services.AddSingleton<IDirectLoanReferenceProjectionStore, PostgresDirectLoanReferenceProjectionStore>();
             services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
+            services.AddSingleton<ICustomAssetProfileFieldProjectionStore, PostgresCustomAssetProfileFieldProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<ISecurityMasterCanonicalWriteScope, PostgresSecurityMasterCanonicalWriteScope>();
@@ -350,7 +360,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
+            // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
+            // (refused while governed term amendments are required, by setting or by the Institutional profile), ISecurityMasterAmender
+            // the system-ingest path, and IGovernedPublicationAmender the approved-revision publication path.
             services.AddSingleton<ISecurityMasterAmender>(sp => (ISecurityMasterAmender)sp.GetRequiredService<ISecurityMasterService>());
+            services.AddSingleton<IGovernedPublicationAmender>(sp => (IGovernedPublicationAmender)sp.GetRequiredService<ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
@@ -492,6 +506,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterCorporateActionCommandService, NullSecurityMasterCorporateActionCommandService>();
         services.TryAddSingleton<IBondReferenceService, NullBondReferenceService>();
         services.TryAddSingleton<IBondAnalyticsService, BondAnalyticsService>();
+        services.TryAddSingleton<IBondObservedFixingStore, FileBondObservedFixingStore>();
         services.TryAddSingleton<IBondSettlementConsiderationService, BondSettlementConsiderationService>();
         services.TryAddSingleton<FileBondCalculationPolicy>(sp => new FileBondCalculationPolicy(
             Path.Combine(sp.GetRequiredService<StorageOptions>().RootPath, "bonds", "cutover.json"),
@@ -518,6 +533,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDirectLoanReferenceService, NullDirectLoanReferenceService>();
         services.TryAddSingleton<IStructuredCreditReferenceService, NullStructuredCreditReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
+        services.TryAddSingleton<IGovernedPublicationAmender, NullSecurityMasterService>();
+        // The governance requirements seam and the governed-amendment policy SecurityMasterService
+        // enforces on its operator-direct path. Idempotent (also registered above); in hosts that
+        // never bind the section it reads the code defaults, under which direct amendments stay
+        // permitted unless the host is a production composition.
+        services.AddSecurityMasterGovernanceRequirements();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
@@ -562,8 +583,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                     sp.GetService<ILedgerJournalStore>()));
             services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
             services.AddSingleton<DirectLendingMigrationRunner>();
+            services.AddSingleton<IDirectLendingIndexFixingStore, PostgresDirectLendingIndexFixingStore>();
             services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
-            services.AddSingleton<LoanAccountingProjector>();
+            // Direct lending can be enabled through the Security Master connection-string fallback
+            // without a ledger database, so the journal store is optional here. The projector fails
+            // closed on every ledger-impacting event when no store is composed; it never posts
+            // around the governed ledger.
+            services.AddSingleton(sp => new LoanAccountingProjector(
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetRequiredService<IAccountingPolicyService>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
@@ -789,6 +818,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ProjectionReplayBatchSize = configuration.GetInt32("MERIDIAN_SECURITY_MASTER_REPLAY_BATCH_SIZE", 500),
             PreloadProjectionCache = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE", true),
             ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true),
+            IdentifierHistoryMigrationWritersStopped = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED", false),
+            IdentifierHistoryMigrationLegacyWritersRetired = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED", false),
             ProjectionCacheNotificationsEnabled = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS", true)
         };
 
@@ -820,6 +851,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         {
             ConnectionString = configuration.GetConnectionString(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
             SchemaName = configuration.GetSchema(LedgerStartup.SchemaVariable, LedgerStartup.DefaultSchema),
+            PrivateCapitalBankingSchema = configuration.GetSchema(BankingStartup.SchemaVariable, BankingStartup.DefaultSchema),
             EnablePeriodLocking = configuration.GetBoolean("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
             RequireGovernedPostingCommand = requireGovernedProductionWrites,
             RequireExpectedVersion = requireGovernedProductionWrites

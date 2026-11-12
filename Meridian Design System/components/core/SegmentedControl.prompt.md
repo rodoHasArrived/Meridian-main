@@ -1,3 +1,3 @@
 Compact mutually-exclusive view switch — denser than `RadioGroup`, made for toolbars (table/chart, Day/Week/Month, status filters). The active segment lifts onto a light surface with the one subtle card shadow. Optional leading icon and trailing count per segment.
 
-Keyboard: the group has one tab stop. Arrow keys move actual focus and request the next enabled choice, wrapping at either end; Home/End choose the first/last enabled choice. Disabled options are skipped. Space/Enter select the focused choice. Controlled consumers retain ownership of the selected value and must update it in response to onChange. Focus indicators remain visible and custom hit areas are at least 24px high.
+A11y (3.5): a real radio group — `role="radiogroup"`/`"radio"`, `aria-checked`, roving tabindex, Arrow/Home/End move and select (selection follows focus, like native radios).

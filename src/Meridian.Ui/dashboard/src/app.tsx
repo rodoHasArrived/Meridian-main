@@ -1,4 +1,4 @@
-import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
@@ -21,6 +21,8 @@ import {
   type AppShellOperatingScopeInput
 } from "@/app-shell.operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
+import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import {
@@ -31,10 +33,11 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
-import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
+import { WorkflowContinuityDock, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
+import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
+import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -42,7 +45,13 @@ import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pa
 import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { applyDensity, writeStoredDensity } from "@/lib/density";
-import type { LayoutRestorePlan } from "@/lib/saved-layouts";
+import { ScopePickerOpenerProvider } from "@/lib/operating-scope/scope-picker-context";
+import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/recent-scopes";
+import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
+import { ShellStatusSignalsProvider } from "@/lib/shell-status-signals-context";
+import { deriveWorkspaceFigureContext, WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
+import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
@@ -61,6 +70,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
+import { getOperatorScopePreference, saveOperatorScopePreference } from "@/lib/api/operator-workstation.api";
 import {
   useCommandPaletteActions,
   type CommandPaletteActionItem
@@ -69,7 +79,6 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
-import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
@@ -83,6 +92,7 @@ import {
   useOnboardingTour
 } from "@/components/meridian/onboarding-tour";
 import { ActivationHeaderProgress } from "@/features/first-run/activation-progress";
+import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import {
   reportWorkstationRouteError,
@@ -129,6 +139,8 @@ const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-
 const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
 const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
+const FactorPaydownScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.FactorPaydownScreen })));
+const ConsolidationWorkflowScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ConsolidationWorkflowScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
 const CapitalCallIssuanceScreen = lazy(() => import("@/screens/capital-call-issuance-screen").then((module) => ({ default: module.CapitalCallIssuanceScreen })));
@@ -343,11 +355,20 @@ function AppShell({
   onRetryDemoModeProbe?: () => void;
 }) {
   const [commandOpen, setCommandOpen] = useState(false);
+  const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const openScopePicker = useCallback(() => setScopePickerOpen(true), []);
   const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
+  // C1: recent scopes per browser; the default scope per operator, from the server.
+  const [recentScopes, setRecentScopes] = useState(() => readRecentScopes());
+  const [defaultScope, setDefaultScope] = useState<AppShellOperatingScopeInput | null>(null);
+  const defaultScopeCheckedRef = useRef(false);
+  // Set once the operator applies or restores any scope, including an empty one, so a default that
+  // loads late never replaces a choice they made while it was loading.
+  const operatorChoseScopeRef = useRef(false);
   const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
@@ -361,9 +382,46 @@ function AppShell({
     [storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
+  // C1: load the operator's default scope once. It is applied only when this session opened with
+  // no scope at all (none in the link, none remembered in this browser) and the operator has not
+  // chosen one since, so it never overrides a shared link or the operator's own choice.
+  const openedUnscopedRef = useRef<boolean | null>(null);
+  if (openedUnscopedRef.current === null) openedUnscopedRef.current = !hasOperatingScopeValues(operatingScopeInput);
+  const currentOperatingScopeRef = useRef(operatingScopeInput);
+  currentOperatingScopeRef.current = operatingScopeInput;
+  useEffect(() => {
+    if (defaultScopeCheckedRef.current) return;
+    const controller = new AbortController();
+    void getOperatorScopePreference({ signal: controller.signal }).then((preference) => {
+      if (controller.signal.aborted) return;
+      defaultScopeCheckedRef.current = true;
+      const saved = preference.defaultScope ? compactOperatingScope(preference.defaultScope) : null;
+      setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
+      if (
+        openedUnscopedRef.current
+        && !operatorChoseScopeRef.current
+        && !hasOperatingScopeValues(currentOperatingScopeRef.current)
+        && saved
+        && hasOperatingScopeValues(saved)
+      ) {
+        applyOperatingScopeRef.current(saved);
+      }
+    }).catch(() => {
+      // No session, an older host, or a failed read: no default, and the session stays as opened.
+      // An aborted read (StrictMode's effect replay, or unmount) leaves the check open to run again.
+      if (!controller.signal.aborted) defaultScopeCheckedRef.current = true;
+    });
+    return () => controller.abort();
+  }, []);
+  const handleSaveDefaultScope = async (next: AppShellOperatingScopeInput | null) => {
+    const compacted = next ? compactOperatingScope(next) : null;
+    const saved = await saveOperatorScopePreference(compacted && hasOperatingScopeValues(compacted) ? compacted : null);
+    setDefaultScope(saved.defaultScope ? compactOperatingScope(saved.defaultScope) : null);
+  };
   const {
     session,
     overview,
+    crossScreenCounts,
     strategy,
     trading,
     portfolio,
@@ -394,6 +452,9 @@ function AppShell({
     loading,
     error,
     workspaceErrors,
+    figureSourceLoadedAt,
+    figureSourcesStale,
+    figureSourceScope,
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
@@ -410,8 +471,19 @@ function AppShell({
   });
   const dataProvenance = resolveWorkstationDataProvenance({
     usingDevelopmentFixtures,
-    demoMode
+    demoMode,
+    sampleWorkspace: firstRunStatus?.workspace.isSample ?? false
   });
+  const workspaceFigureContext = useMemo(
+    () => deriveWorkspaceFigureContext({
+      status: refreshStatus,
+      provenance: dataProvenance,
+      staleSources: figureSourcesStale,
+      sourceLoadedAt: figureSourceLoadedAt,
+      sourceScope: figureSourceScope
+    }),
+    [refreshStatus, dataProvenance, figureSourcesStale, figureSourceLoadedAt, figureSourceScope]
+  );
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
@@ -448,9 +520,24 @@ function AppShell({
     }),
     []
   );
+  // C4: saved views in the palette. A saved layout carries its route with every table's URL state
+  // (filters, sort, hidden columns), the operating scope and density, so opening one restores the
+  // whole view. Read when the palette opens so a view saved a moment ago is offered.
+  const savedViewActionItems = useMemo<CommandPaletteActionItem[]>(
+    () => (commandOpen ? readUserLayouts() : []).map((layout) => ({
+      id: `saved-view:${layout.id}`,
+      verbLabel: `Open saved view ${layout.name}`,
+      description: layout.description ?? "Restores its screen with filters, sort, columns, scope and density.",
+      keywords: ["saved view", "layout", layout.name],
+      run: async () => {
+        handleRestoreLayoutRef.current(buildLayoutRestorePlan(layout));
+      }
+    })),
+    [commandOpen]
+  );
   const paletteActionItems = useMemo(
-    () => [scopeActionItem, ...presetPinActionItems, ...screenActionItems],
-    [scopeActionItem, presetPinActionItems, screenActionItems]
+    () => [scopeActionItem, ...savedViewActionItems, ...presetPinActionItems, ...screenActionItems],
+    [scopeActionItem, savedViewActionItems, presetPinActionItems, screenActionItems]
   );
 
   useEffect(() => {
@@ -479,14 +566,21 @@ function AppShell({
   // Replace the operating scope from the picker: persist it and reflect the
   // applicable dimensions into the current route so URL-reading screens filter,
   // preserving any non-scope query params already on the route.
-  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+  const applyOperatingScope = (next: AppShellOperatingScopeInput) => {
     const compacted = compactOperatingScope(next);
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
+    setRecentScopes((current) => rememberRecentScope(compacted, current));
     const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
     const scopeState = buildOperatingScopeFromSearch("", compacted);
     navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
+  };
+  const applyOperatingScopeRef = useRef(applyOperatingScope);
+  applyOperatingScopeRef.current = applyOperatingScope;
+  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+    operatorChoseScopeRef.current = true;
+    applyOperatingScope(next);
   };
 
   // Replay a saved layout: apply density and operating scope, re-open the recorded
@@ -499,6 +593,7 @@ function AppShell({
     applyDensity(plan.density);
 
     const compacted = compactOperatingScope(plan.operatingScope);
+    operatorChoseScopeRef.current = true;
     scopeReplacementLocationRef.current = locationKey;
     writeStoredOperatingScope(compacted);
     setStoredOperatingScope(compacted);
@@ -508,31 +603,39 @@ function AppShell({
 
     navigate(plan.route);
   };
+  const handleRestoreLayoutRef = useRef(handleRestoreLayout);
+  handleRestoreLayoutRef.current = handleRestoreLayout;
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
 
   useEffect(() => {
-    const handleCommandShortcut = (event: KeyboardEvent) => {
+    const handleGlobalShortcut = (event: KeyboardEvent) => {
+      const targetIsEditable = isAppShellEditableShortcutTarget(event.target);
       const command = resolveAppShellCommandPaletteShortcut({
         key: event.key,
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
         altKey: event.altKey,
         shiftKey: event.shiftKey,
-        targetIsEditable: isAppShellEditableShortcutTarget(event.target),
+        targetIsEditable,
         commandPaletteOpen: commandOpen
       });
-      if (command !== "toggle-command-palette") {
+      if (command === "toggle-command-palette") {
+        event.preventDefault();
+        setCommandOpen((current) => !current);
         return;
       }
 
-      event.preventDefault();
-      setCommandOpen((current) => !current);
+      // "?" opens the shortcut list; never while typing or while the palette is open.
+      if (!targetIsEditable && !commandOpen && matchesKeyCombo(event, getGlobalKeyBinding("keyboard-help").keys)) {
+        event.preventDefault();
+        setKeyboardHelpOpen(true);
+      }
     };
 
-    window.addEventListener("keydown", handleCommandShortcut);
-    return () => window.removeEventListener("keydown", handleCommandShortcut);
+    window.addEventListener("keydown", handleGlobalShortcut);
+    return () => window.removeEventListener("keydown", handleGlobalShortcut);
   }, [commandOpen, setCommandOpen]);
 
   // Tell any open companion panes when the main workstation window goes away, so
@@ -543,6 +646,7 @@ function AppShell({
     return () => window.removeEventListener("pagehide", handlePageHide);
   }, []);
 
+  const { registry: pageTrustRegistry, pageFreshness } = usePageTrustRegistry();
   const shell = useMemo(() => buildAppShellViewState({
     pathname,
     search,
@@ -558,6 +662,7 @@ function AppShell({
     payload: {
       session,
       overview,
+      crossScreenCounts,
       strategy,
       trading,
       portfolio,
@@ -581,6 +686,7 @@ function AppShell({
     dataProvenance,
     session,
     overview,
+    crossScreenCounts,
     strategy,
     trading,
     portfolio,
@@ -590,6 +696,20 @@ function AppShell({
     workflowSummary,
     operatingScopeInput
   ]);
+  // Page status rows fold in the shell's source signals, so a page cannot read "All sources
+  // current" while the masthead pill warns about the same sources.
+  const shellStatusSignals = useMemo(
+    () => ({
+      sourceSignals: shell.attention.sourceSignals,
+      operatingScope: shell.workflowContinuity.operatingScope
+    }),
+    [shell.attention.sourceSignals, shell.workflowContinuity.operatingScope]
+  );
+  // Sidebar attention counts read the same queue selection the Daily Control Tower lists.
+  const workspaceAttention = useMemo(
+    () => buildWorkspaceAttentionCounts(shell.workflowContinuity),
+    [shell.workflowContinuity]
+  );
   const breadcrumbItems = useMemo(
     () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
     [pathname, shell.activeWorkspace, navigate]
@@ -696,6 +816,13 @@ function AppShell({
   ]);
 
   return (
+    <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
+    <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
+    <ScopePickerOpenerProvider open={openScopePicker}>
+    <CrossScreenCountsProvider counts={crossScreenCounts}>
+    <ShellStatusSignalsProvider value={shellStatusSignals}>
+    <WorkspaceFigureContextProvider value={workspaceFigureContext}>
+    <PageTrustProvider registry={pageTrustRegistry}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -709,10 +836,14 @@ function AppShell({
         commandTrigger={shell.commandPaletteTrigger}
         onOpenCommandPalette={() => setCommandOpen(true)}
         trustStrip={shell.trustStrip}
+        provenance={dataProvenance}
+        onRetryLiveData={onRetryDemoModeProbe}
+        retryBusy={demoModeProbeBusy}
+        decisionBrief={shell.workflowContinuity.decisionBrief}
+        attention={shell.attention}
         session={session}
         actions={(
           <>
-            <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
             <ActivationHeaderProgress status={firstRunStatus} />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
@@ -720,15 +851,6 @@ function AppShell({
         )}
       />
 
-      {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
-          workstation is showing simulated, seeded, or sample data the operator keeps
-          seeing it. Renders nothing for real data. Unresolved provenance renders the
-          `unknown` badge with a retry control instead of a false SIMULATED claim. */}
-      <DataProvenanceBanner
-        provenance={dataProvenance}
-        onRetryLiveData={onRetryDemoModeProbe}
-        retryBusy={demoModeProbeBusy}
-      />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">
@@ -736,6 +858,8 @@ function AppShell({
           className="workstation-rail-desktop"
           density="compact"
           operatingContextScope={operatingScopeInput}
+          attention={workspaceAttention}
+          attentionItems={shell.workflowContinuity.operatorFocusCommandItems}
         />
 
         <main
@@ -748,24 +872,23 @@ function AppShell({
         >
           <WorkspaceHeader
             actions={(
-              <>
-                <CopyLinkButton />
-                <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
-                  <LayoutSwitcher
-                    route={`${pathname}${search}`}
-                    operatingScope={operatingScopeInput}
-                    onRestore={handleRestoreLayout}
-                    showLabel
-                  />
-                  <SaveViewButton
-                    workflowLibrary={workflowLibrary}
-                    workflowError={workflowError}
-                    onPresetSaved={upsertWorkflowPreset}
-                    showLabel
-                  />
-                </WorkspaceViewsMenu>
-              </>
+              <WorkspaceViewsMenu routeKey={`${shell.routeFocus.routeKey}:${layoutRestoreSequence}`}>
+                <LayoutSwitcher
+                  route={`${pathname}${search}`}
+                  operatingScope={operatingScopeInput}
+                  onRestore={handleRestoreLayout}
+                  showLabel
+                />
+                <SaveViewButton
+                  workflowLibrary={workflowLibrary}
+                  workflowError={workflowError}
+                  onPresetSaved={upsertWorkflowPreset}
+                  showLabel
+                />
+              </WorkspaceViewsMenu>
             )}
+            overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
+            routeKey={shell.routeFocus.routeKey}
             context={(
               <WorkflowContinuityDock
                 viewModel={shell.workflowContinuity}
@@ -776,6 +899,7 @@ function AppShell({
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}
             session={session}
+            dataProvenance={dataProvenance}
             onRefresh={refresh}
             refreshing={loading || refreshStatus.inFlight}
           />
@@ -790,6 +914,7 @@ function AppShell({
                     <DailyControlTowerScreen
                       viewModel={shell.workflowContinuity}
                       trustStrip={shell.trustStrip}
+                      attention={shell.attention}
                       onEditOperatingScope={() => setScopePickerOpen(true)}
                       onRefresh={() => {
                         void refresh({ includeDeferred: true });
@@ -827,12 +952,14 @@ function AppShell({
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
+                  <Route path="/accounting/factor-paydown" element={<FactorPaydownScreen />} />
+                  <Route path="/accounting/consolidation" element={<ConsolidationWorkflowScreen />} />
                   <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
                   <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
-                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen />} />
+                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen session={session} />} />
                   <Route path="/accounting/margin-control" element={<MarginControlCenterScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
@@ -885,10 +1012,13 @@ function AppShell({
         items={buildWorkstationStatusItems({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
-          hasError: Boolean(error)
+          hasError: Boolean(error),
+          attention: shell.attention,
+          pageFreshness
         })}
       />
 
+      <KeyboardShortcutsSheet open={keyboardHelpOpen} onOpenChange={setKeyboardHelpOpen} />
       <CommandPalette
         open={commandOpen}
         onOpenChange={setCommandOpen}
@@ -909,6 +1039,10 @@ function AppShell({
         scope={operatingScopeInput}
         fundAccounts={scopeFundAccountOptions}
         onApply={handleSetOperatingScope}
+        recentScopes={recentScopes}
+        defaultScope={defaultScope}
+        onSaveDefault={handleSaveDefaultScope}
+        workflowContext={<WorkflowContextDisclosure viewModel={shell.workflowContinuity} />}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
         <SheetContent
@@ -928,12 +1062,21 @@ function AppShell({
             <WorkspaceNav
               className="workstation-nav-sheet"
               operatingContextScope={operatingScopeInput}
+              attentionItems={shell.workflowContinuity.operatorFocusCommandItems}
               onNavigate={() => setNavOpen(false)}
+              attention={workspaceAttention}
             />
           </SheetBody>
         </SheetContent>
       </Sheet>
     </div>
+    </PageTrustProvider>
+    </WorkspaceFigureContextProvider>
+    </ShellStatusSignalsProvider>
+    </CrossScreenCountsProvider>
+    </ScopePickerOpenerProvider>
+    </EntityInspectorProvider>
+    </MetricPassportSessionProvider>
   );
 }
 
@@ -1030,18 +1173,17 @@ function buildWorkspaceBreadcrumbItems(
   workspace: WorkspaceSummary,
   navigate: ReturnType<typeof useNavigate>
 ): BreadcrumbItem[] {
+  // The masthead already says "Meridian", so the trail starts at the workspace and ends in the
+  // page name, which the header renders as the page heading.
   if (pathname === "/") {
-    return [{ label: "Workstation", current: true }];
+    // The Daily Control Tower is the workstation's front door, named "Today" in the sidebar.
+    return [{ label: "Today", current: true }];
   }
 
   const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
-    {
-      label: "Workstation",
-      onClick: () => navigate("/")
-    },
     {
       label: workspace.label,
       current: workspaceIsCurrent,

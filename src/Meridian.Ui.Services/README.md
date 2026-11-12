@@ -6,10 +6,17 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-01
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui.Services
+
+Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
+typed fixed-income reads preserve nullable and nested financial values. API request serialization
+continues to emit numbers; compact storage, pretty-print and retained calculation serializers are
+unchanged. The endpoint precision regression exercises the real shared client against both wire forms.
+
+`DataSamplingService.EstimateSampleSizeAsync` calls `GET /api/sampling/estimate?symbol=...` once per requested symbol and combines the server's population and recommended size; it previously POSTed a body the route does not accept.
 
 ## Purpose
 
@@ -54,6 +61,15 @@ API acknowledgements fail the save with fixed error text; there is no local plai
 Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation and manual or scheduled requeues persist before publishing to workers. Cancellation and removal persist before signalling an execution token or releasing job ownership; failed writes restore the previous status and keep queued work retryable. Successful cancellations and removals remain effective after restart; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
+
+`Services/ColorPalette.cs` supplies the Design System 4.3.0 runtime colors used by WPF brush registries,
+ScottPlot, and QuantScript. Core ARGB values mirror `Meridian.Wpf/Styles/ThemeTokens.xaml`: actual
+traces use graphite, comparisons neutral ink, positive/negative retain green/red, and information
+uses interaction blue. Semantic washes match the corresponding 20% XAML brushes. The palette is
+static and keeps light card/data backgrounds paired with their ink in either window theme; this
+update does not introduce dynamic chart theming. `ColorPaletteTests` checks C#/XAML parity and
+existing notification, progress, latency, and stream-status mapping boundaries.
+
 
 Activity-feed startup and legacy migration retain the file generation they opened while allowing
 the ordered persistence worker to publish an atomic replacement. Snapshot reads share deletion
@@ -112,7 +128,7 @@ policy, so holiday shading and missing-day counts cannot select different calend
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.
 Accounting reconciliation casework endpoints are shared workstation behavior, not client-specific UI logic. Preserve compatibility wrappers for legacy review/resolve calls while routing assign, lifecycle, taxonomy, comments, sign-off, reopen, audit, and bulk triage through shared contracts. Statement break read models are projected into shared `StatementBreakDto` records so the break queue can seed statement-originated cases without depending on infrastructure records.
-Statement-run API projection ownership lives in `src/Meridian.Ui.Shared` so browser, WPF, and host-served workstation composition resolve the same source-backed adapter. This module keeps a compatibility wrapper for the legacy `Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService` type while the shared implementation delegates broker/custodian CSV intake and persistence to the Financial Operations-owned statement-run workflow, then returns shared `StatementRunDto` projections with linked breaks and durable casework for browser and WPF operators. Statement-run list rows also derive review-required status, completion posture, and open exception counts from retained workflow breaks so reconciliation queues do not hide unresolved statement exceptions. Queue-status rows aggregate retained statement breaks by fund-account scope and carry source-backed account identifiers, blocker reasons, and break evidence links for shared operational dashboards. Statement-originated break rows inherit retained case owner, suggested action, SLA due/warning/breach posture, escalation label/reason, and statement-run evidence route so shared break queues seed assigned operator work instead of unowned placeholders.
+Statement-run API projection ownership lives in `src/Meridian.Ui.Shared` so browser, WPF, and host-served workstation composition resolve the same source-backed adapter. The former `Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService` compatibility wrapper had no consumers and was removed; the shared implementation delegates broker/custodian CSV intake and persistence to the Financial Operations-owned statement-run workflow, then returns shared `StatementRunDto` projections with linked breaks and durable casework for browser and WPF operators. Statement-run list rows also derive review-required status, completion posture, and open exception counts from retained workflow breaks so reconciliation queues do not hide unresolved statement exceptions. Queue-status rows aggregate retained statement breaks by fund-account scope and carry source-backed account identifiers, blocker reasons, and break evidence links for shared operational dashboards. Statement-originated break rows inherit retained case owner, suggested action, SLA due/warning/breach posture, escalation label/reason, and statement-run evidence route so shared break queues seed assigned operator work instead of unowned placeholders.
 OMS/EMS integration API handlers are registered from `Services/Integrations/` and implement the shared `IOmsIntegrationApiHandler` contract for idempotent ingestion, replay-safe deduplication, adapter diagnostics, Excel pull/push conflict resolution, request-signing validation, key-rotation hooks, and audit logging.
 Settings configuration keeps the retained built-in profile id `research` for compatibility, but
 renders it as `Strategy` so browser and WPF settings surfaces do not reintroduce `Research` as a
@@ -130,6 +146,10 @@ for discovery.
 Persisted workspace categories use canonical `Strategy`, `Trading`, `Data`, `Accounting`, and
 `Custom` enum members. The older `Research`, `DataOperations`, and `Governance` members remain
 only as numeric compatibility aliases for previously saved workspace state.
+
+`LiveDataService` reads the server's `TradesResponse`, `QuotesResponse` and `OrderBookResponse`
+envelopes, with URLs built from `UiApiRoutes`. `GetRecentQuotesAsync` returns at most one quote,
+because the server keeps only the current quote.
 
 ## Diagrams
 

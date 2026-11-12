@@ -5,21 +5,26 @@
 <meta charset="UTF-8">
 <title>Accounting components — ledger & statements</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
   body { margin: 0; padding: 16px; background: var(--bg); }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
   .stack { display: flex; flex-direction: column; gap: 7px; }
   .cap { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-muted); }
   .amts { display: flex; flex-wrap: wrap; gap: 14px 22px; padding: 12px 14px; }
   .amts > div { display: flex; flex-direction: column; gap: 3px; }
 </style>
+<style>
+.grid > *{min-width:0}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
-const { AmountCell, LedgerTable, AccountTree, StatementTable, TaxLotTable, PanelSurface, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const { AmountCell, LedgerTable, AccountTree, StatementTable, TaxLotTable, PanelSurface, Eyebrow } = window.MeridianDesignSystem_205d17;
 
 const Amt = ({ label, ...p }) => (
   <div><span className="cap">{label}</span><AmountCell {...p} /></div>

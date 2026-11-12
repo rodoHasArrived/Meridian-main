@@ -76,7 +76,7 @@ internal sealed class CrossProviderValidator
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }

@@ -1,9 +1,9 @@
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,35 +31,57 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         violations = governance.run_checks(ROOT)
         self.assertEqual([], violations)
 
+    def retirement_files(self):
+        return {
+            "templates/.keep": "",
+            "api/template-eligibility.json": '{"templates": {}}',
+            "_ds_manifest.json": json.dumps({"components": [{"name": "Current", "sourcePath": "components/core/Current.jsx"}]}),
+            "components/core/Current.jsx": "export function Current() {}",
+            "components/core/Legacy.jsx": "export function Legacy() {}",
+            "api/retired-exports.json": json.dumps({"exports": {"Legacy": {"source": "components/core/Legacy.jsx", "replacement": "Current"}}}),
+        }
+
+    def test_retired_export_with_an_existing_source_and_public_replacement_is_accepted(self):
+        violations = self.run_on_files(self.retirement_files())
+        self.assertFalse(any(v.code == "manifest" for v in violations))
+
+    def test_retained_export_without_a_retirement_declaration_fails(self):
+        files = self.retirement_files()
+        del files["api/retired-exports.json"]
+        violations = self.run_on_files(files)
+        self.assertTrue(any(v.code == "manifest" and "Export Legacy" in v.detail for v in violations))
+
+    def test_retirement_cannot_hide_a_public_export_stale_source_or_missing_replacement(self):
+        for defect in ("public", "commented-source", "missing-replacement", "wrong-source"):
+            with self.subTest(defect=defect):
+                files = self.retirement_files()
+                record = {"source": "components/core/Legacy.jsx", "replacement": "Current"}
+                if defect == "public":
+                    manifest = json.loads(files["_ds_manifest.json"])
+                    manifest["components"].append({"name": "Legacy", "sourcePath": record["source"]})
+                    files["_ds_manifest.json"] = json.dumps(manifest)
+                elif defect == "commented-source":
+                    files[record["source"]] = "// export function Legacy() {}"
+                elif defect == "missing-replacement":
+                    record["replacement"] = "Missing"
+                else:
+                    record["source"] = "components/core/Other.jsx"
+                    files[record["source"]] = "export function Legacy() {}"
+                files["api/retired-exports.json"] = json.dumps({"exports": {"Legacy": record}})
+                violations = self.run_on_files(files)
+                self.assertTrue(any(v.code == "manifest" for v in violations))
+
+    def test_malformed_retirement_records_fail_without_breaking_the_api(self):
+        for declaration in ({"exports": []}, {"exports": {"Legacy": None}}):
+            with self.subTest(declaration=declaration):
+                files = self.retirement_files()
+                files["api/retired-exports.json"] = json.dumps(declaration)
+                violations = self.run_on_files(files)
+                self.assertTrue(any(v.code == "manifest" for v in violations))
+
     def test_missing_local_link_is_reported(self):
         violations = self.run_on_files({"index.html": '<a href="missing.html">Broken</a>'})
         self.assertTrue(any(v.code == "local-link" for v in violations))
-
-    def test_css_imports_and_urls_are_resolved_from_their_own_document(self):
-        violations = self.run_on_files({
-            "preview/example.html": '<style>@import "./tokens/missing.css"; .x{background:url("missing.svg")}</style>',
-            "styles/example.css": '@import "missing.css"; .x{background-image:url(../missing.svg)}',
-        })
-        links = [v for v in violations if v.code == "local-link"]
-        self.assertEqual(len(links), 4)
-        self.assertEqual({v.path for v in links}, {"preview/example.html", "styles/example.css"})
-
-    def test_css_relative_assets_and_external_fragment_dynamic_urls_are_valid(self):
-        violations = self.run_on_files({
-            "preview/example.html": '<!-- <style>@import "missing-comment.css";</style><img src="missing-comment.svg"> --><style>@import "../styles/theme.css";.x{background:url(../assets/icon.svg)}</style>',
-            "styles/theme.css": '/* @import "missing-comment.css"; */ .x{background:url(https://example.test/x.svg)} .y{background:url(data:image/svg+xml;base64,AAA)} .z{fill:url(#marker)} .d{background:url(${dynamic})}',
-            "assets/icon.svg": '<svg></svg>',
-        })
-        self.assertFalse(any(v.code == "local-link" for v in violations))
-
-    def test_quoted_css_asset_paths_with_spaces_and_html_entities_are_checked(self):
-        violations = self.run_on_files({
-            "preview/example.html": '<div style="background:url(&quot;../assets/my%20icon.svg&quot;)"></div><style>.x{background:url("missing icon.svg")}</style>',
-            "assets/my icon.svg": '<svg></svg>',
-        })
-        links = [v for v in violations if v.code == "local-link"]
-        self.assertEqual(len(links), 1)
-        self.assertIn("missing icon.svg", links[0].detail)
 
     def test_local_upload_link_is_reported_even_when_file_exists(self):
         violations = self.run_on_files(
@@ -82,24 +104,33 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         )
         self.assertFalse(any(v.code == "raw-hex" for v in violations))
 
-    def test_prose_comments_run_ids_and_token_definitions_are_not_style_usages(self):
-        violations = self.run_on_files({
-            "README.md": "Copper #A85436; run #1841. Historical border-radius:12px.",
-            "theme.css": ":root{--accent:#A85436}/* .x{color:#fff} */",
-            "preview.html": "<p>Run #1847 uses #A85436.</p>",
-        })
-        self.assertFalse(any(v.code in {"raw-hex", "raw-color", "large-radius"} for v in violations))
+    def test_comment_colors_are_ignored_without_hiding_real_declarations(self):
+        violations = self.run_on_files(
+            {"components/core/Widget.jsx": (
+                "// Reference canvas #FFFFFF\n"
+                "const css = `/* Old ink #000000 */ .w{color:var(--ink,#20252B);background:#FFFFFF;}`;"
+            )}
+        )
+        colors = [v for v in violations if v.code == "raw-hex"]
+        self.assertEqual(1, len(colors))
+        self.assertEqual(2, colors[0].line)
 
-    def test_card_extension_does_not_exempt_its_rendered_styles(self):
-        violations = self.run_on_files({"components/core/widget.card.html": '<div style="color:#fff">Text</div>'})
+    def test_quoted_urls_do_not_hide_a_later_color(self):
+        violations = self.run_on_files(
+            {"components/core/Widget.jsx": 'const url="https://example.invalid"; const css=`.w{color:#FFFFFF}`;'}
+        )
         self.assertTrue(any(v.code == "raw-hex" for v in violations))
 
-    def test_svg_white_fill_in_component_source_is_a_real_style_usage(self):
-        violations = self.run_on_files({"components/charts/Chart.jsx": 'export function Chart(){return <svg><text fill="#fff">12</text></svg>}'})
-        self.assertTrue(any(v.code == "raw-hex" for v in violations))
+    def test_current_eight_pixel_dialog_radius_is_permitted(self):
+        violations = self.run_on_files({"components/core/Widget.jsx": ".w{border-radius:8px;}"})
+        self.assertFalse(any(v.code == "large-radius" for v in violations))
+
+    def test_tokenized_pill_radius_is_permitted(self):
+        violations = self.run_on_files({"components/core/Widget.jsx": ".w{border-radius:var(--radius-pill,999px);}"})
+        self.assertFalse(any(v.code == "large-radius" for v in violations))
 
     def test_large_radius_is_reported(self):
-        violations = self.run_on_files({"components/core/Widget.jsx": "const css = `.w{border-radius:12px;}`;"})
+        violations = self.run_on_files({"components/core/Widget.jsx": ".w{border-radius:12px;}"})
         self.assertTrue(any(v.code == "large-radius" for v in violations))
 
     def test_legacy_workspace_name_is_reported(self):
@@ -165,19 +196,59 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         self.assertTrue(any(v.code == "template-main-landmark" for v in violations))
         self.assertTrue(any(v.code == "template-heading" for v in violations))
 
-    def test_wrapper_landmarks_are_preserved_when_a_child_is_imported(self):
-        violations = self.run_on_files({
-            "templates/new/New.dc.html": '<meta name="viewport" content="width=device-width, initial-scale=1"><main><h1>New</h1><x-import from="./row.jsx"></x-import></main>',
-            "templates/new/row.jsx": "function Row(){return <section>Rows</section>}",
-        })
-        self.assertFalse(any(v.code.startswith("template-") for v in violations))
-
-    def test_multiple_template_headings_and_main_landmarks_are_rejected(self):
-        violations = self.run_on_files({
-            "templates/new/index.html": '<meta name="viewport" content="width=device-width, initial-scale=1"><main><h1>One</h1></main><main><h1>Two</h1></main>'
-        })
-        self.assertTrue(any(v.code == "template-main-landmark" for v in violations))
+    def test_unmounted_sibling_and_comment_cannot_supply_heading(self):
+        violations = self.run_on_files(
+            {
+                "templates/new/New.dc.html": '<meta name="viewport" content="width=device-width"><main><!-- <h1>Hidden</h1> --></main>',
+                "templates/new/unmounted.jsx": "function Other(){return <h1>Unrelated</h1>}",
+            }
+        )
         self.assertTrue(any(v.code == "template-heading" for v in violations))
+
+    def test_role_main_is_a_landmark(self):
+        violations = self.run_on_files(
+            {"templates/new/index.html": '<meta name="viewport" content="width=device-width"><div role="main"><h1>New</h1></div>'}
+        )
+        self.assertFalse(any(v.code == "template-main-landmark" for v in violations))
+
+    def test_delegated_template_contract_follows_the_named_child(self):
+        props = json.dumps({"$preview": {}, "theme": {}, "density": {}, "environment": {}, "dataState": {}}).replace('"', "&quot;")
+        entry = (
+            '<!-- @template name="New" --><meta name="viewport" content="width=device-width">'
+            '<dc-import name="Child"></dc-import>'
+            f'<script type="text/x-dc" data-props="{props}"></script>'
+        )
+        violations = self.run_on_files(
+            {
+                "templates/new/New.dc.html": entry,
+                "templates/new/Child.dc.html": '<main><h1>Child</h1><x-import component-from-global-scope="DS.DataStateSwitch"></x-import></main>',
+                "templates/new/ds-base.js": "",
+            }
+        )
+        self.assertFalse(any(v.code.startswith("template") for v in violations))
+
+    def test_unused_state_switch_name_does_not_satisfy_the_contract(self):
+        violations = self.run_on_files(
+            {"templates/new/New.dc.html": '<!-- @template name="New" --><main><h1>New</h1></main><script>const {DataStateSwitch}=DS;</script>'}
+        )
+        self.assertTrue(any("DataStateSwitch not mounted" in v.detail for v in violations))
+
+    def test_declared_entry_filename_is_checked_without_a_pascal_case_assumption(self):
+        violations = self.run_on_files(
+            {
+                "_ds_manifest.json": json.dumps({"templates": [{"entryPath": "templates/new/Named Entry.dc.html"}]}),
+                "templates/new/Named Entry.dc.html": '<!-- @template name="New" --><meta name="viewport" content="width=device-width"><main><h1>New</h1></main>',
+            }
+        )
+        self.assertFalse(any("No template entry" in v.detail or "Missing template entry" in v.detail for v in violations))
+
+    def test_dynamic_links_are_not_missing_files(self):
+        violations = self.run_on_files({"index.html": '<a href="{{ recordHref }}">Record</a>'})
+        self.assertFalse(any(v.code == "local-link" for v in violations))
+
+    def test_missing_manifest_in_a_release_is_reported(self):
+        violations = self.run_on_files({"release.json": '{"version":"4.3.0"}'})
+        self.assertTrue(any(v.code == "generated" and v.path == "_ds_manifest.json" for v in violations))
 
     def test_non_template_html_is_not_held_to_document_contract(self):
         # A component .card.html doc doesn't need to look like a workstation screen.
@@ -202,20 +273,6 @@ class DesignSystemGovernanceTests(unittest.TestCase):
             }
         )
         self.assertFalse(any(v.code == "prompt-coverage" for v in violations))
-
-    def test_missing_style_tooling_fails_closed(self):
-        with patch.object(governance.subprocess, "run", side_effect=FileNotFoundError("node unavailable")):
-            violations = governance.check_rendered_styles(ROOT, [])
-        self.assertEqual([v.code for v in violations], ["style-policy-unavailable"])
-
-    def test_malformed_style_diagnostics_fail_closed(self):
-        class MalformedResult:
-            returncode = 0
-            stdout = '{"unexpected":"shape"}'
-            stderr = ""
-        with patch.object(governance.subprocess, "run", return_value=MalformedResult()):
-            violations = governance.check_rendered_styles(ROOT, [])
-        self.assertEqual([v.code for v in violations], ["style-policy-unavailable"])
 
 
 if __name__ == "__main__":

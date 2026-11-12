@@ -7,6 +7,10 @@ import { DailyControlTowerScreen } from "@/screens/daily-control-tower-screen";
 import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
+vi.mock("@/components/meridian/operator-triage-queue", () => ({
+  OperatorTriageQueue: ({ fallback }: { fallback: React.ReactNode }) => <>{fallback}</>
+}));
+
 // A payload that produces a multi-row finance queue so row selection is
 // observable: two trading work items plus one data-provider warning.
 const payload: AppShellWorkspacePayload = {
@@ -108,6 +112,7 @@ function renderScreen({
     <DailyControlTowerScreen
       viewModel={shell.workflowContinuity}
       trustStrip={shell.trustStrip}
+      attention={shell.attention}
       onEditOperatingScope={onEditOperatingScope}
       onRefresh={onRefresh}
       refreshing={refreshing}
@@ -116,22 +121,22 @@ function renderScreen({
 }
 
 describe("DailyControlTowerScreen", () => {
-  it("renders the ranked finance queue and defaults the evidence pane to the top row", () => {
+  it("renders the ranked finance queue and defaults the evidence pane to the leading decision", () => {
     renderScreen();
 
     expect(
       screen.getByRole("heading", { name: "What needs an operator decision now" })
     ).toBeInTheDocument();
 
-    // The shared dense table exposes the selected row and its controlled detail
-    // panel without adding a second, mouse-only selection control.
+    // The queue is listed finance-first, but the headline and the default evidence follow the
+    // worst queued decision -- the same one the masthead attention pill names on every route.
     expect(
-      screen.getByRole("row", { name: "Report pack approval waiting" })
+      screen.getByRole("row", { name: "Brokerage sync failed" })
     ).toHaveAttribute("aria-selected", "true");
     expect(
-      screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i })
+      screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 ranked items");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 loaded workspace items");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("May 14, 2026");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
@@ -139,29 +144,69 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
   });
 
-  it("exposes connectivity, scope, and freshness remediation in their owning cards", async () => {
+  it("states the workstation status in one line that names only the open issues", () => {
+    renderScreen();
+
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    const line = within(status).getByTestId("status-row-issues");
+    const priority = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priority).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
+    expect(priority.querySelectorAll('[data-testid="status-row-issues"]')).toHaveLength(1);
+    expect(line).toHaveTextContent("Blocked");
+    expect(line).toHaveTextContent("Decisions:");
+    expect(line).toHaveTextContent("Brokerage sync failed · 2 more");
+    expect(line).toHaveTextContent("Providers:");
+    expect(line).toHaveTextContent("1 warning");
+    // This shell never confirmed its provenance, which is an issue in its own right.
+    expect(line).toHaveTextContent("Provenance:");
+    expect(line).toHaveTextContent("UNKNOWN");
+    // Ready signals are not listed in the line; they are behind Details.
+    expect(line).not.toHaveTextContent("Workspace data");
+    expect(status.querySelector("details")).not.toHaveAttribute("open");
+    expect(status).toHaveTextContent("Workspace data");
+  });
+
+  it("matches the masthead attention state for the same data", () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      search: "?symbol=MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+    renderScreen();
+
+    expect(shell.attention.tone).toBe("blocked");
+    expect(shell.attention.title).toBe("Brokerage sync failed");
+    const headline = screen.getByRole("region", { name: "Priority decision" });
+    expect(headline).toHaveTextContent("Brokerage sync failed");
+    expect(headline).toHaveTextContent("Blocked");
+    expect(screen.getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
+  });
+
+  it("exposes provider and refresh remediation with the status row", async () => {
     const user = userEvent.setup();
     const onEditOperatingScope = vi.fn();
     const onRefresh = vi.fn();
     renderScreen({ onEditOperatingScope, onRefresh, search: "" });
 
-    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    expect(within(confidence).getByText("Connectivity")).toBeInTheDocument();
-    expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    expect(within(status).getByRole("link", { name: "Open provider posture" }))
       .toHaveAttribute("href", "/data/providers");
 
-    await user.click(within(confidence).getByRole("button", { name: "Set operating scope" }));
-    await user.click(within(confidence).getByRole("button", { name: "Refresh control tower evidence" }));
+    await user.click(screen.getByRole("button", { name: "Set operating scope" }));
+    await user.click(within(status).getByRole("button", { name: "Refresh control tower evidence" }));
 
     expect(onEditOperatingScope).toHaveBeenCalledTimes(1);
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("preserves compatible operating scope in connectivity recovery", () => {
+  it("preserves compatible operating scope in provider recovery", () => {
     renderScreen({ search: "?symbol=MSFT" });
 
-    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    expect(within(status).getByRole("link", { name: "Open provider posture" }))
       .toHaveAttribute("href", "/data/providers?symbol=MSFT");
   });
 
@@ -169,34 +214,31 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const brokerageRow = screen.getByRole("row", {
-      name: "Brokerage sync failed"
+    const reportPackRow = screen.getByRole("row", {
+      name: "Report pack approval waiting"
     });
-    expect(brokerageRow).not.toHaveAttribute("aria-selected", "true");
+    expect(reportPackRow).not.toHaveAttribute("aria-selected", "true");
 
-    await user.click(brokerageRow);
+    await user.click(reportPackRow);
 
     // Selection moved without navigating away: the evidence region now reflects
     // the clicked row, and the pressed state follows it.
-    expect(brokerageRow).toHaveAttribute("aria-selected", "true");
+    expect(reportPackRow).toHaveAttribute("aria-selected", "true");
     expect(
-      screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
+      screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("row", { name: "Report pack approval waiting" })
+      screen.getByRole("row", { name: "Brokerage sync failed" })
     ).not.toHaveAttribute("aria-selected", "true");
   });
 
-  it("requires an explicit scope choice before showing the combined queue", async () => {
-    const user = userEvent.setup();
+  it("shows the combined ranked queue without a scope selection", () => {
     renderScreen({ search: "" });
-
-    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Daily control tower finance queue" })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
-
+    expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("All authorized scopes");
+    expect(screen.getByRole("columnheader", { name: "Workspace" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Owner" })).not.toBeInTheDocument();
   });
 
   it("supports keyboard selection and detail focus through the shared dense-row contract", async () => {
@@ -236,11 +278,8 @@ describe("DailyControlTowerScreen", () => {
   it("shows the leading action once outside the ranked queue", () => {
     renderScreen();
 
-    const priorityPanel = screen.getByText("Report pack approval waiting", {
-      selector: ".mds-rpanel__title"
-    }).closest(".mds-rpanel");
-    expect(priorityPanel).not.toBeNull();
-    expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
+    const priorityPanel = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priorityPanel as HTMLElement).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
   });
 
   it("has no accessibility violations", async () => {

@@ -16,7 +16,7 @@ const sizeClasses: Record<NonNullable<SpinnerProps["size"]>, string> = {
 const variantClasses: Record<NonNullable<SpinnerProps["variant"]>, string> = {
   accent: "border-border border-t-primary",
   muted: "border-border border-t-muted-foreground",
-  onDark: "border-current/25 border-t-current text-[var(--ws-masthead-fg)]"
+  onDark: "border-white/25 border-t-white"
 };
 
 /**
@@ -29,7 +29,7 @@ export function Spinner({ size = "md", variant = "accent", label, className }: S
       role="status"
       aria-label={label ?? "Loading"}
       className={cn(
-        "inline-block shrink-0 animate-spin rounded-full motion-reduce:animate-none",
+        "inline-block shrink-0 animate-spin rounded-full motion-reduce:[animation-duration:1.6s]",
         sizeClasses[size],
         variantClasses[variant],
         className

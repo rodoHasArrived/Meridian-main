@@ -1,3 +1,4 @@
+using Meridian.Contracts.Calendars;
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
@@ -20,13 +21,16 @@ internal static class ProviderIntegrationMappedRecordValidation
     public static void AddValidationIssues(
         ProviderCapabilityKindDto capability,
         JsonObject mappedRecord,
-        ICollection<ValidationIssueDto> issues)
+        ICollection<ValidationIssueDto> issues,
+        IBusinessDayCalendarSource? calendars = null)
     {
         ArgumentNullException.ThrowIfNull(mappedRecord);
         ArgumentNullException.ThrowIfNull(issues);
 
+        mappedRecord.Remove("bondValueReconciliation");
         AddMoneyCurrencyIssues(capability, mappedRecord, issues);
         AddMarketValueToleranceIssues(capability, mappedRecord, issues);
+        ProviderIntegrationFixedIncomeTermsValidation.AddValidationIssues(capability, mappedRecord, issues, calendars);
     }
 
     private static void AddMoneyCurrencyIssues(
@@ -72,6 +76,11 @@ internal static class ProviderIntegrationMappedRecordValidation
         ICollection<ValidationIssueDto> issues)
     {
         if (capability is not ProviderCapabilityKindDto.Positions and not ProviderCapabilityKindDto.Holdings)
+        {
+            return;
+        }
+
+        if (ProviderIntegrationBondValueNormalization.AddValidationIssues(mappedRecord, issues))
         {
             return;
         }

@@ -10,7 +10,7 @@ Meridian is an institutional trading, market-data, research, accounting, and
 reporting workstation. The brand language is light, precise, and operational:
 a warm paper canvas, architect-white work surfaces, warm near-black chrome
 bars, one muted copper accent, desaturated status color, hairline borders,
-and flat surfaces. Only detached overlays use the tokenized menu shadow.
+and shallow shadow.
 
 The visual system is grounded in `src/Meridian.Wpf/Styles/*.xaml` and exported
 for web consumers through the design-system token files.

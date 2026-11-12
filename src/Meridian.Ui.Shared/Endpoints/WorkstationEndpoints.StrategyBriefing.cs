@@ -47,7 +47,8 @@ public static partial class WorkstationEndpoints
             FinalEquity: run.FinalEquity,
             SecurityCoverage: BuildSecurityCoverage(detail),
             DrillIn: BuildRunDrillInLinks(run),
-            BiasDisclosure: detail?.BiasDisclosure);
+            BiasDisclosure: detail?.BiasDisclosure,
+            SearchText: StrategyRunTableSearchText(run));
     }
 
     private static InsightFeed BuildBriefingInsightFeed(

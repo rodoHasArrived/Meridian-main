@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface VirtualizedListProps<T = any> extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface VirtualizedListProps<T = any> {
   /** Full data set — only the visible slice is rendered */
   items: T[];
   /** Fixed row height in px (required for scroll math). @default 34 */
@@ -13,6 +13,7 @@ export interface VirtualizedListProps<T = any> extends Omit<React.HTMLAttributes
   renderRow?: (item: T, index: number) => React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  "aria-label"?: string;
 }
 
-export declare function VirtualizedList<T = any>(props: VirtualizedListProps<T>): JSX.Element;
+export declare function VirtualizedList<T = any>(props: VirtualizedListProps<T>): React.JSX.Element;

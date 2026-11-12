@@ -1,12 +1,11 @@
 // Split Pane Reconciliation — template screen. Mounted by the DC via <x-import>.
-// Reads design-system components from the compiled bundle (window.MeridianDesignSystem_4f61be)
+// Reads design-system components from the compiled bundle (window.MeridianDesignSystem_205d17)
 // and the single global React. Functional: two synchronized panes show custodian statement vs.
 // internal ledger; clicking a row cross-highlights its match on the other side; unmatched rows
 // open a break resolution drawer.
-const {
-  WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge,
-  MetricCard, AmountCell, Select
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard, AmountCell, Select;
 const { useState, useMemo, useCallback, useRef, useEffect } = React;
 
 /* ── screen-level CSS ── */
@@ -22,10 +21,10 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-button,6px);overflow:hidden;}
 .spr-seg button{appearance:none;border:none;background:var(--bg-light);cursor:pointer;
   font-family:var(--font-body);font-size:12px;color:var(--text-secondary);
-  padding:6px 12px;border-right:1px solid var(--border);transition:all .12s;}
+  padding:6px 12px;border-right:1px solid var(--border);transition:background-color .12s,color .12s;}
 .spr-seg button:last-child{border-right:none;}
 .spr-seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent-dim);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#E7EDF2);color:var(--brand-signal-ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .spr-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .spr-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);
   border-radius:var(--radius-card,8px);overflow:hidden;background:var(--bg-light);
@@ -33,7 +32,7 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-pane{display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 .spr-pane+.spr-pane{border-left:1px solid var(--border);}
 .spr-pane__head{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:9px 13px;background:var(--bg-medium,#EDEAE4);border-bottom:1px solid var(--border);
+  padding:9px 13px;background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border);
   flex-shrink:0;}
 .spr-pane__title{font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);}
@@ -41,9 +40,9 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-chip{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.02em;border:1px solid;border-radius:var(--radius-chip,4px);
   padding:1px 7px;line-height:1.5;white-space:nowrap;}
-.spr-chip--ok{background:var(--green-a10,rgba(58,122,86,.10));border-color:var(--green,#3A7A56);color:var(--green-dim,#2C5C40);}
-.spr-chip--break{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
-.spr-chip--timing{background:var(--orange-a10,rgba(138,92,18,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#68450E);}
+.spr-chip--ok{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.spr-chip--break{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
+.spr-chip--timing{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
 .spr-pane__scroll{overflow-y:auto;flex:1;min-height:0;}
 .spr-table{width:100%;border-collapse:collapse;}
 .spr-table th{position:sticky;top:0;z-index:1;background:var(--bg-light);
@@ -60,22 +59,22 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-table tbody tr td:first-child{padding-left:13px;position:relative;}
 .spr-table tbody tr td:first-child::before{content:"";position:absolute;left:0;top:0;
   bottom:0;width:3px;border-radius:0 2px 2px 0;}
-.spr-table tr.matched td:first-child::before{background:var(--green,#3A7A56);}
-.spr-table tr.timing td:first-child::before{background:var(--orange,#8A5C12);}
-.spr-table tr.break td:first-child::before{background:var(--red,#A8443C);}
+.spr-table tr.matched td:first-child::before{background:var(--green,#2E7655);}
+.spr-table tr.timing td:first-child::before{background:var(--orange,#986717);}
+.spr-table tr.break td:first-child::before{background:var(--red,#B54B42);}
 .spr-table tr.timing td{background:rgba(183,121,31,.05);}
-.spr-table tr.break td{background:var(--red-a10,rgba(168,68,60,.07));}
-.spr-table tbody tr:hover td{background:var(--bg-hover,#F0EEE9);}
+.spr-table tr.break td{background:var(--red-a10,rgba(181,75,66,.07));}
+.spr-table tbody tr:hover td{background:var(--bg-hover,#EDEFF0);}
 .spr-table tr.break:hover td,.spr-table tr.timing:hover td{filter:brightness(.97);}
-.spr-table tr.selected td{background:var(--blue-a10,rgba(168,84,54,.10))!important;}
-.spr-table tr.cross-lit td{background:var(--blue-a10,rgba(168,84,54,.06))!important;
+.spr-table tr.selected td{background:var(--blue-a10,rgba(47,100,138,.10))!important;}
+.spr-table tr.cross-lit td{background:var(--blue-a10,rgba(47,100,138,.06))!important;
   outline:1px dashed var(--accent);outline-offset:-1px;}
 .spr-table tr.selected td:first-child::before,
-.spr-table tr.cross-lit td:first-child::before{background:var(--accent,#A85436)!important;}
+.spr-table tr.cross-lit td:first-child::before{background:var(--accent,#C56343)!important;}
 .spr-status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .spr-empty{padding:24px 16px;text-align:center;font-family:var(--font-body);font-size:12px;color:var(--text-muted);}
 .spr-summary{display:grid;grid-template-columns:1fr 1fr auto;gap:0;
-  border-top:2px solid var(--border-strong,#AFABA1);background:var(--bg-medium,#EDEAE4);}
+  border-top:2px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1);}
 .spr-sum-cell{padding:10px 14px;display:flex;flex-direction:column;gap:3px;}
 .spr-sum-cell+.spr-sum-cell{border-left:1px solid var(--border);}
 .spr-sum-label{font-family:var(--font-body);font-size:10px;font-weight:600;
@@ -84,8 +83,8 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;border-left:1px solid var(--border);
   padding:10px 16px;white-space:nowrap;}
-.spr-status-badge--rec{color:var(--green-dim,#2C5C40);}
-.spr-status-badge--out{color:var(--red-dim,#7E332D);}
+.spr-status-badge--rec{color:var(--green-dim,#225840);}
+.spr-status-badge--out{color:var(--red-dim,#883832);}
 .spr-status-dot-lg{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;}
 .spr-break-overlay{position:fixed;inset:0;background:rgba(23,26,31,.32);z-index:50;
   display:flex;justify-content:flex-end;animation:spr-fade .14s ease;}
@@ -114,10 +113,10 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-near-match__label{font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);}
 .spr-near-match__val{font-family:var(--font-data);font-size:12px;color:var(--text-primary);}
-.spr-near-match__diff{font-family:var(--font-data);font-size:11px;color:var(--orange,#8A5C12);}
+.spr-near-match__diff{font-family:var(--font-data);font-size:11px;color:var(--orange,#986717);}
 .spr-cat-badge{display:inline-block;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);
-  background:var(--bg-medium,#EDEAE4);border:1px solid var(--border);
+  background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);
   border-radius:var(--radius-chip,4px);padding:1px 6px;}
 `;
   document.head.appendChild(el);
@@ -155,9 +154,9 @@ const LDGR_SEED = [
 ];
 
 const STATUS_DOT_COLOR = {
-  matched: "var(--green,#3A7A56)",
-  timing:  "var(--orange,#8A5C12)",
-  break:   "var(--red,#A8443C)",
+  matched: "var(--green,#2E7655)",
+  timing:  "var(--orange,#986717)",
+  break:   "var(--red,#B54B42)",
 };
 
 const STATUS_LABEL = {
@@ -178,8 +177,8 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
           {breakCount > 0 && <span className="spr-chip spr-chip--break">{breakCount} break{breakCount > 1 ? "s" : ""}</span>}
         </span>
       </div>
-      <div className="spr-pane__scroll">
-        <table className="spr-table">
+      <div className="spr-pane__scroll" role="region" aria-label={`${title} items`} tabIndex={items.length ? undefined : 0}>
+        <table className="spr-table" aria-label={`${title} items`}>
           <thead>
             <tr>
               <th>Date</th>
@@ -193,7 +192,7 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
             {items.length === 0 && (
               <tr><td colSpan={5} className="spr-empty">No items to display</td></tr>
             )}
-            {items.map((it) => {
+            {items.map((it, rowIndex) => {
               const isSel = selectedId === it.id;
               const isCross = crossId === it.id;
               const cls = [
@@ -202,7 +201,15 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
                 isCross ? "cross-lit" : "",
               ].filter(Boolean).join(" ");
               return (
-                <tr key={it.id} className={cls} onClick={() => onSelect(it)}>
+                <tr key={it.id} className={cls} tabIndex={selectedId ? isSel ? 0 : -1 : rowIndex === 0 ? 0 : -1}
+                  aria-selected={isSel} aria-label={`${it.ref}, ${it.memo}, ${STATUS_LABEL[it.matchStatus] || it.matchStatus}`}
+                  onClick={() => onSelect(it)} onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(it); return; }
+                    const next = event.key === "ArrowDown" ? Math.min(items.length - 1, rowIndex + 1) : event.key === "ArrowUp" ? Math.max(0, rowIndex - 1) : event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : null;
+                    if (next == null) return;
+                    event.preventDefault();
+                    const peers = event.currentTarget.parentElement.querySelectorAll("tr[tabindex]"); peers[next]?.focus();
+                  }}>
                   <td className="mono">{it.date}</td>
                   <td className="mono">{it.ref}</td>
                   <td className="memo">{it.memo}</td>
@@ -221,6 +228,24 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
 }
 
 function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
+  const drawerRef = useRef(null);
+  const closeRef = useRef(onClose); closeRef.current = onClose;
+  useEffect(() => {
+    const previous = document.activeElement;
+    const root = drawerRef.current;
+    root?.querySelector("button")?.focus();
+    const keydown = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); closeRef.current(); return; }
+      if (event.key !== "Tab") return;
+      const controls = Array.from(root?.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]') || []);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (!controls.length) { event.preventDefault(); root?.focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    root?.addEventListener("keydown", keydown);
+    return () => { root?.removeEventListener("keydown", keydown); if (previous?.isConnected) previous.focus(); };
+  }, []);
   const isTimingBreak = item.matchStatus === "timing";
   const isHardBreak   = item.matchStatus === "break";
   const diffAmt = counterItem ? Math.abs(item.amount - counterItem.amount) : null;
@@ -231,7 +256,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
 
   return (
     <div className="spr-break-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="spr-break-drawer" role="dialog" aria-label="Break details">
+      <div ref={drawerRef} className="spr-break-drawer" role="dialog" aria-modal="true" aria-label="Break details" tabIndex={-1}>
         <div className="spr-break-drawer__hd">
           <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
             <Eyebrow>{isTimingBreak ? "Timing Break" : isHardBreak ? "Unmatched Item" : "Reconciliation Break"}</Eyebrow>
@@ -242,7 +267,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
               {side === "stmt" ? "Custodian statement" : "Internal ledger"} · {item.date}
             </span>
           </div>
-          <button className="spr-x-btn" aria-label="Close" onClick={onClose}>×</button>
+          <button type="button" className="spr-x-btn" aria-label="Close" onClick={onClose}>×</button>
         </div>
 
         <div className="spr-break-drawer__body">
@@ -328,7 +353,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
             {isHardBreak && (
               <div style={{ padding:"10px 12px", border:"1px solid var(--border)", borderRadius:6, background:"var(--bg-light)" }}>
                 <strong style={{ color:"var(--text-primary)", display:"block", marginBottom:4 }}>Create adjustment entry</strong>
-                Post a journal entry to record the item in the ledger and clear the break.
+                Demonstrate an adjustment outcome in this synthetic view; no journal is posted.
               </div>
             )}
             <div style={{ padding:"10px 12px", border:"1px solid var(--border)", borderRadius:6, background:"var(--bg-light)" }}>
@@ -346,7 +371,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
           )}
           {isHardBreak && (
             <Button variant="primary" size="sm" onClick={() => onResolve("create-je")}>
-              Create journal entry
+              Simulate adjustment entry
             </Button>
           )}
           <Button variant="ghost" size="sm" onClick={() => onResolve("mark-exception")}>
@@ -360,7 +385,8 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
 }
 
 /* ── main screen ── */
-function SplitPaneReconciliationScreen() {
+function SplitPaneReconciliationScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard, AmountCell, Select } = window.MeridianDesignSystem_205d17);
   const [period,  setPeriod]  = useState(PERIODS[0]);
   const [account, setAccount] = useState(ACCOUNTS[0]);
   const [filter,  setFilter]  = useState("all");
@@ -481,13 +507,13 @@ function SplitPaneReconciliationScreen() {
     <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:"var(--bg)", fontFamily:"var(--font-body)", color:"var(--text-secondary)", fontSize:13 }}>
       <WorkstationTopbar
         moduleLabel="Accounting"
-        environment="PAPER"
+        environment={environment}
         clock="14:32:08 UTC"
         brandSrc="../../assets/brand/meridian-mark-light.svg"
       />
 
       <div style={{ display:"flex", flex:1, minHeight:0 }}>
-        <NavRail activeId="reconcile" onSelect={() => {}} sections={navSections} />
+        <NavRail activeId="reconcile" onSelect={(id) => { const routes = { ledger: "../accounting-workstation/AccountingWorkstation.dc.html?view=gl", statements: "../accounting-workstation/AccountingWorkstation.dc.html?view=stmt", taxlots: "../accounting-workstation/AccountingWorkstation.dc.html?view=lots", export: "../report-library/ReportLibrary.dc.html", audit: "../investment-event-ledger/InvestmentEventLedger.dc.html" }; if (routes[id]) window.location.href = routes[id]; }} sections={navSections} />
 
         <main style={{ flex:1, minWidth:0, overflowY:"auto", padding:16, display:"flex", flexDirection:"column", gap:12 }}>
 
@@ -496,14 +522,18 @@ function SplitPaneReconciliationScreen() {
             <h1 style={{ font:"600 22px var(--font-display)", margin:0, color:"var(--text-primary)" }}>
               Reconciliation
             </h1>
-            <Badge variant="paper" dot>PAPER</Badge>
+            <Badge variant={environment === "LIVE" ? "live" : environment === "PAPER" ? "paper" : "warning"} dot>{environment}</Badge>
             <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-muted)", marginLeft:2 }}>
               Statement vs. Ledger · {period}
             </span>
             <div style={{ flex:1 }} />
-            <Button variant="ghost" size="sm">Export</Button>
-            <Button variant="ghost" size="sm">Print report</Button>
-            <Button
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm" onClick={() => {
+              const content = JSON.stringify({ synthetic: true, period, account, statement: stmtItems, ledger: ldgrItems }, null, 2);
+              const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+              const anchor = document.createElement("a"); anchor.href = url; anchor.download = "synthetic-reconciliation.json"; anchor.click(); URL.revokeObjectURL(url);
+            }}>Export example</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm" onClick={() => window.print()}>Print report</Button>
+            <Button disabled={dataState !== "ready"}
               variant={totalBreaks > 0 ? "primary" : "ghost"}
               size="sm"
               onClick={() => {
@@ -514,12 +544,15 @@ function SplitPaneReconciliationScreen() {
               Auto-match{totalBreaks > 0 ? ` (${stmtTiming + ldgrTiming} timing)` : ""}
             </Button>
           </div>
+          <DataStateSwitch state={dataState} label="Statement and ledger records">
 
+          <p role="note">Synthetic retained example. Matches and resolution actions change only this local demonstration; no journal or reconciliation decision is submitted.</p>
           {/* Controls */}
           <div className="spr-controls">
             <span className="spr-controls__label">Period</span>
             <div className="spr-controls__sel">
               <Select
+                ariaLabel="Reconciliation period"
                 options={PERIODS}
                 value={period}
                 onChange={setPeriod}
@@ -528,6 +561,7 @@ function SplitPaneReconciliationScreen() {
             <span className="spr-controls__label" style={{ marginLeft:4 }}>Account</span>
             <div className="spr-controls__sel">
               <Select
+                ariaLabel="Reconciliation account"
                 options={ACCOUNTS}
                 value={account}
                 onChange={setAccount}
@@ -540,7 +574,7 @@ function SplitPaneReconciliationScreen() {
                 { key:"matched", label:"Matched" },
                 { key:"open",    label:"Open"    },
               ].map(f => (
-                <button key={f.key} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>
+                <button type="button" key={f.key} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>
                   {f.label}
                 </button>
               ))}
@@ -622,6 +656,7 @@ function SplitPaneReconciliationScreen() {
             </div>
           </div>
 
+                  </DataStateSwitch>
         </main>
       </div>
 

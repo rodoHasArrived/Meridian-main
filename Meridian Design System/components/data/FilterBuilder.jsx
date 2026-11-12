@@ -1,5 +1,5 @@
 // Meridian FilterBuilder — structured field/op/value query rows for registry surfaces.
-// Where FilteredDataTable does free text + facets, FilterBuilder composes explicit
+// Where a Toolbar does free text + facets, FilterBuilder composes explicit
 // predicates: field → operator → value, AND-combined. Emits rows on change and a compiled
 // predicate on Apply — `FilterBuilder.predicate(fields, rows)` builds the same test anywhere.
 import React from "react";
@@ -12,32 +12,32 @@ function inject() {
 .mds-fb{display:flex;flex-direction:column;gap:6px;font-family:var(--font-body);}
 .mds-fb__row{display:flex;align-items:center;gap:6px;}
 .mds-fb__and{flex:0 0 34px;text-align:right;font-family:var(--font-data);font-size:9.5px;font-weight:700;
-  letter-spacing:.06em;color:var(--text-muted,#5E666F);}
-.mds-fb__ctl{height:26px;box-sizing:border-box;border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-input,2px);
-  background:var(--bg-light,#FBFAF8);color:var(--text-primary,#22252A);font-family:var(--font-body);font-size:12px;
+  letter-spacing:.06em;color:var(--text-muted,#606870);}
+.mds-fb__ctl{height:26px;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,4px);
+  background:var(--bg-light,#F8F7F3);color:var(--text-primary,#20252B);font-family:var(--font-body);font-size:12px;
   padding:0 7px;min-width:0;}
-.mds-fb__ctl:hover{border-color:var(--border-hover,#C6C3BB);}
-.mds-fb__ctl:focus,.mds-fb__ctl:focus-visible{outline:var(--focus-ring);outline-offset:-1px;border-color:var(--border-focus,#A85436);}
+.mds-fb__ctl:hover{border-color:var(--border-hover,#BEB8AD);}
+.mds-fb__ctl:focus,.mds-fb__ctl:focus-visible{outline:var(--focus-ring);outline-offset:-1px;border-color:var(--border-focus,#2D6FB3);}
 select.mds-fb__ctl{appearance:auto;}
 .mds-fb__ctl--field{flex:0 0 148px;font-weight:600;}
-.mds-fb__ctl--op{flex:0 0 118px;color:var(--text-secondary,#4E5258);}
+.mds-fb__ctl--op{flex:0 0 118px;color:var(--text-secondary,#535C65);}
 .mds-fb__ctl--value{flex:1 1 120px;font-family:var(--font-data);}
 .mds-fb__x{flex:0 0 24px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
   border:1px solid transparent;border-radius:var(--radius-button,2px);background:transparent;
-  color:var(--text-muted,#5E666F);font-size:13px;line-height:1;}
-.mds-fb__x:hover{color:var(--red-dim,#7E332D);border-color:var(--border,#E4E3DE);background:var(--bg-hover,#F0EEE9);}
+  color:var(--text-muted,#606870);font-size:13px;line-height:1;}
+.mds-fb__x:hover{color:var(--red-dim,#883832);border-color:var(--border,#D2CDC3);background:var(--bg-hover,#EDEFF0);}
 .mds-fb__x:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-fb__foot{display:flex;align-items:center;gap:8px;padding-top:2px;}
 .mds-fb__btn{height:24px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
   border-radius:var(--radius-button,2px);font-family:var(--font-body);font-size:11px;font-weight:600;padding:0 10px;}
-.mds-fb__btn--add{border:1px dashed var(--border-strong,#AFABA1);background:transparent;color:var(--text-secondary,#4E5258);}
-.mds-fb__btn--add:hover{border-color:var(--accent,#A85436);color:var(--accent,#A85436);}
-.mds-fb__btn--apply{border:1px solid var(--accent,#A85436);background:var(--accent,#A85436);color:var(--text-on-accent,#FFFFFF);}
-.mds-fb__btn--apply:hover{background:var(--accent-dim,#8C4429);border-color:var(--accent-dim,#8C4429);}
-.mds-fb__btn--clear{border:none;background:transparent;color:var(--text-muted,#5E666F);text-decoration:underline;text-underline-offset:2px;}
-.mds-fb__btn--clear:hover{color:var(--text-primary,#22252A);}
+.mds-fb__btn--add{border:1px dashed var(--border-strong,#AAA49A);background:transparent;color:var(--text-secondary,#535C65);}
+.mds-fb__btn--add:hover{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);}
+.mds-fb__btn--apply{border:1px solid var(--brand-signal,#C56343);background:var(--brand-signal,#C56343);color:var(--text-on-accent,#0D1217);}
+.mds-fb__btn--apply:hover{background:var(--brand-signal-dim,#CB6E4E);border-color:var(--brand-signal-dim,#CB6E4E);}
+.mds-fb__btn--clear{border:none;background:transparent;color:var(--text-muted,#606870);text-decoration:underline;text-underline-offset:2px;}
+.mds-fb__btn--clear:hover{color:var(--text-primary,#20252B);}
 .mds-fb__btn:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-fb__summary{margin-left:auto;font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#5E666F);}
+.mds-fb__summary{margin-left:auto;font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#606870);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "filter-builder");
@@ -72,7 +72,11 @@ function fieldByKey(fields, key) { return fields.find((f) => f.key === key); }
 function opsFor(field) { return OPS[(field && field.type) || "text"] || OPS.text; }
 function needsValue(op) { return op !== "empty"; }
 function needsSecond(op) { return op === "between"; }
-function dayOf(v) { const d = new Date(v); return isNaN(d) ? null : d.toISOString().slice(0, 10); }
+// Local day bucket — a UTC slice would drop local-evening rows out of an "on this date" filter.
+function dayOf(v) {
+  const d = new Date(v);
+  return isNaN(d) ? null : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 function rowActive(fields, r) {
   if (!r || !r.field || !r.op) return false;
@@ -85,8 +89,9 @@ function rowActive(fields, r) {
 function testRow(field, r, raw) {
   const type = (field && field.type) || "text";
   if (type === "number") {
+    if (raw == null || typeof raw === "string" && raw.trim() === "") return false;
     const n = Number(raw), a = Number(r.value), b = Number(r.value2);
-    if (isNaN(n)) return false;
+    if (!Number.isFinite(n) || !Number.isFinite(a) || needsSecond(r.op) && !Number.isFinite(b)) return false;
     switch (r.op) {
       case "eq": return n === a; case "ne": return n !== a;
       case "gt": return n > a; case "gte": return n >= a;
@@ -96,6 +101,7 @@ function testRow(field, r, raw) {
     }
   }
   if (type === "date") {
+    if (raw == null || raw === "") return false;
     const d = new Date(raw), a = new Date(r.value), b = new Date(r.value2);
     if (isNaN(d)) return false;
     switch (r.op) {
@@ -186,7 +192,7 @@ export function FilterBuilder({
           value={r.value} onChange={(e) => patch(i, { value: e.target.value })} />
         {needsSecond(r.op) && (
           <React.Fragment>
-            <span style={{ font: "10px var(--font-data)", color: "var(--text-muted,#5E666F)" }}>and</span>
+            <span style={{ font: "10px var(--font-data)", color: "var(--text-muted,#606870)" }}>and</span>
             <input className="mds-fb__ctl mds-fb__ctl--value" aria-label="Filter upper bound" type={type}
               value={r.value2} onChange={(e) => patch(i, { value2: e.target.value })} />
           </React.Fragment>

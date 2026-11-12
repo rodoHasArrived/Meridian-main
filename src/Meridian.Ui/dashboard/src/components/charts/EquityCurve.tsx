@@ -1,7 +1,8 @@
 // Meridian equity curve — line (with area fill) + benchmark overlay, value-axis labels,
 // gridlines, legend, crosshair readout, and an optional drawdown subpane. Mirrors the
 // performance charts in analytics / backtest reporting. Flex-fills its container.
-import { ChartInteractionOverlay } from "./chart-interaction";
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
+import { ChartInteractionOverlay, isChartInteractive } from "./chart-interaction";
 import { niceTicks } from "./ticks";
 
 export interface EquitySeries {
@@ -15,7 +16,7 @@ export interface EquitySeries {
   area?: boolean;
 }
 
-export interface EquityCurveProps {
+export interface EquityCurveProps extends ChartA11yProps {
   /** First series is primary (gets the area fill + crosshair price chip). */
   series: EquitySeries[];
   /** X-axis time labels, aligned to the point index. */
@@ -43,12 +44,12 @@ export interface EquityCurveProps {
   fill?: boolean;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
-const DRAWDOWN = "var(--chart-drawdown, #A8443C)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const CROSSHAIR = "var(--chart-crosshair, #C56343)";
+const DRAWDOWN = "var(--chart-drawdown, #B54B42)";
 
 export function EquityCurve({
   series,
@@ -61,7 +62,10 @@ export function EquityCurve({
   valueTicks = 6,
   timeTicks = 7,
   showLegend = true,
-  fill = true
+  fill = true,
+  ariaLabel = "Equity performance curve",
+  ariaDescription,
+  accessibleData
 }: EquityCurveProps) {
   const W = 960;
   const H = 460;
@@ -109,7 +113,7 @@ export function EquityCurve({
         .join(" ")} L${x(n - 1).toFixed(1)},${yD(0).toFixed(1)} Z`
     : "";
 
-  const legendText = { fontFamily: "var(--font-data, monospace)", fontSize: 11, color: "var(--text-secondary, #4E5258)" };
+  const legendText = { fontFamily: "var(--font-data, monospace)", fontSize: 11, color: "var(--text-secondary, #535C65)" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -129,12 +133,27 @@ export function EquityCurve({
           )}
         </div>
       )}
-      <svg
+      <ChartSvg
         viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
         style={{ width: "100%", flex: 1, display: "block" }}
-        role="img"
-        aria-label="Equity performance curve"
+        ariaLabel={ariaLabel}
+        ariaDescription={ariaDescription}
+        accessibleData={accessibleData}
+        overlay={
+          isChartInteractive(n, onCrosshairChange, onPointActivate) ? (
+            <ChartInteractionOverlay
+              x={plotL}
+              y={eqT}
+              width={plotR - plotL}
+              height={ddB - eqT}
+              count={n}
+              crosshairIndex={crosshairIndex}
+              onCrosshairChange={onCrosshairChange}
+              onPointActivate={onPointActivate}
+              ariaLabel="Move crosshair across equity points; activate to drill into the selected point"
+            />
+          ) : null
+        }
       >
         <rect x="0" y="0" width={W} height={H} fill={PLOT} />
         {/* value gridlines + labels */}
@@ -217,7 +236,7 @@ export function EquityCurve({
             <text
               x={plotR + axisR / 2}
               y={y(primary.points[crosshairIndex]) + 5}
-              fill="var(--text-on-fill, #fff)"
+              fill="#fff"
               textAnchor="middle"
               style={{ ...axFont, fontWeight: 600, fontSize: 13 }}
             >
@@ -225,20 +244,7 @@ export function EquityCurve({
             </text>
           </g>
         )}
-
-        {/* interaction overlay (crosshair + activation) */}
-        <ChartInteractionOverlay
-          x={plotL}
-          y={eqT}
-          width={plotR - plotL}
-          height={ddB - eqT}
-          count={n}
-          crosshairIndex={crosshairIndex}
-          onCrosshairChange={onCrosshairChange}
-          onPointActivate={onPointActivate}
-          ariaLabel="Move crosshair across equity points; activate to drill into the selected point"
-        />
-      </svg>
+      </ChartSvg>
     </div>
   );
 }

@@ -4,7 +4,14 @@ import { cn } from "@/lib/utils";
 
 export type ToastTone = "success" | "warning" | "danger" | "info";
 
+export interface ToastAction {
+  label: string;
+  /** Runs when the action is clicked; the toast is dismissed afterwards. */
+  onAction: () => void;
+}
+
 export interface ToastOptions {
+  action?: ToastAction;
   detail?: ReactNode;
   durationMs?: number;
   id?: string;
@@ -13,6 +20,7 @@ export interface ToastOptions {
 }
 
 interface ToastEntry extends Required<Pick<ToastOptions, "id" | "tone">> {
+  action?: ToastAction;
   detail?: ReactNode;
   title: ReactNode;
 }
@@ -32,7 +40,7 @@ const toneClasses: Record<ToastTone, string> = {
   success: "border-l-success",
   warning: "border-l-warning",
   danger: "border-l-danger",
-  info: "border-l-primary"
+  info: "border-l-[var(--semantic-info)]"
 };
 
 export function ToastProvider({ children, maxToasts = 5 }: { children?: ReactNode; maxToasts?: number }) {
@@ -45,6 +53,7 @@ export function ToastProvider({ children, maxToasts = 5 }: { children?: ReactNod
   const show = useCallback((toast: ToastOptions) => {
     const id = toast.id ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const entry: ToastEntry = {
+      action: toast.action,
       detail: toast.detail,
       id,
       title: toast.title,
@@ -85,7 +94,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
   return (
     <div
       className={cn(
-        "flex min-w-72 max-w-md items-start gap-3 rounded-[2px] border border-l-[3px] border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-float",
+        "flex min-w-72 max-w-md items-start gap-3 rounded-[var(--radius-overlay)] border border-l-[3px] border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
         toneClasses[toast.tone],
         className
       )}
@@ -95,11 +104,23 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
         <div className="text-sm font-semibold">{toast.title}</div>
         {toast.detail ? <div className="mt-0.5 font-mono text-xs leading-5 text-muted-foreground">{toast.detail}</div> : null}
       </div>
+      {toast.action ? (
+        <button
+          type="button"
+          className="shrink-0 rounded-[var(--radius-button)] border border-border px-2 py-0.5 text-xs font-semibold text-[var(--interaction-link)] hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
+          onClick={() => {
+            toast.action?.onAction();
+            onDismiss?.();
+          }}
+        >
+          {toast.action.label}
+        </button>
+      ) : null}
       {onDismiss ? (
         <button
           type="button"
           aria-label="Dismiss notification"
-          className="text-muted-foreground hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="text-muted-foreground hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
           onClick={onDismiss}
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />

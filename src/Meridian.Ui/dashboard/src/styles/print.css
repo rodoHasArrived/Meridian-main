@@ -5,59 +5,36 @@
 @media print {
   @page { margin: 0.6in; }
 
-  /* Paper stays light even when the operator uses a dark workstation. */
+  /* Print is a light document even when the workstation is dark. System ink
+     preserves financial signs, state labels and provenance on monochrome printers.
+     This only changes presentation of mounted records; it never fetches rows. */
   :root,
   :root[data-theme] {
     color-scheme: light;
     --background: 0 0% 100%;
-    --foreground: 218 11% 15%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 218 11% 15%;
-    --muted: 40 25% 95%;
-    --muted-foreground: 212 8% 40%;
-    --secondary: 40 20% 91%;
-    --secondary-foreground: 218 11% 15%;
-    --primary: 16 51% 44%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 16 51% 44%;
-    --accent-foreground: 0 0% 100%;
-    --success: 146 36% 35%;
-    --danger: 4 47% 45%;
-    --warning: 37 77% 31%;
-    --ws-page-bg: #fff;
-    --ws-surface: #fff;
-    --ws-surface-subtle: #EDEAE4;
-    --ws-surface-raised: #F6F4F0;
-    --ws-border: #E4E3DE;
-    --ws-border-strong: #AFABA1;
-    --ws-text: #22252A;
-    --ws-text-secondary: #4E5258;
-    --ws-text-muted: #5E666F;
-    --ws-row-hover: #F0EEE9;
-    --ws-row-selected: #F2E3DB;
-    --ws-row-border: #E4E3DE;
-    --ws-accent: #A85436;
-    --ws-accent-pressed: #8C4429;
-    --green: #3A7A56;
-    --red: #A8443C;
-    --orange: #8A5C12;
-    --purple: #5D5486;
-    --dim-mix: #000;
-    --chart-grid: var(--ws-border);
-    --chart-grid-major: #D3D0C9;
-    --chart-up: var(--green);
-    --chart-dn: var(--red);
-    --chart-ma20: var(--purple);
-    --chart-ma50: var(--orange);
-    --chart-bench: #7E7A72;
-    --chart-crosshair: #6B655C;
-    --chart-series-1: var(--green);
-    --chart-series-2: var(--ws-accent);
-    --chart-series-3: #7C5CBF;
-    --chart-series-4: #B08A2E;
-    --chart-series-5: var(--red);
-    --chart-series-6: var(--orange);
-    --chart-series-7: var(--ws-text-muted);
+    --card-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 25%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --ws-page-bg: Canvas;
+    --ws-surface: Canvas;
+    --ws-surface-subtle: Canvas;
+    --ws-surface-raised: Canvas;
+    --ws-border: CanvasText;
+    --ws-border-strong: CanvasText;
+    --ws-row-border: CanvasText;
+    --ws-row-selected: Canvas;
+    --ws-text: CanvasText;
+    --ws-text-secondary: CanvasText;
+    --ws-text-muted: CanvasText;
+    --ws-accent: CanvasText;
+    --ws-accent-pressed: CanvasText;
+    --text-on-fill: Canvas;
+    --interaction-selected: CanvasText;
+    --interaction-selected-surface: Canvas;
   }
 
   html,
@@ -85,7 +62,7 @@
 
   /* Preserve provenance, live/degraded warnings, workspace title and scope.
      Only navigation, telemetry and screen commands are removed. */
-  .workstation-masthead > :not(.workstation-actions),
+  .workstation-masthead > :not(.workstation-actions):not(.workstation-trust-strip),
   .workstation-actions > :not(.workstation-session-card),
   .workstation-rail-desktop,
   .workstation-statusbar,
@@ -114,6 +91,34 @@
     justify-content: flex-start !important;
   }
 
+  .workstation-masthead::before {
+    content: "Data provenance: " attr(data-provenance) !important;
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    height: auto !important;
+    background: none !important;
+    color: CanvasText !important;
+    font-size: 0.75rem;
+  }
+
+  .workstation-trust-strip,
+  .workstation-trust-summary {
+    display: block !important;
+    max-width: none !important;
+    overflow: visible !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+  }
+
+  .workstation-trust-summary *,
+  .workstation-trust-environment {
+    color: CanvasText !important;
+    background: Canvas !important;
+  }
+
+  .workstation-trust-chevron { display: none !important; }
+
   .workstation-session-card,
   .workstation-session-name,
   .workstation-session-role {
@@ -121,8 +126,10 @@
     color: var(--ws-text) !important;
   }
 
-  .workstation-session-card .mds-badge--paper {
-    color: var(--state-paper-fg) !important;
+  .workstation-session-card .mds-badge {
+    color: CanvasText !important;
+    background: Canvas !important;
+    border-color: CanvasText !important;
   }
 
   .workbench-scroll { padding: 0.75rem 0 !important; }
@@ -187,6 +194,8 @@
   .dense-data-table-spacer { display: none !important; }
 
   .workstation-frame * { box-shadow: none !important; }
+  .workstation-frame svg text { fill: CanvasText !important; }
+  .workbench tr[aria-selected="true"] { outline: 1px solid CanvasText; outline-offset: -1px; }
 
   .workstation-provenance,
   .workbench [role="alert"],

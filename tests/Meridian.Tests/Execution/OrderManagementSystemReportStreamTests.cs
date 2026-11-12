@@ -156,6 +156,206 @@ public sealed class OrderManagementSystemReportStreamTests
         portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
 
+    // IOrderGateway.StreamOrderUpdatesAsync over the OMS order-state broadcast: snapshots are
+    // captured when the OMS writes them, cover non-fill transitions, coalesce to each order's
+    // latest state for a slow reader, and survive retention eviction.
+
+    private static async Task<List<Meridian.Execution.Models.OrderStatusUpdate>> ReadUpdatesUntilAsync(
+        IAsyncEnumerator<Meridian.Execution.Models.OrderStatusUpdate> updates,
+        Func<Meridian.Execution.Models.OrderStatusUpdate, bool> done)
+    {
+        var seen = new List<Meridian.Execution.Models.OrderStatusUpdate>();
+        while (true)
+        {
+            (await updates.MoveNextAsync()).Should().BeTrue("the expected order state must be published");
+            seen.Add(updates.Current);
+            if (done(updates.Current))
+                return seen;
+        }
+    }
+
+    private static OrderManagementSystem CreateStreamOms(StreamingGateway gateway, OrderManagementSystemOptions? options = null) =>
+        new(gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(1_000_000m),
+            options: options);
+
+    private static StreamingGateway CreateStreamGateway() => new()
+    {
+        SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+    };
+
+    private static OrderRequest StreamLimit(string clientOrderId, decimal quantity = 10m, decimal limit = 130m) => new()
+    {
+        ClientOrderId = clientOrderId,
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        Type = OrderType.Limit,
+        Quantity = quantity,
+        LimitPrice = limit
+    };
+
+    [Fact]
+    public async Task GovernedOrderGatewayStream_ReportsCumulativeFillTotalsAndAveragePrice()
+    {
+        // 4 @ 100 then 6 @ 110 is 10 filled at an average of 106; snapshots never go backwards.
+        var gateway = CreateStreamGateway();
+        using var oms = CreateStreamOms(gateway);
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var pending = updates.MoveNextAsync();
+
+        var result = await oms.PlaceOrderAsync(StreamLimit("cumulative", limit: 120m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 4m, fillPrice: 100m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 110m));
+
+        (await pending).Should().BeTrue();
+        var seen = new List<Meridian.Execution.Models.OrderStatusUpdate> { updates.Current };
+        if (updates.Current.Status != Meridian.Execution.Models.OrderStatus.Filled)
+            seen.AddRange(await ReadUpdatesUntilAsync(updates, update => update.Status == Meridian.Execution.Models.OrderStatus.Filled));
+
+        seen.Select(update => update.FilledQuantity).Should().BeInAscendingOrder();
+        seen[^1].FilledQuantity.Should().Be(10m);
+        seen[^1].AverageFillPrice.Should().Be(106m);
+    }
+
+    [Fact]
+    public async Task GovernedOrderGatewayStream_ReportsNonFillTransitions()
+    {
+        // Acceptance and a broker cancellation carry no fill; both still reach the stream.
+        var gateway = CreateStreamGateway();
+        using var oms = CreateStreamOms(gateway);
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var pending = updates.MoveNextAsync();
+
+        var result = await oms.PlaceOrderAsync(StreamLimit("non-fill"));
+        (await pending).Should().BeTrue();
+        var seen = new List<Meridian.Execution.Models.OrderStatusUpdate> { updates.Current };
+        if (updates.Current.Status != Meridian.Execution.Models.OrderStatus.Accepted)
+            seen.AddRange(await ReadUpdatesUntilAsync(updates, update => update.Status == Meridian.Execution.Models.OrderStatus.Accepted));
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Cancelled, ExecutionReportType.Cancelled, filledQty: 0m, fillPrice: null));
+        seen.AddRange(await ReadUpdatesUntilAsync(updates, update => update.Status == Meridian.Execution.Models.OrderStatus.Cancelled));
+
+        seen.Should().Contain(update => update.OrderId == result.OrderId
+            && update.Status == Meridian.Execution.Models.OrderStatus.Accepted && update.FilledQuantity == 0m);
+        seen[^1].OrderId.Should().Be(result.OrderId);
+        seen[^1].FilledQuantity.Should().Be(0m);
+    }
+
+    [Fact]
+    public async Task GovernedOrderGatewayStream_ReusedClientOrderIdIsReportedAsANewOrder()
+    {
+        var gateway = CreateStreamGateway();
+        using var oms = CreateStreamOms(gateway);
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        // Start reading before the first order so the stream is subscribed, then await that read
+        // before calling MoveNextAsync again: an async iterator must not run two moves at once.
+        var first = updates.MoveNextAsync();
+
+        var original = await oms.PlaceOrderAsync(StreamLimit("reused-id", 10m, 100m));
+        (await first).Should().BeTrue();
+        var seen = new List<Meridian.Execution.Models.OrderStatusUpdate> { updates.Current };
+        await gateway.PublishAsync(
+            BuildReport(original.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 100m));
+        await WaitUntilAsync(() => oms.GetOrder(original.OrderId)!.Status == OrderStatus.Filled,
+            "the original order must be terminal before its id is reused");
+
+        var replacement = await oms.PlaceOrderAsync(StreamLimit("reused-id", 5m, 200m));
+        replacement.Success.Should().BeTrue();
+        replacement.OrderId.Should().Be(original.OrderId);
+        await gateway.PublishAsync(
+            BuildReport(replacement.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 5m, fillPrice: 200m));
+
+        seen.AddRange(await ReadUpdatesUntilAsync(updates,
+            update => update.Status == Meridian.Execution.Models.OrderStatus.Filled && update.FilledQuantity == 5m));
+        seen[^1].AverageFillPrice.Should().Be(200m);
+        seen.Should().NotContain(update => update.FilledQuantity > 10m,
+            "the replacement order must not inherit the previous order's fills");
+    }
+
+    [Fact]
+    public async Task GovernedOrderGatewayStream_SlowReaderStillReceivesEveryOrdersFinalState()
+    {
+        // The reader does not consume while A and B fill: intermediate states coalesce, but each
+        // order's final state is delivered and nothing is reported short or double-counted.
+        var gateway = CreateStreamGateway();
+        using var oms = CreateStreamOms(gateway);
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var first = updates.MoveNextAsync();
+
+        var orderA = await oms.PlaceOrderAsync(StreamLimit("slow-a"));
+        (await first).Should().BeTrue();
+        var orderB = await oms.PlaceOrderAsync(StreamLimit("slow-b"));
+        await gateway.PublishAsync(
+            BuildReport(orderA.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 4m, fillPrice: 100m));
+        await gateway.PublishAsync(
+            BuildReport(orderA.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 7m, fillPrice: 110m));
+        await gateway.PublishAsync(
+            BuildReport(orderB.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 120m));
+        await gateway.PublishAsync(
+            BuildReport(orderA.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 120m));
+        await WaitUntilAsync(() => oms.GetOrder(orderA.OrderId)!.Status == OrderStatus.Filled
+                && oms.GetOrder(orderB.OrderId)!.Status == OrderStatus.Filled,
+            "both orders must fill in the OMS while the reader is idle");
+
+        var finals = new Dictionary<string, Meridian.Execution.Models.OrderStatusUpdate>();
+        while (finals.Count < 2)
+        {
+            (await updates.MoveNextAsync()).Should().BeTrue();
+            if (updates.Current.Status == Meridian.Execution.Models.OrderStatus.Filled)
+                finals[updates.Current.OrderId] = updates.Current;
+        }
+
+        finals[orderA.OrderId].FilledQuantity.Should().Be(10m);
+        finals[orderA.OrderId].AverageFillPrice.Should().Be(oms.GetOrder(orderA.OrderId)!.AverageFillPrice);
+        finals[orderB.OrderId].FilledQuantity.Should().Be(10m);
+        finals[orderB.OrderId].AverageFillPrice.Should().Be(120m);
+    }
+
+    [Fact]
+    public async Task GovernedOrderGatewayStream_FinalStateSurvivesRetentionEviction()
+    {
+        // With one retained order, A's terminal state is evicted when B is submitted. The
+        // snapshot was captured at write time, so the idle reader still receives A's final state.
+        var gateway = CreateStreamGateway();
+        using var oms = CreateStreamOms(gateway, new OrderManagementSystemOptions { MaxRetainedOrders = 1 });
+        await oms.StartAsync();
+        var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
+        var first = updates.MoveNextAsync();
+
+        var orderA = await oms.PlaceOrderAsync(StreamLimit("evicted-a"));
+        (await first).Should().BeTrue();
+        await gateway.PublishAsync(
+            BuildReport(orderA.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 100m));
+        await WaitUntilAsync(() => oms.GetOrder(orderA.OrderId)?.Status == OrderStatus.Filled,
+            "order A must fill before it can be evicted");
+        await oms.PlaceOrderAsync(StreamLimit("evicting-b"));
+        await WaitUntilAsync(() => oms.GetOrder(orderA.OrderId) is null,
+            "retention must evict terminal order A once B is retained");
+
+        var seen = await ReadUpdatesUntilAsync(updates,
+            update => update.OrderId == orderA.OrderId && update.Status == Meridian.Execution.Models.OrderStatus.Filled);
+        seen[^1].FilledQuantity.Should().Be(10m);
+        seen[^1].AverageFillPrice.Should().Be(100m);
+    }
+
     [Fact]
     public async Task OutOfOrderCumulativeFill_DoesNotRegressStateOrRepublishToAccounting()
     {

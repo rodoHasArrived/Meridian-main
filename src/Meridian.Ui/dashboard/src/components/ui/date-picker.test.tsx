@@ -100,6 +100,14 @@ describe("DatePicker", () => {
     expect(trigger).toHaveAttribute("aria-errormessage", "settlement-error"); expect(trigger).toHaveAccessibleDescription("Required for posting.");
   });
 
+  it("exposes the selected date alongside feedback when an explicit accessible name replaces the button text", () => {
+    const view = render(<><DatePicker value="2026-01-31" aria-label="Settlement date" aria-describedby="settlement-feedback" /><span id="settlement-feedback">Use the retained settlement date.</span></>);
+    const trigger = screen.getByRole("button", { name: "Settlement date" });
+    expect(trigger).toHaveAccessibleDescription("Use the retained settlement date. Jan 31, 2026");
+    view.rerender(<><span id="settlement-name">Settlement date</span><DatePicker value="2026-01-31" aria-labelledby="settlement-name" aria-describedby="settlement-feedback" /><span id="settlement-feedback">Use the retained settlement date.</span></>);
+    expect(screen.getByRole("button", { name: "Settlement date Jan 31, 2026" })).toHaveAccessibleDescription("Use the retained settlement date.");
+  });
+
   it.each(["America/Los_Angeles", "Pacific/Auckland"])("preserves date-only display under %s", (timezone) => {
     vi.stubEnv("TZ", timezone); render(<DatePicker label="Trade date" value="2026-06-09" />);
     expect(screen.getByRole("button", { name: /Trade date/ })).toHaveTextContent("Jun 9, 2026");

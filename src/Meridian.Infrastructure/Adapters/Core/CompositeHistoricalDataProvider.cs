@@ -363,7 +363,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     _log.Debug("No {Operation} returned from {Provider} for {Symbol}, trying next", operationLabel, provider.Name, symbol);
                     Report(provider.Name, "no-data");
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
                     throw;
                 }
@@ -599,7 +599,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
                 Report(provider.Name, "no-data");
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 throw;
             }
@@ -664,7 +664,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             var mapped = await _symbolResolver.MapSymbolAsync(symbol, "input", providerName, ct).ConfigureAwait(false);
             return mapped ?? symbol;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }

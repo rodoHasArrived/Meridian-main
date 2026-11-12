@@ -154,7 +154,7 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
   return (
     <Card className="panel-surface" id="income-comparison">
       <CardHeader>
-        <div className="eyebrow-label">Retained report comparison</div>
+        <div className="eyebrow-label eyebrow-label--sentence">Retained report comparison</div>
         <CardTitle>Explain investment-income movement</CardTitle>
         <CardDescription>Choose the baseline explicitly, including originally published or restated results. Movement is current minus baseline; inputs and supporting records are retained with the explanation.</CardDescription>
       </CardHeader>
@@ -189,7 +189,20 @@ export function ReportingIncomeComparisonPanel({ currentRunId = "" }: { currentR
           </label>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={compare} disabled={!canCompare} busy={busy} busyLabel="Loading comparison…">Compare and retain explanation</Button>
+          <Button
+            type="button"
+            onClick={compare}
+            disabled={!canCompare}
+            disabledReason={candidatePhase !== "ready"
+              ? "Wait for the retained report runs to load."
+              : baselineId === currentId
+                ? "Choose two different report runs to compare."
+                : "Choose a baseline run, a current run and a metric the current run reports."}
+            busy={busy}
+            busyLabel="Loading comparison…"
+          >
+            Compare and retain explanation
+          </Button>
           <Button type="button" variant="outline" onClick={() => setRefresh((value) => value + 1)} disabled={busy}>Retry / refresh retained records</Button>
         </div>
         {baselineId && baselineId === currentId ? <p role="status" className="text-sm text-warning">Choose two different retained runs.</p> : null}

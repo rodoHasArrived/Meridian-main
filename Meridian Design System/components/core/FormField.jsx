@@ -9,6 +9,7 @@ import React from "react";
  *   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
  * </FormField>
  */
+
 export function FormField({
   label,
   hint,
@@ -17,13 +18,15 @@ export function FormField({
   children,
   className = '',
   style = {},
-  id,
 }) {
   const generatedId = React.useId();
-  const control = React.isValidElement(children) && children.type !== React.Fragment ? children : null;
-  const fieldId = control?.props.id || id || generatedId;
-  const feedbackId = `${fieldId}--feedback`;
-  const describedBy = [control?.props["aria-describedby"], hint || error ? feedbackId : null].filter(Boolean).join(" ") || undefined;
+  const control = React.isValidElement(children) ? children : null;
+  const fieldId = control?.props.id || generatedId;
+  const messageId = `${fieldId}-message`;
+  const describedBy = [...new Set([
+    ...(control?.props["aria-describedby"] || "").split(/\s+/).filter(Boolean),
+    ...((hint || error) ? [messageId] : []),
+  ])].join(" ");
 
   return (
     <div
@@ -38,7 +41,7 @@ export function FormField({
       {/* Label */}
       {label && (
         <label
-          htmlFor={control ? fieldId : undefined}
+          htmlFor={fieldId}
           style={{
             fontSize: 'var(--type-label)',
             fontWeight: 600,
@@ -49,7 +52,7 @@ export function FormField({
         >
           {label}
           {required && (
-            <span aria-hidden="true" style={{ color: 'var(--red-dim)', marginLeft: '4px' }}>*</span>
+            <span aria-hidden="true" style={{ color: 'var(--red)', marginLeft: '4px' }}>*</span>
           )}
         </label>
       )}
@@ -57,19 +60,18 @@ export function FormField({
       {/* Input (cloned with id and aria attrs) */}
       {control ? React.cloneElement(control, {
         id: fieldId,
-        required: required || control.props.required,
+        "aria-required": required || control.props["aria-required"],
         "aria-invalid": error ? true : control.props["aria-invalid"],
-        "aria-describedby": describedBy,
+        "aria-describedby": describedBy || undefined,
       }) : children}
 
       {/* Hint or error message */}
       {(hint || error) && (
         <div
-          id={feedbackId}
-          role={error ? "alert" : undefined}
+          id={messageId}
           style={{
             fontSize: 'var(--type-caption)',
-            color: error ? 'var(--red-dim)' : 'var(--text-muted)',
+            color: error ? 'var(--red)' : 'var(--text-muted)',
             marginTop: '-4px',
           }}
         >

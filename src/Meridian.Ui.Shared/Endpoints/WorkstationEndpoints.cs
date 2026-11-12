@@ -30,7 +30,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
@@ -123,6 +123,10 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapOperatorTriageEndpoints(group, jsonOptions);
+        MapCloseChecklistHistoryEndpoints(group, jsonOptions);
+        MapApprovalCollaborationEndpoints(group, jsonOptions);
+        MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
         MapDataOperationsAssuranceEndpoints(group);
@@ -187,6 +191,8 @@ public static partial class WorkstationEndpoints
         .Produces<WorkflowLibraryDto>(200);
 
         MapCollateralEndpoints(group, jsonOptions);
+        MapOperatorScopePreferenceEndpoints(group, jsonOptions);
+        MapOperatorSurfaceVisitEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
         {
@@ -414,6 +420,17 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .RequireWorkstationTenantCompanyScope();
 
+        // A3: one count per quantity for every screen. The route admits the union of the three source
+        // routes' permissions; each count is then gated by its own source's permission.
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationCrossScreenCounts), async (Guid? fundAccountId, HttpContext context) =>
+        {
+            var counts = await BuildCrossScreenCountsAsync(fundAccountId, context).ConfigureAwait(false);
+            return Results.Json(counts, jsonOptions);
+        })
+        .WithName("GetWorkstationCrossScreenCounts").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationCrossScreenCountsDto>(200)
+        .RequireWorkstationTenantCompanyScope();
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
             var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
@@ -458,7 +475,7 @@ public static partial class WorkstationEndpoints
 
             // Guard violations and SQL errors are part of the result payload (Success=false)
             // so the workbench can render them inline without parsing problem responses.
-            var result = await queryService.ExecuteAsync(request.Sql, options, context.RequestAborted)
+            var result = await ExecuteRetainedWorkstationQueryAsync(queryService, request.Sql, options, context)
                 .ConfigureAwait(false);
             return Results.Ok(result);
         })
@@ -3209,32 +3226,19 @@ public static partial class WorkstationEndpoints
         return "Paper gateway not active. Start a paper session to see live position and order data.";
     }
 
-    // Returns null when neither the strategy run read service nor the configuration store is
-    // registered so the route can respond 503 instead of serving fabricated provider/backfill data.
-    private static async Task<WorkstationDataPayload?> BuildDataPayloadAsync(HttpContext context)
+    /// <summary>
+    /// The provider rows the Data workspace lists. Shared with the cross-screen counts endpoint so
+    /// its provider-health count is counted over exactly these rows.
+    /// </summary>
+    private static async Task<WorkstationDataProviderRecord[]> BuildDataProviderRecordsAsync(
+        HttpContext context,
+        Meridian.Application.UI.ConfigStore? configStore)
     {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
-        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
         var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
         var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
         var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
         var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
-
-        if (readService is null && configStore is null)
-        {
-            return null;
-        }
-
-        var runs = readService is not null
-            ? (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray()
-            : [];
-        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
-        var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
-
-        // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
-        var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
         // Routing connections, bindings and trust snapshots follow connectionRows: their direct
         // /api/provider-routing reads require ManageCredentials, which the Data workspace does not admit.
         var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
@@ -3258,13 +3262,41 @@ public static partial class WorkstationEndpoints
         var trustSnapshots = canReadRouting && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var providers = BuildWorkstationDataProviderRecords(
+        return BuildWorkstationDataProviderRecords(
             metricsStatus,
             connectionRows,
             routingConnections,
             routingBindings,
             trustSnapshots,
             exposeConnectionSummaries: canManageCredentials);
+    }
+
+    // Returns null when neither the strategy run read service nor the configuration store is
+    // registered so the route can respond 503 instead of serving fabricated provider/backfill data.
+    private static async Task<WorkstationDataPayload?> BuildDataPayloadAsync(HttpContext context)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
+        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
+
+        if (readService is null && configStore is null)
+        {
+            return null;
+        }
+
+        var runs = readService is not null
+            ? (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray()
+            : [];
+        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
+        var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
+
+        // --- Providers (real data from metrics store when available) ---
+        var providers = await BuildDataProviderRecordsAsync(context, configStore).ConfigureAwait(false);
+        // The headline card counts the rows listed below, with the cross-screen definition; it used
+        // to read the metrics store's own tally, which disagreed with the list beside it.
+        var healthyProviderCount = CrossScreenCountDefinitions
+            .CountProviderHealth(providers.Select(static provider => provider.Status))
+            .Healthy;
 
         // --- Backfills (last known backfill result from status file) ---
         var lastBackfill = configStore?.TryLoadBackfillStatus();
@@ -3284,7 +3316,10 @@ public static partial class WorkstationEndpoints
             backfills =
             [
                 new WorkstationDataBackfillRecord(
-                    JobId: $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
+                    JobId: "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+                    {
+                        lastBackfill.Provider, lastBackfill.CompletedUtc, lastBackfill.From, lastBackfill.To, lastBackfill.Symbols
+                    }))[..16],
                     Scope: $"{symbolSummary} / {days}",
                     Provider: lastBackfill.Provider,
                     Status: lastBackfill.Success ? "Completed" : "Failed",

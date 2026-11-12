@@ -10,6 +10,7 @@ import {
 import {
   formatCurrency,
   formatCurrencyForCode,
+  formatDateOnly,
   formatDateTimeLabel,
   formatSignedCurrency,
 } from "./accounting-screen.formatting";
@@ -43,6 +44,66 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
+import { formatCount, pluralizeCount } from "@/lib/format";
+import {
+  TIE_OUT_EPSILON,
+  usableAmount,
+  type TieOutCondition,
+} from "@/components/accounting/proof-arithmetic";
+
+/** One open external-GL reconciliation row, listed in the tie-out as identified but not explained. */
+export interface ReconciliationTieOutItemViewModel {
+  id: string;
+  label: string;
+  /** Row variance as the reconciliation reports it (statement less ledger). `null` when unusable. */
+  value: number | null;
+  /** Open breaks are never summed into the explanation. */
+  explained: false;
+  condition: TieOutCondition;
+  conditionLabel: string;
+  evidence?: string;
+}
+
+/** One side of the tie-out. `value` is `null` when the side is not loaded — never zero. */
+export interface ReconciliationTieOutSourceViewModel {
+  label: string;
+  value: number | null;
+  count: number;
+}
+
+/**
+ * Tie-out proof of the comparison summary for a loaded external GL reconciliation. It carries
+ * the same numbers and the same balanced rule as the summary labels, so the proof cannot reach a
+ * different verdict; the fields line up with `TieOutPanel` props.
+ */
+export interface ReconciliationTieOutViewState {
+  title: string;
+  context: string;
+  type: "one-to-one";
+  currency: string;
+  /** "number" when rows span more than one currency, so no single symbol is printed over them. */
+  notation: "currency" | "number";
+  sourceA: ReconciliationTieOutSourceViewModel;
+  sourceB: ReconciliationTieOutSourceViewModel;
+  items: ReconciliationTieOutItemViewModel[];
+  /** Declared from the summary rule: tied needs zero open breaks and a net variance under half a cent. */
+  status: "tied" | "exception";
+  statusNote?: string;
+}
+
+/** The comparison view state with the numbers behind its labels and the tie-out that proves them. */
+export interface ReconciliationComparisonProofViewState extends ReconciliationComparisonViewState {
+  /** Statement-side balance behind `statementBalanceLabel`. `null` when not loaded. */
+  statementBalance: number | null;
+  /** Ledger-side balance behind `ledgerBalanceLabel`. `null` when not loaded. */
+  ledgerBalance: number | null;
+  /** Net variance behind `varianceLabel`. `null` when not loaded. */
+  netVariance: number | null;
+  matchedCount: number;
+  openCount: number;
+  /** Present only for a loaded external GL reconciliation with row detail. */
+  tieOut: ReconciliationTieOutViewState | null;
+}
 
 type StatementRunSummaryWithMetadata = StatementRunSummary & {
   brokerCustodian?: string | null;
@@ -141,6 +202,14 @@ const SYSTEM_RECONCILIATION_TONE: Record<AccountingSystemReconciliationStatus, "
   MissingMeridian: "danger"
 };
 
+const SYSTEM_RECONCILIATION_TIE_OUT_CONDITION: Record<AccountingSystemReconciliationStatus, TieOutCondition> = {
+  Matched: "reconciled",
+  ReviewRequired: "pending",
+  Variance: "exception",
+  MissingExternal: "missing",
+  MissingMeridian: "missing"
+};
+
 function describeSystemReconciliationStatus(status: AccountingSystemReconciliationStatus): string {
   switch (status) {
     case "Matched":
@@ -174,6 +243,80 @@ function buildSystemReconciliationLine(
     amountLabel: formatCurrencyForCode(amount, row.currency),
     statusLabel: describeSystemReconciliationStatus(row.status),
     statusTone: SYSTEM_RECONCILIATION_TONE[row.status]
+  };
+}
+
+function buildSystemReconciliationTieOutItem(
+  row: AccountingSystemReconciliationRow,
+  showCurrency: boolean
+): ReconciliationTieOutItemViewModel {
+  const title = row.accountName || row.accountCode;
+  const evidenceCount = row.evidenceReferences?.length ?? (row.evidenceRef ? 1 : 0);
+  return {
+    id: row.rowId,
+    label: showCurrency && row.currency ? `${title} (${row.currency})` : title,
+    value: usableAmount(row.variance),
+    explained: false,
+    condition: SYSTEM_RECONCILIATION_TIE_OUT_CONDITION[row.status] ?? "exception",
+    conditionLabel: describeSystemReconciliationStatus(row.status),
+    evidence: evidenceCount > 0 ? pluralizeCount(evidenceCount, "evidence reference", { localizeCount: true }) : undefined
+  };
+}
+
+function buildSystemReconciliationTieOut({
+  systemReconciliation,
+  statementHeading,
+  ledgerHeading,
+  statementBalance,
+  ledgerBalance,
+  netVariance,
+  statementLineCount,
+  ledgerLineCount,
+  balanced,
+  currency
+}: {
+  systemReconciliation: AccountingSystemReconciliationSummary;
+  statementHeading: string;
+  ledgerHeading: string;
+  statementBalance: number | null;
+  ledgerBalance: number | null;
+  netVariance: number | null;
+  statementLineCount: number;
+  ledgerLineCount: number;
+  balanced: boolean;
+  currency: string;
+}): ReconciliationTieOutViewState {
+  const rowCurrencies = [...new Set(systemReconciliation.rows.map((row) => row.currency).filter(Boolean))];
+  const mixedCurrencies = rowCurrencies.length > 1;
+  const openCount = systemReconciliation.breakCount;
+  const period = systemReconciliation.periodStart && systemReconciliation.periodEnd
+    ? `${formatDateOnly(systemReconciliation.periodStart)} to ${formatDateOnly(systemReconciliation.periodEnd)}`
+    : null;
+  // Offsetting row-level breaks net to zero. The arithmetic alone would call that tied, so the
+  // declared exception needs its reason on screen.
+  const offsettingBreaks = !balanced && netVariance !== null && Math.abs(netVariance) < TIE_OUT_EPSILON;
+
+  return {
+    title: "Tie-out proof",
+    context: [
+      "External GL reconciliation",
+      period,
+      mixedCurrencies
+        ? `Rows span ${rowCurrencies.join(", ")}; totals are summed as reported, without conversion`
+        : null
+    ].filter(Boolean).join(" · "),
+    type: "one-to-one",
+    currency,
+    notation: mixedCurrencies ? "number" : "currency",
+    sourceA: { label: statementHeading, value: statementBalance, count: statementLineCount },
+    sourceB: { label: ledgerHeading, value: ledgerBalance, count: ledgerLineCount },
+    items: systemReconciliation.rows
+      .filter((row) => row.status !== "Matched")
+      .map((row) => buildSystemReconciliationTieOutItem(row, mixedCurrencies)),
+    status: balanced ? "tied" : "exception",
+    statusNote: offsettingBreaks
+      ? `${pluralizeCount(openCount, "open break", { localizeCount: true })} ${openCount === 1 ? "remains" : "remain"} although the totals net to zero. Offsetting breaks are not a tie-out.`
+      : undefined
   };
 }
 
@@ -267,7 +410,7 @@ export function buildReconciliationComparisonViewState({
   selectedRunId,
   cashFlow,
   systemReconciliation = null
-}: ReconciliationComparisonBuildInput): ReconciliationComparisonViewState {
+}: ReconciliationComparisonBuildInput): ReconciliationComparisonProofViewState {
   const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
     ? []
     : fallbackQueue.map((item): StatementRunSummaryWithMetadata => ({
@@ -304,18 +447,18 @@ export function buildReconciliationComparisonViewState({
     const queueMatch = fallbackQueue.find((item) => item.runId === run.runId);
     const ledgerTitle = queueMatch?.strategyName ?? "Meridian ledger";
     const ledgerMeta = [
-      matchCount.toLocaleString() + " matched",
-      openCount > 0 ? openCount.toLocaleString() + " open" : "no open breaks"
+      formatCount(matchCount) + " matched",
+      openCount > 0 ? formatCount(openCount) + " open" : "no open breaks"
     ].join(" · ");
 
     return {
       id: run.runId,
       statementTitle: brokerCustodian,
       statementMeta: `${period} · ${account}`,
-      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${matchCount.toLocaleString()} matched`,
+      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${formatCount(matchCount)} matched`,
       ledgerTitle,
       ledgerMeta,
-      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
+      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${formatCount(openCount)} open` : "Matched"),
       statusLabel,
       statusTone: rawStatus === "SecurityCoverageOpen"
         ? "danger"
@@ -365,6 +508,13 @@ export function buildReconciliationComparisonViewState({
   let ledgerBalanceLabel: string;
   let varianceLabel: string;
   let varianceTone: "success" | "warning";
+  // The numbers behind the labels, kept so the tie-out proves them without re-parsing text.
+  let statementBalanceValue: number | null;
+  let ledgerBalanceValue: number | null;
+  let netVarianceValue: number | null;
+  let tieOut: ReconciliationTieOutViewState | null = null;
+  const statementHeading = hasTransactionLines ? "Custodian statement" : "Statement";
+  const ledgerHeading = hasTransactionLines ? "Internal ledger" : "Ledger";
 
   if (hasTransactionLines && systemReconciliation) {
     const summaryCurrency = systemReconciliation.rows[0]?.currency || "USD";
@@ -383,7 +533,22 @@ export function buildReconciliationComparisonViewState({
       ? "Balanced"
       : Math.abs(netVariance) >= 0.005
         ? `Out by ${formatCurrencyForCode(Math.abs(netVariance), summaryCurrency)}`
-        : `${openCount.toLocaleString()} open break${openCount === 1 ? "" : "s"}`;
+        : `${formatCount(openCount)} open break${openCount === 1 ? "" : "s"}`;
+    statementBalanceValue = usableAmount(statementBalance);
+    ledgerBalanceValue = usableAmount(ledgerBalance);
+    netVarianceValue = usableAmount(netVariance);
+    tieOut = buildSystemReconciliationTieOut({
+      systemReconciliation,
+      statementHeading,
+      ledgerHeading,
+      statementBalance: statementBalanceValue,
+      ledgerBalance: ledgerBalanceValue,
+      netVariance: netVarianceValue,
+      statementLineCount: statementLines.length,
+      ledgerLineCount: ledgerLines.length,
+      balanced,
+      currency: summaryCurrency
+    });
   } else {
     matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
     openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
@@ -392,19 +557,29 @@ export function buildReconciliationComparisonViewState({
     const variance = cashFlow?.netVariance ?? 0;
     varianceTone = Math.abs(variance) < 0.005 ? "success" : "warning";
     varianceLabel = Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`;
+    // Not loaded is null, never zero: the labels above read "Not loaded" for the same case.
+    statementBalanceValue = cashFlow ? usableAmount(cashFlow.totalCash) : null;
+    ledgerBalanceValue = cashFlow ? usableAmount(cashFlow.totalLedgerCash) : null;
+    netVarianceValue = cashFlow ? usableAmount(cashFlow.netVariance) : null;
   }
 
   return {
     title: "Cash reconciliation - broker statement vs. ledger",
     subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
-    statementHeading: hasTransactionLines ? "Custodian statement" : "Statement",
-    ledgerHeading: hasTransactionLines ? "Internal ledger" : "Ledger",
-    matchedBadgeLabel: `${matchedCount.toLocaleString()} matched`,
-    openBadgeLabel: `${openCount.toLocaleString()} open`,
+    statementHeading,
+    ledgerHeading,
+    matchedBadgeLabel: `${formatCount(matchedCount)} matched`,
+    openBadgeLabel: `${formatCount(openCount)} open`,
     statementBalanceLabel,
     ledgerBalanceLabel,
     varianceLabel,
     varianceTone,
+    statementBalance: statementBalanceValue,
+    ledgerBalance: ledgerBalanceValue,
+    netVariance: netVarianceValue,
+    matchedCount,
+    openCount,
+    tieOut,
     rows,
     statementLines,
     ledgerLines,

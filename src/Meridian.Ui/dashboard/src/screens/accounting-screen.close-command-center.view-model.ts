@@ -112,9 +112,12 @@ export function buildCloseCommandCenterViewState({
     {
       id: "breaks",
       label: "Open breaks",
-      value: String(openBreakCount + workflowOpenBreakCount),
-      detail: `${formatCount(openBreakCount, "queue break")} and ${formatCount(workflowOpenBreakCount, "workflow break")} remain open.`,
-      tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success",
+      // Counted once, from the break queue (A3); summing in the workflow's cases counted breaks twice.
+      value: String(openBreakCount),
+      detail: workflowOpenBreakCount > 0
+        ? `${formatCount(openBreakCount, "queue break")} open; the close workflow also tracks ${formatCount(workflowOpenBreakCount, "break case")}.`
+        : `${formatCount(openBreakCount, "queue break")} open.`,
+      tone: openBreakCount > 0 ? "warning" : "success",
       href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
     },
     {
@@ -353,14 +356,17 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     .filter((blocker) => !commandCenter.queueRows.some((row) => row.queueId === blocker.code))
     .map((blocker) => ({
       id: blocker.code,
-      label: `${blocker.contributorId} - ${blocker.type}`,
+      label: `${humanizeCloseBlockerCode(blocker.contributorId)} - ${blocker.type}`,
       detail: `${blocker.message} Count: ${blocker.count}. Severity: ${blocker.severity}.`,
       tone: "danger" as AccountingToolingTone,
       href: localCommandCenterRoute(null, blocker.contributorId),
       statusLabel: "Blocked",
       ownerLabel: blocker.owner,
       dueLabel: "Required before close",
-      evidenceLabel: blocker.recordIds.length ? blocker.recordIds.join(", ") : "No source record supplied",
+      // Record identifiers are audit material: the row states how many back the blocker and the
+      // identifiers themselves stay behind the audit-details disclosure.
+      evidenceLabel: blocker.recordIds.length ? formatCount(blocker.recordIds.length, "source record") : "No source record supplied",
+      sourceRecordIds: blocker.recordIds,
       actionLabel: "Resolve this requirement and refresh close readiness.",
       impactLabel: "Blocks close completion"
     }));

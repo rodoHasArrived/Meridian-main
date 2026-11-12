@@ -4,6 +4,8 @@
   "private": true,
   "description": "Build tools for Meridian",
   "scripts": {
+    "check:design-system": "npm --prefix src/Meridian.Ui/dashboard run check:design-system --",
+    "check:design-system:browser": "npm --prefix src/Meridian.Ui/dashboard run check:design-system:browser --",
     "dev": "node scripts/dev/web-dev.mjs --mode backend-connected",
     "dev:backend": "node scripts/dev/web-dev.mjs --mode backend-connected",
     "dev:fixtures": "node scripts/dev/web-dev.mjs --mode fixture-only",
@@ -17,10 +19,7 @@
     "generate-wpf-screen-tracker": "node scripts/generate-diagrams.mjs --tracker-only",
     "ui:dashboard:install": "npm --prefix src/Meridian.Ui/dashboard install",
     "ui:dashboard:build": "npm --prefix src/Meridian.Ui/dashboard run build",
-    "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test",
-    "design:build": "npm --prefix src/Meridian.Ui/dashboard run design:build",
-    "design:check": "npm --prefix src/Meridian.Ui/dashboard run design:check",
-    "design:test:browser": "npm --prefix src/Meridian.Ui/dashboard run design:test:browser --"
+    "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test"
   },
   "devDependencies": {
     "@viz-js/viz": "^3.31.0",

@@ -7,6 +7,8 @@ import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-re
 import { describeApiError } from "@/lib/api-errors";
 import { workflowTargetPath } from "@/lib/workspace";
 import type { OrderResult, OrderSubmitRequest } from "@/types";
+import { formatNumber } from "@/lib/format";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 
 export type QuickTicketPhase = "idle" | "seeded" | "submitting" | "submitted" | "parked" | "error";
 
@@ -453,18 +455,15 @@ export function buildQuickTicketFields(
 }
 
 export function validateQuickTicket(state: QuickTicketForm): string | null {
-  const qty = Number(state.quantity);
-  if (!state.quantity || !Number.isFinite(qty) || qty <= 0) {
+  const qty = parsePositiveDecimal(state.quantity);
+  if (qty === null) {
     return "Enter a quantity greater than zero.";
   }
   if (!Number.isInteger(qty)) {
     return "Quantity must be a whole number of shares.";
   }
-  if (state.type === "Limit") {
-    const price = Number(state.limitPrice);
-    if (!state.limitPrice || !Number.isFinite(price) || price <= 0) {
-      return "Enter a limit price greater than zero.";
-    }
+  if (state.type === "Limit" && parsePositiveDecimal(state.limitPrice) === null) {
+    return "Enter a limit price greater than zero.";
   }
   return null;
 }
@@ -512,11 +511,7 @@ function buildQuickTicketReviewAcknowledgement({
 
 export function formatTicketPrice(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return "";
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-    useGrouping: false
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4, useGrouping: false });
 }
 
 function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {

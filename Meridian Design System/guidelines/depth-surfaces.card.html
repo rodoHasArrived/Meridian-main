@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Surface ladder</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -22,7 +22,7 @@
   .light .raised { background: var(--card-surface-raised); border: 1px solid var(--border-divider); margin-top: 8px; }
   .light .menu { position: absolute; right: 14px; bottom: 14px; background: var(--card-surface); border: 1px solid var(--border-hover); box-shadow: var(--shadow-menu); }
   .light .n { color: var(--text-primary); } .light .tok { color: var(--text-muted); }
-  /* Each specimen is rendered in its own document with canonical root tokens. */
+  /* Separate documents resolve the real canonical light and dark tokens. */
   .dark { background: var(--bg); border-color: var(--border); }
   .dark .lbl { color: var(--text-secondary); }
   .dark .band { background: var(--bg-medium); border-bottom: 1px solid var(--border); border-radius: 0; margin: 0 0 8px; }
@@ -34,7 +34,7 @@
   .rule code { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="cols">
     <div class="theme light" data-theme-specimen="light">
       <div class="lbl">Light — concrete</div>

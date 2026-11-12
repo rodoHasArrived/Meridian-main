@@ -406,14 +406,14 @@ public static partial class SecurityMasterEndpoints
             AmendSecurityTermsRequest request,
             HttpContext context,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var detail = await service
@@ -445,14 +445,14 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var current = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -624,10 +624,10 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var currentTerms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -693,10 +693,10 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -1085,7 +1085,8 @@ public static partial class SecurityMasterEndpoints
                     return Results.Conflict(ErrorResponse.Validation(
                         "The conflict was resolved concurrently by another operator."));
                 }
-                catch (InvalidOperationException ex)
+                // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+                catch (InvalidOperationException ex) when (ex is not AppSecurityMaster.SecurityMasterTermsCapabilityRefusedException)
                 {
                     // The transactional persisted-value guard superseded or refreshed the row.
                     return Results.Problem(
@@ -1372,13 +1373,13 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
             // Legacy alias for the canonical preferred-equity-terms PATCH route: it reaches the same
             // AmendPreferredEquityTermsAsync amendment, so it carries the same maker-checker gate.
             // Refuse before the existence probe, matching the canonical route.
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -1434,6 +1435,8 @@ public static partial class SecurityMasterEndpoints
         MapOtcContractEndpoints(group, jsonOptions);
         MapOtcCollateralEndpoints(app, group, jsonOptions);
         MapCurveAndValuationEndpoints(app, group, jsonOptions);
+        if (app.Services.GetService<Meridian.Contracts.FixedIncome.IBondObservedFixingStore>() is not null)
+            MapObservedBondFixingEndpoints(app, group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);
@@ -1561,10 +1564,11 @@ public static partial class SecurityMasterEndpoints
     }
 
     /// <summary>
-    /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when
-    /// <see cref="AppSecurityMaster.SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>
-    /// is enabled, the generic amend route, the bespoke preferred/convertible equity PATCH routes,
-    /// and the legacy <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
+    /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when the effective
+    /// <see cref="AppSecurityMaster.SecurityMasterGovernanceSnapshot.RequireGovernedTermAmendments"/>
+    /// is in force (its setting on, or the Institutional profile), the generic amend route, the
+    /// term-block route, the bespoke preferred/convertible equity PATCH routes, and the legacy
+    /// <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
     /// to stage the correction through the governed workbench (Draft → Submitted → Approved →
     /// Published), whose canonical-merge publish handler applies the approved value to the golden
     /// record. Null when direct amendments remain permitted.
@@ -1575,14 +1579,12 @@ public static partial class SecurityMasterEndpoints
     /// specifically to force maker-checker still had a direct write surface.
     /// </remarks>
     private static IResult? RequireGovernedTermAmendmentRoute(
-        Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions)
-        => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
+        AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements)
+        => governanceRequirements.Current.RequireGovernedTermAmendments
             ? Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden,
-                title: "Direct term amendments are disabled by governance policy.",
-                detail: "This deployment requires term corrections to pass maker-checker: stage the edit through the "
-                    + "Security Master workbench field-edit route and publish it through the governed "
-                    + "Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.")
+                title: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalTitle,
+                detail: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalDetail)
             : null;
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
@@ -1629,6 +1631,7 @@ public static partial class SecurityMasterEndpoints
 
     private static void MapPricingEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         group.MapGet(UiApiRoutes.SecurityMasterPricingHierarchy, async (
             Guid securityId,
             string? accountId,
@@ -1745,6 +1748,19 @@ public static partial class SecurityMasterEndpoints
         .Produces<SecurityPriceGoldenCopyDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet(UiApiRoutes.SecurityMasterRetainedPriceObservations, async (
+            Guid securityId, string? accountId, DateTimeOffset asOf, DateTimeOffset? knownAt,
+            [FromServices] ISecurityMasterPricingService pricingService, CancellationToken ct) =>
+        {
+            if (asOf == default || asOf.Offset != TimeSpan.Zero || knownAt is { Offset: var offset } && offset != TimeSpan.Zero)
+                return Results.BadRequest(new { error = "Observation cutoffs must be explicit UTC timestamps." });
+            return Results.Json(await pricingService.GetObservationSelectionsAsync(securityId, accountId, asOf, ct, knownAt)
+                .ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetSecurityMasterRetainedPricingObservations")
+        .Produces<IReadOnlyList<SecurityPriceGoldenCopyDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
 
         group.MapGet(UiApiRoutes.SecurityMasterPriceComparison, async (
             Guid securityId,

@@ -8,6 +8,8 @@ import type {
   AccountingWorkspaceResponse,
   ReportBrandingTheme
 } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export type ReportBrandingDraftField =
   | "themeId"
@@ -140,7 +142,7 @@ export function ReportingBrandingAccessPanel({
                 ["backgroundColor", "Background", draft.backgroundColor]
               ] as const).map(([field, label, value]) => (
                 <label key={field} className="space-y-1">
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
+                  <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</span>
                   <span className="flex items-center gap-2">
                     <span
                       aria-hidden="true"

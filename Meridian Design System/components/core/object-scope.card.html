@@ -1,0 +1,80 @@
+<!-- @dsCard group="Core" viewport="900x620" name="ObjectScope" subtitle="The object a figure is true of, stated on the figure" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>ObjectScope</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)">
+<div id="root"></div>
+<script type="text/babel">
+const { ObjectScopeProvider, ScopedValue, ScopeMark, ScopeMismatch, Eyebrow } = window.MeridianDesignSystem_205d17;
+
+function Panel({ title, meta, children, wide }) {
+  return <div style={{ background: "var(--card-surface-raised,#FCFBF8)", border: "1px solid var(--border-strong)", padding: 14, display: "flex", flexDirection: "column", gap: 12, gridColumn: wide ? "1 / -1" : undefined }}>
+    <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+      <Eyebrow>{title}</Eyebrow>
+      {meta ? <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>{meta}</span> : null}
+    </div>
+    {children}
+  </div>;
+}
+
+function App() {
+  return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxWidth: 860 }}>
+    <Panel wide title="The ambiguity" meta="four numbers, one label">
+      <div style={{ display: "flex", gap: 28, flexWrap: "wrap", alignItems: "flex-start" }}>
+        <ScopedValue scope="security" label="Duration" value="8.22" note="of the instrument" />
+        <ScopedValue scope="position" label="Duration" value="8.22" note="of this holding" />
+        <ScopedValue scope="portfolio" label="Duration contribution" value="0.21" note="to the population" />
+        <ScopedValue scope="account" label="Duration proxy" value="7.94" note="carried on the book" />
+      </div>
+      <span style={{ fontSize: 12, color: "var(--text-secondary)", textWrap: "pretty" }}>
+        Without the scope word these are the same label four times. With it, they are four claims a reader can check.
+      </span>
+    </Panel>
+
+    <Panel title="Position surface" meta="scope=position">
+      <ObjectScopeProvider scope="position" object="GA-FI-01">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 18px" }}>
+          <ScopedValue label="Market value" value="$24.84M" size="lg" />
+          <ScopedValue label="Book value" value="$24.12M" size="lg" />
+          <ScopedValue scope="security" label="Duration" value="8.22" explain />
+          <ScopedValue scope="portfolio" label="Duration contribution" value="0.21" />
+        </div>
+        <ScopeMismatch />
+      </ObjectScopeProvider>
+    </Panel>
+
+    <Panel title="Security surface" meta="scope=security">
+      <ObjectScopeProvider scope="security" object="91282CJS7">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 18px" }}>
+          <ScopedValue label="Yield" value="4.35%" size="lg" />
+          <ScopedValue label="OAS" value="−12 bp" size="lg" />
+          <ScopedValue scope="position" label="Held in General Account" value="$24.84M" explain />
+          <ScopedValue scope="position" label="Held in Separate Account" value="$8.71M" />
+        </div>
+        <ScopeMismatch />
+      </ObjectScopeProvider>
+    </Panel>
+
+    <Panel wide title="Marks" meta="label · chip · inline">
+      <div style={{ display: "flex", gap: 22, alignItems: "center", flexWrap: "wrap", fontSize: 13, color: "var(--text-secondary)" }}>
+        <ObjectScopeProvider scope="position">
+          <span style={{ display: "inline-flex", gap: 7, alignItems: "center" }}><ScopeMark variant="chip" /><span>in scope</span></span>
+          <span style={{ display: "inline-flex", gap: 7, alignItems: "center" }}><ScopeMark scope="security" variant="chip" /><span>foreign — dashed</span></span>
+          <span style={{ display: "inline-flex", gap: 7, alignItems: "baseline" }}><ScopeMark scope="portfolio" variant="inline" /><span style={{ fontFamily: "var(--font-data)", fontSize: 12.5, color: "var(--text-primary)" }}>0.21</span></span>
+          <ScopedValue scope="legalEntity" label="Statutory carrying value" value="$1.284B" stack={false} size="sm" />
+        </ObjectScopeProvider>
+      </div>
+    </Panel>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

@@ -254,6 +254,136 @@ public sealed class DirectLendingPostgresIntegrationTests
     }
 
     [DirectLendingDatabaseFact]
+    public async Task StateStore_ShouldPersistExcessBalancesInStateJsonAndServicingProjection()
+    {
+        // PRD-115 increment 2: migration 010 adds prepaid_interest and unapplied_cash. No command
+        // sets them yet, so seed them through the store, then prove both read paths return them
+        // and that a later command (F# aggregate + persistence) carries them through.
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(150_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-excess"));
+        var untouched = await db.Service.CreateLoanAsync(BuildCreateRequest());
+
+        var live = (await db.Store.LoadAsync(created.LoanId))!;
+        var seeded = live.Servicing with
+        {
+            Balances = live.Servicing.Balances with { PrepaidInterest = 123.45m, UnappliedCash = 678.90m }
+        };
+        await db.Store.SaveStateAsync(created.LoanId, live.AggregateVersion, live.Contract, seeded);
+
+        var reader = new PostgresDirectLendingStateStore(db.Options);
+        var state = (await reader.LoadAsync(created.LoanId))!.Servicing.Balances;
+        var projection = (await reader.LoadServicingProjectionAsync(created.LoanId))!.Balances;
+        (state.PrepaidInterest, state.UnappliedCash).Should().Be((123.45m, 678.90m));
+        (projection.PrepaidInterest, projection.UnappliedCash).Should().Be((123.45m, 678.90m));
+
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(10_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-excess-2"));
+        var afterCommand = (await reader.LoadServicingProjectionAsync(created.LoanId))!.Balances;
+        afterCommand.PrincipalOutstanding.Should().Be(160_000m);
+        (afterCommand.PrepaidInterest, afterCommand.UnappliedCash).Should().Be((123.45m, 678.90m));
+
+        var defaults = (await reader.LoadServicingProjectionAsync(untouched.LoanId))!.Balances;
+        (defaults.PrepaidInterest, defaults.UnappliedCash).Should().Be((0m, 0m));
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task MixedPayment_RoutesExcessByLoanRule_PersistsAllocationsAndRebuildsIdentically()
+    {
+        // PRD-115 increment 3 on the Postgres path (F# aggregate): during the interest-only period
+        // the waterfall leaves principal alone, so the excess follows the PrincipalPrepayment rule
+        // and charges the 2% penalty in the same command.
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var request = BuildCreateRequest();
+        var created = await db.Service.CreateLoanAsync(request with
+        {
+            Terms = request.Terms with
+            {
+                InterestOnlyMonths = 12,
+                PrepaymentPenaltyRate = 0.02m,
+                ExcessPaymentApplication = ExcessPaymentApplication.PrincipalPrepayment
+            }
+        });
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(150_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-routing"));
+
+        var live = await db.Service.ApplyMixedPaymentAsync(created.LoanId, new ApplyMixedPaymentRequest(50_000m, new DateOnly(2026, 4, 1), null, "pay-routing"));
+
+        live!.Balances.PrincipalOutstanding.Should().Be(100_000m);
+        live.Balances.PenaltyAccruedUnpaid.Should().Be(1_000m);
+        (live.Balances.PrepaidInterest, live.Balances.UnappliedCash).Should().Be((0m, 0m));
+        var allocations = await db.Service.GetPaymentAllocationsAsync(created.LoanId);
+        allocations.Select(allocation => (allocation.TargetType, allocation.AllocatedAmount, allocation.AllocationRule))
+            .Should().Equal(("PrincipalPrepayment", 50_000m, "ExcessPrincipalPrepayment"));
+
+        await db.DeleteLiveStateAsync(created.LoanId);
+        var rebuilt = (await db.QueryService.LoadAggregateAsync(created.LoanId))!.Servicing;
+
+        rebuilt.Balances.Should().Be(live.Balances);
+        rebuilt.TotalDrawn.Should().Be(live.TotalDrawn);
+        rebuilt.DrawdownLots.Select(lot => lot.RemainingPrincipal).Should().Equal(live.DrawdownLots.Select(lot => lot.RemainingPrincipal));
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task PortfolioSummary_ShouldReportExcessBalancesPerLoan_WithoutAddingThemToExposure()
+    {
+        // PRD-115 increment 6: the shared read model behind both workstations' loan books carries
+        // prepaid interest and unapplied cash per loan, and keeps them out of the receivable totals.
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(150_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-summary"));
+        var live = (await db.Store.LoadAsync(created.LoanId))!;
+        await db.Store.SaveStateAsync(created.LoanId, live.AggregateVersion, live.Contract, live.Servicing with
+        {
+            Balances = live.Servicing.Balances with { PrepaidInterest = 600m, UnappliedCash = 99_000m }
+        });
+
+        var summary = await db.QueryService.GetPortfolioSummaryAsync();
+
+        var row = summary.Loans.Single(loan => loan.LoanId == created.LoanId);
+        (row.PrepaidInterest, row.UnappliedCash).Should().Be((600m, 99_000m));
+        summary.TotalPrincipalOutstanding.Should().Be(150_000m, "balances owed to the borrower are not exposure");
+        summary.TotalInterestAccruedUnpaid.Should().Be(0m);
+    }
+
+    [DirectLendingDatabaseFact]
+    public async Task QueryService_RebuildFromHistory_ShouldMatchLiveExcessBalances()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(created.LoanId, new BookDrawdownRequest(150_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-replay"));
+        var live = (await db.Store.LoadAsync(created.LoanId))!.Servicing.Balances;
+        await db.DeleteLiveStateAsync(created.LoanId);
+
+        var rebuilt = (await db.QueryService.LoadAggregateAsync(created.LoanId))!.Servicing.Balances;
+
+        rebuilt.Should().Be(live);
+        (rebuilt.PrepaidInterest, rebuilt.UnappliedCash).Should().Be((0m, 0m));
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task CommandService_ShouldTreatDuplicateCommandIdAsIdempotent()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();

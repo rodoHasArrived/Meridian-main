@@ -164,9 +164,8 @@ modules:
     physical_project: src/Meridian.Documents
     primary_current_owner: Accounting and Ledger
     current_sources:
-      - src/Meridian.Documents
       - src/Meridian.Contracts
       - src/Meridian.Storage
       - src/Meridian.Ui.Shared
       - src/Meridian.Ui.Services
-    migration_next: Financial report PDF/XLSX rendering, Evidence Vault storage-quota policy, durable reservations, and recovery leases now live in Meridian.Documents. Keep retained document intake, attachments, manifests, and publication in the shared audit/reporting adapters until further behavior-preserving extraction is justified.
+    migration_next: Keep retained document attachments and evidence manifests in the audit/reporting fabric until a dedicated document-management module is justified.

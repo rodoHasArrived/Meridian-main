@@ -43,12 +43,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={cn(
               "flex h-4 w-4 items-center justify-center rounded-[2px] border bg-[var(--ws-surface-raised)]",
               "transition-[background-color,border-color] duration-150",
-              "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40",
-              checkedState ? "border-primary bg-primary" : "border-border peer-hover:border-[var(--ws-border-hover)]",
+              "peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--interaction-focus)]",
+              checkedState ? "border-[var(--interaction-selected)] bg-[var(--interaction-selected)]" : "border-border peer-hover:border-[var(--ws-border-hover)]",
               error ? "border-danger" : ""
             )}
           >
-            <Check className={cn("h-3 w-3 text-primary-foreground transition-opacity", checkedState ? "opacity-100" : "opacity-0")} />
+            <Check className={cn("h-3 w-3 text-[var(--text-on-fill)] transition-opacity", checkedState ? "opacity-100" : "opacity-0")} />
           </span>
         </span>
         {(label || hint || error) ? (
@@ -101,7 +101,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         disabled={disabled}
         className={cn(
           "inline-flex min-h-6 items-center gap-2.5 text-sm text-foreground transition-opacity",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
           disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer",
           className
         )}
@@ -111,13 +111,13 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         <span
           aria-hidden="true"
           className={cn(
-            "relative h-5 w-9 rounded-[var(--radius-button)] border transition-colors duration-150",
-            checkedState ? "border-primary bg-primary" : "border-border bg-[var(--ws-surface-raised)]"
+            "relative h-5 w-9 rounded-[2px] border transition-colors duration-150",
+            checkedState ? "border-[var(--interaction-selected)] bg-[var(--interaction-selected)]" : "border-border bg-[var(--ws-surface-raised)]"
           )}
         >
           <span
             className={cn(
-              "absolute top-0.5 h-4 w-4 rounded-[var(--radius-button)] bg-background transition-transform duration-150",
+              "absolute top-0.5 h-4 w-4 rounded-[2px] bg-[var(--text-on-fill)] transition-transform duration-150",
               checkedState ? "translate-x-[1.0625rem]" : "translate-x-0.5"
             )}
           />

@@ -39,6 +39,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
     private readonly IAssetAccountingEventProjectionStore? _assetAccountingEventStore;
     private readonly IBondCalculationPolicy? _bondCalculationPolicy;
     private readonly IBondSettlementConsiderationService? _bondSettlementConsiderationService;
+    private readonly Func<CancellationToken, Task>? _termsCapabilityCheck;
 
     public AccountingPostingCandidatePostService(
         IAccountingPostingCandidateWriteBuilder candidateBuilder,
@@ -47,7 +48,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         IAssetAccountingEventProjectionStore? assetAccountingEventStore = null,
         IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null,
         IBondCalculationPolicy? bondCalculationPolicy = null,
-        IBondSettlementConsiderationService? bondSettlementConsiderationService = null)
+        IBondSettlementConsiderationService? bondSettlementConsiderationService = null,
+        Func<CancellationToken, Task>? termsCapabilityCheck = null)
     {
         _candidateBuilder = candidateBuilder ?? throw new ArgumentNullException(nameof(candidateBuilder));
         _authorityBuilder = authorityBuilder ?? candidateBuilder as IAccountingPostingCandidateAuthorityBuilder;
@@ -56,7 +58,13 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         _assetAccountingEventStore = assetAccountingEventStore;
         _bondCalculationPolicy = bondCalculationPolicy;
         _bondSettlementConsiderationService = bondSettlementConsiderationService;
+        // The Security Master terms capability floor check (the Application verifier, which this layer
+        // cannot reference), asked before a new amortization batch opens its posting transaction.
+        _termsCapabilityCheck = termsCapabilityCheck;
     }
+
+    /// <summary>The composed terms capability floor check, or null when none was composed (pinned by composition tests).</summary>
+    internal Func<CancellationToken, Task>? TermsCapabilityCheck => _termsCapabilityCheck;
 
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
         PostPostingRuleJournalCandidateRequestDto request,
@@ -310,6 +318,12 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         {
             approvedWrite = BindAssetPostingIntentToJournal(approvedWrite, assetAuthority);
         }
+
+        // A new amortization batch (reversals included) asks the terms capability floor before the Approved
+        // stage is appended, so a refused node leaves no approval; exact replays are served (ADR-025).
+        if (hasAtomicLotMutation && existing is null && _termsCapabilityCheck is not null
+            && request.Candidate.AssetLotMutation?.Intent == AssetLotMutationIntentDto.Amortize)
+            await _termsCapabilityCheck(ct).ConfigureAwait(false);
 
         if (hasAtomicLotMutation && assetAuthority is not null)
         {

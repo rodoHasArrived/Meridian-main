@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
 import { Drawer, DrawerBody, DrawerFooter } from "@/components/ui/drawer";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,9 @@ import {
   type ConfigureKeyValuePair,
   type ConfigureTone
 } from "@/screens/accounting-screen.configure-panel.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 function toneTextClass(tone: ConfigureTone): string {
   switch (tone) {
@@ -96,7 +98,7 @@ export function ConfigureCommandBar(): JSX.Element {
               type="button"
               title={section.description}
               onClick={() => scrollToConfigureAnchor(section.anchorId)}
-              className="rounded-[var(--radius-chip)] border border-border/70 bg-secondary/30 px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="rounded-full border border-border/70 bg-secondary/30 px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               {section.label}
             </button>
@@ -123,7 +125,7 @@ export function ConfigureCommandBar(): JSX.Element {
             <ul
               role="listbox"
               aria-label="Configuration setting search results"
-              className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-auto rounded-md border border-border bg-popover p-1 shadow-none"
+              className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-auto rounded-md border border-border bg-popover p-1 shadow-md"
             >
               {results.map((entry) => (
                 <li key={entry.id}>
@@ -136,7 +138,7 @@ export function ConfigureCommandBar(): JSX.Element {
                     className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="text-foreground">{entry.label}</span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{entry.sectionLabel}</span>
+                    <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "font-mono uppercase tracking-[0.08em]")}>{entry.sectionLabel}</span>
                   </button>
                 </li>
               ))}
@@ -348,13 +350,16 @@ export function ConfigureComboField({ id, label, value, onChange, options, place
   const mergedOptions = value && !options.includes(value) ? [value, ...options] : options;
   return (
     <FormRow label={label} labelFor={id}>
-      <Combobox
+      <Input
         id={id}
-        options={mergedOptions}
+        list={`${id}-suggestions`}
         value={value}
-        onChange={onChange}
+        onChange={(event) => onChange(event.currentTarget.value)}
         placeholder={placeholder ?? "Select or type…"}
       />
+      <datalist id={`${id}-suggestions`}>
+        {mergedOptions.map((option) => <option key={option} value={option} />)}
+      </datalist>
     </FormRow>
   );
 }
@@ -494,7 +499,7 @@ export function LedgerBookSetupWizard({ view }: { view: AccountingConfigurationV
               <div className="grid gap-2">
                 {view.setupReadinessRows.map((row) => (
                   <div key={row.id} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                    <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{row.label}</div>
+                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.12em]")}>{row.label}</div>
                     <div className={cn("mt-1 text-sm font-semibold", toneTextClass(row.tone))}>{row.value}</div>
                     <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
                   </div>
@@ -896,7 +901,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               ))}
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting approval queue setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Approval queue setup</div>
+              <div className="text-xs font-semibold text-muted-foreground">Approval queue setup</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <FormRow label="Queue id" labelFor="accounting-approval-queue-id">
                   <Input
@@ -954,7 +959,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               />
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting dimension mapping setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Dimension mapping setup</div>
+              <div className="text-xs font-semibold text-muted-foreground">Dimension mapping setup</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <FormRow label="Mapping id" labelFor="accounting-dimension-mapping-id">
                   <Input
@@ -993,11 +998,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                     <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
-                      <textarea
+                      <TextArea rows={2}
                         id="accounting-dimension-mapping-meridian-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                        className="min-h-28 w-full font-mono text-sm"
                         placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
                       />
                     </FormRow>
@@ -1017,11 +1022,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                     <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
-                      <textarea
+                      <TextArea rows={2}
                         id="accounting-dimension-mapping-provider-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                        className="min-h-28 w-full font-mono text-sm"
                         placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
                       />
                     </FormRow>
@@ -1111,22 +1116,22 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-account-mappings"
                       value={view.externalGlMappingProfile.accountMappingsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
-                      className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-24 w-full font-mono text-sm"
                       placeholder="Meridian:Account=external-account-id"
                     />
                   </FormRow>
                 </details>
               </div>
               <FormRow label="Retained mapping evidence" labelFor="accounting-external-gl-mapping-evidence">
-                <textarea
+                <TextArea rows={2}
                   id="accounting-external-gl-mapping-evidence"
                   value={view.externalGlMappingProfile.evidenceValue}
                   onChange={(event) => view.externalGlMappingProfile.updateEvidence(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                  className="min-h-24 w-full font-mono text-sm"
                   placeholder="approval:external-gl-mapping:profile-id"
                 />
               </FormRow>
@@ -1146,11 +1151,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-meridian-dimensions"
                       value={view.externalGlMappingProfile.meridianDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-28 w-full font-mono text-sm"
                       placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
                     />
                   </FormRow>
@@ -1170,25 +1175,21 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-provider-dimensions"
                       value={view.externalGlMappingProfile.externalDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-28 w-full font-mono text-sm"
                       placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
                     />
                   </FormRow>
                 </details>
               </div>
             </div>
-            <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <input
-                type="checkbox"
-                checked={view.externalGlMappingProfile.certified}
-                onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)}
-              />
+            <Checkbox className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground" checked={view.externalGlMappingProfile.certified} onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)} label={<>
+
               Certify mapping profile for guarded export readiness
-            </label>
+            </>} />
             {view.externalGlMappingProfile.mappingRows.length > 0 ? (
               <div className="mt-3 grid gap-2 md:grid-cols-3" role="region" aria-label="Retained external GL mapping profiles">
                 {view.externalGlMappingProfile.mappingRows.map((row) => (
@@ -1248,7 +1249,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
 
           {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
             <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "uppercase tracking-[0.14em]")}>
                 {view.productionReadiness.migrationWorkerPlanSummaryLabel}
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

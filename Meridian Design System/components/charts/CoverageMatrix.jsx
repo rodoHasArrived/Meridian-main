@@ -14,26 +14,26 @@ function inject() {
 .mds-covm{font-family:var(--font-body);display:inline-flex;flex-direction:column;gap:8px;max-width:100%;}
 .mds-covm__scroll{overflow:auto;max-width:100%;}
 .mds-covm__grid{display:grid;gap:2px;align-items:center;width:max-content;}
-.mds-covm__rowlab{font-family:var(--font-data);font-size:11px;color:var(--text-secondary,#4E5258);
+.mds-covm__rowlab{font-family:var(--font-data);font-size:11px;color:var(--text-secondary,#535C65);
   padding-right:10px;white-space:nowrap;text-align:right;}
-.mds-covm__collab{font-family:var(--font-data);font-size:9px;color:var(--text-muted,#5E666F);
+.mds-covm__collab{font-family:var(--font-data);font-size:9px;color:var(--text-muted,#606870);
   writing-mode:vertical-rl;transform:rotate(180deg);justify-self:center;padding-top:2px;line-height:1;}
-.mds-covm__cell{box-sizing:border-box;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
+.mds-covm__cell{box-sizing:border-box;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
   padding:0;display:block;border-radius:0;}
 button.mds-covm__cell{cursor:pointer;}
-.mds-covm__cell:hover{border-color:var(--text-primary,#22252A);position:relative;z-index:1;}
+.mds-covm__cell:hover{border-color:var(--text-primary,#20252B);position:relative;z-index:1;}
 .mds-covm__cell:focus-visible{outline:var(--focus-ring);outline-offset:1px;position:relative;z-index:1;}
-.mds-covm__cell--full{background:var(--green-a20,rgba(58,122,86,.2));border-color:var(--green,#3A7A56);}
-.mds-covm__cell--partial{background:var(--orange-a20,rgba(138,92,18,.2));border-color:var(--orange,#8A5C12);}
-.mds-covm__cell--gap{background:var(--red-a20,rgba(168,68,60,.2));border-color:var(--red,#A8443C);}
-.mds-covm__cell--pending{background:var(--bg-hover,#F0EEE9);border-color:var(--border,#E4E3DE);}
-.mds-covm__cell--none{background:transparent;border-color:var(--border,#E4E3DE);opacity:.45;}
+.mds-covm__cell--full{background:var(--green-a20,rgba(46,118,85,.2));border-color:var(--green,#2E7655);}
+.mds-covm__cell--partial{background:var(--orange-a20,rgba(152,103,23,.2));border-color:var(--orange,#986717);}
+.mds-covm__cell--gap{background:var(--red-a20,rgba(181,75,66,.2));border-color:var(--red,#B54B42);}
+.mds-covm__cell--pending{background:var(--bg-hover,#EDEFF0);border-color:var(--border,#D2CDC3);}
+.mds-covm__cell--none{background:transparent;border-color:var(--border,#D2CDC3);opacity:.45;}
 .mds-covm__foot{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
-.mds-covm__readout{font-family:var(--font-data);font-size:11px;color:var(--text-primary,#22252A);min-height:15px;}
-.mds-covm__readout--idle{color:var(--text-muted,#5E666F);}
+.mds-covm__readout{font-family:var(--font-data);font-size:11px;color:var(--text-primary,#20252B);min-height:15px;}
+.mds-covm__readout--idle{color:var(--text-muted,#606870);}
 .mds-covm__legend{display:flex;align-items:center;gap:10px;margin-left:auto;}
 .mds-covm__key{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#5E666F);}
+  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);}
 .mds-covm__swatch{width:10px;height:10px;box-sizing:border-box;display:inline-block;}
 `;
   const el = document.createElement("style");
@@ -100,25 +100,27 @@ export function CoverageMatrix({
 
   return (
     <div className={`mds-covm${className ? " " + className : ""}`} {...rest}>
-      <div className="mds-covm__scroll">
+      <div className="mds-covm__scroll" role="region" aria-label="Coverage matrix scroll area" tabIndex={interactive ? undefined : 0}>
         <div className="mds-covm__grid" style={{ gridTemplateColumns: template }} role={interactive ? "grid" : "table"} aria-label="Coverage matrix" aria-rowcount={R.length + (colLabels ? 1 : 0)} aria-colcount={C.length + 1} onKeyDown={onKeyDown}>
           {colLabels && (
             <div role="row" aria-rowindex={1} style={{ display: "contents" }}>
               <span role="columnheader" aria-label="Instrument" />
               {C.map((c) => (
-                <span key={c.id} className="mds-covm__collab" role="columnheader">{c.label}</span>
+                <span role="columnheader" key={c.id} className="mds-covm__collab">{c.label}</span>
               ))}
             </div>
           )}
           {R.map((r, ri) => (
-            <div key={r.id} role="row" aria-rowindex={ri + (colLabels ? 2 : 1)} style={{ display: "contents" }}>
+            <div role="row" key={r.id} aria-rowindex={ri + (colLabels ? 2 : 1)} style={{ display: "contents" }}>
               <span className="mds-covm__rowlab" role="rowheader">{r.label}</span>
               {C.map((c, ci) => {
                 const e = lookup(r, c);
                 const label = describe(r, c, e);
                 return (
-                  <span key={c.id} role={interactive ? "gridcell" : "cell"} aria-colindex={ci + 2} style={{ display: "contents" }}>
                   <CellTag
+                    key={c.id}
+                    role={interactive ? "gridcell" : "cell"}
+                    aria-colindex={ci + 2}
                     type={interactive ? "button" : undefined}
                     className={`mds-covm__cell mds-covm__cell--${e.status || "none"}`}
                     style={{ width: cellSize, height: cellSize }}
@@ -132,7 +134,6 @@ export function CoverageMatrix({
                     onBlur={() => setHover(null)}
                     onClick={interactive ? () => onCellClick(r, c, e) : undefined}
                   />
-                  </span>
                 );
               })}
             </div>

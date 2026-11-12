@@ -57,7 +57,7 @@ Security Master facts. The gate is persisted with the observation and is recheck
 
 | Registered corporate-action feed | Release status | Acceptance evidence posture |
 | --- | --- | --- |
-| Alpaca | `AcceptanceEligible` | Native announcement ID, content-derived version, canonical raw-payload SHA-256, and retained typed Alpaca reference are implemented. Each observation must still contain all four. |
+| Alpaca | `ReviewOnly` | Native event ID, content-derived version, canonical raw-payload SHA-256, and a retained typed Alpaca reference are implemented. The adapter was rewritten on 2026-11-10 against the Market Data `v1/corporate-actions` endpoint after the earlier announcements route was found never to have returned data, so its output has not yet been compared with a trusted source. |
 | Tiingo | `ReviewOnly` | Adjusted-EOD rows do not yet provide the certified stable event/version and retained raw-event evidence contract. |
 | Twelve Data | `ReviewOnly` | Stable provider event/version and retained raw-event evidence are not yet implemented. |
 | Finnhub | `ReviewOnly` | Stable provider event/version and retained raw-event evidence are not yet implemented. |

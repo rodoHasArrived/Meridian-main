@@ -2,41 +2,41 @@
 // strategy runs). Mono stream, UTC time-of-day per line, level filter chips, follow-tail that
 // pauses on manual scroll. Evidence-first: never summarizes, never hides the raw line.
 import React from "react";
+import { formatNumber } from "../core/format.js";
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-logtail{display:flex;flex-direction:column;min-height:0;background:var(--bg-light,#FBFAF8);
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-card,2px);font-family:var(--font-body);}
+.mds-logtail{display:flex;flex-direction:column;min-height:0;background:var(--bg-light,#F8F7F3);
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-card,2px);font-family:var(--font-body);}
 .mds-logtail__bar{display:flex;align-items:center;gap:8px;padding:6px 10px;flex:0 0 auto;
-  border-bottom:1px solid var(--border,#E4E3DE);background:var(--bg-medium,#EDEAE4);}
+  border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
 .mds-logtail__title{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
-  color:var(--text-muted,#5E666F);white-space:nowrap;}
-.mds-logtail__chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border,#E4E3DE);
+  color:var(--text-muted,#606870);white-space:nowrap;}
+.mds-logtail__chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border,#D2CDC3);
   background:transparent;border-radius:var(--radius-chip,2px);padding:2px 7px;cursor:pointer;
-  font-family:var(--font-data);font-size:10px;font-weight:600;color:var(--text-secondary,#4E5258);line-height:1.4;}
-.mds-logtail__chip:hover{border-color:var(--border-hover,#C6C3BB);}
-.mds-logtail__chip--on{background:var(--bg-active,#F2E3DB);border-color:var(--accent,#A85436);color:var(--text-primary,#22252A);}
+  font-family:var(--font-data);font-size:10px;font-weight:600;color:var(--text-secondary,#535C65);line-height:1.4;}
+.mds-logtail__chip:hover{border-color:var(--border-hover,#BEB8AD);}
+.mds-logtail__chip--on{background:var(--selected-surface,#E7EDF2);border-color:var(--interaction-selected,#496C8F);color:var(--text-primary,#20252B);}
 .mds-logtail__chip:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-logtail__body{flex:1 1 auto;min-height:0;overflow:auto;padding:6px 0;
-  font-family:var(--font-data,'Cascadia Mono',monospace);font-size:11.5px;line-height:1.55;}
-.mds-logtail__body:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+  font-family:var(--font-data,'IBM Plex Mono',monospace);font-size:11.5px;line-height:1.55;}
 .mds-logtail__line{display:flex;gap:10px;padding:0 10px;white-space:pre;align-items:baseline;}
 .mds-logtail--wrap .mds-logtail__line{white-space:pre-wrap;}
-.mds-logtail__line:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-logtail__ts{color:var(--text-muted,#5E666F);flex:0 0 auto;font-variant-numeric:tabular-nums;}
+.mds-logtail__line:hover{background:var(--bg-hover,#EDEFF0);}
+.mds-logtail__ts{color:var(--text-muted,#606870);flex:0 0 auto;font-variant-numeric:tabular-nums;}
 .mds-logtail__lvl{flex:0 0 44px;font-weight:700;font-size:10px;letter-spacing:.03em;}
-.mds-logtail__src{color:var(--text-secondary,#4E5258);flex:0 0 auto;}
-.mds-logtail__msg{color:var(--text-primary,#22252A);min-width:0;}
-.mds-logtail__lvl--info{color:var(--text-secondary,#4E5258);}
-.mds-logtail__lvl--debug{color:var(--text-secondary,#4E5258);}
-.mds-logtail__lvl--warn{color:var(--orange-dim,#68450E);}
-.mds-logtail__lvl--error{color:var(--red-dim,#7E332D);}
-.mds-logtail__line--error{background:var(--red-a10,rgba(168,68,60,.08));}
-.mds-logtail__line--warn{background:var(--orange-a10,rgba(138,92,18,.07));}
-.mds-logtail__empty{padding:18px 12px;color:var(--text-muted,#5E666F);font-size:12px;font-family:var(--font-body);}
+.mds-logtail__src{color:var(--text-secondary,#535C65);flex:0 0 auto;}
+.mds-logtail__msg{color:var(--text-primary,#20252B);min-width:0;}
+.mds-logtail__lvl--info{color:var(--text-secondary,#535C65);}
+.mds-logtail__lvl--debug{color:var(--text-secondary,#535C65);}
+.mds-logtail__lvl--warn{color:var(--orange-dim,#724D11);}
+.mds-logtail__lvl--error{color:var(--red-dim,#883832);}
+.mds-logtail__line--error{background:var(--red-a10,rgba(181,75,66,.08));}
+.mds-logtail__line--warn{background:var(--orange-a10,rgba(152,103,23,.07));}
+.mds-logtail__empty{padding:18px 12px;color:var(--text-muted,#606870);font-size:12px;font-family:var(--font-body);}
 .mds-logtail__resume{position:absolute;right:14px;bottom:10px;}
 .mds-logtail__wrapref{position:relative;display:flex;flex-direction:column;min-height:0;flex:1;}
 `;
@@ -72,7 +72,7 @@ export function LogTail({
 
   const counts = React.useMemo(() => {
     const c = { error: 0, warn: 0, info: 0, debug: 0 };
-    for (const e of entries) if (c[e.level] != null) c[e.level] += 1;
+    for (const e of entries) if (c[e.level || "info"] != null) c[e.level || "info"] += 1;
     return c;
   }, [entries]);
 
@@ -106,7 +106,7 @@ export function LogTail({
       style={{ height, ...style }} {...rest}>
       <div className="mds-logtail__bar">
         <span className="mds-logtail__title">{title}</span>
-        <span className="mds-logtail__title">· {entries.length.toLocaleString("en-US")} lines</span>
+        <span className="mds-logtail__title" style={{ color: "var(--text-secondary)" }}>· {formatNumber(entries.length, { decimals: 0 })} lines</span>
         <span style={{ flex: 1 }} />
         {levelFilter && LEVELS.map((lvl) => (
           <button key={lvl} type="button" aria-pressed={levels.has(lvl)}
@@ -124,7 +124,7 @@ export function LogTail({
         </button>
       </div>
       <div className="mds-logtail__wrapref">
-        <div className="mds-logtail__body" ref={bodyRef} tabIndex={0} onScroll={onScroll} role="log" aria-label={title}>
+        <div className="mds-logtail__body" ref={bodyRef} onScroll={onScroll} role="log" aria-label={title} tabIndex={0}>
           {visible.length === 0 ? (
             <div className="mds-logtail__empty">No log lines{entries.length > 0 ? " at the selected levels" : ""}.</div>
           ) : (

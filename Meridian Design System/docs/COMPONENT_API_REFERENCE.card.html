@@ -6,15 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meridian — Component API Reference</title>
   <link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../docs/specimen-layout.css">
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 0;
-      background: var(--bg-canvas, var(--bg));
-      font-family: var(--font-body, 'Segoe UI', sans-serif);
+      background: var(--bg-canvas, #F2F0EB);
+      font-family: var(--font-body, 'IBM Plex Sans', sans-serif);
       font-size: 13px;
-      color: var(--text-primary, var(--text-primary));
+      color: var(--text-primary, #20252B);
     }
     .container {
       max-width: 1400px;
@@ -32,7 +33,7 @@
     }
     .subtitle {
       font-size: 14px;
-      color: var(--text-secondary, var(--text-secondary));
+      color: var(--text-secondary, #535C65);
       margin: 0;
     }
     .controls {
@@ -44,7 +45,7 @@
     }
     .search-input {
       padding: 8px 12px;
-      border: 1px solid var(--border, var(--border));
+      border: 1px solid var(--border, #D2CDC3);
       border-radius: 2px;
       font-family: var(--font-body);
       font-size: 13px;
@@ -52,38 +53,38 @@
     }
     .filter-select {
       padding: 8px 12px;
-      border: 1px solid var(--border, var(--border));
+      border: 1px solid var(--border, #D2CDC3);
       border-radius: 2px;
       font-family: var(--font-body);
       font-size: 13px;
-      background: var(--bg-light, var(--bg-light));
+      background: var(--bg-light, #F8F7F3);
       cursor: pointer;
     }
     .results-count {
       font-size: 12px;
-      color: var(--text-muted, var(--text-muted));
+      color: var(--text-muted, #606870);
     }
     .component-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
       gap: 16px;
     }
     .component-card {
-      background: var(--bg-light, var(--bg-light));
-      border: 1px solid var(--border, var(--border));
+      background: var(--bg-light, #F8F7F3);
+      border: 1px solid var(--border, #D2CDC3);
       border-radius: 2px;
       padding: 20px;
       cursor: pointer;
       transition: background-color 150ms ease, border-color 150ms ease;
     }
     .component-card:hover {
-      background: var(--bg-hover, #F0EEE9);
-      border-color: var(--border-hover, var(--border-hover));
+      background: var(--bg-hover, #EDEFF0);
+      border-color: var(--border-hover, #BEB8AD);
     }
     .component-card.active {
-      background: var(--bg-active, var(--bg-active));
-      border-color: var(--accent, var(--accent));
-      box-shadow: inset 3px 0 0 var(--accent, var(--accent));
+      background: var(--bg-active, #E7EDF2);
+      border-color: var(--brand-signal,#C56343);
+      box-shadow: inset 3px 0 0 var(--brand-signal,#C56343);
       padding-left: 17px;
     }
     .component-name {
@@ -96,12 +97,12 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: var(--text-muted, var(--text-muted));
+      color: var(--text-muted, #606870);
       margin: 0 0 12px 0;
     }
     .component-description {
       font-size: 12px;
-      color: var(--text-secondary, var(--text-secondary));
+      color: var(--text-secondary, #535C65);
       margin: 0;
       line-height: 1.4;
     }
@@ -111,12 +112,12 @@
       right: 0;
       width: 480px;
       height: 100vh;
-      background: var(--bg-light, var(--bg-light));
-      border-left: 1px solid var(--border, var(--border));
+      background: var(--bg-light, #F8F7F3);
+      border-left: 1px solid var(--border, #D2CDC3);
       overflow-y: auto;
       padding: 32px;
       z-index: 100;
-      box-shadow: var(--shadow-card);
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
     }
     .detail-panel.hidden {
       display: none;
@@ -140,7 +141,7 @@
     .detail-category {
       font-size: 11px;
       text-transform: uppercase;
-      color: var(--text-muted, var(--text-muted));
+      color: var(--text-muted, #606870);
       margin-bottom: 24px;
     }
     .detail-section {
@@ -150,16 +151,16 @@
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
-      color: var(--text-secondary, var(--text-secondary));
+      color: var(--text-secondary, #535C65);
       margin: 0 0 12px 0;
     }
     .prop-item {
-      background: var(--bg-hover, #F0EEE9);
-      border: 1px solid var(--border, var(--border));
+      background: var(--bg-hover, #EDEFF0);
+      border: 1px solid var(--border, #D2CDC3);
       border-radius: 2px;
       padding: 12px;
       margin-bottom: 8px;
-      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-family: var(--font-mono, 'IBM Plex Mono', monospace);
       font-size: 11px;
     }
     .prop-name {
@@ -167,15 +168,15 @@
       color: var(--text-primary);
     }
     .prop-type {
-      color: var(--text-muted, var(--text-muted));
+      color: var(--text-muted, #606870);
     }
     .prop-default {
-      color: var(--green, var(--green));
+      color: var(--green, #2E7655);
     }
     .no-results {
       text-align: center;
       padding: 64px 32px;
-      color: var(--text-muted, var(--text-muted));
+      color: var(--text-muted, #606870);
     }
     .grid-wrapper {
       margin-right: 0;
@@ -196,7 +197,7 @@
     }
   </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="container">
     <header>
       <h1>Component API Reference</h1>
@@ -207,11 +208,11 @@
       <input
         type="text"
         class="search-input"
-        id="searchInput"
+        id="searchInput" aria-label="Search component API reference"
         placeholder="Search components by name..."
         autocomplete="off"
       />
-      <select class="filter-select" id="categoryFilter" aria-label="Component category">
+      <select class="filter-select" id="categoryFilter" aria-label="Filter components by category">
         <option value="">All categories</option>
         <option value="core">Core UI</option>
         <option value="data">Data & Tables</option>
@@ -232,7 +233,7 @@
   </div>
 
   <div class="detail-panel hidden" id="detailPanel">
-    <button class="detail-close" id="detailClose">&times;</button>
+    <button type="button" class="detail-close" id="detailClose" aria-label="Close component details">&times;</button>
     <div id="detailContent"></div>
   </div>
 
@@ -437,31 +438,10 @@
           { name: 'showValue', type: 'boolean', default: 'false' },
           { name: 'variant', type: '"accent" | "success" | "warning" | "danger"', default: '"accent"' },
           { name: 'size', type: '"sm" | "md" | "lg"', default: '"md"' },
-        ],
-        example: '<ProgressBar value={65} label="Processing..." showValue />',
-      },
-      {
-        name: 'Gauge',
-        category: 'core',
-        description: 'Circular gauge (0–100 or custom max) with label and optional color.',
-        props: [
-          { name: 'value', type: 'number', default: '0' },
           { name: 'max', type: 'number', default: '100' },
-          { name: 'label', type: 'string', default: 'undefined' },
-          { name: 'color', type: 'string (CSS color)', default: 'var(--accent)' },
+          { name: 'target', type: 'number | null', default: 'null' },
         ],
-        example: '<Gauge value={78} max={100} label="Fill" color="var(--green)" />',
-      },
-      {
-        name: 'LinearGauge',
-        category: 'core',
-        description: 'Flat bar gauge for space-constrained layouts.',
-        props: [
-          { name: 'value', type: 'number', default: '0' },
-          { name: 'max', type: 'number', default: '100' },
-          { name: 'label', type: 'string', default: 'undefined' },
-        ],
-        example: '<LinearGauge value={45} max={100} label="CPU" />',
+        example: '<ProgressBar value={82} target={95} label="Coverage" showValue />',
       },
       {
         name: 'StatusBanner',
@@ -523,40 +503,36 @@
 
       // Core UI — Overlays
       {
-        name: 'Modal',
+        name: 'Dialog',
         category: 'core',
-        description: 'Full-screen blocking overlay. Pair with ModalHeader, ModalBody, ModalFooter.',
+        description: 'The one blocking overlay — confirms, alerts, and form takeovers alike. Width is size, not a second component. Pair with DialogHeader / DialogBody / DialogFooter. (The Modal* aliases were removed in 2.0.0.)',
         props: [
           { name: 'open', type: 'boolean', default: 'false' },
           { name: 'onClose', type: '() => void', default: 'undefined' },
+          { name: 'title', type: 'string', default: 'undefined' },
+          { name: 'size', type: '"sm" | "md" | "lg"', default: '"md"' },
+          { name: 'maxWidth', type: 'string', default: 'undefined' },
+          { name: 'showClose', type: 'boolean', default: 'true' },
+          { name: 'closeOnEsc', type: 'boolean', default: 'true' },
           { name: 'children', type: 'React.ReactNode', default: 'required' },
         ],
-        example: '<Modal open={open} onClose={close}><ModalBody>...</ModalBody></Modal>',
+        example: '<Dialog open={confirm} onClose={cancel} title="Close position" size="sm"><DialogBody>Sell 400 AAPL at market?</DialogBody></Dialog>',
       },
       {
-        name: 'ModalForm',
+        name: 'DialogForm',
         category: 'core',
-        description: 'Modal with form wiring (onSubmit gate, footer buttons).',
+        description: 'Dialog with form wiring — submitting body, system Button footer actions.',
         props: [
           { name: 'open', type: 'boolean', default: 'false' },
           { name: 'onClose', type: '() => void', default: 'required' },
-          { name: 'title', type: 'string', default: 'required' },
-          { name: 'onSubmit', type: '(e) => void', default: 'required' },
-          { name: 'children', type: 'React.ReactNode', default: 'required' },
+          { name: 'title', type: 'string', default: '"Confirm"' },
+          { name: 'onSubmit', type: '() => void', default: 'required' },
+          { name: 'submitLabel', type: 'string', default: '"Save"' },
+          { name: 'cancelLabel', type: 'string', default: '"Cancel"' },
+          { name: 'loading', type: 'boolean', default: 'false' },
+          { name: 'size', type: '"sm" | "md" | "lg"', default: '"md"' },
         ],
-        example: '<ModalForm open={open} title="Create" onClose={close} onSubmit={save}><ModalBody>...</ModalBody></ModalForm>',
-      },
-      {
-        name: 'Dialog',
-        category: 'core',
-        description: 'Small, centered blocking overlay for confirms and alerts.',
-        props: [
-          { name: 'open', type: 'boolean', default: 'false' },
-          { name: 'onClose', type: '() => void', default: 'undefined' },
-          { name: 'title', type: 'string', default: 'required' },
-          { name: 'children', type: 'React.ReactNode', default: 'required' },
-        ],
-        example: '<Dialog open={confirm} onClose={cancel}><DialogBody>Delete this record?</DialogBody></Dialog>',
+        example: '<DialogForm open={open} title="New journal entry" size="lg" onClose={close} onSubmit={save}>…</DialogForm>',
       },
       {
         name: 'Drawer',
@@ -605,7 +581,7 @@
           { name: 'delay', type: 'number (ms)', default: '300' },
           { name: 'children', type: 'React.ReactNode', default: 'required' },
         ],
-        example: '<Tooltip content="Delete forever"><button>🗑</button></Tooltip>',
+        example: '<Tooltip content="Delete forever"><button type="button">🗑</button></Tooltip>',
       },
 
       // Core UI — Navigation & hierarchy
@@ -761,6 +737,22 @@
       },
 
       // Data — Tables
+      {
+        name: 'GroupedDataTable',
+        category: 'data',
+        description: 'Rows rolled up by one key or nested keys — collapsible group headers carrying subtotals, optional footer subtotals, sticky grand total. Money columns format through AmountCell.',
+        props: [
+          { name: 'columns', type: 'Array<GroupedColumn>', default: 'required' },
+          { name: 'rows', type: 'Array<object>', default: 'required' },
+          { name: 'groupBy', type: 'string | string[]', default: 'undefined' },
+          { name: 'subtotals', type: '"header" | "footer"', default: '"header"' },
+          { name: 'showGrandTotal', type: 'boolean', default: 'false' },
+          { name: 'defaultCollapsed', type: 'boolean | string[]', default: 'false' },
+          { name: 'selectedIndex', type: 'number', default: '-1' },
+          { name: 'onRowClick', type: '(row, idx) => void', default: 'undefined' },
+        ],
+        example: '<GroupedDataTable groupBy={["strategy","account"]} columns={cols} rows={positions} showGrandTotal />',
+      },
       {
         name: 'DenseDataTable',
         category: 'data',
@@ -1035,7 +1027,7 @@
           { name: 'height', type: 'number', default: '400' },
           { name: 'onCrosshair', type: '(candle, overlay) => void', default: 'undefined' },
         ],
-        example: '<CandleChart bars={data} overlays={[{label: "MA20", color: "var(--accent)"}]} />',
+        example: '<CandleChart bars={data} overlays={[{label: "MA20", color: "var(--brand-signal,#C56343)"}]} />',
       },
       {
         name: 'EquityCurve',
@@ -1099,7 +1091,7 @@
         props: [
           { name: 'data', type: 'Array<number>', default: 'required' },
           { name: 'height', type: 'number', default: '24' },
-          { name: 'color', type: 'string (CSS color)', default: 'var(--accent)' },
+          { name: 'color', type: 'string (CSS color)', default: 'var(--brand-signal,#C56343)' },
         ],
         example: '<Sparkline data={series} color="var(--green)" />',
       },
@@ -1117,6 +1109,23 @@
       },
 
       // Shell
+      {
+        name: 'WorkstationShell',
+        category: 'shell',
+        description: 'The workstation frame — chrome slots (topbar / nav / status bar) around a crash-isolated scrolling main and an optional evidence rail. Renders the <main> landmark; never hand-roll the flex scaffolding.',
+        props: [
+          { name: 'topbar', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'nav', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'aside', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'asideWidth', type: 'number | string', default: '320' },
+          { name: 'statusBar', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'archetype', type: '"monitor" | "analyze" | "inspect" | "compare" | "reconcile" | "compose"', default: 'undefined' },
+          { name: 'labelledBy', type: 'string (heading id)', default: 'undefined' },
+          { name: 'height', type: 'number | string', default: '"100vh"' },
+          { name: 'padded', type: 'boolean', default: 'false' },
+        ],
+        example: '<WorkstationShell archetype="reconcile" labelledBy="workspace-title" topbar={<WorkstationTopbar …/>} nav={<NavRail …/>} statusBar={<StatusBar …/>}>…</WorkstationShell>',
+      },
       {
         name: 'WorkstationTopbar',
         category: 'shell',
@@ -1277,28 +1286,7 @@
         example: '<FormSectionLabel>Counterparty</FormSectionLabel>',
       },
 
-      // Core UI — Compound overlay parts (Modal / Dialog / Drawer)
-      {
-        name: 'ModalHeader',
-        category: 'core',
-        description: 'Title region of a <Modal> (heading + optional close).',
-        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
-        example: '<ModalHeader>New account</ModalHeader>',
-      },
-      {
-        name: 'ModalBody',
-        category: 'core',
-        description: 'Scrollable content region of a <Modal>.',
-        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
-        example: '<ModalBody><FormField ...>...</FormField></ModalBody>',
-      },
-      {
-        name: 'ModalFooter',
-        category: 'core',
-        description: 'Action bar of a <Modal> — right-aligned buttons.',
-        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
-        example: '<ModalFooter><Button>Cancel</Button><Button variant="primary">Save</Button></ModalFooter>',
-      },
+      // Core UI — Compound overlay parts (Dialog / Drawer)
       {
         name: 'DialogHeader',
         category: 'core',
@@ -1430,7 +1418,7 @@
       {
         name: 'EvidenceLink',
         category: 'operations',
-        description: 'Reference to an evidence artifact — status dot, label, mono route, open arrow. Renders <a> with href, else <button>.',
+        description: 'Reference to an evidence artifact — status dot, label, mono route, open arrow. Renders <a> with href, else <button type="button">.',
         props: [
           { name: 'label', type: 'React.ReactNode', default: 'undefined' },
           { name: 'status', type: 'string (Ready, ReviewRequired, Blocked, Stale, Missing)', default: '"info"' },
@@ -1525,6 +1513,20 @@
           { name: 'withDate', type: 'boolean', default: 'true' },
         ],
         example: '<AsOfControl onChange={({ mode, asOf }) => reprice(mode === "live" ? null : asOf)} />',
+      },
+      {
+        name: 'TimeAndSalesTape',
+        category: 'trading',
+        description: 'Market-wide print tape (FillsFeed covers only own executions) — tick-direction price, size emphasis tiers, tagged block prints.',
+        props: [
+          { name: 'prints', type: '{time,symbol?,price,size,venue?,dir?}[]', default: 'required (newest first)' },
+          { name: 'showSymbol', type: 'boolean', default: 'false' },
+          { name: 'showVenue', type: 'boolean', default: 'false' },
+          { name: 'priceDecimals', type: 'number', default: '2' },
+          { name: 'sizeBuckets', type: 'number[]', default: '[1000, 5000]' },
+          { name: 'blockSize', type: 'number | null', default: 'null' },
+        ],
+        example: '<TimeAndSalesTape prints={prints} blockSize={10000} showVenue />',
       },
       {
         name: 'DepthLadder',

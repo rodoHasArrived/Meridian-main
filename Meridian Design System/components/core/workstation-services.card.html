@@ -5,13 +5,14 @@
 <meta charset="UTF-8" />
 <title>Workstation services</title>
 <link rel="stylesheet" href="../../styles.css" />
-<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const { ErrorBoundary, NotificationCenter, HotkeysProvider, UserMenu, RoleBadge, ReadOnlyBanner, Eyebrow, Kbd } = window.MeridianDesignSystem_4f61be;
+const { ErrorBoundary, NotificationCenter, HotkeysProvider, UserMenu, RoleBadge, ReadOnlyBanner, Eyebrow, Kbd } = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 function Crasher() {
@@ -20,7 +21,7 @@ function Crasher() {
   return (
     <div style={{ padding: 12, fontSize: 12, color: "var(--text-secondary)", display: "flex", gap: 10, alignItems: "center" }}>
       A healthy panel.
-      <button onClick={() => setBroken(true)} style={{ font: "12px var(--font-body)", padding: "4px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", cursor: "pointer" }}>Crash it</button>
+      <button type="button" onClick={() => setBroken(true)} style={{ font: "12px var(--font-body)", padding: "4px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", cursor: "pointer" }}>Crash it</button>
     </div>
   );
 }

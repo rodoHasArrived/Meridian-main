@@ -660,6 +660,13 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     {
         var create = () => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, terms));
         var amend = () => SecurityMasterMapping.ToAmendCommand(AmendRequest(terms), CurrentProjection(assetClass));
+        if (assetClass == "Swap")
+        {
+            const string disabled = "'legs[0].scheduleConventions' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
+            create.Should().Throw<InvalidOperationException>().WithMessage(disabled);
+            amend.Should().Throw<InvalidOperationException>().WithMessage(disabled);
+            return;
+        }
         if (SecurityAssetClassCatalog.GetTermsVersion(assetClass) < HistoricalScheduleReadCeiling(assetClass))
         {
             create.Should().Throw<InvalidOperationException>().WithMessage(oldReadOnlyReason);

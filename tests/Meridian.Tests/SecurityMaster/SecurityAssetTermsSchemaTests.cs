@@ -27,10 +27,10 @@ public sealed class SecurityAssetTermsSchemaTests
     // catalog-vs-projection gap is a conscious decision instead of silent drift.
     private static readonly string[] IntentionallyUnprojectedAssetClasses =
     [
-        // The profile-governed class: its fields vary per approved profile, so there is no fixed
-        // column set to project. Every other catalog class is projected (migration 044 closed the
-        // last eight declared gaps and the whole ops-capable backlog).
-        "CustomAsset"
+        // Empty: every catalog class is projected. Migration 044 closed the last eight declared
+        // gaps and the whole ops-capable backlog; migration 064 gave the profile-governed
+        // CustomAsset, whose fields vary per approved profile, a profile-keyed projection with one
+        // row per profile field instead of a fixed column set.
     ];
 
     // The Asset Operations classes still waiting for a relational terms projection. These are NOT
@@ -133,7 +133,9 @@ public sealed class SecurityAssetTermsSchemaTests
         projected.Should().NotIntersectWith(OpsCapableProjectionBacklog,
             "a class is either projected or on the backlog, never both");
 
-        IntentionallyUnprojectedAssetClasses.Should().NotIntersectWith(OpsCapableProjectionBacklog,
+        // Intersect rather than NotIntersectWith: both lists are empty today and share the cached
+        // empty-array instance, which NotIntersectWith rejects as the same object.
+        IntentionallyUnprojectedAssetClasses.Intersect(OpsCapableProjectionBacklog, StringComparer.Ordinal).Should().BeEmpty(
             "a missing projection is either a decision or a backlog item, and the two carry different obligations");
 
         projected
@@ -434,14 +436,14 @@ public sealed class SecurityAssetTermsSchemaTests
             var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
             var writable = SecurityAssetTermsSchema.WritableFields(assetClass);
 
-            writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= writes), assetClass);
-            writable.Should().NotContain(field => field.SinceTermsVersion > writes, assetClass);
+            writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.AuthoringEnabled && field.SinceTermsVersion <= writes), assetClass);
+            writable.Should().NotContain(field => !field.AuthoringEnabled || field.SinceTermsVersion > writes, assetClass);
         }
 
         foreach (var assetClass in CalculationCompanionClasses)
         {
             SecurityAssetTermsSchema.Fields(assetClass)
-                .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                .Where(field => !field.AuthoringEnabled || field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
                 .Select(static field => field.Key).Should().Equal(new[] { "cashFlowContract" }, assetClass);
             SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key).Should().Equal(
                 SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.Key != "cashFlowContract").Select(static field => field.Key),
@@ -452,7 +454,7 @@ public sealed class SecurityAssetTermsSchemaTests
             .Should().Contain(["seniority", "nonCallPeriodEnd"], "the version-2 tranche terms remain writable")
             .And.Contain(ScheduleTermKeys, "declared schedule containers are writable through the version-4 ceiling");
         SecurityAssetTermsSchema.WritableFields("Swap").Select(static field => field.Key)
-            .Should().Equal("effectiveDate", "maturityDate", "legs");
+            .Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
         SecurityAssetTermsSchema.WritableFields("Equity").Should().Equal(SecurityAssetTermsSchema.Fields("Equity"));
         SecurityAssetTermsSchema.WritableFields("Nope").Should().BeEmpty();
     }

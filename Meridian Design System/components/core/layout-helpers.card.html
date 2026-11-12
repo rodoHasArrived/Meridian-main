@@ -1,12 +1,12 @@
-<!-- @dsCard group="Core" viewport="800x400" name="Layout helpers" subtitle="Grid, Flex, Stack for responsive layouts" -->
+<!-- @dsCard group="Core" viewport="800x400" name="Layout helpers" subtitle="Grid, Flex, Stack, ProgressBar, FormField — layout primitives and bounded ratios" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Meridian — Layout helpers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Meridian — layout helpers</title>
   <link rel="stylesheet" href="../../styles.css">
-  <script src="../../_ds_bundle.js"></script>
+
   <style>
     body { padding: 32px; background: var(--bg); }
     .demo { display: flex; flex-direction: column; gap: 32px; }
@@ -46,50 +46,28 @@
     </div>
 
     <div class="demo-section">
-      <div class="label">Gauge (circular progress)</div>
-      <div style="display: flex; gap: 32px;">
+      <div class="label">ProgressBar (bounded ratio + target datum)</div>
+      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 420px;">
         <div>
-          <svg width="120" height="120" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="8"/>
-            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="326.73" stroke-dashoffset="81.68" stroke-linecap="round"/>
-          </svg>
-          <div style="text-align: center; margin-top: 12px;">
-            <div style="font-size: var(--type-metric); font-weight: 700; color: var(--text-primary);">75%</div>
-            <div style="font-size: var(--type-label); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">CPU</div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;">
+            <div style="font-size: 12px; color: var(--text-secondary);">Disk</div>
+            <div style="font-family: var(--font-data); font-size: 12px; font-weight: 600; color: var(--text-primary);">82%</div>
           </div>
+          <div style="position: relative; width: 100%;">
+            <div style="position: relative; width: 100%; height: 6px; overflow: hidden; background: var(--bg-active); border-radius: var(--radius-chip);">
+              <div style="position: absolute; left: 0; top: 0; height: 100%; width: 82%; background: var(--green); border-radius: inherit;"></div>
+            </div>
+            <span style="position: absolute; left: 95%; top: -3px; bottom: -3px; width: 0; border-left: 2px dotted var(--brand-axis);"></span>
+          </div>
+          <div style="margin-top: 5px; font-size: 11px; color: var(--text-muted);">Dotted datum = target 95%</div>
         </div>
         <div>
-          <svg width="120" height="120" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="8"/>
-            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--orange)" stroke-width="8" stroke-dasharray="326.73" stroke-dashoffset="147.03" stroke-linecap="round"/>
-          </svg>
-          <div style="text-align: center; margin-top: 12px;">
-            <div style="font-size: var(--type-metric); font-weight: 700; color: var(--text-primary);">55%</div>
-            <div style="font-size: var(--type-label); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Memory</div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;">
+            <div style="font-size: 12px; color: var(--text-secondary);">RAM</div>
+            <div style="font-family: var(--font-data); font-size: 12px; font-weight: 600; color: var(--text-primary);">45%</div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="demo-section">
-      <div class="label">LinearGauge (horizontal progress)</div>
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <div style="font-size: var(--type-label); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Disk</div>
-            <div style="font-size: var(--type-data-value); font-weight: 600; color: var(--text-primary);">82%</div>
-          </div>
-          <div style="position: relative; width: 100%; height: 8px; background: var(--border); border-radius: var(--radius-card); overflow: hidden;">
-            <div style="position: absolute; left: 0; top: 0; height: 100%; width: 82%; background: var(--green); border-radius: var(--radius-card);"></div>
-          </div>
-        </div>
-        <div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <div style="font-size: var(--type-label); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">RAM</div>
-            <div style="font-size: var(--type-data-value); font-weight: 600; color: var(--text-primary);">45%</div>
-          </div>
-          <div style="position: relative; width: 100%; height: 8px; background: var(--border); border-radius: var(--radius-card); overflow: hidden;">
-            <div style="position: absolute; left: 0; top: 0; height: 100%; width: 45%; background: var(--accent); border-radius: var(--radius-card);"></div>
+          <div style="position: relative; width: 100%; height: 6px; background: var(--bg-active); border-radius: var(--radius-chip);">
+            <div style="position: absolute; left: 0; top: 0; height: 100%; width: 45%; background: var(--brand-signal,#C56343); border-radius: inherit;"></div>
           </div>
         </div>
       </div>
@@ -100,17 +78,17 @@
       <div style="max-width: 300px;">
         <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
           <label for="layout-email" style="font-size: var(--type-label); font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
-            Email <span style="color: var(--red);">*</span>
+            Email <span aria-hidden="true" style="color: var(--red);">*</span>
           </label>
-          <input id="layout-email" type="email" required aria-describedby="layout-email-hint" placeholder="user@example.com" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
+          <input id="layout-email" type="email" aria-describedby="layout-email-hint" required placeholder="user@example.com" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
           <div id="layout-email-hint" style="font-size: var(--type-caption); color: var(--text-muted); margin-top: -4px;">Required for account creation</div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <label for="layout-password" style="font-size: var(--type-label); font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em;">
-            Password <span style="color: var(--red);">*</span>
+            Password <span aria-hidden="true" style="color: var(--red);">*</span>
           </label>
-          <input id="layout-password" type="password" required aria-invalid="true" aria-describedby="layout-password-error" placeholder="••••••••" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--red); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
-          <div id="layout-password-error" style="font-size: var(--type-caption); color: var(--red-dim); margin-top: -4px;">Must be at least 8 characters</div>
+          <input id="layout-password" type="password" aria-invalid="true" aria-describedby="layout-password-error" required placeholder="••••••••" style="padding: 8px 12px; font-size: 13px; border: 1px solid var(--red); border-radius: var(--radius-card); color: var(--text-primary); background: var(--bg-light);">
+          <div id="layout-password-error" style="font-size: var(--type-caption); color: var(--red); margin-top: -4px;">Must be at least 8 characters</div>
         </div>
       </div>
     </div>

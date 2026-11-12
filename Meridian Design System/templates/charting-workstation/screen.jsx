@@ -4,7 +4,7 @@
 const {
   WorkstationTopbar, StatusBar, PanelSurface, Eyebrow, Button, Badge, KeyValueGrid, CandleChart, ChartCard,
   ScatterChart, SegmentedControl, Input, Kbd
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo } = React;
 
 // deterministic pseudo scatter sample — spread (bps) vs 3M implied vol (%)
@@ -115,11 +115,11 @@ function ChartingWorkstationScreen() {
           <ChartCard
             title="AAPL · 1D" subtitle="Apple Inc." style={{ flex: 1, minHeight: 0 }} height={undefined}
             readout={[
-              { label: "Last", value: bar.c.toFixed(2), color: chg >= 0 ? "var(--green-dim)" : "var(--red-dim)" },
-              { label: "Chg", value: (chg >= 0 ? "+" : "") + chg.toFixed(2), color: chg >= 0 ? "var(--green-dim)" : "var(--red-dim)" },
+              { label: "Last", value: bar.c.toFixed(2), color: chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)" },
+              { label: "Chg", value: (chg >= 0 ? "+" : "") + chg.toFixed(2), color: chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)" },
               { label: "O", value: bar.o.toFixed(2) },
-              { label: "H", value: bar.h.toFixed(2), color: "var(--green-dim)" },
-              { label: "L", value: bar.l.toFixed(2), color: "var(--red-dim)" },
+              { label: "H", value: bar.h.toFixed(2), color: "var(--chart-equity)" },
+              { label: "L", value: bar.l.toFixed(2), color: "var(--chart-drawdown)" },
               { label: "Vol", value: "1.92M" },
             ]}
             actions={

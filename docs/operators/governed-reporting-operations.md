@@ -336,6 +336,24 @@ The coordinated reporting recovery set crosses the production authority and auxi
 Production run and schedule authority does not come from `FileReportingRunStore` or
 `FileReportingScheduleStore`. Do not restore their local snapshots as a substitute for the
 PostgreSQL `reporting_run_snapshots` and `reporting_schedule_snapshots` state.
+
+Capital-call notice generation additionally relies on PostgreSQL run-create claims for its stable
+operation UUID. Configure `MERIDIAN_REPORTING_CONNECTION_STRING` (or the documented ledger
+fallback) and preserve the run snapshots and create-claim tables together. The POST body contains
+`operationId` and the selected `commitmentId`; retry an uncertain result with the same UUID and
+exact call/investor/commitment target and body. The
+server checks current permissions and returns the original certified run without recertifying
+current source data. Deliberate regeneration uses a new UUID. Each notice covers one complete
+posted commitment installment. Select each commitment separately when an investor has multiple
+commitments in the same call. Legacy omission of `commitmentId` is accepted for new generation
+only when the investor has a single call installment. Recover an older omitted-selector request
+with that original body; adding a selector under its existing UUID changes the request identity.
+
+If recovery confirms that exact retained operation is Failed, it returns
+`409 {code: "notice_operation_failed", runId: "<original run ID>"}`. Inspect the failed attempt,
+then explicitly generate a new notice if appropriate; the original failure and audit remain
+retained. Other errors leave the outcome uncertain and require recovery with the original UUID.
+
 Production statement workspaces under
 `<DataRoot>/runtime/statement-reconciliation-authority-workspace/<process-id>/` are hydrated from
 verified PostgreSQL authority bytes. They are not a backup source or a way to repair missing

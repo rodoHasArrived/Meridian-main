@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="UTF-8" />
 <title>Entity schemas</title>
 <link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 24px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
   .wrap { max-width: 760px; display: flex; flex-direction: column; gap: 14px; }
@@ -13,13 +13,13 @@
   .lede { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .ent { background: var(--bg-light); border: 1px solid var(--border); padding: 12px 14px; }
-  .ent h2 { font: 600 11px var(--font-body); font-variant: all-small-caps; letter-spacing: .04em; color: var(--accent-dim); margin: 0 0 8px; }
+  .ent h2 { font: 600 11px var(--font-body); font-variant: all-small-caps; letter-spacing: .04em; color:var(--brand-signal-text); margin: 0 0 8px; }
   pre { margin: 0; font-family: var(--font-data); font-size: 11px; line-height: 1.55; color: var(--text-primary); white-space: pre-wrap; }
   .k { color: var(--text-muted); }
   .full { grid-column: 1 / -1; }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
 <div class="wrap">
   <h1>Shared entity schemas</h1>
   <p class="lede">Map your backend to these once at the edge and Blotter, FillsFeed, NotificationCenter, and the tables drop in with no adapter code. Times are UTC (epoch ms or ISO); status is a free string normalized by <b>SeverityBadge</b>; money is unrounded and formatted by <b>Delta</b>/<b>AmountCell</b>. Full reference: <code>guidelines/ENTITY_SCHEMAS.md</code>.</p>

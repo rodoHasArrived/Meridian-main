@@ -1,9 +1,10 @@
 // Meridian DrawdownChart — the underwater plot. Drawdown (peak-to-trough decline, always ≤ 0)
 // hangs below a 0% waterline as a filled curve, with an optional dashed limit rule and a marker
 // on the maximum drawdown. Pairs beside an EquityCurve in backtest / strategy reporting.
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 import { niceTicks } from "./ticks";
 
-export interface DrawdownChartProps {
+export interface DrawdownChartProps extends ChartA11yProps {
   /** Drawdown series in percent — 0 or negative values (e.g. -12.4). */
   series: number[];
   /** Time-axis labels, parallel to `series`. */
@@ -20,12 +21,12 @@ export interface DrawdownChartProps {
   timeTicks?: number;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const DRAWDOWN = "var(--chart-drawdown, #A8443C)";
-const WARNING = "var(--chart-warning, #8A5C12)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const DRAWDOWN = "var(--chart-drawdown, #B54B42)";
+const WARNING = "var(--chart-warning, #986717)";
 
 export function DrawdownChart({
   series,
@@ -34,7 +35,10 @@ export function DrawdownChart({
   valueFmt = (v) => `${v.toFixed(0)}%`,
   markMax = true,
   valueTicks = 5,
-  timeTicks = 7
+  timeTicks = 7,
+  ariaLabel = "Drawdown underwater chart",
+  ariaDescription,
+  accessibleData
 }: DrawdownChartProps) {
   const W = 960;
   const H = 360;
@@ -65,12 +69,12 @@ export function DrawdownChart({
   for (let i = 1; i < n; i++) if (dd[i] < dd[maxIdx]) maxIdx = i;
 
   return (
-    <svg
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Drawdown underwater chart"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {vTicks.map((v, k) => (
@@ -112,13 +116,13 @@ export function DrawdownChart({
           <line x1={x(maxIdx)} x2={x(maxIdx)} y1={y(0)} y2={y(dd[maxIdx])} stroke={DRAWDOWN} strokeWidth="1" strokeDasharray="3 3" opacity="0.7" />
           <circle cx={x(maxIdx)} cy={y(dd[maxIdx])} r="3.5" fill={DRAWDOWN} />
           <rect x={Math.min(x(maxIdx) + 6, plotR - 70)} y={y(dd[maxIdx]) - 9} width="66" height="18" fill={DRAWDOWN} opacity="0.95" />
-          <text x={Math.min(x(maxIdx) + 6, plotR - 70) + 33} y={y(dd[maxIdx]) + 4} fill="var(--text-on-fill, #fff)" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>
+          <text x={Math.min(x(maxIdx) + 6, plotR - 70) + 33} y={y(dd[maxIdx]) + 4} fill="#fff" textAnchor="middle" style={{ ...labelFont, fontWeight: 600 }}>
             max {valueFmt(dd[maxIdx])}
           </text>
         </g>
       )}
       <line x1={plotR} x2={plotR} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
-    </svg>
+    </ChartSvg>
   );
 }
 

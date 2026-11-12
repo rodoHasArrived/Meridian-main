@@ -38,6 +38,7 @@ import {
   buildSchemaValueEditor,
   validateSchemaFieldValue
 } from "./security-passport-schema-fields.view-model";
+import { Select } from "@/components/ui/select";
 
 /** Injectable workbench client so the editor can be unit-tested without the network. */
 export interface SecurityPassportWorkbenchService {
@@ -100,8 +101,8 @@ const STATE_BADGE_VARIANT: Record<PassportStateTone, "default" | "outline" | "su
 };
 
 const BANNER_CLASS: Record<PassportBannerViewModel["tone"], string> = {
-  error: "border-[var(--state-danger-bd)] text-[var(--state-danger-fg)]",
-  warning: "border-[var(--state-warn-bd)] text-[var(--state-warn-fg)]",
+  error: "border-danger text-danger",
+  warning: "border-warning text-warning",
   info: "border-border text-foreground"
 };
 
@@ -378,8 +379,8 @@ export function SecurityPassportEditor({
           {schemaGroups.length > 0 ? (
             <label className="space-y-1 text-sm sm:col-span-2">
               <span className="text-muted-foreground">{schema?.assetClass} term</span>
-              <select
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              <Select
+                className="h-9 w-full text-sm"
                 aria-label="Asset-class term"
                 value={selectedSchemaField?.fieldPath ?? ""}
                 onChange={(e) => {
@@ -398,7 +399,7 @@ export function SecurityPassportEditor({
                     ))}
                   </optgroup>
                 ))}
-              </select>
+              </Select>
             </label>
           ) : null}
           <label className="space-y-1 text-sm">
@@ -408,8 +409,8 @@ export function SecurityPassportEditor({
           <label className="space-y-1 text-sm">
             <span className="text-muted-foreground">New value</span>
             {valueEditor.input === "select" ? (
-              <select
-                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              <Select
+                className="h-9 w-full text-sm"
                 aria-label="New value"
                 value={newValue}
                 onChange={(e) => setNewValue(e.target.value)}
@@ -420,7 +421,7 @@ export function SecurityPassportEditor({
                     {choice}
                   </option>
                 ))}
-              </select>
+              </Select>
             ) : (
               <Input
                 type={valueEditor.input}
@@ -431,7 +432,7 @@ export function SecurityPassportEditor({
                 aria-invalid={valueError ? true : undefined}
               />
             )}
-            {valueError ? <span className="text-xs text-[var(--state-danger-fg)]">{valueError}</span> : null}
+            {valueError ? <span className="text-xs text-danger">{valueError}</span> : null}
           </label>
           <label className="space-y-1 text-sm">
             <span className="text-muted-foreground">Effective from</span>

@@ -96,9 +96,12 @@ afterEach(() => {
 });
 
 describe("ArchiveMaintenanceOperations", () => {
-  it("renders service posture and execution history from the maintenance endpoints", async () => {
+  it("renders source-ordered history with keyboard scroll and cancellation access", async () => {
+    const user = userEvent.setup();
     primeReads();
-    render(<ArchiveMaintenanceOperations />);
+    // JSDOM omits the browser's closed-details visibility rule. Match that native
+    // behavior so userEvent's Tab traversal does not enter hidden menu controls.
+    render(<><style>{"details:not([open]) > :not(summary) { display: none; }"}</style><ArchiveMaintenanceOperations /></>);
 
     const posture = await screen.findByLabelText("Archive maintenance posture");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
@@ -108,6 +111,37 @@ describe("ArchiveMaintenanceOperations", () => {
     const history = screen.getByLabelText("Maintenance execution history");
     expect(within(history).getByText("Cleanup")).toBeInTheDocument();
     expect(within(history).getByText("Checksum mismatch in shard 12")).toBeInTheDocument();
+    const historyRows = within(history).getAllByRole("row");
+    expect(within(historyRows[1]).getByText("Cleanup")).toBeInTheDocument();
+    expect(within(historyRows[2]).getByText("HealthCheck")).toBeInTheDocument();
+    expect(within(historyRows[0]).queryAllByRole("button")).toHaveLength(0);
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledWith(25);
+    const toolbar = screen.getByRole("group", { name: "Maintenance execution history table controls" });
+    expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    screen.getByRole("combobox", { name: "Maintenance task type" }).focus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Run maintenance now" })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Show failed only" })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("searchbox", { name: "Search" })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("combobox", { name: "Maintenance execution history density" })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("button", { name: "Export CSV" })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true })).toHaveFocus();
+    await user.tab();
+    const scrollArea = screen.getByRole("region", { name: "Maintenance execution history scroll area" });
+    expect(scrollArea).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(scrollArea).toHaveFocus();
+    expect(api.cancelMaintenanceExecution).not.toHaveBeenCalled();
   });
 
   it("starts a manual run for the selected task type and refreshes", async () => {
@@ -151,6 +185,19 @@ describe("ArchiveMaintenanceOperations", () => {
     await waitFor(() => expect(api.getFailedMaintenanceExecutions).toHaveBeenCalledWith(25));
     const history = screen.getByLabelText("Maintenance execution history");
     await waitFor(() => expect(within(history).queryAllByRole("row")).toHaveLength(2));
+  });
+
+  it("preserves distinct empty history messages for all and failed-only reads", async () => {
+    primeReads();
+    api.getMaintenanceExecutions.mockResolvedValue([]);
+    api.getFailedMaintenanceExecutions.mockResolvedValue([]);
+    const user = userEvent.setup();
+    render(<ArchiveMaintenanceOperations />);
+    expect(await screen.findByText("No maintenance executions recorded.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show failed only" }));
+    expect(await screen.findByText("No failed maintenance executions recorded.")).toBeInTheDocument();
+    expect(api.getFailedMaintenanceExecutions).toHaveBeenCalledWith(25);
+    expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
   });
 
   it("keeps the panel readable when one read fails and says how many failed", async () => {

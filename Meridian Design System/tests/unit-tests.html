@@ -5,9 +5,8 @@
 <meta charset="UTF-8" />
 <title>Meridian — component unit tests</title>
 <link rel="stylesheet" href="../styles.css" />
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_preview_runtime.js"></script>
+<script src="../_preview_jsx.js"></script>
 <script src="../_ds_bundle.js"></script>
 <style>
   body { margin: 0; padding: 20px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
@@ -26,8 +25,8 @@
 <div id="results"></div>
 <div id="sandbox"></div>
 <script type="text/babel">
-const DS = window.MeridianDesignSystem_4f61be;
-const { Dialog, Timestamp, Delta, Modal } = DS;
+const DS = window.MeridianDesignSystem_205d17;
+const { Dialog, Timestamp, Delta } = DS;
 const { useTableState, useTableColumns, useRowSelection } = DS.TableHooks;
 const { useDirtyState, useWizard, useAsyncValidation } = DS.FormHooks;
 const results = [];
@@ -121,27 +120,39 @@ const tab = (shift) => new KeyboardEvent("keydown", { key: "Tab", shiftKey: !!sh
   root.unmount(); host.remove(); outside.remove();
 }
 
-// ── Modal: now participates in the same focus contract ──
+// ── Dialog size="md" (the former Modal alias, removed in 2.0): same focus contract ──
 {
   const { host, root } = mount(
-    <Modal open={true} onClose={() => {}}>
+    <Dialog open={true} onClose={() => {}} size="md">
       <div className="mdl-wrap"><button id="m-a">OK</button></div>
-    </Modal>
+    </Dialog>
   );
-  report("Modal moves focus into the panel on open", document.activeElement && document.activeElement.id === "m-a", `active: ${document.activeElement.id || document.activeElement.tagName}`);
+  report("Dialog size=md (ex-Modal) moves focus into the panel on open", document.activeElement && document.activeElement.id === "m-a", `active: ${document.activeElement.id || document.activeElement.tagName}`);
   root.unmount(); host.remove();
 }
 
-// ── FilteredDataTable: search + sort behavior (exercises useTableState) ──
+// ── DataGrid + search input: search + sort behavior (exercises useTableState) ──
+// FilteredDataTable was removed in 4.0; the filter UI is composed above a DataGrid.
 {
-  const { FilteredDataTable } = DS;
+  const { DataGrid, Input } = DS;
+  function FilteredGrid({ data, columns }) {
+    const state = useTableState(data);
+    return (
+      <div>
+        <Input placeholder="Search all fields…" value={state.query} onChange={(e) => state.setQuery(e.target.value)} />
+        <DataGrid columns={columns} rows={state.data} rowKey="sym"
+          sortKey={state.sortBy ? state.sortBy.column : undefined} sortDir={state.sortBy ? state.sortBy.direction : undefined}
+          onSort={(key) => state.toggleSort(key)} />
+      </div>
+    );
+  }
   const data = [
     { sym: "AAPL", px: 201 }, { sym: "MSFT", px: 404 }, { sym: "NVDA", px: 131 },
   ];
   const cols = [{ key: "sym", label: "Symbol" }, { key: "px", label: "Px", align: "right" }];
-  const { host, root } = mount(<FilteredDataTable data={data} columns={cols} />);
+  const { host, root } = mount(<FilteredGrid data={data} columns={cols} />);
   const bodyRows = () => [...host.querySelectorAll("tbody tr:not(.fdt--spacer)")];
-  expect("FilteredDataTable renders all rows", bodyRows().length, 3);
+  expect("DataGrid + useTableState renders all rows", bodyRows().length, 3);
 
   const input = host.querySelector("input");
   const setNative = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
@@ -214,7 +225,8 @@ const tab = (shift) => new KeyboardEvent("keydown", { key: "Tab", shiftKey: !!sh
 // ── OrderTicket: live confirm gate ──
 {
   const { OrderTicket } = DS;
-  const { host, root } = mount(<OrderTicket symbol="AAPL" lastPrice={200} environment="live" />);
+  // onSubmit is required for an enabled submit: "absent submit handlers disable submission" (OrderTicket.prompt.md).
+  const { host, root } = mount(<OrderTicket symbol="AAPL" lastPrice={200} environment="live" onSubmit={() => {}} />);
   const setNative = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
   const qty = [...host.querySelectorAll("input")].find((i) => i.getAttribute("inputmode") === "decimal");
   ReactDOM.flushSync(() => {

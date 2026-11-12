@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Minimal async loading spinner — a thin ring with a semantic top stroke. Motion is its
  * function, so it rotates (and slows under `prefers-reduced-motion`). Pass `label` to render
@@ -11,4 +12,4 @@ export interface SpinnerProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Optional text rendered beside the ring; also becomes the aria-label. */
   label?: string;
 }
-export declare function Spinner(props: SpinnerProps): JSX.Element;
+export declare function Spinner(props: SpinnerProps): React.JSX.Element;

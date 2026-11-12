@@ -1,42 +1,8 @@
 /* Meridian — print. Report and statement surfaces print as documents: chrome hidden,
    white paper, semantic washes preserved where they carry meaning (badges, totals).
-   Scroll regions unroll so the browser paginates mounted table rows.
-   Pagination and virtualization still determine which records are mounted;
-   complete-dataset output belongs to the governed report/export workflow. */
-/* Physical paper is a token role, independent of the active screen appearance. */
-:root { --print-paper: #FFFFFF; }
-
+   Scroll regions unroll so the browser paginates the full table. */
 @media print {
-  :root, :root[data-theme], :root[data-brand], :root[data-brand][data-theme] {
-    color-scheme: light;
-    --bg: var(--print-paper);
-    --bg-light: var(--print-paper);
-    --bg-medium: var(--theme-bg-medium);
-    --bg-hover: var(--theme-bg-hover);
-    --bg-active: var(--theme-bg-active);
-    --card-surface-raised: var(--theme-card-surface-raised);
-    --border: var(--theme-border);
-    --border-hover: var(--theme-border-hover);
-    --border-focus: var(--theme-border-focus);
-    --border-strong: var(--theme-border-strong);
-    --border-divider: var(--theme-border-divider);
-    --text-primary: var(--theme-primary-text);
-    --text-secondary: var(--theme-secondary-text);
-    --text-muted: var(--theme-muted-text);
-    --text-disabled: var(--theme-disabled-text);
-    --accent: var(--theme-accent);
-    --accent-dim: var(--theme-accent-dim);
-    --accent-hover: var(--theme-accent-hover);
-    --accent-ghost: var(--theme-accent-ghost);
-    --text-on-accent: var(--theme-text-on-accent);
-    --green: var(--theme-green);
-    --red: var(--theme-red);
-    --orange: var(--theme-orange);
-    --purple: var(--theme-purple);
-    --dim-mix: var(--theme-dim-mix);
-    --chart-crosshair: var(--text-secondary);
-  }
-  body { background: var(--print-paper) !important; }
+  body { background: #fff !important; }
 
   /* Chrome is screen furniture — masthead, status bar, nav rail, bulk bars, toasts. */
   .ws-masthead, .ws-statusbar, .op-rail, .mds-bulk-bar { display: none !important; }
@@ -71,8 +37,8 @@
   margin: 0 auto;
   box-sizing: border-box;
   padding: 60px 68px;
-  background: var(--bg-light, #FBFAF8);
-  border: 1px solid var(--border, #E4E3DE);
+  background: var(--bg-light, #F8F7F3);
+  border: 1px solid var(--border, #D2CDC3);
   position: relative;
   overflow: hidden;
   display: flex;

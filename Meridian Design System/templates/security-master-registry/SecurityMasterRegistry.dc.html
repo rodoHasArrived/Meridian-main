@@ -1,20 +1,696 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Meridian — Security Master Registry</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
-<script src="./securities-data.js"></script>
+<title>Investigate · Security Master Registry — Meridian</title>
 </head>
-<body class="meridian">
+<body>
 <x-dc>
-<!-- @template name="Security Master Registry" description="Dense multi-asset symbol registry + entity inspector" -->
+<!-- @template name="Investigate · Security Master Registry" description="Dense multi-asset symbol registry — saved views, filter builder, bulk actions, entity inspector whose edits write optimistically (provisional until confirmed, rejected with the reason, revertible with one), annotations versioned with the record, and an audit trail." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/template-actions.js"></script>
+<script src="./securities-data.js"></script>
+<script src="./record-state.js"></script>
 <meta name="dc-template" content="security-master-registry">
+<style>html,body{margin:0;padding:0;height:100%}[data-smr-show="off"]{display:none!important}</style>
 </helmet>
-<x-import component-from-global-scope="SecurityMasterRegistryScreen" from="./screen.jsx" hint-size="100%,900px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Securities" action-label="Retry example" on-action="{{ onPreviewRetry }}" hint-size="100%,900px">
+<div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Security Master" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="security-master" on-select="{{ onNav }}" sections="{{ navSections }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:20px">
+<div data-screen-label="Security Master — List" data-smr-show="{{ listShow }}" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Security Master</h1>
+<span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">{{ shownCount }} of {{ totalCount }} securities</span>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="70px,28px" on-click="{{ onExportAll }}">Export all examples</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="80px,28px" disabled="{{ true }}" title="Security import requires the application validation and import service." aria-description="Security import requires the application validation and import service.">Import data</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="90px,28px" disabled="{{ true }}" title="Adding a security requires an application registry instruction and validation service." aria-description="Adding a security requires an application registry instruction and validation service.">Add security</x-import>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="40px,14px">Views</x-import>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ viewChips }}" as="v" hint-placeholder-count="6">
+<span style="display:inline-flex;align-items:center">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="{{ v.variant }}" size="sm" on-click="{{ v.select }}" hint-size="90px,26px">{{ v.name }}</x-import>
+<button data-smr-show="{{ v.customShow }}" onClick="{{ v.remove }}" title="Delete view" style="margin:0 2px 0 -2px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-size:13px;line-height:1;padding:0 4px">×</button>
+</span>
+</sc-for>
+</div>
+<div style="flex:1"></div>
+<div data-smr-show="{{ notNamingShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onStartNaming }}" hint-size="170px,26px">Save current filter as view</x-import>
+</div>
+<div data-smr-show="{{ namingShow }}" style="display:flex;align-items:center;gap:6px">
+<div style="width:180px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" auto-focus="{{ true }}" placeholder="View name…" value="{{ viewName }}" on-change="{{ onViewName }}" on-key-down="{{ onViewNameKey }}" hint-size="180px,30px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ saveViewDisabled }}" on-click="{{ onSaveView }}" hint-size="50px,26px">Save</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onCancelNaming }}" hint-size="60px,26px">Cancel</x-import>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<div style="width:280px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" ref="{{ searchRef }}" placeholder="Search name, issuer, CUSIP, sector, rating…" value="{{ query }}" on-change="{{ onQuery }}" hint-size="280px,30px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="{{ filtersBtnVariant }}" size="sm" on-click="{{ onToggleFilters }}" hint-size="70px,28px">Filters{{ filterCountSuffix }}</x-import>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:6px">
+<span style="font-size:11px;color:var(--text-muted);font-variant:all-small-caps;letter-spacing:.04em">then by</span>
+<div style="width:150px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ secondarySort }}" on-change="{{ onSecondarySort }}" options="{{ sortOptions }}" hint-size="150px,30px"></x-import>
+</div>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" options="{{ densityOptions }}" value="{{ density }}" on-change="{{ onDensity }}" hint-size="180px,26px"></x-import>
+</div>
+<sc-if value="{{ showFilters }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);padding:14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FilterBuilder" fields="{{ filterFields }}" value="{{ filterRows }}" on-change="{{ onFilterRows }}" show-apply="{{ false }}" summary="{{ filterSummary }}" hint-size="100%,80px"></x-import>
+</div>
+</sc-if>
+<x-import component="RegistryTable" from="./registry-table.jsx" rows="{{ pageRows }}" loading="{{ loading }}" sort-key="{{ sortKey }}" sort-dir="{{ sortDir }}" on-sort="{{ onSort }}" selected-ids="{{ selectedIdList }}" on-toggle-row="{{ onToggleRow }}" on-select-all-page="{{ onSelectAllPage }}" cursor-index="{{ cursor }}" on-row-click="{{ onOpenRow }}" page="{{ page }}" total-pages="{{ totalPages }}" on-page-change="{{ onPage }}" total-shown="{{ shownCountNum }}" hint-size="100%,560px"></x-import>
+<div style="display:flex;gap:14px;align-items:center;font-size:11px;color:var(--text-muted);flex-wrap:wrap">
+<span style="display:inline-flex;gap:5px;align-items:center"><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">J</kbd><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">K</kbd> move</span>
+<span style="display:inline-flex;gap:5px;align-items:center"><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">Enter</kbd> open · <kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">⌘</kbd>+click new tab</span>
+<span style="display:inline-flex;gap:5px;align-items:center"><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">Space</kbd> select</span>
+<span style="display:inline-flex;gap:5px;align-items:center"><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">/</kbd> search</span>
+<span style="display:inline-flex;gap:5px;align-items:center"><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">F</kbd> filters</span>
+<span style="display:inline-flex;gap:5px;align-items:center"><kbd style="font:11px var(--font-data);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:0 5px;background:var(--bg-light);color:var(--text-secondary)">G S</kbd> registry</span>
+</div>
+</div>
+<div data-screen-label="Security Master — Detail" data-smr-show="{{ detailShow }}" style="display:flex;flex-direction:column;gap:14px;max-width:1180px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OptimisticProvider" commit="{{ optCommit }}" on-settle="{{ onOptSettle }}" hint-size="100%,600px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationProvider" object-id="{{ detObjectId }}" object-version="{{ detVersion }}" author="you" hint-size="100%,600px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<nav style="display:flex;align-items:center;gap:8px;font-size:12px">
+<button onClick="{{ onBack }}" style="background:none;border:none;padding:0;cursor:pointer;font:12px var(--font-body);color:var(--link,#2A5F96)" style-hover="text-decoration:underline">Security Master</button>
+<span style="color:var(--text-disabled)">/</span>
+<span style="color:var(--text-secondary)">{{ detName }}</span>
+</nav>
+<div style="display:flex;align-items:flex-start;gap:14px">
+<div style="flex:1;min-width:0">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationAnchor" anchor="{{ detAnchor }}" hint-size="240px,26px"><h1 style="font:600 20px var(--font-display);margin:0;color:var(--text-primary)">{{ detName }}</h1></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="80px,18px">{{ detAssetClass }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ detLifecycleTip }}" hint-size="70px,18px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ detLifecycleVariant }}" dot="{{ true }}" hint-size="70px,18px">{{ detLifecycle }}</x-import></x-import>
+<sc-for list="{{ detFlags }}" as="f" hint-placeholder-count="0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ f.tip }}" hint-size="70px,18px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="danger" dot="{{ true }}" hint-size="70px,18px">{{ f.label }}</x-import>
+</x-import>
+</sc-for>
+</div>
+<div style="font-family:var(--font-data);font-size:12px;color:var(--text-muted);margin-top:4px">{{ detSub }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OptimisticRowBar" row-ids="{{ detRowId }}" label="edits on this record" hint-size="0px,0px"></x-import>
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Depth</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ detail }}" on-change="{{ onDetail }}" options="{{ detailOptions }}" hint-size="140px,26px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Toggle" checked="{{ editMode }}" on-change="{{ onEditMode }}" label="Edit Mode" hint-size="110px,24px"></x-import>
+</div>
+</div>
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:0 18px 18px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" default-tab="{{ 0 }}" tabs="{{ detTabs }}" hint-size="100%,400px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,360px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureProvider" screen-id="security-master-registry" detail="{{ detail }}" hint-size="100%,360px">
+<div style="display:flex;flex-direction:column;gap:18px;padding:18px 2px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="150px,14px">Lineage &amp; provenance</x-import>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">as of {{ detAsOf }}</span>
+</div>
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);padding:12px 14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EntitySummary" columns="{{ 5 }}" items="{{ provItems }}" hint-size="100%,50px"></x-import>
+</div>
+</div>
+<div style="border-top:1px solid var(--border)"></div>
+<sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" title="Edit mode is on" hint-size="100%,60px">Click any field to edit. An edit writes at once and reads Provisional until the registry confirms it; a rejection restores the prior value with the reason attached; a confirmed edit stays revertible — hover it for Revert…, or revert everything on this record from the header.</x-import>
+</sc-if>
+<div data-smr-show="{{ rejectedShow }}" style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="110px,14px">Rejected edits</x-import>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ rejectedCount }} this session · prior values kept</span>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onDismissRejected }}" hint-size="60px,24px">Dismiss</x-import>
+</div>
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);border-left:3px solid var(--red)">
+<sc-for list="{{ detRejected }}" as="r" hint-placeholder-count="1">
+<div style="display:grid;grid-template-columns:140px 1fr auto;gap:12px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--border)">
+<span style="font-weight:600;font-size:12px;color:var(--text-primary)">{{ r.field }}</span>
+<span style="font-size:12.5px;color:var(--text-secondary)"><span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-muted);text-decoration:line-through">{{ r.value }}</span> — {{ r.reason }}</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap">{{ r.ts }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-for list="{{ detSections }}" as="sec" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div data-smr-show="{{ sec.dividerShow }}" style="border-top:1px solid var(--border)"></div>
+<div data-smr-show="{{ sec.fieldsShow }}" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureRegion" id="{{ sec.id }}" title="{{ sec.title }}" secondary="{{ sec.secondary }}" count="{{ sec.count }}" count-label="fields" hint-size="100%,110px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 3 }}" items="{{ sec.items }}" hint-size="100%,80px"></x-import>
+</x-import>
+</div>
+<div data-smr-show="{{ sec.checklistShow }}" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormSectionLabel" hint-size="120px,16px">{{ sec.title }}</x-import>
+<div style="display:flex;flex-wrap:wrap;gap:10px 24px">
+<sc-for list="{{ sec.checks }}" as="c" hint-placeholder-count="3">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Checkbox" checked="{{ c.checked }}" disabled="{{ true }}" label="{{ c.label }}" on-change="{{ noop }}" hint-size="180px,20px"></x-import>
+</sc-for>
+</div>
+</div>
+<div data-smr-show="{{ sec.calloutShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="{{ sec.tone }}" title="{{ sec.title }}" hint-size="100%,60px">{{ sec.text }}</x-import>
+</div>
+<div data-smr-show="{{ sec.scheduleShow }}" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormSectionLabel" hint-size="120px,16px">{{ sec.title }}</x-import>
+<div data-smr-show="{{ sec.hasRowsShow }}" style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead>
+<tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Event Type</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Payment Date</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Index</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Spread</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Expected</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Actual</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Posted</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ sec.rows }}" as="e" hint-placeholder-count="2">
+<tr>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ e.eventType }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ e.paymentDate }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ e.index }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ e.spread }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ e.expected }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ e.actual }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ e.postedVariant }}" dot="{{ true }}" hint-size="70px,18px">{{ e.postedLabel }}</x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div data-smr-show="{{ sec.noRowsShow }}" style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="table" compact="{{ true }}" title="No cash flow schedules available" detail="Import data or add schedules to view projected and actual amounts." hint-size="100%,120px"></x-import>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,200px">
+<div style="padding:18px 2px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ValidationIssueList" issues="{{ detValidation }}" empty-label="No validation issues on file" hint-size="100%,120px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="120px,14px">Compliance status</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ detCompStatus }}" hint-size="70px,18px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 3 }}" items="{{ detCompItems }}" hint-size="100%,80px"></x-import>
+<div style="border-top:1px solid var(--border)"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ValidationIssueList" issues="{{ detCompChecks }}" hint-size="100%,100px"></x-import>
+<div data-smr-show="{{ detRestrictedShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="danger" title="Restricted" hint-size="100%,60px">This security is on the restricted list. See Operational flags on the Overview tab for detail.</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px;max-width:720px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationPanel" title="Anchored annotations" empty-text="No annotations. Press ¶ beside the security name to anchor one; follow-notes go stale when the record changes, pinned notes keep their version." hint-size="100%,80px"></x-import>
+<div style="border-top:1px solid var(--border)"></div>
+<div data-smr-show="{{ noNotesShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="inbox" compact="{{ true }}" title="No notes yet" detail="Add the first note below." hint-size="100%,100px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ detNotes }}" as="n" hint-placeholder-count="2">
+<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:3px">
+<span style="font-weight:600;font-size:12px;color:var(--text-primary)">{{ n.author }}</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ n.ts }}</span>
+</div>
+<div style="font-size:13px;color:var(--text-secondary);line-height:1.5">{{ n.text }}</div>
+</div>
+</sc-for>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TextArea" label="Add a note" rows="{{ 3 }}" value="{{ noteDraft }}" on-change="{{ onNoteDraft }}" placeholder="Log a decision, review outcome, or context for the next operator…" hint-size="100%,90px"></x-import>
+<div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ addNoteDisabled }}" on-click="{{ onAddNote }}" hint-size="80px,26px">Add note</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="padding:18px 2px">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead>
+<tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Timestamp</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">User</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Field</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Old Value</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">New Value</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ detAudit }}" as="a" hint-placeholder-count="3">
+<tr>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted);white-space:nowrap">{{ a.ts }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-primary)">{{ a.user }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ a.field }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted)">{{ a.oldValue }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ a.newValue }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</x-import>
+</x-import>
+</div>
+</div>
+</x-import>
+</x-import>
+</div>
+</main>
+</div>
+<sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SelectionToolbar" count="{{ selectionCount }}" total="{{ shownCountNum }}" on-select-all="{{ onSelectAllFiltered }}" on-clear="{{ onClearSelection }}" primary-action="{{ selPrimaryAction }}" actions="{{ selActions }}" hint-size="0px,0px"></x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeys }}" hint-size="0px,0px"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;detailMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;page&quot;,&quot;options&quot;:[&quot;page&quot;,&quot;inline&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.state.density ?? this.props.density ?? "compact"):(this.state.density ?? this.props.density ?? "compact")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    this._t = setTimeout(() => this.setState({ loading: false }), 650);
+    const stored = JSON.parse(localStorage.getItem("smr.savedViews.v1") || "null");
+    if (Array.isArray(stored)) this.setState({ customViews: stored });
+    const S = window.SMR_STATE;
+    if (S) { this.setState(S.read()); this._unsub = S.subscribe((sh) => this.setState(sh)); }
+    try { const id = new URL(location.href).searchParams.get("security"); if (id && this.data().some((r) => r.id === id)) { if ((this.props.detailMode ?? "page") === "page") location.replace(this.detailHref(id)); else this.setState({ selectedId: id, view: "detail" }); } } catch (e) {}
+    this._key = (e) => {
+      if (this.state.view !== "list") return;
+      const a = document.activeElement;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test((a && a.tagName) || "") || (a && a.isContentEditable)) return;
+      const pr = this.pageRows();
+      if (e.key === "j" || e.key === "ArrowDown") { e.preventDefault(); this.setState((s) => ({ cursor: Math.min(pr.length - 1, s.cursor + 1) })); }
+      else if (e.key === "k" || e.key === "ArrowUp") { e.preventDefault(); this.setState((s) => ({ cursor: Math.max(0, s.cursor - 1) })); }
+      else if (e.key === "Enter") { const r = pr[this.state.cursor]; if (r) this.openRow(r.id, { meta: e.metaKey || e.ctrlKey }); }
+      else if (e.key === " ") { const r = pr[this.state.cursor]; if (r) { e.preventDefault(); this.toggleRow(r.id); } }
+    };
+    window.addEventListener("keydown", this._key);
+  }
+  componentWillUnmount() { clearTimeout(this._t); window.removeEventListener("keydown", this._key); if (this._unsub) this._unsub(); }
+  // Persist record state so the standalone detail page and this list stay in sync.
+  setRecordState(fn) { this.setState((p) => { const n = fn(p); if (window.SMR_STATE) window.SMR_STATE.write({ ...p, ...n }); return n; }); }
+  detailHref(id) { return "./SecurityDetail.dc.html?security=" + encodeURIComponent(id); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
+
+  state = {
+    detail: null,
+    view: "list", selectedId: null, query: "", density: null,
+    sortKey: "name", sortDir: "asc", secondarySort: "",
+    notesById: {}, showFilters: false, filterRows: [], customViews: [],
+    selected: {}, page: 1, cursor: 0, loading: true,
+    overrides: {}, auditExtra: {}, fieldEdits: {},
+    editMode: false, noteDraft: "", naming: false, viewName: "", rejected: {},
+  };
+
+  TODAY = new Date("2026-07-04");
+  PAGE = 8;
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  data() { return window.SECURITIES || []; }
+  toast(tone, title, detail) { const t = window.MeridianToast; if (t) (t[tone] || t.show)(title, detail); }
+  searchRef = React.createRef();
+  noop = () => {};
+
+  anyFieldVal(row, label) {
+    for (const s of row.sections) if (s.type === "fields") { const f = s.fields.find((y) => y.label === label); if (f) return f.value; }
+    return null;
+  }
+  feedFor(src) {
+    if (!src) return "—";
+    if (/BVAL|Bloomberg/i.test(src)) return "Bloomberg BVAL";
+    if (/QuantLib|Internal/i.test(src)) return "Internal model";
+    if (/NAV/i.test(src)) return "GP NAV statement";
+    if (/amortized/i.test(src)) return "Amortized cost";
+    return src;
+  }
+  confidenceFor(level) {
+    if (level === "Level 1") return { label: "High — observable", color: "var(--green)" };
+    if (level === "Level 2") return { label: "Medium — derived", color: "var(--orange)" };
+    return { label: "Model-derived", color: "var(--red)" };
+  }
+  enrichRow(row, ov) {
+    const o = ov || {};
+    const restricted = o.restricted != null ? o.restricted : (row.compliance.restricted || row.flags.includes("Restricted"));
+    const m = row.maturityDate && row.maturityDate !== "—" ? (new Date(row.maturityDate) - this.TODAY) / (1000 * 3600 * 24 * 30.44) : null;
+    const lifecycle = this.lifecycleOf(row);
+    return { ...row, flags: o.flags || row.flags, restricted, lifecycle, lifecycleVariant: this.lifecycleVariant(lifecycle), restrictedLabel: restricted ? "Yes" : "No",
+      watchlistLabel: row.compliance.watchlist ? "Yes" : "No",
+      complianceStatus: o.complianceStatus || row.compliance.status,
+      fairValueLevel: this.anyFieldVal(row, "Fair Value Level") || "—",
+      pricingSource: this.anyFieldVal(row, "Pricing Source") || "—",
+      dataSteward: o.dataSteward || this.anyFieldVal(row, "Data Steward") || "—",
+      nearMaturityLabel: m != null && m <= 12 ? "Yes" : "No" };
+  }
+  filterFields() {
+    if (this._ff) return this._ff;
+    const uniq = (arr) => [...new Set(arr.filter(Boolean))].sort();
+    const raw = this.data().map((r) => this.enrichRow(r));
+    if (!raw.length) return [];
+    this._ff = [
+      { key: "name", label: "Security name", type: "text" },
+      { key: "issuer", label: "Issuer", type: "text" },
+      { key: "cusip", label: "CUSIP", type: "text" },
+      { key: "assetClass", label: "Asset class", type: "enum", options: uniq(raw.map((r) => r.assetClass)) },
+      { key: "sector", label: "Sector", type: "enum", options: uniq(raw.map((r) => r.sector)) },
+      { key: "rating", label: "Rating", type: "enum", options: uniq(raw.map((r) => r.rating)) },
+      { key: "currency", label: "Currency", type: "enum", options: uniq(raw.map((r) => r.currency)) },
+      { key: "fairValueLevel", label: "Valuation level", type: "enum", options: ["Level 1", "Level 2", "Level 3"] },
+      { key: "lifecycle", label: "Lifecycle", type: "enum", options: ["Active", "Pending", "Called", "Matured", "Delisted", "Perpetual"] },
+      { key: "complianceStatus", label: "Compliance", type: "enum", options: ["Ready", "Review", "Blocked"] },
+      { key: "restrictedLabel", label: "Restricted", type: "enum", options: ["Yes", "No"] },
+      { key: "watchlistLabel", label: "On watchlist", type: "enum", options: ["Yes", "No"] },
+      { key: "nearMaturityLabel", label: "Maturing ≤12mo", type: "enum", options: ["Yes", "No"] },
+      { key: "issueDate", label: "Issue date", type: "date" },
+      { key: "maturityDate", label: "Maturity date", type: "date" },
+    ];
+    return this._ff;
+  }
+  builtinViews = [
+    { id: "all", name: "All securities", rows: [] },
+    { id: "restricted", name: "Restricted only", rows: [{ field: "restrictedLabel", op: "is", value: "Yes" }] },
+    { id: "maturing", name: "Maturing ≤ 12mo", rows: [{ field: "nearMaturityLabel", op: "is", value: "Yes" }] },
+    { id: "level3", name: "Level 3 valuations", rows: [{ field: "fairValueLevel", op: "is", value: "Level 3" }] },
+    { id: "watchlist", name: "On watchlist", rows: [{ field: "watchlistLabel", op: "is", value: "Yes" }] },
+    { id: "blocked", name: "Compliance blocked", rows: [{ field: "complianceStatus", op: "is", value: "Blocked" }] },
+    { id: "inactive", name: "Matured / called", rows: [{ field: "lifecycle", op: "is", value: "Matured" }] },
+  ];
+  views() { return [...this.builtinViews, ...this.state.customViews]; }
+
+  filtered() {
+    const s = this.state;
+    const FB = this.ds().FilterBuilder;
+    let pred = () => true;
+    try { if (FB && FB.predicate) pred = FB.predicate(this.filterFields(), s.filterRows); } catch (e) {}
+    const q = s.query.trim().toLowerCase();
+    let rows = this.data().map((r) => this.enrichRow(r, s.overrides[r.id])).filter((r) => {
+      if (!pred(r)) return false;
+      if (!q) return true;
+      return [r.name, r.issuer, r.cusip, r.shortCode, r.sector, r.rating, r.assetClass, r.currency, r.isin, r.ticker].some((v) => (v || "").toLowerCase().includes(q));
+    });
+    rows.sort((a, b) => {
+      const p = String(a[s.sortKey] ?? "").localeCompare(String(b[s.sortKey] ?? ""));
+      const pr = s.sortDir === "asc" ? p : -p;
+      if (pr !== 0) return pr;
+      if (s.secondarySort) { const x = String(a[s.secondarySort] ?? "").localeCompare(String(b[s.secondarySort] ?? "")); if (x !== 0) return x; }
+      return String(a.name).localeCompare(String(b.name));
+    });
+    return rows;
+  }
+  pageRows() { const f = this.filtered(); return f.slice((this.state.page - 1) * this.PAGE, this.state.page * this.PAGE); }
+  resetList(patch) { this.setState({ ...patch, page: 1, cursor: 0 }); }
+  toggleRow(id) { this.setState((s) => { const n = { ...s.selected }; n[id] ? delete n[id] : n[id] = true; return { selected: n }; }); }
+  openRow(id, mod) {
+    const mode = this.props.detailMode ?? "page";
+    if (mode === "page") { const href = this.detailHref(id); if (mod && mod.meta) window.open(href, "_blank"); else location.assign(href); return; }
+    this.setState({ selectedId: id, view: "detail", editMode: false, noteDraft: "" }); this.syncUrl(id);
+  }
+
+  selectedRow() {
+    const s = this.state;
+    const base = this.data().find((x) => x.id === s.selectedId);
+    if (!base) return null;
+    const r = this.enrichRow(base, s.overrides[base.id]);
+    const edits = s.fieldEdits[r.id];
+    if (!edits) return r;
+    return { ...r, sections: r.sections.map((sec) => sec.type === "fields" ? { ...sec, fields: sec.fields.map((f) => edits[f.label] != null ? { ...f, value: edits[f.label] } : f) } : sec) };
+  }
+  // 1 · deep link: ?security=<id> survives refresh and can be shared.
+  syncUrl(id) {
+    try { const u = new URL(location.href); if (id) u.searchParams.set("security", id); else u.searchParams.delete("security"); history.replaceState(null, "", u); } catch (e) {}
+  }
+  lifecycleOf(row) {
+    if (row.lifecycle) return row.lifecycle;
+    if (!row.maturityDate || row.maturityDate === "—") return "Perpetual";
+    return new Date(row.maturityDate) < this.TODAY ? "Matured" : "Active";
+  }
+  lifecycleVariant(l) { return l === "Active" ? "success" : l === "Pending" ? "warning" : l === "Matured" || l === "Called" || l === "Delisted" ? "danger" : "neutral"; }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const el = React.createElement;
+    const { OptimisticCell } = this.ds();
+    const filtered = this.filtered();
+    const pageRows = this.pageRows();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / this.PAGE));
+    const selectedIdList = Object.keys(s.selected);
+    const activeViewId = (this.views().find((v) => JSON.stringify(v.rows) === JSON.stringify(s.filterRows)) || {}).id || null;
+    const row = this.selectedRow();
+    const notes = row ? (s.notesById[row.id] || row.notesSeed) : [];
+    const audit = row ? [...(s.auditExtra[row.id] || []), ...row.audit] : [];
+    const checks = row && window.complianceChecks ? window.complianceChecks(row.compliance) : [];
+    const conf = row ? this.confidenceFor(row.fairValueLevel) : null;
+    const filterCount = s.filterRows.filter((r) => r.field && r.op).length;
+    const saveViewCommit = () => {
+      if (!s.viewName.trim()) return;
+      const v = { id: "cv-" + Date.now(), name: s.viewName.trim(), rows: s.filterRows, custom: true };
+      const next = [...s.customViews, v];
+      localStorage.setItem("smr.savedViews.v1", JSON.stringify(next));
+      this.setState({ customViews: next, naming: false, viewName: "" });
+      this.toast("success", "View saved", v.name);
+    };
+    return {
+      onPreviewRetry: () => this.setState({ previewReady: true }),
+      noop: this.noop,
+      onExportAll: () => window.MeridianTemplateActions.downloadJson("security-registry-examples.json", this.data()),
+
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      detail: s.detail ?? this.props.detail ?? "full",
+      onDetail: (v) => this.setState({ detail: v }),
+      detailOptions: [{ value: "summary", label: "Summary" }, { value: "full", label: "Full" }],
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("security-master") : []),
+      listShow: s.view === "list" ? "on" : "off",
+      detailShow: s.view === "detail" && row ? "on" : "off",
+      shownCount: String(filtered.length), shownCountNum: filtered.length, totalCount: String(this.data().length),
+      viewChips: this.views().map((v) => ({
+        name: v.name, variant: v.id === activeViewId ? "primary" : "ghost",
+        customShow: v.custom ? "on" : "off",
+        select: () => this.resetList({ filterRows: v.rows, showFilters: s.showFilters || v.rows.length > 0 }),
+        remove: () => { const next = s.customViews.filter((x) => x.id !== v.id); localStorage.setItem("smr.savedViews.v1", JSON.stringify(next)); this.setState({ customViews: next }); },
+      })),
+      notNamingShow: s.naming ? "off" : "on", namingShow: s.naming ? "on" : "off",
+      onStartNaming: () => this.setState({ naming: true }),
+      onCancelNaming: () => this.setState({ naming: false, viewName: "" }),
+      viewName: s.viewName, onViewName: (e) => this.setState({ viewName: e.target.value }),
+      onViewNameKey: (e) => { if (e.key === "Enter") saveViewCommit(); },
+      saveViewDisabled: !s.viewName.trim(), onSaveView: saveViewCommit,
+      searchRef: this.searchRef,
+      query: s.query, onQuery: (e) => this.resetList({ query: e.target.value }),
+      filtersBtnVariant: s.showFilters ? "primary" : "ghost",
+      filterCountSuffix: filterCount ? " · " + filterCount : "",
+      onToggleFilters: () => this.setState({ showFilters: !s.showFilters }),
+      secondarySort: s.secondarySort, onSecondarySort: (v) => this.resetList({ secondarySort: v }),
+      sortOptions: [
+        { value: "", label: "None" }, { value: "maturityDate", label: "Maturity date" }, { value: "rating", label: "Rating" },
+        { value: "sector", label: "Sector" }, { value: "assetClass", label: "Asset class" }, { value: "issuer", label: "Issuer" }, { value: "lifecycle", label: "Lifecycle" },
+      ],
+      density: s.density ?? this.props.density ?? "compact", densityOptions: [{ value: "default", label: "Default" }, { value: "compact", label: "Compact" }, { value: "terminal", label: "Terminal" }, { value: "spacious", label: "Spacious" }], onDensity: (v) => this.setState({ density: v }),
+      showFilters: s.showFilters,
+      filterFields: this.filterFields(), filterRows: s.filterRows,
+      onFilterRows: (v) => this.resetList({ filterRows: v }),
+      filterSummary: filtered.length + " of " + this.data().length + " rows",
+      pageRows, loading: s.loading,
+      sortKey: s.sortKey, sortDir: s.sortDir,
+      onSort: (k) => this.setState(k === s.sortKey ? { sortDir: s.sortDir === "asc" ? "desc" : "asc" } : { sortKey: k, sortDir: "asc" }),
+      selectedIdList,
+      onToggleRow: (id) => this.toggleRow(id),
+      onSelectAllPage: (isSel) => this.setState((p) => { const n = { ...p.selected }; pageRows.forEach((r) => { if (isSel) n[r.id] = true; else delete n[r.id]; }); return { selected: n }; }),
+      cursor: s.cursor,
+      onOpenRow: (id, mod) => this.openRow(id, mod),
+      page: s.page, totalPages, onPage: (p) => this.setState({ page: p, cursor: 0 }),
+      hasSelection: selectedIdList.length > 0 && s.view === "list",
+      selectionCount: selectedIdList.length,
+      onSelectAllFiltered: () => this.setState({ selected: Object.fromEntries(filtered.map((r) => [r.id, true])) }),
+      onClearSelection: () => this.setState({ selected: {} }),
+      selPrimaryAction: { label: "Export selected examples", variant: "primary", onClick: () => window.MeridianTemplateActions.downloadJson("selected-security-examples.json", this.data().filter((item) => selectedIdList.includes(item.id))) },
+      selActions: [
+        { label: "Flag restricted", variant: "danger", tooltip: "Add to the restricted list", onClick: () => {
+          this.setRecordState((p) => {
+            const n = { ...p.overrides };
+            selectedIdList.forEach((id) => {
+              const base = this.enrichRow(this.data().find((r) => r.id === id), p.overrides[id]);
+              if (!base.restricted) n[id] = { ...n[id], restricted: true, flags: [...new Set([...base.flags, "Restricted"])] };
+            });
+            const now = new Date().toISOString().slice(0, 16).replace("T", " ") + "Z";
+            const ax = { ...p.auditExtra };
+            selectedIdList.forEach((id) => { ax[id] = [{ ts: now, user: "You", field: "Restricted flag", oldValue: "false", newValue: "true" }, ...(ax[id] || [])]; });
+            return { overrides: n, auditExtra: ax };
+          });
+          this.setState({ selected: {} });
+          this.toast("success", selectedIdList.length + " flagged restricted", "Audit entries written.");
+        } },
+        { label: "Screen sanctions", disabled: true, disabledReason: "Sanctions screening requires an authorized application screening instruction; no securities are submitted by this example.", onClick: this.noop },
+      ],
+      statusItems: [
+        { status: "ok", label: "Connected", value: "IBKR · Polygon · Databento" },
+        { label: "Master", value: this.data().length + " securities" },
+        { label: "Shown", value: String(filtered.length) },
+        { label: "Selected", value: selectedIdList.length ? String(selectedIdList.length) : "—" },
+        { status: "ok", label: "Index", value: "fresh", push: true },
+      ],
+      hotkeys: [
+        { keys: "g s", label: "Go to Security Master", group: "Navigate", action: () => { this.setState({ view: "list" }); this.syncUrl(null); } },
+        { keys: "/", label: "Focus search", group: "Registry", action: () => { this.setState({ view: "list" }); setTimeout(() => { const r = this.searchRef.current; if (r && r.focus) r.focus(); }, 0); } },
+        { keys: "f", label: "Toggle filters", group: "Registry", action: () => this.setState((p) => ({ showFilters: !p.showFilters })) },
+      ],
+      onBack: () => { this.setState({ view: "list" }); this.syncUrl(null); },
+      detLifecycle: row ? row.lifecycle : "", detLifecycleVariant: row ? row.lifecycleVariant : "neutral",
+      detLifecycleTip: row ? (row.maturityDate && row.maturityDate !== "—" ? "Maturity " + row.maturityDate : "No maturity date") : "",
+      // 9 · rejected edits persist on the record until dismissed, and go on the audit trail.
+      rejectedShow: row && (s.rejected[row.id] || []).length ? "on" : "off",
+      rejectedCount: row ? String((s.rejected[row.id] || []).length) : "0",
+      detRejected: row ? (s.rejected[row.id] || []) : [],
+      onDismissRejected: () => this.setRecordState((p) => { const n = { ...p.rejected }; delete n[row.id]; return { rejected: n }; }),
+      detName: row ? row.name : "", detAssetClass: row ? row.assetClass : "",
+      detFlags: row ? row.flags.map((f) => ({ label: f, tip: f === "Restricted" ? "Trading restricted — see Compliance tab" : f })) : [],
+      detSub: row ? row.shortCode + " · " + row.issuer : "",
+      editMode: s.editMode, onEditMode: (v) => this.setState({ editMode: v }),
+      // Optimistic write path. The fixture registry answers in ~650ms and enforces two policies verbatim.
+      detRowId: row ? row.id : "",
+      optCommit: (edit) => new Promise((resolve, reject) => setTimeout(() => {
+        const v = String(edit.value).trim();
+        if (!v) return reject(new Error("Empty value refused · REG-FIELD-01"));
+        if (edit.field === "CUSIP" && !/^[0-9A-Z]{9}$/.test(v)) return reject(new Error("CUSIP must be 9 alphanumerics · REG-CUSIP-01"));
+        if (edit.field === "Rating" && !/^(AAA|AA[+-]?|A[+-]?|BBB[+-]?|BB[+-]?|B[+-]?|CCC|NR)$/.test(v)) return reject(new Error("Not a recognised rating notch · REG-RATING-02"));
+        resolve({ receipt: "smr-" + Date.now().toString(36) });
+      }, 650)),
+      onOptSettle: (edit) => {
+        const now = new Date().toISOString().slice(0, 16).replace("T", " ") + "Z";
+        if (edit.status === "confirmed") {
+          this.setRecordState((p) => ({
+            fieldEdits: { ...p.fieldEdits, [edit.rowId]: { ...(p.fieldEdits[edit.rowId] || {}), [edit.field]: String(edit.value).trim() } },
+            auditExtra: { ...p.auditExtra, [edit.rowId]: [{ ts: now, user: "You", field: edit.field, oldValue: String(edit.prior ?? "—"), newValue: String(edit.value).trim() }, ...(p.auditExtra[edit.rowId] || [])] },
+          }));
+        } else if (edit.status === "reverted") {
+          // A revert is its own write — the first edit stays on the trail.
+          this.setRecordState((p) => ({
+            fieldEdits: { ...p.fieldEdits, [edit.rowId]: { ...(p.fieldEdits[edit.rowId] || {}), [edit.field]: edit.prior } },
+            auditExtra: { ...p.auditExtra, [edit.rowId]: [{ ts: now, user: "You", field: edit.field + " · reverted: " + (edit.reason || "no reason"), oldValue: String(edit.value), newValue: String(edit.prior ?? "—") }, ...(p.auditExtra[edit.rowId] || [])] },
+          }));
+        } else if (edit.status === "rejected") {
+          this.toast("warning", "Edit rejected · " + edit.field, edit.reason);
+          this.setRecordState((p) => ({
+            rejected: { ...p.rejected, [edit.rowId]: [{ ts: now, field: edit.field, value: String(edit.value), reason: edit.reason || "Rejected by registry" }, ...(p.rejected[edit.rowId] || [])] },
+            auditExtra: { ...p.auditExtra, [edit.rowId]: [{ ts: now, user: "You", field: edit.field + " · rejected: " + (edit.reason || "no reason"), oldValue: String(edit.prior ?? "—"), newValue: String(edit.prior ?? "—") + " (kept)" }, ...(p.auditExtra[edit.rowId] || [])] },
+          }));
+        }
+      },
+      // Annotations are judged against the record version: every audit line is a version.
+      detObjectId: row ? "security:" + row.id : "",
+      detVersion: row ? 1 + audit.length : 1,
+      detAnchor: row ? { kind: "header", ref: "security:" + row.id, label: row.name } : { kind: "header", ref: "none" },
+      detTabs: [
+        { label: "Overview" }, { label: "Validation", count: row ? row.validation.length : 0 },
+        { label: "Compliance" }, { label: "Notes & Comments", count: notes.length },
+        { label: "Audit History", count: audit.length },
+      ],
+      detAsOf: row ? row.compliance.lastReview : "",
+      provItems: row ? [
+        { label: "Primary source", value: row.pricingSource, mono: false },
+        { label: "Ingest feed", value: this.feedFor(row.pricingSource), mono: false },
+        { label: "Fair-value level", value: row.fairValueLevel },
+        { label: "Data steward", value: row.dataSteward, mono: false },
+        { label: "Record confidence", value: conf.label, color: conf.color, mono: false },
+      ] : [],
+      detSections: row ? (() => { let fieldsSeen = 0; return row.sections.map((sec, i) => {
+        const out = {
+          // Reading depth (4.1): identity and classification stay open; the reference sections
+          // below them are `secondary` — collapsed at summary depth, and their headers still
+          // report the field count (guidelines/PROGRESSIVE_DISCLOSURE.md).
+          id: "sec-" + i, secondary: false, count: null,
+          title: sec.title || "", dividerShow: i > 0 ? "on" : "off",
+          fieldsShow: "off", checklistShow: "off", calloutShow: "off", scheduleShow: "off",
+          hasRowsShow: "off", noRowsShow: "off", items: [], checks: [], rows: [], tone: sec.tone || "info", text: sec.text || "",
+        };
+        if (sec.type === "fields") {
+          out.fieldsShow = "on";
+          out.count = (sec.fields || []).length;
+          out.secondary = fieldsSeen >= 2;
+          fieldsSeen += 1;
+          out.items = sec.fields.map((f) => {
+            if (s.editMode && OptimisticCell) {
+              // 4.2 · B-2: the edit writes now, reads Provisional until the registry answers, and
+              // stays revertible with a reason — no staging step between the operator and the fate.
+              return { label: f.label, value: el(OptimisticCell, { rowId: row.id, field: f.label, value: f.value, mode: "text",
+                validator: (v) => v.trim().length ? true : "Cannot be empty" }) };
+            }
+            return { label: f.label, value: el("span", { style: { color: f.accent ? "var(--brand-signal,#C56343)" : undefined, fontWeight: f.accent ? 600 : undefined } }, f.value) };
+          });
+        } else if (sec.type === "checklist") { out.checklistShow = "on"; out.checks = sec.items; }
+        else if (sec.type === "callout") { out.calloutShow = "on"; }
+        else if (sec.type === "schedule") {
+          out.scheduleShow = "on";
+          const has = sec.rows && sec.rows.length;
+          out.hasRowsShow = has ? "on" : "off"; out.noRowsShow = has ? "off" : "on";
+          out.rows = (sec.rows || []).map((e) => ({ ...e, postedVariant: e.posted ? "success" : "neutral", postedLabel: e.posted ? "Posted" : "Scheduled" }));
+        }
+        return out;
+      }); })() : [],
+      detValidation: row ? row.validation : [],
+      detCompStatus: row ? row.compliance.status : "Ready",
+      detCompItems: row ? [
+        { label: "Sanctions screened", value: row.compliance.sanctionsScreened ? "Yes" : "No" },
+        { label: "On watchlist", value: row.compliance.watchlist ? "Yes" : "No" },
+        { label: "Last review", value: row.compliance.lastReview },
+        { label: "Reviewed by", value: row.compliance.reviewedBy },
+      ] : [],
+      detCompChecks: checks,
+      detRestrictedShow: row && row.compliance.restricted ? "on" : "off",
+      noNotesShow: notes.length === 0 ? "on" : "off",
+      detNotes: notes,
+      noteDraft: s.noteDraft, onNoteDraft: (e) => this.setState({ noteDraft: e.target.value }),
+      addNoteDisabled: !s.noteDraft.trim(),
+      onAddNote: () => {
+        const now = new Date().toISOString().slice(0, 16).replace("T", " ") + "Z";
+        const text = s.noteDraft.trim();
+        this.setRecordState((p) => ({ notesById: { ...p.notesById, [row.id]: [...(p.notesById[row.id] || row.notesSeed), { author: "You", ts: now, text }] } }));
+        this.setState({ noteDraft: "" });
+      },
+      detAudit: audit,
+    };
+  }
+}
+</script>
 </body>
 </html>

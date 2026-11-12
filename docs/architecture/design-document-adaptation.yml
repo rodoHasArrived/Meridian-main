@@ -5,7 +5,7 @@ schema:
 
 design_source:
   path: docs/product/meridian-design-document.md
-  version: "1.6"
+  version: "1.7"
   sections:
     - "7. Bounded Context Map"
     - "8. Context Ownership Matrix"

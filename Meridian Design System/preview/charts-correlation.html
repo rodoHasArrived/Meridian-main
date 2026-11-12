@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="../colors_and_type.css">
 <link rel="stylesheet" href="preview-common.css">
 <style>
-  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--text-primary); }
-  .card { background: var(--bg-light); border: 1px solid var(--border-strong); border-radius: var(--radius-card); padding: 16px; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-strong); }
-  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-secondary); }
-  .title b { color: var(--text-primary); margin-right: 10px; }
+  body { margin: 0; padding: 20px; font-family: var(--font-sans); color: #FFFFFF; }
+  .card { background: #201D19; border: 1px solid #736B60; border-radius: 8px; padding: 16px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #736B60; }
+  .title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: #B5AEA4; }
+  .title b { color: #FFF; margin-right: 10px; }
   table { border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
-  th, td { padding: 8px 10px; text-align: center; width: 56px; border: 1px solid var(--bg-medium); font-variant-numeric: tabular-nums; }
-  th { color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: 0; padding-bottom: 4px; }
-  td.label { text-align: left; color: var(--text-primary); border: 0; padding-right: 12px; font-weight: 500; }
-  .legend { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); }
-  .legend .bar { display: inline-block; width: 160px; height: 6px; /* @design-role quantitative-scale */ background: linear-gradient(90deg, color-mix(in srgb, var(--red) 20%, var(--bg-light)) 0%, var(--bg-light) 50%, color-mix(in srgb, var(--accent) 20%, var(--bg-light)) 100%); border-radius: 1px; }
+  th, td { padding: 8px 10px; text-align: center; width: 56px; border: 1px solid #100E0C; font-variant-numeric: tabular-nums; }
+  th { color: #B5AEA4; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: 0; padding-bottom: 4px; }
+  td.label { text-align: left; color: #FFF; border: 0; padding-right: 12px; font-weight: 500; }
+  .legend { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: #B5AEA4; }
+  .legend .bar { display: inline-block; width: 160px; height: 6px; background: linear-gradient(90deg, #CE7068 0%, #4A443C 50%, #D98A64 100%); border-radius: 1px; }
 </style>
 </head>
 <body class="bg-app">
@@ -50,10 +50,10 @@
     for (let j=0;j<syms.length;j++){
       const v = m[i][j];
       let bg;
-      if (i===j) bg = 'var(--bg-hover)';
-      else if (v >= 0) bg = `color-mix(in srgb, var(--accent) ${5 + v * 15}%, var(--bg-light))`;
-      else bg = `color-mix(in srgb, var(--red) ${5 + (-v) * 15}%, var(--bg-light))`;
-      h += `<td style="background:${bg};color:var(--text-primary);">${v.toFixed(2)}</td>`;
+      if (i===j) bg = '#2E2A24';
+      else if (v >= 0) bg = `rgba(217, 138, 100, ${0.12 + v*0.65})`;
+      else bg = `rgba(206, 112, 104, ${0.12 + (-v)*0.65})`;
+      h += `<td style="background:${bg};color:#FFF;">${v.toFixed(2)}</td>`;
     }
     h += '</tr>';
   }

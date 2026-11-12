@@ -1,10 +1,9 @@
 // Meridian amx-governance — template screen. Mounted by the DC via <x-import>; reads design-system
 // components from the compiled bundle.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  SegmentedControl, Input, KeyValueGrid, SeverityBadge, GateRail, Callout, Tooltip
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, SegmentedControl, Input, KeyValueGrid, SeverityBadge, GateRail, Callout, Tooltip;
 const { useState } = React;
 
 const NAV = [
@@ -65,11 +64,11 @@ function FieldCard({ f, expanded, toggle }) {
       <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-            <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-data)" }}>⋮⋮</span>
+            <span style={{ color: "var(--text-disabled)", fontFamily: "var(--font-data)" }}>⋮⋮</span>
             <span style={{ font: "600 13px var(--font-body)", color: "var(--text-primary)" }}>{f.name}</span>
             <Badge variant={TYPE_TONE[f.type]}>{f.type}</Badge>
           </div>
-          <code style={{ font: "12px var(--font-data)", color: "var(--accent)" }}>{f.fn}(cusip)</code>
+          <code style={{ font: "12px var(--font-data)", color: "var(--brand-signal-ink)" }}>{f.fn}(cusip)</code>
         </div>
         <SeverityBadge status={FREQ[f.freq]} label={FREQ_LABEL[f.freq]} />
       </div>
@@ -99,12 +98,13 @@ function FieldCard({ f, expanded, toggle }) {
           )}
         </div>
       )}
-      <div style={{ fontSize: 11, fontStyle: "italic", color: "var(--text-muted)" }}>Drag to insert into formula</div>
+      <div style={{ fontSize: 11, fontStyle: "italic", color: "var(--text-disabled)" }}>Drag to insert into formula</div>
     </PanelSurface>
   );
 }
 
-function AmxGovernanceScreen() {
+function AmxGovernanceScreen({ environment = "PAPER", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, SegmentedControl, Input, KeyValueGrid, SeverityBadge, GateRail, Callout, Tooltip } = window.MeridianDesignSystem_205d17);
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState({ ytm: true });
@@ -114,7 +114,7 @@ function AmxGovernanceScreen() {
 
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="AMX Catalog" environment="PAPER" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="AMX Catalog" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="catalog" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -125,6 +125,7 @@ function AmxGovernanceScreen() {
             <div style={{ flex: 1 }}></div>
             <Badge variant="success" dot>AMX live</Badge>
           </div>
+          <DataStateSwitch state={dataState} label="AMX catalog">
 
           <PanelSurface flat style={{ padding: 10 }}>
             <GateRail gates={[
@@ -207,6 +208,7 @@ function AmxGovernanceScreen() {
               </PanelSurface>
             </div>
           </div>
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

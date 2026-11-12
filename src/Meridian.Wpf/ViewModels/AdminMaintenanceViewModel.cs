@@ -505,8 +505,8 @@ public sealed class AdminMaintenanceViewModel : BindableBase
             {
                 ScheduleEnabled = result.Schedule.Enabled;
                 CronExpression = result.Schedule.CronExpression ?? "0 2 * * *";
-                NextRunText = result.Schedule.NextRunTime?.ToString("g") ?? "Not scheduled";
-                LastRunText = result.Schedule.LastRunTime?.ToString("g") ?? "Never";
+                NextRunText = result.Schedule.NextRunTime is { } nextRun ? FormatHelpers.FormatUtcTimestamp(nextRun) : "Not scheduled";
+                LastRunText = result.Schedule.LastRunTime is { } lastRun ? FormatHelpers.FormatUtcTimestamp(lastRun) : "Never";
 
                 var ops = result.Schedule.EnabledOperations;
                 RunCompression = ops.Contains("compression");
@@ -1108,7 +1108,7 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                     HistoryItems.Add(new MaintenanceHistoryItem
                     {
                         RunId = r.RunId,
-                        TimeText = r.StartTime.ToString("g"),
+                        TimeText = FormatHelpers.FormatUtcTimestamp(r.StartTime),
                         OperationsText = $"{r.OperationsCompleted} completed, {r.OperationsFailed} failed",
                         DurationText = r.EndTime.HasValue
                             ? $"{(r.EndTime.Value - r.StartTime).TotalMinutes:F1} min"

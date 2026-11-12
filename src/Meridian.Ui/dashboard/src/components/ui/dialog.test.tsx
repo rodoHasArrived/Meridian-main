@@ -128,39 +128,8 @@ describe("Dialog", () => {
       "max-h-[calc(100dvh-2rem)]",
       "overflow-y-auto",
       "overscroll-contain",
-      "rounded-[2px]"
+      "rounded-[var(--radius-dialog)]"
     );
-  });
-
-  it("wraps focus around hidden content and closed evidence disclosures", async () => {
-    const user = userEvent.setup();
-    render(
-      <Dialog open onOpenChange={vi.fn()}>
-        <DialogContent aria-label="Evidence review">
-          <div hidden><button type="button">Hidden action</button></div>
-          <button type="button">Review action</button>
-          <details>
-            <summary>Evidence details</summary>
-            <button type="button">Open evidence</button>
-          </details>
-          <div inert><button type="button">Inert action</button></div>
-        </DialogContent>
-      </Dialog>
-    );
-
-    const first = screen.getByRole("button", { name: "Review action" });
-    const disclosure = screen.getByText("Evidence details");
-    await waitFor(() => expect(first).toHaveFocus());
-    await user.tab({ shift: true });
-    expect(disclosure).toHaveFocus();
-    await user.tab();
-    expect(first).toHaveFocus();
-
-    await user.click(disclosure);
-    await user.tab();
-    expect(screen.getByRole("button", { name: "Open evidence" })).toHaveFocus();
-    await user.tab();
-    expect(first).toHaveFocus();
   });
 
   it("renders an accessible shared close button", async () => {

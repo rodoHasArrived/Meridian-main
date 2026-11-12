@@ -17,9 +17,6 @@ export interface DenseDataTableColumn {
   render?: (row: Record<string, any>) => React.ReactNode;
 }
 export interface DenseDataTableProps {
-  /** Name for the table and its keyboard-scrollable region. @default "Data table" */
-  "aria-label"?: string;
-  "aria-labelledby"?: string;
   columns: DenseDataTableColumn[];
   rows: Record<string, any>[];
   /** Row index highlighted with the cyan rail. @default -1 */
@@ -46,5 +43,7 @@ export interface DenseDataTableProps {
   rowHeight?: number;
   /** Scrolling viewport height once virtualized. @default 560 */
   maxHeight?: number;
+  /** Accessible name of the keyboard-focusable scroll region. @default "Data table" */
+  label?: string;
 }
 export declare function DenseDataTable(props: DenseDataTableProps): JSX.Element;

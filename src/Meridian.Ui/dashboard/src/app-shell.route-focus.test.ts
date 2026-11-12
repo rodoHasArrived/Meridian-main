@@ -14,7 +14,7 @@ describe("reporting queue route focus", () => {
     expect(first.routeKey).toBe(initial.routeKey);
     expect(second.routeKey).toBe(initial.routeKey);
     expect(second.fallbackElementId).toBe("workbench-content");
-    expect(second.announcement).toBe("Reporting Workstation loaded.");
+    expect(second.announcement).toBe("Reporting loaded.");
   });
 
   it("preserves financial scope and unrelated query values in the route focus key", () => {
@@ -90,6 +90,22 @@ describe("portfolio table route focus", () => {
   });
 });
 
+
+describe("market data tab route focus", () => {
+  it.each(["/data/quotes", "/data/quotes/", "/DATA/QUOTES"])("keeps tab selection local on %s", (pathname) => {
+    const initial = focusState("?provider=polygon&symbol=MSFT", pathname);
+    expect(focusState("?provider=polygon&symbol=MSFT&view=watchlist", pathname).routeKey).toBe(initial.routeKey);
+    expect(focusState("?provider=polygon&symbol=MSFT&view=alerts", pathname).routeKey).toBe(initial.routeKey);
+    expect(focusState("?provider=polygon&symbol=AAPL&view=watchlist", pathname).routeKey).not.toBe(initial.routeKey);
+    expect(focusState("?provider=other&symbol=MSFT&view=watchlist", pathname).routeKey).not.toBe(initial.routeKey);
+    expect(focusState("?provider=polygon&symbol=MSFT&view=watchlist", pathname, "#evidence").routeKey).not.toBe(initial.routeKey);
+  });
+
+  it("retains view navigation on other Data routes", () => {
+    expect(focusState("?view=first", "/data/providers").routeKey)
+      .not.toBe(focusState("?view=second", "/data/providers").routeKey);
+  });
+});
 
 describe("reconciliation queue route focus", () => {
   const paths = ["/accounting/reconciliation", "/accounting/exceptions", "/accounting/reconciliation/", "/ACCOUNTING/EXCEPTIONS/"];

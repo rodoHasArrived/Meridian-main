@@ -10,6 +10,7 @@
  */
 
 import type { AccountingAuditIntegrityReportDto, AuditChainIntegrityResultDto } from "@/types";
+import { formatCount } from "@/lib/format";
 
 export type AuditIntegrityTone = "success" | "danger" | "warning" | "default";
 
@@ -117,9 +118,9 @@ function describeCoverage(result: AuditChainIntegrityResultDto): string {
     return result.detail ?? "—";
   }
 
-  const links = `${result.linksChecked.toLocaleString("en-US")} chained ${result.linksChecked === 1 ? "entry" : "entries"} checked`;
+  const links = `${formatCount(result.linksChecked)} chained ${result.linksChecked === 1 ? "entry" : "entries"} checked`;
   return result.unprotectedPreChainCount > 0
-    ? `${links}; ${result.unprotectedPreChainCount.toLocaleString("en-US")} earlier ${result.unprotectedPreChainCount === 1 ? "record predates" : "records predate"} chaining and are not covered`
+    ? `${links}; ${formatCount(result.unprotectedPreChainCount)} earlier ${result.unprotectedPreChainCount === 1 ? "record predates" : "records predate"} chaining and are not covered`
     : links;
 }
 

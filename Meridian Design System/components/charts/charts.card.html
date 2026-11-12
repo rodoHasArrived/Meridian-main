@@ -1,28 +1,33 @@
-<!-- @dsCard group="Charts" viewport="1200x700" name="Charts" subtitle="Refined CandleChart & EquityCurve: improved gridlines, axis presentation, crosshair readouts, volume visualization" -->
+<!-- @dsCard group="Charts" viewport="1200x760" name="Charts" subtitle="CandleChart & EquityCurve on the real-pixel ChartFrame — hover for live crosshair, tooltip, and rail chips" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Charts</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="../../scripts/demo-runtime.js"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
-  body { margin: 0; padding: 20px; background: var(--bg-canvas, #F2F0EC); font-family: var(--font-body); }
+  body { margin: 0; padding: 20px; background: var(--bg-canvas, #F2F0EB); font-family: var(--font-body); }
   .container { max-width: 1200px; margin: 0 auto; }
-  h3 { margin: 0 0 16px 0; font-size: 15px; color: var(--text-primary, #22252A); font-weight: 600; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .chart-card { background: var(--bg-light); border: 1px solid var(--border, #E4E3DE); border-radius: 2px; padding: 14px; }
-  .chart-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
-  .chart-title { font-size: 14px; font-weight: 600; color: var(--text-primary, #22252A); }
-  .chart-subtitle { font-size: 12px; color: var(--text-muted, #5E666F); font-family: var(--font-data); }
-  .chart-wrap { width: 100%; height: 340px; }
+  h3 { margin: 0 0 16px 0; font-size: 15px; color: var(--text-primary, #20252B); font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+  .chart-card { min-width:0; background: var(--bg-light); border: 1px solid var(--border, #D2CDC3); border-radius: 2px; padding: 14px; }
+  .chart-header { display: flex; flex-wrap:wrap; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .chart-title { font-size: 14px; font-weight: 600; color: var(--text-primary, #20252B); }
+  .chart-subtitle { font-size: 12px; color: var(--text-muted, #606870); font-family: var(--font-data); }
+  a { color: var(--link,#2A5F96); } a:hover { color: var(--text-primary); }
+</style>
+<style>
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
-const { CandleChart, EquityCurve } = window.MeridianDesignSystem_4f61be;
+const { CandleChart, EquityCurve, ChartTooltip, ChartCursor, Fmt } = window.MeridianDesignSystem_205d17;
+const { useChartCrosshair } = ChartCursor;
 
 const BARS = (() => {
   let p = 182; const out = [];
@@ -47,46 +52,69 @@ for (let i = 0; i < 64; i++) {
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"];
 const labels = EQ.map((_, i) => i % 8 === 0 ? MON[i / 8] : "");
 
+function CandlePane() {
+  const cur = useChartCrosshair(BARS.length, { padLeft: 10, rail: 64 });
+  const i = cur.index ?? 44;
+  const bar = BARS[i];
+  return (
+    <div className="chart-card">
+      <div className="chart-header">
+        <span className="chart-title">AAPL · 1D</span>
+        <span className="chart-subtitle">Apple Inc. · XNAS</span>
+      </div>
+      <div {...cur.bind}>
+        <CandleChart bars={BARS} crosshairIndex={i} height={340} />
+        <ChartTooltip index={cur.index} count={BARS.length} title={`AAPL · ${bar.t}`} rail={64}
+          rows={[
+            { label: "Open", value: Fmt.price(bar.o) },
+            { label: "High", value: Fmt.price(bar.h) },
+            { label: "Low", value: Fmt.price(bar.l) },
+            { label: "Close", value: Fmt.price(bar.c), color: bar.c >= bar.o ? "var(--chart-equity)" : "var(--chart-drawdown)" },
+            { label: "Vol", value: Fmt.volume(bar.v) },
+          ]} />
+      </div>
+    </div>
+  );
+}
+
+function EquityPane() {
+  const cur = useChartCrosshair(EQ.length, { padLeft: 10, rail: 62 });
+  const i = cur.index ?? 49;
+  return (
+    <div className="chart-card">
+      <div className="chart-header">
+        <span className="chart-title">Strategy equity · YTD</span>
+        <span className="chart-subtitle">vs SPX benchmark</span>
+      </div>
+      <div {...cur.bind}>
+        <EquityCurve
+          series={[
+            { label: "Strategy", color: "var(--chart-equity)", points: EQ },
+            { label: "SPX", color: "var(--chart-secondary)", points: BM, dashed: true },
+          ]}
+          labels={labels}
+          drawdown={DD}
+          valueFmt={Fmt.currency}
+          crosshairIndex={i}
+          height={313}
+        />
+        <ChartTooltip index={cur.index} count={EQ.length} title="Strategy vs SPX"
+          rows={[
+            { label: "Strategy", value: Fmt.currency(EQ[i]), color: "var(--chart-equity)" },
+            { label: "SPX", value: Fmt.currency(BM[i]) },
+            { label: "Drawdown", value: DD[i].toFixed(1) + "%", color: "var(--chart-drawdown)" },
+          ]} />
+      </div>
+    </div>
+  );
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <div className="container">
-    <h3>Refined Charts with Institutional Presentation</h3>
+    <h3>Charts on the real-pixel frame — hover either pane</h3>
     <div className="grid">
-      <div className="chart-card">
-        <div className="chart-header">
-          <span className="chart-title">AAPL · 1D</span>
-          <span className="chart-subtitle">Apple Inc. · XNAS</span>
-        </div>
-        <div className="chart-wrap">
-          <CandleChart
-            bars={BARS}
-            crosshairIndex={44}
-            overlays={[
-              { label: "MA20", color: "var(--accent)", win: 20 },
-              { label: "MA50", color: "var(--orange)", win: 50 }
-            ]}
-          />
-        </div>
-      </div>
-
-      <div className="chart-card">
-        <div className="chart-header">
-          <span className="chart-title">Strategy equity · YTD</span>
-          <span className="chart-subtitle">vs SPX benchmark</span>
-        </div>
-        <div className="chart-wrap">
-          <EquityCurve
-            series={[
-              { label: "Strategy", color: "var(--chart-equity)", points: EQ },
-              { label: "SPX", color: "var(--chart-secondary)", points: BM, dashed: true },
-            ]}
-            labels={labels}
-            drawdown={DD}
-            valueFmt={(v) => "$" + (v / 1000).toFixed(2) + "k"}
-            crosshairIndex={49}
-            showLegend={true}
-          />
-        </div>
-      </div>
+      <CandlePane />
+      <EquityPane />
     </div>
   </div>
 );

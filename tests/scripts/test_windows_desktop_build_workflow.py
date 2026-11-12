@@ -62,6 +62,12 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         self.assertIn('"scripts/dev/SharedBuild.ps1"', self.workflow)
         self.assertIn('".github/workflows/windows-desktop-build.yml"', self.workflow)
 
+    def test_shared_setup_action_changes_trigger_windows_validation(self) -> None:
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        for event in ("pull_request", "push"):
+            with self.subTest(event=event):
+                self.assertIn(".github/actions/setup-dotnet-nuget/**", workflow["on"][event]["paths"])
+
     def test_launcher_changes_trigger_windows_validation(self) -> None:
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
         for event in ("pull_request", "push"):

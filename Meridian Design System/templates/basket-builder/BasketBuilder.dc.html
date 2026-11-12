@@ -1,20 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Meridian — Basket Builder</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
-<script src="./basket-data.js"></script>
+<title>Compose · Basket Builder — Meridian</title>
 </head>
-<body class="meridian">
+<body>
 <x-dc>
-<!-- @template name="Basket Builder" description="Bond basket construction — constituents, analytics, and concentration risk" -->
+<!-- @template name="Compose · Basket Builder" description="Bond basket construction — constituents, analytics, concentration risk. 'Use in strategy' hands the basket to the executor's shared Portfolio rules." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/template-actions.js"></script>
+<script src="./basket-data.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<script src="../_strategy-executor/screen-kit.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="basket-builder">
+<style>html,body{margin:0;padding:0;height:100%}[data-bb-item="on"]{border-left-color:var(--brand-signal,#C56343);background:var(--bg-active)}[data-bb-item="on"] [data-bb-name="1"]{font-weight:600}</style>
 </helmet>
-<x-import component-from-global-scope="BasketBuilderScreen" from="./screen.jsx" hint-size="100%,900px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelopeProvider" actions="{{ actionDecls }}" transport="{{ actionTransport }}" timeout-ms="{{ 4000 }}" on-settled="{{ onActionSettled }}" hint-size="100%,780px">
+<x-import component="ActionBridge" from="../_scaffold/action-bridge.jsx" on-api="{{ onActionApi }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailProvider" screen-id="basket-builder" persist="{{ true }}" storage="{{ sessionStore }}" default-entries="{{ trailSeed }}" on-navigate="{{ onTrailNavigate }}" hint-size="100%,780px">
+<x-import component="TrailBridge" from="../_scaffold/trail-bridge.jsx" on-api="{{ onTrailApi }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Basket" hint-size="100%,780px">
+<div data-screen-label="Basket Builder" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Basket Builder" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="basket-builder" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<aside style="width:260px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg-medium);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">Baskets</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="link" hint-size="48px,20px" disabled="{{ true }}" title="Creating a basket requires an application instruction; this example only edits existing synthetic baskets." aria-description="Creating a basket requires an application instruction; this example only edits existing synthetic baskets.">+ New</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="Search baskets…" value="{{ query }}" on-change="{{ onQuery }}" hint-size="100%,30px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" full-width="{{ true }}" size="sm" options="{{ filterOptions }}" value="{{ filter }}" on-change="{{ onFilter }}" hint-size="100%,26px"></x-import>
+<div style="height:1px;background:var(--border)"></div>
+<div style="display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ baskets }}" as="b" hint-placeholder-count="3">
+<button onClick="{{ b.select }}" data-bb-item="{{ b.state }}" style="display:flex;flex-direction:column;gap:3px;text-align:left;padding:8px 10px;border:none;border-left:3px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-body)">
+<span data-bb-name="1" style="font-size:13px;font-weight:500;color:var(--text-primary)">{{ b.name }}</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ b.meta }}</span>
+</button>
+</sc-for>
+</div>
+</aside>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:20px">
+<div style="display:flex;flex-direction:column;gap:14px;max-width:1240px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrail" label="Baskets" hint-size="100%,32px"></x-import>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<h1 style="font:600 20px var(--font-display);margin:0;color:var(--text-primary)">{{ basketName }}</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ basketStatus }}" hint-size="64px,18px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionStateChip" state="{{ commitState }}" hint-size="70px,18px"></x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ commitDisabled }}" on-click="{{ onCommit }}" hint-size="110px,28px">Commit basket</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onUseInStrategy }}" hint-size="110px,28px">Use in strategy</x-import>
+<div style="width:100px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ currency }}" disabled="{{ true }}" aria-label="Basket currency" title="Currency is fixed by the synthetic basket; conversion is not available." options="{{ currencyOptions }}" hint-size="100px,30px"></x-import></div>
+<span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">Pricing date {{ asOf }}</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" hint-size="100%,620px">
+<div style="padding:0 18px 18px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" tabs="{{ tabDefs }}" value="{{ tab }}" on-change="{{ onTab }}" hint-size="100%,40px"></x-import>
+<sc-if value="{{ showConstituents }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px 0">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="100px,28px" disabled="{{ true }}" title="Asset upload requires an application import service; no file is submitted by this example." aria-description="Asset upload requires an application import service; no file is submitted by this example.">Upload assets</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="64px,28px" disabled="{{ true }}" title="Security screening requires an application dataset and screening service." aria-description="Security screening requires an application dataset and screening service.">Screen</x-import>
+<div style="width:220px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="Add by CUSIP or ticker…" value="{{ addCode }}" disabled="{{ true }}" title="Adding an identifier requires a security lookup service; this example edits existing constituents." hint-size="220px,30px"></x-import></div>
+<div style="flex:1"></div>
+<div style="width:170px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" aria-label="Constituent grouping" value="{{ groupBy }}" on-change="{{ onGroupBy }}" options="{{ groupOptions }}" hint-size="170px,30px"></x-import></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="60px,28px" on-click="{{ onExport }}">Export example</x-import>
+</div>
+<div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" style="margin-bottom:8px" hint-size="70px,14px">Summary</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="overflow:hidden" hint-size="100%,120px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="index" columns="{{ summaryCols }}" rows="{{ summaryRows }}" hint-size="100%,110px"></x-import>
+</x-import>
+</div>
+<div>
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">Constituents</x-import>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ lineCount }} lines</span>
+</div>
+<sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" hint-size="100%,160px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="table" title="No constituents" detail="Upload assets or add a CUSIP to build this basket." hint-size="100%,150px"></x-import>
+</x-import>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+<div>
+<sc-if value="{{ g.label }}" hint-placeholder-val="{{ false }}">
+<div style="font-family:var(--font-body);font-size:10px;font-weight:700;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);margin-bottom:6px">{{ g.label }}</div>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="overflow:hidden" hint-size="100%,300px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="index" columns="{{ consCols }}" rows="{{ g.rows }}" select="{{ g.selectable }}" selected="{{ g.selected }}" on-selected-change="{{ onSelectedChange }}" hint-size="100%,290px"></x-import>
+</x-import>
+</div>
+</sc-for>
+</div>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.BulkActionBar" selected-count="{{ selectedCount }}" actions="{{ bulkActions }}" on-action="{{ onBulkAction }}" hint-size="0px,0px"></x-import>
+</div>
+</sc-if>
+<sc-if value="{{ showAnalytics }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding:18px 2px 0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 4 }}" items="{{ kvItems }}" hint-size="100%,140px"></x-import>
+<div style="height:1px;background:var(--border)"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" style="margin-bottom:10px" hint-size="160px,14px">Basket NAV · 30 sessions</x-import>
+<div style="height:90px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Sparkline" points="{{ navSeries }}" width="{{ 420 }}" height="{{ 90 }}" variant="area" color="var(--chart-equity)" hint-size="420px,90px"></x-import></div>
+</div>
+<div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" style="margin-bottom:10px" hint-size="190px,14px">Top 6 holdings · correlation</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CorrelationHeatmap" labels="{{ corrLabels }}" matrix="{{ corr }}" cell-size="{{ 40 }}" header-size="{{ 64 }}" hint-size="320px,320px"></x-import>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ showRisk }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px 0">
+<sc-if value="{{ concText }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="warning" title="Sector concentration" hint-size="100%,60px">{{ concText }}</x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="overflow:hidden" hint-size="100%,240px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="index" columns="{{ riskCols }}" rows="{{ riskRows }}" hint-size="100%,230px"></x-import>
+</x-import>
+</div>
+</sc-if>
+</div>
+</x-import>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionQueue" label="Basket actions in flight" hint-size="0px,0px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="basket-builder" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Basket Builder · keyboard shortcuts" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+
+  // The DC template owns the frame and panels; this class owns cross-tab state:
+  // active basket, sidebar filter, tab, grouping, selection, and per-basket row edits.
+  state = { ready: false, activeId: null, filter: "All", query: "", tab: 0, groupBy: "none", addCode: "", selected: [], rowsById: {} };
+
+  componentWillUnmount() { this._untick && this._untick(); }
+  componentDidMount() {
+    this.applyChrome();
+    this._untick = window.MeridianWorld && window.MeridianWorld.tick(this);
+    const tick = () => {
+      if (window.BASKETS && window.MeridianDesignSystem_205d17) {
+        this.setState({
+          ready: true,
+          activeId: window.BASKETS[0].id,
+          rowsById: Object.fromEntries(window.BASKETS.map((b) => [b.id, b.constituents])),
+        });
+      } else setTimeout(tick, 40);
+    };
+    tick();
+  }
+  componentDidUpdate() { this.applyChrome(); }
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  K() { return window.MeridianExecutorKit; }
+  // Adapter: hand this basket to the Strategy Executor's shared draft — Portfolio rules stage.
+  useInStrategy(basket, rows, trade) {
+    const K = this.K(), X = K && K.X(), t = window.MeridianToast;
+    if (!X || !X.ready()) { t && t.info && t.info("Strategy suite loading", "The shared draft is not available yet — try again in a moment."); return; }
+    const idn = X.resolveIdentity();
+    const next = X.updateStrategy(idn.strategyId, (d) => ({ ...d, portfolioRules: { ...d.portfolioRules, maxPositions: rows.length || d.portfolioRules.maxPositions, sizing: "Basket-weighted from " + basket.name + " · DV01 " + this.fmtDv01(trade.dv01) + " · wtd " + trade.rating, rebalance: d.portfolioRules.rebalance || "Monthly, third business day" } }));
+    if (!next) { t && t.error && t.error("Strategy unavailable", "No draft found in the suite store."); return; }
+    if (t && t.success) t.success("Applied to " + next.id + " · Portfolio rules", rows.length + " lines → max positions · sizing from " + basket.name + " · run proofs restale until rerun");
+    setTimeout(() => K.nav("formation", { formationStage: "portfolioRules" }), 700);
+  }
+  fmtUSD(v) { return window.MeridianDesignSystem_205d17.Format.money(v, { currency: "USD" }); }
+  fmtDv01(v) { return window.MeridianDesignSystem_205d17.Format.money(Math.round(v), { currency: "USD", decimals: 0 }); }
+  fmtInt(v) { return window.MeridianDesignSystem_205d17.Format.number(v, { decimals: 0 }); }
+  summarize(rows) {
+    return (window.summarizeBasketRows || (() => ({ count: 0, mv: 0, dv01: 0, liquidityScore: 0, illiquidPct: 0, estCostBps: 0, modDuration: 0, ytw: 0, rating: "—" })))(rows);
+  }
+  dirBadge(d) {
+    const { Badge } = this.ds();
+    return Badge ? React.createElement(Badge, { variant: d === "Buy" ? "success" : "danger", dot: true }, d) : d;
+  }
+  nameCell(r) {
+    return React.createElement("div", null,
+      React.createElement("div", { style: { fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-body)" } }, r.name),
+      React.createElement("div", { style: { fontSize: 11, color: "var(--text-muted)" } }, r.shortCode));
+  }
+
+  setRows(next) {
+    this.setState((s) => ({ rowsById: { ...s.rowsById, [s.activeId]: next }, selected: [] }));
+  }
+
+  // ── Operator layer ─────────────────────────────────────────────────────────────────────────
+  // Palette + hotkeys (track D), session trail (track A), and the write path through
+  // ActionEnvelopeProvider → ActionQueue (track B-1): "Commit basket" is a consequential
+  // instruction with a declared key; its fate stays on screen until resolved.
+  toast(k, a, b) { const T = window.MeridianToast; if (T && T[k]) T[k](a, b); }
+  selectBasket(id) {
+    this.setState({ activeId: id, selected: [] });
+    const b = (window.BASKETS || []).find((x) => x.id === id);
+    if (b && this._trail) this._trail.visit({ type: "basket", typeLabel: "Basket", id: b.id, label: b.name, meta: b.category + " · " + (this.state.rowsById[b.id] || b.constituents).length + " lines", at: b.asOf });
+  }
+  stepBasket(delta) {
+    const B = window.BASKETS || []; const i = B.findIndex((b) => b.id === this.state.activeId);
+    const next = B[Math.min(B.length - 1, Math.max(0, i + delta))]; if (next) this.selectBasket(next.id);
+  }
+  // Fixture transport: answers in ~1.1 s; a basket over the 40% sector limit is REJECTED with the
+  // reason; "silent" (Shift+S toggles) never answers → the queue shows it timed out, retry same key.
+  actionTransport = async (inst) => {
+    await new Promise((r) => setTimeout(r, this.state.silentAdapter ? 9000 : 1100));
+    if (inst.payload && inst.payload.concentrated) return { ok: false, reason: inst.payload.concentrated + " exceeds the 40% single-sector policy limit — reduce the sleeve or request an exception before committing." };
+    return { ok: true, id: "BSK-RCPT-" + Math.floor(1000 + Math.random() * 9000) };
+  };
+  commit(basket, rows, concentrated) {
+    if (!this._actions || !basket.id) return;
+    this._actions.submit("basket.commit", { label: "Commit basket · " + basket.name + " (" + rows.length + " lines)", idempotencyKey: "BSK-" + basket.id + "-" + rows.length + "-" + Math.round(rows.reduce((a, r) => a + r.mv, 0)), payload: { basketId: basket.id, lines: rows.length, concentrated } });
+  }
+  operatorLayer(basket, rows, concentrated) {
+    const L = window.MeridianOperatorLayer, K = this.K();
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    const B = window.BASKETS || [];
+    return L.build({
+      screenId: "basket-builder", sections: this.navSectionsList(), activeId: "basket-builder",
+      go: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      actions: [
+        { id: "commit", label: "Commit basket", keys: "shift+enter", keywords: ["submit", "post"], run: () => this.commit(basket, rows, concentrated) },
+        { id: "use", label: "Use in strategy → Portfolio rules", keys: "u", run: () => this.useInStrategy(basket, rows, this.summarize(rows)) },
+        { id: "tab-c", label: "Constituents tab", keys: "1", run: () => this.setState({ tab: 0 }) },
+        { id: "tab-a", label: "Analytics tab", keys: "2", run: () => this.setState({ tab: 1 }) },
+        { id: "tab-r", label: "Risk tab", keys: "3", run: () => this.setState({ tab: 2 }) },
+        { id: "next", label: "Next basket", keys: "j", run: () => this.stepBasket(1) },
+        { id: "prev", label: "Previous basket", keys: "k", run: () => this.stepBasket(-1) },
+        { id: "group", label: "Cycle grouping (none · sector · rating)", keys: "g g", run: () => this.setState({ groupBy: { none: "sector", sector: "rating", rating: "none" }[this.state.groupBy], selected: [] }) },
+        { id: "flip", label: "Flip direction of selected lines", keys: "f", run: () => this.setRows(rows.map((r, i) => this.state.selected.includes(i) ? { ...r, direction: r.direction === "Buy" ? "Sell" : "Buy" } : r)) },
+        { id: "remove", label: "Remove selected lines", danger: true, keys: "shift+backspace", run: () => this.setRows(rows.filter((_, i) => !this.state.selected.includes(i))) },
+        { id: "silent", label: this.state.silentAdapter ? "Adapter: silent → make it answer" : "Adapter: simulate no answer (timed-out instruction)", group: "Fixture", keys: "shift+s", run: () => this.setState({ silentAdapter: !this.state.silentAdapter }) },
+      ],
+      objects: [
+        ...B.map((b) => ({ type: "basket", typeLabel: "Basket", id: b.id, label: b.name, keywords: [b.category, b.status], open: () => this.selectBasket(b.id) })),
+        ...rows.map((r) => ({ type: "line", typeLabel: "Constituent", id: r.cusip || r.isin, label: r.name, keywords: [r.isin, r.cusip, r.shortCode, r.sector, r.rating], open: () => { this.setState({ tab: 0, selected: [rows.indexOf(r)] }); } })),
+      ],
+      verbs: [{ id: "open", label: "Open", run: (o) => o.open(o) }, { id: "pin", label: "Pin", run: (o) => { o.open(o); this._trail && this._trail.pin({ type: o.type, typeLabel: o.typeLabel, id: o.id, label: o.label }); } }],
+    });
+  }
+  // The rail is the suite app map, not a per-screen invention (_scaffold/app-map.js).
+  navSectionsList() { return (window.MeridianAppMap ? window.MeridianAppMap.sections("basket-builder") : []); }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const env = String(this.props.environment ?? "PAPER").toUpperCase();
+    const BASKETS = window.BASKETS || [];
+    const basket = BASKETS.find((b) => b.id === s.activeId) || BASKETS[0] || { name: "", status: "Draft", currency: "USD", asOf: "", navSeries: [], constituents: [] };
+    const rows = s.rowsById[basket.id] || [];
+    const totalMv = rows.reduce((a, r) => a + r.mv, 0) || 1;
+    const trade = this.summarize(rows);
+
+    const counts = { All: BASKETS.length, Credit: BASKETS.filter((b) => b.category === "Credit").length, Rates: BASKETS.filter((b) => b.category === "Rates").length };
+    const baskets = BASKETS
+      .filter((b) => (s.filter === "All" || b.category === s.filter) && b.name.toLowerCase().includes(s.query.toLowerCase()))
+      .map((b) => {
+        const active = b.id === basket.id;
+        return {
+          name: b.name, meta: (s.rowsById[b.id] || b.constituents).length + " lines · " + b.category,
+          state: active ? "on" : "off",
+          select: () => this.selectBasket(b.id),
+        };
+      });
+
+    let groups;
+    if (s.groupBy === "none") {
+      groups = [{ label: null, rows, selectable: true, selected: s.selected }];
+    } else {
+      const map = new Map();
+      for (const r of rows) { if (!map.has(r[s.groupBy])) map.set(r[s.groupBy], []); map.get(r[s.groupBy]).push(r); }
+      groups = [...map.entries()].map(([label, rs]) => ({ label, rows: rs, selectable: false, selected: [] }));
+    }
+
+    const bySector = (() => {
+      const map = new Map();
+      for (const r of rows) {
+        if (!map.has(r.sector)) map.set(r.sector, { sector: r.sector, count: 0, mv: 0, dv01: 0 });
+        const e = map.get(r.sector); e.count += 1; e.mv += r.mv; e.dv01 += r.mv * r.modDuration / 10000;
+      }
+      return [...map.values()].sort((a, b) => b.mv - a.mv);
+    })();
+    const concentrated = bySector.filter((x) => x.mv / totalMv > 0.4);
+    const concLabel = concentrated.length ? concentrated.map((x) => x.sector).join(", ") : null;
+    const layer = this.operatorLayer(basket, rows, concLabel);
+    const L = window.MeridianOperatorLayer;
+    const commitIns = this._actions ? this._actions.instructionFor("basket.commit") : null;
+
+    const top = [...rows].sort((a, b) => b.mv - a.mv).slice(0, 6);
+    const corrLabels = top.map((r) => r.shortCode);
+    const corr = corrLabels.map((_, i) => corrLabels.map((__, j) => {
+      if (i === j) return 1;
+      const seed = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453;
+      return +(0.35 + 0.55 * Math.abs(seed - Math.floor(seed))).toFixed(2);
+    }));
+
+    return {
+      dataState: s.ready ? (this.props.dataState ?? "ready") : "loading",
+      envLabel: env,
+      noop: () => {},
+      onUseInStrategy: () => this.useInStrategy(basket, rows, trade),
+      navSections: this.navSectionsList(),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      clockLabel: window.MeridianWorld ? window.MeridianWorld.clock() : "14:32:08 UTC",
+      // Operator layer
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      sessionStore: L ? L.sessionStore() : undefined,
+      trailSeed: basket.id ? [{ type: "basket", typeLabel: "Basket", id: basket.id, label: basket.name, meta: basket.category + " · " + rows.length + " lines", at: basket.asOf }] : [],
+      onTrailApi: this._onTrailApi || (this._onTrailApi = (api) => { this._trail = api; }),
+      onTrailNavigate: (entry) => { if (entry && entry.type === "basket") this.setState({ activeId: entry.id, selected: [] }); },
+      // Write path — declared before the attempt (ACTION_SEMANTICS)
+      actionDecls: { "basket.commit": { label: "Commit basket", endpoint: "POST /v1/baskets/commit", permission: { required: "basket.commit", held: true, actor: "r.alvarez" }, posture: "confirmed", failureSurface: "Action queue · status bar" } },
+      actionTransport: this.actionTransport,
+      onActionApi: this._onActionApi || (this._onActionApi = (api) => { this._actions = api; this.forceUpdate(); }),
+      onActionSettled: (r) => { if (r.state === "landed") this.toast("success", "Basket committed", r.receipt.id + " · " + r.receipt.latencyMs + " ms"); this.forceUpdate(); },
+      commitState: commitIns ? commitIns.state : "idle",
+      commitDisabled: !s.ready || rows.length === 0 || (commitIns && commitIns.state === "inflight"),
+      onCommit: () => this.commit(basket, rows, concLabel),
+      query: s.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      filter: s.filter,
+      onFilter: (v) => this.setState({ filter: v }),
+      filterOptions: ["All", "Credit", "Rates"].map((k) => ({ value: k, label: k, count: counts[k] })),
+      baskets,
+      basketName: basket.name,
+      basketStatus: basket.status,
+      currency: basket.currency,
+      onExport: () => window.MeridianTemplateActions.downloadJson("basket-example.json", { basketId: basket.id, asOf: basket.asOf, currency: basket.currency, constituents: rows }),
+
+      currencyOptions: ["USD", "EUR", "GBP"],
+      asOf: basket.asOf,
+      tabDefs: [{ label: "Constituents" }, { label: "Analytics" }, { label: "Risk" }],
+      tab: s.tab,
+      onTab: (i) => this.setState({ tab: i }),
+      showConstituents: s.ready && s.tab === 0,
+      showAnalytics: s.ready && s.tab === 1,
+      showRisk: s.ready && s.tab === 2,
+      addCode: s.addCode,
+      onAddCode: (e) => this.setState({ addCode: e.target.value }),
+      groupBy: s.groupBy,
+      onGroupBy: (v) => this.setState({ groupBy: v, selected: [] }),
+      groupOptions: [
+        { value: "none", label: "Group by: None" },
+        { value: "sector", label: "Group by: Sector" },
+        { value: "rating", label: "Group by: Rating" },
+      ],
+      summaryCols: [
+        { key: "row", label: "" },
+        { key: "count", label: "Bonds", align: "right" },
+        { key: "mv", label: "Market Value", align: "right", cell: (r) => this.fmtUSD(r.mv) },
+        { key: "dv01", label: "DV01", align: "right", cell: (r) => this.fmtDv01(r.dv01) },
+        { key: "liquidityScore", label: "Liquidity Score", align: "right", cell: (r) => r.liquidityScore.toFixed(2) },
+        { key: "illiquidPct", label: "Illiquid", align: "right", cell: (r) => r.illiquidPct.toFixed(2) + "%" },
+        { key: "estCostBps", label: "Est. Cost (bps)", align: "right", cell: (r) => r.estCostBps.toFixed(2) },
+        { key: "modDuration", label: "Mod Duration", align: "right", cell: (r) => r.modDuration.toFixed(2) },
+        { key: "ytw", label: "Yield", align: "right", cell: (r) => r.ytw.toFixed(2) + "%" },
+        { key: "rating", label: "Rating", align: "right" },
+      ],
+      summaryRows: [
+        { row: "Trade", ...trade },
+        { row: "Buys", ...this.summarize(rows.filter((r) => r.direction === "Buy")) },
+        { row: "Sells", ...this.summarize(rows.filter((r) => r.direction === "Sell")) },
+      ],
+      lineCount: String(rows.length),
+      isEmpty: s.ready && rows.length === 0,
+      groups: rows.length ? groups : [],
+      consCols: [
+        { key: "name", label: "Name", align: "left", cell: (r) => this.nameCell(r) },
+        { key: "isin", label: "ISIN" },
+        { key: "cusip", label: "CUSIP" },
+        { key: "direction", label: "Direction", cell: (r) => this.dirBadge(r.direction) },
+        { key: "faceValue", label: "Face Value", align: "right", cell: (r) => this.fmtInt(r.faceValue) },
+        { key: "mv", label: "Market Value", align: "right", cell: (r) => this.fmtUSD(r.mv) },
+        { key: "weight", label: "Weight (MV%)", align: "right", cell: (r) => ((r.mv / totalMv) * 100).toFixed(2) + "%" },
+        { key: "accrued", label: "Accrued Int.", align: "right", cell: (r) => r.accrued.toFixed(2) },
+        { key: "benchmark", label: "Benchmark" },
+        { key: "indQuantity", label: "Ind. Quantity", align: "right", cell: (r) => this.fmtInt(r.indQuantity) },
+      ],
+      onSelectedChange: (keys) => this.setState({ selected: keys }),
+      selectedCount: s.selected.length,
+      bulkActions: [{ id: "flip", label: "Flip direction" }, { id: "remove", label: "Remove", danger: true }],
+      onBulkAction: (id) => {
+        if (id === "flip") this.setRows(rows.map((r, i) => s.selected.includes(i) ? { ...r, direction: r.direction === "Buy" ? "Sell" : "Buy" } : r));
+        else if (id === "remove") this.setRows(rows.filter((_, i) => !s.selected.includes(i)));
+      },
+      kvItems: [
+        { label: "Market Value", value: this.fmtUSD(trade.mv) },
+        { label: "DV01", value: this.fmtDv01(trade.dv01) },
+        { label: "Mod Duration", value: trade.modDuration.toFixed(2) },
+        { label: "Yield to Worst", value: trade.ytw.toFixed(2) + "%" },
+        { label: "Liquidity Score", value: trade.liquidityScore.toFixed(2) },
+        { label: "Est. Transaction Cost", value: trade.estCostBps.toFixed(2) + " bps" },
+        { label: "Weighted Rating", value: trade.rating },
+        { label: "Illiquid Share", value: trade.illiquidPct.toFixed(2) + "%" },
+      ],
+      navSeries: basket.navSeries,
+      corrLabels, corr,
+      concText: concLabel ? concLabel + " exceeds the 40% single-sector policy limit — a commit will be rejected until resolved." : null,
+      riskCols: [
+        { key: "sector", label: "Sector", align: "left" },
+        { key: "count", label: "Bonds", align: "right" },
+        { key: "mv", label: "Market Value", align: "right", cell: (r) => this.fmtUSD(r.mv) },
+        { key: "weight", label: "Weight", align: "right", cell: (r) => ((r.mv / totalMv) * 100).toFixed(2) + "%" },
+        { key: "dv01", label: "DV01 Contribution", align: "right", cell: (r) => this.fmtDv01(r.dv01) },
+      ],
+      riskRows: bySector,
+      statusItems: [
+        { status: "ok", label: "Pricing", value: "Bloomberg BVAL · 07:00 UTC" },
+        { label: "Basket", value: basket.name },
+        { label: "Lines", value: String(rows.length) },
+        { status: commitIns && commitIns.state === "unlanded" ? "error" : commitIns && commitIns.state === "inflight" ? "warn" : "ok", label: "Commit", value: commitIns ? ({ inflight: "in flight", landed: "landed · " + (commitIns.receipt.id || ""), unlanded: "fate unknown", rejected: "rejected" })[commitIns.state] : "not sent", push: true },
+        { status: "ok", label: "Draft", value: "saved 09:50Z" },
+      ],
+    };
+  }
+}
+</script>
 </body>
 </html>

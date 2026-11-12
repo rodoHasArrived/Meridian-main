@@ -145,6 +145,8 @@ describe("workspace nav view model", () => {
       "/accounting/operations-continuity",
       "/accounting/close-calendar",
       "/accounting/ledger",
+      "/accounting/factor-paydown",
+      "/accounting/consolidation",
       "/accounting/journal-entries",
       "/accounting/capital-accounts",
       "/accounting/capital-calls",
@@ -162,7 +164,7 @@ describe("workspace nav view model", () => {
       group.items.map((item) => item.label)
     ])).toEqual([
       ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
+      ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
@@ -352,6 +354,9 @@ describe("workspace nav view model", () => {
       "/data/providers",
       "/data/quotes",
       "/data/operations",
+      // The Backfill queue was reachable only from the Data tab strip until the sidebar became
+      // the single sub-route navigation.
+      "/data/backfills",
       "/data/assurance",
       "/data/exports",
       "/data/query"
@@ -453,5 +458,15 @@ describe("workspace nav view model", () => {
       route: "/accounting?fundAccountId=fund-001&runId=run-44",
       ariaLabel: "Open Accounting workspace, Available product maturity, preserving Account: fund-001 / Run: Selected run"
     });
+  });
+});
+
+
+describe("workspace attention badges", () => {
+  it("deduplicates items and uses the worst severity without clearing acknowledged source work", () => {
+    const item = { id: "break-1", label: "Cash break", detail: "Review", route: "/accounting/reconciliation", workspaceLabel: "Accounting", actionLabel: "Open", ariaLabel: "Cash break", tone: "blocked" as const };
+    const model = buildWorkspaceNavViewModel("/", undefined, "", null, [item, item, { ...item, id: "review-1", tone: "review" }, { ...item, id: "ready-1", tone: "ready" }]);
+    expect(model.items.find((entry) => entry.key === "accounting")).toMatchObject({ attentionCount: 2, attentionSeverity: "blocked" });
+    expect(model.items.filter((entry) => entry.key !== "accounting").every((entry) => entry.attentionCount === 0)).toBe(true);
   });
 });

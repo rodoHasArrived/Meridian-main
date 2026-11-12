@@ -1065,7 +1065,7 @@ describe("accounting-screen journal-entry view model", () => {
           roleLabel: "Requester",
           actorLabel: "ops-user",
           statusLabel: "Requested",
-          decidedLabel: "Jun 30, 00:00 UTC"
+          decidedLabel: "Jun 30, 2026, 00:00 UTC"
         },
         {
           sequenceLabel: "Step 2",
@@ -1264,7 +1264,7 @@ describe("accounting-screen journal-entry view model", () => {
       expect.objectContaining({
         id: "post",
         value: "Posted",
-        detail: "browser-user posted the immutable entry on Jun 30, 02:00 UTC.",
+        detail: "browser-user posted the immutable entry on Jun 30, 2026, 02:00 UTC.",
         tone: "success"
       }),
       expect.objectContaining({

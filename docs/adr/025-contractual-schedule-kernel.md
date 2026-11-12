@@ -154,17 +154,25 @@ increment that edits that call site.
 | Asset-operations bond projection (`BuildBondProjectedCashFlows`) | `CompoundedForward`; the closing grid date is re-evaluated at the start of the closing period to keep SCH-DEF-010 | Increment 3 | 1, removed |
 | Obligation timeline (`NextMonthlyDate`, `NextQuarterDate`, `NextFrequencyDate`, `AdvanceAfter`) | `ScheduleTenor.Advance`; the statement cadence compounds from its anchor | Increment 3 | 4, removed |
 | Fund-structure projected dates (`RollProjectedScheduleDates`) | `ScheduleTenor.Advance`, compounded, behind the forecast's own spellings and 256-date guard | Increment 3 | 4, removed |
-| Direct lending, PostgreSQL (`BuildProjectedFlows`) | Its own loop; planned for increment 10 | — | 1 |
-| Direct lending, in memory (`BuildFlows`) | Its own loop; planned for increment 10 | — | 1 |
+| Direct lending, PostgreSQL (`BuildProjectedFlows`) | `DirectLendingSchedulePeriods.LegacyCompounded`, the kernel's compounded grid, with SCH-DEF-005 pinned; opt-in `dl-engine-v2` is still increment 10 | Legacy-parity move (2026-10-28) | 1, removed |
+| Direct lending, in memory (`BuildFlows`) | `DirectLendingSchedulePeriods.LegacyCompounded`, as above | Legacy-parity move (2026-10-28) | 1, removed |
 | `FaceValueLot` regular and backward coupon dates | Their own loops; planned for increment 12 | — | 2 |
 
 Increment 5a implements decision 7 for the Security Master calculated projection and the
 `ScheduleSpecFactory` of decision 8. It registers the file-backed calendar source on every host,
 and the projection's declared branch is the first production caller of the context day-count
 overload, through `ScheduleDayCount`. No write path can store a declaring block before increment
-5b-2, so the declared branch stays dormant in production until then. Nothing in production consumes
-`SchedulePeriodId` yet. The remaining moves are proposed; their sequence is recorded in the
-extensibility review's resolution passes from 2026-10-23 on.
+5b-2, so the declared branch stays dormant in production until then.
+
+Status on 2026-11-09 (it supersedes the two statements this paragraph used to end with). Declaring
+writes are live, so the declared branch is no longer dormant. `SchedulePeriodId` is consumed in
+production: the asset-operations legacy bond loop and the declared bond mapping derive
+projected-cash-flow ids from it (`AssetOperationsProjectionBuilder.LegacyBond.cs`,
+`AssetOperationsProjectionBuilder.BondCashFlows.cs`), and bond analytics derives its cash-flow ids
+from it (`BondContractualEconomics`, `BondAnalyticsService`). Both direct-lending projection loops run
+on the kernel's compounded grid, and the rolling ratchet (`SchedulePeriodRollingRatchetTests`) allows
+one legacy site, `FaceValueLot.cs` with 2 calls. The remaining moves are proposed; their sequence is
+recorded in the extensibility review's resolution passes from 2026-10-23 on.
 
 ## Rationale
 
@@ -306,7 +314,9 @@ can converge later.
 
 - Increments 1 and 3 change no persisted shape, API shape, term schema, terms version,
   engine-version string (`fixed-income-cash-flow-projection-v1` and
-  `asset-obligation-projection-v1` included) or DI registration. Increment 3 adds one public
+  `asset-obligation-projection-v1` included) or DI registration. (The legacy bond loop's stamp
+  became `fixed-income-cash-flow-projection-v2` on 2026-11-09; see the increment 8a entry under
+  Applications.) Increment 3 adds one public
   Contracts method, `SecurityTermConventions.LegacyCouponPaymentsPerYear`.
 - Increment 5a registers `FileBusinessDayCalendarSource`, which holds its calendars in a
   `StaticBusinessDayCalendarSource`, on every host. A node with no calendar files resolves only
@@ -412,7 +422,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-28*
+*Last Updated: 2026-11-02*
 
 ## Applications
 
@@ -522,7 +532,8 @@ This command verifies referenced files and directories exist; it does not valida
     accreted-value or an unrecognized spelling). The retained economic-terms fold is unchanged: a
     declared, non-empty list replaces the retained one, and an empty list is still filled from it.
   - **Proposed for increment 8, not frozen (the roll and calendar parts are amended by the
-    increment 5a entry below).** Increment 8 adopts or amends these when it generates
+    increment 5a entry below; the increment 8a entry of 2026-11-09 records what was adopted).**
+    Increment 8 adopts or amends these when it generates
     exercise and notice dates: Bermudan dates from a `ScheduleSpec` generated `Forward`, with
     `Roll` from the block's `rollConvention` (falling back to `AnchorDay`), `Short` stubs and the
     same business-day adjustment as payment dates; the calendar for American windows and for
@@ -785,7 +796,9 @@ This command verifies referenced files and directories exist; it does not valida
     `rollConvention` alone. American windows and `Business` notice counts use the block's
     `paymentCalendars`, with no fallback to `commonTerms.holidayCalendarId` or `WEEKENDS`, and
     increment 5b-1 requires block calendars on every American entry and on `Business` notice. The
-    rest of the proposal stands for increment 8 to adopt or amend.
+    rest of the proposal stands for increment 8 to adopt or amend. (Disposed of by the increment 8a
+    entry of 2026-11-09 below: the Bermudan roll written here was not what the consumers
+    implemented.)
 
 - **Declared contractual principal integration (2026-10-28).** A nonempty in-term
   `principalSchedule` with retained face now joins the declared coupon grid. Each principal row
@@ -808,6 +821,274 @@ This command verifies referenced files and directories exist; it does not valida
   full-period window it queries in existing calendar/coverage evidence, and the declared ledger
   gate remains in force.
 
+- **Declared call and put consumers: the adopted rules, the obligation timeline and the legacy
+  stamp (increment 8a) (2026-11-09).** The increment-8 proposals above are closed here. The rules
+  below are the ones `BondExerciseEconomics.TryResolveScenarios` already applies on main for bond
+  analytics, the cash ladder and the notice watch. This entry adopts them as written in code; it
+  changes none of them. Each consumer reads only a Bond row whose own stamp decodes the arrays
+  (terms version 3 or later) and resolves the row under the rules it was stored under.
+  - **Exercise dates.** A `European` entry is its start date. A `Bermudan` entry is its start date
+    followed by the ends of the regular periods of a grid generated forward from that start date to
+    its end date (`callEndDate` or `putEndDate`, else the day before the next entry of the same
+    kind, else maturity), in anchored mode on the anchor-day roll of the start date with a short
+    stub. The tenor is the entry's `exerciseFrequency`, else the coupon frequency. A final stub's end
+    is not an exercise date. **This is not the roll the amended proposal named**: the grid does not
+    take the block's `rollConvention` or `endOfMonthRule`. Anchored generation places each date at
+    the start date plus k tenors, so month-end clamping does not accumulate. Changing the roll
+    changes governed output and needs its own versioned decision.
+  - **Adjustment of exercise dates.** Each exercise date is adjusted on the declared payment
+    calendar under the declared payment convention when the block declares a payment adjustment,
+    and is left unadjusted otherwise. A date on or before the settlement date the consumer passes,
+    or after the last period's payment date, is dropped. The notice watch and the timeline pass the
+    day before the evaluation date, so an exercise on the evaluation date stays visible.
+  - **Notice dates.** Notice bounds are counted back from the adjusted exercise date. `Calendar`
+    notice counts calendar days and the result is not adjusted. `Business` notice counts business
+    days on the block's `paymentCalendars`, resolved through the host's calendar source; with no
+    declared calendars, or no source, the schedule is refused. There is no fallback to
+    `commonTerms.holidayCalendarId` or `WEEKENDS`. `minimumNoticeDays` gives the latest notice
+    date (0 when only a maximum is stated) and `maximumNoticeDays` the earliest. Bounds without a
+    `noticeDayType`, negative bounds and a minimum above the maximum are refused. An elapsed
+    notice deadline does not remove the scenario: analytics, the notice watch and the timeline keep
+    it and report the deadline, and the cash ladder refuses to assume the exercise without retained
+    notice evidence.
+  - **What stays refused.** `American` and any other continuous exercise style; a `priceType` other
+    than `Fixed` (make-whole, accreted value); a `priceBasis` other than `PercentOfPar`; a
+    `partialRedemption` other than `WholeOnly`; a row with `isCallable` and no declared calls; a row
+    that also carries a scalar `mandatoryPutDate` or `preRefundDate`; an exercise that falls between
+    a coupon's accrual end and its lagged payment date; more than 1,200 scenarios. Make-whole and
+    American windows exist only in the calculation-only `cashFlowContract` engine (the 2026-10-29
+    entry below). Bond analytics, the cash ladder, the notice watch, the obligation timeline and the
+    workbench schedule book refuse them; none of them warns and continues.
+  - **Obligation timeline.** A Bond that declares a call or put schedule gets `IssuerCallExercise`
+    and `HolderPutExercise` events on every remaining exercise date, and `IssuerCallNoticeDeadline`
+    and `HolderPutNoticeDeadline` events on the latest notice date where an entry states bounds.
+    They come from `BondExerciseNoticeWatch.EvaluateToMaturity`, the notice watch without its
+    horizon. The declared schedule is the authority for such a bond: the scalar `CallPutReview`
+    probe is not consulted, so an exercise is not shown twice. A schedule that cannot be resolved
+    is a blocked outcome with its code and reason in the timeline's extension payload and in the
+    timeline and readiness warnings; no option event is shown and the scalars are not used. The
+    watch turns a malformed retained schedule and a decimal overflow into blockers, so resolving
+    the schedule does not fault. One fault predates this entry and is unchanged: a cutover policy
+    that throws while it is asked (a `SecurityScheduleValidationException` on a malformed owned
+    schedule) is not caught by the asset-operations projection entry points, for any bond, where
+    the notice-watch read service converts it to a blocker. The gates are the notice-watch read
+    service's, in its order: terms effective at the evaluation date (`TermsNotEffective`), the
+    cutover policy (`CalculationPolicyBlocked`), then the watch. A blocked projection run blocks
+    the events too (`ProjectionBlocked`).
+  - **What counts as declaring.** A `callSchedule` or `putSchedule` the row's stamp decodes, with at
+    least one entry that is not unset in the write rules' sense
+    (`ScheduleTermsWriteRules.IsUnsetScheduleEntry`: JSON null, or an object with no populated
+    member). An array of unset entries passes a write as declaring nothing, so the timeline treats
+    it as declaring nothing and the bond keeps its scalar review and the v1 stamp.
+  - **Recovered economic rows are a declaring population.** ADR-027 stage 1 (increments 1 and 2)
+    recovers an economic document's call and put lists into the flat arrays, stamps the row 3 and
+    recovers the scalar `callDate` from the first call date. Such a row declares a schedule, so its
+    scalar review is no longer shown. Every recovered shape is blocked today with
+    `DeclaredScheduleRequired`, because the economic family never carried what the mapping needs:
+    with no Accrual module the recovered `scheduleConventions` is null, and with one the block
+    holds a business-day convention and calendars but no `accrualAdjusted` and no coupon unit. That
+    holds for European entries with a price, entries with no exercise style, `MakeWhole` and
+    `American` entries and put-only rows. Once an operator declares a reviewed block, a recovered
+    European entry resolves to an exercise event with no deadline (its notice members are null);
+    an entry with no exercise style, a `MakeWhole` entry and an `American` entry then stay refused
+    under the rules above. No recovered shape faults or resolves to nothing without a warning.
+  - **Event identity.** An event id is keyed on the terms version, the event kind, the adjusted
+    exercise date and the event's own date. Two scenarios can share an adjusted exercise date (two
+    weekend entries rolled onto one Monday, or a Bermudan grid date rolled onto the next entry's
+    date), so a repeat of a kind and exercise date carries its occurrence in the watch's order: by
+    notice deadline, then by declared date. Entries on other dates never change an id.
+  - **Explorer "next" row.** The financial record explorer's terms cell names the first timeline row
+    outside the Lifecycle lane. It passes over a declared notice deadline dated before the as-of,
+    because the scalar review it replaces was never raised for a past date. The elapsed deadline
+    stays on the timeline.
+  - **Timeline stamp.** A timeline whose option events came from a declared schedule, resolved or
+    blocked, is stamped `asset-terms-obligations-timeline-declared-v1`
+    (`AssetOperationsEngineVersions.DeclaredObligationTimeline`). Every other timeline keeps
+    `asset-terms-obligations-timeline-v1` and its output byte for byte: bonds that declare no
+    schedule, rows stamped below 3, published projections (their timeline is derived from the
+    published terms), CertificateOfDeposit and StructuredCredit. The scalar probe's conflation of
+    `callDate`, `mandatoryPutDate` and `preRefundDate` is registered as SCH-DEF-012 and stays
+    pinned for them.
+  - **Legacy bond stamp.** The legacy asset-operations bond loop is stamped
+    `fixed-income-cash-flow-projection-v2` (`AssetOperationsEngineVersions.LegacyBondCashFlow`) on
+    its run and in each flow payload. Its flow ids have been derived from `SchedulePeriodId` since
+    commit `4f2e63245` (2026-10-29), which did not change the stamp. **A run stamped
+    `fixed-income-cash-flow-projection-v1` and generated between 2026-10-29 and this change already
+    carries the new ids**, so `-v1` alone does not say which id derivation a stored run used; its
+    generation time does. Stored runs are not restamped. No reader branches on the stamp: the cash
+    ladder, the account cash forecast and the timeline pass it through as evidence, so `-v1`
+    stays readable. The declared stamps keep their values and are now named constants:
+    `asset-obligation-declared-v3` on a declared run and on a flow with rate evidence, and
+    `asset-obligation-declared-v2` on a flow without it.
+  - **Still open.** Two id instabilities are not fixed and nothing marks the affected ids: a
+    canonical entry with no unadjusted period is keyed on a running ordinal that shifts as earlier
+    rows fall out of the projection, and a legacy bond with no issue date is anchored on the as-of
+    date, so its period ids change daily. A notice watch screen (8c), American windows and
+    make-whole in bond analytics (8e) and CertificateOfDeposit and StructuredCredit consumers (8f)
+    are not part of this entry. The schedule book and workbench lifecycle (8b) were open when this
+    entry was written and are the next entry.
+  - Tests: `AssetObligationDeclaredExerciseTimelineTests`, `AssetObligationRecoveredExerciseTimelineTests`,
+    `FinancialRecordExplorerTermsObligationsDetailTests`, `AssetObligationTimelineGoldenTests`,
+    `AssetOperationsEngineVersionStampTests`, `BondExerciseNoticeWatchTests` and the SCH-DEF-012 pin
+    in `AssetObligationProjectionServiceTests`.
+
+- **Declared call and put rows in the Security Master schedule book (increment 8b) (2026-11-10).**
+  Until this entry the workbench schedule book raised a `Call` row only from the economic
+  `call.firstCallDate`, and the workbench's next lifecycle date used the same scalar, so for one
+  declaring bond the book and the obligation timeline disagreed. They now resolve through the same
+  code, with the exceptions listed below. No
+  rule above changes, and no terms version, stamp, mapping version, route or contract member is
+  added.
+  - **Source.** For a Bond row that declares a schedule (the definition above: an array the stamp
+    decodes with at least one entry that is not unset), the book takes its call and put rows from
+    `AssetObligationProjectionService.ResolveDeclaredExerciseAsync`, which is the timeline's
+    resolution with the policy asked inside it. The gates and their order are unchanged: terms
+    effective at the evaluation date (`TermsNotEffective`), the cutover policy
+    (`CalculationPolicyBlocked`), then `BondExerciseNoticeWatch.EvaluateToMaturity`. A policy that
+    throws `SecurityScheduleValidationException` becomes an `InvalidEconomicSchedule` blocker, as
+    in the notice-watch read service, so a workbench snapshot does not fail on one bond's
+    malformed owned schedule. The evaluation date is the snapshot's own time. The rows are laid
+    out by `AssetObligationProjectionService.DeclaredExerciseRows`, which the timeline now uses
+    too, so one outcome gives both surfaces the same exercise dates and notice deadlines.
+  - **Where the two surfaces can still differ.** The book and the timeline resolve through the
+    same code, so for one record at one evaluation date they list the same dates and the same
+    blocker. Four cases are outside that. (1) A timeline served from a same-day published
+    projection is derived from the published terms and keeps the scalar `CallPutReview`; the book
+    reads the live row. (2) A timeline whose projection run is blocked reports `ProjectionBlocked`
+    (8a's added rule); the book has no run and resolves the schedule. (3) A cutover policy that
+    throws `SecurityScheduleValidationException` is an `InvalidEconomicSchedule` blocker in the
+    book; on the asset-operations path the exception escapes, as it did before 8a. (4) Any other
+    fault while resolving (a calendar source or policy that throws, an argument fault in schedule
+    generation) is logged by the workbench and shown as a `DeclaredExerciseUnavailable` blocker
+    with a fixed reason, because the scalar read it replaces could not throw and the snapshot
+    feeds the passport, the operating model, the record explorer and the restatement trigger; on
+    the asset-operations path it escapes. Cancellation propagates on both.
+  - **Rows.** `Call` and `Put` on each remaining exercise date; `CallNoticeDeadline` and
+    `PutNoticeDeadline` on the latest notice date where the entry states bounds. They correspond
+    one to one to the timeline's `IssuerCallExercise`, `HolderPutExercise`,
+    `IssuerCallNoticeDeadline` and `HolderPutNoticeDeadline`. `Call` is the book's existing type
+    for a call date and is kept. An exercise row's pay date is the exercise date; a deadline row
+    has none. No row carries an amount, because a redemption price is a percent of par. The row's
+    reason text is the timeline's sentence for the same event. A row is marked as not derived from
+    economic terms, because it is read from the declared schedule on the stored row.
+  - **Scalar.** The economic `call.firstCallDate` is not read for a declaring bond: it raises no
+    row and is not a candidate for the next lifecycle date. The shared resolver already refuses a
+    row whose scalar `callDate` differs from its earliest declared call date, so a resolved bond's
+    scalar date is always one of the declared rows.
+  - **Blocked.** A blocked outcome adds no call or put row and never falls back to the scalar.
+    The blocker's code and reason are appended to the schedule summary and to the source summary
+    of both the summary and the book, in the timeline's sentence: `Declared call/put schedule is
+    blocked (<code>): <reason> No call or put event is shown and the scalar call date is not
+    used.` No contract member was added for it. Every row recovered from economic terms
+    (ADR-027 stage 1) is blocked with `DeclaredScheduleRequired` until a reviewed
+    `scheduleConventions` block is declared, so those rows lose the `Call` row they showed.
+  - **Elapsed deadlines.** The watch returns no exercise date before the evaluation date. A notice
+    deadline that has passed keeps its row with posting status `Reference`, which is how the book
+    already shows a past scalar call date, and its reason text ends with the watch's elapsed
+    diagnostic; the same diagnostic is appended to the schedule summary. The next lifecycle date
+    is the earliest of the next corporate action, the declared exercise dates, the notice
+    deadlines on or after the evaluation date, and the maturity. An elapsed deadline is never a
+    candidate.
+  - **Row identity.** `call-<exercise date>` and `put-<exercise date>`;
+    `callnoticedeadline-<deadline>-<exercise date>` and the put equivalent, because two exercise
+    dates can share a deadline. A repeat of a kind and adjusted exercise date carries the
+    timeline's occurrence number as a suffix.
+  - **Readiness is not changed.** A blocked declaring bond still reads terms `Ready` in the
+    instrument passport and in close readiness, because those checks count schedule rows and
+    economic terms and the `Maturity` row remains. The blocker reaches the passport only as text,
+    in the two fields that repeat the schedule summary. No status was flipped and no member added.
+  - **Unchanged.** Bonds that declare no schedule or only unset entries, rows stamped below 3,
+    CertificateOfDeposit and StructuredCredit keep the scalar read and their output byte for
+    byte. For them the next lifecycle date can still be a past scalar call date; that behaviour is
+    not changed here.
+  - Tests: `SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests`,
+    `SecurityMasterWorkbenchScheduleBookGoldenTests`,
+    `SecurityMasterWorkbenchQueryServiceCallScheduleTests` and
+    `SecurityMasterWorkbenchDeclaredExerciseCompositionTests`.
+
+- **Typed declared-exercise outcome on the schedule summary and book (2026-11-10).** The 8b entry
+  above put a blocked outcome in summary text only, because no contract shape could change while
+  pull request #3439 was open. It has merged, and the outcome is now a contract member.
+  - **Member.** `SecurityMasterScheduleSummaryDto.DeclaredExercise` and
+    `SecurityMasterScheduleBookDto.DeclaredExercise` carry a
+    `SecurityMasterDeclaredExerciseOutcomeDto`: status (`Resolved` or `Blocked`), the evaluation
+    date, the retained terms version, the window count, the blockers with their codes and reasons,
+    and the watch's diagnostics. It is the notice watch's result with nothing re-derived, and it is
+    the same outcome the timeline carries in its extension payload. A record that declares no
+    schedule carries none, and the member is omitted from JSON when absent, so such a record
+    serializes as before.
+  - **Readiness.** This replaces the "Readiness is not changed" bullet above. A blocked outcome
+    puts the passport's `payment-schedule` item, its terms-and-obligations and cash-flow readiness
+    sections and close readiness under review, with a blocking count, and the close row's next
+    action names the blocker codes. The `economics` item is unchanged: pricing and the retained
+    economic terms are not what is blocked. A resolved outcome and a record with no outcome keep
+    their statuses.
+  - **Text.** The summary and source-summary sentences are unchanged, so a client that prints only
+    text shows what it showed.
+  - **Clients.** The TypeScript types mirror the member. No dashboard screen or WPF view reads it
+    yet: both render the passport statuses, which now change.
+  - Tests: the outcome, its serialization through the API context, the flipped passport pin and
+    the unchanged statuses in `SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests`; the four
+    declaring bonds of `SecurityMasterWorkbenchScheduleBookGoldenTests` gained the member and
+    nothing else, and that golden's clock is now fixed because the outcome states its date.
+
+- **Declared call and put schedules for CertificateOfDeposit and StructuredCredit (increment 8f)
+  (2026-11-10).** These two classes declare `callSchedule` and `putSchedule` (terms versions 3 and
+  4) and their write rules already admit entries, but every reader kept the scalar. A row that
+  declares a schedule its stamp decodes is now read from it on the notice watch, the obligation
+  timeline and the workbench schedule book, through the shared resolver of 8a and 8b.
+  - **Class gate.** The gate is the terms schema: a class is a declaring class when its schema
+    declares one of the arrays (`BondExerciseNoticeWatch.DeclaresExerciseScheduleFields`). No class
+    is named. A class without the arrays stays `UnsupportedAssetClass`.
+  - **No coupon schedule kernel.** Neither class's terms carry an issue date or a payment
+    frequency, so `ScheduleSpecFactory` cannot build a schedule spec for them and none is
+    generated. The watch resolves the declared dates directly
+    (`BondExerciseEconomics.TryResolveDeclaredDates`). No coupon is accrued and no discount time is
+    taken: the result supports dated rows and notice windows, not pricing, and bond analytics and
+    the cash ladder are unchanged and remain Bond-only.
+  - **Entry rules.** The supported-entry rules are Bond's, now one shared `TryReadEntry`: a dated
+    `European` or `Bermudan` entry, a positive `Fixed` price in `PercentOfPar`, `WholeOnly`. The
+    retained-declaration check is the same too, so a CertificateOfDeposit whose scalar
+    `callableDate` is not its earliest declared call date is refused, and an entry with no
+    exercise style is refused. A Bermudan entry needs its own `exerciseFrequency`, because there
+    is no coupon frequency to fall back to.
+  - **Dates.** An exercise date is the declared date. It is adjusted only where a resolved
+    conventions block declares a payment adjustment, which cannot happen today (next bullet). Dates
+    before the evaluation date or after the maturity are dropped. Notice bounds follow the rules
+    above; `Business` notice needs declared payment calendars and is therefore refused.
+  - **A populated `scheduleConventions` block blocks.** The block is passed to
+    `ScheduleSpecFactory`, the one authority for it. For these classes the factory refuses it,
+    because the terms declare no schedule anchors, and the watch reports that refusal as
+    `DeclaredScheduleRequired`. Reading the entries as if the block were absent would drop a
+    declared payment adjustment. A block recovered from an economic Accrual module (ADR-027) is
+    such a block, so those rows are blocked; a recovered row with no Accrual module has no block
+    and its `European` entries resolve.
+  - **Life.** The evaluation date must be before the retained maturity (`EvaluationOutsideLife`);
+    a StructuredCredit row with no maturity is blocked with the same code. There is no issue date
+    to bound the life below; the terms-effective gate covers a row not yet in force.
+  - **Factored principal does not block.** A factor is how StructuredCredit carries principal. The
+    windows are dates and a price in percent of par; no redemption cash is computed.
+  - **What changed for a declaring row.** The timeline showed no option event for these classes,
+    because the scalar probe reads `callDate` and a CertificateOfDeposit's scalar is
+    `callableDate`. It now shows the declared exercise and notice-deadline events under the
+    declared stamp. The schedule book showed one `Call` row from the economic first call date for
+    a CertificateOfDeposit and none for a StructuredCredit; it now shows the declared rows, or the
+    blocker and no row. A resolved CertificateOfDeposit keeps the `call-<date>` row id it had.
+    The notice-watch read service answers for these classes instead of `UnsupportedAssetClass`.
+  - **Unchanged.** A row of either class that declares no schedule, or whose stamp is below the
+    arrays' version, keeps the scalar read. Bond behaviour is unchanged: the bond path's entry
+    reading moved into the shared method with no rule changed, and the bond analytics, cash-ladder
+    and notice-watch suites pass without edits.
+  - Tests: `DeclaredExerciseNonBondClassTests` (resolution, the same windows a bond gives for the
+    same entries, each blocker, the stamp gate, and the same dates and blocker on the book and the
+    timeline); the two declaring cases of `SecurityMasterWorkbenchScheduleBookGoldenTests` and of
+    `AssetObligationTimelineGoldenTests` changed on purpose, with every previously listed timeline
+    event retained unchanged.
+  - **Still open.** A notice watch screen (8c) and American and make-whole windows in bond
+    analytics (8e). Giving these two classes schedule anchors, so a conventions block and
+    business-day notice can be honoured, is a terms-version change under ADR-024 and is not part
+    of this entry.
+
 ## Calculation-only contractual companion — 2026-10-29
 
 The optional `cashFlowContract` version-1 document is readable at Bond/CD terms version 4,
@@ -819,3 +1100,99 @@ Its outputs remain nonpostable; legacy calculated consumers refuse a declaring c
 See [Contractual Cash-Flow Projection](../domain/contractual-cash-flow-projection.md) for API,
 formula, source-evidence, replay and rollout boundaries. This records source capability, not fleet
 write activation, actual exercise authority, or release acceptance.
+
+## Declared-schedule write-rule gaps — 2026-11-02
+
+Declaring writes are live on main (the 5b-1 write rules and the 5b-2 raise shipped in #3319). This
+entry records the rules `ScheduleTermsWriteRules` gained afterwards
+(`src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs` and its partial
+`ScheduleTermsWriteRules.Gaps.cs`), ported from an independently built 5b-1 branch. No terms
+version, write version, stamp floor or declared mapping version changes, so
+`security-master-declared-schedule-v1` and [ADR-024](024-terms-payload-format-and-version-policy.md)
+are unchanged. The owner's disposition is recorded in the
+[extensibility review](../architecture/security-master-extensibility-review.md) (resolution pass of
+2026-11-02).
+
+- **Safety rule: a new or tightened rule judges only what a write introduces or changes.** Main
+  re-admits retained declarations on every amend (`SecurityAssetPackAdmission.EnsureAdmitted`), so
+  a tightened rule applied to stored rows would make them un-amendable by patch-less amends
+  (Polygon backfill, EDGAR, ticker changes) with no operator path but rewriting the container.
+  `Validate(assetClass, payload, retained)` and
+  `ValidateDeclarations(assetClass, payload, termsVersion, retained)` take the stored terms; the
+  older overloads pass `retained: null`, which is a create, where every container is introduced.
+  The unit is the root container (`scheduleConventions`, `callSchedule`, `putSchedule`). C1a also
+  runs when the root `issueDate` changed, and C5c when `nonCallPeriodEnd` changed. A container is
+  changed when it differs from the retained terms as terms: unset members and entries
+  (`IsPopulatedTermValue` false) count as absent, member order is ignored, numbers compare by
+  value and strings ordinally. A raw JSON comparison would not do, because the F# codec
+  re-serializes stored containers in the frozen form, so every patch-less amend would look like a
+  change. The retained terms are passed by the Write-mode amend mapping
+  (`SecurityMasterMapping`), the service amend admission (`SecurityMasterService`, which covers
+  patch-less amends), workbench staging (`SecurityMasterWorkbenchCommandService`) and term-block
+  amends (`SecurityTermBlocks`); creates pass none. Read-back exercise analytics
+  (`BondExerciseEconomics.TryResolveScenarios`) pass the row as its own retained terms, so a stored
+  row is analysed under the rules it was stored under. Main's existing rules, the stray-container
+  guard `EnsureAmendmentDoesNotPromoteStrayContainers` among them, still judge retained containers
+  as before. A stored row that breaks a gap rule stays amendable; to change that container the
+  operator submits a corrected one, and the refusal names the entry path and the rule. An echoed
+  number spelled differently (`100` against `100.0`) is not a change; an echoed vocabulary value
+  re-spelled in another case is, and is judged in full.
+- **Entry rules.** Each refusal carries main's prefix `Invalid declared schedule terms: `, with
+  `{path}` the entry's stored index (`callSchedule[i]`, `putSchedule[i]`):
+  - E4: an `exerciseFrequency` only on a Bermudan entry.
+  - E7: a European entry exercises on its start date only, so it declares no `callEndDate` or
+    `putEndDate`.
+  - E9a and E9b: `makeWholeSpreadBps` only on a `priceType` `MakeWhole` entry (an entry with no
+    `priceType` is Fixed), and never below zero.
+  - E10d: a `noticeDayType` has no effect without `minimumNoticeDays` or `maximumNoticeDays`.
+  - C1a: no `callDate` or `putDate` before the root `issueDate`. It reads the anchor only where the
+    schema declares exactly that key as a Date (Bond today; CertificateOfDeposit and
+    StructuredCredit declare none) and only when it is written `yyyy-MM-dd`; any other spelling
+    skips the rule. The maturity side is main's existing C1b.
+  - C5c: the earliest call opens on or after `nonCallPeriodEnd` (StructuredCredit), read the same
+    way. It runs after main's call-scalar checks C5a and C5b, and names the earliest call by its
+    stored index: "Declared callSchedule[i] callDate {date} is before the nonCallPeriodEnd {date}; no
+    call may open before the non-call period ends."
+  - Inside an entry, main's existing checks run first, then the non-periodic frequency check, the
+    Bermudan-regular rule, the price floor, E4, E7, E9a/b, E10d and C1a.
+- **One loosening, R24.** C2 ("The final exercise window needs an end date or maturity.") no longer
+  applies to a European last entry, which has no window to end. Unlike the rules above, R24
+  applies to every write, retained containers included, because it only admits more.
+- **Strict-walk tightening.** In a container the write introduces or changes:
+  - `paymentCalendars` ids must be canonical, the grammar calendar files use
+    (`BusinessDayCalendars.IsCanonicalCalendarId`, now in `Meridian.Contracts`: an uppercase ASCII
+    letter followed by 1 to 15 uppercase ASCII letters or digits, matched exactly), and each id is
+    named once. Both are checked in a populated block, after main's nonblank-id check.
+  - R30: main's unknown, case-variant or repeated member check now also runs inside an unset object
+    block or entry, so a misspelled member cannot hide behind null values. Because an unset value is
+    never a change, this names-only check runs on every write, amendments and staging included, not
+    only on changed containers; it keeps a member name the stored container already holds (the
+    block's, or any stored entry's), so a stored row stays amendable.
+  - A String member of a populated block or entry must not be blank; omitting it or sending `null`
+    leaves it unset.
+  - A recognized but non-periodic `exerciseFrequency` (`AtMaturity` and its spellings) is refused
+    with its own text. E4 or main's Bermudan-regular rule would refuse the same values; this check
+    only fixes which text answers first.
+  - A declared member whose type the walker cannot check refuses the write. No declared member has
+    such a type today; `ScheduleTermsWriteRules.IsCheckedMemberType` is pinned by a test.
+  - Member names of a populated container are checked before member values, where they were
+    interleaved per member, so a payload with both faults now reports the name fault first.
+- **Capability floor on requests and on other terms-carrying writes.** The floor verifier keeps
+  main's fail-closed semantics (an unreadable floor refuses, as does a missing one once declared
+  terms are writable); the owner kept them, which supersedes the earlier "allow on unreadable"
+  decision (OD5). It now throws `SecurityMasterTermsCapabilityRefusedException`, a
+  `StartupRefusedException`, so startup refuses as before, and on a request the shared API
+  exception handler answers 503; routes that map `InvalidOperationException` to 409 around a gated
+  write exclude it, and a workbench publish whose handler the floor refuses rethrows the refusal.
+  The verifier now also gates projection rebuilds, the direct-lending Asset Operations publication
+  and new amortization batches, the last before the Approved lifecycle stage is appended. The
+  [terms contract rollout](../operators/security-master-terms-contract-rollout.md) gives the
+  operator view and the stored-data query QG, which lists stored rows a gap rule would refuse if
+  their container were changed.
+
+Tests: `ScheduleTermsWriteRulesGapTests`, `ScheduleTermsWriteRulesStrictWalkGapTests`, the
+`RetainedScheduleGaps` partials of `SecurityMasterServiceSnapshotTests` and
+`SecurityMasterWorkbenchCommandServiceTests`, `BondExerciseDelayedCouponTests.RetainedDeclarations`,
+`BusinessDayCalendarsCanonicalIdTests`, `SecurityMasterTermsCapabilityRefusalEndpointsTests`,
+`SecurityMasterRebuildCapabilityFloorTests`, the `CapabilityFloor` partial of
+`PostgresDirectLendingCommandServiceTests` and `LedgerFeatureRegistrationCapabilityFloorTests`.

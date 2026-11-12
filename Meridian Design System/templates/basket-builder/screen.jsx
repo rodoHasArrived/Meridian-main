@@ -3,9 +3,9 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, SeverityBadge,
-  DenseDataTable, KeyValueGrid, Tabs, TabPanel, Input, Select, SegmentedControl, Callout,
+  DataGrid, KeyValueGrid, Tabs, TabPanel, Input, Select, SegmentedControl, Callout,
   Sparkline, CorrelationHeatmap, BulkActionBar, EmptyState,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo } = React;
 
 const BASKETS = window.BASKETS;
@@ -20,18 +20,18 @@ function SummaryTable({ rows }) {
   const cols = [
     { key: "row", label: "" },
     { key: "count", label: "Bonds", align: "right" },
-    { key: "mv", label: "Market Value", align: "right", render: (r) => fmtUSD(r.mv) },
-    { key: "dv01", label: "DV01", align: "right", render: (r) => "$" + Math.round(r.dv01).toLocaleString("en-US") },
-    { key: "liquidityScore", label: "Liquidity Score", align: "right", render: (r) => r.liquidityScore.toFixed(2) },
-    { key: "illiquidPct", label: "Illiquid", align: "right", render: (r) => r.illiquidPct.toFixed(2) + "%" },
-    { key: "estCostBps", label: "Est. Cost (bps)", align: "right", render: (r) => r.estCostBps.toFixed(2) },
-    { key: "modDuration", label: "Mod Duration", align: "right", render: (r) => r.modDuration.toFixed(2) },
-    { key: "ytw", label: "Yield", align: "right", render: (r) => r.ytw.toFixed(2) + "%" },
+    { key: "mv", label: "Market Value", align: "right", cell: (r) => fmtUSD(r.mv) },
+    { key: "dv01", label: "DV01", align: "right", cell: (r) => "$" + Math.round(r.dv01).toLocaleString("en-US") },
+    { key: "liquidityScore", label: "Liquidity Score", align: "right", cell: (r) => r.liquidityScore.toFixed(2) },
+    { key: "illiquidPct", label: "Illiquid", align: "right", cell: (r) => r.illiquidPct.toFixed(2) + "%" },
+    { key: "estCostBps", label: "Est. Cost (bps)", align: "right", cell: (r) => r.estCostBps.toFixed(2) },
+    { key: "modDuration", label: "Mod Duration", align: "right", cell: (r) => r.modDuration.toFixed(2) },
+    { key: "ytw", label: "Yield", align: "right", cell: (r) => r.ytw.toFixed(2) + "%" },
     { key: "rating", label: "Rating", align: "right" },
   ];
   return (
     <PanelSurface flat style={{ overflow: "hidden" }}>
-      <DenseDataTable columns={cols} rows={rows} />
+      <DataGrid rowKey="index" columns={cols} rows={rows} />
     </PanelSurface>
   );
 }
@@ -67,7 +67,7 @@ function ConstituentsTab({ basket, rows, setRows }) {
   }, [rows, groupBy]);
 
   const cols = [
-    { key: "name", label: "Name", align: "left", render: (r) => (
+    { key: "name", label: "Name", align: "left", cell: (r) => (
       <div>
         <div style={{ fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>{r.name}</div>
         <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{r.shortCode}</div>
@@ -75,13 +75,13 @@ function ConstituentsTab({ basket, rows, setRows }) {
     ) },
     { key: "isin", label: "ISIN" },
     { key: "cusip", label: "CUSIP" },
-    { key: "direction", label: "Direction", render: (r) => directionBadge(r.direction) },
-    { key: "faceValue", label: "Face Value", align: "right", render: (r) => r.faceValue.toLocaleString("en-US") },
-    { key: "mv", label: "Market Value", align: "right", render: (r) => fmtUSD(r.mv) },
-    { key: "weight", label: "Weight (MV%)", align: "right", render: (r) => ((r.mv / totalMv) * 100).toFixed(2) + "%" },
-    { key: "accrued", label: "Accrued Int.", align: "right", render: (r) => r.accrued.toFixed(2) },
+    { key: "direction", label: "Direction", cell: (r) => directionBadge(r.direction) },
+    { key: "faceValue", label: "Face Value", align: "right", cell: (r) => r.faceValue.toLocaleString("en-US") },
+    { key: "mv", label: "Market Value", align: "right", cell: (r) => fmtUSD(r.mv) },
+    { key: "weight", label: "Weight (MV%)", align: "right", cell: (r) => ((r.mv / totalMv) * 100).toFixed(2) + "%" },
+    { key: "accrued", label: "Accrued Int.", align: "right", cell: (r) => r.accrued.toFixed(2) },
     { key: "benchmark", label: "Benchmark" },
-    { key: "indQuantity", label: "Ind. Quantity", align: "right", render: (r) => r.indQuantity.toLocaleString("en-US") },
+    { key: "indQuantity", label: "Ind. Quantity", align: "right", cell: (r) => r.indQuantity.toLocaleString("en-US") },
   ];
 
   return (
@@ -126,13 +126,13 @@ function ConstituentsTab({ basket, rows, setRows }) {
                   <div style={{ fontFamily: "var(--font-body)", fontSize: 10, fontWeight: 700, fontVariant: "all-small-caps", letterSpacing: ".03em", color: "var(--text-muted)", marginBottom: 6 }}>{g.key}</div>
                 )}
                 <PanelSurface flat style={{ overflow: "hidden" }}>
-                  <DenseDataTable
+                  <DataGrid
                     columns={cols}
                     rows={g.rows}
-                    selectable={groupBy === "none"}
-                    selectedRows={groupBy === "none" ? selected : []}
-                    onSelectRow={(_, i, on) => setSelected((s) => on ? [...s, i] : s.filter((x) => x !== i))}
-                    onSelectAll={(on) => setSelected(on ? rows.map((_, i) => i) : [])}
+                    rowKey="index"
+                    select={groupBy === "none"}
+                    selected={groupBy === "none" ? selected : []}
+                    onSelectedChange={setSelected}
                   />
                 </PanelSurface>
               </div>
@@ -210,13 +210,14 @@ function RiskTab({ rows }) {
         </Callout>
       )}
       <PanelSurface flat style={{ overflow: "hidden" }}>
-        <DenseDataTable
+        <DataGrid
+          rowKey="index"
           columns={[
             { key: "sector", label: "Sector", align: "left" },
             { key: "count", label: "Bonds", align: "right" },
-            { key: "mv", label: "Market Value", align: "right", render: (r) => fmtUSD(r.mv) },
-            { key: "weight", label: "Weight", align: "right", render: (r) => ((r.mv / totalMv) * 100).toFixed(2) + "%" },
-            { key: "dv01", label: "DV01 Contribution", align: "right", render: (r) => "$" + Math.round(r.dv01).toLocaleString("en-US") },
+            { key: "mv", label: "Market Value", align: "right", cell: (r) => fmtUSD(r.mv) },
+            { key: "weight", label: "Weight", align: "right", cell: (r) => ((r.mv / totalMv) * 100).toFixed(2) + "%" },
+            { key: "dv01", label: "DV01 Contribution", align: "right", cell: (r) => "$" + Math.round(r.dv01).toLocaleString("en-US") },
           ]}
           rows={bySector}
         />
@@ -253,7 +254,7 @@ function BasketsSidebar({ baskets, activeId, onSelect, filter, setFilter, query,
             cursor: "pointer", fontFamily: "var(--font-body)",
           }}>
             <span style={{ fontSize: 13, fontWeight: b.id === activeId ? 600 : 500, color: "var(--text-primary)" }}>{b.name}</span>
-            <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: b.id === activeId ? "var(--text-secondary)" : "var(--text-muted)" }}>{b.constituents.length} lines · {b.category}</span>
+            <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>{b.constituents.length} lines · {b.category}</span>
           </button>
         ))}
       </div>

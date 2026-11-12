@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ContextMenu & Validators</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
   <script src="../../_ds_bundle.js"></script>
   <style>
     body {
@@ -62,7 +63,7 @@
     }
     tr:hover {
       background: var(--bg-active);
-      box-shadow: inset 3px 0 0 var(--accent);
+      box-shadow: inset 3px 0 0 var(--brand-signal,#C56343);
     }
     .row-menu {
       cursor: context-menu;
@@ -94,15 +95,13 @@
       background: var(--bg-light);
     }
     .form-input:focus {
-      outline: var(--focus-ring);
-      outline-offset: var(--focus-ring-offset);
-      border-color: var(--accent);
-
+      outline: none;
+      border-color: var(--brand-signal,#C56343);
+      box-shadow: 0 0 0 2px rgba(47, 111, 143, 0.15);
     }
     .form-input.error {
       border-color: var(--red);
-      outline: 2px solid var(--red);
-      outline-offset: var(--focus-ring-offset);
+      box-shadow: 0 0 0 2px rgba(186, 63, 85, 0.15);
     }
     .error-message {
       font-size: 11px;
@@ -116,7 +115,7 @@
     }
     .info-box {
       background: var(--blue-a10);
-      border-left: 3px solid var(--accent);
+      border-left: 3px solid var(--brand-signal,#C56343);
       padding: 12px;
       border-radius: 2px;
       font-size: 12px;
@@ -172,9 +171,9 @@
   <div class="section">
     <h2>Validators — Shared field validation</h2>
     <p>
-      Try these values to test validation:
+      Live against the real <code>Validators</code> module from the bundle — not a demo copy.
       Currency: "1000", "(500.50)", "abc" ·
-      Date: "2026-06-15", "06/15/2026", "invalid" ·
+      Date (<code>format: "iso"</code>, strict): "2026-06-15" passes, "06/15/2026" and "2026-02-30" do not ·
       Account: "GL-2540", "US-001", "bad id"
     </p>
   </div>
@@ -182,7 +181,7 @@
   <div class="demo-card">
     <div class="validator-form">
       <div class="form-group">
-        <label class="form-label">Currency Amount</label>
+        <label class="form-label" for="currency-field">Currency Amount</label>
         <input
           type="text"
           class="form-input"
@@ -194,7 +193,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Date (YYYY-MM-DD)</label>
+        <label class="form-label" for="date-field">Date (YYYY-MM-DD)</label>
         <input
           type="text"
           class="form-input"
@@ -206,7 +205,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Account ID</label>
+        <label class="form-label" for="account-field">Account ID</label>
         <input
           type="text"
           class="form-input"
@@ -218,7 +217,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Email</label>
+        <label class="form-label" for="email-field">Email</label>
         <input
           type="text"
           class="form-input"
@@ -232,35 +231,15 @@
   </div>
 
   <script>
-    // Simplified validators for demo (in real app, import from Validators module)
-    const validateCurrency = (v) => {
-      if (!v) return "Currency required";
-      const cleaned = v.replace(/[$\s,()]/g, "");
-      const num = parseFloat(cleaned);
-      return isNaN(num) ? "Invalid currency" : true;
-    };
+    // The real module, straight off the bundle namespace. This card previously carried its own
+    // simplified copies — including a `new Date(v)` date check, the exact bug the module fixed —
+    // so nothing here exercised the shipped code.
+    const { Validators } = window.MeridianDesignSystem_205d17;
 
-    const validateDate = (v) => {
-      if (!v) return "Date required";
-      const date = new Date(v);
-      return isNaN(date.getTime()) ? "Invalid date (use YYYY-MM-DD)" : true;
-    };
-
-    const validateAccountId = (v) => {
-      if (!v) return "Account ID required";
-      if (!/^[A-Z0-9\-]{3,20}$/i.test(v.trim())) {
-        return "Account ID must be 3-20 alphanumeric + hyphens";
-      }
-      return true;
-    };
-
-    const validateEmail = (v) => {
-      if (!v) return "Email required";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())) {
-        return "Invalid email address";
-      }
-      return true;
-    };
+    const validateCurrency = (v) => Validators.currency(v);
+    const validateDate = (v) => Validators.date(v, { format: "iso" });
+    const validateAccountId = (v) => Validators.accountId(v);
+    const validateEmail = (v) => Validators.email(v);
 
     // Attach validators to form fields
     function attachValidator(inputId, validator, labelId) {

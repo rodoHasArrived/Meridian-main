@@ -256,7 +256,7 @@ describe("StatementFetchPanel", () => {
 
     await user.click(screen.getByRole("button", { name: "Delete schedule alpaca-daily" }));
     expect(services.deleteSchedule).not.toHaveBeenCalled();
-    expect(screen.getByRole("status")).toHaveTextContent("Delete confirmation pending for alpaca-daily.");
+    expect(screen.getByRole("status", { name: "Schedule deletion confirmation" })).toHaveTextContent("Delete confirmation pending for alpaca-daily.");
 
     await user.click(screen.getByRole("button", {
       name: "Confirm delete schedule alpaca-daily. This permanently removes the fetch schedule."
@@ -286,7 +286,7 @@ describe("StatementFetchPanel", () => {
     await user.click(screen.getByRole("button", { name: "Delete schedule alpaca-monthly" }));
     expect(services.deleteSchedule).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Delete schedule alpaca-daily" })).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Delete confirmation pending for alpaca-monthly.");
+    expect(screen.getByRole("status", { name: "Schedule deletion confirmation" })).toHaveTextContent("Delete confirmation pending for alpaca-monthly.");
 
     await user.click(screen.getByRole("button", {
       name: "Confirm delete schedule alpaca-monthly. This permanently removes the fetch schedule."

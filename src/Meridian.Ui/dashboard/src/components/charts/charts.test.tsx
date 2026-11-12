@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { CandleChart, type Candle } from "./CandleChart";
 import { EquityCurve } from "./EquityCurve";
 import { DrawdownChart } from "./DrawdownChart";
@@ -25,10 +25,10 @@ describe("CandleChart", () => {
 
   it("draws a crosshair price chip at the given index", () => {
     const { container } = render(<CandleChart bars={bars} crosshairIndex={2} />);
-    // The close price uses theme-aware ink on the crosshair chip, distinct from
-    // the axis tick that may share its value. Dark mode requires dark label ink.
+    // The close price (107.00) shows as the white-filled crosshair chip label (distinct from the
+    // axis tick that may share the value).
     const chip = Array.from(container.querySelectorAll("text")).find(
-      (t) => t.getAttribute("fill") === "var(--text-on-fill, #fff)" && t.textContent === "107.00"
+      (t) => t.getAttribute("fill") === "#fff" && t.textContent === "107.00"
     );
     expect(chip).toBeTruthy();
   });
@@ -56,11 +56,108 @@ describe("CandleChart", () => {
   });
 });
 
+describe("chart accessibility", () => {
+  const data = {
+    columns: ["Period", "Value"],
+    rows: [
+      ["Jan", 100],
+      ["Feb", 110]
+    ]
+  };
+  const charts = [
+    { name: "CandleChart", label: "Candlestick price chart", renderChart: (p: object) => <CandleChart bars={bars} {...p} /> },
+    {
+      name: "EquityCurve",
+      label: "Equity performance curve",
+      renderChart: (p: object) => <EquityCurve series={[{ label: "S", color: "#16885F", points: [100, 110] }]} {...p} />
+    },
+    { name: "DrawdownChart", label: "Drawdown underwater chart", renderChart: (p: object) => <DrawdownChart series={[0, -5]} {...p} /> },
+    { name: "Histogram", label: "Distribution histogram", renderChart: (p: object) => <Histogram values={[-1, 0, 1]} {...p} /> },
+    {
+      name: "DepthChart",
+      label: "Order-book depth chart",
+      renderChart: (p: object) => <DepthChart bids={[{ price: 99, size: 100 }]} asks={[{ price: 101, size: 150 }]} {...p} />
+    }
+  ];
+
+  it.each(charts)("$name keeps its default label and renders no description or table by default", ({ label, renderChart }) => {
+    const { container } = render(renderChart({}));
+    const img = screen.getByRole("img", { name: label });
+    expect(img.tagName.toLowerCase()).toBe("svg");
+    expect(img).not.toHaveAttribute("aria-describedby");
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(container.querySelector("p")).toBeNull();
+  });
+
+  it.each(charts)("$name accepts a label, a description, and a hidden data table", ({ renderChart }) => {
+    render(renderChart({ ariaLabel: "AAPL daily", ariaDescription: "Up 10% over two months.", accessibleData: data }));
+
+    const img = screen.getByRole("img", { name: "AAPL daily" });
+    expect(img).toHaveAccessibleDescription("Up 10% over two months.");
+
+    // Caption defaults to the chart label; the table sits outside the role="img" subtree.
+    const table = screen.getByRole("table", { name: "AAPL daily data" });
+    expect(img.contains(table)).toBe(false);
+    expect(table).toHaveStyle({ position: "absolute", width: "1px", height: "1px", overflow: "hidden" });
+    expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toEqual(["Period", "Value"]);
+    expect(screen.getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Jan", "Feb"]);
+    expect(screen.getAllByRole("cell").map((c) => c.textContent)).toEqual(["100", "110"]);
+  });
+
+  it("uses an explicit table caption when one is supplied", () => {
+    render(<Histogram values={[1, 2]} accessibleData={{ ...data, caption: "Return buckets" }} />);
+    expect(screen.getByRole("table", { name: "Return buckets" })).toBeInTheDocument();
+  });
+
+  it.each([
+    {
+      name: "CandleChart",
+      renderChart: () => <CandleChart bars={bars} onCrosshairChange={() => {}} ariaDescription="Three bars." />
+    },
+    {
+      name: "EquityCurve",
+      renderChart: () => (
+        <EquityCurve
+          series={[{ label: "S", color: "#16885F", points: [100, 110] }]}
+          onCrosshairChange={() => {}}
+          ariaDescription="Three bars."
+        />
+      )
+    }
+  ])("$name exposes the crosshair slider outside the role=img subtree", ({ renderChart }) => {
+    const { container } = render(renderChart());
+    const slider = screen.getByRole("slider");
+    const img = screen.getByRole("img");
+
+    expect(img.tagName.toLowerCase()).toBe("g");
+    expect(img).toHaveAccessibleDescription("Three bars.");
+    expect(img.contains(slider)).toBe(false);
+    expect(slider.closest('[role="img"]')).toBeNull();
+    expect(container.querySelector("svg")).toHaveAttribute("role", "group");
+    // Still the top-most element of the same svg so it keeps capturing pointer input.
+    expect(slider.closest("svg")).toBe(img.closest("svg"));
+    expect(slider.closest("svg")?.lastElementChild).toBe(slider);
+  });
+
+  it("gives the crosshair slider a visible keyboard focus ring", () => {
+    const { container } = render(<CandleChart bars={bars} onCrosshairChange={() => {}} />);
+    const slider = screen.getByRole("slider");
+
+    expect(slider).toHaveAttribute("tabindex", "0");
+    expect(slider.style.outline).toBe("");
+    const css = container.querySelector("style")?.textContent ?? "";
+    expect(slider).toHaveClass("meridian-chart-overlay");
+    expect(css).toContain(
+      ".meridian-chart-overlay:focus-visible{outline:var(--focus-ring, 2px solid var(--focus, #2D6FB3))"
+    );
+  });
+});
+
 describe("EquityCurve", () => {
   it("renders a legend and a series path", () => {
     const { container } = render(
       <EquityCurve
-        series={[{ label: "Strategy", color: "var(--chart-equity, #3A7A56)", points: [100, 110, 105, 120] }]}
+        series={[{ label: "Strategy", color: "var(--chart-equity, #2E7655)", points: [100, 110, 105, 120] }]}
         labels={["Jan", "Feb", "Mar", "Apr"]}
       />
     );
@@ -86,7 +183,7 @@ describe("EquityCurve", () => {
       />
     );
     const drawdownPath = Array.from(container.querySelectorAll("path")).find((p) =>
-      p.getAttribute("stroke") === "var(--chart-drawdown, #A8443C)"
+      p.getAttribute("stroke") === "var(--chart-drawdown, #B54B42)"
     );
     expect(drawdownPath?.getAttribute("d")).toContain("432.0");
   });
@@ -143,7 +240,7 @@ describe("DepthChart", () => {
 });
 
 describe("CorrelationHeatmap", () => {
-  it("exposes a read-only matrix with owned rows, headers and cell values", () => {
+  it("renders a grid with the diagonal reading 1.00", () => {
     render(
       <CorrelationHeatmap
         labels={["AAPL", "MSFT"]}
@@ -153,13 +250,7 @@ describe("CorrelationHeatmap", () => {
         ]}
       />
     );
-    const table = screen.getByRole("table", { name: "Correlation matrix" });
-    expect(table).toHaveAttribute("aria-rowcount", "3");
-    const rows = within(table).getAllByRole("row");
-    expect(rows).toHaveLength(3);
-    expect(within(rows[0]!).getAllByRole("columnheader")).toHaveLength(3);
-    expect(within(rows[1]!).getByRole("rowheader", { name: "AAPL" })).toBeInTheDocument();
-    expect(within(rows[1]!).getByRole("cell", { name: "AAPL · MSFT = 0.40" })).toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "Correlation matrix" })).toBeInTheDocument();
     expect(screen.getAllByText("1.00").length).toBe(2);
   });
 });

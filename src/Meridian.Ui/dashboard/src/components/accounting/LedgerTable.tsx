@@ -49,38 +49,40 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.ldg-wrap{overflow-x:auto;border:1px solid var(--ws-border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
+.ldg-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--focus,#2D6FB3));outline-offset:-2px;}
+.ldg__empty{padding:16px 12px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
+.ldg-wrap{overflow-x:auto;border:1px solid var(--border-color,#D2CDC3);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data,monospace);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#EDEAE4);z-index:1;
+  background:var(--bg-medium,#EBE8E1);z-index:1;
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
+  letter-spacing:.03em;color:var(--text-muted,#606870);
+  border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .ldg thead th:last-child{border-right:none;}
 .ldg th.ldg--r{text-align:right;}
-.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
-  border-top:1px solid var(--ws-border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
+.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#20252B);
+  border-top:1px solid var(--border-color,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);
   vertical-align:baseline;height:40px;}
 .ldg td:last-child{border-right:none;}
 .ldg tbody tr:first-child td{border-top:none;}
 .ldg td.ldg--r{text-align:right;}
-.ldg tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
-.ldg__date{color:var(--text-secondary,#4E5258);}
-.ldg__ref{color:var(--ws-accent,#A85436);}
-.ldg__memo{font-family:var(--font-body,inherit);color:var(--text-secondary,#4E5258);
+.ldg tbody tr:hover{background:var(--bg-hover,#EDEFF0);}
+.ldg__date{color:var(--text-secondary,#535C65);}
+.ldg__ref{color:var(--text-secondary,#535C65);}
+.ldg__memo{font-family:var(--font-body,inherit);color:var(--text-secondary,#535C65);
   white-space:normal;min-width:160px;}
-.ldg__acct{color:var(--text-primary,#22252A);}
-.ldg__open td{background:var(--bg-medium,#EDEAE4);color:var(--text-muted,#5E666F);}
+.ldg__acct{color:var(--text-primary,#20252B);}
+.ldg__open td{background:var(--bg-medium,#EBE8E1);color:var(--text-muted,#606870);}
 .ldg__open .ldg__memo{font-style:italic;}
-.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
-  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);}
+.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
+  border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4E5258);}
+  font-size:11px;color:var(--text-secondary,#535C65);}
 .ldg__sort{cursor:pointer;user-select:none;}
-.ldg__sort:focus-visible{outline:2px solid var(--ws-accent,#A85436);outline-offset:-2px;}
+.ldg__sort:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:-2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");
@@ -157,7 +159,7 @@ export function LedgerTable({
       : { scope: "col" };
 
   return (
-    <div className="ldg-wrap" role="region" aria-label={caption || "General ledger"}>
+    <div className="ldg-wrap" tabIndex={0} role="region" aria-label={caption || "General ledger"}>
       <table className="ldg">
         <thead>
           <tr>
@@ -200,6 +202,11 @@ export function LedgerTable({
               </td>
             </tr>
           )}
+          {computed.length === 0 && (
+            <tr>
+              <td className="ldg__empty" colSpan={showAccount ? 7 : 6}>No journal entries</td>
+            </tr>
+          )}
           {computed.map((r, i) => (
             <tr key={i}>
               <td className="ldg__date">{r.date}</td>
@@ -220,7 +227,7 @@ export function LedgerTable({
                 {r._hasBal ? (
                   <AmountCell value={r._bal} currency={currency} parens />
                 ) : (
-                  <span style={{ color: "var(--text-disabled, #94999F)" }}>—</span>
+                  <span style={{ color: "var(--text-disabled, #A4ABB2)" }}>—</span>
                 )}
               </td>
             </tr>

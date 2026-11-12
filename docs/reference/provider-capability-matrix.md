@@ -119,8 +119,7 @@ Their declared release statuses are:
 
 | Provider(s) | `CorporateActionProviderReleaseStatusDto` | Acceptance implication |
 | --- | --- | --- |
-| Alpaca | `AcceptanceEligible` | Eligible for the acceptance path when the required source evidence and workflow controls are satisfied; the label is not acceptance of an individual event. |
-| AlphaVantage, Finnhub, NasdaqDataLink, Tiingo, TwelveData | `ReviewOnly` | Observations remain staged for review; cross-provider agreement does not promote the provider or authorize automatic application. |
+| Alpaca, AlphaVantage, Finnhub, NasdaqDataLink, Tiingo, TwelveData | `ReviewOnly` | Observations remain staged for review; cross-provider agreement does not promote the provider or authorize automatic application. |
 
 [`CorporateActionIngestOrchestratorTests`](../../tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs)
 checks review-only consensus staging, evidence requirements, and rejection of provider attempts to

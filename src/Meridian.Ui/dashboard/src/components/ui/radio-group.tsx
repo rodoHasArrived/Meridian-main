@@ -1,4 +1,4 @@
-import { type KeyboardEvent, type ReactNode, useId, useRef } from "react";
+import { type KeyboardEvent, type ReactNode, useId } from "react";
 import { cn } from "@/lib/utils";
 
 export interface RadioOption {
@@ -38,23 +38,26 @@ export function RadioGroup({
   "aria-label": ariaLabel
 }: RadioGroupProps) {
   const generatedName = useId();
-  const inputs = useRef(new Map<string, HTMLInputElement>());
   const groupName = name ?? generatedName;
   const items = normalize(options);
   const enabled = items.filter((option) => !(disabled || option.disabled));
+  const tabStop = enabled.find((option) => option.value === value)?.value ?? enabled[0]?.value;
 
-  const tabStop = enabled.some((option) => option.value === value) ? value : enabled[0]?.value;
+  const select = (event: KeyboardEvent<HTMLLabelElement>, optionValue: string) => {
+    const group = event.currentTarget.closest("[role='radiogroup']");
+    const target = Array.from(group?.querySelectorAll<HTMLInputElement>("input[type='radio']") ?? [])
+      .find((input) => input.value === optionValue);
+    target?.focus();
+    onChange?.(optionValue);
+  };
 
-  const move = (currentValue: string, delta: number | "first" | "last") => {
+  const move = (event: KeyboardEvent<HTMLLabelElement>, currentValue: string, delta: number) => {
     if (enabled.length === 0) {
       return;
     }
     const index = enabled.findIndex((option) => option.value === currentValue);
-    const nextIndex = delta === "first" ? 0 : delta === "last" ? enabled.length - 1
-      : index < 0 ? 0 : (index + delta + enabled.length) % enabled.length;
-    const next = enabled[nextIndex]!.value;
-    inputs.current.get(next)?.focus();
-    onChange?.(next);
+    const nextIndex = index < 0 ? 0 : (index + delta + enabled.length) % enabled.length;
+    select(event, enabled[nextIndex]!.value);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLLabelElement>, optionValue: string) => {
@@ -62,26 +65,24 @@ export function RadioGroup({
       case "ArrowDown":
       case "ArrowRight":
         event.preventDefault();
-        move(optionValue, 1);
+        move(event, optionValue, 1);
         break;
       case "ArrowUp":
       case "ArrowLeft":
         event.preventDefault();
-        move(optionValue, -1);
-        break;
-      case "Home":
-        event.preventDefault();
-        move(optionValue, "first");
-        break;
-      case "End":
-        event.preventDefault();
-        move(optionValue, "last");
+        move(event, optionValue, -1);
         break;
       case " ":
       case "Enter":
         event.preventDefault();
-        onChange?.(optionValue);
+        select(event, optionValue);
         break;
+      case "Home":
+      case "End": {
+        const next = event.key === "Home" ? enabled[0] : enabled[enabled.length - 1];
+        if (next) { event.preventDefault(); select(event, next.value); }
+        break;
+      }
       default:
         break;
     }
@@ -91,8 +92,6 @@ export function RadioGroup({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      aria-orientation={orientation}
-      aria-disabled={disabled || undefined}
       className={cn("flex", orientation === "horizontal" ? "flex-row flex-wrap gap-4" : "flex-col gap-2.5", className)}
     >
       {items.map((option) => {
@@ -102,20 +101,11 @@ export function RadioGroup({
           <label
             key={option.value}
             className={cn(
-              "inline-flex min-h-6 items-start gap-2 text-sm focus-within:outline-2 focus-within:outline-primary focus-within:outline-offset-2",
+              "inline-flex min-h-6 items-start gap-2 text-sm",
               itemDisabled ? "cursor-not-allowed opacity-55" : "cursor-pointer"
             )}
             onKeyDown={(event) => !itemDisabled && handleKeyDown(event, option.value)}
           >
-            <span
-              aria-hidden="true"
-              className={cn(
-                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full border bg-[var(--ws-surface-raised)] transition-colors",
-                checked ? "border-primary" : "border-border"
-              )}
-            >
-              {checked ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
-            </span>
             <input
               type="radio"
               name={groupName}
@@ -123,13 +113,18 @@ export function RadioGroup({
               checked={checked}
               disabled={itemDisabled}
               onChange={() => onChange?.(option.value)}
-              className="sr-only"
+              className="peer sr-only"
               tabIndex={option.value === tabStop ? 0 : -1}
-              ref={(element) => {
-                if (element) inputs.current.set(option.value, element);
-                else inputs.current.delete(option.value);
-              }}
             />
+            <span
+              aria-hidden="true"
+              className={cn(
+                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full border bg-[var(--ws-surface-raised)] transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--interaction-focus)]",
+                checked ? "border-[var(--interaction-selected)]" : "border-border"
+              )}
+            >
+              {checked ? <span className="h-2 w-2 rounded-full bg-[var(--interaction-selected)]" /> : null}
+            </span>
             <span className="grid gap-0.5">
               <span className="leading-[18px] text-foreground">{option.label}</span>
               {option.hint ? <span className="text-xs leading-5 text-muted-foreground">{option.hint}</span> : null}

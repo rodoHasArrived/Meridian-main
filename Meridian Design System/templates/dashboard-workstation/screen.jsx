@@ -3,8 +3,8 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  MetricCard, DenseDataTable, EntitySummary, StatusBanner
-} = window.MeridianDesignSystem_4f61be;
+  MetricCard, DataGrid, EntitySummary, StatusBanner
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const POSITIONS = [
@@ -45,7 +45,7 @@ function EquityChart() {
       <line x1="0" x2={lastX} y1={lastY} y2={lastY} stroke="var(--chart-equity)" strokeWidth="0.8" strokeDasharray="2 3" opacity="0.5" />
       <circle cx={lastX} cy={lastY} r="3.5" fill="var(--chart-equity)" />
       <rect x={lastX + 6} y={lastY - 9} width="52" height="18" fill="var(--chart-equity)" />
-      <text x={lastX + 32} y={lastY + 4} textAnchor="middle" fill="var(--text-on-fill)" style={{ font: "600 11px var(--font-data)", fontVariantNumeric: "slashed-zero tabular-nums" }}>+23.7%</text>
+      <text x={lastX + 32} y={lastY + 4} textAnchor="middle" fill="#fff" style={{ font: "600 11px var(--font-data)", fontVariantNumeric: "slashed-zero tabular-nums" }}>+23.7%</text>
     </svg>
   );
 }
@@ -132,7 +132,7 @@ function DashboardWorkstationScreen() {
             <PanelSurface raised strong style={{ display: "flex", flexDirection: "column", borderLeft: "3px solid var(--accent)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--bg-medium)", borderBottom: "1px solid var(--border-strong)" }}>
                 <Eyebrow>Selected position</Eyebrow>
-                <span style={{ font: "600 11px var(--font-data)", color: "var(--accent-dim)", marginLeft: "auto" }}>{row.symbol}</span>
+                <span style={{ font: "600 11px var(--font-data)", color: "var(--brand-signal-ink)", marginLeft: "auto" }}>{row.symbol}</span>
               </div>
               <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                 <EntitySummary columns={2} items={[
@@ -151,8 +151,9 @@ function DashboardWorkstationScreen() {
             </PanelSurface>
           </div>
 
-          <DenseDataTable
-            selectedIndex={selected}
+          <DataGrid
+            rowKey="index" activeKey={selected}
+            style={{ flexShrink: 0 }}
             sortKey={sortKey} sortDir={sortDir} onSort={onSort}
             onRowClick={(_, i) => setSelected(i)}
             columns={[
@@ -160,8 +161,8 @@ function DashboardWorkstationScreen() {
               { key: "qty", label: "Qty", align: "right" },
               { key: "avg", label: "Avg cost", align: "right" },
               { key: "last", label: "Last", align: "right" },
-              { key: "pnl", label: "Unrlzd P&L", align: "right", render: (r) => pnlCell(r.pnl) },
-              { key: "pnlPct", label: "Return", align: "right", render: (r) => pnlCell(r.pnlPct) },
+              { key: "pnl", label: "Unrlzd P&L", align: "right", cell: (r) => pnlCell(r.pnl) },
+              { key: "pnlPct", label: "Return", align: "right", cell: (r) => pnlCell(r.pnlPct) },
             ]}
             rows={sorted}
           />

@@ -1,3 +1,1 @@
 Single-select radio group — the form primitive `Checkbox`/`Toggle` don't cover. A column (or row) of radios with a filled accent center dot, optional per-option hint. Controlled via `value` + `onChange`.
-
-Keyboard: the group has one tab stop. Arrow keys move actual focus and request the next enabled choice, wrapping at either end; Home/End choose the first/last enabled choice. Disabled options are skipped. Space/Enter select the focused choice. Controlled consumers retain ownership of the selected value and must update it in response to onChange. Focus indicators remain visible and custom hit areas are at least 24px high.

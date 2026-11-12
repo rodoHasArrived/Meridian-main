@@ -5,29 +5,31 @@
 <meta charset="UTF-8">
 <title>Operations — operator readiness</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="../../scripts/demo-runtime.js"></script>
-<script src="../../_ds_bundle.js"></script>
+
+
+
 <style>
   body { margin: 0; padding: 18px; background: var(--bg); }
   .wrap { display: grid; gap: 16px; max-width: 940px; }
   .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
     letter-spacing: .04em; color: var(--text-muted); margin: 0 0 8px; }
-  .panel { border: 1px solid var(--border); border-radius: var(--radius-card, 2px); background: var(--bg-light); padding: 14px 16px; }
+  .panel { border: 1px solid var(--border); border-radius: var(--radius-card, 8px); background: var(--bg-light); padding: 14px 16px; }
   .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-  .btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 11px;
-    border-radius: var(--radius-button, 2px); border: 1px solid var(--border); background: var(--bg-light); color: var(--text-secondary); cursor: pointer; }
-  .btn--primary { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
 </style>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 </head>
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
 const {
-  SeverityBadge, GateRail, ReadinessPanel, ValidationIssueList, EvidenceLink, TrustStrip, WorkspaceSection
-} = window.MeridianDesignSystem_4f61be;
+  SeverityBadge, GateRail, ReadinessPanel, ValidationIssueList, EvidenceLink, TrustStrip, WorkspaceSection, Button
+} = window.MeridianDesignSystem_205d17;
 
 function Demo() {
+  const [message, setMessage] = React.useState("");
   return (
     <div className="wrap">
       <TrustStrip items={[
@@ -66,7 +68,7 @@ function Demo() {
           score="86 / 100"
           title="Reconciliation"
           detail="3 open exceptions above tolerance in the custody cash lane. Investigate before approval."
-          actions={<><button className="btn">Investigate</button><button className="btn btn--primary">Approve</button></>}
+          actions={<><Button size="sm" variant="ghost" onClick={() => setMessage("Investigation opened for this synthetic fixture.")}>Investigate</Button><Button size="sm" onClick={() => setMessage("Approval review opened; no approval was submitted.")}>Review approval</Button></>}
         />
         <div>
           <p className="lbl">Validation issues — Info / Warning / Critical</p>
@@ -78,6 +80,7 @@ function Demo() {
         </div>
       </div>
 
+      <p role="status" style={{margin:0,fontSize:12,color:"var(--text-secondary)"}}>{message}</p>
       <WorkspaceSection
         id="evidence"
         title="Evidence"

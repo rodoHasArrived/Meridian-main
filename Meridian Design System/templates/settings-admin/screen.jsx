@@ -7,7 +7,7 @@ const {
   WorkstationTopbar, StatusBar, PanelSurface, Eyebrow, Button, Badge,
   FormField, Input, Select, Checkbox, Toggle, RadioGroup, NumberInput, TagInput,
   ValidationIssueList, Dialog, DialogBody, DialogFooter, ToastProvider, Callout,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const SECTIONS = ["Organization", "Data providers", "Notifications", "Danger zone"];
@@ -70,10 +70,10 @@ function SettingsAdminScreen() {
             <Section id="sect-0" title="Organization">
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <FormField label="Organization name" required error={!orgName.trim() ? "Required" : undefined}>
-                  <Input aria-label="Organization name" value={orgName} onChange={(e) => touch(setOrgName)(e.target.value)} />
+                  <Input value={orgName} onChange={(e) => touch(setOrgName)(e.target.value)} />
                 </FormField>
                 <FormField label="Display timezone" hint="All Meridian surfaces render UTC; this affects exports only.">
-                  <Select aria-label="Display timezone" value={tz} options={["UTC", "America/New_York", "Europe/London"]} onChange={() => setDirty(true)} />
+                  <Select value={tz} options={["UTC", "America/New_York", "Europe/London"]} onChange={() => setDirty(true)} />
                 </FormField>
               </div>
             </Section>
@@ -81,7 +81,7 @@ function SettingsAdminScreen() {
             <Section id="sect-1" title="Data providers">
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "start" }}>
                 <FormField label="API rate limit" hint="Requests per minute across all provider connections.">
-                  <NumberInput aria-label="API rate limit" value={rateLimit} min={10} max={600} step={10} onChange={touch(setRateLimit)} />
+                  <NumberInput value={rateLimit} min={10} max={600} step={10} onChange={touch(setRateLimit)} />
                 </FormField>
                 <FormField label="Collection behavior">
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
@@ -130,7 +130,7 @@ function SettingsAdminScreen() {
               This deletes <strong>all fixture-environment data</strong> — 1.2M bars, 4,882 orders, 312 runs. Live and paper data are not affected.
             </p>
             <FormField label='Type "purge fixtures" to confirm'>
-              <Input aria-label="Type purge fixtures to confirm" value={wipeText} onChange={(e) => setWipeText(e.target.value)} placeholder="purge fixtures" />
+              <Input value={wipeText} onChange={(e) => setWipeText(e.target.value)} placeholder="purge fixtures" />
             </FormField>
           </div>
         </DialogBody>

@@ -12,10 +12,12 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { useNotificationCenter } from "@/hooks/use-notification-center";
+import { useToast } from "@/components/ui/toast";
 import { formatRelativeAge } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { NotificationEnvelope, NotificationSeverity } from "@/lib/notification-center/types";
 import type { SystemOverviewResponse } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 const SEVERITY_ORDER: NotificationSeverity[] = ["critical", "warning", "info", "success"];
 const SEVERITY_LABELS: Record<NotificationSeverity, string> = {
@@ -51,6 +53,34 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
   const center = useNotificationCenter({ overview, fundAccountId });
   const { notifications, unreadCount } = center;
 
+  const toast = useToast();
+
+  // Price-alert acknowledgements are durable in their own store, so only inbox and
+  // system items offer undo.
+  const undoable = (entry: NotificationEnvelope) => entry.source !== "price-alert";
+  const handleMarkRead = (entry: NotificationEnvelope) => {
+    center.markRead(entry.id);
+    if (undoable(entry) && !entry.read) {
+      toast.show({
+        title: "Marked as read",
+        detail: entry.title,
+        tone: "info",
+        action: { label: "Undo", onAction: () => center.restoreStatus(entry.id, { read: entry.read }) }
+      });
+    }
+  };
+  const handleDismiss = (entry: NotificationEnvelope) => {
+    center.dismiss(entry.id);
+    if (undoable(entry) && entry.dismissible) {
+      toast.show({
+        title: "Dismissed",
+        detail: entry.title,
+        tone: "info",
+        action: { label: "Undo", onAction: () => center.restoreStatus(entry.id, { read: entry.read }) }
+      });
+    }
+  };
+
   const bellLabel = unreadCount > 0
     ? `Notifications — ${unreadCount} unread`
     : "Notifications — none unread";
@@ -68,7 +98,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
         {unreadCount > 0 ? (
           <span
             aria-hidden="true"
-            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-[var(--radius-chip)] border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
+            className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
@@ -109,14 +139,14 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
                 }
                 return (
                   <section key={severity} aria-label={`${SEVERITY_LABELS[severity]} notifications`} className="space-y-2">
-                    <div className="eyebrow-label">{SEVERITY_LABELS[severity]}</div>
+                    <div className={eyebrowClassName(SEVERITY_LABELS[severity])}>{SEVERITY_LABELS[severity]}</div>
                     <ul className="space-y-2">
                       {rows.map((entry) => (
                         <NotificationRow
                           key={entry.id}
                           entry={entry}
-                          onMarkRead={() => center.markRead(entry.id)}
-                          onDismiss={() => center.dismiss(entry.id)}
+                          onMarkRead={() => handleMarkRead(entry)}
+                          onDismiss={() => handleDismiss(entry)}
                           onOpenRoute={() => {
                             center.markRead(entry.id);
                             setOpen(false);

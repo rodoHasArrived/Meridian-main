@@ -1,10 +1,4 @@
-import {
-  formatNumber as formatNumberAmount,
-  formatRatioAsPercent as formatRatioAsPercentAmount,
-  formatPrefixedCurrency,
-  formatSignedCurrency as formatSignedCurrencyAmount,
-  pluralizeCount
-} from "@/lib/format";
+import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, formatPrefixedCurrency, formatSignedCurrency as formatSignedCurrencyAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
 import type { TradingWorkspaceResponse } from "@/types";
 import type {
   PortfolioDetailField,
@@ -102,11 +96,6 @@ export function formatDateTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "—"
-    : `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+    : formatUtcTimestamp(date);
 }
 
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number): string {
-  return value.toString().padStart(2, "0");
-}

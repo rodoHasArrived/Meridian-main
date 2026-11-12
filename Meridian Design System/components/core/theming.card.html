@@ -1,75 +1,172 @@
-<!-- @dsCard group="Theming" viewport="1000x600" name="Theming Layer" subtitle="Token-driven accents and Terminal, Compact, Default, and Spacious density" -->
+<!-- @dsCard group="Theming" viewport="1000x760" name="Theming playground" subtitle="Live white-label controls — switch brand accent and density scope and watch real components respond" -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Theming Layer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theming playground</title>
   <link rel="stylesheet" href="../../styles.css" />
-  <script src="../../scripts/demo-runtime.js"></script>
-<script src="../../_ds_bundle.js"></script>
-  <style>
-    body { margin:0;padding:24px;background:var(--bg-canvas);font-family:var(--font-body);color:var(--text-primary); }
-    main { max-width:1000px;margin:auto; }
-    h1 { font-size:var(--type-page-title,22px);margin:0 0 24px; }
-    h2 { font-size:13px;margin:0 0 12px; }
-    .themes { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px; }
-    .theme-choice { min-height:28px;padding:5px 12px;background:var(--bg-light);color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius-button);cursor:pointer; }
-    .theme-choice[aria-pressed="true"] { background:var(--bg-active);border-color:var(--accent); }
-    .theme-choice:focus-visible { outline:var(--focus-ring);outline-offset:var(--focus-ring-offset); }
-    .previews { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap-panel);margin-top:24px; }
-    .panel { background:var(--bg-light);border:1px solid var(--border);border-radius:var(--radius-card);padding:var(--pad-panel); }
-    .row { display:flex;flex-wrap:wrap;gap:8px;align-items:center; }
-  </style>
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
+  <script src="../../_ds_bundle.js"></script>
 </head>
-<body>
-<main>
-  <h1>Theming Layer</h1>
-  <h2>Brand accent</h2>
-  <div class="themes" role="group" aria-label="Brand accent">
-    <button class="theme-choice" data-brand-choice="" aria-pressed="true">Copper (default)</button>
-    <button class="theme-choice" data-brand-choice="indigo" aria-pressed="false">Indigo</button>
-    <button class="theme-choice" data-brand-choice="emerald" aria-pressed="false">Emerald</button>
-    <button class="theme-choice" data-brand-choice="rose" aria-pressed="false">Rose</button>
-    <button class="theme-choice" data-brand-choice="slate" aria-pressed="false">Slate</button>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EB); font-family: var(--font-body); color: var(--text-primary, #20252B);">
+  <div style="max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin: 0 0 4px 0; font-size: 22px; font-family: var(--font-display);">Theming playground</h2>
+    <p style="margin: 0 0 22px 0; font-size: 13px; color: var(--text-secondary, #535C65); max-width: 74ch;">The two white-label dials, live. Brand accent sets <code>--theme-accent</code> on <code>&lt;html&gt;</code>; density sets the spacing and row-height scope on <code>&lt;body&gt;</code>. Swatch values and the full token list live in <code>tokens/theming.card.html</code>.</p>
+    <div id="app"></div>
   </div>
-  <div id="preview"></div>
-</main>
-<script>
-  document.querySelectorAll('[data-brand-choice]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const brand = button.dataset.brandChoice;
-      if (brand) document.documentElement.setAttribute('data-brand', brand);
-      else document.documentElement.removeAttribute('data-brand');
-      document.querySelectorAll('[data-brand-choice]').forEach((choice) => choice.setAttribute('aria-pressed', String(choice === button)));
-    });
-  });
-</script>
-<script type="text/babel">
-  const { Button, Badge, Input, DensityToggle } = window.MeridianDesignSystem_4f61be;
-  function Preview() {
-    const [action, setAction] = React.useState('Choose a sample action to preview its response.');
-    const [text, setText] = React.useState('');
-    return <>
-      <h2>Density</h2>
-      <DensityToggle />
-      <div className="previews">
-        <section className="panel"><h2>Button variants</h2><div className="row">
-          <Button onClick={() => setAction('Ghost sample selected.')}>Ghost</Button>
-          <Button variant="primary" onClick={() => setAction('Primary sample selected.')}>Primary</Button>
-          <Button variant="link" onClick={() => setAction('Link sample selected.')}>Link</Button>
-        </div><p role="status">{action}</p></section>
-        <section className="panel"><h2>Semantic badges</h2><div className="row">
-          <Badge>Default</Badge><Badge variant="success">Success</Badge><Badge variant="warning">Warning</Badge><Badge variant="error">Error</Badge>
-        </div></section>
-        <section className="panel"><h2>Labelled input</h2><label htmlFor="theme-sample-input">Sample value</label>
-          <Input id="theme-sample-input" value={text} onChange={(event) => setText(event.target.value)} placeholder="Type a sample value" />
-        </section>
-        <section className="panel"><h2>Theme behavior</h2><p>Accents, surfaces, semantic colors and label ink follow the selected theme. Density changes the sample panels without changing their values.</p></section>
-      </div>
-    </>;
-  }
-  ReactDOM.createRoot(document.getElementById('preview')).render(<Preview />);
-</script>
+
+  <script type="text/babel">
+    const { Button, Badge, Input, DataGrid, ProgressBar, Eyebrow } = window.MeridianDesignSystem_205d17;
+    const { useState, useEffect } = React;
+
+    // Values mirror tokens/theme.css — do not invent new ones here.
+    const BRANDS = [
+      { id: null, label: "Meridian", hex: "#C56343" },
+      { id: "indigo", label: "Indigo", hex: "#4F46E5" },
+      { id: "emerald", label: "Emerald", hex: "#0B7A55" },
+      { id: "rose", label: "Rose", hex: "#E11D48" },
+      { id: "slate", label: "Slate", hex: "#64748B" },
+      { id: "cyan", label: "Cyan", hex: "#0C6A85" },
+      { id: "amber", label: "Amber", hex: "#A34A08" },
+    ];
+
+    const DENSITIES = [
+      { id: "terminal", label: "Terminal", row: "26px", note: "ops walls" },
+      { id: "compact", label: "Dense", row: "28px", note: "scanning" },
+      { id: null, label: "Standard", row: "36px", note: "default" },
+      { id: "spacious", label: "Review", row: "44px", note: "sign-off" },
+    ];
+
+    const ROWS = [
+      { ref: "JE-1042", account: "1100 · Cash", amount: "82,440.00", state: "Reconciled" },
+      { ref: "JE-1043", account: "6200 · Commission", amount: "318.50", state: "Unreconciled" },
+      { ref: "JE-1044", account: "4100 · Dividend income", amount: "1,290.00", state: "Provisional" },
+    ];
+    const COLS = [
+      { key: "ref", label: "Reference", width: 110 },
+      { key: "account", label: "Account" },
+      { key: "amount", label: "Amount (USD)", align: "right" },
+      { key: "state", label: "State", width: 130 },
+    ];
+
+    function SwitchRow({ label, hint, options, value, onChange, renderSwatch }) {
+      return (
+        <div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 9 }}>
+            <Eyebrow>{label}</Eyebrow>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{hint}</span>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {options.map((o) => {
+              const on = o.id === value;
+              return (
+                <button type="button"
+                  key={o.id || "default"}
+                  onClick={() => onChange(o.id)}
+                  aria-pressed={on}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 7,
+                    padding: "6px 10px", cursor: "pointer",
+                    fontFamily: "var(--font-body)", fontSize: 12,
+                    fontWeight: on ? 600 : 400,
+                    background: on ? "var(--bg-active, #E7EDF2)" : "var(--bg-light, #F8F7F3)",
+                    color: "var(--text-primary, #20252B)",
+                    border: "1px solid " + (on ? "var(--brand-axis, #29323A)" : "var(--border, #D2CDC3)"),
+                    borderRadius: "var(--radius-input, 4px)",
+                  }}
+                >
+                  {renderSwatch ? renderSwatch(o) : null}
+                  <span>{o.label}</span>
+                  {o.row ? <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: on ? "var(--text-secondary)" : "var(--text-muted)" }}>{o.row}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function Playground() {
+      const [brand, setBrand] = useState(null);
+      const [density, setDensity] = useState(null);
+
+      useEffect(() => {
+        if (brand) document.documentElement.setAttribute("data-brand", brand);
+        else document.documentElement.removeAttribute("data-brand");
+      }, [brand]);
+
+      useEffect(() => {
+        if (density) document.body.setAttribute("data-theme-density", density);
+        else document.body.removeAttribute("data-theme-density");
+      }, [density]);
+
+      const panel = { background: "var(--card-surface-raised, #FCFBF8)", border: "1px solid var(--border, #D2CDC3)", padding: 14 };
+      const activeBrand = BRANDS.find((b) => b.id === brand);
+      const activeDensity = DENSITIES.find((d) => d.id === density);
+
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <div style={{ ...panel, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <SwitchRow
+              label="Brand accent"
+              hint={'html[data-brand]'}
+              options={BRANDS}
+              value={brand}
+              onChange={setBrand}
+              renderSwatch={(o) => <span style={{ width: 11, height: 11, background: o.hex, borderRadius: 2, flex: "none" }} />}
+            />
+            <SwitchRow
+              label="Density scope"
+              hint={'body[data-theme-density]'}
+              options={DENSITIES}
+              value={density}
+              onChange={setDensity}
+            />
+          </div>
+
+          <div style={{ fontFamily: "var(--font-data)", fontSize: 11.5, color: "var(--text-muted)" }}>
+            {`<html${activeBrand.id ? ' data-brand="' + activeBrand.id + '"' : ""}> · <body${activeDensity.id ? ' data-theme-density="' + activeDensity.id + '"' : ""}> · row ${activeDensity.row}`}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            <div style={panel}>
+              <Eyebrow>Controls</Eyebrow>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "10px 0 12px" }}>
+                <Button variant="primary">Post entry</Button>
+                <Button variant="ghost">Cancel</Button>
+                <Button variant="link">View trace</Button>
+              </div>
+              <Input placeholder="Search by reference…" />
+            </div>
+
+            <div style={panel}>
+              <Eyebrow>Semantic states</Eyebrow>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "10px 0 14px" }}>
+                <Badge variant="success">Reconciled</Badge>
+                <Badge variant="warning">Provisional</Badge>
+                <Badge variant="error">Exception</Badge>
+                <Badge variant="default">Pending</Badge>
+              </div>
+              <ProgressBar label="Period coverage" value={82} target={95} showValue />
+              <p style={{ margin: "10px 0 0", fontSize: 11.5, color: "var(--text-muted)" }}>
+                Semantic colors do not follow the brand dial — only the accent does.
+              </p>
+            </div>
+          </div>
+
+          <div style={panel}>
+            <Eyebrow>Row height follows the density scope</Eyebrow>
+            <div style={{ marginTop: 10 }}>
+              <DataGrid columns={COLS} rows={ROWS} activeKey={0} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("app")).render(<Playground />);
+  </script>
 </body>
 </html>
