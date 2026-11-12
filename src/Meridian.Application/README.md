@@ -1145,6 +1145,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 ## Important workflows
 
+### Market-data feature composition
+
+`ServiceCompositionRoot.AddMarketDataServices` uses one ordered feature plan pairing each
+registration module with its `CompositionOptions` activation predicate. Add a feature in that
+plan rather than maintaining a separate invocation list. Configuration, coordination, storage,
+and ledger stay unconditional; provider routing shares the provider flag. Preserve prerequisite
+ordering and keep canonicalization after pipeline registration. Custom flag combinations retain
+their existing behavior; this plan does not infer or enable additional features. Production
+registration validation and the final-graph startup guard still run after feature registration.
+
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
@@ -1497,6 +1507,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ServiceCompositionRootTests|FullyQualifiedName~PipelineFeatureRegistrationTests|FullyQualifiedName~ProcessWideHostedServiceRegistrationTests|FullyQualifiedName~ProductionServiceRegistrationPolicyTests|FullyQualifiedName~ProductionRegistrationGuardServiceTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioImportReliabilityTests|FullyQualifiedName~QuickSetupAtomicSaveTests|FullyQualifiedName~SymbolSearchCancellationTests|FullyQualifiedName~BoundedSearchCacheTests|FullyQualifiedName~DailySummaryWebhookDeliveryTests|FullyQualifiedName~SchedulingServiceReliabilityTests"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
