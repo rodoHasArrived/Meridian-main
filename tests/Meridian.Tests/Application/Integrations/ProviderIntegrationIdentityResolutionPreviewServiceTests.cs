@@ -83,13 +83,18 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
             firstChoice with { DecisionId = "foreign-connection", StagingRecordId = "staging-invalid-decisions", ConnectionId = "foreign" },
             firstChoice with { DecisionId = "foreign-run", StagingRecordId = "staging-invalid-decisions", SyncRunId = "foreign" }
         ];
+        // Finish real asynchronous reads before configuring substitutes: awaiting between a
+        // substitute call and Returns can lose NSubstitute's pending call on a thread switch.
+        var retainedConnection = await retainedStore.GetConnectionAsync(connectionId);
+        var retainedSyncRuns = await retainedStore.ListSyncRunsAsync(connectionId);
+        var retainedStagingRecords = await retainedStore.ListStagingRecordsAsync(syncRunId);
         var scopedStore = Substitute.For<IProviderIntegrationManifestStore, IProviderIntegrationIdentityDecisionStore>();
         scopedStore.GetConnectionAsync(connectionId, Arg.Any<CancellationToken>())
-            .Returns(await retainedStore.GetConnectionAsync(connectionId));
+            .Returns(retainedConnection);
         scopedStore.ListSyncRunsAsync(connectionId, Arg.Any<CancellationToken>())
-            .Returns(await retainedStore.ListSyncRunsAsync(connectionId));
+            .Returns(retainedSyncRuns);
         scopedStore.ListStagingRecordsAsync(syncRunId, Arg.Any<CancellationToken>())
-            .Returns(await retainedStore.ListStagingRecordsAsync(syncRunId));
+            .Returns(retainedStagingRecords);
         var decisionStore = (IProviderIntegrationIdentityDecisionStore)scopedStore;
         decisionStore.ListIdentityDecisionsAsync(syncRunId, Arg.Any<CancellationToken>()).Returns(decisions);
         var tenantRoot = Substitute.For<IProviderIntegrationManifestStore, IProviderIntegrationTenantManifestStoreFactory>();
