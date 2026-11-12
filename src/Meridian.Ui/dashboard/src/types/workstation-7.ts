@@ -1563,6 +1563,21 @@ export interface CorporateActionProcessingCaseDto {
   updatedAtUtc: string;
   actionAvailability?: CorporateActionProcessingCaseActionAvailabilityDto | null;
   sourceSnapshot?: CorporateActionCaseSourceSnapshotDto | null;
+  electionCalendar?: CorporateActionElectionCalendar | null;
+}
+
+/** Server projection of actual retained source cutoffs; never inferred from corporate dates. */
+export interface CorporateActionElectionCalendar {
+  evidenceState: "Available" | "MissingEvidence" | "InvalidEvidence";
+  cutoffs: Array<{
+    id: string;
+    label: string;
+    /** ISO timestamp including its retained offset. */
+    deadlineAt: string;
+    source: string;
+    evidenceReference: string;
+  }>;
+  messages: string[];
 }
 
 export interface CorporateActionCaseActionAvailability {
@@ -1681,6 +1696,7 @@ export interface CorporateActionCaseProjection {
 }
 
 export interface CorporateActionProposalEntry {
+  electionCalendar?: CorporateActionElectionCalendar | null;
   securityId: string;
   ticker: string;
   actionType: string;

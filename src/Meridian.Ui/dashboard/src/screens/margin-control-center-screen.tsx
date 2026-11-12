@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
+import { MarginDisagreementView, marginAccountAnchor } from "@/screens/margin-disagreement-view";
 
 export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
@@ -64,6 +65,7 @@ export function MarginControlCenterScreen() {
             {data.authorityNote} <span className="font-medium">Next:</span> {data.nextAction}
           </div>
           <PrimeTable data={data} />
+          <MarginDisagreementView accounts={data.accounts} />
           <AlertPanel data={data} />
           <div className="flex flex-col gap-3">
             {data.accounts.map((account) => <AccountMarginCard key={`${account.providerId}:${account.accountId}`} account={account} onCertified={() => void load()} />)}
@@ -166,7 +168,7 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
     }
   };
   return (
-    <Card>
+    <Card id={marginAccountAnchor(account)}>
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>

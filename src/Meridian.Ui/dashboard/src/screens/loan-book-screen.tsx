@@ -19,6 +19,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import { getLoanPortfolioSummary } from "@/lib/api/direct-lending.api";
+import { LoanMaturityView } from "@/screens/loan-maturity-view";
 import {
   buildLoanBookViewModel,
   type LoanBookRowViewModel,
@@ -196,6 +197,8 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
             </div>
 
             {view.currencyNotice ? <p className="text-sm text-muted-foreground">{view.currencyNotice}</p> : null}
+
+            <LoanMaturityView loans={resolved.loans ?? []} />
 
             <DenseDataTable
               columns={loanColumns}

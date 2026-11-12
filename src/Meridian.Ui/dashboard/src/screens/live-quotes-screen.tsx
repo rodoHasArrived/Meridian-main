@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { DepthQuantityIllustration } from "@/screens/depth-quantity-illustration";
 import {
   computeIntradayMetrics,
   LIVE_QUOTES_FRESHNESS_BUDGET_MS,
@@ -347,6 +348,7 @@ export function LiveQuotesScreen() {
                     onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
                     onSeedSell={(price) => quickTrade.seedTicket("Sell", price)}
                   />
+                  <DepthQuantityIllustration key={activeSymbol} book={marketVm.orderbook} />
                 </div>
               )}
             </CardContent>

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -57,6 +57,21 @@ describe("FamilyOfficeScreen", () => {
 
     await waitFor(() => expect(screen.getByLabelText("Family office summary panels")).toBeInTheDocument());
     expect(getFamilyOfficeOverview).toHaveBeenCalledTimes(2);
+  });
+
+  it("requests historical structure without relabelling the financial snapshot date", async () => {
+    const overview = buildFamilyOfficeOverviewFixture();
+    getFamilyOfficeOverview.mockResolvedValueOnce(overview);
+    const historical = structuredClone(overview);
+    historical.ownershipGraph.asOfDate = "2025-01-01";
+    getFamilyOfficeOverview.mockResolvedValueOnce(historical);
+    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+    await screen.findByRole("heading", { name: "Legal ownership relationships" });
+    fireEvent.change(screen.getByLabelText("Ownership structure on"), { target: { value: "2025-01-01" } });
+    await userEvent.click(screen.getByRole("button", { name: "Apply structure date" }));
+    await screen.findByText("Effective structure on 2025-01-01. Financial balance dates remain independent.");
+    expect(getFamilyOfficeOverview).toHaveBeenLastCalledWith(expect.objectContaining({ signal: expect.any(AbortSignal) }), "2025-01-01");
+    expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent(overview.asOfDate);
   });
 
   it("renders family-office panels and accessible ownership graph controls", async () => {

@@ -193,7 +193,15 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         return new(security.SecurityId, security.Currency, model.Version, context, convention,
             clean, measures.DirtyPrice, accrued, yield, annualRate * 100m / clean,
             measures.MacaulayDuration, measures.ModifiedDuration, measures.Convexity, measures.Dv01,
-            worst, flows, exerciseYields, inputs, [], Capabilities(true), diagnostics);
+            worst, flows, exerciseYields, inputs, [], Capabilities(true), diagnostics)
+        {
+            RedemptionScenarios = exerciseYields.Append(new BondExerciseYield("Maturity",
+                terms.MaturityDate!.Value, 100m, yield, null)).ToArray(),
+            YieldToWorstScenarios = exerciseYields.Where(item => item.Kind == "Call" && item.Yield == worst)
+                .Concat(yield == worst
+                    ? new[] { new BondExerciseYield("Maturity", terms.MaturityDate!.Value, 100m, yield, null) }
+                    : Array.Empty<BondExerciseYield>()).ToArray()
+        };
     }
 
     private static BondAnalyticsResult Blocked(BondAnalyticsRequest request, BondCalculationContext context,

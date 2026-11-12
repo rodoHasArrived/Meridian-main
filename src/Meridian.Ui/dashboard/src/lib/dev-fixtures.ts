@@ -124,6 +124,7 @@ import {
 } from "./dev-fixtures/fixture-resolver";
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
+import { analyticalFixturePatterns, analyticalFixtureRoutes } from "./dev-fixtures/analytical-fixtures";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -5984,7 +5985,8 @@ const fixtures = {
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
   ...marketDataFixtureRoutes,
-  ...bootstrapFixtureRoutes
+  ...bootstrapFixtureRoutes,
+  ...analyticalFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
@@ -6050,6 +6052,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
     }
   },
   ...marketDataFixturePatterns,
+  ...analyticalFixturePatterns,
   {
     pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
     resolve: (cleanPath) => {

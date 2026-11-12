@@ -1,5 +1,6 @@
 import { formatCompactCurrency as formatCurrency, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import type { CapitalActivity, CapitalCommitment, FamilyAssetSummary, FamilyOwnershipGraph, PrivateAssetSummary } from "@/types/family-office.types";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
 /**
@@ -78,6 +79,10 @@ export interface FamilyOfficeEntityStructure {
   assetClassExposures: FamilyOfficeAssetClassExposure[];
   privateAssets: FamilyOfficePrivateAssetSummary[];
   commitments: FamilyOfficeCommitmentSummary[];
+  /** Retain authoritative graph relationships rather than reducing them to a parent tree. */
+  ownershipSource?: { graph: FamilyOwnershipGraph; publicAssets: FamilyAssetSummary[]; privateAssets: PrivateAssetSummary[] };
+  capitalLifecycle?: { commitments: CapitalCommitment[]; activities: CapitalActivity[]; asOfDate: string };
+  sourceWarnings?: string[];
 }
 
 export interface FamilyOfficeOwnershipNode {

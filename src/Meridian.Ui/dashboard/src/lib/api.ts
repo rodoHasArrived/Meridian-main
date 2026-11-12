@@ -5,6 +5,7 @@ import {
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
+import type { StrategySweepResultGroup } from "@/types/workstation-6";
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
 export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
@@ -2949,7 +2950,7 @@ export function getRunTimeline(options: { mode?: string; status?: string; strate
 }
 
 export function getRunSweeps(limit?: number) {
-  return getJson<unknown>(workstationRunSweepsEndpoint(limit));
+  return getJson<StrategySweepResultGroup[]>(workstationRunSweepsEndpoint(limit), { allowDevelopmentFallback: false });
 }
 
 // --- Security Master search ---

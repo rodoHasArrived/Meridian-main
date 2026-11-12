@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
+import { BondEconomicsHorizon } from "@/components/meridian/bond-economics-horizon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
@@ -16,28 +16,6 @@ import type {
   BondDecimal,
   BondYieldConvention
 } from "@/types/bond-analytics.types";
-
-type CashFlow = BondAnalyticsResult["cashFlows"][number];
-const cashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
-  { id: "payment", label: "Payment date", render: (row) => row.paymentDate },
-  {
-    id: "accrual",
-    label: "Accrual period",
-    render: (row) => `${row.accrualStart} – ${row.accrualEnd}`
-  },
-  {
-    id: "interest",
-    label: "Interest / 100",
-    align: "right",
-    render: (row) => decimalText(row.interest)
-  },
-  {
-    id: "principal",
-    label: "Principal / 100",
-    align: "right",
-    render: (row) => decimalText(row.principal)
-  }
-];
 
 const decimalText = (value: BondDecimal | null | undefined): string => bondDecimalText(value);
 
@@ -273,22 +251,7 @@ export function BondAnalyticsPanel({ securityId, calculate = getBondAnalytics }:
                 }
               />
             ) : null}
-            <details>
-              <summary className="cursor-pointer text-sm font-semibold">
-                Projected contractual payments ({result.cashFlows.length})
-              </summary>
-              <p className="my-2 text-xs text-muted-foreground">
-                Projected cash per 100 face; these rows are not observed payments or posted journals.
-              </p>
-              <DenseDataTable
-                columns={cashFlowColumns}
-                rows={result.cashFlows}
-                getRowId={(row) => row.flowId}
-                ariaLabel="Projected bond payments"
-                caption="Projected contractual payments per 100 face"
-                emptyText="No calculated payment schedule is available."
-              />
-            </details>
+            <BondEconomicsHorizon result={result} />
             {result.exerciseYields.length ? (
               <details>
                 <summary className="cursor-pointer text-sm font-semibold">Contractual exercise scenarios</summary>

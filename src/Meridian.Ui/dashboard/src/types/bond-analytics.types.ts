@@ -2,6 +2,15 @@
 export type BondDecimal = number | string;
 export type BondYieldConvention = "NominalPeriodic" | "AnnualEffective" | "Simple";
 
+export interface BondExerciseScenario {
+  kind: string;
+  exerciseDate: string;
+  redemptionPrice: BondDecimal;
+  yield: BondDecimal;
+  latestNoticeDate?: string | null;
+  earliestNoticeDate?: string | null;
+}
+
 export interface BondCalculationContext {
   asOf: string;
   settlementDate?: string | null;
@@ -49,13 +58,9 @@ export interface BondAnalyticsResult {
     principal: BondDecimal;
     timeInYears: BondDecimal;
   }>;
-  exerciseYields: Array<{
-    kind: string;
-    exerciseDate: string;
-    redemptionPrice: BondDecimal;
-    yield: BondDecimal;
-    latestNoticeDate?: string | null;
-  }>;
+  exerciseYields: BondExerciseScenario[];
+  redemptionScenarios?: BondExerciseScenario[];
+  yieldToWorstScenarios?: BondExerciseScenario[];
   inputs: BondCalculationInput[];
   blockers: Array<{ code: string; reason: string }>;
   capabilities: Array<{

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Xunit;
 
@@ -57,6 +58,9 @@ public sealed class CoveredCallChainProviderFactoryConvertCallsTests
         c.Bid.Should().Be(4.50m);
         c.Ask.Should().Be(4.60m);
         c.Delta.Should().Be(0.32);
+        c.DeltaAvailable.Should().BeTrue();
+        c.OpenInterestAvailable.Should().BeTrue();
+        c.VolumeAvailable.Should().BeTrue();
         c.ImpliedVolatility.Should().Be(0.18);
         c.Vega.Should().Be(0.55);
         c.OpenInterest.Should().Be(7500L);
@@ -65,7 +69,7 @@ public sealed class CoveredCallChainProviderFactoryConvertCallsTests
     }
 
     [Fact]
-    public void ConvertCalls_NullDeltaDefaultsToZero()
+    public void ConvertCalls_MissingMeasurementsRemainUnavailableAndCannotPassRiskFilter()
     {
         var expiration = new DateOnly(2024, 3, 15);
         var contract = new OptionContractSpec(
@@ -97,6 +101,17 @@ public sealed class CoveredCallChainProviderFactoryConvertCallsTests
         var result = CoveredCallChainProviderFactory.ConvertCalls(snapshot, new DateOnly(2024, 2, 13));
 
         result[0].Delta.Should().Be(0.0);
+        result[0].DeltaAvailable.Should().BeFalse();
+        result[0].OpenInterestAvailable.Should().BeFalse();
+        result[0].VolumeAvailable.Should().BeFalse();
+        OptionsOverwriteFilters.PassesRiskFilter(result[0], new OptionsOverwriteParams
+        {
+            MinStrike = 1m, MaxDelta = 1, MinDte = 0, MaxDte = 365
+        }).Should().BeFalse("an unavailable delta is not an eligible measured zero");
+        var row = CoveredCallRunProjection.ToChainRow(result[0], false, "Delta unavailable");
+        row.DeltaAvailable.Should().BeFalse();
+        row.Multiplier.Should().Be(100);
+        row.SpreadFraction.Should().BeApproximately((4.6 - 4.5) / 4.55, 1e-12);
         result[0].ImpliedVolatility.Should().BeNull();
         result[0].OpenInterest.Should().Be(0L);
         result[0].Volume.Should().Be(0L);

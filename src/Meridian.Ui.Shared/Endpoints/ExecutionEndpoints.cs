@@ -387,6 +387,7 @@ public static class ExecutionEndpoints
             string? objectKind,
             string? objectId,
             string? relatedObjectId,
+            string? orderId,
             DateTimeOffset? fromUtc,
             DateTimeOffset? toUtc,
             int? limit,
@@ -416,7 +417,8 @@ public static class ExecutionEndpoints
                     RelatedObjectId: relatedObjectId,
                     FromUtc: fromUtc,
                     ToUtc: toUtc,
-                    Limit: limit ?? 100),
+                    Limit: limit ?? 100,
+                    OrderId: orderId),
                 context.RequestAborted).ConfigureAwait(false);
 
             return Results.Json(result, jsonOptions);

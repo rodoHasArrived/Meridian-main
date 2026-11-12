@@ -20,6 +20,7 @@ import {
   type AuditTrailTone
 } from "@/screens/trading-screen.audit-trail.view-model";
 import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
+import { ExecutionJourney } from "@/screens/execution-journey";
 
 const AUDIT_LIMIT = 50;
 
@@ -72,6 +73,7 @@ export function ExecutionAuditTrailPanel() {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        <ExecutionJourney recent={result} />
         {error ? <StatusBanner tone="danger" title="Audit trail unavailable" detail={error} /> : null}
         {vm.truncationNotice ? (
           <StatusBanner tone="warning" title="Results truncated" detail={vm.truncationNotice} />

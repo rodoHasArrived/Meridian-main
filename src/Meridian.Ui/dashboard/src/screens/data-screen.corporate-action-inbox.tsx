@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { CorporateActionCalendar } from "@/screens/corporate-action-calendar";
 import type {
   CorporateActionAcceptanceReceipt,
   CorporateActionInboxFilters,
@@ -40,7 +41,7 @@ const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
   },
   {
     id: "deadline",
-    label: "Ex-date / deadline",
+    label: "Ex-date",
     render: (row) => (
       <span className="block">
         <span className="block font-mono text-foreground">{row.exDateLabel}</span>
@@ -349,6 +350,15 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
       {panel.acceptErrors[row.rowId] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.rowId]} /> : null}
       <WorkspaceSection title="Source facts and provenance"><SourceFacts row={row} /></WorkspaceSection>
       <WorkspaceSection title="Entitlement and election">
+        <h4 className="text-xs font-semibold">Actual election cutoffs</h4>
+        {row.electionCalendar?.evidenceState === "Available" && row.electionCalendar.cutoffs.length > 0 ? (
+          <ul className="mb-3 mt-2 space-y-2 text-xs">{row.electionCalendar.cutoffs.map((cutoff) => (
+            <li key={cutoff.id} className="break-words rounded-sm border border-border p-2">
+              <strong>{cutoff.label}</strong> · <span className="font-mono">{cutoff.deadlineAt}</span> (source offset)
+              <span className="mt-1 block text-muted-foreground">{cutoff.source} · {cutoff.evidenceReference}</span>
+            </li>
+          ))}</ul>
+        ) : <p className="mb-3 mt-1 text-xs text-muted-foreground">{row.electionCalendar?.evidenceState === "Available" ? "The source retained no actual election cutoffs." : "Actual election cutoff evidence is unavailable. Ex-date and offer expiry do not establish an election deadline."}</p>}
         {durableCase?.entitlement ? (
           <dl className="grid gap-2 text-xs sm:grid-cols-2">
             {Object.entries(durableCase.entitlement).map(([label, value]) => (
@@ -526,7 +536,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
           <ToolbarStrip
             ariaLabel="Corporate action queue summary"
             items={[
-              { id: "staged", label: "Staged", value: String(panel.model?.stagedCount ?? 0), active: true },
+              { id: "staged", label: "Staged", value: String(panel.model?.stagedCount ?? 0) },
               { id: "conflicts", label: "Conflicts", value: String(conflictCount) },
               { id: "unassigned", label: "Unassigned", value: String(unassignedCount) },
               { id: "durable", label: "Durable cases", value: String(durableCaseCount) }
@@ -553,6 +563,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
           ) : panel.model ? (
             <>
               <QueueFilters filters={panel.filters} rows={allRows} onChange={panel.setFilters} />
+              <CorporateActionCalendar rows={panel.rows} selectedRowId={panel.selectedRowKey} onSelect={panel.selectRow} stale={Boolean(panel.error)} caseWorkspaceId={CORPORATE_ACTION_CASE_WORKSPACE_ID} />
               <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.85fr)]">
                 <DenseDataTable
                   columns={queueColumns}

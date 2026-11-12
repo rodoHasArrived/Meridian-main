@@ -2915,6 +2915,100 @@ ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their pr
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
 registered and it never writes; applying a proposal is a governed amendment.
 
+## Analytical read-model evidence
+
+The browser analytical views consume additive shared contracts; WPF is not modified by this slice.
+
+- Audit search accepts exact `orderId`/reported client or broker aliases and exposes per-source
+  availability and a coverage note. Individual fill reports come from retained session FillHistory,
+  with canonical report identities and an explicit timestamp/quantity basis. Search limits and
+  recording-time audit entries cannot establish a complete order lifecycle.
+- Covered-call preview preserves delta/open-interest/volume availability through provider conversion,
+  filtering and DTO mapping. Unknown delta is rejected instead of accepted as zero. Captured filters,
+  requested/loaded expiries and snapshot times describe the bounded current snapshot; preview status
+  does not establish full strategy eligibility or historical-chain evidence.
+- Family overview accepts `asOf=YYYY-MM-DD` for legal structure only. Current financial populations
+  and their source dates remain independent; historical graph selection stays bound to the same family.
+
+### Retained private-capital lifecycle source
+
+`IPrivateCapitalLifecycleSource` is replaceable by a host integration. Its default file reader uses
+`<workstation-data>/family-office/private-capital-lifecycle.json`, with this versioned shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "snapshots": [{
+    "familyOfficeId": "configured-family-id",
+    "snapshotId": "immutable-source-snapshot-id",
+    "revision": 1,
+    "recordedAtUtc": "2026-05-29T12:00:00Z",
+    "commitment": {
+      "commitmentId": "source-vehicle-commitment-id",
+      "entityId": "configured-owning-entity-id",
+      "vehicleName": "Synthetic private vehicle",
+      "strategy": "PrivateEquity",
+      "currency": "USD",
+      "commitmentAmount": 1000000,
+      "calledAmount": 600000,
+      "unfundedAmount": 450000,
+      "distributedAmount": 100000,
+      "currentNav": 570000,
+      "vintageYear": 2024,
+      "sourceSystem": "retained-source",
+      "sourceDocumentId": "retained-source-document-id",
+      "asOfDate": "2026-05-29",
+      "valuationDate": "2026-03-31",
+      "evidenceCompleteness": "Complete",
+      "reconciliationStatus": "Reconciled",
+      "balancesAvailable": true,
+      "balanceStatus": "Settled"
+    }
+  }],
+  "activities": []
+}
+```
+
+An activity row is `{ "familyOfficeId": "...", "recordedAtUtc": "...Z", "activity": <CapitalActivityDto> }`.
+Activity IDs and source evidence must be retained, with matching entity/commitment/currency identity.
+The example above is synthetic and is not installed as financial data.
+
+Provisioners must atomically replace the document while retaining immutable prior revisions. There
+is no new ingestion, approval or financial mutation endpoint. A commitment ID cannot silently change
+entity or currency. The reader selects the latest eligible as-of/revision under the known-at read cut,
+rejects invalid/duplicate evidence, and excludes future records. Missing or invalid sources publish
+unavailable balances rather than manufacturing zero. Genuine zero and signed NAV remain valid source
+facts. All five balances are required; exact decimal strings accompany chart positioning values for
+inspection. `sourceContentSha256` carries the canonical source-context snapshot digest alongside
+snapshot ID, revision and recorded-at metadata. Authoritative unfunded is preserved independently of commitment minus called capital.
+Other currencies are not silently incorporated into base-currency household scalars.
+
+### Actual corporate-action election cutoffs
+
+Retained provider-action JSON can carry the following companion, projected into both staged and
+durable case reads:
+
+```json
+{
+  "electionCalendar": {
+    "schemaVersion": 1,
+    "cutoffs": [{
+      "id": "custodian-instruction",
+      "label": "Custodian instruction cutoff",
+      "deadlineAt": "2026-11-10T23:30:00-05:00",
+      "source": "Custodian notice revision 2",
+      "evidenceReference": "document://notice/revision-2"
+    }]
+  }
+}
+```
+
+Cutoff identities must be unique and carry an explicit timestamp offset, source and trusted retained
+evidence reference. A malformed declared calendar is unavailable as a whole. An absent companion
+means MissingEvidence, while an explicitly empty valid calendar means no supplied cutoffs. Neither
+ex-date, offer expiry nor an operational case due date supplies election authority. No storage
+migration or inferred deadline is introduced.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.

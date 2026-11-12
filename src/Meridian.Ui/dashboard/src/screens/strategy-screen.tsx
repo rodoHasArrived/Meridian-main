@@ -1,3 +1,4 @@
+import { StrategyRobustness } from "@/components/meridian/strategy-robustness";
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { useEffect, useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
@@ -836,6 +837,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           </div>
         </CardContent>
       </Card>
+
+      {showRuns ? <StrategyRobustness /> : null}
 
       {vm.showComparisonPanel && (
         <Card>

@@ -76,5 +76,8 @@ public sealed record BondAnalyticsResult(
     IReadOnlyList<BondOperationCapability> Capabilities,
     IReadOnlyList<string> Diagnostics)
 {
+    /// <summary>Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield.</summary>
+    public IReadOnlyList<BondExerciseYield> RedemptionScenarios { get; init; } = [];
+    public IReadOnlyList<BondExerciseYield> YieldToWorstScenarios { get; init; } = [];
     public bool IsBlocked => Blockers.Count > 0;
 }
