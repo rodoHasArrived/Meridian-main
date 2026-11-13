@@ -49,7 +49,13 @@ export interface ExactDecimal {
   scale: number;
 }
 
-const DECIMAL_TEXT = /^(\d*)(?:\.(\d*))?(?:e([+-]?\d+))?$/i;
+// The first unsigned number in the text, with an optional exponent that must directly follow a
+// digit ("1.5e-3"). Matching a token rather than stripping letters keeps a currency suffix such as
+// "EUR" from being read as an exponent.
+const DECIMAL_TOKEN = /(\d+)?(?:\.(\d+)?)?(?:(?<=\d)[eE]([+-]?\d+))?/g;
+// No money value needs more than this many digits of exponent; beyond it the text is not an amount
+// and expanding it would exhaust memory.
+const MAX_EXPONENT = 400;
 
 /**
  * Read a money value (number or money-ish string like `"(1,234.00)"`, `"1,234.00-"`, `"−45.5"`)
@@ -63,15 +69,17 @@ export function parseExactDecimal(value: number | string | null | undefined): Ex
   const s = typeof value === "number"
     ? value.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 20 })
     : String(value).trim();
-  const parenthesized = /^\(.*\)$/.test(s);
+  // Statement negatives: "(1,234.00)", optionally followed by an ISO code ("(1,234.00) EUR").
+  const parenthesized = /^\(.*\)(?:\s*[A-Z]{3})?$/i.test(s);
   const trailingMinus = /[-−]$/.test(s);
   const leadingMinus = /^[(\s$€£¥A-Z]*[-−]/i.test(s) && !trailingMinus;
-  // Sign characters go, except an exponent's own sign ("1.5e-3").
-  const cleaned = s.replace(/(?<![eE])[−-]/g, "").replace(/[^0-9.eE+-]/g, "").replace(/^[eE+]+/, "");
-  const match = DECIMAL_TEXT.exec(cleaned);
-  if (!match || (!match[1] && !match[2])) return null;
+  // Signs were read above; the amount is the first number token once group separators are gone.
+  const cleaned = s.replace(/,/g, "");
+  const match = [...cleaned.matchAll(DECIMAL_TOKEN)].find((candidate) => candidate[1] || candidate[2]);
+  if (!match) return null;
   const [, whole = "", fraction = "", exponentText] = match;
   const exponent = exponentText ? Number(exponentText) : 0;
+  if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > MAX_EXPONENT) return null;
   let digits = `${whole}${fraction}` || "0";
   let scale = fraction.length - exponent;
   if (scale < 0) {

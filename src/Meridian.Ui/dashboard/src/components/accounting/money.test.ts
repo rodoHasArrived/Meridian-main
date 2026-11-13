@@ -95,6 +95,19 @@ describe("money exact decimals", () => {
     expect(sumAmounts(["1,000,000.01", "(1,000,000.01)"])).toBe(0);
   });
 
+  it("reads an amount with a currency suffix whose code contains E", () => {
+    expect(toNumber("1,234.56 EUR")).toBe(1234.56);
+    expect(toNumber("(1,234.56) EUR")).toBe(-1234.56);
+    expect(formatMoney("1,234.56 EUR", { parens: true })).toBe("1,234.56");
+    expect(sumAmounts(["100.00 EUR", "50.25 EUR"])).toBe(150.25);
+  });
+
+  it("treats an exponent beyond any money value as invalid instead of throwing", () => {
+    expect(Number.isNaN(toNumber("1e9999999999"))).toBe(true);
+    expect(formatMoney("1e-9999999999")).toBe("1e-9999999999");
+    expect(toNumber("2.5e3")).toBe(2500);
+  });
+
   it("rejects text that is not a number", () => {
     expect(Number.isNaN(toNumber("n/a"))).toBe(true);
     expect(formatMoney("Not supplied")).toBe("Not supplied");

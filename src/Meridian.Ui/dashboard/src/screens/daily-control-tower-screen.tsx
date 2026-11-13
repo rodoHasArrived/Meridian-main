@@ -230,8 +230,9 @@ export function DailyControlTowerScreen({
       </section>
       ) : null}
 
-      {queueSource !== "workspace" ? (
-      <section aria-label="Operator inbox" className="space-y-2">
+      {/* The inbox stays mounted while another source is shown: it owns in-flight and
+          unconfirmed assign/snooze commands and their retry state, which unmounting would drop. */}
+      <section aria-label="Operator inbox" className="space-y-2" hidden={queueSource === "workspace"}>
         <div>
           <h4 className="text-sm font-semibold">Operator inbox</h4>
           <p className="text-xs text-muted-foreground">Source: shared inbox. Assign, snooze and acknowledge here.</p>
@@ -242,7 +243,6 @@ export function DailyControlTowerScreen({
           refreshKey={refreshing}
         />
       </section>
-      ) : null}
       </section>
 
     </div>

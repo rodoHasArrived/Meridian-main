@@ -187,8 +187,9 @@ describe("DailyControlTowerScreen", () => {
 
   it("filters the one Today queue by source without losing either list", async () => {
     const user = userEvent.setup();
-    renderScreen();
+    const { container } = renderScreen();
     const source = screen.getByRole("tablist", { name: "Queue source" });
+    const inboxElement = container.querySelector('[aria-label="Operator inbox"]');
 
     await user.click(within(source).getByRole("tab", { name: /Shared inbox/ }));
     expect(screen.queryByRole("region", { name: "Finance queue" })).not.toBeInTheDocument();
@@ -197,6 +198,10 @@ describe("DailyControlTowerScreen", () => {
     await user.click(within(source).getByRole("tab", { name: /Workspace signals/ }));
     expect(screen.getByRole("region", { name: "Finance queue" })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Operator inbox" })).not.toBeInTheDocument();
+
+    // Hidden, not unmounted: the same inbox element keeps any in-flight or unconfirmed command.
+    expect(container.querySelector('[aria-label="Operator inbox"]')).toBe(inboxElement);
+    expect(inboxElement).not.toBeVisible();
 
     await user.click(within(source).getByRole("tab", { name: /All sources/ }));
     expect(screen.getByRole("region", { name: "Finance queue" })).toBeInTheDocument();
