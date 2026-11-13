@@ -355,11 +355,12 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string ModelVersion = &quot;bond-income-us-gaap-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:13](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L13) |  |
 | <code>public const string SeparatedAccrualPolicyVersion = &quot;bond-income-accrual-v2&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:14](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L14) |  |
-| <code>public static BondIncomePolicyDto ReadPolicy(AccountingPolicyDto policy);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:17](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L17) |  |
-| <code>public static void ValidateAcquisition(BondIncomeAcquisitionDto value, decimal retainedCost);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:35](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L35) |  |
-| <code>public static BondIncomeResultDto Project(OpenLotDto lot, BondIncomeInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:51](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L51) |  |
-| <code>public static OpenLotAmortizationProjectionDto ProjectCanonical(OpenLotAmortizationInstructionDto inputs);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:215](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L215) |  |
-| <code>public static IReadOnlyList&lt;BondIncomeCallDto&gt; ReadQualifyingCalls(SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:316](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L316) |  |
+| <code>public const string SeparatedAccrualWorkflowModelVersion = &quot;bond-workflow-v2&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:15](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L15) |  |
+| <code>public static BondIncomePolicyDto ReadPolicy(AccountingPolicyDto policy);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:18](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L18) |  |
+| <code>public static void ValidateAcquisition(BondIncomeAcquisitionDto value, decimal retainedCost);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:36](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L36) |  |
+| <code>public static BondIncomeResultDto Project(OpenLotDto lot, BondIncomeInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:52](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L52) |  |
+| <code>public static OpenLotAmortizationProjectionDto ProjectCanonical(OpenLotAmortizationInstructionDto inputs);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:216](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L216) |  |
+| <code>public static IReadOnlyList&lt;BondIncomeCallDto&gt; ReadQualifyingCalls(SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:317](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L317) |  |
 
 ## BondIncomeCallDto
 

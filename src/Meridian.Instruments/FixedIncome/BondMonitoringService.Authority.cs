@@ -37,7 +37,7 @@ public sealed partial class BondMonitoringService
         foreach (var obligation in active)
         {
             var models = obligation.Inputs.Where(input => input.Kind == "CalculationModel").ToArray();
-            if (obligation.ModelVersion is not (BondWorkflowModelVersions.Legacy or BondWorkflowModelVersions.Current)
+            if (obligation.ModelVersion is not (BondWorkflowModelVersions.Legacy or BondWorkflowModelVersions.Previous or BondWorkflowModelVersions.Current)
                 || models.Length != 1 || models[0].Key != obligation.ModelVersion)
                 throw new InvalidOperationException("Monitoring obligations require one exact supported retained workflow model and matching CalculationModel input; refresh ambiguous or unsupported source evidence explicitly.");
         }

@@ -22,6 +22,101 @@ public sealed class BondIncomeServiceTests
     [Theory]
     [InlineData(5)]
     [InlineData(-5)]
+    public async Task CompletedCouponAcrossTwoLotsAcceptsActualResolvedCurvePinsWithoutChangingTheAdoptedWorkflow(int coupon)
+    {
+        var f = new RealCurveIncomeFixture(coupon);
+        var preview = await f.Service.PreviewAsync(f.Request);
+        var peerRequest = f.PeerRequest!;
+        var peerProjection = f.PeerProjection!;
+        peerRequest.Context.Curves.Should().BeNull("the account service did not choose a caller-authored curve");
+        peerProjection.Context.Curves.Should().ContainSingle().Which.Should().Be(f.Pin);
+        peerProjection.Context.Should().NotBe(peerRequest.Context, "the actual workflow enriches its resolved context");
+        peerProjection.ModelVersion.Should().Be("bond-workflow-v2");
+        peerProjection.Inputs.Should().Contain(input => input.Kind == "Curve:Discount"
+            && input.VersionId == f.Version.CurveVersionId && input.ContentSha256 == f.Version.ContentSha256);
+        var inputs = preview.Instruction.BondIncome!;
+        var allocation = inputs.CouponCashAllocations.Should().ContainSingle().Which;
+        allocation.Lots.Should().HaveCount(2);
+        allocation.Lots.Sum(row => row.CashAmount).Should().Be(2m * coupon);
+        allocation.Lots.Should().OnlyContain(row => row.CashAmount == coupon && row.RawAmount == coupon);
+        allocation.Lots.Single(row => row.TaxLotRecordId == f.Peer.TaxLotRecordId).EntitlementInputs.Should()
+            .Contain(input => input.Kind == "Curve:Discount" && input.ContentSha256 == f.Version.ContentSha256);
+        inputs.AcquisitionProjection.ModelVersion.Should().Be("bond-workflow-v2");
+        inputs.CurrentProjection.ModelVersion.Should().Be("bond-workflow-v2");
+        inputs.AmortizationProjection.ModelVersion.Should().Be("bond-workflow-v2");
+        await f.Curves.Received().GetDefinitionAsync(f.Definition.CurveId, Arg.Any<CancellationToken>());
+        await f.Curves.Received().GetVersionByIdAsync(f.Definition.CurveId, f.Version.CurveVersionId, Arg.Any<CancellationToken>());
+        // Adding a definition after the retained knowledge cutoff cannot reinterpret preparation.
+        f.FutureDefinition = f.Definition with { CurveId = Guid.NewGuid(), CurveKey = "USD-FUTURE", CreatedAt = f.Request.KnownAt.AddDays(1) };
+        (await f.Service.PrepareAsync(new(f.Request, preview.Fingerprint))).Fingerprint.Should().Be(preview.Fingerprint);
+        await f.Base.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("settlement")]
+    [InlineData("security-version")]
+    [InlineData("observed-selection")]
+    [InlineData("economic-evidence")]
+    [InlineData("knowledge-evidence")]
+    [InlineData("unbacked-pin")]
+    [InlineData("content-hash")]
+    [InlineData("curve-type")]
+    [InlineData("definition-admission")]
+    [InlineData("freeze")]
+    [InlineData("request-fee")]
+    public async Task PeerCurveEnrichmentCannotSubstituteScopeCutoffsOrRetainedAuthority(string defect)
+    {
+        var f = new RealCurveIncomeFixture(5);
+        f.MutatePeer = projection => defect switch
+        {
+            "settlement" => projection with { Context = projection.Context with { SettlementDate = f.Peer.AcquiredDate.AddDays(1) } },
+            "security-version" => projection with { Context = projection.Context with { SecurityVersion = f.Base.Security.Version + 1 } },
+            "observed-selection" => projection with { Context = projection.Context with { ObservedFixingReceiptIds = [Guid.NewGuid()] } },
+            "economic-evidence" => projection with
+            {
+                Inputs = projection.Inputs.Select(input => input.Kind == "Curve:Discount"
+                ? input with { AsOf = projection.Context.AsOf.AddDays(1) } : input).ToArray()
+            },
+            "knowledge-evidence" => projection with
+            {
+                Inputs = projection.Inputs.Select(input => input.Kind == "Curve:Discount"
+                ? input with { RecordedAt = f.Request.KnownAt.AddTicks(1) } : input).ToArray()
+            },
+            "unbacked-pin" => projection with
+            {
+                Context = projection.Context with
+                { Curves = [.. projection.Context.Curves!, new("Forward:UNBACKED", Guid.NewGuid(), Guid.NewGuid())] }
+            },
+            "content-hash" => projection with
+            {
+                Inputs = projection.Inputs.Select(input => input.Kind == "Curve:Discount"
+                ? input with { ContentSha256 = new string('b', 64) } : input).ToArray()
+            },
+            "curve-type" => WrongCurveRole(projection),
+            "definition-admission" => f.ChangeDefinitionAdmission(projection),
+            "freeze" => projection with { FrozenIndexAt = f.Request.ThroughDate.AddDays(1) },
+            _ => projection with { Request = projection.Request! with { Fees = 1m } }
+        };
+        await f.Service.Invoking(service => service.PreviewAsync(f.Request)).Should().ThrowAsync<InvalidOperationException>();
+        f.PeerCalculations.Should().Be(1, "the rejection must follow the real peer projection, not an earlier fixture refusal");
+        await f.Base.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
+
+        static BondWorkflowResult WrongCurveRole(BondWorkflowResult projection)
+        {
+            var context = projection.Context with { Curves = projection.Context.Curves!.Select(pin => pin with { Role = "Forward:SOFR" }).ToArray() };
+            return projection with
+            {
+                Context = context,
+                Request = projection.Request! with { Context = context },
+                Inputs = projection.Inputs.Select(input => input.Kind == "Curve:Discount"
+                    ? input with { Kind = "Curve:Forward:SOFR" } : input).ToArray()
+            };
+        }
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
     public async Task EarlyPaidCouponKeepsMarketInvoiceAvailableButBookAdvanceTailRefuses(int coupon)
     {
         var f = new Fixture(separatedAccrual: true, declaredCoupon: coupon, earlyPayment: true);
@@ -88,7 +183,7 @@ public sealed class BondIncomeServiceTests
         paid.Income.BookedTarget!.BookedTransactionTarget.Should().Be(100m);
         BondIncomeCouponRounding.DeferredEarnedFlows(paid.Instruction.BondIncome!).Should().BeEmpty();
         await f.Workflow.Received().CalculateIncomeScheduleAsync(Arg.Is<BondWorkflowRequest>(input =>
-            input.ModelVersion == BondWorkflowModelVersions.Current), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>());
+            input.ModelVersion == BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>());
         await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
     }
 
@@ -611,6 +706,79 @@ public sealed class BondIncomeServiceTests
             await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
         }
         finally { if (Directory.Exists(path)) Directory.Delete(path, true); }
+    }
+
+    private sealed class RealCurveIncomeFixture : IBondWorkflowService
+    {
+        private readonly BondWorkflowService _workflow;
+        public Fixture Base { get; }
+        public BondIncomeService Service { get; }
+        public BondIncomePreviewRequestDto Request { get; }
+        public LedgerTaxLotRecord Peer { get; }
+        public ISecurityCurveStore Curves { get; } = Substitute.For<ISecurityCurveStore>();
+        public SecurityCurveDefinitionDto Definition { get; private set; }
+        public SecurityCurveDefinitionDto? FutureDefinition { get; set; }
+        public SecurityCurveVersionDto Version { get; }
+        public BondPinnedCurveInput Pin => new("Discount", Definition.CurveId, Version.CurveVersionId);
+        public BondWorkflowRequest? PeerRequest { get; private set; }
+        public BondWorkflowResult? PeerProjection { get; private set; }
+        public int PeerCalculations { get; private set; }
+        public Func<BondWorkflowResult, BondWorkflowResult>? MutatePeer { get; set; }
+
+        public RealCurveIncomeFixture(decimal coupon)
+        {
+            Base = new(separatedAccrual: true, declaredCoupon: coupon);
+            Request = Base.Request with { ThroughDate = new(2026, 1, 5), KnownAt = new(2026, 1, 6, 0, 0, 0, TimeSpan.Zero) };
+            Peer = Base.Lot with { TaxLotRecordId = Guid.NewGuid(), LotId = "real-curve-peer", AcquiredDate = new(2025, 1, 2), Version = 2 };
+            Base.Lots.ListOpenTaxLotsByAssetScopeAsync(Base.Book.LedgerBookId, Base.Lot.SecurityId, Base.Lot.BookPositionId,
+                Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns(_ => (IReadOnlyList<LedgerTaxLotRecord>)[Base.Lot, Peer]);
+            var query = Substitute.For<ISecurityMasterQueryService>();
+            query.GetRecordedByIdAsOfAsync(Base.Lot.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(Base.Security.ToDetail());
+            query.GetByIdAsync(Base.Lot.SecurityId, Arg.Any<CancellationToken>()).Returns(Base.Security.ToDetail());
+            var recorded = new DateTimeOffset(2024, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            Definition = new(Guid.NewGuid(), "USD-INCOME-DISCOUNT", SecurityCurveKind.Discount, "USD", null, null,
+                "ACT/365", SecurityCurveInterpolation.Linear, "Synthetic", null, "synthetic-retainer", recorded);
+            var asOf = new DateOnly(2025, 1, 1);
+            SecurityCurvePointDto[] points = [new(asOf, 1m), new(new(2026, 1, 1), .96m), new(new(2027, 1, 10), .92m)];
+            Version = new(Guid.NewGuid(), Definition.CurveId, Definition.CurveKey, 1, asOf, recorded, recorded,
+                "Synthetic", "synthetic-retainer", points, SecurityCurveRules.ContentSha256(asOf, points));
+            Curves.ListDefinitionsAsync(SecurityCurveKind.Discount, "USD", null, Arg.Any<CancellationToken>())
+                .Returns(_ => (IReadOnlyList<SecurityCurveDefinitionDto>)(FutureDefinition is { } future
+                    ? new[] { Definition, future } : new[] { Definition }));
+            Curves.GetLatestVersionAsOfAsync(Definition.CurveId, Arg.Any<DateOnly>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>()).Returns(Version);
+            Curves.GetDefinitionAsync(Definition.CurveId, Arg.Any<CancellationToken>()).Returns(_ => Definition);
+            Curves.GetVersionByIdAsync(Definition.CurveId, Version.CurveVersionId, Arg.Any<CancellationToken>()).Returns(Version);
+            _workflow = new(query, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]), Curves);
+            Service = new(Base.Lots, Base.Positions, Base.Securities, Base.Policies, this);
+        }
+
+        public Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default)
+            => _workflow.CalculateAsync(request, ct);
+
+        public async Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,
+            CancellationToken ct = default)
+        {
+            var projection = await _workflow.CalculateIncomeScheduleAsync(request, freezeIndexAt, ct);
+            if (request.Context.SettlementDate == Peer.AcquiredDate)
+            {
+                PeerCalculations++;
+                PeerRequest = request;
+                projection.Should().NotBeNull();
+                projection!.IsBlocked.Should().BeFalse(string.Join("; ", projection.Issues.Select(issue => issue.Reason)));
+                PeerProjection = projection;
+                return MutatePeer?.Invoke(projection) ?? projection;
+            }
+            return projection;
+        }
+
+        public Task<BondWorkflowResult?> ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default)
+            => _workflow.ReplayAsync(retained, ct);
+
+        public BondWorkflowResult ChangeDefinitionAdmission(BondWorkflowResult projection)
+        {
+            Definition = Definition with { CreatedAt = Request.KnownAt.AddTicks(1) };
+            return projection;
+        }
     }
 
     private sealed class Fixture

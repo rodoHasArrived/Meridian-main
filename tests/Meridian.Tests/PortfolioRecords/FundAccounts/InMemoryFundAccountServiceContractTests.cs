@@ -307,6 +307,10 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
         => ReconcileAccountAsync_AcceptedFullRevisionDoesNotUnionRetainedHoldings_Core();
 
     [Fact]
+    public Task GetCustodianPositionsAsync_CurrentRevisionPreservesExactDateAccountAndRetryScope()
+        => GetCustodianPositionsAsync_CurrentRevisionPreservesExactDateAccountAndRetryScope_Core();
+
+    [Fact]
     public Task ReconcileAccountAsync_InvalidCanonicalFullStateCannotFallbackToLegacyHoldings()
         => ReconcileAccountAsync_InvalidCanonicalFullStateCannotFallbackToLegacyHoldings_Core();
 }

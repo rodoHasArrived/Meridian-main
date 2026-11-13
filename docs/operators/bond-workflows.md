@@ -107,11 +107,15 @@ provider yield/convention. Imported yield remains distinct from Meridian's calcu
 Set **Economic date and time (UTC)** to the intended intraday cutoff. Selecting a retained quote
 keeps both the economic cutoff and the independent knowledge cutoff unchanged; a quote observed
 after the economic cutoff remains unavailable. Comparison and original settlement remain dates.
-New calculations use `bond-workflow-v2`. Its contractual accrued interest covers the active accrual
+New calculations use `bond-workflow-v3`, retaining v2's active and deferred accrual separation.
+Its contractual accrued interest covers the active accrual
 period; `deferredCouponInterest` separately retains fully earned coupons awaiting their contractual
 payment dates. Invoice accrued interest includes the transferred entitlement and any ex-coupon
-adjustment. Retained `bond-workflow-v1` results replay their original calculation version, including
-older requests that did not contain an explicit model pin.
+adjustment. Final-payment exercise scenarios replace the natural residual balloon once while
+retaining coupons and explicit principal installments. Retained `bond-workflow-v1` and v2 results
+replay their original arithmetic, including v1 requests without an explicit model pin. Adopted
+`bond-income-accrual-v2` accounting remains pinned to workflow v2; a new analytical default does not
+change an acquisition election.
 
 Analytical workflows return `MandatoryRedemptionTermsUnsupported` for any non-null
 `mandatoryPutDate` or `preRefundDate` in retained asset terms, including `profileFields`.
@@ -197,7 +201,7 @@ native-currency cash rounding, so planning and monitoring capture retain one pay
 Accepted face and purchaser ex-coupon flows do not establish continuous holder coupon rights.
 A detached-coupon result blocks decision-ready planning and fresh monitoring capture. A
 `bond-workflow-v1` future zero-interest coupon interval without an entitlement marker requires an
-explicit `bond-workflow-v2` refresh or reconciliation of holder rights; a refresh does not itself
+explicit `bond-workflow-v2` or v3 refresh or reconciliation of holder rights; a refresh does not itself
 prove detached-coupon ownership.
 Previously retained unpaid coupons remain signed claims when overdue, inactive or absent from a
 later holdings snapshot. Only validated gross allocations of observed payments settle their residuals; a

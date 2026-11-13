@@ -194,7 +194,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 lot.Acquisition.TransactionCostBasis, 0m, 1.2m, false, [])
             { PeriodUnits = 1m, AccrualFraction = 1m };
             var flows = new[] { coupon, nextCoupon };
-            BondWorkflowResult Projection(DateOnly date) => new(lot.SecurityId, "USD", BondWorkflowModelVersions.Current,
+            BondWorkflowResult Projection(DateOnly date) => new(lot.SecurityId, "USD", BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion,
                 new(request.KnownAt, date, request.KnownAt), 1_000_000m, 950_000m, 0m, null, null, 0m, null,
                 null, null, null, null, null, null, flows,
                 [new("SecurityTerms", lot.SecurityId.ToString("D"), Physical.Security.Version, new string('a', 64))], [], [])

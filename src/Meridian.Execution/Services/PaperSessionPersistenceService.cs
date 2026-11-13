@@ -1,5 +1,6 @@
 using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
@@ -418,8 +419,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                         ct,
                         requireDurableSuccess: true).ConfigureAwait(false);
                     _logger.LogInformation(
-                        "Persisted {Count} ledger entries for paper session {SessionId}",
-                        ledger.JournalEntryCount, sessionId);
+                        "Persisted {Count} ledger entries for paper session {SessionHash}",
+                        ledger.JournalEntryCount, Sha256Digest.ComputeUtf8(session.SessionId ?? string.Empty));
                 }
 
                 // The close record is the final fallible persistence step while the session gate
@@ -437,8 +438,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             }
 
             _logger.LogInformation(
-                "Closed paper session {SessionId} — final equity: {Equity:C}",
-                sessionId, finalEquity);
+                "Closed paper session {SessionHash} — final equity: {Equity:C}",
+                Sha256Digest.ComputeUtf8(session.SessionId ?? string.Empty), finalEquity);
 
             return true;
         }

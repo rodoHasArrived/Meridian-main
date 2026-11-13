@@ -217,9 +217,15 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         return batch;
     }
 
-    public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
+    public async Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
         Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
-        => _store.GetCustodianPositionsAsync(accountId, asOfDate, ct);
+    {
+        var positions = await _store.GetCustodianPositionsAsync(accountId, asOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<CustodianPositionLineDto>();
+        var batches = await _store.GetCustodianStatementBatchesAsync(accountId, asOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<CustodianStatementBatchDto>();
+        return AccountReconciliationChecks.SelectCustodianState(accountId, asOfDate, positions, batches).Positions;
+    }
 
     public Task<CustodianHoldingSnapshotDto?> GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf,
         DateTimeOffset? knownAt = null, CancellationToken ct = default)

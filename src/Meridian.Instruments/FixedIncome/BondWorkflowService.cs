@@ -15,6 +15,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
     IBondWorkflowQuoteSource? quotes = null, ISecurityMasterPricingService? pricing = null) : IBondWorkflowService
 {
     public const string ModelVersion = BondWorkflowModelVersions.Current;
+    public const string PreviousModelVersion = BondWorkflowModelVersions.Previous;
     public const string LegacyModelVersion = BondWorkflowModelVersions.Legacy;
 
     public Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default)
@@ -25,7 +26,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
 
     public async Task<BondWorkflowResult?> ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default)
     {
-        if (retained.Request is not { } request || retained.ModelVersion is not (ModelVersion or LegacyModelVersion)
+        if (retained.Request is not { } request || retained.ModelVersion is not (ModelVersion or PreviousModelVersion or LegacyModelVersion)
             || request.ModelVersion is { } pinned && pinned != retained.ModelVersion)
             throw new ArgumentException("Retained workflow replay requires its original request and exact supported model version.");
         if (request.Context.AsOf != retained.Context.AsOf
@@ -80,7 +81,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             context, request.OriginalFace, null, null, null, null, request.Fees, null, null, null, null,
             null, null, null, [], inputs, [new("Projection", code, reason, true)], [])
         { Request = originalRequest with { Context = context } };
-        if (modelVersion is not (ModelVersion or LegacyModelVersion))
+        if (modelVersion is not (ModelVersion or PreviousModelVersion or LegacyModelVersion))
             return Block("UnsupportedModelVersion", "Choose the current workflow model or an exact retained legacy version.");
         if (context.AsOf == default || context.AsOf.Offset != TimeSpan.Zero || context.KnownAt?.Offset != TimeSpan.Zero
             || request.OriginalFace <= 0m || request.Fees < 0m || request.CleanPricePer100 < 0m
@@ -554,7 +555,18 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                         var redemption = request.OriginalFace * Factor(exercise.ExerciseDate) * ratio * exercise.RedemptionPrice / 100m;
                         var exerciseFlows = entitled.Where(f => f.PaymentDate <= exercise.ExerciseDate)
                             .Select(f => new BondWorkflowDiscountedFlow(f.Total, (f.PaymentDate.DayNumber - settlement.DayNumber) / 365m, 1m)).ToList();
-                        exerciseFlows.Add(new(redemption + accruedOnExercise,
+                        // The projected final balloon already pays the residual face. Replace only
+                        // that cash at a final-payment exercise, retaining coupons and every explicit
+                        // installment. The signed solver groups this same-date adjustment before
+                        // certifying a unique root. Retained v1/v2 keep their original arithmetic.
+                        var exerciseCash = redemption + accruedOnExercise;
+                        if (modelVersion == ModelVersion && exercise.ExerciseDate == schedule.Periods[^1].PaymentDate)
+                        {
+                            var replacedBalloon = projectionTerms.OriginalFace * projectionTerms.OpeningFactor
+                                - principal.Where(payment => payment.PaymentDate > first).Sum(payment => payment.Amount);
+                            exerciseCash -= replacedBalloon * ratio;
+                        }
+                        exerciseFlows.Add(new(exerciseCash,
                             (exercise.ExerciseDate.DayNumber - settlement.DayNumber) / 365m, 1m));
                         if (BondWorkflowPricing.TrySolveSpread(exerciseFlows, dirty.Value, out var continuous, out unavailable))
                             exerciseYield = (decimal)(Math.Exp((double)continuous) - 1d);

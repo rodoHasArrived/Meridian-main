@@ -12,6 +12,7 @@ public static class BondIncomeCalculator
 {
     public const string ModelVersion = "bond-income-us-gaap-v1";
     public const string SeparatedAccrualPolicyVersion = "bond-income-accrual-v2";
+    public const string SeparatedAccrualWorkflowModelVersion = "bond-workflow-v2";
     private const decimal Quantum = 0.000000000001m;
 
     public static BondIncomePolicyDto ReadPolicy(AccountingPolicyDto policy)
@@ -84,7 +85,7 @@ public static class BondIncomeCalculator
         ValidateProjection(instruction.AmortizationProjection, lot.SecurityId, allowEmpty: true);
         if (instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion
             && new[] { instruction.AcquisitionProjection, instruction.CurrentProjection, instruction.AmortizationProjection }
-                .Concat(instruction.Resets.Select(reset => reset.Projection)).Any(projection => projection.ModelVersion != BondWorkflowModelVersions.Current
+                .Concat(instruction.Resets.Select(reset => reset.Projection)).Any(projection => projection.ModelVersion != SeparatedAccrualWorkflowModelVersion
                     || projection.ContractualAccruedInterest is null || projection.DeferredCouponInterest is null))
             throw new ArgumentException("Separated coupon accrual requires retained v2 workflow projections with active and deferred interest evidence.");
         if (instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion

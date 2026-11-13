@@ -31,7 +31,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string Legacy = &quot;bond-workflow-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:102](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L102) |  |
-| <code>public const string Current = &quot;bond-workflow-v2&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:103](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L103) |  |
+| <code>public const string Previous = &quot;bond-workflow-v2&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:103](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L103) |  |
+| <code>public const string Current = &quot;bond-workflow-v3&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:104](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L104) |  |
 
 ## BondWorkflowObservation
 
@@ -130,7 +131,7 @@ public sealed record BondWorkflowProjectionTerms(string CouponKind, decimal Coup
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowRateObservation</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:106](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L106).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:107](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L107).
 
 ```csharp
 public sealed record BondWorkflowRateObservation(string IndexName, DateOnly Date, decimal Value, string Source, DateTimeOffset PublishedAt, DateTimeOffset RecordedAt, string ContentSha256);
@@ -598,7 +599,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:110](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L110).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:111](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L111).
 
 Only retained, dated observations eligible at the explicit knowledge cutoff.
 
@@ -610,13 +611,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:112](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L112) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:113](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L113) |  |
 
 ## IBondWorkflowQuoteSource
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:125](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L125).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:126](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L126).
 
 Authenticated tenant-scoped access to an exact retained quote observation.
 
@@ -628,7 +629,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;BondMarketObservationDto?&gt; GetAsync(Guid observationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:127](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L127) |  |
+| <code>Task&lt;BondMarketObservationDto?&gt; GetAsync(Guid observationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:128](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L128) |  |
 
 ## IBondWorkflowService
 
@@ -652,7 +653,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:118](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L118).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:119](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L119).
 
 Typed retained sources bind the requested economic role independently of a series name. Existing custom observation sources retain the legacy interface and its explicit source contract.
 
@@ -664,7 +665,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, BondMarketObservationKind kind, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:120](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L120) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, BondMarketObservationKind kind, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:121](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L121) |  |
 
 ## RetainBondObservedFixingRequest
 

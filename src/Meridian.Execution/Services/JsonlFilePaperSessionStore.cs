@@ -632,7 +632,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
             }
             catch (JsonException ex)
             {
-                logger.LogWarning(ex, "Skipping corrupt JSONL record in {Path}", path);
+                logger.LogWarning("Skipping corrupt paper-session JSONL record ({FailureType}).", ex.GetType().Name);
             }
         }
 

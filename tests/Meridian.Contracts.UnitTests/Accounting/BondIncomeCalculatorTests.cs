@@ -10,6 +10,27 @@ namespace Meridian.Contracts.UnitTests.Accounting;
 
 public sealed class BondIncomeCalculatorTests
 {
+    [Theory]
+    [InlineData("acquisition")]
+    [InlineData("current")]
+    [InlineData("amortization")]
+    [InlineData("reset")]
+    public void ExistingSeparatedAccrualElectionCannotAdoptMarketWorkflowV3Implicitly(string changed)
+    {
+        var (lot, input) = LaggedIncome(5m, 5m, new(2026, 1, 6));
+        BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion.Should().Be("bond-workflow-v2");
+        var newer = input.CurrentProjection with { ModelVersion = "bond-workflow-v3" };
+        var altered = changed switch
+        {
+            "acquisition" => input with { AcquisitionProjection = newer },
+            "current" => input with { CurrentProjection = newer },
+            "amortization" => input with { AmortizationProjection = newer },
+            _ => input with { Resets = [new(input.ThroughDate, newer)] }
+        };
+        var action = () => BondIncomeCalculator.Project(lot, altered);
+        action.Should().Throw<ArgumentException>().WithMessage("*retained v2 workflow projections*");
+    }
+
     [Fact]
     public void OpposingAlreadyEarnedAcquisitionCouponsCannotHideInsideZeroDeferredAggregate()
     {
@@ -25,7 +46,7 @@ public sealed class BondIncomeCalculatorTests
         var positive = f.Flow(new(2026, 1, 2), 5m, 0m) with { AccrualStart = new(2023, 1, 1), AccrualEnd = new(2024, 1, 1) };
         var negative = f.Flow(new(2026, 1, 3), -5m, 0m) with { AccrualStart = new(2024, 1, 1), AccrualEnd = f.AcquisitionDate };
         var projection = f.Projection([positive, negative, f.Flow(new(2027, 1, 1), 0m, 100m)]) with
-        { ModelVersion = BondWorkflowModelVersions.Current, ContractualAccruedInterest = 0m, DeferredCouponInterest = 0m };
+        { ModelVersion = BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion, ContractualAccruedInterest = 0m, DeferredCouponInterest = 0m };
         var input = f.Instruction with
         {
             Policy = f.Instruction.Policy with
@@ -66,7 +87,7 @@ public sealed class BondIncomeCalculatorTests
         };
         var opening = f.Instruction.AcquisitionProjection with
         {
-            ModelVersion = BondWorkflowModelVersions.Current,
+            ModelVersion = BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion,
             Context = f.Instruction.AcquisitionProjection.Context with { SettlementDate = date },
             AccruedInterest = purchased,
             ContractualAccruedInterest = raw,
@@ -78,7 +99,7 @@ public sealed class BondIncomeCalculatorTests
         };
         var ending = f.Instruction.CurrentProjection with
         {
-            ModelVersion = BondWorkflowModelVersions.Current,
+            ModelVersion = BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion,
             ContractualAccruedInterest = 0m,
             DeferredCouponInterest = 0m
         };
@@ -247,7 +268,7 @@ public sealed class BondIncomeCalculatorTests
         var second = f.Flow(new(2027, 1, 11), secondCoupon, 100m) with { AccrualStart = new(2026, 1, 1), AccrualEnd = new(2027, 1, 1) };
         var opening = f.Projection([first, second]) with
         {
-            ModelVersion = BondWorkflowModelVersions.Current,
+            ModelVersion = BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion,
             ContractualAccruedInterest = 0m,
             DeferredCouponInterest = 0m
         };

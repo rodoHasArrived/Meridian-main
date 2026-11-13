@@ -481,8 +481,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var results = stored.CustodianPositions
                 .Where(p => p.AsOfDate == asOfDate)
                 .ToList();
-
-            return Task.FromResult<IReadOnlyList<CustodianPositionLineDto>>(results);
+            var batches = stored.CustodianBatches.Where(b => b.AsOfDate == asOfDate).ToArray();
+            var current = AccountReconciliationChecks.SelectCustodianState(accountId, asOfDate, results, batches);
+            return Task.FromResult(current.Positions);
         }
     }
 

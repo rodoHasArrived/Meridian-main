@@ -124,7 +124,7 @@ Declared public members:
 | <code>public async Task VerifyPreparedSourceAsync(OpenLotAmortizationInstructionDto instruction, EconomicEventReferenceDto economicEvent, Guid periodId, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:22](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L22) |  |
 | <code>public async Task RequireAcquisitionPolicyAsync(Guid ledgerBookId, DateOnly acquiredDate, BondIncomeAcquisitionDto acquisition, decimal retainedCost, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:35](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L35) |  |
 | <code>public async Task&lt;BondIncomePreviewDto&gt; PreviewAsync(BondIncomePreviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:56](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L56) |  |
-| <code>public async Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:274](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L274) |  |
+| <code>public async Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:316](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L316) |  |
 
 ## BondSettlementConsiderationService
 

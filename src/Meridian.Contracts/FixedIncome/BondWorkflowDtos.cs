@@ -100,7 +100,8 @@ public interface IBondWorkflowService
 public static class BondWorkflowModelVersions
 {
     public const string Legacy = "bond-workflow-v1";
-    public const string Current = "bond-workflow-v2";
+    public const string Previous = "bond-workflow-v2";
+    public const string Current = "bond-workflow-v3";
 }
 
 public sealed record BondWorkflowRateObservation(string IndexName, DateOnly Date, decimal Value,

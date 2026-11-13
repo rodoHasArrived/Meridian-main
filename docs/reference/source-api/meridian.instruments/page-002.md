@@ -330,10 +330,11 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string ModelVersion = BondWorkflowModelVersions.Current;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:17](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L17) |  |
-| <code>public const string LegacyModelVersion = BondWorkflowModelVersions.Legacy;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:18](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L18) |  |
-| <code>public Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:20](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L20) |  |
-| <code>public Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:23](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L23) |  |
-| <code>public async Task&lt;BondWorkflowResult?&gt; ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:26](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L26) |  |
+| <code>public const string PreviousModelVersion = BondWorkflowModelVersions.Previous;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:18](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L18) |  |
+| <code>public const string LegacyModelVersion = BondWorkflowModelVersions.Legacy;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:19](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L19) |  |
+| <code>public Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:21](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L21) |  |
+| <code>public Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:24](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L24) |  |
+| <code>public async Task&lt;BondWorkflowResult?&gt; ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:27](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L27) |  |
 
 ## FileBondCalculationPolicy
 

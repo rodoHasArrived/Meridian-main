@@ -15,6 +15,10 @@ Accepted full custodian snapshots retain immutable content, source/review identi
 revision/supersession. `AccountBondHoldingsSource` selects account/date/knowledge-eligible authority;
 empty accepted populations mean flat holdings, while conflicts or missing history block. Explicit
 face/factor/inflation/quote units survive both account stores without creating lots or journals.
+Current position reads in both services select the accepted full statement for the exact requested
+date; superseded populations remain available through knowledge-cutoff snapshot history. When full
+statements are declared, a missing or competing accepted winner blocks the current read instead of
+reverting to legacy observations. Legacy-only observations keep their existing read behavior.
 See [reviewed bond imports](../../docs/operators/bond-workflows.md).
 
 Account reconciliation run summaries total only cash-denominated variances (Cash and Continuity checks) in `BreakAmountTotal`; the position-count check's line-count variance still counts as a break but no longer enters the monetary total.

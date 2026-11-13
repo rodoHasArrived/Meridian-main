@@ -99,7 +99,7 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         var separatedAccrual = policy.AccrualPolicyVersion == BondIncomeCalculator.SeparatedAccrualPolicyVersion;
         if (!separatedAccrual && request.ThroughDate == lot.AcquiredDate)
             throw new InvalidOperationException("Legacy income preparation requires a recognition date after acquisition.");
-        var workflowModel = separatedAccrual ? BondWorkflowModelVersions.Current : BondWorkflowModelVersions.Legacy;
+        var workflowModel = separatedAccrual ? BondIncomeCalculator.SeparatedAccrualWorkflowModelVersion : BondWorkflowModelVersions.Legacy;
         var security = await securities.GetProjectionAsync(lot.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Versioned Security Master terms are unavailable.");
         var securityEvidence = acquisition.Evidence.LastOrDefault(e => e.SubjectType == "SecurityMasterProjection"
@@ -186,8 +186,15 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
                     entitlement = await workflow.CalculateIncomeScheduleAsync(peerRequest, request.ThroughDate, ct).ConfigureAwait(false);
                     if (entitlement is null || entitlement.IsBlocked || entitlement.Inputs.Count == 0
                         || entitlement.SecurityId != lot.SecurityId || entitlement.Currency != security.Currency
-                        || entitlement.OriginalFace != parFace || entitlement.Context != peerRequest.Context)
+                        || entitlement.OriginalFace != parFace || entitlement.ModelVersion != peerRequest.ModelVersion
+                        || entitlement.Context.AsOf != peerRequest.Context.AsOf
+                        || entitlement.Context.KnownAt != peerRequest.Context.KnownAt
+                        || entitlement.Context.SettlementDate != peerRequest.Context.SettlementDate
+                        || entitlement.Context.SecurityVersion != peerRequest.Context.SecurityVersion
+                        || JsonSerializer.Serialize(entitlement.Context.ObservedFixingReceiptIds)
+                            != JsonSerializer.Serialize(peerRequest.Context.ObservedFixingReceiptIds))
                         throw new InvalidOperationException("Coupon cash allocation requires retained acquisition-settlement entitlement for every holder lot.");
+                    await RequirePeerCurveAuthorityAsync(peerRequest, entitlement, request.ThroughDate, ct).ConfigureAwait(false);
                     holderEntitlements.Add(holderLot.TaxLotRecordId, entitlement);
                 }
                 var heldPar = holderLot.OpenQuantity * LedgerTaxLotFaceValueTerms.LedgerLotParBasis / holderLot.BookedFactor!.Value;
@@ -269,6 +276,41 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
                 ?? throw new InvalidOperationException("The governed book position has no carrying-account mapping."), Amortization: instruction);
         var fingerprint = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(instruction));
         return new(book.LedgerBookId, lot.TaxLotRecordId, fingerprint, instruction, income, mutation);
+    }
+
+    private async Task RequirePeerCurveAuthorityAsync(BondWorkflowRequest requested, BondWorkflowResult entitlement,
+        DateOnly freezeAt, CancellationToken ct)
+    {
+        var pins = entitlement.Context.Curves ?? [];
+        var dependencies = entitlement.Inputs.Where(input => input.Kind.StartsWith("Curve:", StringComparison.Ordinal)).ToArray();
+        if (pins.Count == 0 && dependencies.Length == 0)
+            return;
+        if (pins.Count != dependencies.Length || pins.GroupBy(pin => pin.Role, StringComparer.Ordinal).Any(group => group.Count() != 1)
+            || dependencies.GroupBy(input => input.Kind, StringComparer.Ordinal).Any(group => group.Count() != 1)
+            || entitlement.Request is not { } retainedRequest || entitlement.FrozenIndexAt != freezeAt
+            || JsonSerializer.Serialize(retainedRequest.Context) != JsonSerializer.Serialize(entitlement.Context)
+            || JsonSerializer.Serialize(retainedRequest with { Context = requested.Context }) != JsonSerializer.Serialize(requested))
+            throw new InvalidOperationException("Peer coupon entitlement requires exact request and frozen-policy identity with retained resolved curve dependencies.");
+        foreach (var pin in pins)
+        {
+            var input = dependencies.SingleOrDefault(item => item.Kind == "Curve:" + pin.Role);
+            if (pin.CurveId == Guid.Empty || pin.CurveVersionId == Guid.Empty || input is null
+                || input.VersionId != pin.CurveVersionId || input.Version is not > 0
+                || !Sha256Digest.IsCanonical(input.ContentSha256) || string.IsNullOrWhiteSpace(input.Key)
+                || input.AsOf is not { } economic || economic.Offset != TimeSpan.Zero
+                || input.RecordedAt is not { } recorded || recorded.Offset != TimeSpan.Zero
+                || economic > requested.Context.AsOf || recorded > requested.Context.KnownAt)
+                throw new InvalidOperationException("Peer coupon resolved curve evidence differs from its exact identity or economic/knowledge cutoff.");
+        }
+        // Replay resolves each retained role against its actual curve definition and immutable
+        // version, including definition admission time, currency/index, hash and both cutoffs.
+        BondWorkflowResult? replay;
+        try
+        { replay = await workflow.ReplayAsync(entitlement, ct).ConfigureAwait(false); }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException or NotSupportedException)
+        { throw new InvalidOperationException("Peer coupon resolved curves require authoritative retained-input replay.", error); }
+        if (replay is null || JsonSerializer.Serialize(replay) != JsonSerializer.Serialize(entitlement))
+            throw new InvalidOperationException("Peer coupon resolved curves or entitlement changed during authoritative replay.");
     }
 
     public async Task<BondIncomePreviewDto> PrepareAsync(BondIncomePreparationRequestDto request, CancellationToken ct = default)

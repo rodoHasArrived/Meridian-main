@@ -8,7 +8,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.FixedIncome;
 
-public sealed class BondWorkflowServiceTests
+public sealed partial class BondWorkflowServiceTests
 {
     private static readonly Guid Id = Guid.Parse("38cf377c-cf7d-448e-920c-14d18a48bbe1");
     private static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);

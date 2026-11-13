@@ -53,11 +53,14 @@ receivable/payable accrual and retained cash clearing through the canonical acco
 period locks and atomic posting boundary. Preview/review fingerprints are revalidated before
 preparation or posting. Deployment does not adopt a book policy or execute customer transactions.
 
-Current analytical workflows pin `bond-workflow-v2`, separating active-period accrual from earlier
-earned coupons awaiting payment. Retained v1 requests replay v1 even when their original request
-omitted the model selector; risk scenarios and monitoring revalidation retain the selected model.
+Current analytical workflows pin `bond-workflow-v3`, retaining v2's active/deferred accrued-interest
+separation and replacing the natural maturity balloon once in final-payment exercise scenarios.
+Coupons and explicit principal installments remain payable separately. Retained v1/v2 requests keep
+their original arithmetic, including v1 requests without a model selector; risk scenarios and
+monitoring revalidation retain the selected model.
 Booked income uses this separation only with the explicitly adopted and acquisition-captured
-`bond-income-accrual-v2` subpolicy. Legacy elections, actual acquisition facts and historical
+`bond-income-accrual-v2` subpolicy, pinned to workflow v2 rather than the new analytical default.
+Legacy elections, actual acquisition facts and historical
 receipt/reversal arithmetic remain unchanged. Full-snapshot imports require complete source
 populations, including quarantine and failed-page evidence; replay subsets cannot imply a flat or
 complete account. The browser exposes an intraday UTC cutoff without advancing it on quote selection.
@@ -71,7 +74,7 @@ localized aliases require the exact scoped payment/accrual hash in durable histo
 
 Account planning and fresh monitoring capture block unproven detached-coupon holder rights and
 `bond-workflow-v1` future zero-interest intervals without an entitlement marker. An explicit
-`bond-workflow-v2` refresh resolves only supported economics. Missing unpaid claims remain visible
+`bond-workflow-v2` or v3 refresh resolves only supported economics. Missing unpaid claims remain visible
 across overdue, inactive and absent holdings; validated gross allocations of observed payments can settle them.
 Accepted face, payment dates and offsetting long/short quantities do not establish coupon ownership
 or setoff.

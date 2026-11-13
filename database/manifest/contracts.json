@@ -5341,7 +5341,7 @@
       ]
     }
   ],
-  "fingerprint": "956072f99fe1e7c51410fb6490853e8b790fb63d76c0098b668639bfdd2ae00d",
+  "fingerprint": "98f7fea1f192d202cea89d42f01e82987533ee43ba4568110d37672dc2677f14",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6693,7 +6693,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "b0e0c7c78f7e401f05155f277b93bac9da45a878a468c23e85d895af1af4bd25",
+      "fingerprint": "1b77db2601b0d7bf39acde2f2d7da9fbd24a37bb7413adecbf3f45571a74c89c",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -154036,7 +154036,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "04c142a96ec2c06cb78fc531cfa1abd5bed9c5f5a017b018ad52e029cfd5008b",
+      "fingerprint": "8407865bfafe3c14519bbc6932c7dee3d1164b5b7f2172a64f2ce6fb5c0163b8",
       "full_name": "Meridian.Contracts.FixedIncome.BondWorkflowRateObservation",
       "id": "Meridian.Contracts.FixedIncome.BondWorkflowRateObservation",
       "kind": "record",
@@ -154053,7 +154053,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 107,
+          "source_line": 108,
           "type": "string"
         },
         {
@@ -154067,7 +154067,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 106,
+          "source_line": 107,
           "type": "DateOnly"
         },
         {
@@ -154081,7 +154081,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 106,
+          "source_line": 107,
           "type": "string"
         },
         {
@@ -154095,7 +154095,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 107,
+          "source_line": 108,
           "type": "DateTimeOffset"
         },
         {
@@ -154109,7 +154109,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 107,
+          "source_line": 108,
           "type": "DateTimeOffset"
         },
         {
@@ -154123,7 +154123,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 107,
+          "source_line": 108,
           "type": "string"
         },
         {
@@ -154137,7 +154137,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 106,
+          "source_line": 107,
           "type": "decimal"
         }
       ],
@@ -154147,12 +154147,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondWorkflowRateObservation",
       "references": [],
       "source": {
-        "line": 106,
+        "line": 107,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 106,
+          "line": 107,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -156072,7 +156072,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0adece7a48696aaef3ef4ad154cfa8d35fe29e6f58c29fef9ede0adc1b375aa7",
+      "fingerprint": "a3a12523ffafe50f2c375ef291e00a194db56571d7133e38cd82432dfb472a6f",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource",
       "kind": "interface",
@@ -156084,12 +156084,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource",
       "references": [],
       "source": {
-        "line": 110,
+        "line": 111,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 110,
+          "line": 111,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -156105,7 +156105,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a2bff87bffc92408fb4191c08b7f2b76b54b7d11fc278c6bc7ae16464618a295",
+      "fingerprint": "cfcea0e3b91306611ba7cd7a7af2ce932d423e2883e152c7251651ae0c3c6a79",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource",
       "kind": "interface",
@@ -156117,12 +156117,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource",
       "references": [],
       "source": {
-        "line": 125,
+        "line": 126,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 125,
+          "line": 126,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -156173,7 +156173,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "efcbe89d778e149af115a41693fa6d990d69321be69401678f5dfc40f294cbfe",
+      "fingerprint": "540423165e7a0127c0dedf6e3ece9fbc23f9e8545629d79209670d847a9a98cb",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource",
       "kind": "interface",
@@ -156187,12 +156187,12 @@
         "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource"
       ],
       "source": {
-        "line": 118,
+        "line": 119,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 118,
+          "line": 119,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],

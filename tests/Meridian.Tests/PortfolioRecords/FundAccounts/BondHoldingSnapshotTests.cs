@@ -146,6 +146,7 @@ public sealed class BondHoldingSnapshotTests
             var restarted = new InMemoryFundAccountService(path);
             var selected = await restarted.GetCustodianSnapshotAsync(account, request.AsOfDate);
             Assert.Equal(revised.Lines.Single(), selected!.Lines.Single());
+            Assert.Equal(revised.Lines.Single(), Assert.Single(await restarted.GetCustodianPositionsAsync(account, request.AsOfDate)));
             var original = await restarted.GetCustodianSnapshotAsync(account, request.AsOfDate, first.IngestedAt);
             Assert.Equal(request.Lines.Single(), original!.Lines.Single());
         }
