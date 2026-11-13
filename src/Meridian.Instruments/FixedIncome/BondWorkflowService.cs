@@ -271,7 +271,8 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                         return new(frozen.Value, false, "IncomePolicyFrozen:" + frozen.Source);
                     }
                 }
-                var observed = Eligible(inflationRows, date, knownAt);
+                var observed = modelVersion != ModelVersion || date <= economicDate
+                    ? Eligible(inflationRows, date, knownAt) : null;
                 if (observed is not null)
                 { AddObservation(observed, inputs); return new(observed.Value, true, observed.Source); }
                 if (date <= economicDate)

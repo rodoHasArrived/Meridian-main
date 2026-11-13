@@ -136,6 +136,9 @@ publication/vintage date; the server assigns recording time. Exact-date fixing q
 substitute yesterday's value. Workflow requests bind the input role explicitly: an inflation level
 cannot become an annual fixing because its series name matches, or vice versa. Existing custom
 legacy observation sources retain their original source contract. Future index/factor values belong to forecast curves.
+Workflow v3 admits observed inflation levels only on or before the economic cutoff, even when later
+knowledge includes their realization; future months require the eligible inflation curve. Explicit
+v1/v2 receipts retain their original lookup arithmetic on replay, and adopted accounting stays on v2.
 
 FRED's typed method retains declared series units, vintage dates and missing observations separately
 from synthetic OHLC compatibility. A vintage day does not prove an exact publication-time instant.
