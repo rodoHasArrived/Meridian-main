@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CustodianPositionLineDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CustodianPositionLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:23](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L23).
+
+A single position line from a custodian statement.
+
+```csharp
+public sealed record CustodianPositionLineDto(Guid LineId, Guid BatchId, Guid AccountId, DateOnly AsOfDate, string Identifier, string IdentifierType, decimal Quantity, decimal MarketValue, string Currency, string? SecurityName, string? AssetClass, bool IsShort, decimal? CostBasis = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondHoldingEconomicsDto? Bond = null);
+```
+
+## CustodianStatementAuthorityDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CustodianStatementAuthorityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:33](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L33).
+
+An explicitly reviewed full statement; source evidence is not accounting authority.
+
+```csharp
+public sealed record CustodianStatementAuthorityDto(int Revision, string SourceEvidenceId, string SourceContentSha256, bool IsAccepted = true, bool IsFullSnapshot = true, Guid? SupersedesBatchId = null);
+```
+
 ## CustodianStatementBatchDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CustodianStatementBatchDto</code>. Kind: `record`.
@@ -563,34 +587,3 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:623](../../..
 ```csharp
 public sealed record GovernanceCashFlowViewDto(GovernanceCashFlowScopeDto Scope, DateTimeOffset AsOf, DateTimeOffset HistoricalWindowStart, DateTimeOffset ProjectionWindowEnd, string Currency, int HistoricalDays, int ForecastDays, int BucketDays, int AccountCount, decimal? CurrentCashBalance, decimal? ProjectedClosingCashBalance, IReadOnlyList<GovernanceCashFlowAccountViewDto> Accounts, IReadOnlyList<GovernanceCashFlowEntryDto> RealizedEntries, IReadOnlyList<GovernanceCashFlowEntryDto> ProjectedEntries, GovernanceCashFlowLadderDto RealizedLadder, GovernanceCashFlowLadderDto ProjectedLadder, GovernanceCashFlowVarianceSummaryDto VarianceSummary, IReadOnlyList<GovernanceCashFlowVarianceBucketDto> VarianceBuckets, FundStructureSharedDataAccessDto? SharedDataAccess = null, int SecurityProjectedEntryCount = 0);
 ```
-
-## HistoricalPriceAccessSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:307](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L307).
-
-```csharp
-public sealed record HistoricalPriceAccessSummaryDto(bool IsAvailable, bool HasStoredData, int AvailableSymbolCount, IReadOnlyList<string> SampleSymbols, string AvailabilityDescription);
-```
-
-## IIntercompanyAccountingArrangementLegalAuthority
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:86](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L86).
-
-Native legal read/lease adapter. Mapping approval cannot manufacture legal approval.
-
-```csharp
-public interface IIntercompanyAccountingArrangementLegalAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:88](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L88) |  |
-| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:90](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L90) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:92](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L92) |  |
-| <code>Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:94](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L94) |  |

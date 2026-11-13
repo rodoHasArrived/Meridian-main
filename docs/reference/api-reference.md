@@ -904,7 +904,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**448 declarations** from **48 source files**.
+**454 declarations** from **49 source files**.
 
 
 ### HostAdapters
@@ -1554,6 +1554,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs](../..
 | --- | --- | --- | --- | --- | --- |
 | `/api/portfolio/cash-ladder` | GET | `async (HttpContext context, CancellationToken ct) => …` | `Produces<PortfolioCashLadderDto>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadder")` | [L33](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L33) |
 | `/api/portfolio/cash-ladder/scenarios` | GET | `(HttpContext _) => …` | `Produces<IReadOnlyList<PortfolioCashScenarioDto>>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadderScenarios")` | [L56](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L56) |
+
+### PrivateCapitalRecordEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/private-capital/records` | GET | `(HttpContext context, [FromServices]PrivateCapitalRecordService service, CancellationToken ct) => …` | `Results.Json` | `WithName("GetPrivateCapitalRecords")` | [L18](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L18) |
+| `/api/private-capital/choices` | GET | `(HttpContext context, [FromServices]PrivateCapitalRecordService service, CancellationToken ct) => …` | `Results.Json` | `WithName("GetPrivateCapitalRecordChoices")` | [L37](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L37) |
+| `/api/private-capital/imports/{batchId}` | GET | `(Guid batchId, HttpContext context, [FromServices]PrivateCapitalRecordService service, CancellationToken ct) => …` | `Results.NotFound`; `Results.Json` | `WithName("InspectPrivateCapitalImport")` | [L48](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L48) |
+| `/api/private-capital/commitments` | POST | `(CreatePrivateCapitalCommitment request, HttpContext context, [FromServices]PrivateCapitalRecordService service, CancellationToken ct) => …` | `Results.Json` | `WithName("CreatePrivateCapitalRecordCommitment")` | [L60](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L60) |
+| `/api/private-capital/preview` | POST | `(PreviewPrivateCapitalImport request, HttpContext context, [FromServices]PrivateCapitalRecordService service, CancellationToken ct) => …` | `Results.Json` | `WithName("PreviewPrivateCapitalImport")` | [L70](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L70) |
+| `/api/private-capital/accept` | POST | `(AcceptPrivateCapitalImport request, HttpContext context, [FromServices]PrivateCapitalRecordService service, CancellationToken ct) => …` | `Results.NotFound`; `Results.Json` | `WithName("AcceptPrivateCapitalImport")` | [L82](../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L82) |
 
 ### PromotionEndpoints
 

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EquityReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Equity.EquityReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Equity/EquityReferenceDtos.cs:3](../../../../src/Meridian.Contracts/Equity/EquityReferenceDtos.cs#L3).
+
+```csharp
+public sealed record EquityReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? ShareClass, string? VotingRightsCat, string? Classification, string? ExchangeCode, string? CountryOfRisk, string? IssuerName, string PrimaryIdentifier, long Version);
+```
+
 ## CsvSchemaDefinition
 
 Qualified name: <code>Meridian.Contracts.Etl.CsvSchemaDefinition</code>. Kind: `class`.
@@ -1067,23 +1077,3 @@ Declared public members:
 | <code>public DataAggregation Aggregation { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:202](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L202) |  |
 | <code>public string[]? IncludeFields { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:203](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L203) |  |
 | <code>public bool IncludeMetadata { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:204](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L204) |  |
-
-## ExportValidationRules
-
-Qualified name: <code>Meridian.Contracts.Export.ExportValidationRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:273](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L273).
-
-Validation rules applied before an export starts.
-
-```csharp
-public sealed class ExportValidationRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:280](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L280) | Minimum available disk space multiplier relative to the estimated output size. Default 1.2 means 20% headroom required beyond the estimated export size. |
-| <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:287](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L287) | Whether to abort the export when no data is found for the requested filters. When false, an empty export is allowed with a warning. |
-| <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:294](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L294) | Emit a warning when exporting nested data structures to CSV format, because nested fields are flattened and may lose precision. |

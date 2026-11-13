@@ -2,7 +2,7 @@
 
 # `fund_accounts` schema
 
-- Relations: 12
+- Relations: 13
 - Functions/procedures: 0
 - Triggers: 0
 - Row-level security policies: 0
@@ -199,6 +199,14 @@ erDiagram
         text checksum
         timestamp_with_time_zone applied_at
     }
+    fund_accounts_private_capital_record {
+        text tenant_id PK
+        text company_id PK
+        text record_kind PK
+        uuid record_id PK
+        jsonb payload
+        timestamp_with_time_zone retained_at
+    }
     fund_accounts_account_definition ||--o{ fund_accounts_account_balance_snapshot : "account_balance_snapshot_account_id_fkey"
     fund_accounts_account_definition ||--o{ fund_accounts_account_margin_snapshot : "account_margin_snapshot_account_id_fkey"
     fund_accounts_account_definition ||--o{ fund_accounts_account_reconciliation_run : "account_reconciliation_run_account_id_fkey"
@@ -228,3 +236,4 @@ erDiagram
 | `custodian_statement_batch` | table | 11 | `batch_id` | 1 | 2 | - |
 | `fund_account_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
 | `fund_account_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
+| `private_capital_record` | table | 6 | `tenant_id`, `company_id`, `record_kind`, `record_id` | 0 | 2 | Append-only, tenant/company-scoped private-capital source records and replay receipts; financial authority follows explicit correction links. |

@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LifecycleShutdownOutcome
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:78](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L78).
+
+```csharp
+public enum LifecycleShutdownOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:80](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L80) |  |
+| <code>Succeeded</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:81](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L81) |  |
+| <code>SucceededWithWarnings</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:82](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L82) |  |
+| <code>TimedOut</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:83](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L83) |  |
+| <code>Forced</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:84](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L84) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:85](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L85) |  |
+| <code>Cancelled</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:86](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L86) |  |
+
+## LifecycleShutdownParticipantReceiptDto
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownParticipantReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:73](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L73).
+
+```csharp
+public sealed record LifecycleShutdownParticipantReceiptDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ParticipantId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:75](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L75) |  |
+| <code>public required LifecycleShutdownStage Stage { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:76](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L76) |  |
+| <code>public required LifecycleShutdownOutcome Outcome { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:77](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L77) |  |
+| <code>public required bool Critical { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:78](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L78) |  |
+| <code>public required double DurationMilliseconds { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:79](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L79) |  |
+| <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:80](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L80) |  |
+
 ## LifecycleShutdownReason
 
 Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownReason</code>. Kind: `enum`.
@@ -1033,48 +1076,3 @@ Enum declarations:
 | <code>CompletedWithWarnings = 2</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:10](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L10) |  |
 | <code>Failed = 3</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:11](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L11) |  |
 | <code>Blocked = 4</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:12](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L12) |  |
-
-## PreparerAttestationApprovalBoundary
-
-Qualified name: <code>Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:8](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L8).
-
-Identifies preparer-assertion references that must never satisfy an ordinary approval field. A reference which is not identified here still needs its domain&#x27;s normal authority checks; this boundary does not authenticate opaque legacy approval text.
-
-```csharp
-public static class PreparerAttestationApprovalBoundary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ReferencePrefix = &quot;preparer-attestation:&quot;;</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:10](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L10) |  |
-| <code>public const string ReservedReceiptIdPrefix = &quot;a77e57ed&quot;;</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:11](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L11) |  |
-| <code>public static Guid NewReceiptId();</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:19](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L19) | Allocates a UUIDv8 from the preparer-receipt namespace, preserving 90 random bits. The marker only establishes a denial category; it is not proof that a receipt exists or that its contents are authentic. Ordinary UUIDv4 approvals are unaffected. |
-| <code>public static bool IsReservedReceiptId(Guid identity);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:25](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L25) |  |
-| <code>public static string ReceiptReference(Guid receiptId);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:32](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L32) |  |
-| <code>public static bool IsReservedReference(string? reference);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:40](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L40) | Unknown versions in the reserved namespace are also refused as ordinary authority. |
-| <code>public static void RequireOrdinaryReference(string? reference, string parameterName);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:52](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L52) |  |
-
-## VerifiedOperationOutcome
-
-Qualified name: <code>Meridian.Contracts.Operations.VerifiedOperationOutcome</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:86](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L86).
-
-Common terminal receipt for an operation whose postconditions have been evaluated. Domain result records should compose this receipt instead of maintaining an independent success flag.
-
-```csharp
-public sealed record VerifiedOperationOutcome(string OperationId, string OperationKind, OperationTerminalState State, DateTimeOffset StartedAtUtc, DateTimeOffset CompletedAtUtc, int AttemptNumber, string? CorrelationId, string? InputHashSha256, IReadOnlyList<OperationPostcondition> Postconditions, IReadOnlyList<OperationEvidenceReference> Evidence, IReadOnlyList<OperationArtifactReference> Artifacts, IReadOnlyList<OperationIssue> Issues, IReadOnlyList<OperationRecoveryAction> Recovery)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CurrentSchemaVersion = &quot;meridian.verified-operation-outcome.v1&quot;;</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:101](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L101) |  |
-| <code>public string SchemaVersion { get; init; } = CurrentSchemaVersion;</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:103](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L103) |  |
-| <code>public DataProvenance Provenance { get; init; } = DataProvenance.Real;</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:110](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L110) | Origin of the figures this receipt attests to. Defaults to DataProvenance.Real; any operation whose inputs are simulated, seeded, or sample data must downgrade this so the signal travels with the receipt and downstream evidence gates can fail closed on it. |
-| <code>public bool IsSuccessful =&gt; …;</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:112](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L112) |  |

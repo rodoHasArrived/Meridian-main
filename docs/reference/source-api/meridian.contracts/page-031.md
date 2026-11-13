@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBookContextDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBookContextDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs:5](../../../../src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs#L5).
+
+```csharp
+public sealed record AccountingBookContextDto(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, AccountingBasisKindDto AccountingBasis, string AccountingPolicyId, string AccountingPolicyVersion, Guid? PeriodId = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## AccountingCertificationStateDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingCertificationStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L105).
+
+```csharp
+public enum AccountingCertificationStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L107) |  |
+| <code>ReadyForReview = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L108) |  |
+| <code>Certified = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L109) |  |
+| <code>Rejected = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:110](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L110) |  |
+| <code>Superseded = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:111](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L111) |  |
+
 ## AccountingCloseReadinessItemDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingCloseReadinessItemDto</code>. Kind: `record`.
@@ -715,28 +745,4 @@ Bytes retained by an actual authenticated independent approval command.
 
 ```csharp
 public sealed record AssetAccountingApprovalReceiptDto(string ApprovalId, string Approver, DateTimeOffset ApprovedAtUtc, string CandidateFingerprint, string SubjectId, string CanonicalContentBase64, string ContentHashSha256);
-```
-
-## AssetAccountingDraftCapabilitiesDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingDraftCapabilitiesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L68).
-
-Caller-specific capability. Missing or unknown protocol remains read-only.
-
-```csharp
-public sealed record AssetAccountingDraftCapabilitiesDto(int ProtocolVersion, Guid JournalEntryId, int DraftVersion, string FundProfileId, Guid LedgerBookId, Guid PeriodId, string CandidateFingerprint, bool CanApprove, bool CanPost, string? ApproveBlockedReason, string? PostBlockedReason, AssetAccountingApprovalReceiptDto? Approval, bool HasPendingPost, JournalEntryLifecycleActionRequestDto? PendingPostCommand, PostedLedgerJournalEntryResultDto? PostedJournal, string? AuthenticatedActor = null);
-```
-
-## AssetAccountingPostIntentDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingPostIntentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L60).
-
-An exact original posting command retained before any canonical financial side effect.
-
-```csharp
-public sealed record AssetAccountingPostIntentDto(string OriginalCommandHash, JournalEntryLifecycleActionRequestDto OriginalCommand, PostPostingRuleJournalCandidateRequestDto CanonicalRequest, string VaultId, string DocumentId);
 ```

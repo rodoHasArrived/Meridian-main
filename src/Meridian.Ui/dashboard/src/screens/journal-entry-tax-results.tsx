@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,6 @@ import { formatDateTime, formatNumber } from "@/lib/format";
 import { formatTaxAmount as amount, formatTaxDecimal } from "@/lib/ledger-tax-results-format";
 import { getLedgerJournalEntryTaxResults, type LedgerTaxResultScope } from "@/lib/ledger-tax-results-api";
 import type { LedgerDisposalTaxResult, LedgerJournalTaxResults, LedgerDisposalTaxParcel } from "@/types/ledger-tax-results";
-import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 
 const characterLabels = { ShortTerm: "Short term", LongTerm: "Long term", Mixed: "Mixed parcels" };
 const stateLabels = { Settled: "Settled", Provisional: "Provisional", MissingEvidence: "Missing evidence" };
@@ -59,7 +59,6 @@ export function JournalEntryTaxResults({ ledgerBookId, periodId, journalEntryId 
               <p role="status" className="text-sm text-muted-foreground">{current.message || "No retained disposal tax result for this journal entry."}</p>
             ) : null}
             <p className="text-xs text-muted-foreground">Evidence checked {retainedTime(current.evaluatedAt)} · Amounts in {current.functionalCurrency || "unrecorded currency"}</p>
-            <TaxParcelComposition key={`${current.ledgerBookId}:${current.periodId}:${current.journalEntryId}:${current.evaluatedAt}`} result={current} />
             {current.disposals.map((disposal) => (
               <DisposalResult key={disposal.mutationBatchId} disposal={disposal} currency={current.functionalCurrency} />
             ))}
@@ -97,6 +96,7 @@ function DisposalResult({ disposal, currency }: { disposal: LedgerDisposalTaxRes
       </dl>
       {disposal.parcels.length > 0 ? (
         <div className="space-y-2">
+          <TaxParcelComposition key={disposal.mutationBatchId} parcels={disposal.parcels} currency={currency} state={stateLabels[disposal.state]} disposal={disposal} />
           <h4 className="text-sm font-semibold">Relieved parcels</h4>
           {disposal.parcels.map((parcel, index) => (
             <ParcelResult key={`${parcel.lotId}-${index}`} parcel={parcel} currency={currency} />

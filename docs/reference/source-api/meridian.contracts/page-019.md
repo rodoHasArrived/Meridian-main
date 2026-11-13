@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionQuote
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.OptionQuote</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:9](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L9).
+
+Best bid/offer quote for an option contract, including greeks and implied volatility.
+
+```csharp
+public sealed record OptionQuote : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:14](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L14) | Gets the timestamp of this quote. |
+| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:19](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L19) | Gets the option contract symbol (OCC or provider-specific). |
+| <code>public OptionContractSpec Contract { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:24](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L24) | Gets the option contract specification. |
+| <code>public decimal BidPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:29](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L29) | Gets the best bid price. |
+| <code>public long BidSize { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:34](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L34) | Gets the bid size in contracts. |
+| <code>public decimal AskPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:39](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L39) | Gets the best ask price. |
+| <code>public long AskSize { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:44](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L44) | Gets the ask size in contracts. |
+| <code>public decimal? LastPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:49](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L49) | Gets the last trade price, if available. |
+| <code>public decimal UnderlyingPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:54](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L54) | Gets the underlying asset price at the time of this quote. |
+| <code>public decimal? ImpliedVolatility { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:59](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L59) | Gets the implied volatility as a decimal (e.g., 0.25 = 25%). |
+| <code>public decimal? Delta { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:64](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L64) | Gets the delta of the option at the time of this quote. |
+| <code>public decimal? Gamma { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:69](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L69) | Gets the gamma of the option at the time of this quote. |
+| <code>public decimal? Theta { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:74](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L74) | Gets the theta of the option at the time of this quote. |
+| <code>public decimal? Vega { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:79](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L79) | Gets the vega of the option at the time of this quote. |
+| <code>public long? OpenInterest { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:84](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L84) | Gets the current open interest for this contract. |
+| <code>public long? Volume { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:89](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L89) | Gets the current day&#x27;s trading volume for this contract. |
+| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:94](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L94) | Gets the sequence number for ordering events. |
+| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:99](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L99) | Gets the data source identifier. |
+| <code>public OptionQuote(DateTimeOffset Timestamp, string Symbol, OptionContractSpec Contract, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal UnderlyingPrice, decimal? LastPrice = null, decimal? ImpliedVolatility = null, decimal? Delta = null, decimal? Gamma = null, decimal? Theta = null, decimal? Vega = null, long? OpenInterest = null, long? Volume = null, long SequenceNumber = 0, string Source = MarketDataSources.Unknown);</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:104](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L104) | Initializes a new instance of the OptionQuote record. |
+| <code>public decimal Spread =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:161](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L161) | Gets the bid-ask spread. |
+| <code>public decimal? MidPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:167](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L167) | Gets the mid-price (average of bid and ask). Returns null if either bid or ask is zero. |
+| <code>public decimal? NotionalValue =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:174](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L174) | Gets the notional value per contract (mid-price * multiplier). |
+| <code>public bool IsInTheMoney =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:181](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L181) | Returns true if the option is in-the-money based on the underlying price. |
+| <code>public decimal Moneyness =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/OptionQuote.cs:192](../../../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs#L192) | Gets the moneyness ratio (underlying / strike). Values &gt; 1 indicate in-the-money for calls; &lt; 1 for puts. |
+
 ## OptionTrade
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.OptionTrade</code>. Kind: `record`.
@@ -836,14 +877,4 @@ Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:129](
 
 ```csharp
 public sealed record RollbackEnvironmentVersionRequest(Guid VersionId, string RolledBackBy, string? Reason = null);
-```
-
-## EquityReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Equity.EquityReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Equity/EquityReferenceDtos.cs:3](../../../../src/Meridian.Contracts/Equity/EquityReferenceDtos.cs#L3).
-
-```csharp
-public sealed record EquityReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? ShareClass, string? VotingRightsCat, string? Classification, string? ExchangeCode, string? CountryOfRisk, string? IssuerName, string PrimaryIdentifier, long Version);
 ```

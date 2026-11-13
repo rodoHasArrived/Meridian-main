@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerBookControlModeDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlModeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6).
+
+```csharp
+public enum LedgerBookControlModeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LegacyWarning</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6) |  |
+| <code>Enforced</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6) |  |
+
+## LedgerBookControlPreflightDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlPreflightDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L25).
+
+```csharp
+public sealed record LedgerBookControlPreflightDto(Guid LedgerBookId, long ProfileVersion, string PolicyVersion, IReadOnlyList<LedgerControlDecisionDto> Decisions, string Digest, DateTimeOffset PreparedAtUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CanActivate =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L33) |  |
+
 ## LedgerBookControlProfileDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlProfileDto</code>. Kind: `record`.
@@ -700,23 +733,3 @@ Enum declarations:
 | <code>LpTransfer = 13</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:151](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L151) |  |
 | <code>ManagementFee = 14</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:152](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L152) |  |
 | <code>ClosingEntry = 15</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:155](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L155) | Period-close closing entries rolling temporary balances into retained earnings. |
-
-## ManualJournalEntryWorkbenchDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:936](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L936).
-
-```csharp
-public sealed record ManualJournalEntryWorkbenchDto(string FundProfileId, Guid? LedgerBookId, DateTimeOffset LoadedAtUtc, IReadOnlyList<LedgerBookDto> LedgerBooks, IReadOnlyList<ChartOfAccountsNodeDto> ChartOfAccounts, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> AuditTrail, PrivateCapitalActivityProjectionDto? PrivateCapitalActivity = null);
-```
-
-## ManualJournalLineCurrencyDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:769](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L769).
-
-```csharp
-public sealed record ManualJournalLineCurrencyDto(string Currency, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal Amount, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal FxRateToFunctional);
-```

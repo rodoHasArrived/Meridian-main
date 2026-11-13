@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConsolidationBalanceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationBalanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:91](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L91).
+
+```csharp
+public sealed record ConsolidationBalanceDto(string AccountPath, string AccountType, decimal GrossBalance, decimal ProposedEliminations, decimal PostedEliminations, decimal ConsolidatedBalance, decimal PreviewBalance, IReadOnlyList<ConsolidationSourceDto> Sources);
+```
+
+## ConsolidationBookVersionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationBookVersionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L12).
+
+```csharp
+public sealed record ConsolidationBookVersionDto(Guid LedgerBookId, long MaxSequence, int JournalCount);
+```
+
 ## ConsolidationDraftSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationDraftSummaryDto</code>. Kind: `record`.
@@ -698,25 +718,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;ReportLineProvenanceDto&gt; LineProvenance { get; init; } = LineProvenance??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:801](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L801) |  |
 | <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(FundId : FundProfileId, BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:804](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L804) |  |
-
-## GeneratedPostingLineDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.GeneratedPostingLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:398](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L398).
-
-```csharp
-public sealed record GeneratedPostingLineDto(string LineId, string AccountPath, AccountingTemplateLineSideDto Side, string AmountFormulaId, decimal Amount, string Currency = "USD", LedgerDimensionSetDto? Dimensions = null, string? Description = null);
-```
-
-## GeneratePrivateCapitalNoticeRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:4](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L4).
-
-A stable generation intent; retry the same operation and use a new ID for deliberate regeneration.
-
-```csharp
-public sealed record GeneratePrivateCapitalNoticeRequest(Guid OperationId, string? CommitmentId = null);
-```

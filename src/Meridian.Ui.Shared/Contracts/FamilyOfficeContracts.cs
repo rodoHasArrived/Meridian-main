@@ -17,7 +17,10 @@ public sealed record FamilyOfficeOverviewDto(
     IReadOnlyList<CapitalCommitmentDto> CapitalCommitments,
     IReadOnlyList<CapitalActivityDto> RecentCapitalActivity,
     FamilyOfficeReadinessDto Readiness,
-    IReadOnlyList<FamilyOfficeEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<FamilyOfficeEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<FamilyOfficeClientOptionDto>? AvailableClients = null);
+
+public sealed record FamilyOfficeClientOptionDto(string ClientId, string DisplayName);
 
 /// <summary>
 /// Common endpoint state for family-office workstation reads, including empty and degraded guidance.
@@ -104,7 +107,8 @@ public sealed record FamilyOwnershipEdgeDto(
     decimal? OwnershipPercent,
     DateOnly? EffectiveFrom,
     DateOnly? EffectiveTo,
-    string? SourceDocumentId);
+    string? SourceDocumentId,
+    string? Notes = null);
 
 public sealed record FamilyAccountSummaryDto(
     string AccountId,

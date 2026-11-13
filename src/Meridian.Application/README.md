@@ -11,6 +11,12 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Application
 
+Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
+these summarize current principal and do not project repayments. Corporate-action calendar reads
+use the scoped retained date population before pagination and bind cursors to the range revision.
+Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
+predecessor validation, frozen-case checks and durable command replay without changing economics.
+
 `BondHoldingImportService` bridges tenant-scoped raw/mapped integration evidence and retained
 reconciliation handoffs into the account statement authority. It rejects omitted unreviewed rows,
 unresolved identities, mismatched dates/currencies and cost-derived marks. The versioned fixed-income

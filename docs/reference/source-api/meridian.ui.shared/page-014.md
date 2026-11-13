@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionAssessmentImportService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
+
+Retains imported broker claims and their exact source bytes. No broker or OMS is called.
+
+```csharp
+public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
+| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
+| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
+
+## OptionScreeningService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
+
+Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
+
+```csharp
+public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
+| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
+
+## OwnedProviderConnection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:676](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L676).
+
+Identity of a retained connection one tenant owns; carries no credential material.
+
+```csharp
+public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);
+```
+
+## PaperFuturesSettlementOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:15](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L15).
+
+Options for the paper futures end-of-day variation-margin settlement job.
+
+```csharp
+public sealed class PaperFuturesSettlementOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;PaperTrading:FuturesSettlement&quot;;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:18](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L18) | Configuration section bound to these options. |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:21](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L21) | Whether the job runs. Off by default, so hosts opt in. |
+| <code>public TimeSpan PollInterval { get; set; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:24](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L24) | How often the job looks for closed, unsettled trading days. |
+| <code>public int MaxCatchUpTradingDays { get; set; } = 5;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:31](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L31) | The most recent closed trading days one pass settles per position, oldest first. A longer outage settles from its last days only; the total cash is the same, because each settlement moves the change since the previous one. |
+
+## PaperFuturesSettlementService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:44](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L44).
+
+Settles the daily variation margin of every open paper futures position once per trading day, after the regular close. Each pass walks the active paper sessions; for every variation-margin position it settles each closed trading day after its last settlement (and after the position opened), oldest first, at that day&#x27;s mark from IMarkPriceSource. The close stands in for the exchange settlement price, which is not modelled yet. A day with no price is skipped with a warning and never settled on a stale price. Settlements go through PaperSessionPersistenceService.RecordSettlementAsync, which persists before applying and ignores a day already settled, so overlapping or repeated passes are safe.
+
+```csharp
+public sealed class PaperFuturesSettlementService(IServiceProvider serviceProvider, IOptions<PaperFuturesSettlementOptions> options, ILogger<PaperFuturesSettlementService> logger, TimeProvider? timeProvider = null) : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; RunOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:98](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L98) | Runs one settlement pass at the current time and returns how many settlements it applied. Does nothing when the job is disabled or paper sessions or a mark price source are not registered. |
+
 ## PaperFuturesSettlementServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementServiceCollectionExtensions</code>. Kind: `class`.
@@ -293,6 +384,42 @@ Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:8](../
 ```csharp
 public sealed record PrivateCapitalLifecycleRead(IReadOnlyList<CapitalCommitmentDto> Commitments, IReadOnlyList<CapitalActivityDto> Activities, IReadOnlyList<string> Warnings, bool IsAvailable = true);
 ```
+
+## PrivateCapitalRecordAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L14).
+
+Checks real authorized structure identities and retained scoped document bytes.
+
+```csharp
+public sealed class PrivateCapitalRecordAuthority(IFundStructureService structures, ISecurityMasterQueryService securities, IEvidenceArtifactStore evidenceStore) : IPrivateCapitalRecordAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalChoices&gt; ChoicesAsync(PrivateCapitalScope scope, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L18) |  |
+| <code>public async Task&lt;PrivateCapitalVehicle&gt; ValidateRegisterAsync(PrivateCapitalScope scope, Guid entityId, Guid securityId, string currency, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:38](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L38) |  |
+| <code>public async Task ValidateEvidenceAsync(PrivateCapitalScope scope, PrivateCapitalEvidence evidence, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:58](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L58) |  |
+
+## PrivateCapitalRecordServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L9).
+
+```csharp
+public static class PrivateCapitalRecordServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddPrivateCapitalRecords(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L12) | Uses the existing account database or durable, partitioned local record authority. |
 
 ## ProductExposure
 
@@ -766,127 +893,3 @@ Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](.
 ```csharp
 public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
 ```
-
-## RecurringJournalRunner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:13](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L13).
-
-Runs under the existing scheduled worker and admits only retained human-review drafts.
-
-```csharp
-public sealed class RecurringJournalRunner(IRecurringJournalStore store, AutomatedJournalDraftIntakeService intake, IManualJournalEntryDraftStore drafts, IRecurringJournalPeriodAuthority periods, IEnumerable<IRecurringJournalCalculation>? calculations = null) : IRecurringJournalQueueSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
-| <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
-| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:334](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L334) |  |
-
-## RecurringJournalSubjectAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalSubjectAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs#L18).
-
-Resolves entity/account membership from retained structure rather than caller labels.
-
-```csharp
-public sealed class RecurringJournalSubjectAuthority(IFundStructureStore? structure = null, IFundAccountStore? accounts = null, TimeProvider? clock = null) : IRecurringJournalSubjectAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task VerifyAsync(RecurringJournalScope scope, LedgerBookRecord book, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs:23](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs#L23) |  |
-
-## RegionalSyncWindow
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RegionalSyncWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:5](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L5).
-
-```csharp
-public sealed record RegionalSyncWindow(string Region, string TimeZoneId, TimeOnly SyncStartLocal, TimeOnly SyncEndLocal, IReadOnlyList<SourceAvailabilityWindow> Sources);
-```
-
-## RejectingReportingProviderReceiptAuthenticator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RejectingReportingProviderReceiptAuthenticator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L28).
-
-Default fail-closed authenticator used when no provider receipt secret is configured.
-
-```csharp
-public sealed class RejectingReportingProviderReceiptAuthenticator : IReportingProviderReceiptAuthenticator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L30) |  |
-
-## RejectingReportingRecipientDestinationResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RejectingReportingRecipientDestinationResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:164](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L164).
-
-Refuses recipient destination resolution when no configured resolver is available.
-
-```csharp
-public sealed class RejectingReportingRecipientDestinationResolver : IReportingRecipientDestinationResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:166](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L166) |  |
-| <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L168) |  |
-
-## ReportAccessPolicyEvaluator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessPolicyEvaluator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L22).
-
-Compatibility adapter for Reporting-owned access policy normalization and evaluation.
-
-```csharp
-public static class ReportAccessPolicyEvaluator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReportAccessPolicyDto Normalize(ReportAccessPolicyDto? policy, string? defaultOwnerPrincipalId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L24) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L27) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L30) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportingOutputManifest manifest, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L33) |  |
-| <code>public static string BuildSummary(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L36) |  |
-
-## ReportAccessQueryContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessQueryContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L6).
-
-```csharp
-public sealed record ReportAccessQueryContext(string? ActorPrincipalId = null, IReadOnlyList<string>? GroupPrincipalIds = null, string? CompanyId = null, bool HasGlobalOverride = false, string? TenantId = null, bool RequireBoundScope = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingAccessQueryContext ToReportingContext() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L15) | Converts the compatibility context to the Reporting-owned query contract. |

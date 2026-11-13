@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ManualJournalEntryWorkbenchDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:936](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L936).
+
+```csharp
+public sealed record ManualJournalEntryWorkbenchDto(string FundProfileId, Guid? LedgerBookId, DateTimeOffset LoadedAtUtc, IReadOnlyList<LedgerBookDto> LedgerBooks, IReadOnlyList<ChartOfAccountsNodeDto> ChartOfAccounts, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> AuditTrail, PrivateCapitalActivityProjectionDto? PrivateCapitalActivity = null);
+```
+
+## ManualJournalLineCurrencyDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:769](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L769).
+
+```csharp
+public sealed record ManualJournalLineCurrencyDto(string Currency, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal Amount, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal FxRateToFunctional);
+```
+
 ## MaterialityPolicyDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.MaterialityPolicyDto</code>. Kind: `record`.
@@ -726,41 +746,3 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos
 ```csharp
 public sealed record PrivateCapitalFundEventDto(string FundEventId, string FundEventType, ManualJournalEntryTypeDto EntryType, ManualJournalEntryStatusDto JournalStatus, Guid JournalEntryId, DateOnly EffectiveDate, string CapitalAccountId, string? InvestorId, string Currency, decimal GrossAmount, decimal NetCapitalActivity, string Memo, string? PaymentIntentId, string? SettlementReference, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, DateTimeOffset UpdatedAtUtc, bool IsPosted = false, string? ApprovalId = null);
 ```
-
-## PrivateCapitalFundEventLedgerReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventLedgerReadinessDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:159](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L159).
-
-```csharp
-public enum PrivateCapitalFundEventLedgerReadinessDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Blocked = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:161](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L161) |  |
-| <code>EvidenceMissing = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:162](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L162) |  |
-| <code>ApprovalPending = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:163](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L163) |  |
-| <code>PostingReview = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:164](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L164) |  |
-| <code>ReportReview = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:165](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L165) |  |
-| <code>Ready = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:166](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L166) |  |
-| <code>Published = 6</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:167](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L167) |  |
-
-## PrivateCapitalFundEventLedgerRecordDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventLedgerRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:262](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L262).
-
-```csharp
-public sealed record PrivateCapitalFundEventLedgerRecordDto(string FundEventRecordId, string FundEventId, string FundEventType, string CapitalAccountId, string? InvestorId, ManualJournalEntryStatusDto ApprovalState, Guid JournalEntryId, DateOnly EffectiveDate, string Currency, decimal GrossAmount, decimal NetCapitalActivity, decimal CapitalAccountOpeningNetActivity, decimal CapitalAccountEndingNetActivity, string Memo, string? PaymentIntentId, string? SettlementReference, string ActivityRoute, string EvidenceRoute, string? ApprovalId, string? ApprovalRoute, bool IsPosted, bool IsPostingReady, bool IsReportReady, bool IsPublished, PrivateCapitalFundEventLedgerReadinessDto Readiness, string ReadinessLabel, string ReadinessReason, string NextAction, string? NextActionRoute, int EvidenceLinkCount, int CapitalAccountSubledgerEntryCount, int LedgerImpactCount, int ReportOutputCount, int ValidationIssueCount, string? PrimaryReportOutputId, string? PrimaryReportOutputType, string? PrimaryReportRoute, string? ReportWorkflowState, string? PublicationManifestId, string? RetainedManifestPath, int ReportLineProvenanceCount, IReadOnlyList<string> EvidenceLinks, PrivateCapitalFundEventDto FundEvent, IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries, IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts, IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null, PrivateCapitalPaymentIntentEvidenceDto? PaymentIntentEvidence = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;PrivateCapitalEvidenceCategoryDto&gt; EvidenceCategories { get; init; } = EvidenceCategories??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:313](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L313) |  |

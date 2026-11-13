@@ -11,6 +11,15 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+Visualization services are registered through the existing workstation composition and endpoint
+map. Private-capital observation and broker-assessment imports use dedicated permissions and
+authenticated tenant/company plus entity/account checks. The former verifies retained source
+document bytes and stores immutable register/snapshot/import records; the latter retains the
+original report and its exact basket/account identity. Neither enters issuer-side call capacity,
+reserves trading collateral or submits an order. Corporate-action calendar reads use a date-range
+query before paging, while deadline capture reuses the case evidence/version/idempotency path.
+Operator source-entry and recovery procedures are in `docs/operators/financial-visualizations.md`.
+
 `BondWorkflowConnectionReadinessService` joins exact tenant-owned connections, credential status
 and applicable input-specific entitlements. It reports identifier, terms, holdings, quote, fixing,
 inflation, factor, rating, curve and execution coverage separately. Connection verification never

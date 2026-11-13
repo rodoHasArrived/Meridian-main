@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountReadinessSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountReadinessSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:273](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L273).
+
+Account-scoped production readiness snapshot for provider, ledger, sync, and reconciliation checks.
+
+```csharp
+public sealed record AccountReadinessSnapshotDto(Guid AccountId, DateTimeOffset EvaluatedAt, AccountProviderLinkStatusDto ProviderLinkStatus, AccountSyncStatusDto? LatestSyncStatus, DateTimeOffset? LastSuccessfulSyncAt, DateTimeOffset? FreshUntil, bool IsReady, IReadOnlyList<AccountReadinessIssueDto> Issues);
+```
+
+## AccountReconciliationBreakDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:665](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L665).
+
+```csharp
+public sealed record AccountReconciliationBreakDto(PositionReconciliationBreakDto? PositionBreak = null, CashReconciliationBreakDto? CashBreak = null);
+```
+
 ## AccountReconciliationResultDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationResultDto</code>. Kind: `record`.
@@ -639,27 +661,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static CustodianHoldingSnapshotDto? Select(Guid accountId, DateOnly asOf, DateTimeOffset? knownAt, IEnumerable&lt;CustodianStatementBatchDto&gt; batches, IEnumerable&lt;CustodianPositionLineDto&gt; lines);</code> | [src/Meridian.Contracts/FundStructure/CustodianHoldingSnapshotSelector.cs:6](../../../../src/Meridian.Contracts/FundStructure/CustodianHoldingSnapshotSelector.cs#L6) |  |
-
-## CustodianPositionLineDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CustodianPositionLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:23](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L23).
-
-A single position line from a custodian statement.
-
-```csharp
-public sealed record CustodianPositionLineDto(Guid LineId, Guid BatchId, Guid AccountId, DateOnly AsOfDate, string Identifier, string IdentifierType, decimal Quantity, decimal MarketValue, string Currency, string? SecurityName, string? AssetClass, bool IsShort, decimal? CostBasis = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondHoldingEconomicsDto? Bond = null);
-```
-
-## CustodianStatementAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CustodianStatementAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:33](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L33).
-
-An explicitly reviewed full statement; source evidence is not accounting authority.
-
-```csharp
-public sealed record CustodianStatementAuthorityDto(int Revision, string SourceEvidenceId, string SourceContentSha256, bool IsAccepted = true, bool IsFullSnapshot = true, Guid? SupersedesBatchId = null);
-```

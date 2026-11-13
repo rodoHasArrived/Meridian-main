@@ -59,9 +59,15 @@ public sealed record AuditTrailExplorerResultDto(
     int TotalMatched,
     int Returned,
     IReadOnlyList<AuditTrailTimelineEntryDto> Entries,
+    AuditTrailSourceAvailabilityDto? SourceAvailability = null,
     IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null,
     string? CoverageNote = null,
     string? OrderIdentityStatus = null);
+
+/// <summary>Distinguishes an empty retained trail from a source that is not configured.</summary>
+public sealed record AuditTrailSourceAvailabilityDto(
+    bool ExecutionAudit,
+    bool OperationsContinuity);
 
 /// <summary>Source availability is independent of the number of matching records.</summary>
 public sealed record AuditTrailSourceStatusDto(string Source, string State);

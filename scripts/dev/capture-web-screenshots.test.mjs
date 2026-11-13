@@ -208,7 +208,8 @@ test("an unexpected worker failure drains other active work before rejecting", {
   assert.deepEqual(attempted, [0, 1]);
 });
 
-test("render readiness uses its timeout and never swallows an unfinished render", async () => {
+test("render readiness uses its timeout and never swallows an unfinished render", async (t) => {
+  t.mock.method(Date, "now", () => 1_000);
   const page = {
     async waitForFunction(_predicate, _argument, options) {
       assert.equal(options.timeout, 1234);

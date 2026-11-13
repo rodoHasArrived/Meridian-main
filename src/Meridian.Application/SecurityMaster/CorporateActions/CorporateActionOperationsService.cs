@@ -525,6 +525,13 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
                 "Corporate-action evidence reference must use an approved typed evidence URI scheme.");
         }
 
+        if (request.EvidenceKind == CorporateActionDeadlinePolicy.EvidenceKind)
+        {
+            var deadline = CorporateActionDeadlinePolicy.Read(request.Metadata);
+            if (CorporateActionDeadlinePolicy.ValidateCapture(deadline, request.EvidenceReference, request.EvidenceHash, request.Description) is { } deadlineError)
+                throw new CorporateActionValidationException(deadlineError);
+        }
+
         var trustedRequest = request with
         {
             TenantId = request.TenantId.Trim(),

@@ -11,6 +11,18 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Instruments
 
+Bond analytics identifies contractual maturity and every exactly tied governing issuer-call or
+maturity yield scenario; holder puts remain separate elections and do not determine yield to
+worst. General option-screen validation preserves resolved contract identities, signed delta,
+criteria reasons and exact decimal evidence. Basket/assessment fingerprints bind full option or
+equity legs and account/order context; imported broker evidence is dated and is not a local
+options margin model or permission to execute.
+
+`OptionsChainService.DiscoverExpirationsAsync` preserves whether provider failover supplied
+expiration coverage before DTE filtering. Screening treats unavailable discovery as an error;
+successfully discovered dates outside the requested DTE range produce a valid empty screen.
+The existing list-only expiration read keeps its compatibility behavior.
+
 `BondMarketDataService` imports and reads typed source revisions within an explicit authenticated
 tenant, retaining the first identity on exact retry and refusing conflicting revisions atomically.
 Exact-date queries never substitute a prior fixing, and future observed values require forecast

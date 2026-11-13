@@ -4720,6 +4720,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanMaturityBucketDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
     },
     {
@@ -6347,6 +6353,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondFredSeriesBindingDocument"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondGoverningYieldScenario"
     },
     {
       "kind": "contract-set-member",
@@ -11392,6 +11404,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.AcceptOptionAssessmentImportRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.BrokerOptionAssessment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentBasket"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentImportPreview"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentImportRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentLeg"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Options.OptionChainSnapshotDto"
     },
     {
@@ -11404,7 +11458,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionScreenCandidate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionScreenRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.OptionScreenResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Options.OptionSeriesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Options.RetainedOptionAssessment"
     },
     {
       "kind": "contract-set-member",
@@ -11657,6 +11735,96 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Plaid.PlaidWebhookEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.AcceptPrivateCapitalImport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalChoice"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalChoices"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalRecords"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalScope"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalVehicle"
     },
     {
       "kind": "contract-set-member",
@@ -12184,6 +12352,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
     },
     {
@@ -12215,6 +12401,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseActionAvailabilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseDeadlinesDto"
     },
     {
       "kind": "contract-set-member",
@@ -12370,6 +12562,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineInstantConverter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDissentEvidencePolicy"
     },
     {
@@ -12437,6 +12677,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
     },
     {
       "kind": "contract-set-member",
@@ -13619,6 +13865,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -15773,6 +16025,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.AuditTrailObjectKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto"
     },
     {
       "kind": "contract-set-member",
@@ -23188,6 +23446,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanMaturityBucketDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
     },
     {
@@ -28054,6 +28318,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
     },
     {
@@ -28085,6 +28367,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseActionAvailabilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseDeadlinesDto"
     },
     {
       "kind": "contract-set-member",
@@ -28240,6 +28528,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineInstantConverter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDissentEvidencePolicy"
     },
     {
@@ -28307,6 +28643,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
     },
     {
       "kind": "contract-set-member",
@@ -29489,6 +29831,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -35787,6 +36135,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanMaturityBucketDto",
+      "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto",
       "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
     },
@@ -35795,6 +36149,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto",
       "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanMaturityBucketDto"
     },
     {
       "kind": "contract-reference",
@@ -37049,6 +37409,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsResult",
       "target": "contract:Meridian.Contracts.FixedIncome.BondExerciseYield"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondAnalyticsResult",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondGoverningYieldScenario"
     },
     {
       "kind": "contract-reference",
@@ -43509,14 +43875,62 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Options.AcceptOptionAssessmentImportRequest",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentImportRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Options.BrokerOptionAssessment",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentBasket"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Options.OptionAssessmentBasket",
+      "target": "contract:Meridian.Contracts.Options.OptionAssessmentLeg"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Options.OptionAssessmentImportPreview",
+      "target": "contract:Meridian.Contracts.Options.BrokerOptionAssessment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Options.OptionAssessmentImportRequest",
+      "target": "contract:Meridian.Contracts.Options.BrokerOptionAssessment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Options.OptionChainSnapshotDto",
       "target": "contract:Meridian.Contracts.Options.OptionSeriesDto"
     },
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Options.OptionScreenResult",
+      "target": "contract:Meridian.Contracts.Options.OptionScreenCandidate"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Options.OptionScreenResult",
+      "target": "contract:Meridian.Contracts.Options.OptionScreenRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Options.OptionSeriesDto",
       "target": "contract:Meridian.Contracts.Options.OptionContractReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Options.RetainedOptionAssessment",
+      "target": "contract:Meridian.Contracts.Options.BrokerOptionAssessment"
     },
     {
       "kind": "contract-reference",
@@ -43667,6 +44081,84 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Plaid.PlaidTransferResult",
       "target": "contract:Meridian.Contracts.Plaid.PlaidTransferStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalChoices",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalChoice"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalRecords",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalRecords",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot",
+      "target": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
     },
     {
       "kind": "contract-reference",
@@ -44043,6 +44535,54 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProviderEventIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseDeadlinesDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseDeadlinesDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseSourceSnapshotDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDto"
     },
@@ -44243,6 +44783,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionConflictResolutionResultDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionEvidenceMutationResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
     },
     {
       "kind": "contract-reference",
@@ -45179,6 +45755,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionConflictCandidateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
     },
     {
       "kind": "contract-reference",
@@ -46823,6 +47411,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ApproveWorkflow",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AuditTrailExplorerResultDto",
+      "target": "contract:Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto"
     },
     {
       "kind": "contract-reference",
@@ -56007,6 +56601,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:fund_accounts.private_capital_record_check on fund_accounts.private_capital_record",
+      "target": "database:fund_accounts.private_capital_record.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.private_capital_record_check on fund_accounts.private_capital_record",
+      "target": "database:fund_accounts.private_capital_record.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:fund_structure.ck_fund_structure_legacy_import_receipt_source_hash on fund_structure.fund_structure_legacy_import_receipt",
       "target": "database:fund_structure.fund_structure_legacy_import_receipt.source_hash"
     },
@@ -63591,6 +64197,12 @@
       "target": "database:fund_accounts.fund_account_schema_migrations"
     },
     {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_accounts",
+      "target": "database:fund_accounts.private_capital_record"
+    },
+    {
       "kind": "hosts-migration-module",
       "label": "",
       "source": "schema:fund_accounts",
@@ -65154,7 +65766,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e62ca58419eb724eec9bb336b51859142d437c1fdbbc1f297d3d7bca6c04ebf6",
+  "fingerprint": "6fc3c8adc7932e16aa34f2c669d8542be39959a0d35a9e17ee362be85f44421b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69925,6 +70537,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.LoanMaturityBucketDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.LoanMaturityBucketDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
@@ -71554,6 +72172,12 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondFredSeriesBindingDocument",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondFredSeriesBindingDocument"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondGoverningYieldScenario",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondGoverningYieldScenario"
     },
     {
       "classification": "dto",
@@ -76596,6 +77220,48 @@
       "label": "Meridian.Contracts.Operations.VerifiedOperationOutcomeValidator"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Options.AcceptOptionAssessmentImportRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.AcceptOptionAssessmentImportRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Options.BrokerOptionAssessment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.BrokerOptionAssessment"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Options.OptionAssessmentBasket",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionAssessmentBasket"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Options.OptionAssessmentImportPreview",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionAssessmentImportPreview"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Options.OptionAssessmentImportRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionAssessmentImportRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Options.OptionAssessmentLeg",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionAssessmentLeg"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Options.OptionAssessmentValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionAssessmentValidation"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Options.OptionChainSnapshotDto",
       "kind": "contract-type",
@@ -76608,10 +77274,34 @@
       "label": "Meridian.Contracts.Options.OptionContractReferenceDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Options.OptionScreenCandidate",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionScreenCandidate"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Options.OptionScreenRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionScreenRequest"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Options.OptionScreenResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.OptionScreenResult"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Options.OptionSeriesDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Options.OptionSeriesDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Options.RetainedOptionAssessment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Options.RetainedOptionAssessment"
     },
     {
       "classification": "class",
@@ -76864,6 +77554,96 @@
       "id": "contract:Meridian.Contracts.Plaid.PlaidWebhookEventDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Plaid.PlaidWebhookEventDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.AcceptPrivateCapitalImport",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.AcceptPrivateCapitalImport"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalChoice",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalChoice"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalChoices",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalChoices"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalImportReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalImportReceipt"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalRecords",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalRecords"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalScope",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalScope"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.PrivateCapital.PrivateCapitalVehicle",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalVehicle"
     },
     {
       "classification": "service_contract",
@@ -77389,6 +78169,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
@@ -77422,6 +78220,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseActionAvailabilityDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseActionAvailabilityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseDeadlinesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseDeadlinesDto"
     },
     {
       "classification": "dto",
@@ -77574,6 +78378,54 @@
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionConflictStates"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlineInstantConverter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlineInstantConverter"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionDissentEvidencePolicy",
       "kind": "contract-type",
@@ -77644,6 +78496,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto"
     },
     {
       "classification": "record",
@@ -78826,6 +79684,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto"
     },
     {
       "classification": "dto",
@@ -80980,6 +81844,12 @@
       "id": "contract:Meridian.Contracts.Workstation.AuditTrailObjectKindDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.AuditTrailObjectKindDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto"
     },
     {
       "classification": "dto",
@@ -88076,6 +88946,27 @@
       "kind": "database-table",
       "label": "fund_accounts.fund_account_schema_migrations",
       "schema": "fund_accounts"
+    },
+    {
+      "id": "database:fund_accounts.private_capital_record",
+      "kind": "database-table",
+      "label": "fund_accounts.private_capital_record",
+      "schema": "fund_accounts"
+    },
+    {
+      "id": "database:fund_accounts.private_capital_record.company_id",
+      "kind": "database-object",
+      "label": "fund_accounts.private_capital_record.company_id"
+    },
+    {
+      "id": "database:fund_accounts.private_capital_record.tenant_id",
+      "kind": "database-object",
+      "label": "fund_accounts.private_capital_record.tenant_id"
+    },
+    {
+      "id": "database:fund_accounts.private_capital_record_check on fund_accounts.private_capital_record",
+      "kind": "database-object",
+      "label": "fund_accounts.private_capital_record_check on fund_accounts.private_capital_record"
     },
     {
       "id": "database:fund_structure.business",
@@ -95580,11 +96471,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4059,
-    "contract_set_memberships": 5186,
-    "edges": 10823,
+    "contract_references": 4100,
+    "contract_set_memberships": 5244,
+    "edges": 10925,
     "foreign_keys": 199,
     "logical_references": 6,
-    "nodes": 5288
+    "nodes": 5335
   }
 }

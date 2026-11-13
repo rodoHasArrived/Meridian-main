@@ -207,6 +207,31 @@ Declared public members:
 | <code>public static CorporateActionAppendResult Success { get; } = new (true);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:25](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L25) |  |
 | <code>public static CorporateActionAppendResult Invalid(string validationError) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:27](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L27) |  |
 
+## CorporateActionCalendarService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionCalendarService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:11](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L11).
+
+Evidence-backed operational dates; never submits elections or changes financial terms.
+
+```csharp
+public sealed class CorporateActionCalendarService(ICorporateActionOperationsService operations, ICorporateActionOperationsStore? store = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;CorporateActionCaseDeadlinesDto&gt; GetDeadlinesAsync(Guid caseId, string tenant, string company, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:16](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L16) |  |
+| <code>public Task&lt;CorporateActionEvidenceMutationResultDto&gt; RecordAsync(RecordCorporateActionDeadlineRequestDto request, string actor, string? correlationId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:25](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L25) |  |
+| <code>public async Task&lt;CorporateActionDeadlineImportPreviewDto&gt; PreviewImportAsync(CorporateActionDeadlineImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:36](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L36) |  |
+| <code>public async Task&lt;CorporateActionDeadlineImportResultDto&gt; ImportAsync(CorporateActionDeadlineImportRequestDto request, string actor, string? correlationId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:61](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L61) |  |
+| <code>public async Task&lt;CorporateActionCalendarPageDto&gt; GetCalendarAsync(string tenant, string company, DateOnly from, DateOnly to, string? account = null, string? custody = null, string? cursor = null, int take = 250, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:89](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L89) |  |
+| <code>public static IReadOnlyList&lt;CorporateActionDeadlineHistoryDto&gt; ProjectHistory(IReadOnlyList&lt;CorporateActionEvidenceDto&gt; evidence);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:123](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L123) |  |
+| <code>public static IReadOnlyList&lt;CorporateActionCalendarEventDto&gt; ProjectCalendar(CorporateActionCalendarReadSet snapshot, DateOnly from, DateOnly to, string? account, string? custody);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:133](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L133) |  |
+| <code>public static CorporateActionDeadlineImportPreviewDto ParseImport(CorporateActionDeadlineImportRequestDto request);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs:179](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCalendarService.cs#L179) |  |
+
 ## CorporateActionCaseAccountingService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionCaseAccountingService</code>. Kind: `class`.
@@ -395,10 +420,10 @@ Declared public members:
 | <code>public async Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:471](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L471) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:486](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L486) |  |
 | <code>public async Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:508](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L508) |  |
-| <code>public async Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:549](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L549) |  |
-| <code>public async Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:582](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L582) |  |
-| <code>public async Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:625](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L625) |  |
-| <code>public async Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:665](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L665) |  |
+| <code>public async Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:556](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L556) |  |
+| <code>public async Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:589](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L589) |  |
+| <code>public async Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:632](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L632) |  |
+| <code>public async Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs:672](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs#L672) |  |
 
 ## CorporateActionProposal
 
@@ -934,26 +959,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:98](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L98) |  |
-
-## InMemorySecurityMasterRevisionStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:136](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L136).
-
-Process-local revision lifecycle store. Mirrors the in-memory posture of SecurityMasterConflictService; the durable Postgres-backed implementation is wired in the subsequent slice. State transitions are compare-and-set so concurrent lifecycle calls are safe.
-
-```csharp
-public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvider = null) : ISecurityMasterRevisionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:141](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L141) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:144](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L144) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:155](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L155) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:198](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L198) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:204](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L204) |  |
-| <code>public Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:208](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L208) |  |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportValidationRules
+
+Qualified name: <code>Meridian.Contracts.Export.ExportValidationRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/ExportPreset.cs:273](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L273).
+
+Validation rules applied before an export starts.
+
+```csharp
+public sealed class ExportValidationRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:280](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L280) | Minimum available disk space multiplier relative to the estimated output size. Default 1.2 means 20% headroom required beyond the estimated export size. |
+| <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:287](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L287) | Whether to abort the export when no data is found for the requested filters. When false, an empty export is allowed with a warning. |
+| <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:294](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L294) | Emit a warning when exporting nested data structures to CSV format, because nested fields are flattened and may lose precision. |
+
 ## IntegrityExportOptions
 
 Qualified name: <code>Meridian.Contracts.Export.IntegrityExportOptions</code>. Kind: `class`.
@@ -672,7 +692,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:83](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L83).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L86).
 
 All prices, accrued interest and DV01 are per 100 face; yields are annual fractions and durations are years. Blocked results contain no calculated metrics.
 
@@ -684,10 +704,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;BondExerciseYield&gt; RedemptionScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:107](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L107) | Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield. |
-| <code>public IReadOnlyList&lt;BondExerciseYield&gt; YieldToWorstScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:108](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L108) |  |
-| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:109](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L109) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:116](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L116) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |
+| <code>public IReadOnlyList&lt;BondExerciseYield&gt; RedemptionScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:110](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L110) | Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield. |
+| <code>public IReadOnlyList&lt;BondExerciseYield&gt; YieldToWorstScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:111](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L111) |  |
+| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:112](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L112) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? MaturityDate { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:115](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L115) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BondGoverningYieldScenario&gt;? GoverningYieldScenarios { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:118](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L118) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:125](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L125) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |
 
 ## BondCalculationContext
 
@@ -802,15 +824,3 @@ Declared public members:
 | <code>public static bool TryTime(ScheduleGenerationResult schedule, DateOnly settlement, DateOnly payment, DayCountConvention dayCount, bool zeroCoupon, BondYieldConvention convention, out decimal time, out string? refusal);</code> | [src/Meridian.Contracts/FixedIncome/BondContractualEconomics.cs:167](../../../../src/Meridian.Contracts/FixedIncome/BondContractualEconomics.cs#L167) | Periodic yields use contractual coupon periods, including reference-period fractions for stubs. Annual-effective/simple yields and zero coupons use Actual/365 Fixed time. Payment dates outside the accrual grid add their actual calendar-day lag over 365. |
 | <code>public static bool TryReferenceUnits(SchedulePeriod period, ScheduleGenerationResult schedule, DayCountConvention convention, DateOnly start, DateOnly end, out decimal units, out string? refusal);</code> | [src/Meridian.Contracts/FixedIncome/BondContractualEconomics.cs:209](../../../../src/Meridian.Contracts/FixedIncome/BondContractualEconomics.cs#L209) |  |
 | <code>public static string? Text(JsonElement value, string name) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondContractualEconomics.cs:253](../../../../src/Meridian.Contracts/FixedIncome/BondContractualEconomics.cs#L253) |  |
-
-## BondCouponStructureDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondCouponStructureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:134](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L134).
-
-Coupon-structure terms retained for downstream capability checks and calculations.
-
-```csharp
-public sealed record BondCouponStructureDto(string? Kind, decimal? CapRate, decimal? FloorRate, JsonElement? StepSchedule, string? RateUnit);
-```

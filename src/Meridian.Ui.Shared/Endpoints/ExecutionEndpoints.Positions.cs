@@ -178,6 +178,7 @@ public static partial class ExecutionEndpoints
 
         var logger = GetLogger(context.RequestServices);
         var actionId = GenerateActionId();
+
         var gateDecision = BrokerageOrderPlacementGate.Evaluate(
             context.RequestServices.GetService<BrokerageConfiguration>(),
             activeGatewayId);

@@ -14,8 +14,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 797 / 797 |
-| Workstation contracts documented | 1025 / 1025 |
+| Endpoints documented | 805 / 805 |
+| Workstation contracts documented | 1026 / 1026 |
 
 ## Endpoint Coverage
 
@@ -439,6 +439,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/messaging/stats` | Documented | `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:69` |
 | `GET` | `/api/messaging/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:51` |
 | `POST` | `/api/messaging/test` | Documented | `src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:172` |
+| `POST` | `/api/options/assessments/accounts/{accountId:guid}/accept` | Documented | `src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:77` |
+| `POST` | `/api/options/assessments/accounts/{accountId:guid}/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:61` |
+| `GET` | `/api/options/assessments/accounts/{accountId:guid}/{assessmentId}/source` | Documented | `src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:96` |
 | `GET` | `/api/options/chains/{underlyingSymbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:78` |
 | `GET` | `/api/options/expirations/{underlyingSymbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:28` |
 | `GET` | `/api/options/quotes/{underlyingSymbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:136` |
@@ -640,26 +643,31 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/security-master/asset-profiles/{profileId}/lineage` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:135` |
 | `GET` | `/api/security-master/conflicts` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:995` |
 | `POST` | `/api/security-master/conflicts/{conflictId:guid}/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1008` |
-| `GET` | `/api/security-master/corporate-actions/cases` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:332` |
-| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:367` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:631` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:655` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:607` |
-| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:403` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:534` |
-| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:456` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:153` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:509` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/options` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:556` |
-| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/transition` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:578` |
-| `GET` | `/api/security-master/corporate-actions/inbox` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:73` |
-| `POST` | `/api/security-master/corporate-actions/inbox/apply` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:105` |
-| `POST` | `/api/security-master/corporate-actions/ingest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:39` |
-| `GET` | `/api/security-master/corporate-actions/source-proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:189` |
-| `POST` | `/api/security-master/corporate-actions/source-proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:118` |
-| `GET` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:214` |
-| `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:239` |
-| `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:257` |
+| `GET` | `/api/security-master/corporate-actions/calendar` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:17` |
+| `GET` | `/api/security-master/corporate-actions/cases` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:333` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:368` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:637` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:661` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:613` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:404` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:540` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:457` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:154` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:35` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:58` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines/import` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:81` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines/import-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:70` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:510` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/options` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:562` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/transition` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:584` |
+| `GET` | `/api/security-master/corporate-actions/inbox` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:74` |
+| `POST` | `/api/security-master/corporate-actions/inbox/apply` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:106` |
+| `POST` | `/api/security-master/corporate-actions/ingest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:40` |
+| `GET` | `/api/security-master/corporate-actions/source-proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:190` |
+| `POST` | `/api/security-master/corporate-actions/source-proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:119` |
+| `GET` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:215` |
+| `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:240` |
+| `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:258` |
 | `GET` | `/api/security-master/coverage/draft/{symbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:979` |
 | `GET` | `/api/security-master/curves` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:42` |
 | `POST` | `/api/security-master/curves` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:64` |
@@ -839,8 +847,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `AssignOnboardingDifferenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:31` |
 | `AuditTrailExplorerQueryDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8` |
 | `AuditTrailExplorerResultDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:57` |
-| `AuditTrailObjectKindDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73` |
-| `AuditTrailSourceStatusDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:67` |
+| `AuditTrailObjectKindDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79` |
+| `AuditTrailSourceAvailabilityDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:68` |
+| `AuditTrailSourceStatusDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73` |
 | `AuditTrailTimelineEntryDto` | Documented | `src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:28` |
 | `AutomatedJournalCapitalAccountReconciliationDto` | Documented | `src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25` |
 | `AutomatedJournalScheduleStateDto` | Documented | `src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:8` |

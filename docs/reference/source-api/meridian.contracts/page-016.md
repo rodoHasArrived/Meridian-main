@@ -158,7 +158,7 @@ public sealed record DirectLendingIndexFixingDto(Guid FixingId, string IndexName
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:466](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L466).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:479](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L479).
 
 ```csharp
 public sealed record DirectLendingOperationsCalendarItemDto(Guid LoanId, string FacilityName, string ItemType, DateOnly DueDate, string Status, string Detail, string Route);
@@ -168,7 +168,7 @@ public sealed record DirectLendingOperationsCalendarItemDto(Guid LoanId, string 
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:503](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L503).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:516](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L516).
 
 ```csharp
 public sealed record DirectLendingOperationsCloseBlockerDto(Guid LoanId, string FacilityName, string BlockerType, string Severity, string Detail, string Route);
@@ -178,7 +178,7 @@ public sealed record DirectLendingOperationsCloseBlockerDto(Guid LoanId, string 
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCollateralCoverageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:444](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L444).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:457](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L457).
 
 ```csharp
 public sealed record DirectLendingOperationsCollateralCoverageDto(Guid LoanId, string FacilityName, decimal PrincipalOutstanding, decimal CollateralValue, decimal CoverageRatio, string Status, string Detail, string Route);
@@ -188,7 +188,7 @@ public sealed record DirectLendingOperationsCollateralCoverageDto(Guid LoanId, s
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsEvidenceItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:475](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L475).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:488](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L488).
 
 ```csharp
 public sealed record DirectLendingOperationsEvidenceItemDto(Guid LoanId, string FacilityName, string EvidenceType, string Label, string Status, string Route);
@@ -198,7 +198,7 @@ public sealed record DirectLendingOperationsEvidenceItemDto(Guid LoanId, string 
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsJournalPostureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:483](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L483).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:496](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L496).
 
 ```csharp
 public sealed record DirectLendingOperationsJournalPostureDto(Guid LoanId, string FacilityName, int DraftCount, int PostedCount, string Status, string Detail, string Route);
@@ -208,7 +208,7 @@ public sealed record DirectLendingOperationsJournalPostureDto(Guid LoanId, strin
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsLoanHealthDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:426](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L426).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:439](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L439).
 
 ```csharp
 public sealed record DirectLendingOperationsLoanHealthDto(Guid LoanId, string FacilityName, string BorrowerName, LoanStatus Status, CurrencyCode Currency, decimal CommitmentAmount, decimal PrincipalOutstanding, decimal InterestAccruedUnpaid, decimal PenaltyAccruedUnpaid, DateOnly MaturityDate, DateOnly? LastAccrualDate, DateOnly? LastPaymentDate, string HealthStatus, string HealthDetail, string Route, Guid? SecurityId = null);
@@ -218,7 +218,7 @@ public sealed record DirectLendingOperationsLoanHealthDto(Guid LoanId, string Fa
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsReadModelDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:411](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L411).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:424](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L424).
 
 ```csharp
 public sealed record DirectLendingOperationsReadModelDto(DateTimeOffset AsOf, string Status, string StatusDetail, IReadOnlyList<DirectLendingOperationsLoanHealthDto> LoanHealth, IReadOnlyList<DirectLendingOperationsCollateralCoverageDto> CollateralCoverage, IReadOnlyList<DirectLendingOperationsStatusPostureDto> CovenantStatusPosture, IReadOnlyList<DirectLendingOperationsCalendarItemDto> ServicingCalendar, IReadOnlyList<DirectLendingOperationsEvidenceItemDto> Evidence, IReadOnlyList<DirectLendingOperationsJournalPostureDto> Journals, IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto> ReconciliationExceptions, IReadOnlyList<DirectLendingOperationsCloseBlockerDto> CloseBlockers, IReadOnlyList<DirectLendingOperationsServicerStatementDto>? ServicerStatements = null, Guid? LedgerBookId = null);
@@ -228,7 +228,7 @@ public sealed record DirectLendingOperationsReadModelDto(DateTimeOffset AsOf, st
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsReconciliationExceptionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:492](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L492).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:505](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L505).
 
 ```csharp
 public sealed record DirectLendingOperationsReconciliationExceptionDto(Guid ExceptionId, Guid LoanId, string FacilityName, string ExceptionType, decimal DifferenceAmount, string Status, string AssignedTo, string Detail, string Route);
@@ -238,7 +238,7 @@ public sealed record DirectLendingOperationsReconciliationExceptionDto(Guid Exce
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsServicerStatementDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:511](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L511).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:524](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L524).
 
 ```csharp
 public sealed record DirectLendingOperationsServicerStatementDto(Guid BatchId, ServicerStatementKind Kind, string ServicerName, DateOnly StatementDate, string Status, int RowCount, int UnmappedRowCount, int ExceptionCount, int ReadyToApplyRowCount, int AppliedRowCount, string EvidenceRoute, string Detail);
@@ -248,7 +248,7 @@ public sealed record DirectLendingOperationsServicerStatementDto(Guid BatchId, S
 
 Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsStatusPostureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:454](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L454).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:467](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L467).
 
 ```csharp
 public sealed record DirectLendingOperationsStatusPostureDto(Guid LoanId, string FacilityName, LoanStatus LoanStatus, string CovenantStatus, bool PikEnabled, AmortizationType AmortizationType, string RestructurePosture, string Detail, string Route, Guid? SecurityId = null);
@@ -529,11 +529,23 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:207](../../..
 public sealed record LoanEventLineageDto(Guid EventId, long AggregateVersion, string EventType, int EventSchemaVersion, DateOnly? EffectiveDate, DateTimeOffset RecordedAt, string PayloadJson, Guid? CausationId, Guid? CorrelationId, Guid? CommandId, string? SourceSystem, bool ReplayFlag);
 ```
 
+## LoanMaturityBucketDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanMaturityBucketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:401](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L401).
+
+Amounts are exact invariant decimal text; an unknown denomination has no amount.
+
+```csharp
+public sealed record LoanMaturityBucketDto(CurrencyCode Currency, int? Year, int? Quarter, string? PrincipalOutstanding, IReadOnlyList<Guid> LoanIds);
+```
+
 ## LoanPortfolioCurrencyTotalsDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:402](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L402).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:415](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L415).
 
 Unconverted totals in the retained loan or collateral currency. Portfolio scalar totals are null when more than one currency occurs; no reporting currency or FX rate is implied. Collateral is grouped by its own appraisal currency, independently of facility currency. Other or unsupported currencies retain an unavailable bucket with null amounts, since their common denomination cannot be proved.
 
@@ -548,8 +560,14 @@ Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto</
 Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:379](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L379).
 
 ```csharp
-public sealed record LoanPortfolioSummaryDto(int TotalLoans, int ActiveLoans, int DefaultedLoans, int NonPerformingLoans, int WorkoutLoans, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue, IReadOnlyList<LoanSummaryDto> Loans, IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null, CurrencyCode? TotalCurrency = null);
+public sealed record LoanPortfolioSummaryDto(int TotalLoans, int ActiveLoans, int DefaultedLoans, int NonPerformingLoans, int WorkoutLoans, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue, IReadOnlyList<LoanSummaryDto> Loans, IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null, CurrencyCode? TotalCurrency = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LoanMaturityBucketDto&gt;? MaturityBuckets { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:397](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L397) | Current principal grouped by contractual maturity, never scheduled repayments. |
 
 ## LoanServicingSchedulePreviewDto
 
@@ -670,14 +688,4 @@ Servicing balances for a loan. The first five members are receivables owed by th
 
 ```csharp
 public sealed record OutstandingBalancesDto(decimal PrincipalOutstanding, decimal InterestAccruedUnpaid, decimal CommitmentFeeAccruedUnpaid, decimal FeesAccruedUnpaid, decimal PenaltyAccruedUnpaid, decimal PrepaidInterest = 0m, decimal UnappliedCash = 0m);
-```
-
-## PaymentAllocationDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.PaymentAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:101](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L101).
-
-```csharp
-public sealed record PaymentAllocationDto(Guid AllocationId, Guid LoanId, Guid CashTransactionId, int AllocationSequenceNumber, string TargetType, string TargetReference, decimal AllocatedAmount, string AllocationRule, Guid SourceEventId, DateTimeOffset CreatedAt);
 ```

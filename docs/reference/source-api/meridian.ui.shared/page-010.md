@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyValuationScheduledBatchResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledBatchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:264](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L264).
+
+```csharp
+public sealed record DailyValuationScheduledBatchResult(DateTimeOffset EvaluatedAtUtc, IReadOnlyList<DailyValuationScheduledRunResult> Runs);
+```
+
+## DailyValuationScheduledRunResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledRunResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:251](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L251).
+
+```csharp
+public sealed record DailyValuationScheduledRunResult(string ScheduleId, DateTimeOffset ScheduledForUtc, DailyValuationScheduleStateDto State, string Summary, Guid? JournalEntryId, IReadOnlyList<string> Blockers, IReadOnlyList<Guid>? JournalEntryIds = null, string? BatchCorrelationId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:261](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L261) |  |
+
+## DailyValuationScheduledWorker
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledWorker</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:272](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L272).
+
+Claims and executes due configured portfolios. Every due item advances exactly once per scheduled timestamp; the downstream deterministic draft id makes crash retries idempotent.
+
+```csharp
+public sealed class DailyValuationScheduledWorker
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DailyValuationScheduledWorker(IDailyValuationPortfolioSource portfolioSource, AutomatedJournalIntakeRunner intakeRunner, ILogger&lt;DailyValuationScheduledWorker&gt; logger, DailyValuationPositionService? positionService = null);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:280](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L280) |  |
+| <code>public async Task&lt;DailyValuationScheduledBatchResult&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:292](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L292) |  |
+| <code>public async Task&lt;DailyValuationScheduledBatchResult&gt; RunDueForScopeAsync(DateTimeOffset nowUtc, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:301](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L301) | Executes due schedules owned by exactly one tenant/company scope. This is the operator-route seam; the host loop intentionally uses RunDueAsync to process every scope. |
+
 ## DailyValuationSchedulerHostedService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationSchedulerHostedService</code>. Kind: `class`.
@@ -525,10 +571,10 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public FamilyOfficeReadService(IFundStructureService? fundStructureService, IFundAccountService? fundAccountService, StrategyRunReadService? strategyRunReadService = null, TimeProvider? timeProvider = null, IPrivateCapitalLifecycleSource? privateCapitalSource = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:26](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L26) |  |
-| <code>public async Task&lt;FamilyOfficeOverviewDto&gt; GetOverviewAsync(CancellationToken ct = default, DateOnly? ownershipAsOf = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:40](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L40) |  |
-| <code>public async Task&lt;FamilyOfficeBalanceSheetResponseDto&gt; GetBalanceSheetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:145](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L145) |  |
-| <code>public async Task&lt;FamilyOfficeEntitiesResponseDto&gt; GetEntitiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:151](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L151) |  |
-| <code>public async Task&lt;FamilyOfficeOwnershipGraphResponseDto&gt; GetOwnershipGraphAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:157](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L157) |  |
+| <code>public async Task&lt;FamilyOfficeOverviewDto&gt; GetOverviewAsync(CancellationToken ct = default, Guid? familyOfficeId = null, DateOnly? ownershipAsOf = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:40](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L40) |  |
+| <code>public async Task&lt;FamilyOfficeBalanceSheetResponseDto&gt; GetBalanceSheetAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:152](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L152) |  |
+| <code>public async Task&lt;FamilyOfficeEntitiesResponseDto&gt; GetEntitiesAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:158](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L158) |  |
+| <code>public async Task&lt;FamilyOfficeOwnershipGraphResponseDto&gt; GetOwnershipGraphAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:164](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L164) |  |
 
 ## FeatureCapabilitySettingsService
 
@@ -858,69 +904,3 @@ Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:247](../../.
 ```csharp
 public sealed record DailyValuationScheduleSnapshot(IReadOnlyList<DailyValuationScheduleWorkItem> WorkItems);
 ```
-
-## FileFinancialRecordExplorerSavedViewStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileFinancialRecordExplorerSavedViewStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:37](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L37).
-
-Persists tenant-scoped financial-record explorer saved views to disk.
-
-```csharp
-public sealed class FileFinancialRecordExplorerSavedViewStore : JsonFileSnapshotStore<FinancialRecordExplorerSavedViewSnapshot>, IFinancialRecordExplorerSavedViewStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileFinancialRecordExplorerSavedViewStore(string workstationDataRoot, ILogger&lt;FileFinancialRecordExplorerSavedViewStore&gt; logger) : base(ResolveSnapshotPath(workstationDataRoot), FinancialRecordExplorerSavedViewJsonContext.Default.FinancialRecordExplorerSavedViewSnapshot);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:44](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L44) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;FinancialRecordExplorerSavedViewDto&gt;&gt; LoadAsync(string tenantId, string explorerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:54](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L54) |  |
-| <code>public async Task&lt;FinancialRecordExplorerSavedViewDto&gt; SaveAsync(string tenantId, string explorerId, FinancialRecordExplorerSavedViewDto savedView, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L75) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;WorkstationTableViewDto&gt;&gt; LoadPersonalViewsAsync(string tenantId, string operatorId, string tableId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:109](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L109) |  |
-| <code>public async Task&lt;WorkstationTableViewDto&gt; SavePersonalViewAsync(string tenantId, string operatorId, string tableId, WorkstationTableViewSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:127](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L127) |  |
-
-## FileFundProfileTenancyRegistry
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileFundProfileTenancyRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs:15](../../../../src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs#L15).
-
-File-backed IFundProfileTenancyRegistry for the single-process workstation host. Fund profiles are keyed case-insensitively (normalized to a trimmed, lower-invariant id, matching how the rest of the system compares FundProfileId) and the first tenant to bind a fund wins; a later bind by a different tenant is a no-op that returns the original owner. Writes go through AtomicFileWriter so a crash mid-write cannot corrupt the registry.
-
-```csharp
-public sealed class FileFundProfileTenancyRegistry : IFundProfileTenancyRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileFundProfileTenancyRegistry(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs:25](../../../../src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs#L25) |  |
-| <code>public async Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs:32](../../../../src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs#L32) |  |
-| <code>public async Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs:69](../../../../src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs#L69) |  |
-| <code>public async Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs:85](../../../../src/Meridian.Ui.Shared/Services/FileFundProfileTenancyRegistry.cs#L85) |  |
-
-## FileGovernanceReportPackRepository
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileGovernanceReportPackRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:45](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L45).
-
-Persists governance report-pack snapshots, artifacts, and evidence bundles to disk.
-
-```csharp
-public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileGovernanceReportPackRepository(string dataDirectory, ILogger&lt;FileGovernanceReportPackRepository&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:57](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L57) |  |
-| <code>public async Task&lt;FundReportPackSnapshotDto&gt; SaveAsync(FundReportPackSnapshotDto snapshot, IReadOnlyList&lt;GovernanceReportPackArtifactContent&gt; artifacts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:67](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L67) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;FundReportPackHistoryItemDto&gt;&gt; GetHistoryAsync(string fundProfileId, int limit, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:131](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L131) |  |
-| <code>public async Task&lt;FundReportPackSnapshotDto?&gt; GetAsync(Guid reportId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:192](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L192) |  |
-| <code>public async Task&lt;FundReportPackSnapshotDto?&gt; FindLatestByRunIdAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:222](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L222) |  |
-| <code>public async Task&lt;FundReportPackEvidenceBundleDto&gt; SaveEvidenceBundleAsync(FundReportPackSnapshotDto snapshot, FundReportPackEvidenceBundleDto bundle, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:256](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L256) |  |

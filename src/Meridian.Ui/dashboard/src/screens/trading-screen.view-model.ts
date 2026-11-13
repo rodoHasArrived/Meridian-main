@@ -31,7 +31,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction 
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
+import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
+import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
@@ -110,6 +111,7 @@ export type {
   AcceptanceLevel,
   TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
+export type { ExecutionAuditRow, ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 
 export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
 export type TradingRouteWorkstream = "orders" | "positions" | "risk";
@@ -1190,23 +1192,10 @@ function orderStatusTone(status: TradingOrder["status"]): TradingDataTone {
   return "muted";
 }
 
-export type ExecutionEvidenceTone = "success" | "warning" | "danger";
-
 export interface ExecutionEvidenceFieldRow {
   id: string;
   label: string;
   value: string;
-}
-
-export interface ExecutionAuditRow {
-  id: string;
-  action: string;
-  outcome: string;
-  outcomeTone: ExecutionEvidenceTone;
-  message: string;
-  metadataText: string;
-  technicalMetadataText: string | null;
-  ariaLabel: string;
 }
 
 export interface ExecutionControlsPanel {
@@ -1382,72 +1371,6 @@ export function buildExecutionEvidenceState({
     statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText }),
     requestStatus: requestStatus ?? idleExecutionEvidenceStatus
   };
-}
-
-function buildExecutionAuditRow(entry: ExecutionAuditEntry): ExecutionAuditRow {
-  const metadataText = formatExecutionAuditMetadata(entry);
-  const technicalMetadataText = formatExecutionAuditTechnicalMetadata(entry);
-  const message = entry.message?.trim() || "No operator message recorded.";
-  const action = formatExecutionAuditAction(entry.action);
-
-  return {
-    id: entry.auditId,
-    action,
-    outcome: entry.outcome,
-    outcomeTone: mapExecutionOutcomeTone(entry.outcome),
-    message,
-    metadataText,
-    technicalMetadataText,
-    ariaLabel: `${action} ${entry.outcome}. ${message} ${metadataText}`.trim()
-  };
-}
-
-function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
-  const occurredAt = new Date(entry.occurredAt);
-  if (Number.isNaN(occurredAt.getTime())) {
-    return "Recorded time unavailable";
-  }
-
-  return `Recorded ${formatUtcTimestamp(occurredAt)}`;
-}
-
-function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {
-  const parts = [
-    entry.occurredAt,
-    entry.metadata?.sessionId ? `session ${entry.metadata.sessionId}` : null,
-    entry.orderId ? `order ${entry.orderId}` : null,
-    entry.symbol ? `symbol ${entry.symbol}` : null,
-    entry.runId ? `run ${entry.runId}` : null
-  ].filter(Boolean);
-
-  return parts.length > 0 ? parts.join(" · ") : null;
-}
-
-function formatExecutionAuditAction(action: string): string {
-  const normalized = action.trim();
-  if (normalized === "ReplayPaperSession") {
-    return "Paper session replay";
-  }
-
-  const words = normalized
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/[._-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Execution activity";
-}
-
-function mapExecutionOutcomeTone(outcome: string): ExecutionEvidenceTone {
-  const normalized = outcome.toLowerCase();
-  if (normalized.includes("fail") || normalized.includes("reject") || normalized.includes("error")) {
-    return "danger";
-  }
-
-  if (normalized.includes("complete") || normalized.includes("accept") || normalized.includes("success")) {
-    return "success";
-  }
-
-  return "warning";
 }
 
 function buildExecutionEvidenceAnnouncement({

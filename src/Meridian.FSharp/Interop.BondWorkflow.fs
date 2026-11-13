@@ -33,4 +33,3 @@ module BondWorkflowTermsJson =
                     "Bond", "assetSpecificTerms.bondWorkflow", payload.GetRawText(), &path, &reason)) then
             invalidOp reason
         payload
-

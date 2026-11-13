@@ -8,7 +8,7 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 18 | 2 | 5 | 0 | `c9c7114b8157` |
 | [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `13eb85175584` |
-| [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `d46f504e4848` |
+| [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 13 | 0 | 0 | 0 | `aba5d08fb6ed` |
 | [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 23 | 5 | 18 | 0 | `ad4a8d01d990` |
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
 | [`ledger`](modules/ledger.md) | `ledger` | 52 | 29 | 56 | 0 | `052ee869aebb` |

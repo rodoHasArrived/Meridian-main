@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondCouponStructureDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondCouponStructureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:134](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L134).
+
+Coupon-structure terms retained for downstream capability checks and calculations.
+
+```csharp
+public sealed record BondCouponStructureDto(string? Kind, decimal? CapRate, decimal? FloorRate, JsonElement? StepSchedule, string? RateUnit);
+```
+
 ## BondEconomicsCompatibility
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondEconomicsCompatibility</code>. Kind: `enum`.
@@ -193,6 +205,18 @@ Exact independently accepted provider-trust/fred document. BindingKey names an i
 
 ```csharp
 public sealed record BondFredSeriesBindingDocument(int SchemaVersion, string Kind, string BindingKey, string SeriesId, string IndexName, [property : JsonRequired] BondMarketObservationKind ObservationKind, [property : JsonRequired] BondMarketValueUnit Unit, string SourceName, string? Currency = null);
+```
+
+## BondGoverningYieldScenario
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondGoverningYieldScenario</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:80](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L80).
+
+Every tied issuer-controlled or maturity scenario determining yield to worst.
+
+```csharp
+public sealed record BondGoverningYieldScenario(string Kind, DateOnly Date, decimal Yield);
 ```
 
 ## BondIdentifierCandidateDto
@@ -675,32 +699,4 @@ Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:77](../../../..
 
 ```csharp
 public sealed record BondOperationCapability(string Operation, bool Supported, string? Reason = null);
-```
-
-## BondPerformanceAccountingBridgeDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceAccountingBridgeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L24).
-
-```csharp
-public sealed record BondPerformanceAccountingBridgeDto(Guid SecurityId, IReadOnlyList<Guid> TaxLotRecordIds, decimal OpeningCarryingBasis, decimal ClosingCarryingBasis, decimal CouponIncome, decimal PremiumDiscountIncome, decimal IndexationIncome, decimal ExpensedFees, decimal CashGrossCoupons, decimal AccrualVersusCashDifference, string Currency, IReadOnlyList<string> InstructionFingerprints)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal AccountingIncome =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:30](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L30) |  |
-
-## BondPerformanceAttributionDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceAttributionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L14).
-
-Order-dependent model explanation. Accounting amortization is never a market-return component.
-
-```csharp
-public sealed record BondPerformanceAttributionDto(decimal? CarryAndRoll, decimal? RateEffect, decimal? SpreadEffect, decimal? InflationEffect, decimal? CollectionAndCosts, decimal? FxEffect, decimal? Residual, string Currency);
 ```

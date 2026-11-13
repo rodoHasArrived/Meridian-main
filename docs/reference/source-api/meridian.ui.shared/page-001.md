@@ -52,7 +52,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.CapitalActivityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:224](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L224).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:228](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L228).
 
 ```csharp
 public sealed record CapitalActivityDto(string ActivityId, string CommitmentId, string EntityId, string ActivityType, string Currency, [property : System.Text.Json.Serialization.JsonRequired] decimal Amount, DateOnly EffectiveDate, DateOnly? NoticeDate, DateOnly? DueDate, string Status, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
@@ -62,7 +62,7 @@ public sealed record CapitalActivityDto(string ActivityId, string CommitmentId, 
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.CapitalCommitmentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:175](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L175).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:179](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L179).
 
 ```csharp
 public sealed record CapitalCommitmentDto(string CommitmentId, string EntityId, string VehicleName, string Strategy, string Currency, [property : System.Text.Json.Serialization.JsonRequired] decimal CommitmentAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal CalledAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal UnfundedAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal DistributedAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal CurrentNav, int? VintageYear, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc, bool BalancesAvailable = true, string BalanceStatus = "Retained", string? SnapshotId = null, int? SourceRevision = null, DateTimeOffset? RecordedAtUtc = null, PrivateCapitalExactBalancesDto? ExactBalances = null, string? SourceContentSha256 = null);
@@ -282,7 +282,7 @@ public sealed record ExecutionSimulationSummaryDto(IReadOnlyList<string> Symbols
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyAccountSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:109](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L109).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:113](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L113).
 
 ```csharp
 public sealed record FamilyAccountSummaryDto(string AccountId, string EntityId, string DisplayName, string AccountType, string? Custodian, string? ProviderAccountId, string Currency, decimal CashBalance, decimal MarketValue, decimal AccruedIncome, decimal TotalEquity, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
@@ -292,7 +292,7 @@ public sealed record FamilyAccountSummaryDto(string AccountId, string EntityId, 
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyAssetSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:130](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L130).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:134](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L134).
 
 ```csharp
 public sealed record FamilyAssetSummaryDto(string AssetId, string EntityId, string? AccountId, string DisplayName, string AssetClass, string? Symbol, string Currency, decimal Quantity, decimal MarketValue, decimal CostBasis, decimal UnrealizedGainLoss, decimal PercentOfNetWorth, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
@@ -302,7 +302,7 @@ public sealed record FamilyAssetSummaryDto(string AssetId, string EntityId, stri
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyBalanceSheetDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:46](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L46).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:49](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L49).
 
 Consolidated family balance sheet with evidence fields retained for operator review.
 
@@ -314,7 +314,7 @@ public sealed record FamilyBalanceSheetDto(string FamilyOfficeId, string BaseCur
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyEntityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:70](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L70).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:73](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L73).
 
 Legal, trust, fund, household, or operating entity in the family office structure.
 
@@ -326,17 +326,27 @@ public sealed record FamilyEntityDto(string EntityId, string DisplayName, string
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeBalanceSheetResponseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:31](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L31).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:34](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L34).
 
 ```csharp
 public sealed record FamilyOfficeBalanceSheetResponseDto(FamilyBalanceSheetDto BalanceSheet, FamilyOfficeEndpointStateDto State);
+```
+
+## FamilyOfficeClientOptionDto
+
+Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeClientOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:23](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L23).
+
+```csharp
+public sealed record FamilyOfficeClientOptionDto(string ClientId, string DisplayName);
 ```
 
 ## FamilyOfficeEndpointStateDto
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeEndpointStateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:25](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L25).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:28](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L28).
 
 Common endpoint state for family-office workstation reads, including empty and degraded guidance.
 
@@ -348,7 +358,7 @@ public sealed record FamilyOfficeEndpointStateDto(bool IsEmpty, string? EmptySta
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeEntitiesResponseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:35](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L35).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:38](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L38).
 
 ```csharp
 public sealed record FamilyOfficeEntitiesResponseDto(IReadOnlyList<FamilyEntityDto> Entities, FamilyOfficeEndpointStateDto State);
@@ -358,7 +368,7 @@ public sealed record FamilyOfficeEntitiesResponseDto(IReadOnlyList<FamilyEntityD
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeEvidenceLinkDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:262](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L262).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:266](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L266).
 
 Link to a source document, packet, or operator evidence route backing a family-office value.
 
@@ -375,14 +385,14 @@ Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:6](../../../.
 Single-family-office overview payload for browser and desktop operator workstations.
 
 ```csharp
-public sealed record FamilyOfficeOverviewDto(string FamilyOfficeId, string DisplayName, string BaseCurrency, DateOnly AsOfDate, FamilyBalanceSheetDto BalanceSheet, IReadOnlyList<FamilyEntityDto> Entities, FamilyOwnershipGraphDto OwnershipGraph, IReadOnlyList<FamilyAccountSummaryDto> Accounts, IReadOnlyList<FamilyAssetSummaryDto> PublicAssets, IReadOnlyList<PrivateAssetSummaryDto> PrivateAssets, IReadOnlyList<CapitalCommitmentDto> CapitalCommitments, IReadOnlyList<CapitalActivityDto> RecentCapitalActivity, FamilyOfficeReadinessDto Readiness, IReadOnlyList<FamilyOfficeEvidenceLinkDto> EvidenceLinks);
+public sealed record FamilyOfficeOverviewDto(string FamilyOfficeId, string DisplayName, string BaseCurrency, DateOnly AsOfDate, FamilyBalanceSheetDto BalanceSheet, IReadOnlyList<FamilyEntityDto> Entities, FamilyOwnershipGraphDto OwnershipGraph, IReadOnlyList<FamilyAccountSummaryDto> Accounts, IReadOnlyList<FamilyAssetSummaryDto> PublicAssets, IReadOnlyList<PrivateAssetSummaryDto> PrivateAssets, IReadOnlyList<CapitalCommitmentDto> CapitalCommitments, IReadOnlyList<CapitalActivityDto> RecentCapitalActivity, FamilyOfficeReadinessDto Readiness, IReadOnlyList<FamilyOfficeEvidenceLinkDto> EvidenceLinks, IReadOnlyList<FamilyOfficeClientOptionDto>? AvailableClients = null);
 ```
 
 ## FamilyOfficeOwnershipGraphResponseDto
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeOwnershipGraphResponseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:39](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L39).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:42](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L42).
 
 ```csharp
 public sealed record FamilyOfficeOwnershipGraphResponseDto(FamilyOwnershipGraphDto OwnershipGraph, FamilyOfficeEndpointStateDto State);
@@ -392,7 +402,7 @@ public sealed record FamilyOfficeOwnershipGraphResponseDto(FamilyOwnershipGraphD
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:247](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L247).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:251](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L251).
 
 Operator readiness projection for whether the family-office workspace can be trusted for decisions.
 
@@ -404,17 +414,17 @@ public sealed record FamilyOfficeReadinessDto(string Status, string EvidenceComp
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOwnershipEdgeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:99](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L99).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:102](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L102).
 
 ```csharp
-public sealed record FamilyOwnershipEdgeDto(string EdgeId, string SourceNodeId, string TargetNodeId, string RelationshipType, decimal? OwnershipPercent, DateOnly? EffectiveFrom, DateOnly? EffectiveTo, string? SourceDocumentId);
+public sealed record FamilyOwnershipEdgeDto(string EdgeId, string SourceNodeId, string TargetNodeId, string RelationshipType, decimal? OwnershipPercent, DateOnly? EffectiveFrom, DateOnly? EffectiveTo, string? SourceDocumentId, string? Notes = null);
 ```
 
 ## FamilyOwnershipGraphDto
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOwnershipGraphDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:85](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L85).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:88](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L88).
 
 Ownership graph used by operator surfaces to explain control, trust, and entity relationships.
 
@@ -426,7 +436,7 @@ public sealed record FamilyOwnershipGraphDto(DateOnly AsOfDate, IReadOnlyList<Fa
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOwnershipNodeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:91](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L91).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:94](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L94).
 
 ```csharp
 public sealed record FamilyOwnershipNodeDto(string NodeId, string DisplayName, string NodeType, string? EntityId, string? Jurisdiction, string? Currency);
@@ -669,14 +679,4 @@ Source: [src/Meridian.Ui.Shared/Contracts/Integrations/OmsIntegrationContracts.c
 
 ```csharp
 public sealed record OmsKeyRotationRequest(string KeyId, string RequestedBy, string CorrelationId, DateTimeOffset EffectiveAtUtc);
-```
-
-## OmsKeyRotationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Contracts.Integrations.OmsKeyRotationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Contracts/Integrations/OmsIntegrationContracts.cs:118](../../../../src/Meridian.Ui.Shared/Contracts/Integrations/OmsIntegrationContracts.cs#L118).
-
-```csharp
-public sealed record OmsKeyRotationResult(string KeyId, string Status, DateTimeOffset EffectiveAtUtc, string CorrelationId);
 ```

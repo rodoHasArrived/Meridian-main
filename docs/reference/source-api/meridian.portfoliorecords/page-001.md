@@ -338,3 +338,65 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;AccountSettlementInstructionView&gt;&gt; ListSettlementInstructionsAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs:557](../../../../src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs#L557) |  |
 | <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceTimelineAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs:576](../../../../src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs#L576) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;AccountOpenBreakView&gt;&gt; ListOpenBreaksAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs:580](../../../../src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs#L580) |  |
+
+## IPrivateCapitalRecordAuthority
+
+Qualified name: <code>Meridian.PortfolioRecords.PrivateCapital.IPrivateCapitalRecordAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:11](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L11).
+
+Host-owned source access checks, separated from pure financial-record validation.
+
+```csharp
+public interface IPrivateCapitalRecordAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PrivateCapitalChoices&gt; ChoicesAsync(PrivateCapitalScope scope, CancellationToken ct);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:13](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L13) |  |
+| <code>Task&lt;PrivateCapitalVehicle&gt; ValidateRegisterAsync(PrivateCapitalScope scope, Guid entityId, Guid securityId, string currency, CancellationToken ct);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:14](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L14) |  |
+| <code>Task ValidateEvidenceAsync(PrivateCapitalScope scope, PrivateCapitalEvidence evidence, CancellationToken ct);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:15](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L15) |  |
+
+## PrivateCapitalCsv
+
+Qualified name: <code>Meridian.PortfolioRecords.PrivateCapital.PrivateCapitalCsv</code>. Kind: `class`.
+
+Source: [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalCsv.cs:7](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalCsv.cs#L7).
+
+Bounded canonical CSV, including quoted commas/newlines and escaped quotes.
+
+```csharp
+public static class PrivateCapitalCsv
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Header = &quot;commitment_id,as_of_date,nav_valuation_date,commitment_amount,called_amount,unfunded_amount,cumulative_distributions,nav_amount,source_reference,supersedes_snapshot_id&quot;;</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalCsv.cs:9](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalCsv.cs#L9) |  |
+| <code>public static IReadOnlyList&lt;PrivateCapitalSnapshotInput&gt; Parse(string csv);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalCsv.cs:11](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalCsv.cs#L11) |  |
+
+## PrivateCapitalRecordService
+
+Qualified name: <code>Meridian.PortfolioRecords.PrivateCapital.PrivateCapitalRecordService</code>. Kind: `class`.
+
+Source: [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:22](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L22).
+
+Retains source-reported observations only. No journal, payment, call-capacity or consolidated balance-sheet authority is granted by accepting these records.
+
+```csharp
+public sealed class PrivateCapitalRecordService(IPrivateCapitalRecordStore store, IPrivateCapitalRecordAuthority authority, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;PrivateCapitalChoices&gt; ChoicesAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:28](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L28) |  |
+| <code>public async Task&lt;PrivateCapitalRecords&gt; ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:34](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L34) |  |
+| <code>public async Task&lt;PrivateCapitalImportInspection?&gt; InspectImportAsync(PrivateCapitalScope scope, Guid batchId, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:41](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L41) |  |
+| <code>public async Task&lt;PrivateCapitalCommitment&gt; CreateAsync(PrivateCapitalScope scope, string actor, CreatePrivateCapitalCommitment request, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:53](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L53) |  |
+| <code>public async Task&lt;PrivateCapitalImportPreview&gt; PreviewAsync(PrivateCapitalScope scope, string actor, PreviewPrivateCapitalImport request, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:86](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L86) |  |
+| <code>public async Task&lt;PrivateCapitalImportReceipt&gt; AcceptAsync(PrivateCapitalScope scope, string actor, AcceptPrivateCapitalImport request, CancellationToken ct = default);</code> | [src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs:117](../../../../src/Meridian.PortfolioRecords/PrivateCapital/PrivateCapitalRecordService.cs#L117) |  |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OmsKeyRotationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Contracts.Integrations.OmsKeyRotationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Contracts/Integrations/OmsIntegrationContracts.cs:118](../../../../src/Meridian.Ui.Shared/Contracts/Integrations/OmsIntegrationContracts.cs#L118).
+
+```csharp
+public sealed record OmsKeyRotationResult(string KeyId, string Status, DateTimeOffset EffectiveAtUtc, string CorrelationId);
+```
+
 ## OmsOutboundContract
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.Integrations.OmsOutboundContract</code>. Kind: `record`.
@@ -253,7 +263,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateAssetSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:155](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L155).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:159](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L159).
 
 Summary for assets that require valuation evidence instead of exchange-traded marks.
 
@@ -265,7 +275,7 @@ public sealed record PrivateAssetSummaryDto(string PrivateAssetId, string Entity
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalActivitySourceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:219](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L219).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:223](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L223).
 
 ```csharp
 public sealed record PrivateCapitalActivitySourceDto(string FamilyOfficeId, DateTimeOffset RecordedAtUtc, CapitalActivityDto Activity);
@@ -275,7 +285,7 @@ public sealed record PrivateCapitalActivitySourceDto(string FamilyOfficeId, Date
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalExactBalancesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:203](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L203).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:207](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L207).
 
 ```csharp
 public sealed record PrivateCapitalExactBalancesDto(string CommitmentAmount, string CalledAmount, string UnfundedAmount, string DistributedAmount, string CurrentNav);
@@ -285,7 +295,7 @@ public sealed record PrivateCapitalExactBalancesDto(string CommitmentAmount, str
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalLifecycleDocumentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:207](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L207).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:211](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L211).
 
 Retained source revisions, never inferred from ownership assignments or posting intent.
 
@@ -297,7 +307,7 @@ public sealed record PrivateCapitalLifecycleDocumentDto(int SchemaVersion, IRead
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:212](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L212).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:216](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L216).
 
 ```csharp
 public sealed record PrivateCapitalSnapshotDto(string FamilyOfficeId, string SnapshotId, int Revision, DateTimeOffset RecordedAtUtc, CapitalCommitmentDto Commitment);
@@ -786,21 +796,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapBondReferencePagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs#L15) |  |
-
-## BondWorkflowEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondWorkflowEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L15).
-
-Shared retained-input bond analysis. A calculation never grants financial write authority.
-
-```csharp
-public static class BondWorkflowEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L19) |  |

@@ -1,5 +1,106 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_DeclareSecurityUnderlyingLinkRequest["DeclareSecurityUnderlyingLinkRequest"] {
+        +string? CreatedBy
+        +string? Notes
+        +string? Reference
+        +SecurityUnderlyingRole Role
+        +Guid SecurityId
+        +Guid? UnderlyingSecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+        +decimal? Weight
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal["DeclaredScheduleRefusal"] {
+        +DeclaredScheduleRefusalCode Code
+        +string Message
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode["DeclaredScheduleRefusalCode"] {
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution["DeclaredScheduleResolution"] {
+        +ScheduleConventionTerms Conventions
+        +DeclaredScheduleRefusal? Refusal
+        +ScheduleSpec? Spec
+        +DeclaredScheduleStatus Status
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus["DeclaredScheduleStatus"] {
+    }
+    class Meridian_Contracts_SecurityMaster_DefineSecurityCurveRequest["DefineSecurityCurveRequest"] {
+        +string? CreatedBy
+        +string Currency
+        +string CurveKey
+        +string DayCount
+        +string? Description
+        +string? IndexName
+        +SecurityCurveInterpolation Interpolation
+        +SecurityCurveKind Kind
+        +SecurityCurveRatePolicy RatePolicy
+        +string Source
+        +string? Tenor
+    }
+    class Meridian_Contracts_SecurityMaster_EconomicTermsSchema["EconomicTermsSchema"] {
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarAddress["EdgarAddress"] {
+        +string? City
+        +string? StateOrCountry
+        +string? StateOrCountryDescription
+        +string? Street1
+        +string? Street2
+        +string? ZipCode
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarDebtOfferingTerms["EdgarDebtOfferingTerms"] {
+        +string AccessionNumber
+        +decimal? AdditionalDenomination
+        +string Cik
+        +decimal? CouponRate
+        +string? CouponType
+        +string? Currency
+        +string? Cusip
+        +string? DayCount
+        +decimal ExtractionConfidence
+        +IReadOnlyList~string~ ExtractionNotes
+        +DateOnly? FirstCallDate
+        +DateOnly? FirstInterestPaymentDate
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarFactsRecord["EdgarFactsRecord"] {
+        +string Cik
+        +IReadOnlyList~EdgarXbrlFact~ Facts
+        +DateTimeOffset RetrievedAtUtc
+        +IssuerFactSnapshot? Snapshot
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarFilerRecord["EdgarFilerRecord"] {
+        +EdgarAddress? BusinessAddress
+        +string? Category
+        +string Cik
+        +string? Description
+        +string? Ein
+        +string? EntityType
+        +IReadOnlyList~string~ Exchanges
+        +string? FiscalYearEnd
+        +IReadOnlyList~string~ Flags
+        +IReadOnlyList~EdgarFormerName~ FormerNames
+        +bool? InsiderTransactionForIssuerExists
+        +bool? InsiderTransactionForOwnerExists
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarFilingSummary["EdgarFilingSummary"] {
+        +string AccessionNumber
+        +string Cik
+        +string? FileNumber
+        +DateOnly? FilingDate
+        +string? FilmNumber
+        +string Form
+        +bool? IsInlineXbrl
+        +bool? IsXbrl
+        +string? Items
+        +string? PrimaryDocDescription
+        +string? PrimaryDocument
+        +DateOnly? ReportDate
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarFormerName["EdgarFormerName"] {
+        +DateOnly? From
+        +string Name
+        +DateOnly? To
+    }
     class Meridian_Contracts_SecurityMaster_EdgarFundHolding["EdgarFundHolding"] {
         +string AccessionNumber
         +string? AssetCategory
@@ -336,68 +437,15 @@ classDiagram
         +decimal ValuedAmount
         +DateOnly ValuedAsOf
     }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralJsonContext["OtcCollateralJsonContext"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralKind["OtcCollateralKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto["OtcCollateralMovementDto"] {
-        +decimal Amount
-        +string Currency
-        +OtcMovementKind Kind
-        +OtcMovementParty Mover
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralRules["OtcCollateralRules"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCompressionData["OtcCompressionData"] {
-        +string CompressionReference
-        +decimal RemainingNotional
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractDirection["OtcContractDirection"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractDto["OtcContractDto"] {
-        +string? ConfirmationReference
-        +Guid ContractId
-        +OtcContractDirection Direction
-        +DateOnly EffectiveDate
-        +string? ExternalTradeId
-        +Guid NettingSetId
-        +string? Notes
-        +decimal Notional
-        +string NotionalCurrency
-        +Guid SecurityId
-        +OtcContractStatus Status
-        +DateOnly? TerminationDate
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleData["OtcContractLifecycleData"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto["OtcContractLifecycleEventDto"] {
-        +string Actor
-        +OtcContractDto After
-        +OtcContractDto Before
-        +OtcContractLifecycleData Data
-        +DateOnly EffectiveDate
-        +Guid EventId
-        +OtcContractLifecycleKind Kind
-        +OtcContractDto? NovationSuccessor
-        +int PayloadVersion
-        +DateTimeOffset RecordedAt
-        +string SourceReference
-        +OtcContractLifecycleTarget? Target
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleKind["OtcContractLifecycleKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleRules["OtcContractLifecycleRules"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractLifecycleTarget["OtcContractLifecycleTarget"] {
-        +string AssetClass
-        +string? IndexName
-        +string? LegId
-        +string? ReferenceEntity
-        +Guid SecurityId
-        +long SecurityVersion
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractRules["OtcContractRules"] {
-    }
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus
+    Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
+    Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_IssuerFactSnapshot
+    Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarAddress
+    Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarFilingSummary
+    Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarFormerName
+    Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarDebtOfferingTerms
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
     Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
@@ -410,14 +458,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelException --> Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptorLabelField
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
-    Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
-    Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
-    Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
-    Meridian_Contracts_SecurityMaster_OtcCompressionData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
-    Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractDirection
-    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
-    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
-    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleKind
-    Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleTarget

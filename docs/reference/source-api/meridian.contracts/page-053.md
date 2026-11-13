@@ -6,6 +6,777 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IOperationalScheduler
+
+Qualified name: <code>Meridian.Contracts.Services.IOperationalScheduler</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:136](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L136).
+
+Centralized operational scheduler for coordinating maintenance tasks, backfill operations, and other scheduled activities with trading hours.
+
+```csharp
+public interface IOperationalScheduler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ScheduleDecision&gt; CanExecuteAsync(OperationType operationType, ResourceRequirements? requirements = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:145](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L145) | Checks if an operation can execute now based on current conditions. |
+| <code>Task&lt;ScheduleSlot?&gt; FindNextAvailableSlotAsync(OperationType operationType, TimeSpan minDuration, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:157](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L157) | Finds the next available slot for an operation. |
+| <code>bool IsWithinTradingHours { get; }</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:165](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L165) | Gets whether we are currently within trading hours for any market. |
+| <code>bool IsWithinMaintenanceWindow { get; }</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:170](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L170) | Gets whether we are currently within a maintenance window. |
+| <code>TradingSession? GetCurrentTradingSession();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:176](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L176) | Gets the current trading session if any. |
+| <code>TradingSession? GetNextTradingSession();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:182](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L182) | Gets the next trading session. |
+| <code>MaintenanceWindow? GetCurrentMaintenanceWindow();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:188](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L188) | Gets the current maintenance window if any. |
+| <code>MaintenanceWindow? GetNextMaintenanceWindow();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:194](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L194) | Gets the next maintenance window. |
+| <code>void RegisterMaintenanceWindow(MaintenanceWindow window);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:200](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L200) | Registers a maintenance window. |
+| <code>void RemoveMaintenanceWindow(string windowName);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:206](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L206) | Removes a maintenance window. |
+
+## IOperationalTradingCalendar
+
+Qualified name: <code>Meridian.Contracts.Services.IOperationalTradingCalendar</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:213](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L213).
+
+Provides the deterministic trading-calendar policy used by local operational scheduling. This is intentionally separate from provider-supplied calendar data.
+
+```csharp
+public interface IOperationalTradingCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsTradingDay(DateOnly date, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:221](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L221) | Checks if a specific date is a trading day. |
+| <code>IReadOnlyList&lt;TradingSession&gt; GetTradingSessions(DateOnly date, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:229](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L229) | Gets trading hours for a specific date. |
+| <code>DateOnly GetNextTradingDay(DateOnly after, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:237](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L237) | Gets the next trading day. |
+| <code>IReadOnlyList&lt;DateOnly&gt; GetHolidays(int year, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:245](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L245) | Gets market holidays for a year. |
+
+## ISecurityValidationGateService
+
+Qualified name: <code>Meridian.Contracts.Services.ISecurityValidationGateService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:8](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L8).
+
+Workflow-facing Security Master validation gate.
+
+```csharp
+public interface ISecurityValidationGateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:13](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L13) | Validates Security Master identity and policy posture for a symbol-scoped workflow. |
+| <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:24](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L24) | Validates Security Master identity and policy posture for a known security. |
+
+## ITradingCalendarProvider
+
+Qualified name: <code>Meridian.Contracts.Services.ITradingCalendarProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:256](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L256).
+
+Compatibility alias for the former local scheduling calendar contract. New local scheduling code must use IOperationalTradingCalendar; provider adapters must use Meridian.ProviderSdk.ITradingCalendarProvider so their calendar output retains provider provenance.
+
+```csharp
+public interface ITradingCalendarProvider : IOperationalTradingCalendar
+```
+
+## MaintenanceWindow
+
+Qualified name: <code>Meridian.Contracts.Services.MaintenanceWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:118](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L118).
+
+Maintenance window definition.
+
+```csharp
+public sealed record MaintenanceWindow(string Name, DateTimeOffset StartTime, DateTimeOffset EndTime, IReadOnlyList<OperationType>? AllowedOperations = null, int Priority = 0);
+```
+
+## OperationType
+
+Qualified name: <code>Meridian.Contracts.Services.OperationType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:6](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L6).
+
+Types of operations that can be scheduled.
+
+```csharp
+public enum OperationType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Maintenance</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:9](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L9) | Routine maintenance (archival, cleanup). |
+| <code>Backfill</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:12](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L12) | Historical data backfill. |
+| <code>IntegrityCheck</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:15](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L15) | Data integrity checks and repairs. |
+| <code>Reporting</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:18](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L18) | Report generation. |
+| <code>HealthCheck</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:21](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L21) | System health checks. |
+| <code>CacheRefresh</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:24](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L24) | Cache refresh operations. |
+| <code>CredentialRefresh</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:27](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L27) | Provider credential refresh. |
+| <code>IndexRebuild</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:30](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L30) | Index rebuilding. |
+
+## ResourceRequirements
+
+Qualified name: <code>Meridian.Contracts.Services.ResourceRequirements</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:41](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L41).
+
+Resource requirements for an operation.
+
+```csharp
+public sealed record ResourceRequirements(bool RequiresCpuIntensive = false, bool RequiresIoIntensive = false, bool RequiresNetwork = false, TimeSpan? EstimatedDuration = null, bool CanBeInterrupted = true);
+```
+
+## ScheduleDecision
+
+Qualified name: <code>Meridian.Contracts.Services.ScheduleDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:55](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L55).
+
+Decision about whether an operation can be executed.
+
+```csharp
+public sealed record ScheduleDecision(bool CanExecute, string? Reason = null, TimeSpan? SuggestedDelay = null, IReadOnlyDictionary<string, object>? Context = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly ScheduleDecision Allowed = new (true);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:64](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L64) | Decision indicating operation can execute. |
+| <code>public static ScheduleDecision Denied(string reason, TimeSpan? suggestedDelay = null) =&gt; …;</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:69](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L69) | Creates a denied decision with reason. |
+
+## ScheduleSlot
+
+Qualified name: <code>Meridian.Contracts.Services.ScheduleSlot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:79](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L79).
+
+A scheduled time slot for an operation.
+
+```csharp
+public sealed record ScheduleSlot(DateTimeOffset StartTime, DateTimeOffset EndTime, string SlotType)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan Duration =&gt; …;</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:87](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L87) | Duration of the slot. |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:92](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L92) | Whether the slot is currently active. |
+
+## TradingSession
+
+Qualified name: <code>Meridian.Contracts.Services.TradingSession</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:103](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L103).
+
+Represents a trading session.
+
+```csharp
+public sealed record TradingSession(string Exchange, string Market, string SessionType, DateTimeOffset OpenTime, DateTimeOffset CloseTime);
+```
+
+## CollectionSession
+
+Qualified name: <code>Meridian.Contracts.Session.CollectionSession</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:8](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L8).
+
+Represents a discrete data collection session with comprehensive tracking.
+
+```csharp
+public sealed class CollectionSession
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:14](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L14) | Gets or sets the unique session identifier. |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:20](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L20) | Gets or sets the human-readable session name. |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:26](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L26) | Gets or sets the session description. |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = SessionStatus.Pending;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:32](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L32) | Gets or sets the current session status. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:38](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L38) | Gets or sets the timestamp when data collection started. |
+| <code>[JsonPropertyName(&quot;endedAt&quot;)] public DateTime? EndedAt { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:44](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L44) | Gets or sets the timestamp when data collection ended. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:50](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L50) | Gets or sets the array of symbols being collected. |
+| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:56](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L56) | Gets or sets the array of event types being collected. |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:62](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L62) | Gets or sets the data provider name. |
+| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:68](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L68) | Gets or sets the session tags for categorization. |
+| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:74](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L74) | Gets or sets additional notes about the session. |
+| <code>[JsonPropertyName(&quot;statistics&quot;)] public CollectionSessionStatistics? Statistics { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:80](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L80) | Gets or sets the session statistics. |
+| <code>[JsonPropertyName(&quot;qualityScore&quot;)] public float QualityScore { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:86](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L86) | Gets or sets the data quality score (0.0 to 1.0). |
+| <code>[JsonPropertyName(&quot;manifestPath&quot;)] public string? ManifestPath { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:92](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L92) | Gets or sets the path to the session manifest file. |
+| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:98](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L98) | Gets or sets the timestamp when the session was created. |
+| <code>[JsonPropertyName(&quot;updatedAt&quot;)] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:104](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L104) | Gets or sets the timestamp when the session was last updated. |
+
+## CollectionSessionsConfig
+
+Qualified name: <code>Meridian.Contracts.Session.CollectionSessionsConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:225](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L225).
+
+Configuration for collection sessions.
+
+```csharp
+public sealed class CollectionSessionsConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;sessions&quot;)] public CollectionSession[]? Sessions { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:231](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L231) | Gets or sets the array of collection sessions. |
+| <code>[JsonPropertyName(&quot;activeSessionId&quot;)] public string? ActiveSessionId { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:237](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L237) | Gets or sets the currently active session identifier. |
+| <code>[JsonPropertyName(&quot;autoCreateDailySessions&quot;)] public bool AutoCreateDailySessions { get; set; } = true;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:243](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L243) | Gets or sets a value indicating whether to auto-create daily sessions. |
+| <code>[JsonPropertyName(&quot;sessionNamingPattern&quot;)] public string SessionNamingPattern { get; set; } = &quot;{date}-{mode}&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:249](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L249) | Gets or sets the pattern for naming new sessions. |
+| <code>[JsonPropertyName(&quot;generateManifestOnComplete&quot;)] public bool GenerateManifestOnComplete { get; set; } = true;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:255](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L255) | Gets or sets a value indicating whether to generate a manifest on session completion. |
+| <code>[JsonPropertyName(&quot;retainSessionHistory&quot;)] public int RetainSessionHistory { get; set; } = 365;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:261](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L261) | Gets or sets the number of days to retain session history. |
+
+## CollectionSessionStatistics
+
+Qualified name: <code>Meridian.Contracts.Session.CollectionSessionStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:141](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L141).
+
+Statistics for a collection session.
+
+```csharp
+public sealed class CollectionSessionStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:147](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L147) | Gets or sets the total number of events collected. |
+| <code>[JsonPropertyName(&quot;tradeEvents&quot;)] public long TradeEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:153](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L153) | Gets or sets the number of trade events collected. |
+| <code>[JsonPropertyName(&quot;quoteEvents&quot;)] public long QuoteEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:159](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L159) | Gets or sets the number of quote events collected. |
+| <code>[JsonPropertyName(&quot;depthEvents&quot;)] public long DepthEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:165](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L165) | Gets or sets the number of market depth events collected. |
+| <code>[JsonPropertyName(&quot;barEvents&quot;)] public long BarEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:171](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L171) | Gets or sets the number of bar events collected. |
+| <code>[JsonPropertyName(&quot;totalBytes&quot;)] public long TotalBytes { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:177](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L177) | Gets or sets the total uncompressed data size in bytes. |
+| <code>[JsonPropertyName(&quot;compressedBytes&quot;)] public long CompressedBytes { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:183](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L183) | Gets or sets the total compressed data size in bytes. |
+| <code>[JsonPropertyName(&quot;fileCount&quot;)] public int FileCount { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:189](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L189) | Gets or sets the number of data files created. |
+| <code>[JsonPropertyName(&quot;gapsDetected&quot;)] public int GapsDetected { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:195](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L195) | Gets or sets the number of data gaps detected. |
+| <code>[JsonPropertyName(&quot;gapsFilled&quot;)] public int GapsFilled { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:201](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L201) | Gets or sets the number of gaps that were filled. |
+| <code>[JsonPropertyName(&quot;sequenceErrors&quot;)] public int SequenceErrors { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:207](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L207) | Gets or sets the number of sequence errors detected. |
+| <code>[JsonPropertyName(&quot;eventsPerSecond&quot;)] public float EventsPerSecond { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:213](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L213) | Gets or sets the average events processed per second. |
+| <code>[JsonPropertyName(&quot;compressionRatio&quot;)] public float CompressionRatio { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:219](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L219) | Gets or sets the compression ratio achieved. |
+
+## SessionStatus
+
+Qualified name: <code>Meridian.Contracts.Session.SessionStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:110](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L110).
+
+Session status constants.
+
+```csharp
+public static class SessionStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:115](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L115) | Session is waiting to start. |
+| <code>public const string Active = &quot;Active&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:120](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L120) | Session is actively collecting data. |
+| <code>public const string Paused = &quot;Paused&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:125](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L125) | Session is temporarily paused. |
+| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:130](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L130) | Session has completed successfully. |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:135](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L135) | Session has failed due to an error. |
+
+## MarketDataQuery
+
+Qualified name: <code>Meridian.Contracts.Store.MarketDataQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Store/MarketDataQuery.cs:23](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L23).
+
+Immutable query specification for IMarketDataStore. All parameters are optional — an empty query returns all stored events up to Limit.
+
+```csharp
+public sealed record MarketDataQuery(SymbolId? Symbol = null, DateTimeOffset? From = null, DateTimeOffset? To = null, MarketEventType? EventType = null, string? Source = null, int? Limit = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MarketDataQuery WithSymbol(SymbolId symbol) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:32](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L32) | Returns a new query that adds a symbol filter. |
+| <code>public MarketDataQuery WithTimeRange(DateTimeOffset from, DateTimeOffset to) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:35](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L35) | Returns a new query restricted to a time window. |
+| <code>public MarketDataQuery WithEventType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:39](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L39) | Returns a new query restricted to a specific event type. |
+| <code>public MarketDataQuery WithSource(string source) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:42](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L42) | Returns a new query restricted to a specific data source. |
+| <code>public MarketDataQuery WithLimit(int limit) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:45](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L45) | Returns a new query with a maximum result count. |
+
+## StrategyEngineDataAvailability
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataAvailability</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:171](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L171).
+
+```csharp
+public sealed record StrategyEngineDataAvailability(string DependencyId, bool IsAvailable, DateTimeOffset? AvailableFrom = null, DateTimeOffset? AvailableTo = null, DateTimeOffset? LastUpdatedAt = null, string? SourceReference = null, IReadOnlyList<string>? MissingFields = null, string? DegradationReason = null);
+```
+
+## StrategyEngineDataDependency
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependency</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:129](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L129).
+
+```csharp
+public sealed record StrategyEngineDataDependency(string DependencyId, StrategyEngineDataDependencyKind Kind, string Description, string? AssetClass = null, string? Granularity = null, DateTimeOffset? RequiredFrom = null, DateTimeOffset? RequiredTo = null, TimeSpan? FreshnessWindow = null, StrategyEngineMissingDataPolicy MissingDataPolicy = StrategyEngineMissingDataPolicy.Block, IReadOnlyList<string>? RequiredFields = null);
+```
+
+## StrategyEngineDataDependencyKind
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependencyKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:60](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L60).
+
+Declared data input class for a strategy.
+
+```csharp
+public enum StrategyEngineDataDependencyKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PriceBars</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:62](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L62) |  |
+| <code>LiveQuotes</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:63](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L63) |  |
+| <code>Fundamentals</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:64](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L64) |  |
+| <code>ReferenceData</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:65](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L65) |  |
+| <code>SecurityMaster</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:66](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L66) |  |
+| <code>OptionsChain</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:67](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L67) |  |
+| <code>Positions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:68](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L68) |  |
+| <code>OpenLots</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:69](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L69) |  |
+| <code>Portfolio</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:70](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L70) |  |
+| <code>Ledger</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:71](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L71) |  |
+| <code>CorporateActions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:72](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L72) |  |
+| <code>ProviderBackfill</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:73](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L73) |  |
+| <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:74](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L74) |  |
+
+## StrategyEngineDefinition
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L141).
+
+```csharp
+public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
+```
+
+## StrategyEngineMissingDataPolicy
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineMissingDataPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:81](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L81).
+
+How a strategy may proceed when a declared data dependency is incomplete.
+
+```csharp
+public enum StrategyEngineMissingDataPolicy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Block</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:83](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L83) |  |
+| <code>AllowDegradedWithEvidence</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:84](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L84) |  |
+| <code>Optional</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:85](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L85) |  |
+
+## StrategyEngineParameterDefinition
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineParameterDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:115](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L115).
+
+```csharp
+public sealed record StrategyEngineParameterDefinition(string Name, StrategyEngineParameterType Type, string? DefaultValue, string? Description, string? DisplayLabel = null, string? CurrentValue = null, string? MinValue = null, string? MaxValue = null, IReadOnlyList<string>? AllowedValues = null, string? ValidationRule = null, string? SweepHint = null, bool IsRequired = true);
+```
+
+## StrategyEngineParameterType
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineParameterType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:44](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L44).
+
+Strategy parameter value type used for validation and browser rendering.
+
+```csharp
+public enum StrategyEngineParameterType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>String</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:46](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L46) |  |
+| <code>Decimal</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:47](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L47) |  |
+| <code>Integer</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:48](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L48) |  |
+| <code>Boolean</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:49](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L49) |  |
+| <code>Date</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:50](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L50) |  |
+| <code>Enum</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:51](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L51) |  |
+| <code>Symbol</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:52](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L52) |  |
+| <code>SymbolList</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:53](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L53) |  |
+
+## StrategyEnginePromotionRequest
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:207](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L207).
+
+```csharp
+public sealed record StrategyEnginePromotionRequest(string SourceRunId, StrategyEnginePromotionTarget Target, string? OperatorAcknowledgement, IReadOnlyList<string> ReadinessChecks, IReadOnlyList<string> RiskChecks, string EvidencePacket, string? Rationale = null);
+```
+
+## StrategyEnginePromotionTarget
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionTarget</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:92](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L92).
+
+Promotion target used by Strategy Engine handoffs.
+
+```csharp
+public enum StrategyEnginePromotionTarget : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Review</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:94](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L94) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:95](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L95) |  |
+| <code>Paper</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:96](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L96) |  |
+| <code>ReportPack</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:97](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L97) |  |
+| <code>EvidenceWorkbench</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:98](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L98) |  |
+| <code>TradingReadiness</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:99](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L99) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:100](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L100) |  |
+
+## StrategyEngineRunEvidence
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:193](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L193).
+
+```csharp
+public sealed record StrategyEngineRunEvidence(string EvidenceId, string StrategyId, string StrategyVersion, string InputHash, string? OutputHash, string DataSource, DateTimeOffset CapturedAt, IReadOnlyList<string> DataSourceReferences, IReadOnlyList<string> Warnings, string ReviewRoute, string EvidenceRoute, string? ReportPackRoute = null);
+```
+
+## StrategyEngineRunMode
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:30](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L30).
+
+Execution mode requested for a strategy run.
+
+```csharp
+public enum StrategyEngineRunMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Backtest</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:32](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L32) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:33](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L33) |  |
+| <code>Simulation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:34](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L34) |  |
+| <code>PaperValidation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:35](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L35) |  |
+| <code>ReviewOnly</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:36](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L36) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:37](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L37) |  |
+
+## StrategyEngineRunRequest
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:156](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L156).
+
+```csharp
+public sealed record StrategyEngineRunRequest(string StrategyId, string StrategyVersion, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<string> Universe, DateTimeOffset From, DateTimeOffset To, string DataSource, StrategyEngineRunMode Mode, string? CostModel = null, string? SlippageModel = null, IReadOnlyDictionary<string, string>? RiskConstraints = null, string? RunReason = null, string? OperatorId = null);
+```
+
+## StrategyEngineSignal
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineSignal</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:181](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L181).
+
+```csharp
+public sealed record StrategyEngineSignal(string Symbol, string SignalType, string Direction, decimal? Strength, decimal? Confidence, DateTimeOffset Timestamp, string Horizon, string Rationale, string SourceRunId, string? RequiredFollowUpAction = null);
+```
+
+## StrategyEngineStrategyType
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineStrategyType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:9](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L9).
+
+Stable strategy category used by the Strategy Engine registry and browser workstation.
+
+```csharp
+public enum StrategyEngineStrategyType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>CoveredCall</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:11](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L11) |  |
+| <code>Momentum</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:12](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L12) |  |
+| <code>MeanReversion</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:13](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L13) |  |
+| <code>FactorScreen</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:14](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L14) |  |
+| <code>FixedIncomeCarry</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:15](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L15) |  |
+| <code>DirectLendingScreen</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:16](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L16) |  |
+| <code>RebalancingRule</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:17](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L17) |  |
+| <code>RiskOverlay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:18](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L18) |  |
+| <code>PortfolioConstruction</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:19](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L19) |  |
+| <code>CashDeployment</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:20](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L20) |  |
+| <code>QuantScript</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:21](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L21) |  |
+| <code>VisualDesigner</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:22](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L22) |  |
+| <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:23](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L23) |  |
+
+## StrategyEngineValidationFinding
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineValidationFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:216](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L216).
+
+```csharp
+public sealed record StrategyEngineValidationFinding(string Code, StrategyEngineValidationSeverity Severity, string Target, string Message, string? HandoffRoute = null);
+```
+
+## StrategyEngineValidationResult
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:223](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L223).
+
+```csharp
+public sealed record StrategyEngineValidationResult(bool IsValid, bool IsDegraded, string InputHash, IReadOnlyList<StrategyEngineValidationFinding> Findings, StrategyEngineRunEvidence Evidence);
+```
+
+## StrategyEngineValidationSeverity
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineValidationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:107](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L107).
+
+Operator-facing validation severity for strategy definitions, requests, data, risk, and promotion checks.
+
+```csharp
+public enum StrategyEngineValidationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:109](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L109) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:110](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L110) |  |
+| <code>Error</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:111](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L111) |  |
+| <code>Blocker</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:112](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L112) |  |
+
+## AuthoritativeScopeAssignment
+
+Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
+
+One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
+
+```csharp
+public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
+| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
+
+## FundProfileOwnership
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:61](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L61).
+
+Recorded ownership of a fund profile by a tenant (and, for audit, its company).
+
+```csharp
+public sealed record FundProfileOwnership(string FundProfileId, string TenantId, string? CompanyId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsHeldBy(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:68](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L68) | Whether this ownership is held by the supplied tenant. Tenant identity is the authoritative scope key (it falls back to company id when a distinct tenant id is not yet issued), matched case-insensitively after trimming. |
+
+## FundScopedWriteTenantDecision
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:12](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L12).
+
+SEC-005 slice 4c-iii decision for a fund-scoped write request: whether a session with no server-resolved tenant may create or evaluate fund-scoped accounting artifacts.
+
+```csharp
+public enum FundScopedWriteTenantDecision
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Allow</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:15](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L15) | The caller has a resolved tenant; proceed normally. |
+| <code>WarnAndAllow</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:18](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L18) | Tenantless caller, enforcement off: record a detection warning, then proceed. |
+| <code>Deny</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L21) | Tenantless caller, enforcement on: refuse the write (fail closed). |
+
+## FundScopedWriteTenantGate
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:25](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L25).
+
+Pure decision for the SEC-005 4c-iii fund-scoped write tenant gate.
+
+```csharp
+public static class FundScopedWriteTenantGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundScopedWriteTenantDecision Decide(bool hasTenantScope, bool enforce) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:31](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L31) | A caller with a resolved tenant is always allowed. A tenantless caller is denied only when enforcement is enabled; otherwise it is allowed but flagged for detection. |
+
+## FundScopeTenantAuthority
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopeTenantAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L28).
+
+The tenant an out-of-request reader is acting for, established explicitly for the duration of a unit of background work (W9-GOV-008 criterion 2).
+
+```csharp
+public static class FundScopeTenantAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? CurrentTenantId =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:33](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L33) | The tenant the current background scope holds authority for, or null when none is held. |
+| <code>public static string? CurrentReason =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:39](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L39) | Why the current scope holds authority — the job or workflow name — for diagnostics when a background read is scoped differently from an operator&#x27;s. |
+| <code>public static IDisposable Enter(string tenantId, string reason);</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:50](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L50) | Acts as tenantId until the returned scope is disposed. |
+
+## IAuthoritativeScopeFanOutService
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:121](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L121).
+
+The authoritative multi-tenant scope fan-out authority: given a security-level fact, it names every accounting scope that fact reaches, or refuses to answer. This is the tenancy authority that security-master decisions depend on. A corporate-action source decision is a statement about a globally observed fact, but applying it creates per-scope casework; without an authority that can enumerate the affected scopes, a decision taken in one tenant either silently misses other affected tenants or leaks their existence. Consumers must treat a non-authoritative result as a denial, never as an empty affected set.
+
+```csharp
+public interface IAuthoritativeScopeFanOutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:127](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L127) | Enumerates every accounting scope affected by the fact, across all tenants. Never throws for an unavailable backing store — that is reported as a blocker. |
+| <code>Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:137](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L137) | Enumerates the affected scopes owned by exactly one tenant/company, for a caller that may only see its own tenancy. The result is authoritative only when the full cross-tenant resolution was authoritative, so a caller cannot obtain a confident single-tenant answer while the wider fan-out is unknown. |
+
+## IFundProfileTenancyRegistry
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:13](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L13).
+
+Authoritative registry mapping a fund profile to its owning tenant/company — the storage-enforced source of truth for fund-scoped tenant isolation (security backlog SEC-005). Once a fund profile is bound to a tenant, data keyed by that fund (strategy runs, ledger books, report packs) must only be served to callers in the owning tenant. Ownership is established on first authoritative use under a tenant scope (trust-on-first-use); the first owner wins and is never silently reassigned. Under a single-company-per-deployment runtime every fund binds to the one tenant, so nothing is ever foreign and behavior is unchanged.
+
+```csharp
+public interface IFundProfileTenancyRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L21) | Claims fundProfileId for the given tenant/company if it is currently unbound, then returns the effective owner. Idempotent and first-owner-wins: a fund already bound to a different tenant is left unchanged and that existing owner is returned, so the caller can compare it to detect a foreign fund. |
+| <code>Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L28) | Resolves the owning tenant/company for a fund profile, or null when it is unbound. |
+| <code>Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:34](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L34) | True when the caller&#x27;s tenant may use the fund: it is unbound (unknown) or bound to the caller. False only when the fund is bound to a different tenant. A read-only check — it never binds. |
+
+## IFundScopeTenantAccessor
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IFundScopeTenantAccessor</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:52](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L52).
+
+Resolves the caller&#x27;s server-side tenant for the current ambient scope (e.g. the active HTTP request), so storage can apply SEC-005 slice 4c-ii tenant read predicates without threading a caller-tenant argument through every read method and intermediate service. Returns null when there is no tenant in scope — a non-request/background caller, or the single-company-per-deployment runtime where the legacy tenantless admin profile has no company. A null result is the fail-open signal: reads are not tenant-scoped and every row passes, matching the deployment-boundary posture. The web layer supplies an IHttpContextAccessor-backed implementation; the storage layer depends only on this abstraction (no ASP.NET Core coupling).
+
+```csharp
+public interface IFundScopeTenantAccessor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? ResolveCallerTenant();</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:57](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L57) | The caller&#x27;s resolved tenant id for the current scope, or null when none is in scope (fail-open). |
+
+## IScopeAssignmentProvider
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IScopeAssignmentProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:149](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L149).
+
+One authority over a slice of the scope-assignment graph (custodied holdings, ledger books, mandates, …). Providers are composed by IAuthoritativeScopeFanOutService; each is individually responsible for failing closed rather than under-reporting.
+
+```csharp
+public interface IScopeAssignmentProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AuthorityId { get; }</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:152](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L152) | Stable id stamped onto every assignment this provider asserts. |
+| <code>Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:159](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L159) | Resolves the scopes this authority can attribute the fact to. Implementations must report IsAuthoritative = false with a stated blocker whenever they cannot see the whole of their own slice, and must not throw for expected unavailability. |
+
+## ScopeAssignmentProviderResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:168](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L168).
+
+One authority&#x27;s contribution to a fan-out resolution.
+
+```csharp
+public sealed record ScopeAssignmentProviderResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeAssignmentProviderResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:174](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L174) | A fail-closed contribution carrying a single stated reason. |
+| <code>public static ScopeAssignmentProviderResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:178](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L178) | A complete contribution over the supplied scopes (possibly none). |
+
 ## ScopeFanOutIdentifier
 
 Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutIdentifier</code>. Kind: `record`.
@@ -154,559 +925,3 @@ Declared public members:
 | <code>public static string? NormalizeOptional(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:43](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L43) | Returns value trimmed, or null when it is null, empty, or entirely white space. |
 | <code>public static string RequireText(string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:58](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L58) | Returns value trimmed, throwing when it is null, empty, or entirely white space. |
 | <code>public static string? FirstNonBlank(params string?[] values);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:74](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L74) | Returns the first entry of values that is not null, empty, or entirely white space, trimmed; or null when every entry is blank. |
-
-## MmfDetailDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:25](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L25).
-
-Full reference record for a money market fund, including canonical identity, sweep eligibility, weighted-average maturity, and liquidity-fee metadata.
-
-```csharp
-public sealed record MmfDetailDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, string Status, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
-```
-
-## MmfFundFamilyDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfFundFamilyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:63](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L63).
-
-Fund-family grouping projection. Normalised family name is upper-case; members are the canonical security IDs of all active MMFs sharing that family lineage.
-
-```csharp
-public sealed record MmfFundFamilyDto(string NormalizedFamilyName, IReadOnlyList<Guid> MemberSecurityIds, int MemberCount, DateTimeOffset AsOf);
-```
-
-## MmfLiquidityDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:41](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L41).
-
-Liquidity projection for a money market fund derived from WAM and operational state.
-
-```csharp
-public sealed record MmfLiquidityDto(Guid SecurityId, MmfLiquidityState State, int? WeightedAverageMaturityDays, DateTimeOffset AsOf);
-```
-
-## MmfLiquidityState
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:13](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L13).
-
-Operational liquidity state of a money market fund. Liquid funds are within standard WAM limits and fully operational. Restricted funds have elevated WAM or suspended redemptions. Suspended funds are under regulatory or operational hold. Inactive funds have been deactivated in the security master.
-
-```csharp
-public enum MmfLiquidityState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Liquid</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:15](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L15) |  |
-| <code>Restricted</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:16](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L16) |  |
-| <code>Suspended</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:17](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L17) |  |
-| <code>Inactive</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:18](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L18) |  |
-
-## MmfRebuildCheckpointDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfRebuildCheckpointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:87](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L87).
-
-Tracks the last successful projection rebuild for a money market fund. Used by governance and operations to verify rebuild freshness.
-
-```csharp
-public sealed record MmfRebuildCheckpointDto(Guid SecurityId, long AggregateVersion, DateTimeOffset CheckpointedAt, string RebuildSource);
-```
-
-## MmfSearchQuery
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfSearchQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:73](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L73).
-
-Filter criteria for MMF search queries. All nullable criteria are treated as &quot;any&quot; when not specified.
-
-```csharp
-public sealed record MmfSearchQuery(string? FundFamily = null, bool? IsSweepEligible = null, bool? HasLiquidityFee = null, MmfLiquidityState? LiquidityState = null, int? MaxWamDays = null, bool ActiveOnly = true, int Skip = 0, int Take = 50);
-```
-
-## MmfSweepProfileDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfSweepProfileDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:51](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L51).
-
-Sweep-eligibility and fee profile for a money market fund. Used by cash-management and treasury consumers to determine routing eligibility.
-
-```csharp
-public sealed record MmfSweepProfileDto(Guid SecurityId, bool IsSweepEligible, bool HasLiquidityFee, string? FundFamily, DateTimeOffset AsOf);
-```
-
-## AccountBalanceHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AccountBalanceHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs#L8).
-
-```csharp
-public sealed record AccountBalanceHistoryDto(Guid AccountId, DateTimeOffset AsOfUtc, IReadOnlyList<AccountBalanceHistoryPointDto> Points, bool IsTruncated);
-```
-
-## AccountBalanceHistoryPointDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AccountBalanceHistoryPointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs#L4).
-
-Retained components, without an invented net-equity total or cross-currency aggregation.
-
-```csharp
-public sealed record AccountBalanceHistoryPointDto(Guid SnapshotId, Guid AccountId, DateOnly AsOfDate, DateTimeOffset RecordedAtUtc, string Currency, string Source, string CashBalance, string? SecuritiesMarketValue);
-```
-
-## AccountingPreparerAttestationDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L56).
-
-A classification of an immutable native accounting decision, not independent approval or source proof. Complete entitlement operands remain in the separately authorized native receipt.
-
-```csharp
-public sealed record AccountingPreparerAttestationDisclosureDto(int SchemaVersion, string Classification, string Disclosure, LedgerAmountScopeDto SourceScope, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<string> ValidationIssues)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid? AttestationId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L64) |  |
-| <code>public Guid? CaseId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L65) |  |
-| <code>public Guid? ProjectionId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L66) |  |
-| <code>public Guid? EventId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L67) |  |
-| <code>public long? EventVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L68) |  |
-| <code>public string? Actor { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L69) |  |
-| <code>public DateTimeOffset? RecordedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L70) |  |
-| <code>public string? PolicyVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L71) |  |
-| <code>public string? PolicyHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L72) |  |
-| <code>public Guid? DeclarationId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L73) |  |
-| <code>public long? DeclarationRevision { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L74) |  |
-| <code>public string? DraftedCandidateFingerprint { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L75) |  |
-| <code>public string? PostingIntentHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L76) |  |
-
-## AccrualCalculationResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AccrualCalculationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:267](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L267).
-
-Result of a Security Master accrual calculation.
-
-```csharp
-public sealed record AccrualCalculationResultDto(string EventId, Guid SecurityId, string Symbol, string AccountId, DateOnly AccrualStartDate, DateOnly AccrualEndDate, int AccrualDays, decimal DayCountFraction, decimal AccruedAmount, string Currency, AccrualInputSnapshotDto InputSnapshot);
-```
-
-## AccrualInputSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AccrualInputSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L249).
-
-Deterministic input snapshot used to generate an expected accounting event.
-
-```csharp
-public sealed record AccrualInputSnapshotDto(Guid SecurityId, string Symbol, string AccountId, DateOnly PeriodStart, DateOnly PeriodEnd, decimal ParAmount, decimal? CouponRate, string? CouponType, string? DayCountConvention, int? PaymentFrequencyPerYear, decimal? PriorFactor, decimal? CurrentFactor, string SourceHash);
-```
-
-## ActivationOutcomeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ActivationOutcomeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L77).
-
-```csharp
-public sealed record ActivationOutcomeDto(string Key, string Label, string ActionLabel, string Route, bool IsComplete, DateTimeOffset? CompletedAtUtc);
-```
-
-## AlpacaBrokerageConnectionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AlpacaBrokerageConnectionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L104).
-
-```csharp
-public sealed record AlpacaBrokerageConnectionRequestDto(string? KeyId, string? SecretKey, string? Environment = "paper");
-```
-
-## ApprovalDecision
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L31).
-
-```csharp
-public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
-```
-
-## ApprovalPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L23).
-
-```csharp
-public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
-```
-
-## ApprovalStep
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalStep</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L21).
-
-```csharp
-public sealed record ApprovalStep(int Sequence, string RoleOrQueue, bool DualControlRequired, decimal? AmountThreshold, string? Currency, Guid? AccountId, string? RiskBucket);
-```
-
-## ApproveSecurityMasterOverrides
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterOverrides</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L22).
-
-```csharp
-public sealed record ApproveSecurityMasterOverrides(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ApproveSecurityMasterRevisionRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterRevisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L98).
-
-Approves a submitted revision through the operations-continuity approval gate.
-
-```csharp
-public sealed record ApproveSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null);
-```
-
-## ApproveWorkflow
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveWorkflow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:29](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L29).
-
-```csharp
-public sealed record ApproveWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## AssignOnboardingDifferenceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L32).
-
-```csharp
-public sealed record AssignOnboardingDifferenceRequestDto(int ExpectedVersion, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds);
-```
-
-## AuditTrailExplorerQueryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L8).
-
-Query contract for cross-object audit trail exploration.
-
-```csharp
-public sealed record AuditTrailExplorerQueryDto(string? SearchText = null, string? RunId = null, string? Category = null, string? Action = null, string? Outcome = null, string? Actor = null, string? Symbol = null, string? CorrelationId = null, string? ObjectKind = null, string? ObjectId = null, string? RelatedObjectId = null, DateTimeOffset? FromUtc = null, DateTimeOffset? ToUtc = null, int Limit = 100, string? OrderId = null);
-```
-
-## AuditTrailExplorerResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L57).
-
-Result contract for cross-object audit trail search.
-
-```csharp
-public sealed record AuditTrailExplorerResultDto(DateTimeOffset AsOf, int TotalMatched, int Returned, IReadOnlyList<AuditTrailTimelineEntryDto> Entries, IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null, string? CoverageNote = null, string? OrderIdentityStatus = null);
-```
-
-## AuditTrailObjectKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailObjectKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
-
-Stable object-kind vocabulary for audit explorer rows.
-
-```csharp
-public enum AuditTrailObjectKindDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Audit</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L75) |  |
-| <code>Order</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L76) |  |
-| <code>ExecutionControl</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L77) |  |
-| <code>OperatorAction</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L78) |  |
-| <code>Promotion</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L79) |  |
-| <code>Run</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L80) |  |
-| <code>Reconciliation</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L81) |  |
-| <code>Report</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L82) |  |
-| <code>Evidence</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L83) |  |
-
-## AuditTrailSourceStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L67).
-
-Source availability is independent of the number of matching records.
-
-```csharp
-public sealed record AuditTrailSourceStatusDto(string Source, string State);
-```
-
-## AuditTrailTimelineEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailTimelineEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L28).
-
-Normalized timeline row used by shared audit explorer surfaces.
-
-```csharp
-public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null, string? OrderId = null, string? BrokerName = null);
-```
-
-## AutomatedJournalCapitalAccountReconciliationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalCapitalAccountReconciliationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L25).
-
-Reviewed capital-account tie-out for the NAV and high-water-mark inputs used by one monthly fee-accrual cycle. The scheduler verifies the retained values, variance, confidence, reviewer, source version, and evidence before it can create a draft.
-
-```csharp
-public sealed record AutomatedJournalCapitalAccountReconciliationDto(string ReconciliationId, string PeriodId, string Currency, decimal ReconciledBeginningNav, decimal ReconciledEndingNavBeforeFees, decimal ReconciledHighWaterMark, decimal CapitalAccountOpeningBalance, decimal CapitalAccountEndingBalanceBeforeFees, decimal CapitalAccountHighWaterMark, decimal MaximumVarianceTolerance, decimal ConfidenceScore, bool IsReconciled, string SourceVersion, string ReviewedBy, DateTimeOffset ReviewedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L43) |  |
-
-## AutomatedJournalScheduleStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L8).
-
-Operator-visible state of scheduled fee-accrual and dividend-capture work.
-
-```csharp
-public enum AutomatedJournalScheduleStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L10) |  |
-| <code>Scheduled = 1</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L11) |  |
-| <code>Running = 2</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L12) |  |
-| <code>DraftReady = 3</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L13) |  |
-| <code>NeedsInvestigation = 4</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L14) |  |
-| <code>NoDraftRequired = 5</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L15) |  |
-| <code>Blocked = 6</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L16) |  |
-| <code>Failed = 7</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L17) |  |
-
-## AutomatedJournalScheduleStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L51).
-
-Close-cockpit projection for the explicitly scoped monthly automated-journal work. Counts are schedule-run counts, not posted-journal counts; every produced item remains in the existing manual workbench for human approval and posting.
-
-```csharp
-public sealed record AutomatedJournalScheduleStatusDto(string? FundProfileId, Guid? LedgerBookId, string? PeriodId, int ConfiguredCount, int EnabledCount, int FeeScheduleCount, int DividendScheduleCount, int DraftReadyCount, int NeedsInvestigationCount, int BlockedCount, AutomatedJournalScheduleStateDto State, string Summary, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<Guid>? JournalEntryIds = null, decimal? MinimumEvidenceConfidence = null, AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null, int HumanReviewQueueCount = 0, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L74) |  |
-| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L76) |  |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L78) |  |
-
-## BankAccountSnapshot
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankAccountSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L102).
-
-Banking-focused projection for statement and balance review tabs.
-
-```csharp
-public sealed record BankAccountSnapshot(Guid AccountId, string DisplayName, string AccountCode, string BankName, string Currency, decimal? CurrentBalance, decimal PendingSettlement, DateOnly? LastStatementDate, int StatementLineCount, string? LatestTransactionType, decimal? LatestTransactionAmount);
-```
-
-## BankStatementImportResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankStatementImportResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L74).
-
-Result returned after a retained bank-statement source file is applied as account evidence.
-
-```csharp
-public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## BiasDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:275](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L275).
-
-Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
-
-```csharp
-public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
-```
-
-## BiasDisclosureItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:264](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L264).
-
-One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
-
-```csharp
-public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
-```
-
-## BooksBeforeBrokerReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
-
-```csharp
-public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
-```
-
-## BrokerageAccountKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L18).
-
-```csharp
-public enum BrokerageAccountKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L20) |  |
-| <code>TaxableBrokerage = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L21) |  |
-| <code>RothIra = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L22) |  |
-| <code>TraditionalIra = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L23) |  |
-
-## BrokerageAccountLinkRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L62).
-
-```csharp
-public sealed record BrokerageAccountLinkRequestDto(string ProviderId, string ExternalAccountId, string? DisplayName = null, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## BrokerageCashFlowEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L131).
-
-```csharp
-public sealed record BrokerageCashFlowEntryDto(string TransactionId, string TransactionType, string Category, decimal Amount, string Currency, DateTimeOffset PostedAt, string? Symbol = null, string? Description = null);
-```
-
-## BrokerageCashFlowSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L141).
-
-```csharp
-public sealed record BrokerageCashFlowSummaryDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, string Currency, int TransactionCount, IReadOnlyList<BrokerageCashFlowEntryDto> Entries, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageConnectionStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L27).
-
-```csharp
-public enum BrokerageConnectionStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L29) |  |
-| <code>Disconnected = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L30) |  |
-| <code>AuthorizationPending = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L31) |  |
-| <code>Connected = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L32) |  |
-| <code>ReauthorizationRequired = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L33) |  |
-| <code>Degraded = 5</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L34) |  |
-
-## BrokerageConnectionStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L87).
-
-```csharp
-public sealed record BrokerageConnectionStatusDto(string ProviderId, string DisplayName, BrokerageConnectionStateDto State, bool IsConfigured, bool IsConnected, string? AuthorizationUrl, DateTimeOffset? ConnectedAt, DateTimeOffset? ExpiresAt, string? LastError, IReadOnlyList<string> Warnings, IReadOnlyList<string> Scopes, string? Environment = null, string? ExternalAccountId = null, DateTimeOffset? VerifiedAt = null, string? MaskedKeyId = null);
-```
-
-## BrokerageHouseholdAccountDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L156).
-
-```csharp
-public sealed record BrokerageHouseholdAccountDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, BrokerageAccountKindDto AccountKind, WorkstationBrokerageSyncHealth Health, decimal Cash, decimal Equity, decimal BuyingPower, string Currency, DateTimeOffset SyncedAt, int PositionCount, int CashTransactionCount, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageHouseholdPortfolioDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPortfolioDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L197).
-
-```csharp
-public sealed record BrokerageHouseholdPortfolioDto(string ProviderId, DateTimeOffset AsOf, decimal TotalCash, decimal TotalEquity, decimal TotalBuyingPower, string Currency, IReadOnlyList<BrokerageHouseholdAccountDto> Accounts, IReadOnlyList<BrokerageHouseholdPositionDto> Positions, IReadOnlyList<string> Warnings);
-```

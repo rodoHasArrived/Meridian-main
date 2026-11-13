@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondWorkflowInflationConvention
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowInflationConvention</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L9).
+
+```csharp
+public sealed record BondWorkflowInflationConvention(string IndexName, decimal BaseIndex, int LagMonths, bool InterpolateMonthly, decimal? CouponFloorRatio = null, decimal? RedemptionFloorRatio = null);
+```
+
+## BondWorkflowIssue
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
+
+```csharp
+public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);
+```
+
 ## BondWorkflowMetric
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowMetric</code>. Kind: `record`.
@@ -818,25 +838,3 @@ Enum declarations:
 | <code>Info = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:213](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L213) |  |
 | <code>Warning = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:214](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L214) |  |
 | <code>Critical = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:215](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L215) |  |
-
-## AccountReadinessSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReadinessSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:273](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L273).
-
-Account-scoped production readiness snapshot for provider, ledger, sync, and reconciliation checks.
-
-```csharp
-public sealed record AccountReadinessSnapshotDto(Guid AccountId, DateTimeOffset EvaluatedAt, AccountProviderLinkStatusDto ProviderLinkStatus, AccountSyncStatusDto? LatestSyncStatus, DateTimeOffset? LastSuccessfulSyncAt, DateTimeOffset? FreshUntil, bool IsReady, IReadOnlyList<AccountReadinessIssueDto> Issues);
-```
-
-## AccountReconciliationBreakDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:665](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L665).
-
-```csharp
-public sealed record AccountReconciliationBreakDto(PositionReconciliationBreakDto? PositionBreak = null, CashReconciliationBreakDto? CashBreak = null);
-```
