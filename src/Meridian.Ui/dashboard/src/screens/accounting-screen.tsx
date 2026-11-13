@@ -176,30 +176,45 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const selectSecurityById = securityMaster.selectSecurity;
+  const requestedSecurityId = new URLSearchParams(search).get("securityId")?.trim() || null;
+  const selectSecurityWithRoute = useCallback((securityId: string, replace = false) => {
+    const next = new URLSearchParams(search);
+    if (requestedSecurityId && requestedSecurityId !== securityId) next.delete("bondAction");
+    next.set("securityId", securityId);
+    if (requestedSecurityId === securityId) void selectSecurityById(securityId);
+    else navigate({ pathname, search: `?${next}`, hash }, { replace });
+  }, [hash, navigate, pathname, requestedSecurityId, search, selectSecurityById]);
   const [observedFixingSelection, setObservedFixingSelection] = useState<{ securityId: string; receipts: BondObservedFixingReceipt[] } | null>(null);
   const observedFixingReceiptIds = useMemo(() => observedFixingSelection?.securityId === securityMaster.selectedSecurityId
     ? observedFixingSelection.receipts.map(receipt => receipt.receiptId) : [], [observedFixingSelection, securityMaster.selectedSecurityId]);
   const [ladderReturnAvailable, setLadderReturnAvailable] = useState(false);
   const ladderScroll = useRef<Array<{ element: Element; top: number; left: number }>>([]);
   const returnToLadder = () => {
-    navigate({ pathname, search: buildSecurityMasterDrillInSearch(search, "reference"), hash },
+    const selectedRow = ladderScroll.current[0]?.element;
+    // The shell and local restoration must target the same row, regardless of effect timing.
+    const returnHash = selectedRow instanceof HTMLElement && selectedRow.id ? `#${encodeURIComponent(selectedRow.id)}` : "#bond-ladders";
+    navigate({ pathname, search: buildSecurityMasterDrillInSearch(search, "reference"), hash: returnHash },
       { replace: true, preventScrollReset: true });
     requestAnimationFrame(() => {
       for (const position of ladderScroll.current)
         position.element.scrollTo({ top: position.top, left: position.left, behavior: "instant" });
-      const selectedRow = ladderScroll.current[0]?.element;
       if (selectedRow instanceof HTMLElement && selectedRow.isConnected)
         selectedRow.focus({ preventScroll: true });
     });
   };
   const selectSecurityFromExplorer = useCallback((recordId: string) => {
     const securityId = resolveExplorerSecurityId(recordId);
-    // Explorer selection changes drive this callback. Depending on the detail selection would
-    // replay the explorer's old row after every manual search selection and overwrite it.
-    if (securityId) {
-      securityMaster.selectSecurity(securityId);
+    if (!securityId) return;
+    // The explorer selects its default row on mount. Synchronize that initial selection
+    // without adding a Back destination that would immediately select and push it again.
+    selectSecurityWithRoute(securityId, requestedSecurityId === null);
+  }, [requestedSecurityId, selectSecurityWithRoute]);
+  useEffect(() => {
+    if (workstream === "security-master" && requestedSecurityId) {
+      void selectSecurityById(requestedSecurityId);
     }
-  }, [securityMaster.selectSecurity]);
+  }, [workstream, requestedSecurityId, selectSecurityById]);
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
@@ -289,6 +304,25 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const identityTechnicalFields = identity?.summaryFields.filter((field) => !identityPrimaryFields.includes(field)) ?? [];
   const selectedSecurityEntry = securityMaster.selectedEntry;
   const securityMasterActiveTab = resolveSecurityMasterDrillInTab(search);
+  const bondAction = new URLSearchParams(search).get("bondAction");
+  const focusedBondAction = useRef<string | null>(null);
+  useEffect(() => {
+    if (securityMasterActiveTab !== "evidence" || !bondAction || !["analytics", "migration"].includes(bondAction)) {
+      focusedBondAction.current = null;
+      return;
+    }
+    if (!selectedSecurityEntry) return;
+    const focusKey = `${selectedSecurityEntry.securityId.toLowerCase()}:${bondAction}`;
+    if (focusedBondAction.current === focusKey) return;
+    const target = document.getElementById(`bond-${bondAction}-action`);
+    if (target) {
+      const explorerHeader = target.closest(".workspace-section-band")?.querySelector(".workspace-section-subheader");
+      target.style.scrollMarginTop = `${(explorerHeader?.getBoundingClientRect().height ?? 0) + 16}px`;
+      target.focus({ preventScroll: true });
+      target.scrollIntoView?.({ block: "start" });
+      focusedBondAction.current = focusKey;
+    }
+  }, [bondAction, securityMasterActiveTab, selectedSecurityEntry]);
   const securityMasterDrillInTabs = useMemo(() => [
     {
       id: "identity",
@@ -777,7 +811,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
           <TechnicalDetails label="Break aging"><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></TechnicalDetails>
-          <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
+          <AccountOversightPanel />
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
         </>
       ) : null}
@@ -1536,10 +1570,30 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             }
           ]}
           explorer={securityInstrumentExplorerView}
+          activeRecordId={requestedSecurityId
+            ? securityInstrumentExplorer?.rows.find((row) => resolveExplorerSecurityId(row.recordId)?.toLowerCase() === requestedSecurityId.toLowerCase())?.recordId ?? `security-instrument:${requestedSecurityId}`
+            : undefined}
           onSaveView={(request) => saveAccountingExplorerView("security-instrument", request)}
           onSelectRecord={selectSecurityFromExplorer}
         >
         <section className="space-y-6">
+          <div id="bond-ladders" className="scroll-mt-6">
+            <BondReferenceLadderPanel onSelectSecurity={(securityId) => {
+              ladderScroll.current = [];
+              let element: Element | null = document.activeElement;
+              while (element) {
+                ladderScroll.current.push({ element, top: element.scrollTop, left: element.scrollLeft });
+                element = element.parentElement;
+              }
+              setLadderReturnAvailable(true);
+              const next = new URLSearchParams(search);
+              next.set("securityId", securityId);
+              next.set("tab", "evidence");
+              next.delete("bondAction");
+              if (requestedSecurityId === securityId) void selectSecurityById(securityId);
+              navigate({ pathname, search: `?${next}`, hash: "#security-detail-page-title" }, { preventScrollReset: true });
+            }} />
+          </div>
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
@@ -1649,7 +1703,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   getRowSelectAriaLabel={(row) => row.selectAriaLabel}
                   getRowAriaControls={(row) => row.detailPanelId}
                   getRowAriaExpanded={(row) => row.isExpanded}
-                  onRowSelect={(row) => void securityMaster.selectSecurity(row.securityId)}
+                  onRowSelect={(row) => selectSecurityWithRoute(row.securityId)}
                   selectedRowId={securityMaster.selectedSecurityId ? `security-result-${securityMaster.selectedSecurityId}` : null}
                   emptyText={securityMaster.searchStatusText ?? "No Security Master results returned."}
                   ariaLabel={securityMaster.resultsTableLabel}
@@ -1921,19 +1975,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                       view={securityMaster.referenceDataWorkbenchView}
                       onSelect={securityMaster.selectReferenceDataEndpoint}
                     />
-                    <BondReferenceLadderPanel onSelectSecurity={(securityId) => {
-                      ladderScroll.current = [];
-                      let element: Element | null = document.activeElement;
-                      while (element) {
-                        ladderScroll.current.push({ element, top: element.scrollTop, left: element.scrollLeft });
-                        element = element.parentElement;
-                      }
-                      setLadderReturnAvailable(true);
-                      if (securityMaster.selectedSecurityId !== securityId)
-                        void securityMaster.selectSecurity(securityId);
-                      navigate({ pathname, search: buildSecurityMasterDrillInSearch(search, "evidence"), hash },
-                        { replace: true, preventScrollReset: true });
-                    }} />
                   </div>
                 </TabPanel>
                 <TabPanel>
@@ -1980,6 +2021,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                       selectedSecurityEntry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")
                     ) ? (
                       <>
+                        <div id="bond-analytics-action" tabIndex={-1} aria-label="Bond analytics" className="scroll-mt-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                         <div id="bond-calculation-context" tabIndex={-1}>
                           <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId}
                             observedFixingReceiptIds={observedFixingReceiptIds}
@@ -2000,6 +2042,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                               panel?.scrollIntoView({ block: "nearest" });
                             }} />
                         </div>
+                        </div>
                         <SecurityCurveValuationPanel key={`curve-valuation-${securityMaster.selectedSecurityId}`} securityId={securityMaster.selectedSecurityId} />
                         <BondWorkflowPanel securityId={securityMaster.selectedSecurityId} />
                         <BondIncomePanel key={`income-${securityMaster.selectedSecurityId}`} />
@@ -2009,13 +2052,16 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                             panel?.focus({ preventScroll: true });
                             panel?.scrollIntoView({ block: "nearest" });
                           }}>Return to calculation</Button>
+                        <div id="bond-migration-action" tabIndex={-1} aria-label="Bond convention migration" className="scroll-mt-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                         <BondMigrationPreviewPanel
                           key={`migration-${securityMaster.selectedSecurityId}`}
+                          initiallyOpen={bondAction === "migration"}
                           securityId={securityMaster.selectedSecurityId}
-                          expectedVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId
+                          expectedVersion={securityMaster.identity?.securityId.toLowerCase() === securityMaster.selectedSecurityId.toLowerCase()
                             ? securityMaster.identity.version
                             : null}
                         />
+                        </div>
                         </section>
                         <div>
                           <Button type="button" variant="outline" size="sm" onClick={() => {
