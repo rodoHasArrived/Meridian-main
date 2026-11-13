@@ -16,6 +16,11 @@ Settings provider runtime evidence and integration setup components are owned by
 or mutation authority. Accounting Security Master selection/search state belongs to
 `accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
 instrument-passport projections belong to `accounting-screen.security-projections.ts`.
+The Accounting screen composes its larger panels from sibling modules:
+`accounting-screen.external-gl-panel.tsx`, `accounting-screen.approvals-workstream.tsx`,
+`accounting-screen.case-workbench.tsx`, `accounting-screen.manual-journal-panel.tsx`, and
+`accounting-screen.configuration-panel.tsx`, with `accounting-screen.accounting-value.tsx` holding the
+shared label/value cell.
 The existing view-model entrypoint re-exports their public contracts for current callers.
 The design-system source contract checks the projection owner, those re-exports and the screen's
 schedules-view binding together.
