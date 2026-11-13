@@ -19,7 +19,7 @@ test("checks formatting only in display expressions and status only in status ba
   assert.deepEqual(scanSource("src/screens/view.tsx", source).map(item => item.rule), ["localDisplayFormatter", "adHocStatusBadge"]);
 });
 test("worksheet exceptions do not exempt browse tables elsewhere in the same owner file", () => {
-  const file = "src/screens/accounting-screen.tsx";
+  const file = "src/screens/accounting-screen.manual-journal-panel.tsx";
   assert.equal(scanSource(file, 'function Editor(){return <table className="accounting-journal-table"><tbody /></table>}').length, 0);
   assert.equal(scanSource(file, 'function Queue(){return <table aria-label="New records"><tbody /></table>}').length, 1);
 });

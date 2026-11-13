@@ -158,7 +158,7 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
                 ticker);
 
             return series.Any(entry => !ProviderDateParsing.TryParseProviderDate(entry.Key, out _) || entry.Value is null
-                || !decimal.TryParse(entry.Value.DividendAmount, NumberStyles.Number, CultureInfo.InvariantCulture, out var dividend)
+                || !decimal.TryParse(entry.Value.DividendAmount, NumberStyles.Float, CultureInfo.InvariantCulture, out var dividend)
                 || dividend < 0m || !TryParsePositiveDecimal(entry.Value.SplitCoefficient, out _))
                 ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record")])
                 : CorporateActionFetchResult.Complete(commands);

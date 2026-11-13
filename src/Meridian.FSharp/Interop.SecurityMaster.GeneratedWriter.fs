@@ -11,6 +11,16 @@ open Meridian.FSharp.Domain
 [<RequireQualifiedAccess>]
 module internal GeneratedFlatWriter =
 
+    let writeEquity (schemaVersion: int) (terms: EquityTerms) : string =
+        JsonSerializer.Serialize(
+            {| schemaVersion = schemaVersion
+               shareClass = terms.Capital.ShareClass
+               votingRightsCat = terms.Capital.VotingRightsCat |> Option.map VotingRightsCat.asString
+               classification = EquityCapitalCodec.classification terms.Capital
+               otherClassification = EquityCapitalCodec.otherClassification terms.Capital
+               preferredTerms = EquityCapitalCodec.preferredTerms terms.Capital
+               convertibleTerms = EquityCapitalCodec.convertibleTerms terms.Capital |})
+
     let writeOption (schemaVersion: int) (terms: OptionTerms) : string =
         JsonSerializer.Serialize(
             {| schemaVersion = schemaVersion
@@ -404,3 +414,13 @@ module internal GeneratedFlatWriter =
                issuerName = terms.IssuerName
                couponRate = terms.ContractualRate.CouponRate
                paymentFrequency = terms.ContractualRate.PaymentFrequency |})
+
+    let writeInvestmentFund (schemaVersion: int) (terms: InvestmentFundTerms) : string =
+        JsonSerializer.Serialize(
+            {| schemaVersion = schemaVersion
+               fundType = terms.FundShare.FundType
+               navCurrency = terms.FundShare.NavCurrency
+               distributionPolicy = terms.DistributionPolicy |> Option.map DistributionPolicy.label
+               isStableNav = terms.FundShare.IsStableNav
+               fundFamily = terms.FundTerms.FundFamily
+               pricingSource = terms.ReferenceDataSource.PricingSource |})

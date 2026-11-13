@@ -19,9 +19,6 @@ internal static partial class SecurityMasterMapping
     private const string EnvelopeLessCustomAssetSalvage =
         "read-only salvage of an envelope-less legacy row as OtherSecurity; the CustomAsset schema declares the profile envelope, not the OtherSecurity shape";
 
-    private const string PreferredTermsShapeUndeclared =
-        "the schema declares preferredTerms as an object but registers no inner shape for it";
-
     /// <summary>
     /// ADR-027 stage 3 (S3-D): every read a schema-bound class decode makes OUTSIDE the schema —
     /// a key (or nested path) <see cref="SecurityAssetTermsSchema"/> does not declare for the
@@ -36,18 +33,7 @@ internal static partial class SecurityMasterMapping
     [
         new("CustomAsset", "maturity", SecurityAssetTermFieldType.Date, EnvelopeLessCustomAssetSalvage),
         new("CustomAsset", "issuerName", SecurityAssetTermFieldType.String, EnvelopeLessCustomAssetSalvage),
-        new("CustomAsset", "settlementType", SecurityAssetTermFieldType.String, EnvelopeLessCustomAssetSalvage),
-        new("Equity", "preferredTerms.dividendRate", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.dividendType", SecurityAssetTermFieldType.String, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.redemptionPrice", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.redemptionDate", SecurityAssetTermFieldType.Date, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.callableDate", SecurityAssetTermFieldType.Date, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.participationTerms", SecurityAssetTermFieldType.Object, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.participationTerms.participatesInCommonDividends", SecurityAssetTermFieldType.Boolean, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.participationTerms.additionalDividendThreshold", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.liquidationPreference", SecurityAssetTermFieldType.Object, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.liquidationPreference.kind", SecurityAssetTermFieldType.String, PreferredTermsShapeUndeclared),
-        new("Equity", "preferredTerms.liquidationPreference.multiple", SecurityAssetTermFieldType.Decimal, PreferredTermsShapeUndeclared)
+        new("CustomAsset", "settlementType", SecurityAssetTermFieldType.String, EnvelopeLessCustomAssetSalvage)
     ];
 
     private static readonly FrozenSet<(string AssetClass, string Path, SecurityAssetTermFieldType ReadAs)> LedgeredUnboundReads =

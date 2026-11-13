@@ -5418,7 +5418,7 @@
       ]
     }
   ],
-  "fingerprint": "ea622c5a677536ebc15f535e441baf1bd3a88cc4a0f4544851a408834daab5e5",
+  "fingerprint": "f1444266062524cefc27daaae5734ef0ed86d43e6365852f953ee04227d5adb7",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -7970,7 +7970,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "a2982408f22f0a86c4f535bb7528d6d8b057b408580347e058deb7c7b161c10c",
+      "fingerprint": "804c01fefd04d37f3dec08373ce91857b787d1aef22bc41c2152739f21a1b692",
       "mapped_schemas": [
         "security_master"
       ],
@@ -318716,7 +318716,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d3f934e5079a2746ef018eec968829b02b2bcaa912606f3db28c21d6d9fdc75d",
+      "fingerprint": "6f5cf406b695a64445cc5be63b09fa5724389f4eed6118ba5689f9bad703afcd",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
       "kind": "class",
@@ -318735,7 +318735,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyDictionary<string, SecurityClassCodecBinding>",
-          "source_line": 492,
+          "source_line": 513,
           "type": "IReadOnlyDictionary<string, SecurityClassCodecBinding>"
         },
         {
@@ -318823,7 +318823,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cd358e8a1260dbcdd109fc41583824e27ff26e29d9f427c871fb95db0a80694e",
+      "fingerprint": "825d810781a2d11c5cddeeede1fc84b7e2a9c5a85c3f0d7c299f6cc9e6aa6ca9",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
       "kind": "class",
@@ -318842,7 +318842,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyCollection<string>",
-          "source_line": 877,
+          "source_line": 902,
           "type": "IReadOnlyCollection<string>"
         }
       ],

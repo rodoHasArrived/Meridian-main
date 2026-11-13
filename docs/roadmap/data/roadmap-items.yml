@@ -1778,7 +1778,7 @@ items:
       - type: source
         path: src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs
       - type: source
-        path: src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs
+        path: src/Meridian.Reporting.ReadModels/LedgerDisposalTaxReadService.cs
       - type: source
         path: src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Tax.cs
       - type: source

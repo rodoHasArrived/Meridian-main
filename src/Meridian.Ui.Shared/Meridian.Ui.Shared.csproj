@@ -57,14 +57,4 @@
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
   </ItemGroup>
 
-  <!-- Leaf reporting/journal readers compile independently of UI orchestration. -->
-  <ItemGroup>
-    <Compile Remove="Services/ReportingIncomeComparisonService.cs" />
-    <Compile Remove="Services/ReportAccessPolicyEvaluator.cs" />
-    <Compile Remove="Services/LedgerDisposalTaxReadService.cs" />
-    <Compile Remove="Services/ReportingPartnersCapitalSource.cs" />
-    <Compile Remove="Services/ReportingLedgerPopulationSnapshot.cs" />
-    <Compile Remove="Services/ReportAmountBindingBuilder.cs" />
-    <Compile Remove="Services/ReportPeriodRange.cs" />
-  </ItemGroup>
 </Project>
