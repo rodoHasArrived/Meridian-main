@@ -13,6 +13,7 @@ internal static partial class SecurityMasterMapping
     /// <summary>The classes whose decode arm is generated from the binding table.</summary>
     internal static IReadOnlyList<string> GeneratedDecodeClasses { get; } =
     [
+        "Equity",
         "Option",
         "Future",
         "Bond",
@@ -42,7 +43,15 @@ internal static partial class SecurityMasterMapping
         "Swaption",
         "CapFloor",
         "StructuredNote",
+        "InvestmentFund",
     ];
+
+    private static SecurityKind DecodeGeneratedEquity(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewEquity(new EquityTerms(
+            new EquityCapitalTerms(
+                ToOption(bound.OptionalString("shareClass")),
+                ToVotingRightsCatOption(bound.OptionalString("votingRightsCat")),
+                ToEquityClassificationOption(bound, mode))));
 
     private static SecurityKind DecodeGeneratedOption(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewOption(new OptionTerms(
@@ -692,4 +701,20 @@ internal static partial class SecurityMasterMapping
                 ToOption(bound.OptionalConventionString("paymentFrequency")),
                 null),
             ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
+    private static SecurityKind DecodeGeneratedInvestmentFund(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
+            new FundShareTerms(
+                ToOption(bound.OptionalString("fundType")),
+                ToOption(bound.OptionalString("navCurrency")),
+                ToDistributionPolicyOption(bound.OptionalString("distributionPolicy")),
+                ToOption(bound.OptionalBoolean("isStableNav"))),
+            new FundTerms(
+                ToOption(bound.OptionalString("fundFamily")),
+                null,
+                null,
+                null),
+            new ReferenceDataSourceTerms(
+                ToOption(bound.OptionalString("pricingSource")),
+                null)));
 }

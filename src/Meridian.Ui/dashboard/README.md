@@ -138,9 +138,27 @@ explicit cancel, and pending saves retain the mounted editor.
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
-or mutation authority. Accounting Security Master selection/search state belongs to
+or mutation authority. Presentational Settings sections live beside the screen:
+`settings-screen.profile-sections.tsx` (profile authentication, system posture, appearance),
+`settings-screen.brokerage-sections.tsx` (Alpaca and Robinhood), `settings-screen.diagnostics-section.tsx`,
+and `settings-screen.capability-sections.tsx` (runtime and backend capabilities), with shared chips and
+tone helpers in `settings-screen.section-primitives.tsx`. The state-heavy sections pair a private
+`useSettings<Section>SectionState` hook with their component in `settings-screen.scoped-access-section.tsx`,
+`settings-screen.operations-section.tsx`, `settings-screen.asset-profile-section.tsx`, and
+`settings-screen.provider-section.tsx`; draft-state shapes shared with the screen live in
+`settings-screen.section-state.ts`. The screen keeps shared state, the effects that reconcile it with
+incoming props, the mutation-confirmation dialog, and the route-driven section gates. Accounting Security Master selection/search state belongs to
 `accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
 instrument-passport projections belong to `accounting-screen.security-projections.ts`.
+The Accounting screen composes its larger panels from sibling modules:
+`accounting-screen.external-gl-panel.tsx`, `accounting-screen.approvals-workstream.tsx`,
+`accounting-screen.case-workbench.tsx`, `accounting-screen.manual-journal-panel.tsx`, and
+`accounting-screen.configuration-panel.tsx`, with `accounting-screen.accounting-value.tsx` holding the
+shared label/value cell.
+`src/lib/api.ts` is the stable import facade for the workstation API client: it re-exports the
+transport in `src/lib/api/http-client.ts` and the domain endpoint modules in `src/lib/api/*.api.ts`
+without widening the public surface. Import from `@/lib/api`; endpoint modules import the transport
+from `@/lib/api/http-client`, never from the facade.
 The existing view-model entrypoint re-exports their public contracts for current callers.
 The design-system source contract checks the projection owner, those re-exports and the screen's
 schedules-view binding together.
@@ -164,11 +182,12 @@ file-size limits. Curve sampling, reported returns and promotion selection behav
 Trading promotion form normalization, keyed evidence parsing and request validation live in
 `trading-screen.promotion-evidence.ts`; the existing trading view-model entrypoint re-exports its
 public contracts. Gate criteria, retained evidence requirements and command transport are unchanged.
-Reference Data probe payload classification lives in `lib/reference-data-probe.ts`, while the API
-entrypoint keeps transport/probe orchestration and the established public type exports.
+Reference Data probe payload classification lives in `lib/reference-data-probe.ts`; probe
+orchestration lives in `lib/api/system-overview.api.ts`, and the `lib/api.ts` facade keeps the
+established public type exports.
 
-Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts`; `lib/api.ts`
-retains their public type exports and the setup request functions. Pure order-ticket form,
+Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts` and the setup
+request functions in `lib/api/fund-structure-setup.api.ts`; `lib/api.ts` re-exports both. Pure order-ticket form,
 validation and control-state helpers live in `trading-screen.order-ticket-state.ts`.
 `trading-screen.view-model.ts` retains service and hook orchestration and re-exports the public
 helpers and types. The extracted declarations and function bodies preserve the existing request
