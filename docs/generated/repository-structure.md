@@ -9255,6 +9255,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.account-close-prices.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.tsx
+│   │   │   │   │   ├── accounting-screen.accounting-value.tsx
+│   │   │   │   │   ├── accounting-screen.approvals-workstream.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts
 │   │   │   │   │   ├── accounting-screen.asset-workflow-panel.tsx
 │   │   │   │   │   ├── accounting-screen.asset-workflow.test.ts
@@ -9277,6 +9279,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.ts
 │   │   │   │   │   ├── accounting-screen.case-discussion.test.tsx
 │   │   │   │   │   ├── accounting-screen.case-discussion.tsx
+│   │   │   │   │   ├── accounting-screen.case-workbench.tsx
 │   │   │   │   │   ├── accounting-screen.close-cockpit-drafts.ts
 │   │   │   │   │   ├── accounting-screen.close-cockpit-panels.tsx
 │   │   │   │   │   ├── accounting-screen.close-cockpit-presenters.ts
@@ -9286,6 +9289,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.close-scope.ts
 │   │   │   │   │   ├── accounting-screen.close-sources.test.ts
 │   │   │   │   │   ├── accounting-screen.close-sources.ts
+│   │   │   │   │   ├── accounting-screen.configuration-panel.tsx
 │   │   │   │   │   ├── accounting-screen.configure-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.configure-panel.tsx
 │   │   │   │   │   ├── accounting-screen.configure-panel.view-model.test.ts
@@ -9296,6 +9300,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.corporate-action-formatting.ts
 │   │   │   │   │   ├── accounting-screen.corporate-actions-panel.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
+│   │   │   │   │   ├── accounting-screen.external-gl-panel.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.tsx
 │   │   │   │   │   ├── accounting-screen.formatting.test.ts
@@ -9310,6 +9315,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.journal-entry-enhancements.tsx
 │   │   │   │   │   ├── accounting-screen.journal-lifecycle.ts
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
+│   │   │   │   │   ├── accounting-screen.manual-journal-panel.tsx
 │   │   │   │   │   ├── accounting-screen.mark-preview.test.tsx
 │   │   │   │   │   ├── accounting-screen.mark-preview.tsx
 │   │   │   │   │   ├── accounting-screen.onboarding-panel.test.tsx
