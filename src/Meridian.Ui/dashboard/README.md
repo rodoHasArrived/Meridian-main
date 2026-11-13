@@ -290,6 +290,34 @@ the same reviewed request for retry. Focused tests are in
 `accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
 `accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
+## Financial visual evidence
+
+Report-writer chart previews are explicitly labeled **Signed value summary** beside the configured
+chart type. They use a symmetric scale around a visible zero baseline; missing, non-numeric and
+non-finite observations remain unavailable. Reported values, series labels, warnings and the
+underlying grid stay inspectable. The summary does not claim to render the configured chart type.
+
+The retained income comparison adds a baseline → journal → population → methodology → unexplained
+→ current waterfall. Exact decimal strings are summed and checked with integer arithmetic before
+only bounded drawing coordinates become numbers. Missing, incompatible or inconsistent bridges
+withhold the plot. The server residual is included once; unexplained records remain separate, and
+nonzero unsupported records cannot produce a reconciled success banner through netting. Each
+contribution opens the existing retained-support sheet, preserving URL state and keyboard return.
+
+Open-position exposure and P&L cells retain their original financial strings with small relative
+bars. A strict presentation adapter accepts only the source's demonstrated invariant dollar formats
+(including grouped values and K/M suffixes). These are rounded display comparisons, not concentration
+calculations or an inferred ISO currency. Each column uses its own largest absolute supported value
+across all loaded positions before filters, grouped by source currency. Rows without a currency stay
+in a separate, explicitly unavailable-currency group; no currency conversion is applied. Unsupported formats retain
+the original amount and say Graphic unavailable. Losses extend left of a visible zero marker;
+the largest displayed exposures with the shared mark-review assessment receive a textual cue.
+
+Focused coverage: `report-writer-grid-format.test.ts`, `report-writer-chart-preview.test.tsx`,
+`income-movement-waterfall.test.ts`, `reporting-income-comparison.test.tsx`,
+`position-value-graphic.test.ts`, `position-value-graphic.test.tsx`, and the existing position-control
+and Portfolio view-model tests.
+
 ## Portfolio Open positions controls
 
 Open positions supports case-insensitive symbol search, exact Side filtering from loaded rows,

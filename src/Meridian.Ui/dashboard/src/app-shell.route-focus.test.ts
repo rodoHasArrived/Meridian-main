@@ -90,6 +90,45 @@ describe("portfolio table route focus", () => {
   });
 });
 
+describe("retained income comparison route focus", () => {
+  const paths = ["/reporting/run-status", "/reporting/runs/detail", "/REPORTING/RUN-STATUS/", "/REPORTING/RUNS/DETAIL/"];
+  const localKeys = ["incomeBaseline", "incomeCurrent", "incomeGrid", "incomeMetric", "incomeComparison", "incomeContribution"];
+
+  it.each(paths)("keeps comparison selection and supporting-record focus local on %s", (pathname) => {
+    const initial = focusState("?runId=host-run", pathname);
+    for (const key of localKeys) {
+      expect(focusState(`?runId=host-run&${key}=first`, pathname).routeKey).toBe(initial.routeKey);
+      expect(focusState(`?runId=host-run&${key}=second`, pathname).routeKey).toBe(initial.routeKey);
+    }
+    const pair = "runId=host-run&incomeBaseline=baseline&incomeCurrent=current&incomeGrid=income&incomeMetric=Income&incomeComparison=retained";
+    const comparison = focusState(`?${pair}`, pathname);
+    const support = focusState(`?${pair}&incomeContribution=journal%3Aaccrual`, pathname);
+    expect(comparison.routeKey).toBe(initial.routeKey);
+    expect(support.routeKey).toBe(comparison.routeKey);
+  });
+
+  it.each(paths)("preserves host run, financial scope, unrelated state, and hash navigation on %s", (pathname) => {
+    const scope = "runId=host-run&fundAccountId=fund-a&companyId=company-a&bookId=book-a&periodId=2026-06&asOf=2026-06-30&from=2026-06-01&to=2026-06-30&filter=due&reportingWork=board&view=saved&tab=retained";
+    const initial = focusState(`?${scope}`, pathname, "#income-comparison");
+    const selected = focusState(`?${scope}&incomeComparison=retained&incomeContribution=journal`, pathname, "#income-comparison");
+    expect(selected.routeKey).toBe(initial.routeKey);
+    expect(selected.routeKey).toBe(`${pathname}?${scope}#income-comparison`);
+    expect(selected.targetElementId).toBe("income-comparison");
+    expect(focusState(`?${scope}&incomeContribution=journal`, pathname, "#other-evidence").routeKey).not.toBe(initial.routeKey);
+    for (const key of ["runId", "fundAccountId", "companyId", "bookId", "periodId", "asOf", "from", "to", "filter", "reportingWork", "view", "tab"]) {
+      const changed = new URLSearchParams(`${scope}&incomeComparison=retained&incomeContribution=journal`);
+      changed.set(key, "changed");
+      expect(focusState(`?${changed}`, pathname, "#income-comparison").routeKey).not.toBe(initial.routeKey);
+    }
+  });
+
+  it.each(["/reporting", "/reporting/run", "/reporting/runs", "/portfolio"])("keeps income query navigation active outside the comparison screens on %s", (pathname) => {
+    for (const key of localKeys) {
+      expect(focusState(`?${key}=first`, pathname).routeKey).not.toBe(focusState(`?${key}=second`, pathname).routeKey);
+    }
+  });
+});
+
 
 describe("family ownership graph route focus", () => {
   it.each(["/portfolio/family-office", "/portfolio/family-office/", "/PORTFOLIO/FAMILY-OFFICE"])("keeps ownership selection local on %s", (pathname) => {
