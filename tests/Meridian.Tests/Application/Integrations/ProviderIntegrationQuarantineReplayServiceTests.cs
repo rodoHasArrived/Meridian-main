@@ -733,7 +733,9 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
         (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
         (await store.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
         (await store.ListQuarantinedRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
-        (await store.GetRawPayloadAsync(request.SourceSyncRunId, "payload-1")).Should().BeEquivalentTo(original);
+        var retained = (await store.GetRawPayloadAsync(request.SourceSyncRunId, "payload-1"))!;
+        retained.Should().BeEquivalentTo(original, options => options.Excluding(payload => payload.RawPayload));
+        retained.RawPayload.GetRawText().Should().Be(original.RawPayload.GetRawText());
     }
 
     [Fact]
