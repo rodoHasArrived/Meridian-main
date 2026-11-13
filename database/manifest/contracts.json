@@ -5418,7 +5418,7 @@
       ]
     }
   ],
-  "fingerprint": "f1444266062524cefc27daaae5734ef0ed86d43e6365852f953ee04227d5adb7",
+  "fingerprint": "5a33f9b19875811c1914bd9d3cb9bba1a6cbaa45373fd6294b4c69bd0df7db40",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5613,7 +5613,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "4e87bbba86289e0cf474758240b5f1a9c2c13dad02cf423d8f29e0f1f4a6ee7f",
+      "fingerprint": "a660a10db4fb2a6581bf94810bd9877ac4a4e24d56e3656bec808b67b186ab68",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Api",
       "object_ids": [
@@ -47932,7 +47932,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c3d61e40a8a0ee936b060367142078a01d1ec122dfcfd296dac2853fc6656336",
+      "fingerprint": "6dcb146c8923be217f321331c54e1f54c030a34ff0cea479b6a7b928dff74333",
       "full_name": "Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto",
       "id": "Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto",
       "kind": "record",
@@ -47949,7 +47949,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 63,
+          "source_line": 79,
           "type": "bool"
         },
         {
@@ -47963,7 +47963,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 69,
+          "source_line": 85,
           "type": "bool"
         },
         {
@@ -47977,7 +47977,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 65,
+          "source_line": 81,
           "type": "bool"
         },
         {
@@ -47991,7 +47991,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 64,
+          "source_line": 80,
           "type": "bool"
         },
         {
@@ -48005,7 +48005,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 67,
+          "source_line": 83,
           "type": "bool"
         },
         {
@@ -48019,7 +48019,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 66,
+          "source_line": 82,
           "type": "bool"
         },
         {
@@ -48033,7 +48033,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 70,
+          "source_line": 86,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -48047,7 +48047,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 68,
+          "source_line": 84,
           "type": "bool"
         }
       ],
@@ -48057,12 +48057,12 @@
       "qualified_name": "Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto",
       "references": [],
       "source": {
-        "line": 62,
+        "line": 78,
         "path": "src/Meridian.Contracts/Api/ProviderRateLimits.cs"
       },
       "sources": [
         {
-          "line": 62,
+          "line": 78,
           "path": "src/Meridian.Contracts/Api/ProviderRateLimits.cs"
         }
       ],
@@ -48078,7 +48078,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4275b914ca32291ebcefd0b4050d3fbd6aa6578067dc5f3bf0afaca7201bdf2f",
+      "fingerprint": "45a269bbce2b7221e5aed8635bf9a75997e179da0e606604200c038dcfacf9b6",
       "full_name": "Meridian.Contracts.Api.ProviderRateLimitEventDto",
       "id": "Meridian.Contracts.Api.ProviderRateLimitEventDto",
       "kind": "record",
@@ -48095,7 +48095,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 88,
+          "source_line": 104,
           "type": "int"
         },
         {
@@ -48109,7 +48109,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 91,
+          "source_line": 107,
           "type": "DateTimeOffset?"
         },
         {
@@ -48123,7 +48123,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 87,
+          "source_line": 103,
           "type": "DateTimeOffset"
         },
         {
@@ -48137,7 +48137,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "double",
-          "source_line": 89,
+          "source_line": 105,
           "type": "double"
         },
         {
@@ -48151,7 +48151,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 90,
+          "source_line": 106,
           "type": "bool"
         }
       ],
@@ -48161,12 +48161,12 @@
       "qualified_name": "Meridian.Contracts.Api.ProviderRateLimitEventDto",
       "references": [],
       "source": {
-        "line": 86,
+        "line": 102,
         "path": "src/Meridian.Contracts/Api/ProviderRateLimits.cs"
       },
       "sources": [
         {
-          "line": 86,
+          "line": 102,
           "path": "src/Meridian.Contracts/Api/ProviderRateLimits.cs"
         }
       ],
@@ -48182,7 +48182,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "115f18e4839b449ce83b916ddee48058b0e003998593aa9f267ab1a440ea5758",
+      "fingerprint": "fb7baef323ab21be9396982a9070c832158182aab11b22df9cc46c3162603705",
       "full_name": "Meridian.Contracts.Api.ProviderRateLimitHistoryResponse",
       "id": "Meridian.Contracts.Api.ProviderRateLimitHistoryResponse",
       "kind": "record",
@@ -48199,7 +48199,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ProviderRateLimitEventDto>",
-          "source_line": 78,
+          "source_line": 94,
           "type": "IReadOnlyList<ProviderRateLimitEventDto>"
         },
         {
@@ -48213,7 +48213,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 80,
+          "source_line": 96,
           "type": "bool"
         },
         {
@@ -48227,7 +48227,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 81,
+          "source_line": 97,
           "type": "string"
         },
         {
@@ -48241,7 +48241,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 77,
+          "source_line": 93,
           "type": "int"
         },
         {
@@ -48255,7 +48255,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 76,
+          "source_line": 92,
           "type": "string"
         },
         {
@@ -48269,7 +48269,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 79,
+          "source_line": 95,
           "type": "DateTimeOffset"
         }
       ],
@@ -48281,12 +48281,12 @@
         "Meridian.Contracts.Api.ProviderRateLimitEventDto"
       ],
       "source": {
-        "line": 75,
+        "line": 91,
         "path": "src/Meridian.Contracts/Api/ProviderRateLimits.cs"
       },
       "sources": [
         {
-          "line": 75,
+          "line": 91,
           "path": "src/Meridian.Contracts/Api/ProviderRateLimits.cs"
         }
       ],
@@ -48392,7 +48392,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "09d8fc8e5de26146fd4f5a93c071e62a00ed9e9024f757a5f24f537dbbd9ce53",
+      "fingerprint": "b28971b14f64aa8bdc06d412d9b8b2ac3d1b2711f6f30d66a53c2dd99f5297c0",
       "full_name": "Meridian.Contracts.Api.ProviderRateLimitSnapshotDto",
       "id": "Meridian.Contracts.Api.ProviderRateLimitSnapshotDto",
       "kind": "record",
@@ -48411,6 +48411,62 @@
           "raw_type": "ProviderRateLimitCapabilitiesDto",
           "source_line": 39,
           "type": "ProviderRateLimitCapabilitiesDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "dailyMaximum",
+          "key_type": null,
+          "name": "DailyMaximum",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "int?",
+          "source_line": 60,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "dailyResetPolicy",
+          "key_type": null,
+          "name": "DailyResetPolicy",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 66,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "dailyResetsAt",
+          "key_type": null,
+          "name": "DailyResetsAt",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 63,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "dailyUnitsUsed",
+          "key_type": null,
+          "name": "DailyUnitsUsed",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "int?",
+          "source_line": 57,
+          "type": "int?"
         },
         {
           "collection": false,
@@ -48508,6 +48564,20 @@
           "origin": "positional_parameter",
           "raw_type": "string",
           "source_line": 35,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": "quotaUnit",
+          "key_type": null,
+          "name": "QuotaUnit",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 54,
           "type": "string"
         },
         {
