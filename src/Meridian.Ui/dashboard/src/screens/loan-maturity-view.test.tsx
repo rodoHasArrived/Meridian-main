@@ -24,13 +24,32 @@ const summary: LoanPortfolioSummary = {
 ] };
 
 describe("loan maturity concentration", () => {
+  it("shows signed exact server principal on the corresponding side of zero without rebuilding row totals", () => {
+    const select = vi.fn();
+    render(<LoanMaturityView summary={{ ...summary, maturityBuckets: [
+      { currency: "USD", year: 2028, quarter: 1, principalOutstanding: "-9007199254740993.12345", loanIds: ["a", "b"] },
+      { currency: "USD", year: 2028, quarter: 2, principalOutstanding: "100", loanIds: ["c"] }
+    ] }} selectedId={null} onSelect={select} />);
+    const negative = screen.getByRole("button", { name: "2028 Q1 2 facilities USD -9,007,199,254,740,993.12345" });
+    const positive = screen.getByRole("button", { name: "2028 Q2 1 facility USD 100" });
+    const negativeBar = negative.querySelector("[aria-hidden] > span:last-child") as HTMLElement;
+    const positiveBar = positive.querySelector("[aria-hidden] > span:last-child") as HTMLElement;
+    expect(parseFloat(negativeBar.style.width)).toBeGreaterThan(0);
+    expect(parseFloat(negativeBar.style.left)).toBeLessThan(50);
+    expect(parseFloat(negativeBar.style.left) + parseFloat(negativeBar.style.width)).toBe(50);
+    expect(positiveBar.style.left).toBe("50%");
+    fireEvent.click(negative);
+    expect(select).toHaveBeenCalledWith("USD:2028:1");
+    expect(screen.getByText("USD -9,007,199,254,740,993.12345")).toBeInTheDocument();
+  });
+
   it("retains exact server totals and selects currency-specific facility groups", async () => {
     const select = vi.fn();
     const { container } = render(<LoanMaturityView summary={summary} selectedId={null} onSelect={select} />);
     expect(screen.getByText("USD 9,007,199,254,740,993.12345")).toBeInTheDocument();
     expect(screen.getByText("EUR 0")).toBeInTheDocument();
     expect(screen.getByText("Amount unavailable")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /2028 Q1, 2 facilities/ }));
+    fireEvent.click(screen.getByRole("button", { name: /2028 Q1 2 facilities/ }));
     expect(select).toHaveBeenCalledWith(maturityBucketId(summary.maturityBuckets![0]));
     expect((await axe(container)).violations).toEqual([]);
   });

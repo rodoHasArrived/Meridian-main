@@ -2153,7 +2153,7 @@
     outline-offset: 2px;
   }
 
-  :where([aria-current="page"], [aria-selected="true"], [aria-pressed="true"]) {
+  :where([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], [aria-checked="true"]) {
     border-color: Highlight;
     outline: 2px solid Highlight;
     outline-offset: -2px;

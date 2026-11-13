@@ -157,9 +157,22 @@ public static partial class LedgerEndpoints
             if (book.AccountingBasis != request.AccountingBasis || period.Version != request.ExpectedPeriodVersion ||
                 period.Status != "Open" || request.AsOfDate < period.StartDate || request.AsOfDate > period.EndDate)
                 return Results.Conflict(new { error = "The accounting basis, open period, occurrence date or period version changed." });
+            var retainedLot = (await periods.GetTaxLotsByIdsAsync(ledgerBookId, [request.TaxLotRecordId], context.RequestAborted)
+                .ConfigureAwait(false)).SingleOrDefault();
+            if (retainedLot is null)
+                return Results.NotFound(new { error = "The canonical lot was not found in the selected book." });
+            if (retainedLot.LedgerBookId != ledgerBookId || retainedLot.TaxLotRecordId != request.TaxLotRecordId)
+                return EndpointHelpers.Forbidden();
+            if (retainedLot.Acquisition is { } acquisition && !HasSupportedCanonicalAmortizationCurrency(acquisition))
+                return CanonicalAmortizationFxUnavailable();
             var preview = await service.PreviewExtendedAsync(ledgerBookId, request.TaxLotRecordId, request.AsOfDate,
                 request.SecurityEvidence, request.AmortizeRemainingFace, request.AutomaticYieldToWorst, context.RequestAborted).ConfigureAwait(false);
             var instruction = preview.Instruction;
+            if (instruction.ExpectedLot.LedgerBookId != ledgerBookId || instruction.ExpectedLot.TaxLotRecordId != request.TaxLotRecordId)
+                return EndpointHelpers.Forbidden();
+            // Recheck the calculation's authoritative reread before exposing a preview or retaining source authority.
+            if (!HasSupportedCanonicalAmortizationCurrency(instruction.ExpectedLot.Acquisition))
+                return CanonicalAmortizationFxUnavailable();
             if (instruction.ExpectedLot.Acquisition.BondIncome is not null)
                 return Results.Conflict(new
                 {
@@ -240,6 +253,17 @@ public static partial class LedgerEndpoints
         catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         catch (LedgerBookServiceException ex) { return MapServiceException(ex); }
     }
+
+    private static bool HasSupportedCanonicalAmortizationCurrency(OpenLotAcquisitionDto acquisition)
+        => string.Equals(acquisition.AcquisitionCurrency, acquisition.FunctionalCurrency, StringComparison.Ordinal)
+            && acquisition.AcquisitionFxRateToFunctional == 1m;
+
+    private static IResult CanonicalAmortizationFxUnavailable()
+        => Results.Conflict(new
+        {
+            error = "This amortization workbench supports matching acquisition and functional currencies with acquisition FX rate 1 only. Cross-currency or non-unit FX preparation is unsupported before source or journal-draft retention.",
+            code = "AMORTIZATION_FX_UNSUPPORTED"
+        });
 
     private static bool AssetAccountingSourcePayloadEquals<T>(T left, T right)
         => AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(left) == AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(right);

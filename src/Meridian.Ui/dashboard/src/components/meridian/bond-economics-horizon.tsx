@@ -42,52 +42,62 @@ export function BondEconomicsHorizon({ result }: { result: BondAnalyticsResult }
   const y = (value: BondDecimal) => 155 - ((Number(value) - low) / (high - low || 1)) * 125;
   const selectedPoint = points.find((point) => point.id === selected);
   const selectedFlow = result.cashFlows.find((flow) => flow.flowId === selectedFlowId);
-  const maxInterest = Math.max(1, ...result.cashFlows.map((flow) => Number(flow.interest) || 0));
-  const maxPrincipal = Math.max(1, ...result.cashFlows.map((flow) => Number(flow.principal) || 0));
+  const maxInterest = Math.max(1, ...result.cashFlows.map((flow) => Math.abs(Number(flow.interest)) || 0));
+  const maxPrincipal = Math.max(1, ...result.cashFlows.map((flow) => Math.abs(Number(flow.principal)) || 0));
+  const interestZero = 230;
+  const principalZero = 300;
+  const paymentBar = (value: BondDecimal, zero: number, maximum: number) => {
+    const displacement = Number(value) / maximum * 28;
+    return { y: Math.min(zero, zero - displacement), height: Math.abs(displacement) };
+  };
   const analysisDate = result.context.asOf.slice(0, 10);
   return <section aria-label="Callable bond economics horizon" className="space-y-3 border-y border-border py-4">
     <h3 className="text-sm font-semibold">Callable-bond horizon</h3>
     <p className="text-xs text-muted-foreground">Discrete contractual scenarios; the yield axis is in percent and exact yields are annual fractions. Yield to worst compares maturity and issuer calls. Holder puts remain separate elections. The payment strip uses the contractual maturity basis.</p>
     {result.governingYieldScenarios == null && result.yieldToWorstScenarios == null ? <p className="text-xs text-warning">The host did not identify governing scenarios; no governing point has been inferred.</p> : null}
     <div className="overflow-x-auto">
-      <svg viewBox="0 0 920 345" className="min-w-[640px] w-full" role="group" aria-label="Exercise yield scenarios and projected payments">
+      <svg viewBox="0 0 920 395" className="min-w-[640px] w-full" role="group" aria-label="Exercise yield scenarios and projected payments">
         <title>Exercise yield scenarios and projected contractual payments per 100 face</title>
         {[0, 0.5, 1].map((fraction) => {
           const rate = low + fraction * (high - low);
-          return <g key={fraction}><line x1="100" x2="840" y1={y(rate)} y2={y(rate)} stroke="var(--chart-grid, #E4E3DE)" /><text x="90" y={y(rate) + 4} textAnchor="end" fill="currentColor" fontSize="12">{formatRatioAsPercent(rate)}</text></g>;
+          return <g key={fraction}><line x1="100" x2="840" y1={y(rate)} y2={y(rate)} stroke="var(--chart-grid, #E2DED5)" /><text x="90" y={y(rate) + 4} textAnchor="end" fill="currentColor" fontSize="12">{formatRatioAsPercent(rate)}</text></g>;
         })}
         {plottable.map((point) => <g key={point.id} role="button" tabIndex={0} aria-pressed={selected === point.id}
           aria-label={`${point.kind} ${point.exerciseDate}, annual yield ${bondDecimalText(point.yield)}${point.governing ? ", governs yield to worst" : ""}`}
           className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" onClick={() => setSelected(point.id)}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelected(point.id); } }}>
           <rect x={x(point.exerciseDate) - 14} y={y(point.yield) - 14} width="28" height="28" fill="transparent" />
-          {point.kind === "Put" ? <path d={`M${x(point.exerciseDate)},${y(point.yield) - 6}l6,12h-12z`} fill="var(--chart-drawdown, #A8443C)" />
-            : point.kind === "Maturity" ? <rect x={x(point.exerciseDate) - 5} y={y(point.yield) - 5} width="10" height="10" fill="var(--chart-axis, #5E666F)" />
+          {point.kind === "Put" ? <path d={`M${x(point.exerciseDate)},${y(point.yield) - 6}l6,12h-12z`} fill="var(--chart-drawdown, #B54B42)" />
+            : point.kind === "Maturity" ? <rect x={x(point.exerciseDate) - 5} y={y(point.yield) - 5} width="10" height="10" fill="var(--chart-axis, #606870)" />
               : <circle cx={x(point.exerciseDate)} cy={y(point.yield)} r="5" fill="hsl(var(--primary, 208 17% 19%))" />}
           {point.governing ? <circle cx={x(point.exerciseDate)} cy={y(point.yield)} r="10" fill="none" stroke="currentColor" strokeWidth="2" /> : null}
         </g>)}
         {points.flatMap((point) => [point.earliestNoticeDate, point.latestNoticeDate].filter((date): date is string => !!date && day(date) != null).map((date, index) =>
-          <g key={`${point.id}:notice:${index}`}><path d={`M${x(date)},180l-4,7h8z`} fill="var(--chart-axis, #5E666F)" /><title>{point.kind} {point.exerciseDate}: {index === 0 && point.earliestNoticeDate ? "earliest" : "latest"} notice {date}</title></g>))}
+          <g key={`${point.id}:notice:${index}`}><path d={`M${x(date)},180l-4,7h8z`} fill="var(--chart-axis, #606870)" /><title>{point.kind} {point.exerciseDate}: {index === 0 && point.earliestNoticeDate ? "earliest" : "latest"} notice {date}</title></g>))}
         <text x="90" y="187" textAnchor="end" fontSize="12" fill="currentColor">Notice dates</text>
-        <line x1="100" x2="840" y1="225" y2="225" stroke="var(--chart-grid, #E4E3DE)" />
-        <line x1="100" x2="840" y1="280" y2="280" stroke="var(--chart-grid, #E4E3DE)" />
-        <text x="90" y="225" textAnchor="end" fontSize="12" fill="currentColor">Interest / 100</text>
-        <text x="90" y="280" textAnchor="end" fontSize="12" fill="currentColor">Principal / 100</text>
-        {result.cashFlows.filter((flow) => day(flow.paymentDate) != null).map((flow) => <g key={flow.flowId} role="button" tabIndex={0}
+        <line x1="100" x2="840" y1={interestZero} y2={interestZero} stroke="var(--chart-grid, #E2DED5)" />
+        <line x1="100" x2="840" y1={principalZero} y2={principalZero} stroke="var(--chart-grid, #E2DED5)" />
+        <text x="90" y={interestZero} textAnchor="end" fontSize="12" fill="currentColor">Interest / 100</text>
+        <text x="90" y={principalZero} textAnchor="end" fontSize="12" fill="currentColor">Principal / 100</text>
+        {result.cashFlows.filter((flow) => day(flow.paymentDate) != null).map((flow) => {
+          const interestBar = paymentBar(flow.interest, interestZero, maxInterest);
+          const principalBar = paymentBar(flow.principal, principalZero, maxPrincipal);
+          return <g key={flow.flowId} role="button" tabIndex={0}
           aria-label={`Inspect projected payment ${flow.paymentDate}`} aria-pressed={flow.flowId === selectedFlowId}
           onClick={() => setSelectedFlowId(flow.flowId)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedFlowId(flow.flowId); } }}
           className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-          <rect x={x(flow.paymentDate) - 12} y="195" width="24" height="90" fill="transparent" />
-          <rect x={x(flow.paymentDate) - 4} y={225 - Number(flow.interest) / maxInterest * 28} width="8" height={Math.max(0, Number(flow.interest) / maxInterest * 28)} fill="var(--chart-equity, #3A7A56)" />
-          <rect x={x(flow.paymentDate) - 4} y={280 - Number(flow.principal) / maxPrincipal * 28} width="8" height={Math.max(0, Number(flow.principal) / maxPrincipal * 28)} fill="var(--chart-axis, #5E666F)" />
+          <rect x={x(flow.paymentDate) - 12} y={interestZero - 34} width="24" height={principalZero - interestZero + 68} fill="transparent" />
+          <rect x={x(flow.paymentDate) - 4} {...interestBar} width="8" fill="var(--chart-equity, #2E7655)" />
+          <rect x={x(flow.paymentDate) - 4} {...principalBar} width="8" fill="var(--chart-axis, #606870)" />
           <title>{flow.paymentDate}: projected interest {bondDecimalText(flow.interest)}; principal {bondDecimalText(flow.principal)} per 100 face</title>
-        </g>)}
-        <text x="100" y="310" fontSize="12" fill="currentColor">{new Date(start).toISOString().slice(0, 10)}</text>
-        <text x="840" y="310" textAnchor="end" fontSize="12" fill="currentColor">{new Date(end).toISOString().slice(0, 10)}</text>
-        <text x="100" y="334" fontSize="12" fill="currentColor">● Issuer call · ▲ Holder put · ■ Maturity · ring = server-identified yield to worst</text>
+        </g>;
+        })}
+        <text x="100" y="352" fontSize="12" fill="currentColor">{new Date(start).toISOString().slice(0, 10)}</text>
+        <text x="840" y="352" textAnchor="end" fontSize="12" fill="currentColor">{new Date(end).toISOString().slice(0, 10)}</text>
+        <text x="100" y="378" fontSize="12" fill="currentColor">● Issuer call · ▲ Holder put · ■ Maturity · ring = server-identified yield to worst</text>
       </svg>
     </div>
-    <p className="text-xs text-muted-foreground">Projected contractual payments per 100 face. Interest and principal have independent vertical scales; exact amounts remain in the payment table.</p>
+    <p className="text-xs text-muted-foreground">Projected contractual payments per 100 face. Interest and principal have independent vertical scales; positive amounts extend above zero and negative amounts below. Exact amounts remain in the payment table.</p>
     {selectedFlow ? <p role="status" className="text-xs">Projected payment {selectedFlow.paymentDate}: interest {bondDecimalText(selectedFlow.interest)} / 100 · principal {bondDecimalText(selectedFlow.principal)} / 100.</p> : null}
     <div className="flex flex-wrap gap-2" aria-label="Select exercise scenario">
       {points.map((point) => <Button key={point.id} size="sm" variant="outline" aria-pressed={selected === point.id} onClick={() => setSelected(point.id)}>{point.kind} {point.exerciseDate}{point.governing ? " · YTW" : ""}</Button>)}

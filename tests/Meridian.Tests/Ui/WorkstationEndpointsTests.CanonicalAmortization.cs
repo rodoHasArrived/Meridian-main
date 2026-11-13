@@ -43,6 +43,50 @@ public sealed partial class WorkstationEndpointsTests
         spine.ReceivedCalls().Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task CanonicalAmortizationPreparationAndDraft_UnsupportedFxRefusesBeforeCalculationOrRetention(bool crossCurrency, bool nonUnitFx)
+    {
+        var fixture = await CanonicalAmortizationFixture(crossCurrency: crossCurrency, nonUnitFx: nonUnitFx);
+        var before = await fixture.Positions.GetSecurityAsync(fixture.Security.SecurityId);
+        var spine = Substitute.For<IAssetAccountingEventSpineService>();
+        await using var app = await CreateAppAsync(services => { fixture.Register(services); services.AddSingleton(spine); },
+            currentUserPermissions: UserPermission.ManageLedgerReports, currentUserCompanyId: "company-alpha", mapLedgerApi: true);
+        var client = app.GetTestClient();
+        using var preparation = await client.PostAsJsonAsync(AmortizationRoute(fixture.Request), fixture.Request, ServerJsonOptions);
+        using var draft = await client.PostAsJsonAsync(AmortizationRoute(fixture.Request, true),
+            new CreateCanonicalAmortizationDraftRequestDto(fixture.Request, "not-calculated", "Reviewed FX occurrence"), ServerJsonOptions);
+        foreach (var response in new[] { preparation, draft })
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.Conflict, await response.Content.ReadAsStringAsync());
+            (await response.Content.ReadAsStringAsync()).Should().Contain("AMORTIZATION_FX_UNSUPPORTED");
+        }
+        fixture.Securities.ReceivedCalls().Should().BeEmpty("unsupported FX must be refused before the calculation reads reference data");
+        spine.ReceivedCalls().Should().BeEmpty();
+        (await fixture.Positions.GetSecurityAsync(fixture.Security.SecurityId)).Should().BeEquivalentTo(before,
+            "no reviewed occurrence lineage or position version may be retained for unsupported FX");
+        var drafts = app.Services.GetRequiredService<IManualJournalEntryDraftStore>();
+        (await drafts.ListAsync("fund-alpha", fixture.Request.LedgerBookId, tenantId: "company-alpha", companyId: "company-alpha")).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task CanonicalAmortizationPreparation_ForeignLotCannotRevealUnsupportedFxFacts()
+    {
+        var fixture = await CanonicalAmortizationFixture(crossCurrency: true, nonUnitFx: true);
+        var retained = (await fixture.Periods.GetTaxLotsByIdsAsync(fixture.Request.LedgerBookId,
+            [fixture.Request.TaxLotRecordId])).Single();
+        fixture.Periods.GetTaxLotsByIdsAsync(fixture.Request.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns([retained with { LedgerBookId = Guid.NewGuid() }]);
+        await using var app = await CreateAppAsync(fixture.Register, currentUserPermissions: UserPermission.ManageLedgerReports,
+            currentUserCompanyId: "company-alpha", mapLedgerApi: true);
+        using var response = await app.GetTestClient().PostAsJsonAsync(AmortizationRoute(fixture.Request), fixture.Request, ServerJsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await response.Content.ReadAsStringAsync()).Should().NotContain("AMORTIZATION_FX_UNSUPPORTED");
+        fixture.Securities.ReceivedCalls().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task CanonicalAmortizationPreparation_AdoptedIncomeLotRequiresItsPolicyOwnedWorkflow()
     {
@@ -149,15 +193,15 @@ public sealed partial class WorkstationEndpointsTests
     private static string AmortizationRoute(PrepareCanonicalAmortizationRequestDto request, bool draft = false)
         => $"/api/ledger/books/{request.LedgerBookId:D}/amortization/{(draft ? "drafts" : "prepare")}";
 
-    private static async Task<CanonicalAmortizationTestFixture> CanonicalAmortizationFixture(bool adoptedIncome = false)
+    private static async Task<CanonicalAmortizationTestFixture> CanonicalAmortizationFixture(bool adoptedIncome = false, bool crossCurrency = false, bool nonUnitFx = false)
     {
         var inputs = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m, BondAmortizationMethod.StraightLine, null);
-        var security = inputs.Security with { Currency = "USD" };
+        var security = inputs.Security with { Currency = crossCurrency ? "EUR" : "USD" };
         var lot = inputs.ExpectedLot with
         {
-            OpenFunctionalCostBasis = inputs.ExpectedLot.OpenTransactionCostBasis,
-            Acquisition = inputs.ExpectedLot.Acquisition with { AcquisitionCurrency = "USD", AcquisitionFxRateToFunctional = 1m,
-                FunctionalCostBasis = inputs.ExpectedLot.Acquisition.TransactionCostBasis }
+            OpenFunctionalCostBasis = nonUnitFx ? inputs.ExpectedLot.OpenFunctionalCostBasis : inputs.ExpectedLot.OpenTransactionCostBasis,
+            Acquisition = inputs.ExpectedLot.Acquisition with { AcquisitionCurrency = crossCurrency ? "EUR" : "USD", AcquisitionFxRateToFunctional = nonUnitFx ? 1.1m : 1m,
+                FunctionalCostBasis = nonUnitFx ? inputs.ExpectedLot.Acquisition.FunctionalCostBasis : inputs.ExpectedLot.Acquisition.TransactionCostBasis }
         };
         inputs = inputs with { Security = security, ExpectedLot = lot,
             SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) } };

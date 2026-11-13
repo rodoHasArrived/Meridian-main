@@ -47,12 +47,12 @@ describe("retained robustness grid", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyRobustness />, { initialEntries: ["/strategy/promotions?companyId=company-a"] });
     await user.click(screen.getByRole("button", { name: "Load retained experiments" }));
-    const cell = await screen.findByRole("button", { name: "lookback 10, threshold 1: Acceptable" });
+    const cell = await screen.findByRole("button", { name: "✓ Acceptable 20.00%; lookback 10, threshold 1" });
     cell.focus(); await user.keyboard("{Enter}");
     const details = screen.getByRole("region", { name: "Selected parameter result" });
     expect(within(details).getByText(/Retained parameters/)).toBeInTheDocument();
     expect(within(details).getByRole("link").getAttribute("href")).toBe("/strategy/run-ledger?companyId=company-a&runId=a");
-    await user.click(screen.getByRole("button", { name: "lookback 20, threshold 2: Missing" }));
+    await user.click(screen.getByRole("button", { name: "— Missing 0 retained runs; lookback 20, threshold 2" }));
     expect(screen.getByText("No retained result at this coordinate. No performance is inferred.")).toBeInTheDocument();
   });
   it("shows explicit empty and failed retrieval states", async () => {
@@ -76,14 +76,14 @@ describe("retained robustness grid", () => {
     const options = within(experiments).getAllByRole("option") as HTMLOptionElement[];
     expect(options[0].value).not.toBe(options[1].value);
     await user.selectOptions(experiments, options[1]);
-    await user.click(screen.getByRole("button", { name: "lookback 10, threshold 1: Acceptable" }));
+    await user.click(screen.getByRole("button", { name: "✓ Acceptable 20.00%; lookback 10, threshold 1" }));
     expect(within(screen.getByRole("region", { name: "Selected parameter result" })).getByText(/other-a/)).toBeInTheDocument();
   });
   it("keeps the populated grid and selected result accessible", async () => {
     const user = userEvent.setup();
     const { container } = renderWithRouter(<StrategyRobustness />);
     await user.click(screen.getByRole("button", { name: "Load retained experiments" }));
-    await user.click(await screen.findByRole("button", { name: "lookback 10, threshold 1: Acceptable" }));
+    await user.click(await screen.findByRole("button", { name: "✓ Acceptable 20.00%; lookback 10, threshold 1" }));
     expect((await axe(container)).violations).toEqual([]);
   });
 });

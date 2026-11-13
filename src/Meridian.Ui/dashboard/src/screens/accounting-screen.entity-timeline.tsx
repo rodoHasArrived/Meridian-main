@@ -21,7 +21,7 @@ export function EntityLifecycleTimeline({ scope }: { scope: EntityOperationScope
     <OperationField label="Timeline organization" value={organizationId} onChange={setOrganizationId} required><option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}</OperationField>
     <OperationField label="Timeline entity" value={entityId} onChange={setEntityId} required><option value="">Select entity</option>{scope.graph?.entities.map((entity) => <option key={entity.entityId} value={entity.entityId}>{entity.name}</option>)}</OperationField>
     <OperationField label="Timeline as of (UTC)" value={asOf} onChange={setAsOf} type="date" required />
-  </FormGrid><Button type="button" variant="outline" onClick={() => { timeline.refresh(); currentLifecycle.refresh(); }} disabled={timeline.loading}>Refresh entity timeline</Button>
+  </FormGrid><Button type="button" variant="outline" onClick={() => { timeline.refresh(); currentLifecycle.refresh(); }} disabled={timeline.loading} disabledReason="Wait for the entity timeline to load.">Refresh entity timeline</Button>
     <OperationError error={timeline.error} />{timeline.loading ? <p role="status">Loading shared entity history…</p> : null}
     {timeline.data ? <div className="space-y-4"><p className="text-sm"><strong>{timeline.data.entity.name}</strong> · {timeline.data.entity.baseCurrency} · server as of {timeline.data.asOf}</p>
       {timeline.data.warnings.map((warning, index) => <p role="status" className="text-sm text-warning" key={index}>{warning}</p>)}

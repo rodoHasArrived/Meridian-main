@@ -95,7 +95,9 @@ export function StrategyRobustness() {
               const status = classifyRobustnessCell(cell.runs, metric, numericThreshold, direction);
               const symbol = status === "Acceptable" ? "✓" : status === "Outside threshold" ? "×" : status === "Missing" ? "—" : "?";
               const tint = status === "Acceptable" ? "bg-success/10" : status === "Outside threshold" ? "bg-danger/10" : "bg-secondary/40";
-              return <td key={cell.x} className={`border border-border p-0 ${tint}`}><button type="button" className={`min-h-16 w-full min-w-24 p-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${selected === cell ? "ring-2 ring-inset ring-primary" : ""}`} aria-pressed={selected === cell} aria-label={`${x} ${cell.x}, ${y} ${cell.y}: ${status}${cell.runs.length > 1 ? `, ${cell.runs.length} runs` : ""}`} onClick={() => setSelection({ x: cell.x, y: cell.y })}><span className="block font-semibold">{symbol} {status}</span><span className="font-mono">{cell.runs.length === 1 ? displayValue(cell.runs[0][metric], metric) : `${cell.runs.length} retained runs`}</span></button></td>;
+              const value = cell.runs.length === 1 ? displayValue(cell.runs[0][metric], metric) : `${cell.runs.length} retained runs`;
+              const visibleLabel = `${symbol} ${status} ${value}`;
+              return <td key={cell.x} className={`border border-border p-0 ${tint}`}><button type="button" className={`min-h-16 w-full min-w-24 p-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${selected === cell ? "ring-2 ring-inset ring-primary" : ""}`} aria-pressed={selected === cell} aria-label={`${visibleLabel}; ${x} ${cell.x}, ${y} ${cell.y}`} onClick={() => setSelection({ x: cell.x, y: cell.y })}><span className="block font-semibold">{symbol} {status}{" "}</span><span className="font-mono">{value}</span></button></td>;
             })}</tr>)}</tbody>
           </table>
         </div>}

@@ -28,6 +28,9 @@ intake. Draft creation retains the exact reviewed occurrence lineage on the auth
 without changing acquisition history or posting economics, and preserves its full dimensions;
 journal validation, independent approval and atomic posting retain their authority. No
 preview alone grants journal or lot mutation authority.
+This browser amortization handoff supports matching acquisition/functional currencies at unit
+acquisition FX. Other lots are refused before calculation or source retention because the current
+governed journal handoff cannot preserve their transaction-currency posting evidence.
 
 Provider-backed bond discovery requires tenant scope and Security Master read permission, uses
 Alpaca's fixed-income filter and authoritative error propagation, and exposes modification permission
@@ -1311,6 +1314,8 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+When source ledger dimensions carry `IntercompanyAgreementId`, the explorer exposes an `Agreement`
+filter with the same D-format UUID shown in record detail.
 Personal explorer views apply only after tenant/operator ownership is resolved; unknown or another
 operator's view ID yields no records. Their normalized search/filter values reach the shared
 read service without an unresolved personal ID, while the response retains that view's active marker.

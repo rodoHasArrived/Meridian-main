@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormGrid } from "@/components/ui/form";
 import type { ConsolidationFxConfiguration, ConsolidationFxRateSet, EntityOperationScope, FxRateKind } from "@/types/entity-operations";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
@@ -11,8 +12,8 @@ type AccountRule = NonNullable<ConsolidationFxConfiguration["policy"]["accountRu
 type HistoricalFact = NonNullable<ConsolidationFxConfiguration["historicalFacts"]>[number];
 type ClosingDate = NonNullable<ConsolidationFxConfiguration["policy"]["closingRateDates"]>[number];
 
-export function FxBookPolicyEditor({ scope, current, rateSets, onSaved }: {
-  scope: EntityOperationScope; current: ConsolidationFxConfiguration | null; rateSets: ConsolidationFxRateSet[]; onSaved: () => void;
+export function FxBookPolicyEditor({ scope, current, rateSets, onSaved, onCancel }: {
+  scope: EntityOperationScope; current: ConsolidationFxConfiguration | null; rateSets: ConsolidationFxRateSet[]; onSaved: () => void; onCancel: () => void;
 }) {
   const [selectedRate, setSelectedRate] = useState(current ? `${current.rateSetId}:${current.rateSetRevision}` : "");
   const [effectiveFrom, setEffectiveFrom] = useState(current?.effectiveFrom ?? today());
@@ -59,7 +60,7 @@ export function FxBookPolicyEditor({ scope, current, rateSets, onSaved }: {
           <OperationField label={`Treatment ${index + 1} method`} value={row.method} onChange={(value) => rule(index, { method: value as FxRateKind, periodStart: null, periodEnd: null })}>{fxRateKinds.map((kind) => <option key={kind}>{kind}</option>)}</OperationField>
           {row.method === "PeriodAverage" ? <><OperationField label={`Treatment ${index + 1} period start`} value={row.periodStart ?? ""} onChange={(value) => rule(index, { periodStart: value || null })} type="date" required />
             <OperationField label={`Treatment ${index + 1} period end`} value={row.periodEnd ?? ""} onChange={(value) => rule(index, { periodEnd: value || null })} type="date" required /></> : null}
-        </FormGrid><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={row.requiresOpeningTranslatedBalance} onChange={(event) => rule(index, { requiresOpeningTranslatedBalance: event.target.checked })} />Require retained opening translated balance for treatment {index + 1}</label>
+        </FormGrid><Checkbox checked={row.requiresOpeningTranslatedBalance} onCheckedChange={(checked) => rule(index, { requiresOpeningTranslatedBalance: checked })} label={`Require retained opening translated balance for treatment ${index + 1}`} />
           <Button type="button" size="sm" variant="outline" onClick={() => setRules((currentRules) => currentRules.filter((_, at) => at !== index))}>Remove treatment {index + 1}</Button></div>)}
         <Button type="button" size="sm" variant="outline" onClick={() => setRules((currentRules) => [...currentRules, { accountPath: "", method: "PeriodAverage", periodStart: null, periodEnd: null, requiresOpeningTranslatedBalance: false }])}>Add account translation rule</Button>
       </fieldset>
@@ -82,7 +83,7 @@ export function FxBookPolicyEditor({ scope, current, rateSets, onSaved }: {
         </FormGrid><Button type="button" size="sm" variant="outline" onClick={() => setClosingDates((currentDates) => currentDates.filter((_, at) => at !== index))}>Remove closing selection {index + 1}</Button></div>)}
         <Button type="button" size="sm" variant="outline" onClick={() => setClosingDates((currentDates) => [...currentDates, { asOf: today(), rateDate: today(), evidenceReference: "" }])}>Add closing-date selection</Button>
       </fieldset>
-      <Button type="submit" disabled={!selectedRate}>Approve and retain book FX policy</Button>
+      <Button type="submit" disabled={!selectedRate} disabledReason="Select an approved FX rate-set revision before retaining the policy.">Approve and retain book FX policy</Button><Button type="button" variant="outline" onClick={onCancel}>Cancel policy editing</Button>
     </fieldset><MutationFeedback state={mutation} />
   </form>;
 }

@@ -4341,6 +4341,7 @@ Meridian-main
 │   │   ├── SESSION_CONTINUITY.md
 │   │   ├── spacing-density.card.html
 │   │   ├── spacing-radii.card.html
+│   │   ├── specimen-themes.js
 │   │   ├── states-antipatterns.card.html
 │   │   ├── STATES_AND_ANTIPATTERNS.md
 │   │   ├── TABULAR_CONTRACT.md
@@ -4754,8 +4755,11 @@ Meridian-main
 │   │   ├── accounting-interaction-regression.mjs
 │   │   ├── action-contract.html
 │   │   ├── agency-regression.mjs
+│   │   ├── books-loop-readiness-regression.mjs
 │   │   ├── books-loop.html
 │   │   ├── brand-contrast-regression.mjs
+│   │   ├── browser-audit-helpers.mjs
+│   │   ├── browser-audit-regression.mjs
 │   │   ├── BROWSER_TEST_PLAN.md
 │   │   ├── chart-accessibility-regression.mjs
 │   │   ├── chart-trading-contract-regression.mjs
@@ -4770,6 +4774,7 @@ Meridian-main
 │   │   ├── core-delegated-lifecycle-regression.mjs
 │   │   ├── core-form-regression.mjs
 │   │   ├── core-gap-regression.mjs
+│   │   ├── core-integration-regression.mjs
 │   │   ├── core-interaction-regression.mjs
 │   │   ├── core-logic-regression.mjs
 │   │   ├── core-selection-disclosure-regression.mjs
@@ -4799,6 +4804,7 @@ Meridian-main
 │   │   ├── gallery.mjs
 │   │   ├── gallery.test.mjs
 │   │   ├── global-search-focus-regression.mjs
+│   │   ├── integration-data-accessibility-regression.mjs
 │   │   ├── interaction-depth-regression.mjs
 │   │   ├── local-patches-regression.mjs
 │   │   ├── mock-transport.js
@@ -4809,6 +4815,7 @@ Meridian-main
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
 │   │   ├── release-browser.mjs
+│   │   ├── retained-reference-accessibility-regression.mjs
 │   │   ├── retained-template-states-regression.mjs
 │   │   ├── scenario-selector-regression.mjs
 │   │   ├── semantic-role-regression.mjs
@@ -9088,6 +9095,7 @@ Meridian-main
 │   │   │   │   │       ├── combobox.test.tsx
 │   │   │   │   │       ├── combobox.tsx
 │   │   │   │   │       ├── context-menu.tsx
+│   │   │   │   │       ├── date-field.tsx
 │   │   │   │   │       ├── date-picker.test.tsx
 │   │   │   │   │       ├── date-picker.tsx
 │   │   │   │   │       ├── date-range-picker.tsx
@@ -9120,6 +9128,7 @@ Meridian-main
 │   │   │   │   │       ├── governed-approvals-panel.tsx
 │   │   │   │   │       ├── guardrail-utilization.tsx
 │   │   │   │   │       ├── input.tsx
+│   │   │   │   │       ├── integration-runtime-contracts.test.tsx
 │   │   │   │   │       ├── kbd.tsx
 │   │   │   │   │       ├── label.tsx
 │   │   │   │   │       ├── layout.test.tsx
@@ -9206,6 +9215,7 @@ Meridian-main
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
 │   │   │   │   │       └── entity-setup-wizard.tsx
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-notification-center.test.ts
 │   │   │   │   │   ├── use-notification-center.ts
 │   │   │   │   │   ├── use-portfolio-positions-table.test.tsx
 │   │   │   │   │   ├── use-portfolio-positions-table.ts
@@ -9980,6 +9990,7 @@ Meridian-main
 │   │   │   │   │   ├── settings-route-state.ts
 │   │   │   │   │   ├── settings-screen.a11y.test.tsx
 │   │   │   │   │   ├── settings-screen.date-format.ts
+│   │   │   │   │   ├── settings-screen.execution-alerts.test.tsx
 │   │   │   │   │   ├── settings-screen.execution-alerts.tsx
 │   │   │   │   │   ├── settings-screen.operations-control.ts
 │   │   │   │   │   ├── settings-screen.operations-form-options.ts
@@ -10086,6 +10097,7 @@ Meridian-main
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
+│   │   │   │   │   ├── print.css
 │   │   │   │   │   ├── reconciliation-workbench.css
 │   │   │   │   │   ├── status-badge.css
 │   │   │   │   │   ├── table-workbench.css
