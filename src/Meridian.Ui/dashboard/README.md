@@ -1045,7 +1045,10 @@ and local command search. Purpose descriptions and search-only aliases expose in
 cash forecast, statement import, historical prices, and running reports. Local destinations remain
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
-onboarding workspace and its retained comparison and readiness evidence.
+onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
+(`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
+opening-balance upload and report, per-period agreement, difference explanations, the parallel-run
+certificate and promotion; tables use the shared `DenseDataTable`.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
 (`PAPER · SEEDED`; LIVE uses the alarm-red `--live-env` token and follows the resolved session, not

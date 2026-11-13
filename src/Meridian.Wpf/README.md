@@ -227,6 +227,9 @@ runtime routing; those remain separate workflows. Credential-free providers show
 credentials are required. The wizard and credential management use the service's vault field schema,
 not local catalog field names, and never read secrets back into editors or write environment variables.
 
+The desktop close publication guard also resolves the optional book-of-record guard lazily, so a shadow
+onboarding book cannot hard-close; the shadow onboarding panel itself is browser-only for now.
+
 Provider badges and selections join canonical IDs, including retained aliases. Credential management
 retains a selected connection's field schema when a status read finishes during or after verification,
 without replacing the newer verification result with an older status label.
