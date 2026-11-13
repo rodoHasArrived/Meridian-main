@@ -72,12 +72,38 @@ import { AccountingConfigurationPanel } from "@/screens/accounting-screen.config
 import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.manual-journal-panel";
 import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
-import { buildSecurityMasterDrillInSearch, isSecurityMasterDrillInTabId, resolveExplorerSecurityId, resolveSecurityMasterDrillInTab } from "@/screens/accounting-screen.security-master-navigation";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   session?: SessionInfo | null;
+}
+
+const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
+
+type SecurityMasterDrillInTabId = (typeof SECURITY_MASTER_DRILL_IN_TAB_IDS)[number];
+
+function isSecurityMasterDrillInTabId(value: string | null): value is SecurityMasterDrillInTabId {
+  return SECURITY_MASTER_DRILL_IN_TAB_IDS.includes(value as SecurityMasterDrillInTabId);
+}
+
+function resolveSecurityMasterDrillInTab(search: string): SecurityMasterDrillInTabId {
+  const requested = new URLSearchParams(search).get("tab");
+  return isSecurityMasterDrillInTabId(requested) ? requested : "identity";
+}
+
+function buildSecurityMasterDrillInSearch(search: string, tabId: SecurityMasterDrillInTabId): string {
+  const params = new URLSearchParams(search);
+  params.set("tab", tabId);
+  const serialized = params.toString();
+  return serialized ? `?${serialized}` : "";
+}
+
+function resolveExplorerSecurityId(recordId: string): string | null {
+  const [recordType, securityId, ...extraSegments] = recordId.split(":");
+  return (recordType === "security" || recordType === "security-instrument") && securityId && extraSegments.length === 0
+    ? securityId
+    : null;
 }
 
 function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
