@@ -59,9 +59,9 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
 
         try
         {
-            using var response = await Http.GetAsync(
+            using var response = await ExecuteGetAsync(
                 $"{ApiBaseUrl}/series/observations?series_id=GDP&api_key={Uri.EscapeDataString(_apiKey)}&file_type=json&limit=1",
-                ct).ConfigureAwait(false);
+                "GDP", "availability", ct).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
@@ -83,8 +83,6 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
         if (string.IsNullOrWhiteSpace(_apiKey))
             throw new InvalidOperationException("FRED API key is required. Set FRED_API_KEY environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSeriesId = NormalizeSymbol(symbol);
         var url = BuildRequestUrl(normalizedSeriesId, from, to);
 
@@ -92,7 +90,7 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
             var httpResult = await HandleHttpResponseAsync(response, normalizedSeriesId, "economic observations", ct).ConfigureAwait(false);
 
             if (httpResult.IsNotFound)

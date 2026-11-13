@@ -344,7 +344,7 @@ public sealed record TradierOrderTransition(OrderStatus Status, ExecutionReportT
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.TwelveData.TwelveDataCorporateActionProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L34).
+Source: [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L35).
 
 Fetches dividend and split history from Twelve Data fundamentals endpoints.
 
@@ -356,10 +356,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TwelveDataCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;TwelveDataCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L41) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L53) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L55) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L59) |  |
+| <code>public TwelveDataCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;TwelveDataCorporateActionProvider&gt; logger, ICredentialContext? credentials = null, RateLimiterRegistry? rateLimiterRegistry = null);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L43) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:57](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L57) |  |
+| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L59) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs:63](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataCorporateActionProvider.cs#L63) |  |
 
 ## TwelveDataHistoricalDataProvider
 
@@ -377,17 +377,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L42) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L43) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L44) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L49) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L50) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:51](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L51) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L52) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly.WithMarkets(&quot;US&quot;, &quot;UK&quot;, &quot;EU&quot;, &quot;CA&quot;, &quot;AU&quot;);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L54) |  |
-| <code>public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L58) |  |
-| <code>public override Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:64](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L64) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L75) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L47) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L48) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L49) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L54) |  |
+| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L55) |  |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L56) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:57](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L57) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly.WithMarkets(&quot;US&quot;, &quot;UK&quot;, &quot;EU&quot;, &quot;CA&quot;, &quot;AU&quot;);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L59) |  |
+| <code>public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null) : base(httpClient, log, timeProvider : rateLimiterRegistry?.TimeProvider);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:63](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L63) |  |
+| <code>public override Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L70) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs:81](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs#L81) |  |
 
 ## TwelveDataSymbolSearchProvider
 
@@ -405,12 +405,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L26) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L27) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L28) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L44) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L56) |  |
-| <code>public TwelveDataSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:71](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L71) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L32) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L33) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L34) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L50) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L62) |  |
+| <code>public TwelveDataSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null) : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider);</code> | [src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs:77](../../../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataSymbolSearchProvider.cs#L77) |  |
 
 ## YahooFinanceHistoricalDataProvider
 

@@ -95,7 +95,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         {
             // Quick health check with quote endpoint
             var url = $"{BaseUrl}/quote?symbol=AAPL&token={_apiKey}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -118,8 +118,6 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Finnhub API key is required. Set FINNHUB_API_KEY environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
 
         // Convert dates to Unix timestamps
@@ -136,7 +134,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -223,8 +221,6 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Finnhub API key is required.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var normalizedResolution = NormalizeResolution(resolution);
 
@@ -238,7 +234,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -310,14 +306,12 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Finnhub API key is required.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = $"{BaseUrl}/stock/earnings?symbol={normalizedSymbol}&token={_apiKey}";
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -345,14 +339,12 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Finnhub API key is required.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
         var url = $"{BaseUrl}/stock/profile2?symbol={normalizedSymbol}&token={_apiKey}";
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
