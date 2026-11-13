@@ -19,14 +19,26 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class ProviderAssetClassCodeParityTests
 {
     // Inputs the sites see: codes, aliases, casing and whitespace variants, and near misses.
-    public static TheoryData<string> Corpus => new()
+    // The second column is a literal pin, not derived from any table: face-value
+    // (percentage-of-par) sizing applies to exactly treasury, us_treasury,
+    // fixed_income_treasury, corporate, bond, corporate_bond and us_corporate, in any case
+    // and with any surrounding whitespace.
+    public static TheoryData<string, bool> Corpus => new()
     {
-        "us_equity", "US_EQUITY", " us_equity ", "equity", "Equity", "stock",
-        "us_option", "US_Option", "option", "OPTION", "options", " option",
-        "treasury", "Treasury", " treasury", "us_treasury", "fixed_income_treasury",
-        "corporate", "bond", "BOND", "corporate_bond", "us_corporate",
-        "crypto", "Crypto", " crypto", "fixed_income", "futures", "forex",
-        "STK", "stk", "OPT", "opt", "FOP", "FUT", "CASH", "GOVT", "ETF", "",
+        { "us_equity", false }, { "US_EQUITY", false }, { " us_equity ", false }, { "equity", false },
+        { "Equity", false }, { "stock", false },
+        { "us_option", false }, { "US_Option", false }, { "option", false }, { "OPTION", false },
+        { "options", false }, { " option", false },
+        { "treasury", true }, { "Treasury", true }, { " treasury", true }, { "TREASURY ", true },
+        { "us_treasury", true }, { " US_Treasury", true }, { "fixed_income_treasury", true },
+        { "Fixed_Income_Treasury ", true },
+        { "corporate", true }, { "CORPORATE", true }, { "bond", true }, { "BOND", true }, { " bond ", true },
+        { "corporate_bond", true }, { "Corporate_Bond", true }, { "us_corporate", true }, { " US_CORPORATE ", true },
+        { "crypto", false }, { "Crypto", false }, { " crypto", false }, { "fixed_income", false },
+        { "treasuries", false }, { "bonds", false }, { "corporate bond", false }, { "govt", false },
+        { "futures", false }, { "forex", false },
+        { "STK", false }, { "stk", false }, { "OPT", false }, { "opt", false }, { "FOP", false },
+        { "FUT", false }, { "CASH", false }, { "GOVT", false }, { "ETF", false }, { "", false }, { "   ", false },
     };
 
     [Theory]
@@ -68,7 +80,7 @@ public sealed class ProviderAssetClassCodeParityTests
 
     [Theory]
     [MemberData(nameof(Corpus))]
-    public void PaperGateway_HasTheLiveGatewaysFixedIncomeSet(string assetClass)
+    public void PaperGateway_HasTheLiveGatewaysFixedIncomeSet(string assetClass, bool expectedFaceValue)
     {
         var paper = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);
         var request = new OrderRequest
@@ -84,9 +96,12 @@ public sealed class ProviderAssetClassCodeParityTests
         var live = !string.IsNullOrWhiteSpace(assetClass)
             && AlpacaBrokerageGateway.IsFixedIncomeAssetClass(AlpacaBrokerageGateway.NormalizeAssetClass(assetClass));
 
-        paper.UsesFaceValuePercentageOfPar(request).Should().Be(live, $"paper and live must size '{assetClass}' alike");
+        // Pin each side to the literal column first, so a new face-value alias in the table
+        // fails here rather than moving paper, live and the table together.
+        paper.UsesFaceValuePercentageOfPar(request).Should().Be(expectedFaceValue, $"paper must size '{assetClass}' as pinned");
+        live.Should().Be(expectedFaceValue, $"live must size '{assetClass}' as pinned");
         ProviderAssetClassCodeCatalog.IsFaceValueFixedIncomeInput(ProviderAssetClassCodeProviders.Alpaca, assetClass)
-            .Should().Be(live);
+            .Should().Be(expectedFaceValue);
     }
 
     [Theory]

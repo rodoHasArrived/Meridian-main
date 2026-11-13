@@ -6085,6 +6085,7 @@ Meridian-main
 │   │   │   ├── OtcContractLifecycle.cs
 │   │   │   ├── OtcContracts.cs
 │   │   │   ├── OtcExposure.cs
+│   │   │   ├── ProviderAssetClassCodeCatalog.cs
 │   │   │   ├── RateUnitNormalizer.cs
 │   │   │   ├── ScheduleConventionTerms.cs
 │   │   │   ├── ScheduleSpecFactory.cs
@@ -6607,6 +6608,7 @@ Meridian-main
 │   │   │   ├── ExecutionAuditTrailService.cs
 │   │   │   ├── ExecutionJournal.cs
 │   │   │   ├── ExecutionOperatorControlService.cs
+│   │   │   ├── ExecutionReportingAssetClasses.cs
 │   │   │   ├── FileBrokerageOrderRecoveryStore.cs
 │   │   │   ├── ILiveOrderReadinessGate.cs
 │   │   │   ├── IPaperSessionStore.cs
@@ -12627,6 +12629,7 @@ Meridian-main
 │   │   │   ├── PostingCalculationConnectionTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
+│   │   │   ├── ProviderAssetClassCodeRatchetTests.cs
 │   │   │   ├── ReportingReadModelBoundaryTests.cs
 │   │   │   ├── ReviewBoundaryTests.cs
 │   │   │   ├── SchedulePeriodRollingRatchetTests.cs
@@ -13207,6 +13210,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSequenceIntegrityTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── PolygonTimestampIntegrityTests.cs
+│   │   │   │   ├── ProviderAssetClassCodeParityTests.cs
 │   │   │   │   ├── ProviderCredentialPreparationWiringTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
@@ -13667,6 +13671,7 @@ Meridian-main
 │   │   │   ├── PricingStoreOtcContractValuationSourceTests.cs
 │   │   │   ├── ProjectionFanOutPostgresTests.cs
 │   │   │   ├── ProjectionFanOutTests.cs
+│   │   │   ├── ProviderAssetClassCodeCatalogTests.cs
 │   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RateUnitNormalizerTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
@@ -13794,6 +13799,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterRecordedIdentifierQueryTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
 │   │   │   ├── SecurityMasterReplayCorpusTests.cs
+│   │   │   ├── SecurityMasterRequiredReadOrderTests.cs
 │   │   │   ├── SecurityMasterSchemaVersionsTests.cs
 │   │   │   ├── SecurityMasterServiceAliasCacheRefreshTests.cs
 │   │   │   ├── SecurityMasterServiceCommittedReadbackTests.cs
