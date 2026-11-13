@@ -9726,6 +9726,8 @@ date.
   deadline's date appears under "Payment date", because the view model maps
   `payDate ?? effectiveDate` (`accounting-screen.view-model.ts`). Deferred while pull request
   #3423 edits those files.
+  *(2026-11-13: the labels are done; the payment-date half is still open. See
+  [record corrections](#record-corrections--2026-11-13).)*
 - The WPF "Schedule model" evidence item and the schedule fields print both `Summary` and the
   source summary, so the blocker sentence appears twice there.
 - Clock injection is partial. The snapshot time and the declared rows use the injected clock; the
@@ -9852,6 +9854,8 @@ read past.
   it used to read defaults. The sample configuration no longer sets
   `RequireGovernedTermAmendments` explicitly, so a production host started from it runs governed
   instead of refusing to start. The workbench read model does not yet show the effective profile.
+  *(2026-11-13: it now does, in both workstations. See
+  [record corrections](#record-corrections--2026-11-13).)*
 
 ### D6 — classification labels: closed
 
@@ -9976,6 +9980,25 @@ and role privileges, logical replication, and whether 062 is already applied any
 
 - The typed outcome is not read by any dashboard screen or WPF view; both render the statuses.
 - The three new schedule-book row types are still shown by their raw type names in the browser.
+
+*2026-11-13: the first two risks are closed. See
+[record corrections](#record-corrections--2026-11-13).*
+
+### Record corrections — 2026-11-13
+
+Three items recorded above as open were closed in source by `d9f2c698` (2026-11-11), and this
+record did not say so. Each was checked against source on 2026-11-13.
+
+| Recorded as open | Now in source |
+| --- | --- |
+| The workbench read model does not show the effective governance profile (D5 limits) | `SecurityMasterTrustSnapshotDto.Governance` (`SecurityMasterGovernanceDto`) carries the profile, why it is in effect (`Default`, `Configuration`, `ProductionComposition` or `Latched`), whether it is latched, each of the three requirements and the ignored configuration keys. `SecurityMasterWorkbenchQueryService` reads it from `ISecurityMasterGovernanceRequirements`, the seam that enforces edits, so the display cannot disagree with enforcement. The browser shows it in the accounting screen's Security Master panel (`governanceEvidence`) and WPF in the security's schedule fields (`SecurityMasterViewModel.PolicyEvidence`). `SecurityMasterWorkbenchGovernanceProjectionTests` pins the projection |
+| No dashboard screen or WPF view reads the typed declared call/put outcome | Both read `DeclaredExercise` from the schedule book, falling back to the schedule summary: its status, as-of, security version, window count, blockers and diagnostics. A resolved schedule states that its dates grant no exercise authority |
+| The browser shows the three new schedule-book row types by their raw type names | `formatSecurityScheduleEventType` labels them "Holder put", "Issuer call notice deadline" and "Holder put notice deadline" |
+
+Still open from the same entries: a notice deadline's date still appears under "Payment date" in
+the browser, because the row maps `payDate ?? effectiveDate`
+(`accounting-screen.security-projections.ts`). The other items these entries list as open were
+not re-checked here.
 - No mutation run was made for this pass. The 062 regression test was checked against the
   previous writer; the other new tests were not.
 - WPF sources changed (the governance registration and two log messages). WPF tests cannot run on
