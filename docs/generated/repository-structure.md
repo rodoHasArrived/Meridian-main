@@ -2157,7 +2157,8 @@ Meridian-main
 │   │   │   │   ├── page-067.md
 │   │   │   │   ├── page-068.md
 │   │   │   │   ├── page-069.md
-│   │   │   │   └── page-070.md
+│   │   │   │   ├── page-070.md
+│   │   │   │   └── page-071.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -9114,6 +9115,7 @@ Meridian-main
 │   │   │   │   │   │   ├── entity-operations.api.ts
 │   │   │   │   │   │   ├── execution-audit.api.ts
 │   │   │   │   │   │   ├── execution-blotter.api.ts
+│   │   │   │   │   │   ├── execution-evidence.api.ts
 │   │   │   │   │   │   ├── execution-workflows.api.ts
 │   │   │   │   │   │   ├── factor-paydown.api.test.ts
 │   │   │   │   │   │   ├── factor-paydown.api.ts
@@ -9854,6 +9856,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.cancel-preview.test.tsx
 │   │   │   │   │   ├── trading-screen.cancel-preview.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
+│   │   │   │   │   ├── trading-screen.execution-audit-rows.ts
 │   │   │   │   │   ├── trading-screen.execution-blotter.test.tsx
 │   │   │   │   │   ├── trading-screen.execution-blotter.tsx
 │   │   │   │   │   ├── trading-screen.execution-blotter.view-model.test.ts
@@ -10237,6 +10240,7 @@ Meridian-main
 │   │   │   ├── EquityReferenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
+│   │   │   ├── ExecutionEndpointDtos.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Workflows.cs
 │   │   │   ├── ExportEndpoints.cs
