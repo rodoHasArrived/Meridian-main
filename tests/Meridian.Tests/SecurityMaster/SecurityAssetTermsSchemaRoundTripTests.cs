@@ -720,6 +720,22 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     }
 
     [Theory]
+    [InlineData("Floter", "SOFR", "*couponType*Floter*")]
+    [InlineData("Floating", null, "*floatingIndex*")]
+    public void Bond_CouponRefusal_IsReportedBeforeAMissingMaturity_OnWrite(string couponType, string? floatingIndex, string expected)
+    {
+        // The generated Bond decode builds its fields in record order, dates first; the coupon
+        // contract was always read first on a write, so the refusal a caller sees names the coupon.
+        var payload = new Dictionary<string, object?> { ["couponType"] = couponType, ["isCallable"] = false, ["subclass"] = "Corporate" };
+        if (floatingIndex is not null)
+            payload["floatingIndex"] = floatingIndex;
+
+        FluentActions.Invoking(() => CreateSnapshot("Bond", payload))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage(expected);
+    }
+
+    [Theory]
     [InlineData("weightedAverageMaturityMonths", 1.5, "a whole number")]
     [InlineData("weightedAverageCoupon", "seven", "a decimal number")]
     [InlineData("reinvestmentPeriodEnd", "someday", "an ISO-8601 date")]

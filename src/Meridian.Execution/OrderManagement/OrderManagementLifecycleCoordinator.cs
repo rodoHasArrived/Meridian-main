@@ -51,7 +51,7 @@ internal sealed class OrderManagementLifecycleCoordinator(
     internal Task StopAsync(CancellationToken cancellationToken = default)
         => DisposeAsync().AsTask().WaitAsync(cancellationToken);
 
-    internal OperationLease EnterOperation()
+    internal OperationLease EnterOperation(bool allowCancellationAfterFailure = false)
     {
         lock (_sync)
         {
@@ -59,7 +59,7 @@ internal sealed class OrderManagementLifecycleCoordinator(
                 throw new ObjectDisposedException(nameof(OrderManagementSystem));
             if (!_started)
                 throw new InvalidOperationException("The OMS must be started before accepting operations. Call StartAsync first.");
-            if (failures.Failure is { } reportPumpFailure)
+            if (!allowCancellationAfterFailure && failures.AdmissionFailure is { } reportPumpFailure)
                 throw new InvalidOperationException(
                     "The authoritative broker-report pump failed and the OMS is closed to new operations.",
                     reportPumpFailure);
@@ -166,7 +166,7 @@ internal sealed class OrderManagementLifecycleCoordinator(
 
         // A subscriber may fail outside the pump stack, including while shutdown is draining.
         // Keep the existing shutdown-error precedence when another cleanup step already failed.
-        if (shutdownFailure is null && failures.Failure is { } terminalReportFailure)
+        if (shutdownFailure is null && failures.AdmissionFailure is { } terminalReportFailure)
             shutdownFailure = terminalReportFailure;
         if (shutdownFailure is not null)
             ExceptionDispatchInfo.Capture(shutdownFailure).Throw();

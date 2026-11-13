@@ -6,8 +6,16 @@ namespace Meridian.Execution.OrderManagement;
 internal sealed class ExecutionFailureState(ILogger logger)
 {
     private Exception? _failure;
+    private Exception? _journalFailure;
 
     public Exception? Failure => Volatile.Read(ref _failure);
+    public Exception? AdmissionFailure => Failure ?? Volatile.Read(ref _journalFailure);
+
+    public void MarkJournalFailure(Exception failure, string message)
+    {
+        if (Interlocked.CompareExchange(ref _journalFailure, failure, null) is null)
+            logger.LogCritical(failure, "{Message} The OMS is closed to new order admission.", message);
+    }
 
     public void Mark(Exception failure, string message)
     {

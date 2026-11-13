@@ -25,7 +25,12 @@ public sealed record PrepareFactorPaydownRequestDto(
     string CarryingAccountPath,
     string RealizedGainAccountPath,
     string RealizedLossAccountPath,
-    Guid? CorrelationId = null);
+    Guid? CorrelationId = null)
+{
+    /// <summary>Opt-in governed US GAAP contractual repayment; legacy disposal treatment remains the default.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool ScheduledPrincipal { get; init; }
+}
 
 /// <summary>Read-only preview. Decimal component strings preserve exact workstation display.</summary>
 public sealed record FactorPaydownPreparationDto(

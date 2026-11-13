@@ -606,9 +606,16 @@ Stage 3's codec arms were asserted, not generated. Twenty classes now have both 
 from one binding table (`SecurityAssetTermsCodecBindings`): the decode arm in
 `SecurityMasterMapping.GeneratedDecode.cs` and the writer arm in
 `Interop.SecurityMaster.GeneratedWriter.fs`, both committed and held to the table by
-`SecurityFlatCodecGenerationTests`. Behaviour is unchanged. Twelve classes remain hand-written:
-four need a module-level row kind, five need the structural codecs named in the table, and
-three have bespoke decodes. See the review record for the split.
+`SecurityFlatCodecGenerationTests`. Behaviour is unchanged.
+
+Cohort 2 (2026-11-12) added a module-level row kind and generated Deposit,
+CertificateOfDeposit, CommercialPaper and CashSweep, so 24 of 32 classes are generated. Eight
+remained hand-written at that point.
+
+Cohort 3 (2026-11-13) added list, computed and multi-key row kinds plus per-class decode inputs.
+It generated the five structural classes (Bond, Swap, DirectLoan, StructuredCredit,
+CommitmentGuarantee), so 29 of 32 classes are generated. Three remain hand-written because their
+decodes are bespoke: Equity, InvestmentFund and CustomAsset. See the review record for the split.
 
 ## Accrual and accounting follow-through — 2026-11-12
 

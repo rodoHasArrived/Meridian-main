@@ -20,7 +20,9 @@ internal static class AccountingPreparerAttestationTestData
         var eventId = Guid.NewGuid();
         var commandId = Guid.NewGuid();
         var debitName = record.Entry.Lines.Single(line => line.Debit > 0m).Account.Name;
-        var creditName = record.Entry.Lines.Single(line => line.Credit > 0m).Account.Name;
+        var creditAccount = record.Entry.Lines.Single(line => line.Credit > 0m).Account;
+        // A synthetic dividend uses a revenue path compatible with the retained chart.
+        var creditName = creditAccount.AccountType == LedgerAccountType.Revenue ? creditAccount.Name : "Dividend income";
         if (creditName == debitName)
             creditName = "Dividend income";
         var roles = new CashDividendAccountRoleBindingDto(scope.LedgerBookId, debitName, creditName,

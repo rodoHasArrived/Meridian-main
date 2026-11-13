@@ -522,7 +522,10 @@ public sealed partial class PostgresFundStructureStore : IFundStructureStore
                 jurisdiction = EXCLUDED.jurisdiction, base_currency = EXCLUDED.base_currency,
                 is_active = EXCLUDED.is_active, effective_from = EXCLUDED.effective_from,
                 effective_to = EXCLUDED.effective_to, description = EXCLUDED.description,
-                legal_form = EXCLUDED.legal_form, lifecycle_status = EXCLUDED.lifecycle_status,
+                legal_form = EXCLUDED.legal_form,
+                lifecycle_status = case when exists
+                    (select 1 from {Q("entity_lifecycle_revision")} revision where revision.entity_id = EXCLUDED.entity_id)
+                    then legal_entity.lifecycle_status else EXCLUDED.lifecycle_status end,
                 registration_number = EXCLUDED.registration_number,
                 beneficial_owners = EXCLUDED.beneficial_owners,
                 lifecycle_events = EXCLUDED.lifecycle_events, updated_at = now()";

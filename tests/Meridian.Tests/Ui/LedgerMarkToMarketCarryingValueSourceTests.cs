@@ -14,6 +14,56 @@ public sealed class LedgerMarkToMarketCarryingValueSourceTests
     private static readonly Guid SecurityId = Guid.NewGuid();
     private static readonly DateTimeOffset AsOf = DateTimeOffset.Parse("2026-07-15T22:00:00Z");
 
+    [Fact]
+    public async Task GetCarryingValuesAsync_UsesNativeBalanceReadAndPreservesMissingVersusZero()
+    {
+        var store = Substitute.For<ILedgerJournalStore, ILedgerBalanceSnapshotSource>();
+        var snapshots = (ILedgerBalanceSnapshotSource)store;
+        using var cancellation = new CancellationTokenSource();
+        snapshots.ReadTrialBalanceAsOfAsync(BookId, AsOf, null,
+                Arg.Is<LedgerLineDimensionSet>(dimensions => dimensions.EntityId == "entity-a"), cancellation.Token)
+            .Returns(new Dictionary<LedgerAccount, decimal>
+            {
+                [LedgerAccounts.Securities("AAPL", "broker-a")] = 0m
+            });
+        MarkToMarketPosition[] positions =
+        [
+            new("AAPL", 1m, 100m, "broker-a", SecurityId: SecurityId),
+            new("MSFT", 1m, 200m, "broker-a", SecurityId: Guid.NewGuid())
+        ];
+        var request = new MarkToMarketCarryingValueRequest("fund-a", "2026-07", BookId,
+            AsOf.ToOffset(TimeSpan.FromHours(-7)), "USD", positions, " entity-a ");
+
+        var result = await new LedgerMarkToMarketCarryingValueSource(store)
+            .GetCarryingValuesAsync(request, cancellation.Token);
+
+        result[MarkToMarketCarryingValueKey.FromPosition(positions[0])].Amount.Should().Be(0m);
+        result[MarkToMarketCarryingValueKey.FromPosition(positions[1])].Amount.Should().BeNull();
+        result.Values.Should().OnlyContain(value => value.CapturedAtUtc == AsOf &&
+            value.Source == "durable-ledger-trial-balance" &&
+            value.EvidenceReference!.Contains("entityId=entity-a", StringComparison.Ordinal));
+        await snapshots.Received(1).ReadTrialBalanceAsOfAsync(BookId, AsOf, null,
+            Arg.Is<LedgerLineDimensionSet>(dimensions => dimensions.EntityId == "entity-a"), cancellation.Token);
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetCarryingValuesAsync_NativeIntegrityFailureDoesNotFallBackToJournalHydration()
+    {
+        var store = Substitute.For<ILedgerJournalStore, ILedgerBalanceSnapshotSource>();
+        ((ILedgerBalanceSnapshotSource)store).ReadTrialBalanceAsOfAsync(BookId, AsOf, null,
+                Arg.Any<LedgerLineDimensionSet?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<IReadOnlyDictionary<LedgerAccount, decimal>>(
+                new LedgerValidationException("Checkpoint integrity failure")));
+        var request = new MarkToMarketCarryingValueRequest("fund-a", "2026-07", BookId, AsOf, "USD",
+            [new("AAPL", 1m, 100m, "broker-a", SecurityId: SecurityId)]);
+
+        var read = () => new LedgerMarkToMarketCarryingValueSource(store).GetCarryingValuesAsync(request);
+
+        await read.Should().ThrowAsync<LedgerValidationException>().WithMessage("*integrity failure*");
+        await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("entity-a", 100, 10)]
     [InlineData("entity-b", 200, -90)]
@@ -49,7 +99,7 @@ public sealed class LedgerMarkToMarketCarryingValueSourceTests
             DateOnly.FromDateTime(AsOf.UtcDateTime), SecurityId, "broker-a", "AAPL",
             draft.Metadata.Tags[ValuationMarkEvidenceGuard.DigestTag], "another-entity").Should().NotBeNull();
         await store.Received(1).QueryAsync(Arg.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == BookId &&
-            query.OccurredTo == AsOf && query.LineDimensions!.EntityId == entityId), Arg.Any<CancellationToken>());
+            query.OccurredTo == AsOf && query.LineDimensions == null), Arg.Any<CancellationToken>());
     }
 
     private static LedgerJournalEntryRecord Record(string? entityId, decimal amount)

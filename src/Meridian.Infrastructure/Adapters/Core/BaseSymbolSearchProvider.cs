@@ -7,6 +7,7 @@ using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -31,6 +32,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 {
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
+    protected virtual RateLimiter RequestRateLimiter => RateLimiter;
+    protected virtual bool OwnsHttpRetries => false;
+    private readonly TimeProvider _timeProvider;
     protected readonly ILogger Log;
     protected bool Disposed;
 
@@ -110,9 +114,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="apiKey">Optional API key (loads from environment if not provided).</param>
     /// <param name="httpClient">Optional HTTP client (uses factory if not provided).</param>
     /// <param name="log">Optional logger.</param>
-    protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null)
     {
         Log = log ?? LoggingSetup.ForContext(GetType());
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         // Load API key from parameter or environment
         ApiKey = apiKey ?? LoadApiKeyFromEnvironment();
@@ -122,7 +127,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         ConfigureHttpClientHeaders();
 
         // Initialize rate limiter with provider-specific settings
-        RateLimiter = new RateLimiter(MaxRequestsPerWindow, RateLimitWindow, MinRequestDelay, Log);
+        RateLimiter = new RateLimiter(MaxRequestsPerWindow, RateLimitWindow, MinRequestDelay, Log, _timeProvider);
     }
 
     /// <summary>
@@ -202,12 +207,21 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <summary>
     /// Search for symbols with filtering options.
     /// </summary>
-    public async Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
+    public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
         string query,
         int limit = 10,
         string? assetType = null,
         string? exchange = null,
         CancellationToken ct = default)
+        => SearchCoreAsync(query, limit, assetType, exchange, failOnProviderError: false, ct);
+
+    /// <summary>Candidate review lookup: HTTP and transport failures must not become empty matches.</summary>
+    public Task<IReadOnlyList<SymbolSearchResult>> SearchAuthoritativeAsync(
+        string query, int limit = 10, string? assetType = null, string? exchange = null, CancellationToken ct = default)
+        => SearchCoreAsync(query, limit, assetType, exchange, failOnProviderError: true, ct);
+
+    private async Task<IReadOnlyList<SymbolSearchResult>> SearchCoreAsync(
+        string query, int limit, string? assetType, string? exchange, bool failOnProviderError, CancellationToken ct)
     {
         ThrowIfDisposed();
 
@@ -218,14 +232,22 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             return Array.Empty<SymbolSearchResult>();
 
         if (!HasValidCredentials())
+        {
+            if (failOnProviderError)
+                throw new InvalidOperationException("Provider credentials are unavailable.");
             return Array.Empty<SymbolSearchResult>();
+        }
 
-        await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+        await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
         try
         {
             var url = BuildSearchUrl(query, assetType, exchange);
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            if (OwnsHttpRetries)
+                request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            using var response = await Http.SendAsync(request, ct).ConfigureAwait(false);
+            ApplyResponseCooldown(response);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -234,6 +256,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
                 Log.Warning("{Provider} search returned {Status} for query {Query}",
                     Name, response.StatusCode, query);
+                if (failOnProviderError)
+                    response.EnsureSuccessStatusCode();
                 return Array.Empty<SymbolSearchResult>();
             }
 
@@ -241,7 +265,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             if (CreateQuotaLimitException(json, query) is { } quotaLimit)
                 throw quotaLimit;
 
-            var results = DeserializeSearchResults(json, query);
+            var results = failOnProviderError
+                ? DeserializeAuthoritativeSearchResults(json, query)
+                : DeserializeSearchResults(json, query);
 
             // Apply additional filtering if provider doesn't support it natively
             results = ApplyFilters(results, assetType, exchange);
@@ -262,6 +288,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         catch (Exception ex)
         {
             Log.Error(ex, "{Provider} search failed for query {Query}", Name, query);
+            if (failOnProviderError)
+                throw;
             return Array.Empty<SymbolSearchResult>();
         }
     }
@@ -279,14 +307,18 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (!HasValidCredentials())
             return null;
 
-        await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+        await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
         var symbolValue = symbol.Value;
 
         try
         {
             var url = BuildDetailsUrl(symbolValue);
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            if (OwnsHttpRetries)
+                request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            using var response = await Http.SendAsync(request, ct).ConfigureAwait(false);
+            ApplyResponseCooldown(response);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -345,6 +377,13 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     protected abstract IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query);
 
     /// <summary>
+    /// Decode explicit candidate-review evidence. Providers whose ordinary decoder tolerates
+    /// invalid responses override this hook so decoding failures remain unavailable evidence.
+    /// </summary>
+    protected virtual IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
+        => DeserializeSearchResults(json, query);
+
+    /// <summary>
     /// Deserialize the details response JSON into a SymbolDetails object.
     /// </summary>
     /// <param name="json">Response JSON.</param>
@@ -364,13 +403,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (response.StatusCode != HttpStatusCode.TooManyRequests)
             return null;
 
-        var retryAfter = response.Headers.RetryAfter?.Delta;
-        if (retryAfter is null && response.Headers.RetryAfter?.Date is { } retryAt)
-        {
-            var delay = retryAt - DateTimeOffset.UtcNow;
-            if (delay > TimeSpan.Zero)
-                retryAfter = delay;
-        }
+        var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
 
         return new RateLimitException(
             $"{DisplayName} symbol search rate limit exceeded for {symbol}.",
@@ -399,14 +432,26 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     }
 
     private RateLimitException? CreateQuotaLimitException(string json, string symbol)
-        => IsQuotaExceededResponse(json)
-            ? new RateLimitException(
+    {
+        if (!IsQuotaExceededResponse(json))
+            return null;
+        RequestRateLimiter.ApplyCooldown(RateLimitWindow);
+        return new RateLimitException(
                 $"{DisplayName} symbol search quota was exhausted for {symbol}.",
                 provider: Name,
                 symbol: symbol,
                 retryAfter: RateLimitWindow,
-                requestLimit: MaxRequestsPerWindow)
-            : null;
+                requestLimit: MaxRequestsPerWindow);
+    }
+
+    private void ApplyResponseCooldown(HttpResponseMessage response)
+    {
+        var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
+        if (retryAfter is { } delay)
+            RequestRateLimiter.ApplyCooldown(delay);
+        else if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            RequestRateLimiter.ApplyCooldown(RateLimitWindow);
+    }
 
     private static bool ContainsStructuredQuotaSignal(JsonElement element)
     {

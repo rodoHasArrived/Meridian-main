@@ -100,6 +100,7 @@ public sealed partial class IntercompanyAgreementService
         return new(state.AgreementId, aggregateVersion, identity.Code, identity.Name, identity.PartyOneId, identity.PartyOneRole,
             identity.PartyTwoId, identity.PartyTwoRole, identity.AgreementType, identity.Currency, asOf, timeline.Status,
             revisions.Length == 0 ? null : revisions.Max(r => r.AgreementVersion), timeline.Revision,
-            historical ? [] : state.Proposals, revisions, history, caps);
+            historical ? [] : state.Proposals, revisions, history, caps)
+        { MigrationWarnings = history.LastOrDefault()?.MigrationWarnings };
     }
 }

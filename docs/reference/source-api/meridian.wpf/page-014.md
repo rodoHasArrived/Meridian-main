@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PackageManagerViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.PackageManagerViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L19).
+
+ViewModel for the Package Manager page. Owns all create, validate, import, and list operations plus their status display state, so the code-behind is thinned to constructor DI and lifecycle wiring only.
+
+```csharp
+public sealed class PackageManagerViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string CreateStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L26) |  |
+| <code>public Brush CreateStatusForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L29) |  |
+| <code>public string ValidateResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L33) |  |
+| <code>public Brush ValidateResultForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L36) |  |
+| <code>public string ImportResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:40](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L40) |  |
+| <code>public Brush ImportResultForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L43) |  |
+| <code>public string PackageListStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L47) |  |
+| <code>public Brush PackageListStatusForeground { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L50) |  |
+| <code>public IReadOnlyList&lt;object&gt;? PackageItems { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L53) |  |
+| <code>public IAsyncRelayCommand RefreshPackagesCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L56) |  |
+| <code>public PackageManagerViewModel(PortablePackagerService packagerService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L58) |  |
+| <code>public async Task LoadAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L70) |  |
+| <code>public async Task CreatePackageAsync(string symbolsText, string fromDateText, string toDateText);</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L74) |  |
+| <code>public async Task ValidatePackageAsync(string path);</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:126](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L126) |  |
+| <code>public async Task ImportPackageAsync(string path);</code> | [src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/PackageManagerViewModel.cs#L163) |  |
+
 ## ParameterItemViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ParameterItemViewModel</code>. Kind: `record`.
@@ -1418,14 +1450,4 @@ Source: [src/Meridian.Wpf/ViewModels/SecurityConflictLaneModels.cs:40](../../../
 
 ```csharp
 public sealed record SecurityConflictSecurityContext(string DisplayName, string PrimaryIdentifier, string AssetClass);
-```
-
-## BondAnalyticsModelOption
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.BondAnalyticsModelOption</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/BondAnalyticsViewModel.cs:228](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/BondAnalyticsViewModel.cs#L228).
-
-```csharp
-public sealed record BondAnalyticsModelOption(string Version, string Label);
 ```

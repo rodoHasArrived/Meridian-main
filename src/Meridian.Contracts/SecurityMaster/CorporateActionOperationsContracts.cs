@@ -244,7 +244,7 @@ public static class CorporateActionEvidenceKinds
 
     public static bool IsKnown(string? kind) => kind is
         ProviderPayload or OfferingMemorandum or IssuerNotice or CustodianNotice or
-        PositionSnapshot or TaxLotSnapshot or ElectionInstruction or OperatorAnalysis;
+        PositionSnapshot or TaxLotSnapshot or ElectionInstruction or OperatorAnalysis or CorporateActionDeadlinePolicy.EvidenceKind;
 
     public static bool IsTrustedReference(string? reference)
     {
@@ -468,7 +468,10 @@ public sealed record CorporateActionDurableInboxEntryDto(
     long Version,
     string ProposalState,
     CorporateActionCaseScopeDto AcceptanceScope,
-    CorporateActionSourceProposalActionAvailabilityDto ActionAvailability);
+    CorporateActionSourceProposalActionAvailabilityDto ActionAvailability)
+{
+    public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }
+}
 
 public sealed record CorporateActionDurableInboxDto(
     DateTimeOffset? LastIngestAt,
@@ -506,7 +509,10 @@ public sealed record CorporateActionProcessingCaseDto(
     DateTimeOffset UpdatedAtUtc,
     CorporateActionCaseActionAvailabilityDto? ActionAvailability = null,
     CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null,
-    CorporateActionCaseAccountingStatusDto? AccountingStatus = null);
+    CorporateActionCaseAccountingStatusDto? AccountingStatus = null)
+{
+    public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }
+}
 
 /// <summary>Server-owned action posture consumed by browser and desktop clients.</summary>
 public sealed record CorporateActionCaseActionAvailabilityDto(

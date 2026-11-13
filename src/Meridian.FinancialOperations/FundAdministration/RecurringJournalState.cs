@@ -84,7 +84,12 @@ public sealed record RecurringOccurrenceRecord(
     string? Reason = null,
     string? PeriodId = null,
     string? LockOwner = null,
-    string? ReopenPath = null);
+    string? ReopenPath = null)
+{
+    /// <summary>Write-once digest of trusted calculated intake evidence, independent of the editable draft store.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DraftEvidenceDigest { get; init; }
+}
 
 /// <summary>A definition change cannot silently reinterpret a retained approval draft.</summary>
 public sealed class RecurringJournalDefinitionChangedException(string message) : InvalidOperationException(message);
@@ -122,6 +127,8 @@ public interface IRecurringJournalSession : IAsyncDisposable
         int expectedVersion, DateTimeOffset now, CancellationToken ct = default);
     Task<RecurringOccurrenceRecord> ClaimAsync(string scheduleId, DateOnly date,
         int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);
+    Task<RecurringOccurrenceRecord> PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default)
+        => Task.FromException<RecurringOccurrenceRecord>(new NotSupportedException("This recurring registry cannot retain calculated draft evidence authority."));
     Task<RecurringOccurrenceRecord> SetOutcomeAsync(string key, RecurringOccurrenceState state,
         string? reason, string? periodId, string? lockOwner, string? reopenPath,
         DateTimeOffset now, CancellationToken ct = default);

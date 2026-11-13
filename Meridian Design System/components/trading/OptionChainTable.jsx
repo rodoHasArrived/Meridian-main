@@ -100,6 +100,7 @@ export function OptionChainTable({
   }, [rows, underlyingPrice]);
 
   const [focusIdx, setFocusIdx] = React.useState(atmIdx);
+  const gridId = React.useId();
   const interactive = !!onSelect;
   const currentFocus=Math.max(0,Math.min(focusIdx,sorted.length-1));
 
@@ -142,7 +143,7 @@ export function OptionChainTable({
     cols.map((key) => {
       const { text, tone } = fmtCell(side, key, r);
       return (
-        <span key={side + key} role="gridcell"
+        <span key={side + key} role={interactive ? "gridcell" : "cell"}
           className={`mds-ochain__cell${itm ? " mds-ochain__cell--itm" : ""}${tone ? ` mds-ochain__cell--${tone}` : ""}`}>
           {text}
         </span>
@@ -152,7 +153,9 @@ export function OptionChainTable({
   return (
     <div
       className={`mds-ochain${interactive ? " mds-ochain--interactive" : ""}${className ? " " + className : ""}`}
-      role="grid" aria-label="Option chain"
+      role={interactive ? "grid" : "table"} aria-label="Option chain"
+      aria-activedescendant={interactive && sorted.length ? `${gridId}-strike-${currentFocus}` : undefined}
+      aria-rowcount={sorted.length + 2 + (spotAfter >= 0 ? 1 : 0)} aria-colcount={nC + nP + 1}
       tabIndex={0}
       onKeyDown={onKeyDown}
       {...rest}
@@ -182,18 +185,19 @@ export function OptionChainTable({
           return (
             <React.Fragment key={r.strike}>
               <div
+                id={`${gridId}-strike-${i}`}
                 className={`mds-ochain__row${isSel ? " mds-ochain__row--selected" : ""}${isFocus ? " mds-ochain__row--focus" : ""}`}
                 role="row" aria-selected={interactive ? isSel : undefined}
                 onClick={interactive ? () => { setFocusIdx(i); select(r); } : undefined}
               >
                 {cells(r, "call", callCols, callItm)}
-                <span className="mds-ochain__cell mds-ochain__cell--strike" role="gridcell">
+                <span className="mds-ochain__cell mds-ochain__cell--strike" role={interactive ? "gridcell" : "cell"}>
                   {r.strike.toFixed(strikeDecimals)}
                 </span>
                 {cells(r, "put", putCols, putItm)}
               </div>
               {i === spotAfter && (
-                <div className="mds-ochain__spot" role="row"><span role="gridcell" aria-colspan={nC+nP+1} style={{display:"contents"}}>
+                <div className="mds-ochain__spot" role="row"><span role={interactive ? "gridcell" : "cell"} aria-colspan={nC+nP+1} style={{display:"contents"}}>
                   <span className="mds-ochain__spotrule" aria-hidden="true"></span>
                   <span className="mds-ochain__spotlab">
                     {underlyingPrice.toFixed(priceDecimals)} · {underlyingLabel}

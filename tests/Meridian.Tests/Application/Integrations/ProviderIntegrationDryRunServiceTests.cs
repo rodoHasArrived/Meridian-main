@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
@@ -343,6 +344,48 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         (await store.GetSyncRunAsync("sync-run-1")).Should().BeNull();
         (await store.ListStagingRecordsAsync("sync-run-1")).Should().BeEmpty();
         (await store.ListQuarantinedRecordsAsync("sync-run-1")).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("bond")]
+    [InlineData(" Bond ")]
+    [InlineData("CorporateBond")]
+    [InlineData("MunicipalBond")]
+    [InlineData("FixedIncome")]
+    [InlineData("fixedincome")]
+    public void MappedRecordValidation_BondClassAliasOrLegacyFamilyCannotUseQuantityFallback(string assetClass)
+    {
+        var mapped = JsonNode.Parse("""
+            {"quantity":1,"price":{"amount":100},"marketValue":{"amount":100,"currency":"USD"}}
+            """)!.AsObject();
+        mapped["security"] = new JsonObject { ["assetClass"] = assetClass };
+        var issues = new List<ValidationIssueDto>();
+
+        ProviderIntegrationMappedRecordValidation.AddValidationIssues(ProviderCapabilityKindDto.Positions, mapped, issues);
+
+        issues.Should().Contain(issue => issue.Code == "bond-value.conventions.incomplete");
+        mapped["bondValueReconciliation"]!["normalizedValue"].Should().BeNull();
+        mapped["bondValueReconciliation"]!["status"]!.GetValue<string>().Should().Be("Blocked");
+    }
+
+    [Theory]
+    [InlineData("Equity")]
+    [InlineData("StructuredCredit")]
+    [InlineData("StructuredNote")]
+    [InlineData("TreasuryBill")]
+    public void MappedRecordValidation_NonCouponClassWithoutBondEvidenceKeepsItsExistingUnits(string assetClass)
+    {
+        var mapped = JsonNode.Parse("""
+            {"quantity":1,"price":{"amount":100},"marketValue":{"amount":100,"currency":"USD"}}
+            """)!.AsObject();
+        mapped["assetClass"] = assetClass;
+        var issues = new List<ValidationIssueDto>();
+
+        ProviderIntegrationMappedRecordValidation.AddValidationIssues(ProviderCapabilityKindDto.Holdings, mapped, issues);
+
+        issues.Should().BeEmpty();
+        mapped.ContainsKey("bondValueReconciliation").Should().BeFalse();
     }
 
     [Theory]

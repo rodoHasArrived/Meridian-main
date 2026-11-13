@@ -18,7 +18,7 @@ import { DesignSystemStatus } from "@/design-system/status";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
+import { AccrualScheduleWorkbench } from "@/components/accounting/accrual-schedule-workbench";
 import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
@@ -27,7 +27,12 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
+import { SecurityCurveWorkbench } from "@/components/meridian/security-curve-workbench";
+import { SecurityCurveValuationPanel } from "@/components/meridian/security-curve-valuation-panel";
+import { BondDiscoveryPanel } from "@/components/meridian/bond-discovery-panel";
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
+import { BondWorkflowPanel } from "@/components/meridian/bond-workflow-panel";
+import { BondIncomePanel } from "@/components/meridian/bond-income-panel";
 import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
 import { SecurityRatesIngestionPanel } from "@/components/meridian/security-rates-ingestion-panel";
 import { BondObservedFixingPanel } from "@/components/meridian/bond-observed-fixing-panel";
@@ -1451,6 +1456,8 @@ function AccountingCaseWorkbench({
 }
 
 export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
+  const [curvesOpen, setCurvesOpen] = useState(false);
+  const [bondDiscoveryOpen, setBondDiscoveryOpen] = useState(false);
   const { pathname, search, hash } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   // The same baseline the break queue marks rows against (C3), read without recording a visit:
@@ -2248,7 +2255,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel view={journalEntries} search={search} />
+        <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? (
@@ -2871,6 +2878,17 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             </div>
           </section>
 
+          <div className="grid gap-4" aria-label="Security Master market inputs and discovery">
+            <details className="rounded border border-border p-4" onToggle={(event) => setCurvesOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer font-semibold">Curves: definitions, pillars and historical versions</summary>
+              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+            </details>
+            <details className="rounded border border-border p-4" onToggle={(event) => setBondDiscoveryOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer font-semibold">Discover provider bonds and stage candidate imports</summary>
+              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+            </details>
+          </div>
+
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.8fr)]">
           {/* Search panel */}
           <Card className="panel-surface">
@@ -3288,6 +3306,9 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                               panel?.scrollIntoView({ block: "nearest" });
                             }} />
                         </div>
+                        <SecurityCurveValuationPanel key={`curve-valuation-${securityMaster.selectedSecurityId}`} securityId={securityMaster.selectedSecurityId} />
+                        <BondWorkflowPanel securityId={securityMaster.selectedSecurityId} />
+                        <BondIncomePanel key={`income-${securityMaster.selectedSecurityId}`} />
                         <section id="bond-conventions-review" tabIndex={-1} aria-label="Bond convention review">
                           <Button type="button" variant="outline" size="sm" onClick={() => {
                             const panel = document.getElementById("bond-calculation-context");
@@ -3984,12 +4005,13 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
       <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
         onChange={(event) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId: event.target.value })} />
     </label>
-    <RecurringJournalQueue
+    <AccrualScheduleWorkbench
       scope={recurringFund && recurringBook && recurringEntity.trim()
         ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
         : null}
       availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
       onSelectDraft={view.selectDraft}
+      onDraftsGenerated={view.refresh}
     />
   </div>;
   // While an amount input holds unparseable text, its raw string is kept here (keyed
@@ -4098,6 +4120,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
         </div>
       ) : null}
 
+      {recurringQueue}
       {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated governed asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
       <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
@@ -4134,7 +4157,6 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
             </div>
           </section>
 
-          {recurringQueue}
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
         </div>
 

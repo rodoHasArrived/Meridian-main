@@ -372,7 +372,8 @@ public static class SecurityAssetTermsSchema
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
                 Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4).ReadOnly()
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4).ReadOnly(),
+                Opt("bondWorkflow", SecurityAssetTermFieldType.Object).Since(5)
             ],
             ["FxSpot"] =
             [
@@ -830,6 +831,20 @@ public static class SecurityAssetTermsSchema
             ],
             ["Swap.legs.scheduleConventions"] = ScheduleConventionFields,
             ["Bond.scheduleConventions"] = ScheduleConventionFields,
+            ["Bond.bondWorkflow"] =
+            [
+                OptOneOf("floatingMethod", "Simple", "CompoundedOvernight"),
+                Opt("fixingCalendarId", SecurityAssetTermFieldType.String),
+                Opt("lookbackBusinessDays", SecurityAssetTermFieldType.Integer),
+                OptOneOf("observationMethod", "LookbackWithoutShift", "ObservationShift"),
+                OptOneOf("observationWeighting", "ObservationPeriod", "InterestPeriod"),
+                Opt("lockoutBusinessDays", SecurityAssetTermFieldType.Integer),
+                Opt("lagMonths", SecurityAssetTermFieldType.Integer),
+                Opt("interpolateMonthly", SecurityAssetTermFieldType.Boolean),
+                Opt("couponFloorRatio", SecurityAssetTermFieldType.Decimal),
+                Opt("redemptionFloorRatio", SecurityAssetTermFieldType.Decimal),
+                Opt("exCouponBusinessDays", SecurityAssetTermFieldType.Integer)
+            ],
             ["CertificateOfDeposit.scheduleConventions"] = ScheduleConventionFields,
             ["StructuredCredit.scheduleConventions"] = ScheduleConventionFields,
             ["Bond.callSchedule"] = CallScheduleEntryFields,

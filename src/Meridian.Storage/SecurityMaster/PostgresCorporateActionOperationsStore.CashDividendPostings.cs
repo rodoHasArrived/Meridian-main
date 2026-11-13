@@ -46,7 +46,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
         var selectedBookId = await ReadCashDividendSelectedBookAsync(connection, transaction, request.CaseId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
         // Ordinary lot writers take shared entitlement/book authority before security rows.
         // Freeze the book first, then security, canonical chain and case, in that same order.
-        await nativeLedger.LockCashDividendBookAsync(connection, transaction, selectedBookId, ct).ConfigureAwait(false);
+        await using var structureAuthority = await nativeLedger.AcquireNativeBookStructureAuthorityAsync(
+            connection, transaction, selectedBookId, ct).ConfigureAwait(false);
         await AcquireCashDividendSourceChainAsync(connection, transaction, request.CaseId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
         await AcquireCaseCommandLocksAsync(connection, transaction, PostAttestedCashDividendOperation,
             request.CaseId, request.IdempotencyKey, ct).ConfigureAwait(false);
@@ -83,7 +84,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
                     || retained.ProjectionId != projection.ProjectionId)
                     throw new CorporateActionValidationException("Native preparer authority changed during the posting invocation.");
             }, (symbol, securityId, version, asOf, verifyCt) => EnsureCashDividendCanonicalInstrumentAsync(connection,
-                transaction, processingCase.SecurityId, symbol, securityId, version, asOf, verifyCt));
+                transaction, processingCase.SecurityId, symbol, securityId, version, asOf, verifyCt), structureAuthority);
         try
         {
             var posted = await post(lease, ct).ConfigureAwait(false);
@@ -125,7 +126,11 @@ public sealed partial class PostgresCorporateActionOperationsStore
         }
         finally
         {
-            lease.Deactivate();
+            // Roll back an unsuccessful invocation before releasing external lifecycle/mapping
+            // authority; successful invocations have already committed this same transaction.
+            try
+            { await transaction.DisposeAsync().ConfigureAwait(false); }
+            finally { await lease.DeactivateAsync().ConfigureAwait(false); }
         }
     }
 

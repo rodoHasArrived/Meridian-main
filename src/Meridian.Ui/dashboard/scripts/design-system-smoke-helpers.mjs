@@ -1,6 +1,14 @@
 import path from "node:path";
 import { tmpdir } from "node:os";
 
+// Route changes can cancel an API read. Stylesheets, scripts and other actual
+// resources must still fail verification when aborted before an HTTP response.
+export function isCanceledApiRequest(request) {
+  return ["fetch", "xhr"].includes(request.resourceType())
+    && new URL(request.url()).pathname.startsWith("/api/")
+    && request.failure()?.errorText === "net::ERR_ABORTED";
+}
+
 export const DESIGN_SYSTEM_APPEARANCES = [
   { name: "light", os: "light", stored: "light", dark: false },
   { name: "manual-dark", os: "light", stored: "dark", dark: true },

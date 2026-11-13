@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 267,
-    "warning": 267
+    "total": 301,
+    "warning": 301
   },
   "failed": false,
   "findings": [
@@ -310,6 +310,26 @@
     {
       "details": {
         "schema": "fund_structure",
+        "table": "entity_lifecycle_legacy_baseline"
+      },
+      "message": "Business table fund_structure.entity_lifecycle_legacy_baseline does not have a table comment.",
+      "object": "fund_structure.entity_lifecycle_legacy_baseline",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "entity_lifecycle_revision"
+      },
+      "message": "Business table fund_structure.entity_lifecycle_revision does not have a table comment.",
+      "object": "fund_structure.entity_lifecycle_revision",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
         "table": "fund"
       },
       "message": "Business table fund_structure.fund does not have a table comment.",
@@ -344,6 +364,16 @@
       },
       "message": "Business table fund_structure.fund_structure_linked_account does not have a table comment.",
       "object": "fund_structure.fund_structure_linked_account",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "intercompany_accounting_arrangement_events"
+      },
+      "message": "Business table fund_structure.intercompany_accounting_arrangement_events does not have a table comment.",
+      "object": "fund_structure.intercompany_accounting_arrangement_events",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -540,10 +570,130 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "bond_coupon_cash_consumption"
+      },
+      "message": "Business table ledger.bond_coupon_cash_consumption does not have a table comment.",
+      "object": "ledger.bond_coupon_cash_consumption",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Business table ledger.bond_coupon_recognition does not have a table comment.",
+      "object": "ledger.bond_coupon_recognition",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "consolidation_fx_book_configurations"
+      },
+      "message": "Business table ledger.consolidation_fx_book_configurations does not have a table comment.",
+      "object": "ledger.consolidation_fx_book_configurations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "consolidation_fx_rate_sets"
+      },
+      "message": "Business table ledger.consolidation_fx_rate_sets does not have a table comment.",
+      "object": "ledger.consolidation_fx_rate_sets",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "consolidation_transition_previews"
+      },
+      "message": "Business table ledger.consolidation_transition_previews does not have a table comment.",
+      "object": "ledger.consolidation_transition_previews",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "consolidation_transition_receipts"
+      },
+      "message": "Business table ledger.consolidation_transition_receipts does not have a table comment.",
+      "object": "ledger.consolidation_transition_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "entity_controlled_close_authorization"
+      },
+      "message": "Business table ledger.entity_controlled_close_authorization does not have a table comment.",
+      "object": "ledger.entity_controlled_close_authorization",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "fund_profile_tenancy"
       },
       "message": "Business table ledger.fund_profile_tenancy does not have a table comment.",
       "object": "ledger.fund_profile_tenancy",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_account_binding_revisions"
+      },
+      "message": "Business table ledger.intercompany_account_binding_revisions does not have a table comment.",
+      "object": "ledger.intercompany_account_binding_revisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_counterpart_reservations"
+      },
+      "message": "Business table ledger.intercompany_counterpart_reservations does not have a table comment.",
+      "object": "ledger.intercompany_counterpart_reservations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_proposal_links"
+      },
+      "message": "Business table ledger.intercompany_proposal_links does not have a table comment.",
+      "object": "ledger.intercompany_proposal_links",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_proposal_retries"
+      },
+      "message": "Business table ledger.intercompany_proposal_retries does not have a table comment.",
+      "object": "ledger.intercompany_proposal_retries",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_proposals"
+      },
+      "message": "Business table ledger.intercompany_proposals does not have a table comment.",
+      "object": "ledger.intercompany_proposals",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -590,6 +740,26 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "ledger_book_control_activation"
+      },
+      "message": "Business table ledger.ledger_book_control_activation does not have a table comment.",
+      "object": "ledger.ledger_book_control_activation",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "ledger_book_controls"
+      },
+      "message": "Business table ledger.ledger_book_controls does not have a table comment.",
+      "object": "ledger.ledger_book_controls",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "ledger_books"
       },
       "message": "Business table ledger.ledger_books does not have a table comment.",
@@ -614,6 +784,16 @@
       },
       "message": "Business table ledger.ledger_event_audit_head does not have a table comment.",
       "object": "ledger.ledger_event_audit_head",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "legacy_intercompany_attributions"
+      },
+      "message": "Business table ledger.legacy_intercompany_attributions does not have a table comment.",
+      "object": "ledger.legacy_intercompany_attributions",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1905,14 +2085,14 @@
     {
       "details": {
         "columns": [
-          "account_id"
+          "entity_id"
         ],
-        "constraint": "custodian_statement_batch_account_id_fkey",
-        "schema": "fund_accounts",
-        "table": "custodian_statement_batch"
+        "constraint": "entity_lifecycle_revision_entity_id_fkey",
+        "schema": "fund_structure",
+        "table": "entity_lifecycle_revision"
       },
-      "message": "Foreign key fund_accounts.custodian_statement_batch.custodian_statement_batch_account_id_fkey is not covered by a left-prefix index.",
-      "object": "fund_accounts.custodian_statement_batch.custodian_statement_batch_account_id_fkey",
+      "message": "Foreign key fund_structure.entity_lifecycle_revision.entity_lifecycle_revision_entity_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_structure.entity_lifecycle_revision.entity_lifecycle_revision_entity_id_fkey",
       "rule_id": "foreign-key-must-be-indexed",
       "severity": "warning"
     },
@@ -1957,6 +2137,233 @@
       },
       "message": "Foreign key ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey is not covered by a left-prefix index.",
       "object": "ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "receipt_id"
+        ],
+        "constraint": "bond_coupon_cash_consumption_receipt_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_cash_consumption"
+      },
+      "message": "Foreign key ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_receipt_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_receipt_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tax_lot_record_id"
+        ],
+        "constraint": "bond_coupon_cash_consumption_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_cash_consumption"
+      },
+      "message": "Foreign key ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_tax_lot_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "journal_entry_id"
+        ],
+        "constraint": "bond_coupon_recognition_journal_entry_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Foreign key ledger.bond_coupon_recognition.bond_coupon_recognition_journal_entry_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_recognition.bond_coupon_recognition_journal_entry_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "previous_receipt_id"
+        ],
+        "constraint": "bond_coupon_recognition_previous_receipt_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Foreign key ledger.bond_coupon_recognition.bond_coupon_recognition_previous_receipt_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_recognition.bond_coupon_recognition_previous_receipt_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tax_lot_record_id"
+        ],
+        "constraint": "bond_coupon_recognition_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Foreign key ledger.bond_coupon_recognition.bond_coupon_recognition_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_recognition.bond_coupon_recognition_tax_lot_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tenant_id",
+          "company_id",
+          "rate_set_id",
+          "rate_set_revision"
+        ],
+        "constraint": "consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey",
+        "schema": "ledger",
+        "table": "consolidation_fx_book_configurations"
+      },
+      "message": "Foreign key ledger.consolidation_fx_book_configurations.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey is not covered by a left-prefix index.",
+      "object": "ledger.consolidation_fx_book_configurations.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "previous_book_id"
+        ],
+        "constraint": "consolidation_transition_receipts_previous_book_id_fkey",
+        "schema": "ledger",
+        "table": "consolidation_transition_receipts"
+      },
+      "message": "Foreign key ledger.consolidation_transition_receipts.consolidation_transition_receipts_previous_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.consolidation_transition_receipts.consolidation_transition_receipts_previous_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "previous_transition_id"
+        ],
+        "constraint": "consolidation_transition_receipts_previous_transition_id_fkey",
+        "schema": "ledger",
+        "table": "consolidation_transition_receipts"
+      },
+      "message": "Foreign key ledger.consolidation_transition_receipts.consolidation_transition_receipts_previous_transition_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.consolidation_transition_receipts.consolidation_transition_receipts_previous_transition_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "intercompany_account_binding_revisions_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "intercompany_account_binding_revisions"
+      },
+      "message": "Foreign key ledger.intercompany_account_binding_revisions.intercompany_account_binding_revisions_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.intercompany_account_binding_revisions.intercompany_account_binding_revisions_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "proposal_id"
+        ],
+        "constraint": "intercompany_counterpart_reservations_proposal_id_fkey",
+        "schema": "ledger",
+        "table": "intercompany_counterpart_reservations"
+      },
+      "message": "Foreign key ledger.intercompany_counterpart_reservations.intercompany_counterpart_reservations_proposal_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.intercompany_counterpart_reservations.intercompany_counterpart_reservations_proposal_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "proposal_id"
+        ],
+        "constraint": "intercompany_proposal_links_proposal_id_fkey",
+        "schema": "ledger",
+        "table": "intercompany_proposal_links"
+      },
+      "message": "Foreign key ledger.intercompany_proposal_links.intercompany_proposal_links_proposal_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.intercompany_proposal_links.intercompany_proposal_links_proposal_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "proposal_id"
+        ],
+        "constraint": "intercompany_proposal_retries_proposal_id_fkey",
+        "schema": "ledger",
+        "table": "intercompany_proposal_retries"
+      },
+      "message": "Foreign key ledger.intercompany_proposal_retries.intercompany_proposal_retries_proposal_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.intercompany_proposal_retries.intercompany_proposal_retries_proposal_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_book_id"
+        ],
+        "constraint": "intercompany_proposals_source_book_id_fkey",
+        "schema": "ledger",
+        "table": "intercompany_proposals"
+      },
+      "message": "Foreign key ledger.intercompany_proposals.intercompany_proposals_source_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.intercompany_proposals.intercompany_proposals_source_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_journal_id"
+        ],
+        "constraint": "intercompany_proposals_source_journal_id_fkey",
+        "schema": "ledger",
+        "table": "intercompany_proposals"
+      },
+      "message": "Foreign key ledger.intercompany_proposals.intercompany_proposals_source_journal_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.intercompany_proposals.intercompany_proposals_source_journal_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "ledger_book_control_activation_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "ledger_book_control_activation"
+      },
+      "message": "Foreign key ledger.ledger_book_control_activation.ledger_book_control_activation_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.ledger_book_control_activation.ledger_book_control_activation_ledger_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "ledger_book_id"
+        ],
+        "constraint": "legacy_intercompany_attributions_ledger_book_id_fkey",
+        "schema": "ledger",
+        "table": "legacy_intercompany_attributions"
+      },
+      "message": "Foreign key ledger.legacy_intercompany_attributions.legacy_intercompany_attributions_ledger_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.legacy_intercompany_attributions.legacy_intercompany_attributions_ledger_book_id_fkey",
       "rule_id": "foreign-key-must-be-indexed",
       "severity": "warning"
     },
@@ -2949,5 +3356,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "6b62919cde10baa701ec7c32c9568dfed4000ad743b36ad98943408c3675229d"
+  "fingerprint": "79adba8c6a3f21b9e5377a1169a998853e4a64b6ea2259ccd6ebd33d668700b9"
 }

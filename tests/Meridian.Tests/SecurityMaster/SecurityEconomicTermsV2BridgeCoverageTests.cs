@@ -204,6 +204,10 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond",
                 SecurityDeclaredScheduleModuleContractionTests.DeclaringFlat("Bond"))).EconomicTerms);
+        representativeDocuments.Add(SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond",
+                Workbench.BondWorkflowAdmissionFixtures.Terms("Floating", 5,
+                    Workbench.BondWorkflowAdmissionFixtures.Overnight))).EconomicTerms);
         var emitted = representativeDocuments.SelectMany(PropertyNames)
             .Where(name => !SecurityTermsEnvelope.IsReservedKey(name))
             .Distinct(StringComparer.Ordinal)

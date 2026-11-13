@@ -1,11 +1,11 @@
 {
-  "total_files": 1196,
+  "total_files": 1216,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:e1b07192f96da23d89bdb34cabbb2b9a5c09c2e0e54c57b72ef8abae03075e72",
+  "signal_digest": "sha256:29dd3e995558ca148d0de1de98546dbe240a56cbc906ccc05ad1c15cc62140e8",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2233,6 +2233,13 @@
       "stale": false
     },
     {
+      "path": "docs/domain/intercompany-agreements-and-entity-lifecycle.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/intercompany-agreements.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2255,6 +2262,13 @@
     },
     {
       "path": "docs/domain/operational-evidence-graph.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/options-screening-and-assessments.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2478,6 +2492,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/execution-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2535,6 +2556,13 @@
     },
     {
       "path": "docs/engineering/plans/god-file-burn-down-plan.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2786,6 +2814,13 @@
       "stale": false
     },
     {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-06.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/generated/database/contracts/ledger-contracts.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2850,6 +2885,13 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-07.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-08.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3101,6 +3143,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/bond-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/browser-workstation-installer.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3143,6 +3192,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/financial-visualizations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/fund-ops-persistence-cutover.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3158,6 +3214,13 @@
     },
     {
       "path": "docs/operators/governed-reporting-operations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3948,6 +4011,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.backtesting.sdk/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.backtesting/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4438,6 +4508,48 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-070.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-071.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-072.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-073.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-074.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-075.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4732,6 +4844,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.instruments/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4907,6 +5026,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.storage.accounting/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.storage/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4999,6 +5125,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.storage/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-015.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5258,6 +5391,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.ui.shared/page-017.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-018.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

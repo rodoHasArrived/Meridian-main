@@ -11,6 +11,70 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+
+`Ledger/CanonicalAmortizationPreparationDtos.cs` defines browser preparation and governed draft
+handoff over the existing canonical lot engine. Requests supply retained lot/evidence identities,
+book/period/version, accounts, explicit supported policy choices and a bounded schedule horizon.
+Responses retain the canonical instruction, exact calculated occurrence bases, journal projection,
+scope and preparation fingerprint. Draft commands carry the reviewed request and opaque fingerprint;
+displayed financial amounts never become client-authored posting instructions.
+Visualization contracts retain server-calculated loan maturity buckets as exact decimal strings,
+bond contractual maturity and governing yield-scenario identities, and audit-source availability.
+`PrivateCapital` describes holder-side source observations and import receipts, separately from
+issuer-side `Ledger.PrivateCapitalLifecycleDtos`. `Options` screening and broker-assessment
+contracts distinguish neutral contract criteria from an exact basket/account assessment as of its
+source time. Typed corporate-action deadline evidence carries precision, original source text and
+correction identity outside economic payload fingerprints. Additive read fields preserve older
+payload compatibility; missing observations are not reported zeros or inferred approvals.
+
+`BondMarketDataContracts` distinguishes retained fixings, inflation levels, principal factors,
+agency ratings and categorized clean/dirty quotes with settlement basis and provider yields.
+Source revisions retain economic/publication/knowledge dates and content identities; importing a
+quote does not select a golden copy. `SecurityCurveRatePolicy.SignedRates` is an explicit immutable
+curve-definition opt-in; omitted policy retains legacy nonnegative admission and receipt JSON.
+
+`BondWorkflow*`, `BondPerformance*`, `BondIncome*` and coupon-recognition contracts keep signed
+analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
+Workflow v2 pins active accrual separately from deferred earned coupons; literal v1 replay keeps
+its original fields and arithmetic. The nullable `bond-income-accrual-v2` subpolicy is explicitly
+captured at acquisition, preserving old policy bytes when absent. Purchased opening interest,
+raw earning targets and native obligation-boundary rounding remain separate, including signed sides.
+See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
+
+Terminal principal retains exact earned-coupon receipts or an actual acquisition-opening authority
+for separately purchased interest. Later signed cash clears those frozen rights without accruing
+on a closed lot. Accounting yield certificates distinguish the declared period recurrence from
+market cash-flow yields; the purchased-coupon tail admits only the evidenced nonaccreting par case.
+New optional proof fields omit null values so legacy contract bytes remain unchanged.
+
+Workflow v3 replaces the natural balloon once in final-payment exercise scenarios while retaining
+coupons and explicit installments. Retained workflow v1/v2 keep their original replay arithmetic;
+adopted accrual-v2 accounting remains explicitly pinned to workflow v2.
+
+Run ledger accounting-package downloads use the shared `RunsLedgerExport` route, mirrored by the
+maintained TypeScript route generator. The existing summary, trial-balance and journal routes
+accept an optional inclusive `asOf` economic timestamp.
+
+Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
+
+The exact top-level `electionCalendar` companion is operational source evidence, excluded from
+economic payload fingerprints and compared separately for immutable source replay. A companion-only
+envelope uses the absent economic-payload representation; legacy payloads without that companion,
+including explicit empty objects and JSON null, retain their existing hashes. Original retained
+payloads and fingerprints are not rewritten to attach or correct deadlines.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Intercompany contracts retain immutable agreement terms, lifecycle timelines, source proposal facts,
+stable account-role bindings, approved FX sets and exact legacy-attribution digests. New optional
+ledger dimensions omit null fields to preserve legacy evidence hashes. Consolidation evidence pins
+participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
+See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+
 `SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
 lineage grammar can represent. It supplies server-owned instrument context for new non-lot
 corporate-action candidates; it grants no approval and accepts no caller authority.
@@ -101,7 +165,7 @@ economic module preserves the declaration on replay. An invalid retained declara
 normalization instead of reviving a field default. New unit versions keep calculation-only
 companions and swap leg conventions read-only through the schema's authoring flag.
 
-`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
+`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (including 0 for JPY, 3 for KWD/BHD, 4 for CLF/UYW, and 2 for ordinary currencies).
 
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.
@@ -2110,6 +2174,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

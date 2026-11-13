@@ -78,10 +78,12 @@ any of these (`findCaptureContentIssues`):
 | `api-path` | a request path such as `/api/ledger/...` |
 | `internal-term` | "lane", "payload", "mutation" or "caller-visible" |
 | `slug-identifier` | a slug-shaped record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`); ordinary compounds such as "as-of" and "read-only" pass |
+| `latency-not-duration` | a `Latency` label followed by a clock time or "Never" |
+| `unavailable-placeholder` | "Basis unavailable" or "Saved views unavailable" |
 | `disabled-primary-without-reason` | a visible disabled primary button with no `title` or description saying why |
 | `status-contradiction` | a status bar that says "up to date" while the page's posture strip says its freshness needs review or is blocked |
 
-The first five read the rendered text; the last two read the DOM. Collapsed technical details,
+The first seven read the rendered text; the last two read the DOM. Collapsed technical details,
 `title` attributes and form-field values are not rendered text, so identifiers and request paths
 kept there pass. A route that cannot comply yet lists the rule with a `reason` under
 `allowedContentIssues` in `scripts/dev/web-screenshot-routes.json`; an entry without a reason

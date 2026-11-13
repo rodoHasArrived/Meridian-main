@@ -148,7 +148,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
         (declared, current).Should().Be((2, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", Json(V1Text), out _, out current).Should().BeTrue();
-        current.Should().Be(3);
+        current.Should().Be(5);
     }
 
     // ── The missing test: version 1 reads exactly as version 2 ──────────────────────────────────
@@ -436,7 +436,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
             .Select(static field => field.Key).Should().Equal("cashFlowContract");
         foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
         {
-            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1 && field.Key != "rateUnit")
+            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1 && field.SinceTermsVersion <= 4 && field.Key != "rateUnit")
                 .Select(static field => (field.Key, field.SinceTermsVersion))
                 .Should().Equal(("scheduleConventions", 2), ("callSchedule", 3), ("putSchedule", 3), ("cashFlowContract", 4));
         }
@@ -474,7 +474,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void GetReadsTermsThrough_ResolvesThroughTheCatalog()
     {
         SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit").Should().Be(6);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(4);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
         SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(5);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Swap").Should().Be(4);
         SecurityAssetClassCatalog.GetReadsTermsThrough("DirectLoan").Should().Be(3);

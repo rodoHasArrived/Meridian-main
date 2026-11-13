@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import { auditVisibleFrames, monitorResourceFailures } from './browser-audit-helpers.mjs';
 
 const require = createRequire(import.meta.url);
 const babel = require('@babel/standalone');
@@ -36,7 +37,7 @@ const axe = await readFile(resolve(root, 'node_modules/axe-core/axe.min.js'), 'u
 const bundle = await readFile(resolve(root, '_ds_bundle.js'), 'utf8');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 async function snapshotRuntimeSources() {
-  const filenames = ['styles.css','_preview_runtime.js','_preview_jsx.js'];
+  const filenames = ['styles.css','_preview_runtime.js','_preview_jsx.js','tests/browser-audit-helpers.mjs'];
   const extensions = new Set(['.js','.jsx','.html','.css','.svg','.woff2','.woff','.ttf','.png','.jpg','.jpeg','.webp','.avif','.gif','.ico','.thumbnail']);
   async function walk(relative) {
     const entries=await readdir(resolve(root,relative),{withFileTypes:true});
@@ -373,8 +374,7 @@ async function auditJob(job) {
   page.setDefaultTimeout(5000);
   page.on('pageerror', error => record.runtimeErrors.push(error.message));
   page.on('console', message => { if (message.type() === 'error' && !message.text().startsWith('Failed to load resource:')) record.runtimeErrors.push(message.text()); });
-  page.on('requestfailed', request => { if (!request.failure()?.errorText.includes('ERR_ABORTED')) record.failedRequests.push({ url: request.url().replace(base, ''), error: request.failure()?.errorText }); });
-  page.on('response', response => { if (response.status() >= 400) record.failedRequests.push({ url: response.url().replace(base, ''), status: response.status() }); });
+  monitorResourceFailures(page, record.failedRequests, base);
   await page.route('**/*', route => {
     const url = new URL(route.request().url());
     if (url.protocol === 'data:' || url.protocol === 'blob:' || url.origin === base) return route.continue();
@@ -409,11 +409,7 @@ async function auditJob(job) {
       const themes = ['light', 'dark'];
       for (const theme of themes) {
         await setAppearance(frame, theme,'default',job.kind==='templates');
-        await frame.addScriptTag({ content: axe });
-        const a11y = await frame.evaluate(async () => {
-          const result = await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } });
-          return { passes: result.passes.length, incomplete: result.incomplete.map(item => item.id), violations: result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary })) })) };
-        });
+        const a11y = await auditVisibleFrames(page, axe);
         record.accessibility.push({ theme, ...a11y });
         recordCase(record, `${theme} automated WCAG A/AA`, 'accessibility', a11y.violations.length ? 'failed' : 'passed', { violations: a11y.violations.map(item => ({ id: item.id, nodes: item.nodes.length })) });
         for (const [width, height] of matrix === 'smoke' ? [[1440, 900]] : [[1920, 1080], [1440, 900], [1366, 768]]) {
@@ -509,7 +505,7 @@ async function auditThemes() {
           const style=getComputedStyle(node), bg=over(rgba(style.backgroundColor),surface), fg=over(rgba(style.color),bg), a=luminance(fg), b=luminance(bg), contrast=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
           return {role:node.dataset.tokenPair,color:style.color,background:style.backgroundColor,contrast,status:contrast>=4.5?'passed':'failed'};
         });
-        const result = await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        const result = await axe.run(document, { preload: false, iframes: false, runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
         return { selector, label, roles, semanticChips, violations: result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary })) })) };
       }, theme);
       results.themes.push({ ...observed, status: observed.error || observed.violations?.length || observed.semanticChips?.some(chip=>chip.status==='failed') ? 'failed' : 'passed' });

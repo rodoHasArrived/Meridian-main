@@ -13,6 +13,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 
 | Plan | Purpose |
 |---|---|
+| [Intercompany Contracts and Entity Controls](intercompany-entity-controls.md) | Adopted P1–P5 stages, evidence-preserving migration, authority and verification boundaries |
 | [Carta-Inspired Commitment-to-Cash](carta-inspired-capital-lifecycle.md) | Bounded W12-CAPITAL-001 delivery contract, operator sequence and later capability candidates |
 | [Security Master Review Remediation](security-master-review-remediation-plan.md) | Draft slices consuming the consolidated October review; policy, unit and migration decisions remain explicit |
 | [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | Closes WPF parity gaps with the browser workstation (`W8-WPF-PARITY-001`) |

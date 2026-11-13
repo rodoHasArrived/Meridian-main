@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
@@ -61,7 +62,14 @@ public sealed record PersistedJournalEntryDto(
     Guid? SecurityId = null,
     Guid? OrderId = null,
     string? LedgerView = null,
-    string? StrategyId = null);
+    string? StrategyId = null)
+{
+    /// <summary>
+    /// Complete posting provenance, including cash-flow groups bound to the original persisted
+    /// line identities. Legacy records omit this property and retain their scalar metadata.
+    /// </summary>
+    public Meridian.Ledger.JournalEntryMetadata? Metadata { get; init; }
+}
 
 /// <summary>
 /// Versioned durable envelope for one paper-session fill.  <see cref="FillId"/> is the
@@ -79,6 +87,22 @@ public sealed record PaperSessionFillRecord(
 {
     /// <summary>Current on-disk envelope schema.</summary>
     public const int CurrentSchemaVersion = 1;
+
+    /// <summary>
+    /// Version of exact accounting evidence retained when this fill was captured. Zero means
+    /// opening authority is unknown, including historical records and unverified current fills.
+    /// This is independent of the live event schema and does not change its canonical report hash.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int AccountingEvidenceVersion { get; init; }
+
+    /// <summary>Accounting owner retained with captured evidence; absent in historical records.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? FinancialAccountId { get; init; }
+
+    internal bool HasSameAccountingProvenance(PaperSessionFillRecord other)
+        => AccountingEvidenceVersion == other.AccountingEvidenceVersion
+           && string.Equals(FinancialAccountId, other.FinancialAccountId, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Creates a validated current-version envelope for <paramref name="fill"/>.</summary>
     public static PaperSessionFillRecord Create(
@@ -157,6 +181,11 @@ public sealed record PaperSessionFillRecord(
     /// <summary>Validates the envelope version, identity, and canonical content hash.</summary>
     public PaperSessionFillRecord Validate()
     {
+        if (AccountingEvidenceVersion is not (0 or 1))
+            throw new InvalidDataException($"Unsupported retained accounting evidence version {AccountingEvidenceVersion}.");
+        if (FinancialAccountId is not null && (string.IsNullOrWhiteSpace(FinancialAccountId)
+                || !string.Equals(FinancialAccountId, FinancialAccountId.Trim(), StringComparison.Ordinal)))
+            throw new InvalidDataException("A retained financial account must be non-empty and normalized.");
         if (SchemaVersion != CurrentSchemaVersion)
         {
             throw new InvalidDataException(

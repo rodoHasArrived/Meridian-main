@@ -234,6 +234,25 @@ Declared public members:
 | <code>[McpServerTool(Name = &quot;get_known_errors&quot;)][Description(&quot;Get AI known error patterns from the project registry. Optionally filter by area token such as docs, build, tests, runtime, config, CI, WPF, process, workflows, desktop-ui, or XAML.&quot;)] public string GetKnownErrors([Description(&quot;Optional area filter token, e.g. docs &#124; build &#124; tests &#124; runtime &#124; config &#124; CI &#124; WPF &#124; process&quot;)] string? area = null);</code> | [src/Meridian.Mcp/Tools/KnownErrorTools.cs:11](../../../../src/Meridian.Mcp/Tools/KnownErrorTools.cs#L11) |  |
 | <code>[McpServerTool(Name = &quot;search_known_errors&quot;)][Description(&quot;Search the known error registry by keyword. Returns entries where the keyword appears in symptoms, root cause, prevention checklist, or verification commands.&quot;)] public string SearchKnownErrors([Description(&quot;Search keyword, e.g. &#x27;CancellationToken&#x27;, &#x27;HttpClient&#x27;, &#x27;sealed&#x27;&quot;)] string query);</code> | [src/Meridian.Mcp/Tools/KnownErrorTools.cs:29](../../../../src/Meridian.Mcp/Tools/KnownErrorTools.cs#L29) |  |
 
+## LedgerTools
+
+Qualified name: <code>Meridian.Mcp.Tools.LedgerTools</code>. Kind: `class`.
+
+Source: [src/Meridian.Mcp/Tools/LedgerTools.cs:9](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L9).
+
+Read-only accounting access through the workstation API&#x27;s existing authorization and run-visibility boundary. No archive or database path bypasses that boundary.
+
+```csharp
+public sealed class LedgerTools(IHttpClientFactory clients)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string HttpClientName = &quot;meridian-ledger-read&quot;;</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:11](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L11) |  |
+| <code>[McpServerTool(Name = &quot;get_run_trial_balance&quot;)][Description(&quot;Read a strategy run&#x27;s trial balance at an inclusive as-of instant. Calls the configured Meridian workstation API and honors its authentication, tenant scope and run visibility. Returns an explicit unavailable/refused error when no authorized retained ledger exists.&quot;)] public async Task&lt;string&gt; GetRunTrialBalanceAsync([Description(&quot;Retained strategy run identifier&quot;)] string runId, [Description(&quot;Inclusive as-of instant with UTC offset, for example 2026-10-31T23:59:59Z&quot;)] DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Mcp/Tools/LedgerTools.cs:15](../../../../src/Meridian.Mcp/Tools/LedgerTools.cs#L15) |  |
+
 ## ProviderTools
 
 Qualified name: <code>Meridian.Mcp.Tools.ProviderTools</code>. Kind: `class`.

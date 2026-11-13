@@ -277,7 +277,7 @@ export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
  * link should land on the desk directly instead of bouncing through a redirect.
  */
 export function marketDataDeskPath(
-  view: "quotes" | "watchlist" | "alerts",
+  view: "quotes" | "watchlist" | "alerts" | "options",
   query: Record<string, WorkstationRouteQueryValue> = {}
 ): string {
   return workstationRouteWithQuery("dataQuotes", {

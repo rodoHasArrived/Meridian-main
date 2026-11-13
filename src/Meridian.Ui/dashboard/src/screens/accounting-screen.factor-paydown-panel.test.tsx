@@ -39,6 +39,21 @@ beforeEach(() => {
   vi.mocked(createFactorPaydownDraft).mockResolvedValue({ spine: { scope: preview.instruction.scope }, candidate: { journalEntryId: "draft-1", hasBlockingIssues: false, issues: [] } });
 });
 describe("Factor-paydown operator workflow", () => {
+  it("offers scheduled principal only after authoritative adopted-lot evidence and requires a new preview", async () => {
+    const adopted: FactorPaydownPreview = { ...preview, instruction: { ...preview.instruction,
+      scope: { ...preview.instruction.scope, accountingBasis: "Gaap" }, lots: preview.instruction.lots.map((lot) => ({ ...lot, expectedLot: { ...lot.expectedLot, acquisition: { bondIncome: { knownAt: "2026-10-28T12:00:00Z" } } } })) } };
+    vi.mocked(prepareFactorPaydown).mockResolvedValue(adopted);
+    renderWithRouter(<FactorPaydownPanel {...props} accountingBasis="Gaap" />);
+    expect(screen.queryByRole("checkbox", { name: /Use contractual scheduled-principal/ })).not.toBeInTheDocument();
+    await prepare();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Use contractual scheduled-principal/ }));
+    expect(screen.queryByRole("heading", { name: "Authoritative paydown preview" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Prepare factor paydown" }));
+    await screen.findByRole("heading", { name: "Authoritative paydown preview" });
+    expect(prepareFactorPaydown).toHaveBeenLastCalledWith(expect.objectContaining({ scheduledPrincipal: true }), expect.any(Object));
+    fireEvent.change(screen.getByLabelText("Book position ID"), { target: { value: "another-position" } });
+    expect(screen.queryByRole("checkbox", { name: /Use contractual scheduled-principal/ })).not.toBeInTheDocument();
+  });
   it("keeps factor precision and requires reviewed confirmation before creating a draft", async () => {
     const { container } = renderWithRouter(<FactorPaydownPanel {...props} />);
     await prepare();

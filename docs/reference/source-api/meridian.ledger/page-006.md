@@ -6,6 +6,169 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValuationFreshnessPolicy
+
+Qualified name: <code>Meridian.Ledger.ValuationFreshnessPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:9](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L9).
+
+Single owner of valuation mark admission. Compatibility settings may tighten these controls; disabled, allow, flag and incomplete-coverage settings cannot authorize unsupported numbers.
+
+```csharp
+public sealed record ValuationFreshnessPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValuationFreshnessPolicy(int maximumAgeDays = 3, DailyPortfolioPriceConfidence minimumConfidence = DailyPortfolioPriceConfidence.Medium, string version = &quot;mark-freshness-v1&quot;);</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:11](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L11) |  |
+| <code>public static ValuationFreshnessPolicy Default { get; } = new ();</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:27](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L27) |  |
+| <code>public int MaximumAgeDays { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:28](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L28) |  |
+| <code>public DailyPortfolioPriceConfidence MinimumConfidence { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:29](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L29) |  |
+| <code>public string Version { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:30](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L30) |  |
+| <code>public bool RequireCompleteCoverage =&gt; …;</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:31](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L31) |  |
+| <code>public bool RequireObservedDate =&gt; …;</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:32](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L32) |  |
+| <code>public MarkFreshnessAssessmentDto Assess(string symbol, Guid? securityId, string? financialAccountId, DateOnly valuationDate, DateOnly? observedOn, DailyPortfolioPriceConfidence? confidence, decimal? price);</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:34](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L34) |  |
+
+## ValuationMarkEvidence
+
+Qualified name: <code>Meridian.Ledger.ValuationMarkEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ValuationMarkEvidence.cs:7](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L7).
+
+Immutable input facts retained with each security/account valuation journal.
+
+```csharp
+public sealed record ValuationMarkEvidence(string FundId, string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, decimal Price, DailyPortfolioPriceConfidence Confidence, int MaximumAgeDays, DailyPortfolioPriceConfidence MinimumConfidence, string PolicyVersion, string EvidenceReference, string? EntityId = null);
+```
+
+## ValuationMarkEvidenceGuard
+
+Qualified name: <code>Meridian.Ledger.ValuationMarkEvidenceGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ValuationMarkEvidence.cs:26](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L26).
+
+Reassesses retained inputs at submit, approve and post. Review notes and arbitrary override tags never replace a dated mark. Historical valuations are compared to their valuation date.
+
+```csharp
+public static class ValuationMarkEvidenceGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EvidenceTag = &quot;valuation.markEvidence.v1&quot;;</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:28](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L28) |  |
+| <code>public const string DigestTag = &quot;valuation.markEvidence.sha256&quot;;</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:29](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L29) |  |
+| <code>public static bool IsValuation(string? idempotencyKey) =&gt; …;</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:31](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L31) |  |
+| <code>public static string? Validate(string? json, string fundId, DateOnly valuationDate, Guid? securityId, string? financialAccountId, string? symbol = null, string? expectedDigest = null, string? entityId = null);</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:34](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L34) |  |
+| <code>public static void EnsureValid(AutomatedJournalDraft draft);</code> | [src/Meridian.Ledger/ValuationMarkEvidence.cs:69](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L69) |  |
+
+## ValuationProvenanceTag
+
+Qualified name: <code>Meridian.Ledger.ValuationProvenanceTag</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ValuationProvenanceTag.cs:16](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L16).
+
+The journal tag that carries a fair-value draft&#x27;s data provenance, and the reader that recovers it from posted entries.
+
+```csharp
+public static class ValuationProvenanceTag
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Key = &quot;valuation.dataProvenance&quot;;</code> | [src/Meridian.Ledger/ValuationProvenanceTag.cs:19](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L19) | Journal metadata tag key written by DailyPortfolioPricingDraftBuilder. |
+| <code>public static DataProvenance Read(JournalEntryMetadata? metadata);</code> | [src/Meridian.Ledger/ValuationProvenanceTag.cs:26](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L26) | Origin declared by one journal entry&#x27;s valuation tag. An entry with no tag is not a valuation entry and contributes DataProvenance.Real; an entry carrying an unrecognized token degrades to DataProvenance.Simulated rather than to real. |
+| <code>public static DataProvenance Strongest(IEnumerable&lt;JournalEntry&gt; entries);</code> | [src/Meridian.Ledger/ValuationProvenanceTag.cs:42](../../../../src/Meridian.Ledger/ValuationProvenanceTag.cs#L42) | Strongest non-real origin declared across a set of posted entries — the mark any figure derived from them must carry. |
+
+## WashSaleBasisIncrease
+
+Qualified name: <code>Meridian.Ledger.WashSaleBasisIncrease</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/WashSale.cs:119](../../../../src/Meridian.Ledger/WashSale.cs#L119).
+
+A cost-basis increase applied to a replacement lot to carry a deferred wash-sale loss forward. The replacement lot&#x27;s holding period is also extended to include the sold shares&#x27; holding period (HoldingPeriodCarryDate is the sold lots&#x27; earliest acquisition date).
+
+```csharp
+public sealed record WashSaleBasisIncrease(string ReplacementLotId, decimal Amount, DateOnly HoldingPeriodCarryDate, LedgerAccount? ReplacementAccount = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WashSalePolicy? AppliedPolicy { get; init; }</code> | [src/Meridian.Ledger/WashSale.cs:126](../../../../src/Meridian.Ledger/WashSale.cs#L126) | Exact policy settings and configured revision that explain this adjustment. |
+| <code>public IReadOnlyList&lt;WashSaleSourceAllocation&gt; SourceAllocations { get; init; } = [];</code> | [src/Meridian.Ledger/WashSale.cs:129](../../../../src/Meridian.Ledger/WashSale.cs#L129) | Loss-lot contributions, including matched shares whose amount rounds to zero. |
+
+## WashSaleOutcome
+
+Qualified name: <code>Meridian.Ledger.WashSaleOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/WashSale.cs:104](../../../../src/Meridian.Ledger/WashSale.cs#L104).
+
+The outcome of applying a WashSalePolicy to a loss-generating relief. Present on a projection only when a wash sale was detected.
+
+```csharp
+public sealed record WashSaleOutcome(decimal DisallowedLoss, decimal AllowedLoss, decimal MatchedReplacementQuantity, IReadOnlyList<WashSaleBasisIncrease> BasisIncreases);
+```
+
+## WashSalePolicy
+
+Qualified name: <code>Meridian.Ledger.WashSalePolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/WashSale.cs:40](../../../../src/Meridian.Ledger/WashSale.cs#L40).
+
+Wash-sale deferral policy applied when relieving a tax lot at a loss (US IRC §1091 and equivalent regimes). When enabled, a realized loss that coincides with the acquisition of a substantially-identical security within WindowDays days before or after the sale is disallowed in proportion to the replacement quantity; the disallowed amount is capitalized into the replacement lot&#x27;s cost basis rather than recognized as a realized loss.
+
+```csharp
+public sealed record WashSalePolicy(bool Enabled, int WindowDays = 30, WashSaleReplacementScope Scope = WashSaleReplacementScope.LedgerBook, DateOnly? EffectiveDate = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? PolicyId { get; init; }</code> | [src/Meridian.Ledger/WashSale.cs:47](../../../../src/Meridian.Ledger/WashSale.cs#L47) | The configured tax-lot policy revision; null for an unversioned ad-hoc policy. |
+| <code>public static WashSalePolicy Disabled { get; } = new (false);</code> | [src/Meridian.Ledger/WashSale.cs:50](../../../../src/Meridian.Ledger/WashSale.cs#L50) | No wash-sale deferral; realized losses are always recognized in full. |
+| <code>public static WashSalePolicy UnitedStates { get; } = new (true, 30);</code> | [src/Meridian.Ledger/WashSale.cs:53](../../../../src/Meridian.Ledger/WashSale.cs#L53) | The US IRC §1091 default: enabled with a 30-day symmetric replacement window. |
+| <code>public WashSalePolicy EnsureValid();</code> | [src/Meridian.Ledger/WashSale.cs:56](../../../../src/Meridian.Ledger/WashSale.cs#L56) | Validates the window magnitude and scope. |
+| <code>public bool AppliesOn(DateOnly saleDate) =&gt; …;</code> | [src/Meridian.Ledger/WashSale.cs:69](../../../../src/Meridian.Ledger/WashSale.cs#L69) | True when this policy governs a sale on saleDate. A dated policy leaves sales before its effective date untouched so historical report packs stay reproducible. |
+
+## WashSaleReplacementAcquisition
+
+Qualified name: <code>Meridian.Ledger.WashSaleReplacementAcquisition</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/WashSale.cs:89](../../../../src/Meridian.Ledger/WashSale.cs#L89).
+
+A candidate replacement purchase considered for wash-sale matching against a loss-generating sale. The relief engine filters these to acquisitions that fall within the policy window and match the security being sold; callers supply recent purchases of the position without having to pre-apply the window themselves.
+
+```csharp
+public sealed record WashSaleReplacementAcquisition(string LotId, DateOnly AcquiredDate, decimal Quantity, Guid? SecurityId = null, LedgerAccount? Account = null);
+```
+
+## WashSaleReplacementLookup
+
+Qualified name: <code>Meridian.Ledger.WashSaleReplacementLookup</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:40](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L40).
+
+What a IWashSaleReplacementResolver found for one disposal.
+
+```csharp
+public sealed record WashSaleReplacementLookup(IReadOnlyList<WashSaleReplacementAcquisition> Replacements, IReadOnlyList<LedgerTaxLotBasisAdjustment> PriorDeferrals)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WashSaleReplacementLookup Empty { get; } = new ([], []);</code> | [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:45](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L45) | Nothing found; relief proceeds exactly as if wash-sale matching were disabled. |
+| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Ledger/IWashSaleReplacementResolver.cs:48](../../../../src/Meridian.Ledger/IWashSaleReplacementResolver.cs#L48) | True when neither a replacement nor a prior deferral affects this disposal. |
+
 ## WashSaleReplacementQuery
 
 Qualified name: <code>Meridian.Ledger.WashSaleReplacementQuery</code>. Kind: `record`.

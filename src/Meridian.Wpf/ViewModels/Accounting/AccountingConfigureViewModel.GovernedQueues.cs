@@ -9,6 +9,7 @@ public sealed partial class AccountingConfigureViewModel
     {
         // Invalidate financial commands immediately, before a potentially delayed queue read.
         FactorPaydown.SetScope(null, null);
+        ApplyEntityConsolidationBooks([]);
         await RecurringJournalQueue.LoadAsync(null, null, null, ct).ConfigureAwait(false);
     }
 

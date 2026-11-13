@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -575,6 +577,7 @@ public sealed class OrderManagementSystemTests : IDisposable
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("not connected");
+        result.RequiresOrderReconciliation.Should().BeTrue();
         result.OrderState!.Status.Should().Be(OrderStatus.PendingNew,
             "an exception after invoking the gateway does not prove the broker rejected the order");
         oms.GetOpenOrders().Should().ContainSingle(order =>
@@ -1466,9 +1469,14 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     [Fact]
     public async Task PlaceOrderAsync_WhenGateRejects_ReturnsFailureWithoutSubmittingToGateway()
     {
-        var gate = new RejectAllGate("UNKNWN is not in Security Master");
-        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance,
-            securityMasterGate: gate);
+        const string reason = "UNKNWN is not in Security Master\r\nFORGED";
+        var gate = new RejectAllGate(reason);
+        var logger = new RecordingLogger<OrderManagementSystem>();
+        var root = Path.Combine(Path.GetTempPath(), "meridian-rejected-log-" + Guid.NewGuid().ToString("N"));
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(root), NullLogger<ExecutionAuditTrailService>.Instance);
+        using var oms = new OrderManagementSystem(_gateway, logger,
+            securityMasterGate: gate, auditTrail: auditTrail);
         await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
@@ -1480,8 +1488,13 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         });
 
         result.Success.Should().BeFalse("the gate rejected the symbol");
-        result.ErrorMessage.Should().Contain("UNKNWN");
+        result.ErrorMessage.Should().Be(reason);
         oms.GetOpenOrders().Should().BeEmpty("rejected orders must not be tracked");
+        var audit = (await auditTrail.GetRecentAsync(10)).Single(entry => entry.Action == "OrderRejected");
+        audit.Message.Should().Be(reason);
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(reason), StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains("FORGED", StringComparison.Ordinal)
+            && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }
 
     [Fact]

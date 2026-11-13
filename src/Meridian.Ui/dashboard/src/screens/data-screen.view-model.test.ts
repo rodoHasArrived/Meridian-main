@@ -2091,6 +2091,7 @@ describe("data-screen view model", () => {
       label: "Latency",
       value: "Latency not reported"
     });
+    expect(row.latencyOrLastGoodText).toBe("Latency not reported");
     expect(row.trustFields).toContainEqual({
       id: "trust-score",
       label: "Trust score",
@@ -2100,6 +2101,79 @@ describe("data-screen view model", () => {
     expect(row.reasonLabelText).toBe("Checkpoint delay");
     expect(row.reasonCodeText).toBe("CHECKPOINT_DELAY");
     expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
+  });
+
+  it("uses last-good time for the server's unreported-latency sentinel without relabelling it as latency", () => {
+    const section = buildProviderSection([
+      { ...providers[0], latency: "Latency not reported" }
+    ], null, { providerConnections: [polygonConnection] });
+    const row = section.rows[0];
+
+    expect(row.providerId).toBe("polygon");
+    expect(row.latencyText).toBe("Latency not reported");
+    expect(row.lastSuccessfulText).not.toBe("Never");
+    expect(row.latencyOrLastGoodText).toBe(row.lastSuccessfulText);
+    expect(row.trustFields).toContainEqual({ id: "latency", label: "Latency", value: "Latency not reported" });
+    expect(row.ariaLabel).toContain("Latency not reported");
+    expect(row.ariaLabel).not.toContain(`Latency ${row.lastSuccessfulText}`);
+    expect(row.ariaLabel).not.toContain("Latency Latency");
+  });
+
+  it("keeps response timestamps out of the Latency field when no latency is reported", () => {
+    const alpacaConnection: ProviderConnectionRow = {
+      ...polygonConnection,
+      providerId: "alpaca",
+      displayName: "Alpaca paper",
+      capability: "Brokerage",
+      lastVerifiedAt: "2026-07-13T18:55:00Z",
+      lastSuccessfulAt: "2026-07-13T18:55:00Z"
+    };
+    const plaidConnection: ProviderConnectionRow = {
+      ...polygonConnection,
+      providerId: "plaid",
+      displayName: "Plaid",
+      lastVerifiedAt: null,
+      lastSuccessfulAt: null
+    };
+    const providerSection = buildProviderSection(providers, null, {
+      providerConnections: [polygonConnection, alpacaConnection, plaidConnection]
+    });
+    const rowFor = (providerId: string) => {
+      const row = providerSection.rows.find((candidate) => candidate.providerId === providerId);
+      if (!row) {
+        throw new Error(`Expected a provider row for ${providerId}.`);
+      }
+      return row;
+    };
+
+    const alpaca = rowFor("alpaca");
+    expect(alpaca.latencyText).toBe("Latency not reported");
+    expect(alpaca.trustFields).toContainEqual({ id: "latency", label: "Latency", value: "Latency not reported" });
+    expect(alpaca.ariaLabel).toContain("Latency not reported");
+    expect(alpaca.ariaLabel).not.toContain(`Latency ${alpaca.lastSuccessfulText}`);
+    expect(alpaca.ariaLabel).not.toContain("Latency Latency");
+    // The "Trust / last good" column keeps the last successful time, whatever the locale renders.
+    expect(alpaca.latencyOrLastGoodText).toBe(alpaca.lastSuccessfulText);
+
+    const plaid = rowFor("plaid");
+    expect(plaid.latencyText).toBe("Latency not reported");
+    expect(plaid.latencyOrLastGoodText).toBe("Never");
+
+    const polygon = rowFor("polygon");
+    expect(polygon.latencyText).toBe("18ms p50");
+    expect(polygon.latencyOrLastGoodText).toBe("18ms p50");
+    expect(polygon.ariaLabel).toContain("Latency 18ms p50");
+
+    // The server writes the same sentinel for providers without metrics; it must not be prefixed twice.
+    const serverSentinelRow = buildProviderRow({ ...providers[0], latency: "Latency not reported" });
+    expect(serverSentinelRow.ariaLabel.split("Latency not reported")).toHaveLength(2);
+    expect(serverSentinelRow.ariaLabel).not.toContain("Latency Latency");
+
+    expect(providerSection.selectedDetail).not.toBeNull();
+    expect(providerSection.summaryCards).toContainEqual(expect.objectContaining({
+      id: "latency",
+      detail: "Last successful call or verification."
+    }));
   });
 
   it("presents provider reason enums as operator labels while preserving non-code copy", () => {

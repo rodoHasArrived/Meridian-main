@@ -233,7 +233,8 @@ public sealed record StrategyRunSummary(
     string? SweepObjective = null,
     // PR-02: paper/live-compatible status shapes
     StrategyRunLiveStatus? LiveStatus = null,
-    StrategyRunPaperStatus? PaperStatus = null);
+    StrategyRunPaperStatus? PaperStatus = null,
+    IReadOnlyDictionary<string, string>? Parameters = null);
 
 public sealed record StrategySweepObjectiveRanking(
     string RunId,
@@ -251,7 +252,10 @@ public sealed record StrategySweepResultGroup(
     DateTimeOffset StartedAt,
     int RunCount,
     IReadOnlyList<StrategyRunSummary> Runs,
-    IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings);
+    IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings,
+    bool ComparisonContextVerified = false,
+    bool HistoryMayBeTruncated = false,
+    string CoverageDescription = "Expected grid was not retained; missing cells are inferred from observed parameter values.");
 
 /// <summary>
 /// One disclosed simulation assumption or detected data-quality issue for a backtest run.

@@ -197,7 +197,8 @@ public sealed class ConsolidationAuthorityPostgresTests
         await using var fixture = await AuthorityFixture.CreateAsync(ct);
         var held = new HoldingAuthority(fixture.Authority, async () =>
             (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Count == 1);
-        var store = new PostgresLedgerJournalStore(fixture.Database.Options, consolidationAuthority: () => held);
+        var store = new PostgresLedgerJournalStore(fixture.Database.Options, consolidationAuthority: () => held,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var append = store.AppendAsync(fixture.Write, ct);
         await held.Acquired.Task.WaitAsync(ct);
         var ownershipChange = fixture.Ownership.UpsertOwnershipLinkAsync(fixture.MemberLink with { OwnershipPercent = 90m }, ct);
@@ -331,7 +332,8 @@ public sealed class ConsolidationAuthorityPostgresTests
                     ReviewedPolicy = calculation.Policy,
                     Service = service,
                     Authority = authority,
-                    Store = new(database.Options, consolidationAuthority: () => authority),
+                    Store = new(database.Options, consolidationAuthority: () => authority,
+                        postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities),
                     Period = periods[2],
                     Evidence = calculation.Evidence,
                     Write = write

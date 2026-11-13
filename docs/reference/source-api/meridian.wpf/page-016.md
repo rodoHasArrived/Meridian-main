@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolStorageItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L263).
+
+```csharp
+public sealed record SymbolStorageItem(string Symbol, string SizeText, string FileCountText, double PercentOfTotal, string DateRangeText);
+```
+
 ## SymbolStorageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageViewModel</code>. Kind: `class`.
@@ -1303,28 +1313,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:30](../../../../src/Meridian.Wpf/Views/
 
 ```csharp
 public partial class ArchiveHealthPage : Page
-```
-
-## BackfillPage
-
-Qualified name: <code>Meridian.Wpf.Views.BackfillPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/BackfillPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/BackfillPage.xaml.cs#L17).
-
-Historical data backfill page with provider selection, date ranges, and scheduling. Wired to real BackfillApiService for live execution and progress tracking. Supports job resumability via BackfillCheckpointService. Timer management and service orchestration are delegated to BackfillViewModel.
-
-```csharp
-public partial class BackfillPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BackfillPage(WpfServices.WorkspaceService workspaceService, BackfillViewModel viewModel);</code> | [src/Meridian.Wpf/Views/BackfillPage.xaml.cs:22](../../../../src/Meridian.Wpf/Views/BackfillPage.xaml.cs#L22) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:20](../../../../src/Meridian.Wpf/Views/Pages.cs#L20).
-
-```csharp
-public partial class BackfillPage : Page
 ```

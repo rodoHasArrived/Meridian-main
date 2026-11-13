@@ -38,12 +38,15 @@ export function VirtualizedList({
       {/* Spacer sets the true scroll height */}
       <div style={{ height: total * rowHeight, position: "relative" }}>
         {/* Offset the rendered window to its real position */}
-        <div style={{ position: "absolute", top: start * rowHeight, left: 0, right: 0 }}>
+        <div role="list" aria-label={ariaLabel} style={{ position: "absolute", top: start * rowHeight, left: 0, right: 0 }}>
           {slice.map((item, i) => {
             const index = start + i;
             return (
               <div
                 key={index}
+                role="listitem"
+                aria-setsize={total}
+                aria-posinset={index + 1}
                 style={{
                   height: rowHeight,
                   display: "flex",
