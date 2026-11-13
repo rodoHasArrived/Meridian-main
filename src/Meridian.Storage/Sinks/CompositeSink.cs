@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Meridian.Core.Resilience;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
@@ -63,6 +64,17 @@ public sealed class CompositeSink : IStorageSink
     private readonly TimeProvider _timeProvider;
 
     private long _appendFailures;
+
+    // EventPipeline retains the same event instance for an in-process append retry. Weak keys
+    // retain per-child acknowledgements only as long as that event is alive; successful children
+    // must not receive it again when another child fails or cancellation interrupts fan-out.
+    private readonly ConditionalWeakTable<MarketEvent, AppendProgress> _appendProgress = new();
+
+    private sealed class AppendProgress(int sinkCount)
+    {
+        public readonly SemaphoreSlim Gate = new(1, 1);
+        public readonly bool[] Succeeded = new bool[sinkCount];
+    }
 
     /// <summary>
     /// Per-sink circuit breaker (shared <see cref="CircuitBreaker"/> primitive), indexed by
@@ -160,32 +172,55 @@ public sealed class CompositeSink : IStorageSink
     /// </exception>
     public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
+        if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
+        {
+            var progress = _appendProgress.GetValue(evt, _ => new AppendProgress(_sinks.Count));
+            await progress.Gate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                var writes = new List<Task>(_sinks.Count);
+                for (var i = 0; i < _sinks.Count; i++)
+                {
+                    if (!progress.Succeeded[i])
+                        writes.Add(AppendAndAcknowledgeAsync(i, evt, progress, ct));
+                }
+                await Task.WhenAll(writes).ConfigureAwait(false);
+            }
+            finally
+            {
+                progress.Gate.Release();
+            }
+            return;
+        }
+
+        // Preserve the single-sink fast path and the upstream all-failed check: a partial
+        // failure policy must still refuse an event that no child accepted.
         if (_sinks.Count == 1)
         {
-            // Fast path: single sink — skip Task.WhenAll overhead.
             var outcome = await AppendToSinkAsync(0, evt, ct).ConfigureAwait(false);
             if (!outcome.Accepted)
                 throw NoSinkAccepted("append", evt.Symbol, outcome.Failure is null ? [] : [outcome.Failure]);
             return;
         }
 
-        // Multi-sink: fan out in parallel. Independent sinks are written concurrently so that
-        // total append latency equals max(sink latencies) rather than sum(sink latencies).
         var tasks = new Task<SinkWriteOutcome>[_sinks.Count];
         for (var i = 0; i < _sinks.Count; i++)
             tasks[i] = AppendToSinkAsync(i, evt, ct);
-
         var outcomes = await Task.WhenAll(tasks).ConfigureAwait(false);
-        for (var i = 0; i < outcomes.Length; i++)
-        {
-            if (outcomes[i].Accepted)
-                return;
-        }
+        if (outcomes.Any(static outcome => outcome.Accepted))
+            return;
 
-        throw NoSinkAccepted(
-            "append",
-            evt.Symbol,
-            outcomes.Where(static o => o.Failure is not null).Select(static o => o.Failure!).ToList());
+        throw NoSinkAccepted("append", evt.Symbol,
+            outcomes.Where(static outcome => outcome.Failure is not null)
+                .Select(static outcome => outcome.Failure!).ToList());
+    }
+
+    private async Task AppendAndAcknowledgeAsync(int index, MarketEvent evt, AppendProgress progress, CancellationToken ct)
+    {
+        var outcome = await AppendToSinkAsync(index, evt, ct).ConfigureAwait(false);
+        if (!outcome.Accepted)
+            throw NoSinkAccepted("append", evt.Symbol, outcome.Failure is null ? [] : [outcome.Failure]);
+        progress.Succeeded[index] = true;
     }
 
     private InvalidOperationException NoSinkAccepted(string operation, string? symbol, IReadOnlyList<Exception> failures)
@@ -303,6 +338,9 @@ public sealed class CompositeSink : IStorageSink
                 _logger.LogDebug(
                     "Skipping flush for sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open",
                     i + 1, _sinks.Count, _sinkTypeNames[i]);
+                if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
+                    (exceptions ??= new List<Exception>()).Add(
+                        new InvalidOperationException($"Sink {_sinkTypeNames[i]} cannot flush while its circuit breaker is open."));
                 continue;
             }
 

@@ -72,7 +72,7 @@ public sealed partial class AccountingConfigureViewModel
         var accountingDate = _selectedDraft?.AccountingDate ?? DateOnly.FromDateTime(now.UtcDateTime);
         var periodId = _selectedDraft?.PeriodId
             ?? _selectedManualJournalPeriod?.PeriodId.ToString("D", CultureInfo.InvariantCulture)
-            ?? CreateStableGuid(
+            ?? AccountingWorkbenchPresentation.CreateStableGuid(
                 "manual-je-period",
                 fundProfileId,
                 ledgerBookId?.ToString("D") ?? "fund-level",

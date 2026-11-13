@@ -900,25 +900,6 @@ Declared public members:
 | <code>Task StartAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Execution/IOrderManagementLifecycle.cs:13](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L13) | Starts report intake once and enables order operations. Repeated starts are idempotent; a stopped instance cannot be restarted. The token cancels startup, not the service lifetime. |
 | <code>Task StopAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Execution/IOrderManagementLifecycle.cs:20](../../../../src/Meridian.Execution/IOrderManagementLifecycle.cs#L20) | Closes admission, drains admitted operations and accepted fills, and stops background work. Repeated calls share one shutdown. Cancelling the token cancels the wait, not the drain; disposal still awaits it before dependencies can be released. |
 
-## IRiskValidator
-
-Qualified name: <code>Meridian.Execution.IRiskValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/IRiskValidator.cs:8](../../../../src/Meridian.Execution/IRiskValidator.cs#L8).
-
-Pre-trade risk validation. Called by the OMS before routing orders to the gateway.
-
-```csharp
-public interface IRiskValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;RiskValidationResult&gt; ValidateResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default);</code> | [src/Meridian.Execution/IRiskValidator.cs:15](../../../../src/Meridian.Execution/IRiskValidator.cs#L15) | Validates a new submission after structural validation and gateway sizing resolution. Existing validators and rules retain their request contract through this adapter. Reservation ownership is identical to ValidateOrderAsync. |
-| <code>Task&lt;RiskValidationResult&gt; ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/IRiskValidator.cs:32](../../../../src/Meridian.Execution/IRiskValidator.cs#L32) | Validates an order against risk rules. The returned result carries ownership of any capacity a stateful rule reserved while reaching the decision, so the caller can settle it at the routing boundary. Passing the risk gate is not the same as being routed — client-order-id registration, journaling, or gateway submission can still fail afterwards — so committing inside the validator would consume capacity for orders that never reach a venue. See RiskValidationResult.Reservations. |
-
 ## ISecurityMasterGate
 
 Qualified name: <code>Meridian.Execution.ISecurityMasterGate</code>. Kind: `interface`.
@@ -988,24 +969,6 @@ Declared public members:
 | <code>public void Publish(LiveMarketEvent evt);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:40](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L40) | Publishes one live event to all subscriptions whose symbol set contains the event&#x27;s symbol. Never blocks; full subscriber queues drop their oldest event. |
 | <code>public async IAsyncEnumerable&lt;LiveMarketEvent&gt; SubscribeAsync(IReadOnlyCollection&lt;string&gt; symbols, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/Live/LiveMarketEventHub.cs:51](../../../../src/Meridian.Execution/Live/LiveMarketEventHub.cs#L51) |  |
 
-## LogSanitizer
-
-Qualified name: <code>Meridian.Execution.Logging.LogSanitizer</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Logging/LogSanitizer.cs:10](../../../../src/Meridian.Execution/Logging/LogSanitizer.cs#L10).
-
-Neutralizes client-controlled strings before they reach log templates: control characters (including CR/LF) are replaced with _ so forged input cannot fabricate or split log records, and unbounded values are truncated. Use for any caller-supplied value (symbols, actors, reasons, metadata) flowing into a log call; server-generated identifiers do not need it.
-
-```csharp
-public static class LogSanitizer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Sanitize(string? value);</code> | [src/Meridian.Execution/Logging/LogSanitizer.cs:14](../../../../src/Meridian.Execution/Logging/LogSanitizer.cs#L14) |  |
-
 ## IMarginModel
 
 Qualified name: <code>Meridian.Execution.Margin.IMarginModel</code>. Kind: `interface`.
@@ -1025,3 +988,41 @@ Declared public members:
 | <code>string ModelName { get; }</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:12](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L12) | Human-readable name of this margin model (e.g., &quot;Reg T&quot;, &quot;Portfolio Margin&quot;). |
 | <code>MarginRequirement CalculateForPosition(ExecutionPosition position, decimal lastPrice, decimal portfolioEquity);</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:24](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L24) | Calculates the margin requirement for a single position described by position. |
 | <code>MarginRequirement CalculatePortfolioRequirement(IReadOnlyDictionary&lt;string, ExecutionPosition&gt; positions, IReadOnlyDictionary&lt;string, decimal&gt; prices, decimal cash);</code> | [src/Meridian.Execution/Margin/IMarginModel.cs:36](../../../../src/Meridian.Execution/Margin/IMarginModel.cs#L36) | Calculates the aggregate portfolio-level margin requirement across all open positions. |
+
+## MarginAccountType
+
+Qualified name: <code>Meridian.Execution.Margin.MarginAccountType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/Margin/MarginAccountType.cs:6](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L6).
+
+Classifies the margin regime of a brokerage account.
+
+```csharp
+public enum MarginAccountType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:11](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L11) | Cash account — no borrowing allowed. Positions must be fully funded by available cash. |
+| <code>RegT</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:18](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L18) | Regulation T (Reg T) margin account. FINRA/SEC rules: 50 % initial margin for long positions; 25 % maintenance margin. Short positions require 150 % of the short value as initial collateral. Buying power is up to 2× the available cash equity. |
+| <code>PortfolioMargin</code> | [src/Meridian.Execution/Margin/MarginAccountType.cs:24](../../../../src/Meridian.Execution/Margin/MarginAccountType.cs#L24) | Portfolio margin account. Risk-based margining using stress-test scenarios rather than fixed percentage requirements. Typically requires a minimum equity threshold. |
+
+## MarginCallStatus
+
+Qualified name: <code>Meridian.Execution.Margin.MarginCallStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Margin/MarginCallStatus.cs:24](../../../../src/Meridian.Execution/Margin/MarginCallStatus.cs#L24).
+
+Captures the current margin health for one account at a given point in time. Returned by Services.PaperTradingPortfolio.CheckMarginStatus.
+
+```csharp
+public sealed record MarginCallStatus(string AccountId, MarginRequirement PortfolioRequirement, IReadOnlyList<MarginRequirement> PositionRequirements, bool IsMarginCall, decimal MarginDeficiency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static MarginCallStatus NoMarginRequired(string accountId) =&gt; …;</code> | [src/Meridian.Execution/Margin/MarginCallStatus.cs:35](../../../../src/Meridian.Execution/Margin/MarginCallStatus.cs#L35) | Convenience factory that represents a cash account or one with no open positions (no margin call possible, zero requirements). |

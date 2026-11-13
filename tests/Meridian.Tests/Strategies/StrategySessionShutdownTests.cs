@@ -242,8 +242,11 @@ public sealed class StrategySessionShutdownTests
         AssertSuccess(outcome);
         (await runStop.WaitAsync(WaitBudget)).Should().BeEquivalentTo(outcome);
         var retained = await fixture.ReloadRunAsync(run.RunId);
-        retained!.Metrics!.Metrics.TotalTrades.Should().Be(1);
+        retained!.Metrics!.Metrics.TotalTrades.Should().Be(0, "the admitted entry fill is not a completed trade outcome");
         retained.Metrics.Fills.Should().ContainSingle(fill => fill.Symbol == "AAPL" && fill.FilledQuantity == 3);
+        double.IsNaN(retained.Metrics.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(retained.Metrics.Metrics.ProfitFactor).Should().BeTrue();
+        retained.Metrics.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
         strategy.StopCount.Should().Be(1);
         fixture.Orders.Requests.Should().ContainSingle();
     }

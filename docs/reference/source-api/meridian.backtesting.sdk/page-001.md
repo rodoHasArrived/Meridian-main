@@ -119,7 +119,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestEngineMetadata</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:69](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L69).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:71](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L71).
 
 Metadata about the engine and normalization path that produced a backtest result.
 
@@ -149,12 +149,12 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestMetrics</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:44](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L44).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:46](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L46).
 
 Aggregate performance statistics computed by BacktestMetricsEngine.
 
 ```csharp
-public sealed record BacktestMetrics(decimal InitialCapital, decimal FinalEquity, decimal GrossPnl, decimal NetPnl, decimal TotalReturn, decimal AnnualizedReturn, double SharpeRatio, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double SortinoRatio, double CalmarRatio, decimal MaxDrawdown, decimal MaxDrawdownPercent, int MaxDrawdownRecoveryDays, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double ProfitFactor, double WinRate, int TotalTrades, int WinningTrades, int LosingTrades, decimal TotalCommissions, decimal TotalMarginInterest, decimal TotalShortRebates, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double Xirr, IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution);
+public sealed record BacktestMetrics(decimal InitialCapital, decimal FinalEquity, decimal GrossPnl, decimal NetPnl, decimal TotalReturn, decimal AnnualizedReturn, double SharpeRatio, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double SortinoRatio, double CalmarRatio, decimal MaxDrawdown, decimal MaxDrawdownPercent, int MaxDrawdownRecoveryDays, [property : JsonConverter(typeof(UnavailableMetricJsonConverter))] double ProfitFactor, [property : JsonConverter(typeof(UnavailableWinRateJsonConverter))] double WinRate, int TotalTrades, int WinningTrades, int LosingTrades, decimal TotalCommissions, decimal TotalMarginInterest, decimal TotalShortRebates, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double Xirr, IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution);
 ```
 
 ## BacktestProgressEvent
@@ -192,7 +192,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:83](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L83).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:85](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L85).
 
 Complete result of a finished backtest run.
 
@@ -204,7 +204,7 @@ public sealed record BacktestResult(BacktestRequest Request, IReadOnlySet<string
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestResultKinds</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:76](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L76).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:78](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L78).
 
 Canonical result coverage categories shared by native and external backtest engines.
 
@@ -216,8 +216,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:78](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L78) |  |
-| <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:79](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L79) |  |
+| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:80](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L80) |  |
+| <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:81](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L81) |  |
 
 ## BacktestStage
 
@@ -828,9 +828,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long RemainingQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:115](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L115) | Absolute quantity that still needs to be executed. |
-| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:118](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L118) | True when the order has no remaining quantity to execute. |
-| <code>public long RemainingSignedQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:121](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L121) | Signed quantity still open, retaining the original side of the order. |
+| <code>public decimal CommissionCharged { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Order.cs:115](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L115) | Commission already charged on accepted fills of this order. |
+| <code>public decimal FilledNotional { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Order.cs:118](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L118) | Absolute notional of accepted fills, used for cumulative commission tiers. |
+| <code>public long RemainingQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:121](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L121) | Absolute quantity that still needs to be executed. |
+| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:124](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L124) | True when the order has no remaining quantity to execute. |
+| <code>public long RemainingSignedQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Order.cs:127](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L127) | Signed quantity still open, retaining the original side of the order. |
 
 ## OrderRequest
 

@@ -6,6 +6,7 @@ using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
@@ -631,7 +632,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 ShortCollateralReleased: capture.ShortCollateralReleased,
                 SettlesVariationMargin: variationMargin,
                 VariationMarginPnl: capture.VariationMarginPnl,
-                FinancialAccountId: _scopeLedgerAccounts ? account.AccountId : NormalizeOwner(ownerAccountId));
+                FinancialAccountId: _scopeLedgerAccounts ? account.AccountId : NormalizeOptional(ownerAccountId));
             return new PaperFillAccountingResult(
                 canCertifyOwnership ? evidence : null,
                 evidence.RealizedPnl,
@@ -1358,7 +1359,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
     private bool CanCertifyAccountingOwner(AccountState account, PaperPosition? position, string? ownerAccountId)
     {
-        var owner = NormalizeOwner(ownerAccountId);
+        var owner = NormalizeOptional(ownerAccountId);
         if (_scopeLedgerAccounts && owner is not null
             && !string.Equals(owner, account.AccountId, StringComparison.OrdinalIgnoreCase))
         {
@@ -1379,9 +1380,6 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         return _scopeLedgerAccounts || accountingOwner is null || position.Quantity == 0m
             || position.OwnerQuantities.GetValueOrDefault(accountingOwner) == position.Quantity;
     }
-
-    private static string? NormalizeOwner(string? ownerAccountId)
-        => string.IsNullOrWhiteSpace(ownerAccountId) ? null : ownerAccountId.Trim();
 
     private sealed class FillAccountingCapture
     {

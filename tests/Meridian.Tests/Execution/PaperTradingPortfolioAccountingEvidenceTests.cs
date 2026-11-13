@@ -22,7 +22,9 @@ public sealed class PaperTradingPortfolioAccountingEvidenceTests
         ], ledger);
         portfolio.ApplyFill("broker-a", Fill(OrderSide.Buy, 10m, 100m) with
         {
-            Commission = 1m, Fees = 2m, SlippageCost = 3m
+            Commission = 1m,
+            Fees = 2m,
+            SlippageCost = 3m
         });
         portfolio.ApplyFill("broker-b", Fill(OrderSide.Sell, 10m, 100m) with { Commission = 1m });
         portfolio.ApplyFill("broker-b", Fill(OrderSide.Buy, 4m, 90m) with { Commission = 1m });
@@ -58,7 +60,9 @@ public sealed class PaperTradingPortfolioAccountingEvidenceTests
         var result = portfolio.ApplyFillWithAccountingEvidence(
             Fill(shortFirst ? OrderSide.Buy : OrderSide.Sell, 5m, 8m) with
             {
-                Commission = 1m, Fees = 2m, SlippageCost = 3m
+                Commission = 1m,
+                Fees = 2m,
+                SlippageCost = 3m
             }, "fund-a");
 
         result.Evidence.Should().NotBeNull();
@@ -181,8 +185,10 @@ public sealed class PaperTradingPortfolioAccountingEvidenceTests
         var portfolio = new PaperTradingPortfolio(10_000m);
         var open = Fill(OrderSide.Buy, 1m, 6_000m) with
         {
-            AssetClass = "Future", LotMultiplier = 50m,
-            BookedMoneyMultiplier = 50m, BookedVariationMargin = true
+            AssetClass = "Future",
+            LotMultiplier = 50m,
+            BookedMoneyMultiplier = 50m,
+            BookedVariationMargin = true
         };
         portfolio.ApplyFillWithAccountingEvidence(open, "fund-a");
         portfolio.ApplyVariationMarginSettlement(PaperTradingPortfolio.DefaultAccountId, "AAPL", 6_010m, FilledAt);

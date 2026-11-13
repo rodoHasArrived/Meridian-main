@@ -86,15 +86,22 @@ public sealed partial class EventDrivenDecouplingTests
             "wrong-account" => evt with { AccountingEvidence = evidence with { FinancialAccountId = "other-broker" } },
             "wrong-side" => evt with { Side = OrderSide.Sell },
             "wrong-quantity" => evt with { FilledQuantity = 2m },
-            "wrong-gross" => evt with { AccountingEvidence = evidence with
+            "wrong-gross" => evt with
             {
-                Opening = evidence.Opening! with { GrossValue = 99m }
-            } },
+                AccountingEvidence = evidence with
+                {
+                    Opening = evidence.Opening! with { GrossValue = 99m }
+                }
+            },
             "wrong-realized" => evt with { RealizedPnl = 1m },
-            "missing-basis" => evt with { AccountingEvidence = evidence with
+            "missing-basis" => evt with
             {
-                Opening = null, Closing = new(SecurityTradePostingKind.CoverShort, 1m, 100m)
-            } },
+                AccountingEvidence = evidence with
+                {
+                    Opening = null,
+                    Closing = new(SecurityTradePostingKind.CoverShort, 1m, 100m)
+                }
+            },
             "negative-fee" => evt with { AccountingEvidence = evidence with { Fees = -1m } },
             "unbacked-collateral" => evt with { AccountingEvidence = evidence with { ShortCollateralReleased = 1m } },
             "unknown-side" => evt with { Side = (OrderSide)999 },
@@ -180,10 +187,14 @@ public sealed partial class EventDrivenDecouplingTests
                 Fees: 1.00m, FinancialAccountId: "broker"));
         var target = new InMemoryTradeFillLedgerPostingTarget();
         await DrainCurrentEvidenceAsync(target, new InMemoryTradeFillPostingStore(TestPostingScope), evt);
-        var retry = evt with { AccountingEvidence = evt.AccountingEvidence! with
+        var retry = evt with
         {
-            Opening = new(SecurityTradePostingKind.OpenLong, 1m, 100m), Fees = 1m
-        } };
+            AccountingEvidence = evt.AccountingEvidence! with
+            {
+                Opening = new(SecurityTradePostingKind.OpenLong, 1m, 100m),
+                Fees = 1m
+            }
+        };
         var store = new InMemoryTradeFillPostingStore(TestPostingScope);
 
         await DrainCurrentEvidenceAsync(target, store, retry);
@@ -200,7 +211,8 @@ public sealed partial class EventDrivenDecouplingTests
                 FinancialAccountId: "broker"));
         var close = CurrentEvidenceEvent(OrderSide.Sell, 10m, 20m,
             new(Closing: new(SecurityTradePostingKind.CloseLong, 10m, 200m, 1_000m, LoanRepaid: 500m),
-                FinancialAccountId: "broker")) with { OccurredAt = open.OccurredAt.AddDays(1) };
+                FinancialAccountId: "broker")) with
+        { OccurredAt = open.OccurredAt.AddDays(1) };
         var store = new InMemoryTradeFillPostingStore(TestPostingScope);
 
         var ledger = await DrainCurrentEvidenceAsync(new InMemoryTradeFillLedgerPostingTarget(), store, open, close);
@@ -253,7 +265,8 @@ public sealed partial class EventDrivenDecouplingTests
             new(Opening: new(SecurityTradePostingKind.OpenShort, 10m, 1_000m), FinancialAccountId: "broker"));
         var cover = CurrentEvidenceEvent(OrderSide.Buy, 10m, coverPrice,
             new(Closing: new(SecurityTradePostingKind.CoverShort, 10m, 10m * coverPrice, 1_000m),
-                FinancialAccountId: "broker")) with { OccurredAt = opening.OccurredAt.AddDays(1) };
+                FinancialAccountId: "broker")) with
+        { OccurredAt = opening.OccurredAt.AddDays(1) };
         var store = new InMemoryTradeFillPostingStore(TestPostingScope);
 
         var ledger = await DrainCurrentEvidenceAsync(new InMemoryTradeFillLedgerPostingTarget(), store, opening, cover);

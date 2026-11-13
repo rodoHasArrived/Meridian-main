@@ -75,7 +75,7 @@ public sealed class FixedIncomeAccrualCalculation(
         if (projection.Schedule.Any(static entry => entry.InterestSegments is { Count: > 0 }))
             return await CalculateRetainedAsync(context, security, securityId, bookPositionId, ticker,
                 financialAccountId, projectionAsOf, descriptor.QuoteConvention, ct).ConfigureAwait(false);
-        if (descriptor.AssetClass == "StructuredCredit"
+        if (descriptor.CashFlowBehavior == SecurityCashFlowBehavior.FactorAmortizing
             || projection.TermsUsed?.CurrentFactor is { } factor && factor != 1m
             || projection.TermsUsed?.FactorSchedule.Any(static point => point.Factor != 1m) == true)
             throw new InvalidOperationException(
@@ -243,4 +243,3 @@ public sealed class FixedIncomeAccrualCalculation(
     private static bool SameHolding(LedgerTaxLot[] left, LedgerTaxLot[] right)
         => left.SequenceEqual(right);
 }
-

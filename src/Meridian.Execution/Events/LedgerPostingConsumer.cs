@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -1333,7 +1334,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
         AppendCanonical(canonical, evidence.SettlesVariationMargin ? "variation-margin" : "notional");
         AppendCanonical(canonical, FormatDecimal(evidence.VariationMarginPnl));
         AppendCanonical(canonical, NormalizeOptional(evidence.FinancialAccountId)?.ToUpperInvariant());
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
+        return Convert.ToHexString(Sha256Digest.ComputeBytesUtf8(canonical.ToString()));
     }
 
     private static string FormatDecimal(decimal value)

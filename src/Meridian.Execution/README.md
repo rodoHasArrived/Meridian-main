@@ -11,6 +11,10 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Execution
 
+Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
+The original symbol remains authoritative for probing and order validation, and a failed probe
+still refuses the order.
+
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
 
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.

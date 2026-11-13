@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Application
@@ -19,6 +19,15 @@ lines as authoritative posting, including reversal, principal receipt, amortizat
 Unknown roles, unbalanced projections, missing required amounts and negative source amounts fail
 before posting or draft creation. Public compatibility line helpers use registry definitions without
 inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
+
+Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
+Provider requests and coverage checkpoints retain the original symbol identities.
+
+Intraday historical-backfill coverage and resume checkpoints follow the date of the bar's start
+in its session timezone. The current US-equity providers default to `America/New_York`; callers
+for other markets can pass `intradaySessionTimeZone` explicitly. A bar ending after UTC midnight
+does not mark the following US trading session as covered. Daily bars retain their declared
+`SessionDate`.
 
 The W14 cash-dividend lane is a separate preparer-attestation path, not an exception inside
 ordinary approval. `CorporateActionCaseAccountingService.CashDividend.cs` composes the retained
@@ -60,6 +69,11 @@ receipts and effective-date selection over the durable agreement store. Retrospe
 preserve posted versions; semantic bases follow effective chronology rather than approval order.
 `PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
 lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+Main composition supplies that authority through a deferred factory, and journal validation and
+transactional writer interfaces resolve to the same durable ledger singleton.
+`IntercompanyAgreementRules` uses the shared optional-text normalizer and SHA-256 helper while
+preserving trimmed optional terms, meaningful internal whitespace and lowercase canonical JSON
+fingerprints for retained commands and reviews.
 
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation

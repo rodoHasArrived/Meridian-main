@@ -169,6 +169,13 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 
 ## Execution realism and result trustworthiness
 
+Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
+metrics, and stitched walk-forward metrics use the same 365-observation annualization because
+the native snapshot series includes weekends. Trade cash flows contain only consideration;
+commission cash flows carry fees separately, and their sum reconciles to the cash movement.
+Fill models apply fixed, minimum, and maximum commissions cumulatively per order across all
+accepted partial fills rather than charging each execution as a new order.
+
 - `BacktestRequest.FillTiming` defaults to `NextBar`: an order can only fill against events
   strictly later than the event that generated it, eliminating same-bar look-ahead. Under
   next-bar timing a `Day` order expires at the end of the first day on which its symbol traded

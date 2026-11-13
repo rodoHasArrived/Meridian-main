@@ -1,7 +1,9 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Promotions;
+using Meridian.Strategies.Serialization;
 using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.Strategies;
@@ -20,6 +22,33 @@ namespace Meridian.Tests.Strategies;
 public sealed class LiveRunMetricsTrackerTests
 {
     private static readonly DateTimeOffset StartedAt = new(2024, 1, 2, 0, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Build_WithoutClosedTradeAccounting_ReportsOutcomeMetricsAsUnavailable()
+    {
+        var tracker = new LiveRunMetricsTracker(1_000m, StartedAt);
+        tracker.RecordFill(CreateFill("SPY", 1, 100m), StartedAt);
+        var result = tracker.Build("BrokerPaper", new HashSet<string>(), 1_000m,
+            new MeridianLedger(), StartedAt.AddDays(1));
+
+        double.IsNaN(result.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(result.Metrics.ProfitFactor).Should().BeTrue();
+        result.Metrics.TotalTrades.Should().Be(0, "fills do not establish completed trade outcomes");
+        result.EngineMetadata!.CoverageWarnings.Should().NotBeEmpty();
+        var json = JsonSerializer.SerializeToElement(result.Metrics);
+        json.GetProperty(nameof(BacktestMetrics.WinRate)).ValueKind.Should().Be(JsonValueKind.Null);
+        json.GetProperty(nameof(BacktestMetrics.ProfitFactor)).ValueKind.Should().Be(JsonValueKind.Null);
+        var restored = json.Deserialize<BacktestMetrics>()!;
+        double.IsNaN(restored.WinRate).Should().BeTrue();
+        double.IsNaN(restored.ProfitFactor).Should().BeTrue();
+
+        var retained = JsonSerializer.SerializeToElement(result, StrategyRunPersistenceJson.Options);
+        retained.GetProperty("metrics").GetProperty("winRate").ValueKind.Should().Be(JsonValueKind.Null);
+        retained.GetProperty("metrics").GetProperty("profitFactor").ValueKind.Should().Be(JsonValueKind.Null);
+        var restoredRun = retained.Deserialize<BacktestResult>(StrategyRunPersistenceJson.Options)!;
+        double.IsNaN(restoredRun.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(restoredRun.Metrics.ProfitFactor).Should().BeTrue();
+    }
 
     [Fact]
     public void Build_LargerLaterCurrencyLoss_PreservesWorstPercentageAndBlocksPromotion()

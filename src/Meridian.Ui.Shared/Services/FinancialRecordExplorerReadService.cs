@@ -975,7 +975,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 : BuildGraph(scoped.Rows));
     }
 
-    private static FinancialRecordExplorerDto ApplyExplorerQuery(
+    internal static FinancialRecordExplorerDto ApplyExplorerQuery(
         FinancialRecordExplorerDto explorer,
         FinancialRecordExplorerQueryDto? query)
     {
@@ -1086,13 +1086,30 @@ public sealed partial class FinancialRecordExplorerReadService
         IReadOnlyList<FinancialRecordExplorerFilterDto> filters)
         => filters.Count == 0 || filters.All(filter =>
         {
+            var filterId = NormalizeSearchToken(filter.FilterId);
+            // Agreement identity is dimensional scope: matching another field's text (or version
+            // 10 when version 1 was requested) must not admit an unrelated row.
+            var agreementField = filterId switch
+            {
+                "intercompanyagreementid" => "Agreement",
+                "intercompanyagreementversion" => "Agreement version",
+                _ when filter.FilterId.StartsWith("dimension-intercompany-agreement-version-", StringComparison.OrdinalIgnoreCase) => "Agreement version",
+                _ when filter.FilterId.StartsWith("dimension-intercompany-agreement-", StringComparison.OrdinalIgnoreCase) => "Agreement",
+                _ => null
+            };
+            if (agreementField is not null)
+            {
+                return row.Detail.Fields.Any(field =>
+                    string.Equals(field.Label, agreementField, StringComparison.Ordinal) &&
+                    string.Equals(field.Value.Trim(), filter.Value.Trim(), StringComparison.OrdinalIgnoreCase));
+            }
+
             var expected = NormalizeSearchToken(filter.Value);
             if (string.IsNullOrWhiteSpace(expected))
             {
                 return true;
             }
 
-            var filterId = NormalizeSearchToken(filter.FilterId);
             var directCell = string.IsNullOrWhiteSpace(filterId)
                 ? null
                 : row.Cells.FirstOrDefault(cell => string.Equals(NormalizeSearchToken(cell.ColumnId), filterId, StringComparison.Ordinal));
@@ -1415,7 +1432,7 @@ public sealed partial class FinancialRecordExplorerReadService
             SourceRunId: run.RunId);
     }
 
-    private static void AddDimensionFilters(
+    internal static void AddDimensionFilters(
         ICollection<FinancialRecordExplorerFilterDto> filters,
         IEnumerable<LedgerDimensionSetDto?> dimensionSets)
     {
@@ -1438,6 +1455,8 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "intercompany-agreement", "Agreement", dimensions.Select(static value => value.IntercompanyAgreementId?.ToString("D")));
+        AddDimensionFilter(filters, "intercompany-agreement-version", "Agreement version", dimensions.Select(static value => value.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture)));
         AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
         AddDimensionFilter(filters, "customer", "Customer", dimensions.Select(static value => value.CustomerId));
         AddDimensionFilter(filters, "vendor", "Vendor", dimensions.Select(static value => value.VendorId));
