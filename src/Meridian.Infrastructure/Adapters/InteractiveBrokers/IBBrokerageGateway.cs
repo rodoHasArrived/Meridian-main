@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Pipeline;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -1612,8 +1613,8 @@ public sealed partial class IBBrokerageGateway :
             return null;
 
         var secType = GetMetadata(metadata, "sec_type");
-        if (!string.Equals(secType, "OPT", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(secType, "FOP", StringComparison.OrdinalIgnoreCase))
+        if (!ProviderAssetClassCodeCatalog.IsCodeIgnoreCase(
+                secType, SecurityAssetClassNames.Option, ProviderAssetClassCodeProviders.InteractiveBrokers))
         {
             return null;
         }

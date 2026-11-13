@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
@@ -1046,7 +1047,7 @@ public static partial class ExecutionEndpoints
                 actionName: "ClosePosition",
                 side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
                 quantity: request.Quantity ?? Math.Abs(position.Quantity),
-                positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                positionEffect: IsRobinhoodOrMeridianOptionCode(position.AssetClass) ? "close" : null,
                 fundAccountId: request.FundAccountId,
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
@@ -1099,7 +1100,7 @@ public static partial class ExecutionEndpoints
                 actionName: "UpsizePosition",
                 side: position.Quantity < 0 ? OrderSide.Sell : OrderSide.Buy,
                 quantity: request.Quantity ?? Math.Abs(position.Quantity),
-                positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "open" : null,
+                positionEffect: IsRobinhoodOrMeridianOptionCode(position.AssetClass) ? "open" : null,
                 fundAccountId: request.FundAccountId,
                 successVerb: "Upsize",
                 jsonOptions: jsonOptions,
@@ -1165,7 +1166,7 @@ public static partial class ExecutionEndpoints
                 actionName: "ClosePosition",
                 side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
                 quantity: Math.Abs(position.Quantity),
-                positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                positionEffect: IsRobinhoodOrMeridianOptionCode(position.AssetClass) ? "close" : null,
                 fundAccountId: fundAccountId,
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
@@ -1183,6 +1184,16 @@ public static partial class ExecutionEndpoints
     // ------------------------------------------------------------------ //
     // Private helpers                                                     //
     // ------------------------------------------------------------------ //
+
+    // Position effect is classified for the Robinhood/Meridian option code only (ignoring
+    // case), as before the code table existed; an Alpaca option position carries none.
+    // Classifying other providers' option codes would change routing and is a separate change.
+    private static bool IsRobinhoodOrMeridianOptionCode(string? assetClass)
+        => ProviderAssetClassCodeCatalog.IsCodeIgnoreCase(
+            assetClass,
+            SecurityAssetClassNames.Option,
+            ProviderAssetClassCodeProviders.Robinhood,
+            ProviderAssetClassCodeProviders.Meridian);
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 

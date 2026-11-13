@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
@@ -83,7 +84,7 @@ public sealed partial class AlpacaBrokerageGateway
                     // Trading API stock/option dollar values are bound at this adapter;
                     // account base currency is not a general position denomination fallback.
                     Currency: string.Equals(account.Currency, "USD", StringComparison.Ordinal)
-                        && position.AssetClass is "us_equity" or "us_option" ? "USD" : null,
+                        && position.AssetClass is AlpacaAssetClassCodes.UsEquity or AlpacaAssetClassCodes.UsOption ? "USD" : null,
                     Metadata: position.Metadata)
                 {
                     AccruedInterest = position.AccruedInterest,

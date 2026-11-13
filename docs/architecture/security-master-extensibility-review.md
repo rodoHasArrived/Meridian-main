@@ -852,6 +852,42 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### Terms storage consolidation slice B — brokerage asset-class codes come from one table — 2026-11-13
+
+Brokerage asset-class codes were spelled by hand at each execution site: Alpaca's order builder
+normalized `equity`/`option`/`treasury`/`corporate` aliases in its own switch and gated face-value
+sizing on `treasury`/`corporate`; the paper gateway repeated that alias list; the OMS decided which
+fills book from the report alone on `us_equity`/`equity`/`crypto`; the live portfolio sync and
+`BrokeragePortfolioState` compared to `us_option`; Robinhood, the IB gateway and the execution
+endpoints each checked their own option spelling; and the IB mapper carried a private secType map.
+`ProviderAssetClassCodeCatalog` (`src/Meridian.Contracts/SecurityMaster/`) is now the one table:
+
+- One exact-match row per provider code (alpaca, robinhood, ib, meridian) with the catalog class it
+  names, its input aliases, role flags (`OrderPayload`, `PositionReport`, `Search`) and traits
+  (`FaceValueFixedIncome`, `BookableFromReportAlone`). It is checked at type load: every catalog
+  class is a canonical `SecurityAssetClassCatalog` name, every provider is known, and no spelling
+  is declared twice for one provider. `AlpacaAssetClassCodes` holds the Alpaca wire codes.
+- It deliberately does not use `SecurityAssetClassCatalog.ResolveLabel`, which resolves none of
+  `crypto`, `treasury` or `corporate`.
+- Each helper reproduces the comparison its site made — ordinal and untrimmed
+  (`TryResolveExact`, used where the site wrote `== "us_option"`), ordinal-ignore-case
+  (`TryResolveCodeIgnoreCase`), or trimmed lower-invariant input (`TryResolveInput`) — so the move
+  changes no accepted spelling. The execution endpoints' position effect still classifies only the
+  Robinhood/Meridian `option` code; an Alpaca `us_option` position gets none (classifying it would
+  change routing and is deferred).
+- The persisted journal tag `USD_US_EQUITY` is `ExecutionReportingAssetClasses.UsdUsEquity`, value
+  unchanged.
+
+`ProviderAssetClassCodeParityTests` was committed first and run green against the old sites: its
+truth tables are literal copies of the former switches (Alpaca normalization and fixed-income
+gate, paper/live fixed-income parity over an input corpus, `IsBookableFromReportAlone`, Robinhood
+and IB option gates, the IB secType map), and an endpoint test pins that `us_option` carries no
+`position_effect`. `ProviderAssetClassCodeRatchetTests` caps each file's vendor-spelled literals
+(`us_equity`, `us_option`, the Alpaca fixed-income aliases, IB `OPT`/`FOP`, `USD_US_EQUITY`); the
+ceilings may only go down. The Alpaca symbol-search vocabulary, IB `ContractFactory`, subscription
+`SecurityType` defaults and the WPF symbols page still spell codes and are counted, not moved.
+Behavior is unchanged.
+
 ### Terms storage consolidation slice A — required-field read order comes from the schema — 2026-11-13
 
 The read path's historical refusal order for required flat fields (which key a reconstruction

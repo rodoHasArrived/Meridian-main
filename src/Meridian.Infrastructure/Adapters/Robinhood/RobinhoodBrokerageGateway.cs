@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -1536,7 +1537,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         return request.Metadata.TryGetValue("option_instrument_url", out var optionInstrumentUrl)
                    && !string.IsNullOrWhiteSpace(optionInstrumentUrl)
                || request.Metadata.TryGetValue("asset_class", out var assetClass)
-                   && string.Equals(assetClass, "option", StringComparison.OrdinalIgnoreCase);
+                   && ProviderAssetClassCodeCatalog.IsCodeIgnoreCase(
+                       assetClass, SecurityAssetClassNames.Option, ProviderAssetClassCodeProviders.Robinhood);
     }
 
     private static bool TryGetOptionOrderMetadata(

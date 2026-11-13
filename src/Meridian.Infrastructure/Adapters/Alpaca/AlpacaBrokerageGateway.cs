@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Config;
 using Meridian.Core.Pipeline;
 using Meridian.Execution.Sdk;
@@ -1066,7 +1067,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         }
         else if (LooksLikeOptionSymbol(request.Symbol))
         {
-            payload.AssetClass = "us_option";
+            payload.AssetClass = AlpacaAssetClassCodes.UsOption;
         }
 
         var notional = ReadMetadataDecimal(request.Metadata, "notional", "alpaca:notional")
@@ -1275,14 +1276,10 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         _ => throw new NotSupportedException($"Alpaca order_class '{orderClass}' is not supported.")
     };
 
-    internal static string NormalizeAssetClass(string assetClass) => assetClass.Trim().ToLowerInvariant() switch
-    {
-        "equity" or "us_equity" => "us_equity",
-        "option" or "options" or "us_option" => "us_option",
-        "treasury" or "us_treasury" or "fixed_income_treasury" => "treasury",
-        "corporate" or "bond" or "corporate_bond" or "us_corporate" => "corporate",
-        _ => assetClass.Trim().ToLowerInvariant()
-    };
+    // Codes and aliases live in ProviderAssetClassCodeCatalog; an unknown spelling passes
+    // through trimmed and lower-cased so Alpaca sees (and refuses) what was submitted.
+    internal static string NormalizeAssetClass(string assetClass)
+        => ProviderAssetClassCodeCatalog.NormalizeInput(ProviderAssetClassCodeProviders.Alpaca, assetClass);
 
     private static AlpacaOrderLegPayload MapOrderLeg(OrderLeg leg)
     {
@@ -1333,11 +1330,13 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                trimmed.Any(char.IsDigit);
     }
 
+    // An ordinal match on the normalized payload code, not on caller input.
     internal static bool IsFixedIncomeAssetClass(string? assetClass) =>
-        assetClass is "treasury" or "corporate";
+        ProviderAssetClassCodeCatalog.TryResolveExact(ProviderAssetClassCodeProviders.Alpaca, assetClass, out var code)
+        && code.HasTrait(ProviderAssetClassCodeTraits.FaceValueFixedIncome);
 
     private static bool IsOptionsOrder(AlpacaOrderPayload payload) =>
-        payload.OrderClass == "mleg" || payload.AssetClass == "us_option";
+        payload.OrderClass == "mleg" || payload.AssetClass == AlpacaAssetClassCodes.UsOption;
 
     private OrderEndpoint ResolveOrderEndpoint(OrderRequest request, AlpacaOrderPayload payload)
     {
