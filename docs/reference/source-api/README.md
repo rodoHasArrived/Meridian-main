@@ -36,7 +36,7 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | `Meridian.Identity` | 53 | [1](meridian.identity/page-001.md) · [2](meridian.identity/page-002.md) |
 | `Meridian.Infrastructure` | 350 | [1](meridian.infrastructure/page-001.md) · [2](meridian.infrastructure/page-002.md) · [3](meridian.infrastructure/page-003.md) · [4](meridian.infrastructure/page-004.md) · [5](meridian.infrastructure/page-005.md) · [6](meridian.infrastructure/page-006.md) · [7](meridian.infrastructure/page-007.md) |
 | `Meridian.Instruments` | 86 | [1](meridian.instruments/page-001.md) · [2](meridian.instruments/page-002.md) |
-| `Meridian.Ledger` | 257 | [1](meridian.ledger/page-001.md) · [2](meridian.ledger/page-002.md) · [3](meridian.ledger/page-003.md) · [4](meridian.ledger/page-004.md) · [5](meridian.ledger/page-005.md) · [6](meridian.ledger/page-006.md) |
+| `Meridian.Ledger` | 264 | [1](meridian.ledger/page-001.md) · [2](meridian.ledger/page-002.md) · [3](meridian.ledger/page-003.md) · [4](meridian.ledger/page-004.md) · [5](meridian.ledger/page-005.md) · [6](meridian.ledger/page-006.md) |
 | `Meridian.Mcp` | 20 | [1](meridian.mcp/page-001.md) |
 | `Meridian.Platform` | 126 | [1](meridian.platform/page-001.md) · [2](meridian.platform/page-002.md) · [3](meridian.platform/page-003.md) |
 | `Meridian.PortfolioRecords` | 11 | [1](meridian.portfoliorecords/page-001.md) |
@@ -53,4 +53,4 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | `Meridian.Workflow` | 11 | [1](meridian.workflow/page-001.md) |
 | `Meridian.Wpf` | 1044 | [1](meridian.wpf/page-001.md) · [2](meridian.wpf/page-002.md) · [3](meridian.wpf/page-003.md) · [4](meridian.wpf/page-004.md) · [5](meridian.wpf/page-005.md) · [6](meridian.wpf/page-006.md) · [7](meridian.wpf/page-007.md) · [8](meridian.wpf/page-008.md) · [9](meridian.wpf/page-009.md) · [10](meridian.wpf/page-010.md) · [11](meridian.wpf/page-011.md) · [12](meridian.wpf/page-012.md) · [13](meridian.wpf/page-013.md) · [14](meridian.wpf/page-014.md) · [15](meridian.wpf/page-015.md) · [16](meridian.wpf/page-016.md) · [17](meridian.wpf/page-017.md) · [18](meridian.wpf/page-018.md) · [19](meridian.wpf/page-019.md) · [20](meridian.wpf/page-020.md) · [21](meridian.wpf/page-021.md) |
 
-Total: **10286** distinct module/qualified-name/arity entries from **10761** source declarations.
+Total: **10293** distinct module/qualified-name/arity entries from **10770** source declarations.
