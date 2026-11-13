@@ -6,10 +6,67 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Wpf
+
+`SecurityMasterPresentation` and `AccountingWorkbenchPresentation` own stateless display and
+readiness projections formerly embedded in their large workspace view models. View models retain
+selection, asynchronous commands and mutable workflow state; the presentation helpers retain the
+same financial labels, evidence links and authorization-independent formatting. Existing view-model
+tests exercise these projections through the operator-facing properties and commands.
+
+The Evidence Workbench reads the shared single-principal declaration and retained preparer-assertion
+history through `EvidenceWorkbenchApiClient.GetAttestationsAsync`. Its scope panel preserves
+"Attested by preparer — not independently reviewed", source provenance, actor, exact subject revision
+and hashes, and reasoned revocations after declaration withdrawal. Current support is explicitly
+unassessed; these rows never grant approval, posting, close or release authority. Permission failures
+clear prior rows and remain unavailable rather than reading as zero assertions. Native interaction and
+`EvidenceWorkbenchViewModelTests` require Windows. The desktop also offers the browser's explicit
+declaration enable/withdraw, exact-source inspection, preparer acknowledgment and corrective
+self-revocation commands through the same endpoints. Reasons and the canonical responsibility
+confirmation bind an inspected document; changing document or scope clears confirmation. Uncertain
+responses retain the same command identity for retry, while a definite refusal requires fresh
+authority and source inspection. These controls stay default-off and never alter economic approvals.
+Focused command coverage lives in `EvidenceWorkbenchAttestationActionTests.cs`.
+The workbench and amount-proof drawer also display the shared packet-specific preparer-evidence
+projection: receipt/task counts, exact original disclosures, source provenance and dated applicability
+remain separate from amount readiness and Verified Coverage. Unsupported projection versions remain
+unavailable. A selected history row can read its original retained JSON proof after withdrawal or
+revocation; current correction state remains visibly separate from those frozen operands.
+
+The Security passport cash-flow scenario panel offers a separate `ATTEST-DRAFT-CHECK` over an
+explicitly retained or loaded Security run. It reads the server's exact run revision, hash,
+original preparer and listed checks; preview calculations and edited scenario parameters are never
+attestation operands. Recording requires the dedicated draft capability, a current v2 declaration,
+a reason and the canonical non-posting confirmation. Own corrective revocation uses the separate
+Security modification capability and remains available when recording is disabled or source support
+is unavailable. Original receipts and revocations stay visible. Declaration administration opens the
+existing Evidence Workbench. `PreparerDraftCheckViewModelTests` covers retained-target isolation,
+v2 reaffirmation, action-specific permissions and exact uncertain retries.
+
+Security Master's Corporate Actions tab also exposes the bounded C2 workspace for regular mandatory
+USD cash dividends. An operator selects an existing processing case, explicitly inspects the exact
+server projection, manages its separate book declaration with the returned account-role binding,
+records a preparer attestation, then separately confirms governed posting. The server owns the
+related-event and calendar-month limits, eligibility, selected book, permissions, period/evidence
+checks and journal calculation. Native controls send the exact returned case version, projection,
+declaration revision and evidence hash; they never calculate amounts or substitute ordinary approval.
+Default-off policy and missing capabilities disable new actions. Stale refusals require refresh;
+uncertain outcomes retain the original command for exact retry. `CashDividendAttestationViewModelTests`
+covers these contracts and delayed-response isolation. The amount-proof drawer renders the shared
+accounting preparer classification separately from task history, preserves its canonical disclosure,
+and shows unknown or foreign support as unavailable without granting ordinary approval or coverage.
+Native compilation can be checked with Windows targeting on another OS; executing the WPF controls
+and Windows test assembly still requires the Windows Desktop runtime.
+
+Fund Operations includes an Agreements tab over the shared `IntercompanyAgreementWorkspace` and
+API client. It supports entity/date filters, draft terms, evidence, independent review, revision
+comparison and advisory source-line drill-through. Server capabilities control mutations and stale
+responses preserve local edits. The desktop surface does not maintain its own agreement store or
+posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
+native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
@@ -230,6 +287,12 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+Desktop startup asynchronously initializes `ConfigService` before constructing the host.
+Synchronous Strategy and Accounting DI factories consume its `ConfiguredDataRoot` snapshot;
+they must not reload configuration from disk or block on an async read. Embedded desktop hosts
+must also await `ConfigService.InitializeAsync()` before resolving data-backed services.
+Ticker refreshes serialize pending timer polls, and stopping the strip cancels pending requests.
 
 The desktop's independent host registers the shared tenant-enforcement setting through
 `AddDesktopTenantScopeServices`. An omitted setting selects strict enforcement, and the identity
@@ -875,8 +938,28 @@ now follows that focused attribution pattern: the oversized hero is replaced by 
 retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
 rail plus Security Master lookup readiness.
 The desktop shell visual system now targets a light institutional workstation frame with a
-near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
-workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
+graphite global app bar, paper page bands, compact filter bars, and dense table chrome. Colors in
+`Styles/ThemeTokens.xaml` follow the Meridian Design System 4.3.0 palette shared with the browser
+workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
+`ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
+(`ConsoleAccentCyan`) is the brand signal only. Paper simulation uses slate (`ModePaperColor`),
+independent of live red and fixture amber; actual chart traces use graphite. `OnAccentTextColor` is
+the dark ink the package puts on a terracotta fill (4.7:1; white is 4.0:1). Brand art in
+`Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
+window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
+the package reserves the light mark for graphite surfaces and WPF does not load SVG directly.
+Retained SVG text declarations follow the package's IBM Plex Sans identity; canonical asset
+copies stay byte-aligned with the package.
+IBM Plex Sans now supplies display and body text; IBM Plex Mono supplies financial values, code,
+identifiers, and keyboard labels. All ten package faces and both OFL licenses are embedded from
+`Assets/Fonts/`, so no installed fonts or network access are required. Window and Page roots set
+an inherited body default; existing mono declarations use `MeridianDataFontFamily`. Symbol glyphs
+retain Segoe MDL2 Assets. `ThemeTypography.xaml` loads before `AppStyles.xaml` so shared families
+resolve before their consumers, with existing font sizes, weights, and density retained.
+`DesignSystemResourceTests` verifies embedded face resolution, canonical binary/license parity,
+body inheritance, preserved symbol fonts, primary control rendering, and selection/environment roles.
+These tests require Windows; Linux builds of the WPF projects are stubs and do not validate fonts
+or XAML. Workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
 `WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and
 inspector host primitives before adding page-local cards or dark terminal styling. The Data shell is
@@ -1041,6 +1124,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-WPF -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
@@ -1129,3 +1213,12 @@ summary/journal arrivals, missing summaries, basis preservation, scope resets, a
 pending proof invalidation.
 
 Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-amount-provenance.md).
+
+### Posted-ledger account postings
+
+`PostedLedgerViewModel.SelectedTrialBalanceRow` loads the selected account's postings for the
+period into `AccountPostings` through `ILedgerReportsApiClient.GetAccountRunningBalanceAsync`,
+the same shared running-balance route the browser workstation uses. A response for a row or period
+that is no longer selected is discarded, and reloading the trial balance clears the selection.
+The request carries the selected row's symbol, financial account and dimension set, so the postings
+and ending balance are those of that row only.

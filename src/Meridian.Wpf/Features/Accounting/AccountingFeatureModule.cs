@@ -98,6 +98,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // background workers that have not yet migrated.
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
+        services.AddSingleton<IWorkstationIntercompanyAgreementApiClient, WorkstationIntercompanyAgreementApiClient>();
         // Audit-chain verification (W9-GOV-008) is read-only and AdminMaintenance-gated server side.
         services.AddSingleton<IAccountingAuditIntegrityApiClient, AccountingAuditIntegrityApiClient>();
         services.AddSingleton<IFactorPaydownApiClient, FactorPaydownApiClient>();
@@ -262,7 +263,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
-                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+                sp.GetService<IAutomatedJournalScheduleStatusSource>(),
+                sp.GetService<IRecurringJournalQueueSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IWorkstationTenantContextAccessor, DesktopWorkstationTenantContextAccessor>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
@@ -371,8 +373,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         {
             try
             {
-                var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-                return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
+                return Path.Combine(configService.ConfiguredDataRoot, "workstation", "accounting");
             }
             catch (Exception ex)
             {

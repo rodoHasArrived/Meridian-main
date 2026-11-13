@@ -30,6 +30,8 @@
 
   <!-- Project references -->
   <ItemGroup>
+    <ProjectReference Include="../Meridian.Reporting.ReadModels/Meridian.Reporting.ReadModels.csproj" />
+    <ProjectReference Include="../Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Audit\Meridian.Audit.csproj" />
@@ -53,5 +55,16 @@
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
+  </ItemGroup>
+
+  <!-- Leaf reporting/journal readers compile independently of UI orchestration. -->
+  <ItemGroup>
+    <Compile Remove="Services/ReportingIncomeComparisonService.cs" />
+    <Compile Remove="Services/ReportAccessPolicyEvaluator.cs" />
+    <Compile Remove="Services/LedgerDisposalTaxReadService.cs" />
+    <Compile Remove="Services/ReportingPartnersCapitalSource.cs" />
+    <Compile Remove="Services/ReportingLedgerPopulationSnapshot.cs" />
+    <Compile Remove="Services/ReportAmountBindingBuilder.cs" />
+    <Compile Remove="Services/ReportPeriodRange.cs" />
   </ItemGroup>
 </Project>

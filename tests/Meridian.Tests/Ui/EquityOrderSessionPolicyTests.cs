@@ -74,6 +74,42 @@ public sealed class EquityOrderSessionPolicyTests
         await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData(null, "2026-11-10T21:00:00Z")]
+    [InlineData(OrderSessionIntent.RegularOnly, "2026-11-10T21:00:00Z")]
+    [InlineData(OrderSessionIntent.ExtendedHours, "2026-11-11T01:00:00Z")]
+    public async Task SessionClosingDuringAdmission_RefusesDispatchAndRollsBackCapacity(
+        OrderSessionIntent? intent, string closesAt)
+    {
+        var close = DateTimeOffset.Parse(closesAt);
+        var clock = Substitute.For<TimeProvider>();
+        clock.GetUtcNow().Returns(close.AddSeconds(-1), close);
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("paper");
+        gateway.StreamExecutionReportsAsync(Arg.Any<CancellationToken>()).Returns(AsyncEnumerable.Empty<ExecutionReport>());
+        var throttle = new OrderRateThrottle(1, NullLogger<OrderRateThrottle>.Instance);
+        var risk = new CompositeRiskValidator([throttle], NullLogger<CompositeRiskValidator>.Instance);
+        await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: risk, sessionPolicy: new EquityOrderSessionPolicy(KnownEquity(), clock));
+        await oms.StartAsync();
+
+        var result = await oms.PlaceOrderAsync(new()
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 100m,
+            TimeInForce = TimeInForce.Day,
+            SessionIntent = intent
+        });
+
+        result.Success.Should().BeFalse();
+        result.OrderState.Status.Should().Be(OrderStatus.Rejected);
+        throttle.CurrentUsage.Should().Be(0);
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task LocalPaperSimulator_RefusesNextSessionQueuingInPreviewAndSubmission()
     {

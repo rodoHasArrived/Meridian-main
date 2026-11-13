@@ -24,6 +24,7 @@ import type {
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import type { CellKind, CellOutput, QuantTrade } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
 
 /** Map a `Badge` variant onto a Concrete operator-severity status string so notebook cell
  * execution states resolve to the right severity color through the shared `SeverityBadge`
@@ -412,7 +413,7 @@ function NotebookCellItem({
       {!cell.collapsed && (
         <>
           <div className="border-t border-border/60 px-3 py-2">
-            <textarea
+            <TextArea
               className={cn(
                 "w-full resize-none rounded-md border border-border/60 bg-secondary/30 px-3 py-2",
                 isMarkdown ? "text-sm" : "font-mono text-xs",

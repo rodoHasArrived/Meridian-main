@@ -60,10 +60,12 @@
                                         <DataTrigger Binding="{Binding IsCompactSurface, RelativeSource={RelativeSource AncestorType={x:Type views:WorkspaceCommandBarControl}}}" Value="True">
                                             <Setter Property="Padding" Value="12,7" />
                                         </DataTrigger>
+                                        <!-- Primary commands use the graphite primary action (Design System 4.3.0):
+                                             its template keeps hover/press fills dark under the light label. -->
                                         <DataTrigger Binding="{Binding Tone}" Value="Primary">
-                                            <Setter Property="Background" Value="{StaticResource InfoColorBrush}" />
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentBlueBrush}" />
-                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="Template" Value="{StaticResource PrimaryButtonTemplate}" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleActionPrimaryBrush}" />
+                                            <Setter Property="Foreground" Value="{StaticResource ConsoleActionPrimaryTextBrush}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Tone}" Value="Danger">
                                             <Setter Property="Background" Value="Transparent" />
@@ -84,12 +86,16 @@
                                                FontSize="12"
                                                FontWeight="SemiBold" />
                                     <TextBlock Text="{Binding ShortcutHint}"
-                                               FontSize="10"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}">
+                                               FontSize="10">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Visibility" Value="Visible" />
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
                                                 <Style.Triggers>
+                                                    <!-- Light hint on the graphite primary fill (4.5:1 or better on rest, hover and press). -->
+                                                    <DataTrigger Binding="{Binding Tone}" Value="Primary">
+                                                        <Setter Property="Foreground" Value="{StaticResource ConsoleActionPrimaryMutedTextBrush}" />
+                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsCompactSurface, RelativeSource={RelativeSource AncestorType={x:Type views:WorkspaceCommandBarControl}}}" Value="True">
                                                         <Setter Property="Visibility" Value="Collapsed" />
                                                     </DataTrigger>

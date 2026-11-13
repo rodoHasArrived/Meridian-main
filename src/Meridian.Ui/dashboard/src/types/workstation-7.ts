@@ -1,3 +1,4 @@
+import type { ProviderIntegrationIdentityDecision } from "./provider-integration-identity";
 import type {
   MetricSnapshot,
   ProviderCredentialSource,
@@ -434,6 +435,7 @@ export type ProviderIntegrationIdentityResolutionStatus =
   | "ReviewRequired"
   | "MissingIdentifier"
   | "NotFound"
+  | "Conflict"
   | "NotConfigured";
 
 export type ProviderIntegrationPromotionReadinessStatus =
@@ -746,6 +748,9 @@ export interface ProviderIntegrationStagingIdentityResolutionRow {
   securityRoute?: string | null;
   securityCandidates: ProviderIntegrationIdentityCandidate[];
   issues: ProviderIntegrationValidationIssue[];
+  evidenceHash?: string | null;
+  hasIdentifierConflict?: boolean;
+  operatorResolution?: ProviderIntegrationIdentityDecision | null;
 }
 
 export interface ProviderIntegrationStagingIdentityResolutionPreview {
@@ -914,6 +919,7 @@ export interface ProviderIntegrationRunDueSyncRequest {
 }
 
 export interface ProviderIntegrationDryRunResult {
+  mappedRecordPreviews?: unknown[];
   syncRunId: string;
   rawPayloadId: string;
   capability: ProviderIntegrationCapabilityKind;
@@ -1446,6 +1452,27 @@ export interface ProviderInstrumentCapabilityRow {
   declaredInstrumentTypes: string[];
   surfaces: ProviderCapabilitySurface;
   cells: ProviderInstrumentCapabilityCell[];
+  fixedIncomeTasks?: ProviderFixedIncomeTaskCapability[] | null;
+}
+
+export interface ProviderFixedIncomeTaskCapability {
+  task: string;
+  adapterSupport: "AdapterDeclared" | "Unsupported";
+  detail: string;
+  connections: ProviderFixedIncomeConnectionEvidence[];
+}
+
+export interface ProviderFixedIncomeConnectionEvidence {
+  connectionId: string;
+  displayName: string;
+  enabled: boolean;
+  configurationState: string;
+  entitlementState: string;
+  freshnessState: string;
+  verificationState: string;
+  observationAsOf: string | null;
+  verifiedAt: string | null;
+  evidence: { kind: string; detail: string; observedAt?: string | null }[];
 }
 
 export interface ProviderDiscoveryFailure {
@@ -1476,6 +1503,7 @@ export type CorporateActionCaseStatus =
   | "AccountingReview"
   | "ReadyForApproval"
   | "Approved"
+  | "PreparerAttested"
   | "Scheduled"
   | "Posted"
   | "Reconciled"

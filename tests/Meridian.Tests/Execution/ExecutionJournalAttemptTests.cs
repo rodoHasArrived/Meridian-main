@@ -169,6 +169,57 @@ public sealed class ExecutionJournalAttemptTests
         orders[1].FilledQuantity.Should().Be(0m);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task PaperBookReplayRequiresEconomicContinuity(bool retainSameBook, bool legacyJournal)
+    {
+        var root = NewRoot();
+        var book = new PaperTradingPortfolio(1000m);
+        await using (var journal = CreateJournal(legacyJournal ? null : book.BookId))
+            await RetainFill(journal, "before-restart", OrderSide.Buy, 100m, At);
+
+        var currentBook = retainSameBook ? book : new PaperTradingPortfolio(1000m);
+        await using (var journal = CreateJournal(currentBook.BookId))
+        {
+            await RetainFill(journal, "after-restart-buy", OrderSide.Buy, 120m, At.AddMinutes(1));
+            await RetainFill(journal, "after-restart-sell", OrderSide.Sell, 120m, At.AddMinutes(2));
+        }
+
+        await using var replay = CreateJournal(currentBook.BookId);
+        var summary = await replay.SummaryAsync(Account, scope: PaperScope);
+        (await replay.OrdersAsync(Account, scope: PaperScope)).Should().HaveCount(3);
+        var gaps = (await replay.ReadAsync(Account)).Where(entry => entry.Kind == "EconomicCoverageGap");
+        if (retainSameBook)
+        {
+            gaps.Should().BeEmpty();
+            summary.RealizedPnl.Should().Be(20m);
+        }
+        else
+        {
+            gaps.Should().ContainSingle();
+            summary.RealizedPnl.Should().BeNull();
+            summary.NetRealizedPnl.Should().BeNull();
+            summary.Attributions.Should().BeEmpty();
+        }
+
+        ExecutionJournal CreateJournal(Guid? bookId) => new(root)
+        {
+            OpeningEvidenceSource = (_, _) => new(true, true, At, "test opening evidence"),
+            PaperBookIdentitySource = () => bookId
+        };
+
+        static async Task RetainFill(ExecutionJournal journal, string id, OrderSide side, decimal price, DateTimeOffset at)
+        {
+            var request = Request(id, "SPY", "test") with { Side = side };
+            await journal.AppendAsync(new(1, $"dispatch:{id}", PaperScope, Account, id, "Dispatch", at,
+                Request: request, ReportingAssetClass: "USD_US_EQUITY"));
+            await journal.AppendAsync(new(1, $"fill:{id}", PaperScope, Account, id, "Fill", at,
+                Report: FillReport(request, price) with { Timestamp = at }));
+        }
+    }
+
     private static OrderRequest Request(string id, string symbol, string tag) => new()
     {
         ClientOrderId = id,

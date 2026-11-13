@@ -1,4 +1,7 @@
 import type { LedgerAmountProof } from "@/types/ledger-amount-proof";
+import type { PreparerAttestationEvidenceProjection } from "@/types/preparer-attestation-evidence";
+import { PreparerAttestationEvidence } from "@/components/meridian/preparer-attestation-evidence";
+import { AccountingPreparerAttestation } from "@/components/meridian/accounting-preparer-attestation";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSelectedRecordDto
@@ -10,15 +13,30 @@ export interface NumberPassportItem {
   detail: string;
 }
 
-export function NumberPassport(props: {
+export function NumberPassport(props: ({
   explorer: FinancialRecordExplorerDto;
   record: FinancialRecordExplorerSelectedRecordDto;
-} | { proof: LedgerAmountProof; title: string }) {
+} | { proof: LedgerAmountProof; title: string }) & { inline?: boolean; preparerAttestations?: PreparerAttestationEvidenceProjection | null;
+  sourceJournalEntryIds?: string[] }) {
   const items = "proof" in props
     ? buildLedgerAmountPassportItems(props.proof)
     : buildNumberPassportItems(props.explorer, props.record);
   const title = "proof" in props ? props.title : props.record.title;
   const Heading = "proof" in props ? "h3" : "h4";
+
+  // Headline previews sit inside inline number readouts. Keep valid phrasing
+  // content while sharing the exact same passport fields and evidence rules.
+  if (props.inline) return <span role="group" className="mt-2 block border-t border-border pt-2" aria-label={`${title} Number Passport`}>
+    <span className="block font-semibold">Number Passport</span>
+    <span role="list" className="mt-2 block space-y-2">{items.map(item => <span role="listitem" key={item.label} className="block">
+      <span className="block font-medium">{item.label}</span>
+      <span className="block break-words tabular-nums">{item.value}</span>
+      <span className="block text-muted-foreground">{item.detail}</span>
+    </span>)}</span>
+    {"proof" in props ? <AccountingPreparerAttestation proof={props.proof} sourceJournalEntryIds={props.sourceJournalEntryIds} inline /> : null}
+    <PreparerAttestationEvidence projection={props.preparerAttestations}
+      expectedScope={"proof" in props ? props.proof.scope : undefined} inline />
+  </span>;
 
   return (
     <section className="rounded-md border border-border/70 bg-secondary/15 p-3" aria-label={`${title} Number Passport`}>
@@ -32,6 +50,9 @@ export function NumberPassport(props: {
           </div>
         ))}
       </dl>
+      {"proof" in props ? <AccountingPreparerAttestation proof={props.proof} sourceJournalEntryIds={props.sourceJournalEntryIds} /> : null}
+      <PreparerAttestationEvidence projection={props.preparerAttestations}
+        expectedScope={"proof" in props ? props.proof.scope : undefined} />
     </section>
   );
 }

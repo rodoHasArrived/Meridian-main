@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
@@ -24,6 +24,13 @@ vi.mock("@/hooks/use-report-run-stream", () => ({
 vi.mock("@/lib/reporting-income-comparison-api", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/reporting-income-comparison-api")>(),
   getIncomeComparisonCandidates: vi.fn(async () => [])
+}));
+
+// Personal-view reads are covered by the workbench suite. Keep export command
+// response ordering independent of that separate background preferences read.
+vi.mock("@/lib/table-workbench", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/table-workbench")>(),
+  loadTableViews: vi.fn(async () => [])
 }));
 
 function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
@@ -2364,11 +2371,17 @@ describe("ReportingScreen", () => {
     let formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
     expect(formulaTokenLabels[1]).toContain("pnl");
-    await user.click(within(formulas).getByRole("button", { name: "Move pnl left" }));
+    const moveLeft = within(formulas).getByRole("button", { name: "Move pnl left" });
+    expect(within(formulas).getByRole("button", { name: "Move pnl right" })).toHaveAttribute("title", "This token is already last in the list.");
+    moveLeft.focus();
+    await user.keyboard("{Enter}");
+    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toBeDisabled();
+    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toHaveAttribute("title", "This token is already first in the list.");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("pnl");
     expect(formulaTokenLabels[1]).toContain("Return %");
-    await user.click(within(formulas).getByRole("button", { name: "Move pnl right" }));
+    within(formulas).getByRole("button", { name: "Move pnl right" }).focus();
+    await user.keyboard(" ");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
     expect(formulaTokenLabels[1]).toContain("pnl");
@@ -2505,6 +2518,127 @@ describe("ReportingScreen", () => {
         "Sector Pivot Draft draft saved."
       );
     });
+  });
+
+  it("starts a blank custom report from the builder and saves it as a new template draft", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        definition: {
+          templateId: { name: "custom-report-1", version: 1 },
+          displayName: "Custom report 1 Draft",
+          parameters: [],
+          sections: [],
+          grids: [],
+          accessPolicy: null
+        },
+        status: "Draft",
+        family: "CustomReport",
+        isBuiltIn: false,
+        isLatestApproved: false,
+        createdBy: "controller.admin",
+        createdAt: "2026-06-08T00:00:00Z",
+        updatedBy: "controller.admin",
+        updatedAt: "2026-06-08T00:00:00Z",
+        validationIssues: [],
+        auditTrail: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    const grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    expect(grid).toHaveTextContent("New report · not saved yet");
+    expect(within(grid).getByLabelText("Custom report 1 draft name")).toHaveValue("custom-report-1");
+    const sourceFields = within(grid).getByRole("list", { name: "Custom report 1 source fields" });
+    const transferStore = new Map<string, string>();
+    const dataTransfer = {
+      effectAllowed: "",
+      setData: vi.fn((type: string, value: string) => transferStore.set(type, value)),
+      getData: vi.fn((type: string) => transferStore.get(type) ?? "")
+    };
+    fireEvent.dragStart(within(sourceFields).getByText("Strategy").closest("[role='listitem']")!, { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Rows" }), { dataTransfer });
+    fireEvent.dragStart(within(sourceFields).getByText("Gross exposure").closest("[role='listitem']")!, { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Metrics" }), { dataTransfer });
+
+    await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as governed report template draft" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/drafts",
+      expect.objectContaining({ method: "POST" })
+    );
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse((request as RequestInit).body as string);
+    expect(body).toMatchObject({
+      name: "custom-report-1",
+      displayName: "Custom report 1 Draft",
+      family: "CustomReport",
+      basedOnVersion: null,
+      rationale: "New no-code custom report Custom report 1.",
+      grids: [
+        {
+          gridId: "grid-1",
+          title: "Custom report 1",
+          kind: "Pivot",
+          rowFields: ["strategy"],
+          metrics: [{ sourceField: "grossExposure", function: "Sum" }]
+        }
+      ]
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Save report-writer draft status" })).toHaveTextContent(
+        "Custom report 1 Draft draft saved."
+      );
+    });
+
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+  });
+
+  it("does not restore a discarded new report's edits into the next new report", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    let grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    fireEvent.change(within(grid).getByLabelText("Custom report 1 draft display name"), {
+      target: { value: "Edited then discarded" }
+    });
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    grid = screen.getAllByRole("group", { name: /new report-writer grid$/ })[0];
+    expect(within(grid).getByLabelText(/draft display name$/)).not.toHaveValue("Edited then discarded");
+  });
+
+  it("names a new custom report so it cannot collide with a retained template", async () => {
+    const user = userEvent.setup();
+    const retained = accounting.reporting.templates![0];
+    renderWithRouter(
+      <ReportingScreen
+        data={withReportTemplate({
+          ...retained,
+          templateId: "custom-report-1",
+          name: "Custom report 1",
+          family: "CustomReport",
+          isBuiltIn: false,
+          reportWriterGrids: []
+        })}
+      />,
+      { initialEntries: ["/reporting/report-builder"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    const second = screen.getByRole("group", { name: "Custom report 2 new report-writer grid" });
+    expect(within(second).getByLabelText("Custom report 2 draft name")).toHaveValue("custom-report-2");
+    expect(screen.getByRole("group", { name: "Custom report 3 new report-writer grid" })).toBeInTheDocument();
   });
 
   it("locks private no-code report-writer drafts to a user owner", async () => {
@@ -5026,7 +5160,7 @@ describe("ReportingScreen", () => {
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(task).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Report packs" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Report packs awaiting approval" })).toBeInTheDocument();
     expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();
@@ -5662,5 +5796,84 @@ describe("ReportingScreen", () => {
     // channel attaches to a run the endpoint can resolve instead of 404-looping.
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
+  });
+  it("moves run-status keyboard selection with j/k while leaving governed actions explicit", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const second = within(queue).getByRole("listitem", { name: "Review run keyboard-run-b" });
+    expect(first).toHaveAttribute("tabindex", "0");
+    first.focus();
+    await user.keyboard("j");
+    await waitFor(() => expect(second).toHaveFocus());
+    expect(second).toHaveAttribute("aria-current", "true");
+    await user.keyboard("ard");
+    expect(second).toHaveFocus();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("k");
+    await waitFor(() => expect(first).toHaveFocus());
+    expect(screen.getByText(/j\/k select a run/)).toBeInTheDocument();
+  });
+
+  it("keeps reporting queue shortcuts out of audit controls and modifier commands", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const audit = within(first).getByRole("button", { name: /Audit, lineage, and artifacts/ });
+    audit.focus();
+    await user.keyboard("jk");
+    expect(audit).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+    first.focus();
+    await user.keyboard("{Control>}j{/Control}");
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+  });
+
+});
+
+describe.each([
+  { zone: "America/New_York", now: "2026-07-01T02:30:00Z", localDay: "2026-06-30" },
+  { zone: "Asia/Tokyo", now: "2026-06-30T22:30:00Z", localDay: "2026-07-01" }
+])("ReportingScreen blank as-of default for an operator in $zone", ({ zone, now, localDay }) => {
+  const originalTimeZone = process.env.TZ;
+  const utcDay = now.substring(0, 10);
+
+  beforeEach(() => {
+    process.env.TZ = zone;
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(now));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (originalTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTimeZone;
+    }
+  });
+
+  it("starts a new schedule on the UTC calendar day, with its due time on that same UTC day", () => {
+    // The operator's own calendar reads a different day at this instant; the default stays UTC.
+    const operatorNow = new Date();
+    expect(`${operatorNow.getFullYear()}-${String(operatorNow.getMonth() + 1).padStart(2, "0")}-${String(operatorNow.getDate()).padStart(2, "0")}`).toBe(localDay);
+    expect(localDay).not.toBe(utcDay);
+
+    const rendered = renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
+    try {
+      expect(screen.getByLabelText("Reporting schedule next report period end")).toHaveValue(utcDay);
+      expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue(`${utcDay}T20:00:00Z`);
+    } finally {
+      rendered.unmount();
+    }
   });
 });

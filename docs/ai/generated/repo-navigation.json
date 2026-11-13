@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-07T01:52:55Z",
+  "generatedAt": "2026-11-12T17:22:14Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "agent-a6be291a2d62b6341",
+  "repositoryRoot": "Meridian-merge",
   "subsystems": [
     {
       "id": "host-shell",
@@ -482,6 +482,7 @@
         "Meridian.QuantScript",
         "Meridian.QuantScript.Worker",
         "Meridian.Storage",
+        "Meridian.Storage.Accounting",
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared"
       ],
@@ -534,6 +535,7 @@
         "Meridian.ProviderSdk",
         "Meridian.ReferenceData",
         "Meridian.Storage",
+        "Meridian.Storage.Accounting",
         "Meridian.Workflow"
       ],
       "relatedDocs": []
@@ -714,7 +716,8 @@
         "Meridian.Core",
         "Meridian.Execution.Sdk",
         "Meridian.Ledger",
-        "Meridian.Storage"
+        "Meridian.Storage",
+        "Meridian.Storage.Accounting"
       ],
       "relatedDocs": []
     },
@@ -1007,7 +1010,6 @@
       ],
       "projectReferences": [
         "Meridian.Contracts",
-        "Meridian.Execution",
         "Meridian.Execution.Sdk",
         "Meridian.FSharp"
       ],
@@ -1077,9 +1079,7 @@
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Domain",
-        "Meridian.Ledger",
-        "Meridian.ProviderSdk",
-        "Meridian.Reporting"
+        "Meridian.ProviderSdk"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.storage.md"
@@ -1116,8 +1116,8 @@
         "Meridian.FSharp",
         "Meridian.FSharp.Ledger",
         "Meridian.FSharp.Trading",
-        "Meridian.Infrastructure",
-        "Meridian.Instruments"
+        "Meridian.Instruments",
+        "Meridian.ProviderSdk"
       ],
       "relatedDocs": [
         "docs/reference/lifecycle-control-plane.md",
@@ -1199,8 +1199,10 @@
         "Meridian.QuantScript",
         "Meridian.ReferenceData",
         "Meridian.Reporting",
+        "Meridian.Reporting.ReadModels",
         "Meridian.Risk",
         "Meridian.Storage",
+        "Meridian.Storage.Accounting",
         "Meridian.Strategies"
       ],
       "relatedDocs": []
@@ -1243,6 +1245,7 @@
         "Meridian.QuantScript.Worker",
         "Meridian.Reporting",
         "Meridian.Storage",
+        "Meridian.Storage.Accounting",
         "Meridian.Strategies",
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared",
@@ -2207,11 +2210,6 @@
     },
     {
       "from": "Meridian.Risk",
-      "to": "Meridian.Execution",
-      "reason": "Meridian.Risk references Meridian.Execution directly via project reference."
-    },
-    {
-      "from": "Meridian.Risk",
       "to": "Meridian.Execution.Sdk",
       "reason": "Meridian.Risk references Meridian.Execution.Sdk directly via project reference."
     },
@@ -2234,11 +2232,6 @@
       "from": "Meridian.Storage",
       "to": "Meridian.Domain",
       "reason": "Meridian.Storage references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian.Storage",
-      "to": "Meridian.Ledger",
-      "reason": "Meridian.Storage references Meridian.Ledger directly via project reference."
     },
     {
       "from": "Meridian.Storage",
@@ -2287,8 +2280,8 @@
     },
     {
       "from": "Meridian.Strategies",
-      "to": "Meridian.Infrastructure",
-      "reason": "Meridian.Strategies references Meridian.Infrastructure directly via project reference."
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Strategies references Meridian.ProviderSdk directly via project reference."
     },
     {
       "from": "Meridian.Ui.Services",
@@ -2438,324 +2431,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 39
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 20
-    },
-    {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-06T21:21:21+00:00",
-      "lastCommit": "a970ac12",
-      "lastSummary": "PRD-115 increment 2: prepaid-interest and unapplied-cash balances",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T19:11:01+00:00",
-      "lastCommit": "4e6151df",
-      "lastSummary": "fix(wpf): keep SecurityMasterViewModel within its file-size cap",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.Wpf/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T18:32:01+00:00",
-      "lastCommit": "8b0e25ea",
-      "lastSummary": "docs(source): document conflict categories and refresh reviewed hashes",
-      "touches": 19
-    },
-    {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T18:25:31+00:00",
-      "lastCommit": "4cf61eca",
-      "lastSummary": "Compute session TCA commission rates on the multiplied principal",
-      "touches": 17
-    },
-    {
-      "path": "src/Meridian.Execution/Services/SessionTcaReporter.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T18:25:31+00:00",
-      "lastCommit": "4cf61eca",
-      "lastSummary": "Compute session TCA commission rates on the multiplied principal",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T18:11:29+00:00",
-      "lastCommit": "cd0070f4",
-      "lastSummary": "Scale paper notional-based costs by the resolved contract multiplier",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T18:11:29+00:00",
-      "lastCommit": "cd0070f4",
-      "lastSummary": "Scale paper notional-based costs by the resolved contract multiplier",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T18:11:29+00:00",
-      "lastCommit": "cd0070f4",
-      "lastSummary": "Scale paper notional-based costs by the resolved contract multiplier",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:56:13+00:00",
-      "lastCommit": "dcece77e",
-      "lastSummary": "Scale strategy-run cash flows by the booked contract multiplier",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:56:13+00:00",
-      "lastCommit": "dcece77e",
-      "lastSummary": "Scale strategy-run cash flows by the booked contract multiplier",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/LiveStrategyRunSession.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:56:13+00:00",
-      "lastCommit": "dcece77e",
-      "lastSummary": "Scale strategy-run cash flows by the booked contract multiplier",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-06T17:56:07+00:00",
-      "lastCommit": "6400667a",
-      "lastSummary": "fix(wpf): route Security Master conflicts by declared field names",
-      "touches": 1
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 78
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T17:45:03+00:00",
-      "lastCommit": "2025b3f5",
-      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
-      "touches": 28
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 65
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs",
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 54
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T17:45:03+00:00",
-      "lastCommit": "2025b3f5",
-      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
-      "touches": 9
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 31
     },
     {
-      "path": "src/Meridian.Execution/Margin/PortfolioMarginModel.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:45:03+00:00",
-      "lastCommit": "2025b3f5",
-      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/Margin/RegTMarginModel.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:45:03+00:00",
-      "lastCommit": "2025b3f5",
-      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/Margin/MarginPricing.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:45:03+00:00",
-      "lastCommit": "2025b3f5",
-      "lastSummary": "Derive banking action origin from the principal; multiply margin notionals",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:28:43+00:00",
-      "lastCommit": "057d0ef4",
-      "lastSummary": "Stamp the OMS-resolved contract multiplier on the replayable fill report",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:11:01+00:00",
-      "lastCommit": "dfc72366",
-      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T17:11:01+00:00",
-      "lastCommit": "dfc72366",
-      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T17:11:01+00:00",
-      "lastCommit": "dfc72366",
-      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-06T17:11:01+00:00",
-      "lastCommit": "dfc72366",
-      "lastSummary": "Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 27
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
-      "touches": 19
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 22
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
-      "touches": 12
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 20
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 17
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 16
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 12
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
+      "path": "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/cross-screen-counts.ts",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
-      "touches": 4
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/since-last-visit.ts",
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/since-last-visit.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:27:46+00:00",
-      "lastCommit": "2f930f77",
-      "lastSummary": "Address review: record queue visits only from the queue; Settings keeps fresh provider counts",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:08:02+00:00",
-      "lastCommit": "3b276d86",
-      "lastSummary": "Address review: one bulk action at a time, from the keyboard too",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx",
+      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:08:02+00:00",
-      "lastCommit": "3b276d86",
-      "lastSummary": "Address review: one bulk action at a time, from the keyboard too",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Risk/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Backtesting/FillModels/MarketImpactFillModel.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/app.tsx",
+      "path": "src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-06T16:00:29+00:00",
-      "lastCommit": "180e9667",
-      "lastSummary": "Address review: scope-bound bulk updates and late default scopes",
-      "touches": 16
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/App.xaml.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Backtesting/Engine/BacktestEngine.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Mcp/Services/RepoPathService.cs",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Sinks/CompositeSink.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Backtesting/FillModels/BarMidpointFillModel.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Backtesting/WalkForward/WalkForwardService.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T16:06:18Z",
+      "lastCommit": "01649c7a44",
+      "lastSummary": "fix: resolve codebase review defects and extract boundaries",
+      "touches": 2
     }
   ],
   "recentChangesWindowDays": 14,

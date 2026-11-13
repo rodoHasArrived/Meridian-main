@@ -6,16 +6,69 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.FinancialOperations
+
+Unreadable operations-close snapshots report the exception type without the workflow path,
+identity or exception payload. Reviewed posting candidates require trusted human authority before
+store access; nonhuman and undefined origins cannot append a journal.
+
+`AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
+default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
+candidate through existing accounting authority, checks the declared receivable/income account
+roles and current open-period version, then retains `PreparerAttested` and `Posted` stages with the
+journal in the native transaction. It creates no ordinary `ApprovalId` or `Approved` stage and grants
+no lot, correction, short-position or FX authority. Ordinary candidate posting still requires an
+independent reviewer.
+
+New non-lot corporate-action candidates retain the unique active Security Master ticker selected
+by the server. The existing candidate engine uses that retained authority on mapped accounts and
+native lineage; caller-selected symbols remain refused. Cash-dividend posting checks the exact
+retained symbol and Security Master version again through the native lease transaction. Missing,
+ambiguous or changed symbol authority blocks posting; historical ordinary drafts with no retained
+symbol keep their existing rebuild behavior. The native lineage guard remains authoritative.
+
+Operations Continuity refuses reserved W14 preparer-assertion references when disposing a break
+or reopening a controlled workflow. These refusals preserve the current workflow state and its
+ordinary approval requirements; legacy opaque references still do not prove independent review.
+
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Agreement coverage remains advisory and separate from the
+existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
+entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+The asset-accounting event spine freezes an optional canonical redemption disposal instruction
+at projection and requires the same instruction at drafting. Selections are compared by their
+retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
+existing atomic disposal authority to relieve full quantities and bases together with their
+journal. Historical events omit the optional member and preserve their retained fingerprints.
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
 none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
 latest-import and latest-reconciliation reads have no side effects.
+
+`PrivateCapitalLifecycleService` coordinates commitment revision review, effective approved terms,
+pro-rata call previews, and retention of the exact reviewed plan over `IPrivateCapitalStore`.
+Previews allocate over posted calls effective by the notice date, then validate the full approved
+commitment/issuance timeline, including future reductions and later posted calls.
+The first slice supports one fund/book/currency per call. It does not reserve capacity at preview
+or post journals itself. Missing evidence and unmatched historical capital activity block adoption
+until opening reconciliation; no legacy commitment balances are guessed or automatically migrated.
+Approved retained terms establish the source-backed investor/capital-account mapping for this slice;
+an approved capital account cannot be rebound to a different investor across commitments.
+
+Canonical Operations Continuity commits retain a versioned snapshot of all five required close
+gates in the same audit/state transaction. Snapshot-bearing events use an explicit v1 hash envelope;
+events without snapshots preserve their original canonical hash bytes. Upgraded readers verify
+mixed chains and reject mutated, stripped or unknown snapshot formats. Readers must deploy with
+the new writer; older hash validators intentionally refuse the new envelope. Legacy audit events
+and nontransactional paths remain explicit history gaps, with no reconstructed or backfilled task
+counts. Burndown observations retain workflow versions and break across missing coverage.
 
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
@@ -25,7 +78,7 @@ IB Flex remote retrieval resolves the guarded legacy-runtime credential-store ke
 cannot use unassigned credentials after rollback. Hosts without that guard, authoritative configuration
 or vault service keep file parsing available while remote retrieval remains unavailable.
 
-New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
+New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Settlement verification requests the retained analytics model version. Quote-derived receipts also retain the immutable price selector and its pricing-account scope, then replay that selector instead of substituting a manual clean price. The selector must agree with the hash-bound price-selection manifest entry; missing or inaccessible quote evidence blocks verification. Optional replay fields are omitted for manual-input receipts, preserving their retained fingerprints. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
 
 `CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face
 amortization and/or automatic yield-to-worst. It retains the complete comparison for independent
@@ -170,6 +223,13 @@ Ambiguous interrupted starts retain their claim and require recovery instead of 
 `OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
 and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
 and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
+`OperationsReviewedAutomationProjection` owns the read-only automation review stages, allowed and
+prohibited action guidance, and evidence-linked artifacts projected by
+`OperationsContinuityWorkflowService`. The workflow service retains transition, audit, posting,
+and close authority; the projection consumes retained state without writing it. Focused proof
+lives in `OperationsReviewedAutomationProjectionTests`, with service integration covered by
+`OperationsContinuityWorkflowServiceTests`.
 
 Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
 statement store so committed imports use Storage-owned directory durability without an
@@ -454,7 +514,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `OperationsContinuity/OperationsApprovalPolicyMatrixService.cs` - server-owned approval-policy matrix, governed rule upsert validation, audit-event construction, and file-backed policy persistence.
 - `OperationsContinuity/OperationsCloseCalendarService.cs` - account-close calendar projection, governed due-date/owner overrides, and audit-event construction backed by Financial Operations policy.
 - `PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs` - Financial Operations-owned private-capital activity projection over manual-journal drafts, posted ledger events, report-pack workflow records, bank evidence, readiness, evidence categories, report-output posture, and payment-intent workflow status.
-- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness.
+- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness. When the period has recurring or calculated journal occurrences it also adds a lane that is ready only once each is posted or recorded as needing no draft.
 - `AccountingClose/` - deterministic journal posting, trial-balance projection, roll-forward,
   FX translation, source-linked audit rows, and period-close evidence gates.
 - `AccountingClose/AccountingCloseManagementService.cs` - close-period plan projection over
@@ -1144,6 +1204,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
@@ -1171,7 +1232,7 @@ evidence deletion.
 
 ```bash
 dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityWorkflowServiceTests|FullyQualifiedName~OperationsReviewedAutomationProjectionTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy|FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true

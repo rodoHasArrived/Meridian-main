@@ -7,12 +7,12 @@ import { usesTrackedCaps } from "@/design-system/label-case";
  * and event classification throughout the operator workstation.
  *
  * **Variants:**
- * - `"default"` - primary/cyan, general status
+ * - `"default"` - semantic information blue, general status
  * - `"outline"` - muted, secondary metadata
  * - `"success"` / `"warning"` / `"danger"` - semantic state tones
- * - `"paper"` - paper (simulated) trading mode (blue)
+ * - `"paper"` - paper (simulated) trading mode (slate)
  * - `"live"` - LIVE environment alarm using `--live-env` (alarm red). NOT the same as
- *   data-posture "live" (cyan). Workspace status `live` maps to `"success"` in view-models.
+ *   data-posture "live". Workspace status `live` maps to `"success"` in view-models.
  * - `"research"` - research/backtest mode
  *
  * **Dot:** set `dot` to prepend a filled circle indicator matched to the variant color.
@@ -26,18 +26,18 @@ export interface DesignSystemBadgeProps extends HTMLAttributes<HTMLSpanElement> 
 }
 
 const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>, string> = {
-  default: "mds-badge--info border-primary/40 bg-primary/15 text-primary",
+  default: "mds-badge--info border-[var(--semantic-info)] bg-[var(--blue-a10)] text-[var(--semantic-info)]",
   outline: "mds-badge--neutral border-border bg-secondary/35 text-muted-foreground",
   // These semantic variants have always been unfilled: /12 was not emitted by
   // Tailwind 3. Retain that contrast instead of adding a new tint under v4.
-  success: "mds-badge--success border-success/35 text-success",
-  warning: "mds-badge--warning border-warning/35 text-warning",
-  danger: "mds-badge--danger border-danger/35 text-danger",
+  success: "mds-badge--success border-success/35 text-[var(--green-dim)]",
+  warning: "mds-badge--warning border-warning/35 text-[var(--orange-dim)]",
+  danger: "mds-badge--danger border-danger/35 text-[var(--red-dim)]",
   paper: "mds-badge--paper border-paper/35 text-paper",
   // "live" variant = LIVE environment (real-money alarm). Uses --live-env (alarm red),
   // not --live (cyan data-posture). Workspace status "live" maps to "success" in view-models.
   live: "mds-badge--live border-live-env/40 text-live-env",
-  research: "mds-badge--info border-primary/35 text-primary"
+  research: "mds-badge--info border-[var(--semantic-info)] text-[var(--semantic-info)]"
 };
 
 export function DesignSystemBadge({ children, className, dot = false, variant = "default", ...props }: DesignSystemBadgeProps) {

@@ -147,6 +147,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 $"Typed Approved lifecycle evidence was attested by {approved.AttestedBy} at {approved.AttestedAtUtc.ToString("u", CultureInfo.InvariantCulture)}.",
                 FinancialRecordExplorerTone.Success));
         }
+        AppendNativePreparerDecisionField(fields, proof);
 
         var postedProof = SelectPostedJournalProof(enrichment);
         if (postedProof?.Journal is not { } journal)
@@ -228,6 +229,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 assetHref,
                 FinancialRecordExplorerTone.Success));
         }
+        AppendNativePreparerDecisionImpact(impacts, proof, assetHref);
 
         var postedProof = SelectPostedJournalProof(enrichment);
         if (postedProof?.Journal is not { })
@@ -292,7 +294,8 @@ public sealed partial class FinancialRecordExplorerReadService
         AddGraphEdge(edges, rolePositionNodeId, economicProjectionNodeId, "projects", rolePosition?.Tone ?? FinancialRecordExplorerTone.Info);
 
         var postingCandidate = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "posting-candidate");
-        var approval = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "approval");
+        var approval = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "approval")
+            ?? row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "preparer-attestation");
         var previousNodeId = economicProjectionNodeId;
         if (postingCandidate is not null)
         {
@@ -304,7 +307,8 @@ public sealed partial class FinancialRecordExplorerReadService
         if (approval is not null)
         {
             var approvalNodeId = AddRelationshipGraphNode(nodes, row.RecordId, approval, "approval");
-            AddGraphEdge(edges, previousNodeId, approvalNodeId, "authorizes", approval.Tone);
+            AddGraphEdge(edges, previousNodeId, approvalNodeId,
+                approval.RelationshipId == "preparer-attestation" ? "attests as preparer" : "authorizes", approval.Tone);
             previousNodeId = approvalNodeId;
         }
 
@@ -526,6 +530,7 @@ public sealed partial class FinancialRecordExplorerReadService
             !HasMatchingProjectionTags(journal, lineage) ||
             journal.Entry.Lines.Count == 0 ||
             !journal.Entry.IsBalanced ||
+            !MatchesNativePreparerDecision(spine, journal) ||
             !IsMatchingPostedImpact(spine, journal))
         {
             return false;
@@ -668,9 +673,12 @@ public sealed partial class FinancialRecordExplorerReadService
             AssetAccountingLifecycleStageDto.Drafted =>
                 spine.Stages.Any(static candidate => candidate.Stage == AssetAccountingLifecycleStageDto.Projected),
             AssetAccountingLifecycleStageDto.Approved =>
-                spine.Stages.Any(static candidate => candidate.Stage == AssetAccountingLifecycleStageDto.Drafted),
+                spine.PreparerAttestation is null && spine.Stages.Any(static candidate => candidate.Stage == AssetAccountingLifecycleStageDto.Drafted),
+            AssetAccountingLifecycleStageDto.PreparerAttested =>
+                HasValidNativePreparerStage(spine),
             AssetAccountingLifecycleStageDto.Posted =>
-                spine.Stages.Any(static candidate => candidate.Stage == AssetAccountingLifecycleStageDto.Approved),
+                spine.Stages.Any(static candidate => candidate.Stage == AssetAccountingLifecycleStageDto.Approved)
+                    || HasValidNativePreparerStage(spine),
             _ => true
         };
     }
@@ -678,7 +686,7 @@ public sealed partial class FinancialRecordExplorerReadService
     private static bool RequiresSourceEvidence(AssetAccountingLifecycleStageDto stage)
         => stage is AssetAccountingLifecycleStageDto.Expected or
             AssetAccountingLifecycleStageDto.Projected or
-            AssetAccountingLifecycleStageDto.Drafted;
+            AssetAccountingLifecycleStageDto.Drafted or AssetAccountingLifecycleStageDto.PreparerAttested;
 
     private static string ResolveJournalCurrency(InstrumentJournalProof proof)
         => proof.Journal?.Entry.Lines

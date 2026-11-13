@@ -296,6 +296,8 @@ public sealed partial class PostgresLedgerJournalStore
     {
         if (ledgerBookId == Guid.Empty)
             throw new LedgerValidationException("An exact ledger book is required for backfill.");
+        if (transaction is not null)
+            await CashDividendEntitlementLock.AcquireAsync(connection, transaction, ledgerBookId, false, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"select base_currency from {Qualified("ledger_books")} where ledger_book_id = @book";

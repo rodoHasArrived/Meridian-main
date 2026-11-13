@@ -412,6 +412,8 @@ public static partial class ExecutionEndpoints
             int? limit,
             HttpContext context) =>
         {
+            if (!await AuditTrailHttpAuthority.CanReadExecutionFeedAsync(context).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
             var explorer = context.RequestServices.GetService<AuditTrailExplorerService>();
             if (explorer is null)
             {
@@ -421,7 +423,7 @@ public static partial class ExecutionEndpoints
                     : new AuditTrailExplorerService(auditTrail);
             }
 
-            var result = await explorer.SearchAsync(
+            var result = await explorer.SearchAuthorizedAsync(
                 new AuditTrailExplorerQueryDto(
                     SearchText: searchText,
                     RunId: runId,
@@ -437,6 +439,7 @@ public static partial class ExecutionEndpoints
                     FromUtc: fromUtc,
                     ToUtc: toUtc,
                     Limit: limit ?? 100),
+                (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token),
                 context.RequestAborted).ConfigureAwait(false);
 
             return Results.Json(result, jsonOptions);

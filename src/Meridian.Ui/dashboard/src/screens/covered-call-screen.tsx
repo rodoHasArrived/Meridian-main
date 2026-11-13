@@ -155,7 +155,9 @@ export function CoveredCallScreen() {
   const vm = useCoveredCallScreenViewModel();
 
   useEffect(() => {
-    void vm.loadHistory();
+    const controller = new AbortController();
+    void vm.loadHistory(controller.signal);
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -640,16 +642,11 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
         <CardDescription>{result.underlyingSymbol} · {result.from} → {result.to}</CardDescription>
       </CardHeader>
       <CardContent>
-        <table className="w-full text-sm">
-          <tbody>
-            {rows.map(([label, value]) => (
-              <tr key={label} className="border-b border-border/30">
-                <td className="py-1 pr-2 font-mono text-muted-foreground">{label}</td>
-                <td className="py-1 text-right font-mono">{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <dl className="divide-y divide-border/30 text-sm" aria-label="Covered call run metrics">
+          {rows.map(([label, value]) => <div key={label} className="grid grid-cols-2 gap-2 py-1">
+            <dt className="text-muted-foreground">{label}</dt><dd className="text-right tabular-nums">{value}</dd>
+          </div>)}
+        </dl>
       </CardContent>
     </Card>
   );
@@ -675,16 +672,24 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       title="Equity curve"
       subtitle="Strategy vs underlying-only buy-and-hold."
       readout={[
-        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #3A7A56)" },
-        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #5E666F)" }
+        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #2E7655)" },
+        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #606870)" }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
     >
       <EquityCurveChart
+        ariaLabel="Covered-call strategy versus underlying equity curve"
+        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${fmtMoney(
+          finalStrategy
+        )}, underlying buy-and-hold ${fmtMoney(finalUnderlying)}.`}
+        accessibleData={{
+          columns: ["Date", "Strategy", "Underlying"],
+          rows: points.map((p) => [p.date, fmtMoney(p.strategyEquity), fmtMoney(p.underlyingEquity)])
+        }}
         series={[
-          { label: "Strategy", color: "var(--chart-equity, #3A7A56)", points: strategy },
-          { label: "Underlying", color: "var(--chart-axis, #5E666F)", points: underlying, dashed: true, area: false }
+          { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
+          { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
         ]}
         valueFmt={fmtMoney}
       />

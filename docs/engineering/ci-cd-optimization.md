@@ -21,6 +21,8 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Lifecycle supervisor and installer setup tests | Automatic Windows validation; release preflight remains |
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
+| Design-system package freshness, export integrity, dashboard asset projection and Chromium regressions (previously run by hand) | Design System Package `package-integrity`, path-filtered; not a required check |
+| Design-system whole-release validator and retained Python suite | Design System Package `release-governance`, path-filtered; exits with the gates' real status; not a required check |
 
 The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
 now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
@@ -53,15 +55,46 @@ forks), merge groups, main pushes and manual/reusable calls.
 The shared implementation uses the certification `postgres:17` service, health checks and
 eight domain connection strings. The database and credentials are disposable within each
 job; no production secrets or privileged PR event are used. Checkout uses the event SHA with
-credentials persistence disabled and `contents: read`. Both project restores and test runs
-are attempted independently, so one failure cannot hide the other's result. TRX validation
+credentials persistence disabled and `contents: read`. Meridian, Direct Lending and Demo project
+restores and test runs are attempted independently, so one failure cannot hide another result. TRX validation
 runs after failures and rejects missing required suite prefixes, failed/skipped/unknown
 outcomes and every file with zero discovered tests. Coverage and schema evidence retain the
 existing certification artifact contract (90 days); CI companion evidence is retained 14 days.
 
+Demo Smoke uses the focused `Meridian.Demo.Tests` project for the same 26 demo cases, avoiding
+compilation of the unrelated monolithic test sources. The solution and canonical runner retain
+the ordinary cases, while the shared PostgreSQL gate retains all eight demo integration cases
+in its required `demo-integrations` TRX and coverage suite. Evidence creation and reuse both
+require that suite. The CLI seed keeps normal restore/build behavior; serve and reset reuse
+the Release output with `--no-build`. Runner class, NuGet caching and check identities stay
+the same. Compare equivalent hosted runs before claiming a timing improvement.
+
 Administrators may add `integration-gate` as a required companion check after human governance
 review and a successful PR/merge-group rollout. This change does not alter repository rulesets
 or replace the existing `quality-gate` requirement.
+
+### Design System Package
+
+`design-system-package.yml` runs when a pull request or `main` push changes
+`Meridian Design System/**`, the dashboard asset synchronization script, or the workflow itself.
+It adds hosted coverage that did not exist; it replaces no lane and leaves the four canonical
+`scripts/ci.sh` lanes, `quality-gate` and `integration-gate` unchanged. It uses `contents: read`,
+no secrets, and a checkout without persisted credentials.
+
+`package-integrity` runs `build:check`, `release:check`, the release integrity tests, the
+dashboard asset projection check and its tests, then the Chromium regressions (`test:patches`,
+`test:agency`, `test:browser`). Chromium comes from the Playwright version in the package
+lockfile, installed with up to three attempts and cached by lockfile hash. It runs no apt
+step, so a package-mirror outage cannot fail the job before a test starts.
+
+`release-governance` runs the whole-release validator and the retained Python suite and exits
+with their real status. It carries no `continue-on-error`, baseline or skip: a green result
+there has to mean the gates passed. Both passed with zero findings when this workflow was
+last revised.
+
+Neither job is a required check. Administrators may add `package-integrity` as a required
+check for design-system paths after human governance review, and `release-governance` once
+it has stayed green on `main`. Rollback is deleting the workflow file.
 
 ## Local verification execution
 

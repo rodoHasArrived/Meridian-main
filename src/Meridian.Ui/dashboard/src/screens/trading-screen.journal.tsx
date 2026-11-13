@@ -3,6 +3,7 @@ import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type
 import { formatCurrency, formatUtcTimestamp } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 
 const money = (value: number | null | undefined) => value == null ? "Unavailable" : formatCurrency(value);
 type OrderSelection = { orderId: string; attemptId?: string; fromLink?: boolean };
@@ -63,7 +64,24 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
       {totals ? <dl className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4"><div><dt>Gross / net realized P&amp;L</dt><dd>{money(totals.realizedPnl)} / {money(totals.netRealizedPnl)}</dd></div><div><dt>Commissions / fees</dt><dd>{money(totals.commissions)} / {money(totals.fees)}</dd></div><div><dt>Execution slippage</dt><dd>{money(totals.slippage)}</dd></div><div><dt>Account coverage for selected dates</dt><dd>{totals.coverage}</dd></div></dl> : null}
       {totals?.attributions?.length ? <div className="text-xs"><h4 className="font-semibold">FIFO attribution to opening strategy and tag</h4><ul>{totals.attributions.map((row, index) => <li key={index}>{row.strategyId ?? "Unattributed"} · {row.runId ?? "No run"} · {row.tag ?? "No tag"}: gross {money(row.grossRealizedPnl)}; net {money(row.netRealizedPnl)}</li>)}</ul></div> : null}
       <p className="text-xs text-muted-foreground">Totals cover the account and date window. Symbol, strategy, tag and status filter the order list.</p>
-      <div className="overflow-x-auto"><table className="w-full text-left text-xs"><caption className="sr-only">Retained orders for the selected account</caption><thead><tr>{["Order", "Symbol", "Side", "Status", "Filled / requested", "Strategy / tag", "Updated"].map((title) => <th key={title} className="p-2">{title}</th>)}</tr></thead><tbody>{visibleOrders.map((order) => <tr key={JSON.stringify([order.scope, order.orderId, order.attemptId])} className="border-t border-border"><td className="p-2"><button type="button" className="underline" onClick={() => setSelected({ orderId: order.orderId, attemptId: order.attemptId })} aria-expanded={detail?.orderId === order.orderId && detail?.attemptId === order.attemptId}>{order.orderId}</button></td><td>{order.symbol}</td><td>{order.side}</td><td>{order.status}</td><td>{order.filledQuantity} / {order.quantity}</td><td>{order.strategyId ?? "Unattributed"} / {order.tag ?? "—"}</td><td>{formatUtcTimestamp(new Date(order.updatedAt))}</td></tr>)}</tbody></table></div>
+      <TableWorkbench<JournalOrder>
+        workbenchId="execution-journal"
+        sourceKey={JSON.stringify([accountId, symbol, strategy, tag, status, from, to])}
+        sourceDescription="Retained execution orders for the selected account and filters, limited to 500 results. Totals cover the account and date window."
+        rows={visibleOrders}
+        getRowId={(order) => JSON.stringify([order.scope, order.orderId, order.attemptId])}
+        ariaLabel="Retained orders for the selected account"
+        emptyText={loading ? "Loading retained orders…" : "No retained orders match these filters. This does not establish complete historical coverage."}
+        columns={[
+          { id: "order", label: "Order", render: (order) => <button type="button" className="underline" onClick={() => setSelected({ orderId: order.orderId, attemptId: order.attemptId })} aria-expanded={detail?.orderId === order.orderId && detail?.attemptId === order.attemptId}>{order.orderId}</button>, exportValue: (order) => order.orderId },
+          { id: "symbol", label: "Symbol", render: (order) => order.symbol, exportValue: (order) => order.symbol },
+          { id: "side", label: "Side", render: (order) => order.side, exportValue: (order) => order.side },
+          { id: "status", label: "Status", render: (order) => order.status, exportValue: (order) => order.status },
+          { id: "quantity", label: "Filled / requested", numeric: true, render: (order) => `${order.filledQuantity} / ${order.quantity}`, exportValue: (order) => `${order.filledQuantity} / ${order.quantity}` },
+          { id: "strategy", label: "Strategy / tag", render: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? "—"}`, exportValue: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? "—"}` },
+          { id: "updated", label: "Updated", render: (order) => formatUtcTimestamp(new Date(order.updatedAt)), exportValue: (order) => order.updatedAt }
+        ]}
+      />
       {!loading && !error && visibleOrders.length === 0 ? <p className="text-xs">No retained orders match these filters. This does not establish complete historical coverage.</p> : null}
       {detail ? <section aria-label={`Order ${detail.orderId} history`} className="border-t border-border pt-3"><h4 className="text-sm font-semibold">Order evidence: {detail.orderId}</h4><p className="break-all text-xs">Scope: {detail.scope} · Run: {detail.runId ?? "Unattributed"}</p><ol className="mt-2 space-y-2 text-xs">{detail.events.map((event) => <li key={event.eventId}><strong>{event.kind}</strong> · {formatUtcTimestamp(new Date(event.recordedAt))}{event.report ? <p>Broker identity {event.report.gatewayOrderId ?? "unknown"}; predecessor {event.report.replacesOrderId ?? "none"}; cumulative fill {event.report.filledQuantity}; price {event.report.fillPrice ?? "unknown"}; commission {money(event.report.commission)}; fees {money(event.report.fees)}</p> : null}{event.activityFill ? <p>Provider fill {event.activityFill.fillId}: {event.activityFill.quantity} at {event.activityFill.price}; commission {money(event.activityFill.commission)}</p> : null}{event.detail ? <p>{event.detail}</p> : null}</li>)}</ol></section> : null}
     </>}

@@ -436,7 +436,7 @@ public static class LedgerFinancialStatementBuilder
         return (income, expense, fee);
     }
 
-    private static bool IsPureRetainedEarningsClosingEntry(
+    internal static bool IsPureRetainedEarningsClosingEntry(
         JournalEntry entry,
         string? financialAccountId,
         LedgerLineDimensionSet? lineDimensions)

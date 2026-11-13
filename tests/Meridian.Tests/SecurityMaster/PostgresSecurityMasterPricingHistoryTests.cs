@@ -14,6 +14,92 @@ public sealed class PostgresSecurityMasterPricingHistoryTests(SecurityMasterData
     : IClassFixture<SecurityMasterDatabaseFixture>
 {
     [SecurityMasterDatabaseFact]
+    public async Task QuotationEvidence_RoundTripsAndCannotReplaceSameObservation()
+    {
+        var securityId = await SeedSecurityAsync();
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var date = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var quote = new SecurityPriceQuotationEvidence(SecurityPriceBasis.Dirty,
+            SecurityQuotationConvention.Per100Face, SecurityQuoteStatus.Ask, new(2026, 6, 2), "T+1");
+        var request = new RecordRawPriceRequest(securityId, "dealer", 99.12345678901234567890123456m, date, "operator", SecurityPriceUnit.PercentOfPar)
+        { Quotation = quote };
+        await store.RecordRawPriceAsync(request);
+        await store.RecordRawPriceAsync(request);
+        var restored = (await store.GetRawPricesAsync(securityId, date)).Single();
+        restored.Quotation.Should().Be(quote);
+        restored.Price.Should().Be(request.Price);
+        await store.Invoking(value => value.RecordRawPriceAsync(request with { Quotation = quote with { Basis = SecurityPriceBasis.Clean } }))
+            .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ExactPrice_RefusesDifferentQuotesThatShareTheSameRoundedCompatibilityMirror()
+    {
+        var securityId = await SeedSecurityAsync();
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var date = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var original = new RecordRawPriceRequest(securityId, "exact-source", 99.12345678901m,
+            date, "operator", SecurityPriceUnit.PercentOfPar);
+        await store.RecordRawPriceAsync(original);
+        await store.RecordRawPriceAsync(original);
+
+        // Both values become 99.1234567890 in the old numeric(28,10) column. Idempotence must
+        // compare retained exact prices, rather than accepting a replacement hidden by rounding.
+        await store.Invoking(value => value.RecordRawPriceAsync(original with { Price = 99.12345678902m }))
+            .Should().ThrowAsync<InvalidOperationException>();
+        (await store.GetRawPricesAsync(securityId, date)).Single().Price.Should().Be(original.Price);
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            select price, price_exact from {fixture.Options.Schema}.security_raw_prices
+            where security_id = @id and source_id = 'exact-source';
+            """;
+        command.Parameters.AddWithValue("id", securityId);
+        await using var reader = await command.ExecuteReaderAsync();
+        (await reader.ReadAsync()).Should().BeTrue();
+        reader.GetDecimal(0).Should().Be(99.1234567890m);
+        reader.GetDecimal(1).Should().Be(original.Price);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task LegacyPriceFallback_PreservesNullExactPriceAndUnknownQuotationOnReplay()
+    {
+        var securityId = await SeedSecurityAsync();
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var date = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            insert into {fixture.Options.Schema}.security_raw_prices
+                (security_id, source_id, price, price_as_of, price_unit, recorded_by)
+            values (@id, 'legacy-source', 98.1234567890, @date, 'PercentOfPar', 'operator');
+            """;
+        command.Parameters.AddWithValue("id", securityId);
+        command.Parameters.AddWithValue("date", date.UtcDateTime);
+        await command.ExecuteNonQueryAsync();
+
+        var legacy = (await store.GetRawPricesAsync(securityId, date)).Single();
+        legacy.Price.Should().Be(98.1234567890m);
+        legacy.Quotation.Should().BeNull();
+        await store.RecordRawPriceAsync(new(securityId, "legacy-source", legacy.Price, date,
+            "operator", SecurityPriceUnit.PercentOfPar));
+        // A retry with additional digits is new evidence, even if its compatibility mirror agrees.
+        await store.Invoking(value => value.RecordRawPriceAsync(new(securityId, "legacy-source",
+            98.12345678901m, date, "operator", SecurityPriceUnit.PercentOfPar)))
+            .Should().ThrowAsync<InvalidOperationException>();
+        command.CommandText = $"""
+            select price_exact is null and quotation_evidence is null
+            from {fixture.Options.Schema}.security_raw_prices
+            where security_id = @id and source_id = 'legacy-source';
+            """;
+        (await command.ExecuteScalarAsync()).Should().Be(true,
+            "idempotent replay must not backfill unknown exact digits or quotation facts on a legacy row");
+        (await store.GetRawPricesAsync(securityId, date)).Single().Should().Be(legacy);
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task Observations_RetainOutOfOrderHistoryAndRefuseSameTimestampReplacement()
     {
         var securityId = await SeedSecurityAsync();

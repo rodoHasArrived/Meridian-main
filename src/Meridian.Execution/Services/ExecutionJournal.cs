@@ -16,7 +16,8 @@ public sealed record ExecutionJournalEntry(
     ExecutionEquityObservation? Equity = null, BrokerageFillSnapshotDto? ActivityFill = null,
     BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null,
     string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null,
-    BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null);
+    BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null,
+    Guid? PaperBookId = null);
 
 public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
@@ -40,6 +41,7 @@ public sealed class ExecutionJournal : IAsyncDisposable
     private readonly Dictionary<string, string> _hashes = new(StringComparer.Ordinal);
     private bool _initialized;
     public Func<Guid, string, JournalOpeningEvidence?>? OpeningEvidenceSource { private get; init; }
+    public Func<Guid?>? PaperBookIdentitySource { private get; init; }
 
     public ExecutionJournal(string root) => _wal = new WriteAheadLog(root, new WalOptions
     {
@@ -63,17 +65,34 @@ public sealed class ExecutionJournal : IAsyncDisposable
         try
         {
             await InitializeLockedAsync(ct).ConfigureAwait(false);
+            if (entry.Kind is "Dispatch" or "OpeningCheckpoint" && entry.AccountId is { } bookAccount
+                && entry.Scope.StartsWith("local-paper:", StringComparison.Ordinal)
+                && PaperBookIdentitySource?.Invoke() is { } bookId)
+            {
+                var history = _entries.Where(item => item.Scope == entry.Scope && item.AccountId == bookAccount).ToArray();
+                if (history.LastOrDefault(item => item.Kind == "PaperBook")?.PaperBookId != bookId)
+                {
+                    // A fresh simulator does not restore lots from the retained execution log.
+                    // Keep prior evidence visible but never match those lots against the new book.
+                    if (!history.Any(item => item.Kind == "EconomicCoverageGap" && item.PaperBookId == bookId)
+                        && history.Any(item => item.Report?.FilledQuantity > 0m || item.State?.FilledQuantity > 0m
+                            || item.ActivityFill?.Quantity > 0m))
+                        await AppendRetainedLockedAsync(new(1, $"paper-book-gap:{bookAccount:D}:{bookId:D}", entry.Scope,
+                            bookAccount, "", "EconomicCoverageGap", entry.RecordedAt,
+                            Detail: "Local paper book restarted without restoring prior positions; FIFO continuity is unavailable.",
+                            PaperBookId: bookId), ct).ConfigureAwait(false);
+                    await AppendRetainedLockedAsync(new(1, $"paper-book:{bookAccount:D}:{bookId:D}", entry.Scope,
+                        bookAccount, "", "PaperBook", entry.RecordedAt, PaperBookId: bookId), ct).ConfigureAwait(false);
+                }
+            }
             if (entry.Kind is "Dispatch" or "OpeningCheckpoint" && entry.AccountId is { } account
                 && !_entries.Any(item => item.Scope == entry.Scope && item.AccountId == account && item.Opening is not null))
             {
                 var opening = OpeningEvidenceSource?.Invoke(account, entry.Scope)
                     ?? new JournalOpeningEvidence(false, false, entry.RecordedAt, "Opening position evidence unavailable before first dispatch.");
                 var seed = new ExecutionJournalEntry(1, $"opening:{account:D}", entry.Scope, account, "", "OpeningEvidence", entry.RecordedAt, Opening: opening);
-                await _wal.AppendAsync(Serialize(seed), "ExecutionJournalV1", ct).ConfigureAwait(false);
-                _entries.Add(seed);
-                _hashes.Add(Key(seed), ContentHash(seed));
+                await AppendRetainedLockedAsync(seed, ct).ConfigureAwait(false);
             }
-            var json = Serialize(entry);
             var key = Key(entry);
             var hash = ContentHash(entry);
             if (_hashes.TryGetValue(key, out var retained))
@@ -82,11 +101,16 @@ public sealed class ExecutionJournal : IAsyncDisposable
                     throw new InvalidDataException("Execution event identity was reused with conflicting content.");
                 return;
             }
-            await _wal.AppendAsync(json, "ExecutionJournalV1", ct).ConfigureAwait(false);
-            _entries.Add(entry);
-            _hashes.Add(key, hash);
+            await AppendRetainedLockedAsync(entry, ct).ConfigureAwait(false);
         }
         finally { _gate.Release(); }
+    }
+
+    private async Task AppendRetainedLockedAsync(ExecutionJournalEntry entry, CancellationToken ct)
+    {
+        await _wal.AppendAsync(Serialize(entry), "ExecutionJournalV1", ct).ConfigureAwait(false);
+        _entries.Add(entry);
+        _hashes.Add(Key(entry), ContentHash(entry));
     }
 
     public async Task<IReadOnlyList<ExecutionJournalEntry>> ReadAsync(Guid? accountId = null, CancellationToken ct = default)

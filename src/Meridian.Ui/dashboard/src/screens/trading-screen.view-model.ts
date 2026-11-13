@@ -6,12 +6,14 @@ import {
   buildOrderTicketStatusAnnouncement,
   buildOrderTicketSubmitDisabledReason
 } from "./trading-screen.order-ticket-text";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -2733,6 +2735,8 @@ export interface TradingConfirmState {
   result: TradingActionResult | null;
   error: string | null;
   acknowledged: boolean;
+  cancelAllPreview?: CancelAllPreview | null;
+  previewLoading?: boolean;
 }
 
 export interface TradingConfirmResultPanel {
@@ -2780,6 +2784,7 @@ export interface TradingConfirmDialogState {
 }
 
 export interface TradingConfirmServices {
+  getCancelAllPreview?: () => Promise<CancelAllPreview>;
   cancelOrder: (orderId: string) => Promise<TradingActionResult>;
   cancelAllOrders: () => Promise<TradingActionResult>;
   closePosition: (positionKey: string, fundAccountId?: string | null) => Promise<TradingActionResult>;
@@ -2799,6 +2804,7 @@ export interface TradingConfirmViewModel extends TradingConfirmDialogState {
 }
 
 const defaultTradingConfirmServices: TradingConfirmServices = {
+  getCancelAllPreview: readCancelAllPreview,
   cancelOrder: (orderId) => workstationApi.cancelOrder(orderId),
   cancelAllOrders: () => workstationApi.cancelAllOrders(),
   closePosition: (positionKey, fundAccountId) => workstationApi.closePosition(positionKey, fundAccountId),
@@ -2818,12 +2824,27 @@ export function useTradingConfirmViewModel({
 } = {}): TradingConfirmViewModel {
   const [state, setState] = useState<TradingConfirmState>(() => createTradingConfirmState());
   const executingRef = useRef(false);
+  const previewRevisionRef = useRef(0);
 
   const openConfirm = useCallback((action: TradingConfirmAction) => {
+    if (executingRef.current) return;
+    const revision = ++previewRevisionRef.current;
     setState((current) => current.busy ? current : createTradingConfirmState(action));
-  }, []);
+    if (action.kind === "cancel-all") {
+      setState((current) => ({ ...current, previewLoading: true }));
+      (services.getCancelAllPreview ? services.getCancelAllPreview() : Promise.reject(new Error("OMS preview service is unavailable."))).then((preview) => {
+        if (revision !== previewRevisionRef.current) return;
+        setState((current) => current.action?.kind === "cancel-all" ? { ...current, cancelAllPreview: preview, previewLoading: false } : current);
+      }).catch((failure: unknown) => {
+        if (revision !== previewRevisionRef.current) return;
+        setState((current) => ({ ...current, previewLoading: false, error: failure instanceof Error ? failure.message : "The OMS open-order population could not be verified." }));
+      });
+    }
+  }, [services]);
 
   const closeConfirm = useCallback(() => {
+    if (executingRef.current) return;
+    previewRevisionRef.current += 1;
     setState((current) => current.busy ? current : createTradingConfirmState());
   }, []);
 
@@ -2839,7 +2860,7 @@ export function useTradingConfirmViewModel({
 
   const executeConfirm = useCallback(async () => {
     const action = state.action;
-    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current) {
+    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current || (action.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading))) {
       return;
     }
 
@@ -2885,14 +2906,16 @@ export function createTradingConfirmState(action: TradingConfirmAction | null = 
 
 export function buildTradingConfirmDialogState(state: TradingConfirmState): TradingConfirmDialogState {
   const title = state.action ? tradingConfirmActionLabel(state.action) : "";
-  const description = state.action ? tradingConfirmActionDescription(state.action) : "";
+  const description = state.action?.kind === "cancel-all"
+    ? `${tradingConfirmActionDescription(state.action)} ${state.cancelAllPreview ? `OMS snapshot: ${state.cancelAllPreview.orderIds.length} open order(s), received in the browser at ${state.cancelAllPreview.observedAt}. The open book can change before execution; the result reports surviving orders.` : "The current OMS population must be verified before confirmation."}`
+    : state.action ? tradingConfirmActionDescription(state.action) : "";
   const isCompleted = state.result !== null;
   const actionId = state.action ? sanitizeDomId(tradingConfirmActionDomKey(state.action)) : "none";
   const resultPanel = state.result ? buildTradingConfirmResultPanel(state.result) : null;
   const errorPanel = state.error ? { text: state.error, ariaLabel: `Confirmation action failed: ${state.error}` } : null;
   const confirmDisabledReason = buildTradingConfirmDisabledReason(state, isCompleted);
   const acknowledgementDisabledReason = buildTradingConfirmAcknowledgementDisabledReason(state, isCompleted);
-  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged;
+  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged && !(state.action?.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading));
 
   return {
     open: state.action !== null,
@@ -2939,6 +2962,10 @@ function buildTradingConfirmDisabledReason(state: TradingConfirmState, isComplet
 
   if (state.busy) {
     return "Wait for this trading action to finish.";
+  }
+
+  if (state.action.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading)) {
+    return state.previewLoading ? "Loading the current OMS open-order population." : "Verify the current OMS open-order population before confirming.";
   }
 
   if (isCompleted) {
@@ -3038,7 +3065,7 @@ function tradingConfirmActionDescription(action: TradingConfirmAction): string {
     case "cancel-order":
       return "This will request cancellation of the selected order. Partial fills that already occurred are not reversed.";
     case "cancel-all":
-      return "This will request cancellation of every open order in the current session. Partial fills that already occurred are not reversed.";
+      return "This requests cancellation across the entire active OMS open book, including other accounts and strategies. The selected account and table filters do not limit this action. Partial fills that already occurred are not reversed.";
     case "close-position":
       return "A market order will be submitted to flatten the full position at the next available price. You will remain responsible for the resulting fill.";
     case "pause-strategy":
@@ -3057,7 +3084,7 @@ function tradingConfirmAcknowledgementDescription(action: TradingConfirmAction):
     case "cancel-order":
       return `Cancel order ${action.orderId} after reviewing partial-fill risk.`;
     case "cancel-all":
-      return "Cancel every open order in the current session after reviewing partial-fill risk.";
+      return "Cancel the entire OMS open book across accounts and strategies after reviewing the affected identities and partial-fill risk.";
     case "close-position":
       return `Flatten ${action.symbol} with a market order after reviewing fill risk.`;
     case "pause-strategy":
@@ -3246,7 +3273,20 @@ export function useOrderTicketViewModel({
   const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
-  const [acknowledged, setAcknowledged] = useState(false);
+  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const [editor, setEditor] = useState<{
+    scope: string | null;
+    values: Partial<Record<"quantity" | "limitPrice", string>>;
+    acknowledged: boolean;
+  }>(() => ({ scope: normalizedAccountScope, values: {}, acknowledged: false }));
+  const editorMatchesScope = editor.scope === normalizedAccountScope;
+  const acknowledged = editorMatchesScope && editor.acknowledged;
+  const editorValues = editorMatchesScope ? editor.values : {};
+  // Scope-bound derivation withholds the old text and acknowledgement in the first render.
+  // Discard the stored session too, so returning to that account cannot revive its review.
+  if (!editorMatchesScope) {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }
   const submittingRef = useRef(false);
   const unconfirmedSubmissionRef = useRef<OrderSubmissionIdentity | null>(null);
   const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<OrderSubmissionIdentity | null>(null);
@@ -3284,6 +3324,22 @@ export function useOrderTicketViewModel({
     return () => window.clearInterval(timer);
   }, [open, services.previewOrder]);
 
+  const resetEditor = useCallback(() => {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }, [normalizedAccountScope]);
+
+  const setAcknowledged = useCallback((next: SetStateAction<boolean>) => {
+    setEditor((current) => {
+      const sameScope = current.scope === normalizedAccountScope;
+      const previous = sameScope && current.acknowledged;
+      return {
+        scope: normalizedAccountScope,
+        values: sameScope ? current.values : {},
+        acknowledged: typeof next === "function" ? next(previous) : next
+      };
+    });
+  }, [normalizedAccountScope]);
+
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
     [acknowledged, errorText, escalationId, form, open, orderId, phase, riskWarnings]
@@ -3314,8 +3370,8 @@ export function useOrderTicketViewModel({
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, [phase]);
+    resetEditor();
+  }, [phase, resetEditor]);
 
   const toggleTicket = useCallback(() => {
     if (open) {
@@ -3328,11 +3384,22 @@ export function useOrderTicketViewModel({
 
   const updateField = useCallback((field: OrderTicketField, value: string) => {
     setForm((current) => updateOrderTicketForm(current, field, value));
+    // Keep local editor text such as "188.0" while the existing model parses it as 188.
+    // Rendering String(188) after that keystroke would make the next "5" become 1885.
+    setEditor((current) => {
+      const values = current.scope === normalizedAccountScope ? current.values : {};
+      return {
+        scope: normalizedAccountScope,
+        values: field === "quantity" || field === "limitPrice"
+          ? { ...values, [field]: value }
+          : field === "symbol" || field === "type" ? {} : values,
+        acknowledged: false
+      };
+    });
     setPhase((current) => current === "submitted" ? "idle" : current);
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, []);
+  }, [normalizedAccountScope]);
 
   const normalizeSymbol = useCallback(() => {
     setForm((current) => ({
@@ -3408,7 +3475,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3424,7 +3491,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3454,10 +3521,17 @@ export function useOrderTicketViewModel({
     }
     setPhase("error");
     setErrorText(refusal);
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services, serverPreviewBlocked, serverPreview, sessionIntent]);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
+    controls: {
+      ...state.controls,
+      quantity: { ...state.controls.quantity, value: editorValues.quantity ?? state.controls.quantity.value },
+      limitPrice: state.controls.limitPrice
+        ? { ...state.controls.limitPrice, value: editorValues.limitPrice ?? state.controls.limitPrice.value }
+        : null
+    },
     preview,
     serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Refresh checks to inspect its retained outcome; do not resubmit.` : serverPreviewError,
     serverPreviewLoading, serverPreviewExpired, sessionIntent,
@@ -3639,10 +3713,10 @@ export function updateOrderTicketForm(
   }
 
   if (field === "quantity") {
-    return { ...current, quantity: parsePositiveNumber(value) ?? 0 };
+    return { ...current, quantity: parsePositiveDecimal(value) ?? 0 };
   }
 
-  return { ...current, limitPrice: parsePositiveNumber(value) };
+  return { ...current, limitPrice: parsePositiveDecimal(value) };
 }
 
 export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
@@ -3703,11 +3777,6 @@ function normalizeOrderSymbol(symbol: string): string {
 
 function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
   return type === "Limit" || type === "Stop";
-}
-
-function parsePositiveNumber(value: string): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";

@@ -22,10 +22,12 @@ public static class AccountingPostingCommandValidator
     public static LedgerJournalEntryWrite NormalizeAndValidate(
         LedgerJournalEntryWrite write,
         bool requirePostingCommand = false,
-        bool requireExpectedVersion = false)
+        bool requireExpectedVersion = false,
+        bool allowPreparerAttestation = false)
     {
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
+        ValidateAgreementTagTargets(write.Entry);
 
         ConsolidationPostingEvidenceGuard.Validate(write);
 
@@ -39,13 +41,70 @@ public static class AccountingPostingCommandValidator
 
         if (write.PostingCommand is not { } command)
         {
+            if (write.Entry.Metadata.PreparerAttestation is not null)
+                throw new LedgerValidationException("Typed preparer journal metadata requires the native attested posting boundary.");
             if (requirePostingCommand)
             {
                 throw new LedgerValidationException(
                     "A typed accounting posting command is required at the production ledger append boundary.");
             }
 
+            if (write.Entry.Metadata.Tags?.Keys.Any(key => key.EndsWith(".intercompanyAgreementId", StringComparison.OrdinalIgnoreCase)
+                    || key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) == true)
+            {
+                var lines = NormalizeLineDimensions(write.Entry.Lines, write.Entry.Metadata.Tags, null, null, null);
+                write = write with
+                {
+                    Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
+                    write.Entry.Description, lines, write.Entry.Metadata)
+                };
+            }
+            IntercompanyAgreementPostingGuard.ValidateShape(write.Entry);
             return write;
+        }
+
+        var preparerAttested = command.ApprovalState == AccountingPostingApprovalStateDto.PreparerAttested;
+        if (PreparerAttestationApprovalBoundary.IsReservedReference(command.ApprovalId)
+            || command.Evidence.Where(evidence => evidence.Kind == AccountingPostingEvidenceKindDto.Approval).Any(evidence =>
+                PreparerAttestationApprovalBoundary.IsReservedReference(evidence.EvidenceId)
+                || PreparerAttestationApprovalBoundary.IsReservedReference(evidence.Uri)
+                || PreparerAttestationApprovalBoundary.IsReservedReference(evidence.SourceReference)
+                || PreparerAttestationApprovalBoundary.IsReservedReference(evidence.SubjectId)))
+            throw new LedgerValidationException("A preparer attestation cannot supply ordinary posting approval authority.");
+        if (preparerAttested || command.CashDividendAttestation is not null || write.Entry.Metadata.PreparerAttestation is not null)
+        {
+            if (!allowPreparerAttestation || !preparerAttested || command.CashDividendAttestation is not { } binding
+                || command.ApprovalId is not null || command.Intent != AccountingPostingIntentDto.Originating
+                || command.SourceJournalEntryId is not null || write.SourceJournalEntryId is not null
+                || command.LotAmortization is not null || command.LotCorporateAction is not null
+                || command.LotCapitalReturn is not null || command.LotFactorPaydown is not null
+                || command.SourceEventType != AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction)
+                || command.Evidence.Any(item => item.Kind == AccountingPostingEvidenceKindDto.Approval)
+                || command.EconomicEvent is null)
+                throw new LedgerValidationException("Preparer-attested cash dividends require the native lease boundary without ordinary approval, correction or lot authority.");
+            var attestedBookId = command.LedgerBookId ?? write.LedgerBookId
+                ?? throw new LedgerValidationException("Accounting posting command ledger book id is required.");
+            var bindingIssues = AssetAccountingPreparerAttestationDto.Validate(binding,
+                attestedBookId, command.PeriodId,
+                command.EconomicEvent.EventId, command.EconomicEvent.EventVersion,
+                binding.TenantId, binding.CompanyId, command.Actor,
+                command.BookContext?.BaseCurrency ?? string.Empty, write.Entry.Lines.Sum(line => line.Debit));
+            if (bindingIssues.Count != 0 || write.Entry.Lines.Sum(line => line.Debit) != write.Entry.Lines.Sum(line => line.Credit)
+                || binding.Receipt.AttestedAtUtc > command.PostingDate
+                || binding.Receipt.ExDate != command.EffectiveDate
+                || binding.Receipt.BudgetMonth != new DateOnly(command.EffectiveDate.Year, command.EffectiveDate.Month, 1)
+                || write.Entry.Metadata.PreparerAttestation is { } supplied && !JsonElement.DeepEquals(
+                    JsonSerializer.SerializeToElement(supplied), JsonSerializer.SerializeToElement(binding)))
+                throw new LedgerValidationException("Native preparer posting scope, receipt, chronology or balanced journal amounts do not match.");
+            var roles = binding.Receipt.AccountRoleBinding!;
+            if (command.RulePackReference is not { } rules || rules.RulePackId != roles.RulePackId
+                || rules.RulePackVersion != roles.RulePackVersion || rules.SelectedRuleId != roles.SelectedRuleId
+                || rules.SelectedRuleVersion != roles.SelectedRuleVersion || write.Entry.Lines.Count != 2
+                || write.Entry.Lines.Count(line => line.Account.Name == roles.DividendReceivableAccountName
+                    && line.Account.AccountType == LedgerAccountType.Asset && line.Debit == binding.Receipt.GrossImpactUsd && line.Credit == 0m) != 1
+                || write.Entry.Lines.Count(line => line.Account.Name == roles.DividendIncomeAccountName
+                    && line.Account.AccountType == LedgerAccountType.Revenue && line.Credit == binding.Receipt.GrossImpactUsd && line.Debit == 0m) != 1)
+                throw new LedgerValidationException("Native dividend accounts and rule must match the explicit book-owned receivable/income binding.");
         }
 
         if (command.CommandId == Guid.Empty)
@@ -135,7 +194,7 @@ public static class AccountingPostingCommandValidator
             }
         }
 
-        if (RequiresApproval(command.Intent) && command.ApprovalState is not AccountingPostingApprovalStateDto.Approved and not AccountingPostingApprovalStateDto.NotRequired)
+        if (RequiresApproval(command.Intent) && !preparerAttested && command.ApprovalState is not AccountingPostingApprovalStateDto.Approved and not AccountingPostingApprovalStateDto.NotRequired)
         {
             throw new LedgerValidationException("Accounting posting command requires approved or not-required reviewer state before append.");
         }
@@ -144,7 +203,10 @@ public static class AccountingPostingCommandValidator
         ValidateTypedAssertions(command);
 
         var entry = NormalizeEntryMetadata(write.Entry, command);
-        return write with
+        IntercompanyAgreementPostingGuard.ValidateShape(entry);
+        if (preparerAttested && IntercompanyAgreementPostingGuard.HasReferences(entry))
+            throw new LedgerValidationException("Intercompany agreement references require the standalone append transaction so authoritative agreement leases remain held through commit.");
+        var normalizedWrite = write with
         {
             Entry = entry,
             CommandId = command.CommandId,
@@ -156,10 +218,28 @@ public static class AccountingPostingCommandValidator
                 ? LedgerPostingKindDto.Adjustment
                 : write.PostingKind
         };
+        IntercompanyAgreementPostingGuard.ValidateAccountingDate(normalizedWrite);
+        return normalizedWrite;
     }
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
+
+    private static void ValidateAgreementTagTargets(JournalEntry entry)
+    {
+        if (entry.Metadata.Tags is not { } tags)
+            return;
+        var validKeys = entry.Lines.SelectMany(line => new[]
+        {
+            $"lineDimensions.{line.EntryId:N}.intercompanyAgreementId",
+            $"lineDimensions.{line.EntryId:N}.intercompanyAgreementVersion"
+        }).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in tags.Keys)
+            if (key.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase) &&
+                (key.EndsWith(".intercompanyAgreementId", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) && !validKeys.Contains(key))
+                throw new LedgerValidationException("Agreement line-dimension tags must identify an existing journal line using its canonical line identity.");
+    }
 
     /// <summary>
     /// Data-provenance evidence gate (fail closed): a figure whose evidence declares a simulated,
@@ -478,6 +558,7 @@ public static class AccountingPostingCommandValidator
 
         var normalizedMetadata = metadata with
         {
+            PreparerAttestation = command.CashDividendAttestation,
             SecurityId = metadata.SecurityId ?? typedSecurityId,
             EffectiveDate = metadata.EffectiveDate ?? treasury?.EffectiveDate ?? command.EffectiveDate,
             LedgerBook = FirstText(metadata.LedgerBook, command.LedgerBookId?.ToString("D")),
@@ -516,6 +597,17 @@ public static class AccountingPostingCommandValidator
         };
 
         AddTag(tags, "approvalId", command.ApprovalId);
+        if (command.CashDividendAttestation is { } preparer)
+        {
+            tags["decisionKind"] = preparer.Receipt.DecisionKind;
+            tags["attestationReceiptRef"] = PreparerAttestationApprovalBoundary.ReceiptReference(preparer.Receipt.AttestationId);
+            tags["attestationId"] = preparer.Receipt.AttestationId.ToString("D");
+            tags["attestedBy"] = preparer.Receipt.AttestedBy;
+            tags["declarationId"] = preparer.Receipt.DeclarationId.ToString("D");
+            tags["declarationRevision"] = preparer.Receipt.DeclarationRevision.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            tags["policyVersion"] = preparer.Receipt.PolicyVersion;
+            tags["policyHash"] = preparer.Receipt.PolicyHash;
+        }
         AddTag(tags, PostingActorTag, command.Actor);
         if (!string.IsNullOrWhiteSpace(command.Actor))
             tags[PostingActorAttributionTag] = PostingActorAttributionVersion;
@@ -670,6 +762,21 @@ public static class AccountingPostingCommandValidator
             var line = lines[index];
             var dimensions = line.Dimensions ??
                 (tags is null ? null : BuildLineDimensions(line.EntryId, tags));
+            if (tags is not null)
+            {
+                var prefix = $"lineDimensions.{line.EntryId:N}.";
+                var agreementId = ReadAgreementId(tags, prefix);
+                var agreementVersion = ReadAgreementVersion(tags, prefix);
+                if ((agreementId.HasValue && dimensions?.IntercompanyAgreementId is { } retainedId && retainedId != agreementId) ||
+                    (agreementVersion.HasValue && dimensions?.IntercompanyAgreementVersion is { } retainedVersion && retainedVersion != agreementVersion))
+                    throw new LedgerValidationException("Agreement line-dimension tags conflict with the explicit journal dimensions.");
+                if (agreementId.HasValue || agreementVersion.HasValue)
+                    dimensions = (dimensions ?? new LedgerLineDimensionSet()) with
+                    {
+                        IntercompanyAgreementId = agreementId ?? dimensions?.IntercompanyAgreementId,
+                        IntercompanyAgreementVersion = agreementVersion ?? dimensions?.IntercompanyAgreementVersion
+                    };
+            }
 
             var isReviewedSuccessor = corporateAction is not null && corporateAction.Successors.Any(target =>
                 target.Lot.SecurityId == dimensions?.InstrumentId && target.Lot.BookPositionId == dimensions?.PositionId);
@@ -760,7 +867,9 @@ public static class AccountingPostingCommandValidator
             VendorId: GetLineDimensionTag(tags, prefix, "vendorId"),
             ProjectId: GetLineDimensionTag(tags, prefix, "projectId"))
         {
-            PositionId = GetLineDimensionGuidTag(tags, prefix, "positionId")
+            PositionId = GetLineDimensionGuidTag(tags, prefix, "positionId"),
+            IntercompanyAgreementId = ReadAgreementId(tags, prefix),
+            IntercompanyAgreementVersion = ReadAgreementVersion(tags, prefix)
         };
 
         return HasAnyLineDimension(dimensions) ? dimensions : null;
@@ -800,6 +909,8 @@ public static class AccountingPostingCommandValidator
            || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
            || dimensions.InstrumentId.HasValue
            || dimensions.PositionId.HasValue
+           || dimensions.IntercompanyAgreementId.HasValue
+           || dimensions.IntercompanyAgreementVersion.HasValue
            || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
            || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
            || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
@@ -811,6 +922,20 @@ public static class AccountingPostingCommandValidator
            || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
            || !string.IsNullOrWhiteSpace(dimensions.VendorId)
            || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+
+    private static Guid? ReadAgreementId(IReadOnlyDictionary<string, string> tags, string prefix)
+    {
+        try
+        { return LedgerAgreementDimensions.ReadId(tags, prefix); }
+        catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message, exception); }
+    }
+
+    private static int? ReadAgreementVersion(IReadOnlyDictionary<string, string> tags, string prefix)
+    {
+        try
+        { return LedgerAgreementDimensions.ReadVersion(tags, prefix); }
+        catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message, exception); }
+    }
 
     private static IReadOnlyList<JournalEvidenceReference> MergeEvidence(
         IReadOnlyList<JournalEvidenceReference> existing,

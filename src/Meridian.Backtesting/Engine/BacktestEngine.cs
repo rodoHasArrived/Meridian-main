@@ -23,7 +23,8 @@ public sealed class BacktestEngine(
     ISecurityTradingParametersQueryService? securityMasterQueryService,
     ICorporateActionAdjustmentService? corporateActionAdjustment = null,
     IBacktestPreflightService? backtestPreflightService = null,
-    ISecurityIdentityQueryService? securityIdentityQueryService = null)
+    ISecurityIdentityQueryService? securityIdentityQueryService = null,
+    IBacktestAssetEventSource? assetEventSource = null)
 {
     /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
     public BacktestEngine(
@@ -141,7 +142,10 @@ public sealed class BacktestEngine(
         var allSnapshots = new List<PortfolioSnapshot>();
         var allCashFlows = new List<CashFlowEntry>();
         var allFills = new List<FillEvent>();
-        var assetEventsByDate = BuildAssetEventIndex(request.AssetEvents, request.From, request.To);
+        var assetEventsByDate = BuildAssetEventIndex(
+            await ResolveAssetEventsAsync(request, universe, ct).ConfigureAwait(false),
+            request.From,
+            request.To);
 
         // 3. Initialise strategy
         ctx.CurrentTime = startTimestamp;
@@ -194,7 +198,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, commissionModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -490,6 +494,44 @@ public sealed class BacktestEngine(
         }
     }
 
+    /// <summary>
+    /// Explicit request events always win. Otherwise, when the request opts in, events come from
+    /// the configured source. The opt-in fails closed rather than silently running without events
+    /// or counting each action twice on back-adjusted prices.
+    /// </summary>
+    private async Task<IReadOnlyList<AssetEvent>?> ResolveAssetEventsAsync(
+        BacktestRequest request,
+        IReadOnlyCollection<string> universe,
+        CancellationToken ct)
+    {
+        if (request.AssetEvents is not null || !request.PopulateAssetEventsFromSecurityMaster)
+        {
+            return request.AssetEvents;
+        }
+
+        if (request.AdjustForCorporateActions)
+        {
+            throw new InvalidOperationException(
+                "PopulateAssetEventsFromSecurityMaster requires AdjustForCorporateActions = false: " +
+                "back-adjusted prices already contain dividends and splits, so applying them as asset events would count them twice.");
+        }
+
+        if (assetEventSource is null)
+        {
+            throw new InvalidOperationException(
+                "PopulateAssetEventsFromSecurityMaster was requested but no Security Master asset-event source is configured on this host.");
+        }
+
+        var assetEvents = await assetEventSource
+            .GetAssetEventsAsync(universe, request.From, request.To, ct)
+            .ConfigureAwait(false);
+        logger.LogInformation(
+            "Populated {Count} asset events from the Security Master for {SymbolCount} symbols",
+            assetEvents.Count,
+            universe.Count);
+        return assetEvents;
+    }
+
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(
         IReadOnlyList<AssetEvent>? assetEvents,
         DateOnly from,
@@ -643,6 +685,7 @@ public sealed class BacktestEngine(
         IFillModel lobModel,
         IFillModel barModel,
         IFillModel marketImpactModel,
+        ICommissionModel commissionModel,
         SimulatedPortfolio portfolio,
         IBacktestStrategy strategy,
         BacktestContext ctx,
@@ -668,9 +711,20 @@ public sealed class BacktestEngine(
             var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
             var acceptedFilledQuantity = 0L;
+            var acceptedCommission = 0m;
+            var acceptedNotional = 0m;
+            var commissionOrder = order;
 
-            foreach (var fill in result.Fills)
+            foreach (var candidate in result.Fills)
             {
+                // A preceding model slice may have been refused by the account. Its fee was
+                // never booked, so only accepted executions may consume a per-order minimum
+                // or maximum. Re-price this candidate before checking available cash.
+                var fill = candidate with
+                {
+                    Commission = OrderCommission.CalculateIncrement(commissionModel, commissionOrder,
+                        candidate.FilledQuantity, candidate.FillPrice)
+                };
                 try
                 {
                     portfolio.ProcessFill(fill);
@@ -688,6 +742,14 @@ public sealed class BacktestEngine(
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
                 acceptedFilledQuantity += fill.FilledQuantity;
+                acceptedCommission += fill.Commission;
+                acceptedNotional += Math.Abs(fill.FilledQuantity) * fill.FillPrice;
+                commissionOrder = commissionOrder with
+                {
+                    FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                    CommissionCharged = order.CommissionCharged + acceptedCommission,
+                    FilledNotional = order.FilledNotional + acceptedNotional
+                };
                 rollingState.IncrementFills();
                 strategy.OnOrderFill(fill, ctx);
 
@@ -723,6 +785,8 @@ public sealed class BacktestEngine(
             var updatedOrder = order with
             {
                 FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                CommissionCharged = order.CommissionCharged + acceptedCommission,
+                FilledNotional = order.FilledNotional + acceptedNotional,
                 Status = order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
                     ? OrderStatus.Filled
                     : OrderStatus.PartiallyFilled,
@@ -1244,7 +1308,7 @@ internal sealed class RollingMetricsState
             var mean = _sumExcess / n;
             var variance = (_sumSqExcess / n) - (mean * mean);
             var stdDev = variance > 0 ? Math.Sqrt(variance) : 0;
-            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(252) : 0;
+            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(365) : 0;
         }
 
         var drawdownPct = _peakEquity > 0

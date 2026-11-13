@@ -815,3 +815,166 @@ describe("accounting-screen reconciliation view model", () => {
   });
 
 });
+
+describe("accounting-screen reconciliation tie-out proof", () => {
+  function systemReconciliation(
+    overrides: Partial<AccountingSystemReconciliationSummary> = {}
+  ): AccountingSystemReconciliationSummary {
+    return {
+      reconciliationId: "gl-recon-proof",
+      importId: "gl-import-proof",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "fund-alpha",
+      periodStart: "2026-06-01",
+      periodEnd: "2026-06-30",
+      generatedAtUtc: "2026-07-01T00:00:00Z",
+      matchedCount: 1,
+      breakCount: 0,
+      totalExternalDebits: 500,
+      totalExternalCredits: 0,
+      totalMeridianDebits: 500,
+      totalMeridianCredits: 0,
+      postingEnabled: false,
+      postingDisabledReason: "Posting/export remains disabled.",
+      evidenceReferences: [],
+      rows: [
+        { rowId: "r-cash", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Matched", externalDebit: 500, externalCredit: 0, meridianDebit: 500, meridianCredit: 0, variance: 0, detail: "Tied.", evidenceRef: null }
+      ],
+      ...overrides
+    };
+  }
+
+  function build(reconciliation: AccountingSystemReconciliationSummary | null, cashFlow: Parameters<typeof buildReconciliationComparisonViewState>[0]["cashFlow"] = null) {
+    return buildReconciliationComparisonViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      cashFlow,
+      systemReconciliation: reconciliation
+    });
+  }
+
+  it("carries the numbers behind the summary labels and declares tied only when balanced", () => {
+    const state = build(systemReconciliation());
+
+    expect(state.varianceLabel).toBe("Balanced");
+    expect(state).toMatchObject({ statementBalance: 500, ledgerBalance: 500, netVariance: 0, matchedCount: 1, openCount: 0 });
+    expect(state.tieOut).toMatchObject({
+      title: "Tie-out proof",
+      context: "External GL reconciliation · 2026-06-01 to 2026-06-30",
+      type: "one-to-one",
+      currency: "USD",
+      notation: "currency",
+      sourceA: { label: "Custodian statement", value: 500, count: 1 },
+      sourceB: { label: "Internal ledger", value: 500, count: 1 },
+      items: [],
+      status: "tied"
+    });
+    expect(state.tieOut?.statusNote).toBeUndefined();
+  });
+
+  it("lists open rows as identified-but-unexplained items and declares an exception for a net variance", () => {
+    const state = build(systemReconciliation({
+      matchedCount: 1,
+      breakCount: 2,
+      totalExternalDebits: 742,
+      totalExternalCredits: 0,
+      totalMeridianDebits: 800,
+      totalMeridianCredits: 0,
+      rows: [
+        { rowId: "r-cash", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Matched", externalDebit: 500, externalCredit: 0, meridianDebit: 500, meridianCredit: 0, variance: 0, detail: "Tied.", evidenceRef: null },
+        { rowId: "r-miss-ext", accountCode: "7000", accountName: "Mgmt fee payable", currency: "USD", status: "MissingExternal", externalDebit: 0, externalCredit: 0, meridianDebit: 300, meridianCredit: 0, variance: -300, detail: "Ledger-only accrual.", evidenceRef: null },
+        { rowId: "r-miss-mer", accountCode: "4000", accountName: "", currency: "USD", status: "MissingMeridian", externalDebit: 242, externalCredit: 0, meridianDebit: 0, meridianCredit: 0, variance: 242, detail: "Statement-only interest.", evidenceRef: "qbo:trial-balance:interest", evidenceReferences: ["qbo:trial-balance:interest", "qbo:statement:interest"] }
+      ]
+    }));
+
+    expect(state.varianceLabel).toBe("Out by $58");
+    expect(state).toMatchObject({ statementBalance: 742, ledgerBalance: 800, netVariance: -58, openCount: 2 });
+    expect(state.tieOut?.status).toBe("exception");
+    expect(state.tieOut?.statusNote).toBeUndefined();
+    // Statement side drops the ledger-only row and the ledger side drops the statement-only row.
+    expect(state.tieOut?.sourceA).toEqual({ label: "Custodian statement", value: 742, count: 2 });
+    expect(state.tieOut?.sourceB).toEqual({ label: "Internal ledger", value: 800, count: 2 });
+    expect(state.tieOut?.items).toEqual([
+      { id: "r-miss-ext", label: "Mgmt fee payable", value: -300, explained: false, condition: "missing", conditionLabel: "Missing in statement", evidence: undefined },
+      { id: "r-miss-mer", label: "4000", value: 242, explained: false, condition: "missing", conditionLabel: "Missing in ledger", evidence: "2 evidence references" }
+    ]);
+  });
+
+  it("never calls offsetting breaks tied, and says why the exception stands", () => {
+    const state = build(systemReconciliation({
+      matchedCount: 0,
+      breakCount: 2,
+      totalExternalDebits: 1000,
+      totalExternalCredits: 1000,
+      totalMeridianDebits: 1000,
+      totalMeridianCredits: 1000,
+      rows: [
+        { rowId: "tb-1", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Variance", externalDebit: 500, externalCredit: 0, meridianDebit: 480, meridianCredit: 0, variance: 20, detail: "Cash variance.", evidenceRef: "qbo:cash" },
+        { rowId: "tb-2", accountCode: "2000", accountName: "Payables", currency: "USD", status: "Variance", externalDebit: 0, externalCredit: 500, meridianDebit: 0, meridianCredit: 480, variance: -20, detail: "Payables variance.", evidenceRef: null }
+      ]
+    }));
+
+    expect(state.varianceLabel).toBe("2 open breaks");
+    expect(state.netVariance).toBe(0);
+    expect(state.tieOut?.status).toBe("exception");
+    expect(state.tieOut?.statusNote).toBe("2 open breaks remain although the totals net to zero. Offsetting breaks are not a tie-out.");
+    expect(state.tieOut?.items.map((item) => [item.label, item.value, item.conditionLabel, item.evidence])).toEqual([
+      ["Cash", 20, "Variance", "1 evidence reference"],
+      ["Payables", -20, "Variance", undefined]
+    ]);
+  });
+
+  it("carries a side that is not a usable number as null, never zero", () => {
+    const state = build(systemReconciliation({
+      // A missing total can only arrive through a malformed payload; it must not be read as 0.
+      totalExternalDebits: Number.NaN
+    }));
+
+    expect(state.statementBalance).toBeNull();
+    expect(state.netVariance).toBeNull();
+    expect(state.tieOut?.sourceA.value).toBeNull();
+    expect(state.tieOut?.sourceB.value).toBe(500);
+    expect(state.tieOut?.status).toBe("exception");
+    expect(state.varianceLabel).not.toBe("Balanced");
+  });
+
+  it("prints bare numbers and names the currencies when rows span more than one", () => {
+    const state = build(systemReconciliation({
+      breakCount: 1,
+      totalExternalDebits: 500,
+      totalExternalCredits: 200,
+      totalMeridianDebits: 500,
+      totalMeridianCredits: 180,
+      rows: [
+        { rowId: "r-cash", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Matched", externalDebit: 500, externalCredit: 0, meridianDebit: 500, meridianCredit: 0, variance: 0, detail: "Tied.", evidenceRef: null },
+        { rowId: "r-fees", accountCode: "6000", accountName: "Fees", currency: "EUR", status: "Variance", externalDebit: 0, externalCredit: 200, meridianDebit: 0, meridianCredit: 180, variance: -20, detail: "Commission variance.", evidenceRef: null }
+      ]
+    }));
+
+    expect(state.tieOut?.notation).toBe("number");
+    expect(state.tieOut?.context).toBe("External GL reconciliation · 2026-06-01 to 2026-06-30 · Rows span USD, EUR; totals are summed as reported, without conversion");
+    expect(state.tieOut?.items[0].label).toBe("Fees (EUR)");
+  });
+
+  it("offers no tie-out for the run-level fallback and keeps not-loaded balances null", () => {
+    const notLoaded = build(null);
+    expect(notLoaded.lineSource).toBe("runs");
+    expect(notLoaded.tieOut).toBeNull();
+    expect(notLoaded.statementBalanceLabel).toBe("Not loaded");
+    expect(notLoaded).toMatchObject({ statementBalance: null, ledgerBalance: null, netVariance: null });
+
+    const cashOnly = build(null, {
+      totalCash: 120000,
+      totalLedgerCash: 120500,
+      netVariance: 500,
+      totalFinancing: 1400,
+      runsWithCashSignals: 4,
+      runsWithCashVariance: 1,
+      tone: "warning",
+      summary: "Cash-flow coverage is available."
+    });
+    expect(cashOnly.tieOut).toBeNull();
+    expect(cashOnly).toMatchObject({ statementBalance: 120000, ledgerBalance: 120500, netVariance: 500 });
+  });
+});

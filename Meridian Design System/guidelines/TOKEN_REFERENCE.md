@@ -24,7 +24,7 @@ re-brand and a broken one.
 
 **Tier 1 — Theme.** `--theme-accent`, `--theme-bg-canvas`, `--theme-spacing-*`, `--theme-row-height`,
 the `--theme-font-*` stack, plus the `data-brand` (indigo / emerald / rose / slate / cyan / amber)
-and `data-theme-density` (compact / cozy / spacious) switches. This is the **only** layer a
+and `data-theme-density` (terminal / compact / spacious; unset = standard) switches. This is the **only** layer a
 consumer should override to re-skin. Setting `data-brand="indigo"` re-points `--theme-accent`,
 which flows down through Tier 2 and Tier 3 with zero component edits.
 
@@ -57,25 +57,31 @@ Both are legible body weights; the distinction is **role, not just darkness**.
 
 | | Token | Hex · on panel | Use for |
 | --- | --- | --- | --- |
-| Secondary | `--text-secondary` | `#4E5258` · 7.5:1 | Content that is *still primary reading* but subordinate — row labels, field labels, secondary values, body copy in a side panel. The user is meant to read it. |
-| Muted | `--text-muted` | `#5E666F` · 5.6:1 | *Metadata about* content — captions, hints, timestamps, unit suffixes, column sublabels, "last synced" lines. Glanceable, not primary reading. |
+| Secondary | `--text-secondary` | `#535C65` · 7.1:1 | Content that is *still primary reading* but subordinate — row labels, field labels, secondary values, body copy in a side panel. The user is meant to read it. |
+| Muted | `--text-muted` | `#606870` · 5.3:1 | *Metadata about* content — captions, hints, timestamps, unit suffixes, column sublabels, "last synced" lines. Glanceable, not primary reading. |
 
 Rule of thumb: if the user reads it to do the task → **secondary**; if it annotates or timestamps
 the thing they read → **muted**. (Both pass AA on every surface; choosing correctly is about
 hierarchy, not contrast.)
 
 ### `--accent-hover` vs `--accent-dim`
-`--accent-hover` (#AF6143, lighter) is the **pointer-hover** state; `--accent-dim` (#8C4429,
-darker) is the **pressed/active** state. Lighter on hover, darker on press — never swap them.
-`--accent-dim` also doubles as **emphasized accent text** (Toast action, role badges).
-**Dark-mode exception (2026-07):** in dark, `--accent-dim` is `#E39A77` — *lighter* than the
-accent, sitting between accent and hover — because a darker pressed fill left the dark button
-ink at 3.11:1 and failed as text on dark panels. Semantics are unchanged (still "pressed" +
-"accent text"); only the direction of the shift flips in dark, per standard dark-UI convention.
+`--accent-hover` (`#D2795A`) is the pointer-emphasized signal; `--accent-dim` (`#CB6E4E`)
+is the controlled signal variant. Primary actions do not use this family. In dark mode the same
+roles use `#E5A088` and `#E19479` so signal labels remain legible without turning into focus or
+semantic state. Do not create intermediate shades.
+
+### `--brand-signal-ink` vs signal fills
+Use `--brand-signal-ink` for normal-sized text that retains the signal hue: labels, inline
+references, highlighted matches and retained table ranks. It derives 75% of the signal toward
+`--dim-mix`, producing `#944A32` in the default light theme and `#E2A38C` in dark. Its text
+contrast is checked against workstation surfaces and signal washes in every appearance.
+`--brand-signal`, `--accent-hover` and `--accent-dim` remain fill, border and graphical roles;
+their lighter variants are not text inks. Keep text fully opaque on hover; emphasize it with
+an underline instead of fading an otherwise readable label.
 
 ### `--bg-hover` vs `--bg-active`
-`--bg-hover` (#F0EEE9) is a flat neutral shift for transient hover. `--bg-active` (#F2E3DB) is a
-warm copper-tinted wash for *selected/engaged* state (selected row, active nav). Active is a state that
+`--bg-hover` (#EDEFF0) is a flat neutral shift for transient hover. `--bg-active` (#E7EDF2) is a
+cool blue wash for *selected/engaged* state (selected row, active nav). Active is a state that
 persists; hover is not.
 
 ### `--border` vs `--border-strong` vs `--border-divider`
@@ -85,49 +91,111 @@ for splitting sections *inside* a surface where a full border would be too much.
 
 ---
 
-## Spacing, radius, elevation — the Programmed Institutionalism constraints
+## Spacing, radius, elevation — the v2.1 constraints
 
-**Spacing** is a 6-step scale: `--space-xs 3px · sm 6px · md 12px · lg 16px · xl 24px · 2xl 32px`.
-The density switch rescales the *theme* spacing (`--theme-spacing-*`) and `--theme-row-height`
-(compact 32px · cozy 40px · spacious 48px). Use the scale tokens; don't type pixel padding.
+**Spacing** is a 4px-base, 8-step scale: `--space-xs 4 · sm 8 · md 12 · lg 16 · xl 24 · 2xl 32 ·
+3xl 48 · 4xl 64`. The density switch rescales the *theme* spacing (`--theme-spacing-*`) and the
+row/control heights (see the density table below). Use the scale tokens; don't type pixel padding.
 
-**Radius is intentionally tiny.** Everything is `2px` (`--radius-chip` / `-button` / `-card` all
-2px); the named scale tops out at `--radius-xl 6px` for large sheets only. *Structure comes from
-borders, not rounding.* If you find yourself wanting a 12px corner, you're off-system — Meridian is
-"Programmed Institutionalism," not "friendly SaaS."
+**Radius is intentionally tiny.** `--radius-chip` / `--radius-analytical` **2px** (chips, badges,
+plots, plates) · `--radius-button` / `--radius-card` **4px** (controls, panels) ·
+`--radius-overlay` **6px** (popovers, menus, drawers) · `--radius-dialog` **8px** — the ceiling.
+`--radius-pill 999px` is for status pills only. *Structure comes from borders, not rounding.*
 
 **Elevation is flat by mandate.** `--shadow-card`, `--shadow-panel`, `--shadow-soft`,
 `--shadow-workstation` are all `none` — the workstation plane is flat and **borders carry
-structure**. The *only* real shadow is `--shadow-menu` (`0 2px 6px rgba(0,0,0,.18)`), for genuinely
+structure**. The *only* real shadow is `--shadow-menu` (`0 2px 8px rgba(17,23,29,.16)`), for genuinely
 detached overlays (menus, popovers) — aliased as `--shadow-float`. Don't reach for a shadow to
 separate two panels; use a border or a background step (`--card-surface-raised`).
+
+**Opacity** has exactly three sanctioned values: `--opacity-disabled .38` ·
+`--opacity-muted .62` · `--opacity-series-secondary .74`. Never invent a fourth.
+
+**Grid** — `--grid-columns 12` (large) / `--grid-columns-md 8`, gutters
+`--grid-gutter-lg 24 · --grid-gutter 20 · --grid-gutter-sm 16`, margins
+`--grid-margin-lg 32 · --grid-margin 24 · --grid-margin-sm 20`.
+
+**Component anatomy** — reference dimensions to alias instead of hard-coding:
+`--table-row-height` (tracks density) · `--table-header-height 34` · `--selection-rail 2` ·
+`--capsule-header-height 48` / `--capsule-footer-height 32` / `--capsule-h-sm|md|lg|xl`
+(144 · 240 · 336 · 432) · `--drawer-width-min 360` / `--drawer-width-max 440` /
+`--drawer-action-height 36`. Analytical geometry (plates, inspector, plot padding) lives in
+`tokens/visualization.css`.
+
+### Density modes
+
+| Scope | Row | Control | Body | Label | Panel pad |
+| --- | --- | --- | --- | --- | --- |
+| `terminal` | 26px | 24px | 12px | 10px | 8px |
+| `compact` (**dense**) | 28px | 28px | 13px | 10px | 12px |
+| default (**standard**) | 36px | 36px | 14px | 11px | 16px |
+| `spacious` (**review**) | 44px | 40px | 15px | 12px | 20px |
+
+Read them as `--theme-row-height` · `--theme-control-height` · `--theme-body-size` ·
+`--theme-label-size` · `--pad-panel`; never branch on the attribute yourself.
+
+---
+
+## Material hierarchy & the interaction family
+
+Surfaces are named by **material**, and the ladder is deliberate: data surfaces read brightest,
+insets recede toward the canvas.
+
+| Material | Token | Light | Use |
+| --- | --- | --- | --- |
+| Paper | `--bg` / `--surface-paper` | `#F2F0EB` | application canvas |
+| Plate | `--bg-light` / `--surface-plate` | `#F8F7F3` | primary workspace, panels |
+| Well | `--card-surface-raised` / `--surface-well` | `#FCFBF8` | data surfaces, raised cells |
+| Recessed / Rail | `--bg-medium` / `--surface-recessed` | `#EBE8E1` | headers, nav rail, inset wells |
+| Overlay | `--surface-overlay` | `#FFFFFF` | dialogs, menus, popovers |
+| Signal | `--signal` / `--accent` | `#C56343` | brand, active identity marker, scenario |
+
+**Focus and selection are blue, not brand.** `--focus #2D6FB3` (focus ring, also `--border-focus`) ·
+`--selected #496C8F` (selection rail, selected mark) · `--selected-surface #E7EDF2` (selected row,
+plate, datum) · `--interaction-hover #DDE5EC`. The terracotta signal marks *identity or an analytical alternate state* (an active brand marker,
+the scenario series, the editorial Field); graphite marks primary action, while blue marks *system
+feedback* (what you focused and selected). Keeping them apart is why a scenario overlay never reads as an alarm and a focused input
+never reads as a brand moment.
+
+**Semantic surfaces** — flat washes for high-priority conditions: `--green-surface #E4EEE8` ·
+`--red-surface #F5E5E2` · `--orange-surface #F2EAD8` · `--info-surface #E3ECF2`. Plus the extra
+semantics the data-condition model needs: `--pending #7A6B52` · `--neutral #6D757D` ·
+`--missing #A34A42` · `--brand-field #5D7286` (the Field motif) · `--brand-axis #29323A` (the Datum
+ink — chrome and the primary trace).
 
 ---
 
 ## Motion
 
-Two durations and one curve — that's the whole budget:
+Five durations and two curves — that's the whole budget:
 
-- `--motion-fast` **100ms** — color/border/background state changes (hover, focus, press).
-- `--motion-base` **150ms** — slightly larger transitions (accordion height, drawer slide).
-- `--ease-standard` `cubic-bezier(.4,0,.2,1)` — the only easing curve. Use it for everything.
+- `--motion-instant` **80ms** — state flips (checkbox, chip, toggle).
+- `--motion-fast` **120ms** — color/border/background state changes (hover, focus, press).
+- `--motion-base` **180ms** — slightly larger transitions (accordion height, drawer slide).
+- `--motion-reflow` **240ms** (= `--motion-slow`) — marks moving after sort, filter, or scenario.
+- `--motion-deliberate` **280ms** — trace and reconcile sequences.
+- `--ease-standard` `cubic-bezier(.2,0,0,1)` for entrances and moves; `--ease-exit`
+  `cubic-bezier(.4,0,1,1)` for dismissals.
 
 No entrance choreography, no parallax, no animated number rolls (live data updates silently). Any
-continuous motion you add must gate on `prefers-reduced-motion` — see `ACCESSIBILITY.md` §4.
+continuous motion you add must gate on `prefers-reduced-motion` — see `ACCESSIBILITY.md` §4, and
+the four motion verbs in `VISUALIZATION_GRAMMAR.md` §17.
 
 ---
 
 ## Typography tokens
 
-Three families — `--font-display` (Segoe UI Variable Display, headings), `--font-body` (Segoe UI
-Variable Text, UI copy), `--font-data` (Cascadia/JetBrains Mono — **all numbers, IDs, codes, and
+Three families — `--font-display` (IBM Plex Sans, headings), `--font-body` (IBM Plex Sans,
+UI copy), `--font-data` (IBM Plex Mono — **all numbers, IDs, codes, and
 tabular data**). Numeric data is *always* mono; this is load-bearing for column alignment.
 
-Ramp (size/line-height pairs): `--type-page-title 24/32` · `--type-section 16/24` ·
-`--type-card-title 13/20` · `--type-body 13/20` · `--type-metric 28` (mono) ·
-`--type-data-value 16` (mono) · `--type-label 9` (small-caps) · `--type-caption 11/16`. Weights
-400/500/600/700 via `--weight-*`. Don't hand-size text — pull from the ramp so density and
-hierarchy stay coherent.
+Ramp (size/line-height pairs): `--type-display 48/52` (report covers only) · `--type-workspace 28/34` ·
+`--type-page-title 22/28` · `--type-data-medium 18/24` · `--type-section 16/22` ·
+`--type-card-title 14/20` · `--type-body 14/20` (`--type-body-dense 13/18`, `--type-body-review 15/22`) ·
+`--type-metric 28/34` (mono) · `--type-data-value 16` (mono) · `--type-label-lg 11/16` ·
+`--type-label` / `--type-micro 10/14` (small-caps) · `--type-caption 12/16`. Weights
+400 / **450 (`--weight-data`, mono optical match)** / 500 / 600 / 700 via `--weight-*`. Don't hand-size
+text — pull from the ramp so density and hierarchy stay coherent.
 
 ---
 
@@ -156,7 +224,7 @@ The near-black bars stay dark in **both** modes, so their interior details have 
 instead of reusing panel tokens (which flip in dark): `--topbar-text-muted` / `--topbar-text-faint`
 (secondary/hint ink on chrome), `--topbar-sep`, `--topbar-field-bg` / `--topbar-field-border`(`-hover`)
 (the inset search field and kbd caps), and `--chrome-ok/warn/err` (status dots bright enough to read
-on `#1F1D1A` — deliberately lighter than the panel semantics `--green/--orange/--red`). Anything that
+on `#29323A` — deliberately lighter than the panel semantics `--green/--orange/--red`). Anything that
 sits ON the chrome uses these; anything on paper uses the normal panel tokens. Defined in
 `tokens/colors.css` under "Chrome interior details"; no dark override needed.
 
@@ -164,7 +232,7 @@ sits ON the chrome uses these; anything on paper uses the normal panel tokens. D
 
 ## Anti-patterns
 
-- ❌ Hardcoding a hex (`color:#A85436`) — breaks white-label + dark. Use `var(--accent)`.
+- ❌ Hardcoding a hex (`color:#C56343`) — breaks white-label + dark. Use `var(--accent)`.
 - ❌ Authoring against Tier 3 (`var(--green-dim)` for a non-semantic surface) or `--ws-*` names.
 - ❌ Typed pixel padding/margins instead of `--space-*`; typed corners instead of `--radius-*`.
 - ❌ A shadow to separate two coplanar panels — use a border or surface step.
@@ -173,5 +241,5 @@ sits ON the chrome uses these; anything on paper uses the normal panel tokens. D
 
 ---
 
-**See also:** `guidelines/VISUAL_FOUNDATIONS.md` (the "why" behind Programmed Institutionalism) ·
-`guidelines/ACCESSIBILITY.md` (measured contrast for every token) · `PATTERNS.md` (composition).
+**See also:** `guidelines/VISUAL_FOUNDATIONS.md` (the "why" behind Concrete) ·
+`guidelines/ACCESSIBILITY.md` (measured contrast for every token) · `guidelines/PATTERNS.md` (composition).

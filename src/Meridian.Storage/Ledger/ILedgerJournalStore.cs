@@ -124,6 +124,23 @@ public interface ILedgerJournalStore
             new NotSupportedException("This ledger journal store does not support asset-scoped tax-lot reads."));
 
     /// <summary>
+    /// Reconstructs daily face-value accrual entitlements from retained mutation evidence in one
+    /// scoped read. Closing acquisitions/disposals retain their existing timing; a same-day factor
+    /// paydown follows interest, including the final day of a full paydown that closes the lot.
+    /// Missing face terms or incomplete history refuses the whole read. Returned acquisition facts
+    /// and current version tokens are evidence, not writable historical lot records.
+    /// </summary>
+    Task<IReadOnlyList<Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding>> ListTaxLotAccrualSnapshotsAsync(
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid bookPositionId,
+        DateOnly from,
+        DateOnly through,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding>>(
+            new NotSupportedException("This ledger journal store does not support retained accrual-history reads."));
+
+    /// <summary>
     /// Resolves one immutable atomic tax-lot posting batch together with its journal and mutation
     /// evidence. Public Posted projections use this read to prove that a supplied mutation-batch
     /// identity is durable authority rather than caller-provided lifecycle metadata.

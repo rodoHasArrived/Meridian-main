@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Broker-side execution blotter for Trading → Risk.
  *
@@ -9,12 +10,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Briefcase, RefreshCcw } from "lucide-react";
-import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ApiError } from "@/lib/api-errors";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import {
   getExecutionAccountSnapshot,
   getExecutionBlotter,
@@ -87,8 +88,8 @@ export function ExecutionBlotterPanel() {
   const rows = useMemo(() => (blotter?.positions ?? []).map(buildExecutionBlotterRow), [blotter]);
 
   async function submitUpsize(positionKey: string) {
-    const quantity = Number(upsizeQuantity);
-    if (!Number.isFinite(quantity) || quantity <= 0) {
+    const quantity = parsePositiveDecimal(upsizeQuantity);
+    if (quantity === null) {
       setError("Enter a positive quantity to add to the position.");
       return;
     }
@@ -145,69 +146,43 @@ export function ExecutionBlotterPanel() {
           ))}
         </div>
 
-        <DenseDataTable
-          tableId="execution-blotter-positions"
-          ariaLabel="Execution blotter positions"
-          emptyText={executionBlotterEmptyMessage(readState)}
-          rows={rows}
-          getRowId={(row) => row.positionKey}
-          getRowAriaLabel={(row) => row.ariaLabel}
-          maxVisibleRows={null}
-          columns={[
-            {
-              id: "symbol",
-              label: "Symbol",
-              sortValue: (row) => row.symbol,
-              render: (row) => (
-                <>
+        <TableWorkbench<(typeof rows)[number]> workbenchId="trading-execution-blotter" sourceKey={`${blotter?.source ?? "unavailable"}:${blotter?.asOf ?? ""}`} sourceDescription="Authoritative execution position snapshot. Source numbers are exported without display formatting; provenance remains explicit."
+ completePopulation={readState === "ready" && !error} rows={rows} getRowId={(row)=>row.positionKey} getRowAriaLabel={(row)=>row.ariaLabel}
+ maxVisibleRows={null} ariaLabel="Execution blotter positions" emptyText={executionBlotterEmptyMessage(readState)}
+ getSearchText={(row)=>`${row.symbol} ${row.side} ${row.product}`}
+ columns={[{id:"symbol",sortValue:(row)=>row.symbol,label:"Symbol",render:(row)=>(<>
                   <div className="font-mono text-xs">{row.symbol}</div>
                   <div className="text-xs text-muted-foreground">
                     {row.assetClass}{row.contractDetail ? ` · ${row.contractDetail}` : ""}
                   </div>
-                </>
-              )
-            },
-            { id: "side", label: "Side", hideable: true, sortValue: (row) => row.side, render: (row) => row.side },
-            { id: "quantity", label: "Quantity", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.quantity, render: (row) => row.quantity },
-            { id: "averageCostBasis", label: "Avg cost", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.averageCostBasis, render: (row) => row.averageCostBasis },
-            { id: "marketPrice", label: "Mark", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.marketPrice, render: (row) => row.marketPrice },
-            { id: "marketValue", label: "Market value", numeric: true, hideable: true, className: "font-mono", sortValue: (row) => row.values.marketValue, render: (row) => row.marketValue },
-            {
-              id: "unrealisedPnl",
-              label: "Unrealised",
-              numeric: true,
-              hideable: true,
-              className: "font-mono",
-              sortValue: (row) => row.values.unrealisedPnl,
-              render: (row) => <span className={toneInlineClassName(row.unrealisedTone)}>{row.unrealisedPnl}</span>
-            },
-            {
-              id: "actions",
-              label: "",
-              srLabel: "Actions",
-              align: "right",
-              render: (row) => row.canUpsize ? (
-                upsizeKey === row.positionKey ? (
-                  <span className="flex items-center justify-end gap-2">
-                    <Input
-                      aria-label={`Quantity to add to ${row.symbol}`}
-                      className="h-8 w-24"
-                      value={upsizeQuantity}
-                      onChange={(event) => setUpsizeQuantity(event.target.value)}
-                    />
-                    <Button size="sm" disabled={busy} onClick={() => void submitUpsize(row.positionKey)}>
-                      Confirm
-                    </Button>
-                  </span>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={() => { setUpsizeKey(row.positionKey); setUpsizeQuantity(""); }}>
-                    Upsize
-                  </Button>
-                )
-              ) : null
-            }
-          ]}
-        />
+                </>),exportValue:(row)=>row.symbol},
+{id:"side",sortValue:(row)=>row.side,label:"Side",render:(row)=>(<>{row.side}</>),exportValue:(row)=>row.side},
+{id:"quantity",numeric:true,hideable:true,sortValue:(row)=>row.values.quantity,label:"Quantity",align:"right",className:"tabular-nums",render:(row)=>(<>{row.quantity}</>),exportValue:(row)=>row.values.quantity},
+{id:"averageCostBasis",numeric:true,hideable:true,sortValue:(row)=>row.values.averageCostBasis,label:"Avg cost",align:"right",className:"tabular-nums",render:(row)=>(<>{row.averageCostBasis}</>),exportValue:(row)=>row.values.averageCostBasis},
+{id:"marketPrice",numeric:true,hideable:true,sortValue:(row)=>row.values.marketPrice,label:"Mark",align:"right",className:"tabular-nums",render:(row)=>(<>{row.marketPrice}</>),exportValue:(row)=>row.values.marketPrice},
+{id:"marketValue",numeric:true,hideable:true,sortValue:(row)=>row.values.marketValue,label:"Market value",align:"right",className:"tabular-nums",render:(row)=>(<>{row.marketValue}</>),exportValue:(row)=>row.values.marketValue},
+{id:"unrealisedPnl",numeric:true,hideable:true,sortValue:(row)=>row.values.unrealisedPnl,label:"Unrealised",align:"right",className:"tabular-nums",render:(row)=>(<span className={toneInlineClassName(row.unrealisedTone)}>{row.unrealisedPnl}</span>),exportValue:(row)=>row.values.unrealisedPnl},
+{id:"actions",label:"Actions",render:(row)=>(<>
+                  {row.canUpsize ? (
+                    upsizeKey === row.positionKey ? (
+                      <span className="flex items-center justify-end gap-2">
+                        <Input
+                          aria-label={`Quantity to add to ${row.symbol}`}
+                          className="h-8 w-24"
+                          value={upsizeQuantity}
+                          onChange={(event) => setUpsizeQuantity(event.target.value)}
+                        />
+                        <Button size="sm" disabled={busy} onClick={() => void submitUpsize(row.positionKey)}>
+                          Confirm
+                        </Button>
+                      </span>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => { setUpsizeKey(row.positionKey); setUpsizeQuantity(""); }}>
+                        Upsize
+                      </Button>
+                    )
+                  ) : null}
+                </>)}]} />
       </CardContent>
     </Card>
   );

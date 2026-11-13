@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * NotificationCenter — persistent notification rail: a bell button with an unread count and
  * an anchored panel (tone dot, title, detail, relative time). The durable complement to Toast:
@@ -28,4 +29,4 @@ export interface NotificationCenterProps {
   /** Bell button label. @default "Alerts" */
   label?: React.ReactNode;
 }
-export declare function NotificationCenter(props: NotificationCenterProps): JSX.Element;
+export declare function NotificationCenter(props: NotificationCenterProps): React.JSX.Element;

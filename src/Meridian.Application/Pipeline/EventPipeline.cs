@@ -95,6 +95,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
     // Configuration
     private readonly TimeSpan _flushInterval;
+    private readonly TimeProvider _timeProvider;
     private readonly int _batchSize;
     private readonly int _maxAdaptiveBatchSize;
     private readonly bool _enablePeriodicFlush;
@@ -160,7 +161,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         IEventValidator? validator = null,
         DeadLetterSink? deadLetterSink = null,
         IDedupStore? dedupLedger = null,
-        int consumerCount = 1)
+        int consumerCount = 1,
+        TimeProvider? timeProvider = null)
         : this(
             sink,
             new EventPipelinePolicy(capacity, fullMode),
@@ -176,7 +178,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             validator,
             deadLetterSink,
             dedupLedger,
-            consumerCount)
+            consumerCount,
+            timeProvider)
     {
     }
 
@@ -214,9 +217,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         IEventValidator? validator = null,
         DeadLetterSink? deadLetterSink = null,
         IDedupStore? dedupLedger = null,
-        int consumerCount = 1)
+        int consumerCount = 1,
+        TimeProvider? timeProvider = null)
     {
         _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _logger = logger ?? NullLogger<EventPipeline>.Instance;
         _auditTrail = auditTrail;
         _wal = wal;
@@ -269,7 +274,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             _flusher = PeriodicFlushAsync();
         }
 
-        Interlocked.Exchange(ref _lastFlushTimestamp, Stopwatch.GetTimestamp());
+        Interlocked.Exchange(ref _lastFlushTimestamp, _timeProvider.GetTimestamp());
     }
 
     private static int DetermineConsumerCount(
@@ -353,8 +358,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         get
         {
             var lastTs = Interlocked.Read(ref _lastFlushTimestamp);
-            return TimeSpan.FromTicks((long)((Stopwatch.GetTimestamp() - lastTs) *
-                (TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency)));
+            return _timeProvider.GetElapsedTime(lastTs);
         }
     }
 
@@ -874,7 +878,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         }
 
         await _sink.FlushAsync(ct).ConfigureAwait(false);
-        Interlocked.Exchange(ref _lastFlushTimestamp, Stopwatch.GetTimestamp());
+        Interlocked.Exchange(ref _lastFlushTimestamp, _timeProvider.GetTimestamp());
 
         // Warn callers if events were dropped during this flush window so they
         // understand that the returned flush is not a full-fidelity confirmation.
@@ -1532,7 +1536,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         {
             while (!_cts.Token.IsCancellationRequested)
             {
-                await Task.Delay(_flushInterval, _cts.Token).ConfigureAwait(false);
+                await Task.Delay(_flushInterval, _timeProvider, _cts.Token).ConfigureAwait(false);
 
                 try
                 {
@@ -1542,7 +1546,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     flushTimeoutCts.CancelAfter(_sinkFlushTimeout);
 
                     await _sink.FlushAsync(flushTimeoutCts.Token).ConfigureAwait(false);
-                    Interlocked.Exchange(ref _lastFlushTimestamp, Stopwatch.GetTimestamp());
+                    Interlocked.Exchange(ref _lastFlushTimestamp, _timeProvider.GetTimestamp());
 
                     // Periodically truncate committed WAL files to reclaim disk space
                     if (_wal != null && _lastCommittedWalSequence > 0)

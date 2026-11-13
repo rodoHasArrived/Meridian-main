@@ -57,17 +57,23 @@ paper Trading API with real orders. It is a separate opt-in because it changes a
   in the position, in the activity snapshot, and exactly once in the durable trade-update inbox
   across repeated REST reconciliations and restarts.
 
-Set `MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1` with the same three credential variables, then run:
+Set `MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1` with the same three credential variables. That one
+opt-in covers every test that places orders: this gateway check and the governed order-path check
+below. Run both together, or narrow the filter to one class:
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-  --filter 'FullyQualifiedName~AlpacaPaperOrderLifecycleTests' \
+  --filter 'FullyQualifiedName~AlpacaPaperOrderLifecycleTests|FullyQualifiedName~AlpacaPaperSandboxOrderLifecycleTests' \
   --logger 'console;verbosity=normal' \
   --logger 'trx;LogFileName=alpaca-paper-orders.trx'
 ```
 
-An HTTP guard allows only `GET` requests and single-order submit, replace and cancel requests on
-`paper-api.alpaca.markets`; it refuses the cancel-all and close-position routes. Resting orders
+Both checks send every request through one transport guard. It allows only reads of the account,
+portfolio, order and reference resources and single-order submit, replace and cancel requests on
+`paper-api.alpaca.markets`, for at most two shares or contracts sized by quantity. It refuses the
+cancel-all and close-position routes and dollar-sized orders. The one exception is the submission
+that proves the broker rejects an order the account cannot afford, which is let past the share
+ceiling once. Resting orders
 are priced at 1.00 so they cannot execute. Every order carries a per-run `mrd-it-` client order ID
 prefix, and each test cancels or flattens only what it created, so other orders and positions in
 the account are left alone. The round trip costs the paper spread on one share.
@@ -110,19 +116,8 @@ for the paper gateway — brokerage configuration, a run id, and a readiness gat
 only that one-share run — rather than bypassing the gate. The lost acknowledgement is produced by
 dropping one real response in the test transport, not by a network-level disconnect.
 
-Set `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` and `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS=1` with
-the same three credential variables, then run:
-
-```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-  --filter 'FullyQualifiedName~AlpacaPaperSandboxOrderLifecycleTests' \
-  --logger 'console;verbosity=normal' \
-  --logger 'trx;LogFileName=alpaca-paper-governed-orders.trx'
-```
-
-Its transport guard allows `GET` requests and single-order submit, replace and cancel requests on
-`paper-api.alpaca.markets` for at most two shares sized by quantity; cancel-all, close-position
-and dollar-sized orders are refused. Orders carry a per-run `meridian-sandbox-` client order ID
+It runs under the same `MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1` opt-in, command and transport guard
+as the gateway check above. Orders carry a per-run `meridian-sandbox-` client order ID
 prefix and trade a different symbol from the gateway check. Cleanup is measured from the broker's
 record of the run's own orders, and a run that otherwise passed fails if an order or position of
 its own could not be cleared. It tolerates open orders it does not own: readiness is then reported

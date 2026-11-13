@@ -33,6 +33,12 @@ public static class LedgerReportPresentation
             tables.Add(BuildCashFlow(cashFlow));
         if (statements.PartnersCapital is { } partnersCapital)
             tables.Add(BuildPartnersCapital(partnersCapital));
+        if (reportPack.PreparerAttestations is { Count: > 0 } attestations)
+            tables.Add(new("Accounting Preparer Attestations", ["Journal", "Decision", "Disclosure", "Receipt", "Declaration / Policy", "Actor / Recorded"],
+                attestations.Select(item => (IReadOnlyList<string>)[item.JournalEntryId.ToString("D"), item.Classification,
+                    item.Disclosure, item.ReceiptReference ?? "Unavailable",
+                    $"{item.DeclarationId?.ToString("D") ?? "Unavailable"} revision {item.DeclarationRevision}; {item.PolicyVersion ?? "Unavailable"}",
+                    $"{item.Actor ?? "Unavailable"}; {item.RecordedAtUtc?.ToString("O", CultureInfo.InvariantCulture) ?? "Unavailable"}"]).ToArray()));
 
         return tables;
     }

@@ -42,6 +42,7 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
 
         result.Success.Should().BeTrue(
             "non-authoritative session persistence cannot rewrite a broker-accepted fill as rejected");
+        Assert.NotNull(result.OrderState);
         result.OrderState.Status.Should().Be(OrderStatus.Filled);
         oms.GetOrder(result.OrderId)!.Status.Should().Be(OrderStatus.Filled);
         publisher.AcceptedEvents.Should().ContainSingle();
@@ -123,6 +124,7 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
                 });
 
                 result.Success.Should().BeFalse();
+                Assert.NotNull(result.OrderState);
                 result.OrderState.Status.Should().Be(OrderStatus.Filled,
                     "the broker truth cannot be rewritten to Rejected when accounting input is malformed");
                 publisher.AcceptedEvents.Should().BeEmpty(

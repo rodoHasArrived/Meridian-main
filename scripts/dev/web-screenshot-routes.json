@@ -12,7 +12,7 @@
       "name": "web-daily-control-tower",
       "path": "/",
       "docLabel": "Daily Control Tower",
-      "waitForText": "What needs an operator decision now",
+      "waitForText": "Today",
       "requiredApiRoutes": [
         "/api/workstation/first-run/",
         "/api/demo/mode",
@@ -21,9 +21,11 @@
         "/api/workstation/workflow-summary"
       ],
       "waitForTexts": [
-        "What needs an operator decision now",
-        "Finance queue",
+        "All authorized scopes",
         "Daily Control Tower"
+      ],
+      "waitForSelectors": [
+        "[aria-label=\"Finance queue\"] table"
       ]
     },
     {
@@ -56,7 +58,6 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Net P&L",
         "Open orders",
         "Recent fills"
       ]
@@ -71,7 +72,6 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Net P&L",
         "Live positions",
         "AAPL"
       ]
@@ -88,7 +88,6 @@
         "/api/risk/rules/DrawdownCircuitBreaker/config"
       ],
       "waitForTexts": [
-        "Net P&L",
         "Paper risk cockpit"
       ],
       "waitForAbsentTexts": [
@@ -133,7 +132,6 @@
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total exposure",
         "VTI"
       ]
     },
@@ -147,7 +145,6 @@
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total exposure",
         "Mean Reversion FX"
       ]
     },
@@ -273,7 +270,7 @@
       "waitForSelectors": [
         "select:has(option[value=\"run-42\"]:checked)",
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
-        "#reconciliation-break-detail-panel [aria-label=\"Reconciliation break detail for run-42:cash\"]"
+        "#reconciliation-break-detail-panel[aria-label=\"Reconciliation break detail for run-42:cash\"]"
       ],
       "waitForAbsentTexts": [
         "Loading reconciliation break queue..."
@@ -369,7 +366,15 @@
       ],
       "waitForTexts": [
         "Account balances from the fund's posted journal, scoped by ledger period.",
-        "Trial balance scope"
+        "Trial balance scope",
+        "3 trial balance lines loaded for the posted journal for period June 2026.",
+        "Cash contributes $120,500 across 3 ledger entries for the posted journal for period June 2026.",
+        "Cash sweep",
+        "Capital contribution"
+      ],
+      "waitForAbsentTexts": [
+        "Loading trial balance for the posted journal for period June 2026.",
+        "Loading posted journal entries for this period."
       ]
     },
     {
@@ -493,7 +498,48 @@
         "Search by account, amount, journal ID, source, security, entity",
         "Ledger book",
         "Ledger period",
-        "Ledger search results"
+        "Ledger search results",
+        "Cash sweep receipt",
+        "Investor contribution recorded"
+      ],
+      "waitForAbsentTexts": [
+        "Loading ledger books.",
+        "Loading ledger periods.",
+        "Loading posted journal entries for this period."
+      ]
+    },
+    {
+      "id": "W03FP",
+      "name": "web-accounting-factor-paydown",
+      "path": "/accounting/factor-paydown",
+      "docLabel": "Accounting \u2014 Factor paydown",
+      "waitForText": "Factor paydown",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/books",
+        "/api/ledger/periods"
+      ],
+      "waitForTexts": [
+        "Accounting scope",
+        "Retained factor evidence JSON"
+      ]
+    },
+    {
+      "id": "W03CO",
+      "name": "web-accounting-consolidation",
+      "path": "/accounting/consolidation",
+      "docLabel": "Accounting \u2014 Consolidation",
+      "waitForText": "Group consolidation",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/books",
+        "/api/ledger/periods"
+      ],
+      "waitForTexts": [
+        "Accounting scope",
+        "Group consolidation"
       ]
     },
     {
@@ -689,17 +735,29 @@
     },
     {
       "id": "W03O",
-      "docLabel": "Accounting \u2014 Capital Call Issuance",
+      "docLabel": "Accounting \u2014 Commitments and capital calls",
       "name": "web-accounting-capital-calls",
-      "path": "/accounting/capital-calls",
+      "path": "/accounting/capital-calls?ledgerBookId=3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/ledger/books",
+        "/api/ledger/private-capital/workbench"
       ],
-      "waitForText": "Capital Call Issuance",
+      "waitForText": "Commitments and capital calls",
       "waitForTexts": [
-        "How this run is governed",
-        "Capital-call id",
-        "This surface never posts."
+        "Prepare commitment revision",
+        "Retained commitment register",
+        "commitment-a",
+        "investor-a",
+        "1000000.00 USD",
+        "Prepare capital call"
+      ],
+      "waitForSelectors": [
+        "table[aria-label=\"Commitment register and posted capital balances\"] tbody tr"
+      ],
+      "waitForAbsentTexts": [
+        "Capital activity unavailable",
+        "Book authority unavailable",
+        "Loading commitment and posting authority"
       ]
     },
     {
@@ -712,7 +770,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Daily reporting cockpit",
+        "Daily Reporting Cockpit",
         "Triage queue",
         "Report family organizer"
       ],
@@ -1102,7 +1160,12 @@
       ],
       "waitForTexts": [
         "Backfill queue",
-        "Selected Backfill"
+        "Selected Backfill",
+        "Remediation history unavailable",
+        "Backfill remediation history is unavailable."
+      ],
+      "waitForAbsentTexts": [
+        "Loading durable remediation history…"
       ]
     },
     {
@@ -1225,7 +1288,11 @@
       "waitForTexts": [
         "Storage & Data Assurance",
         "Assurance signals",
-        "Guarded maintenance"
+        "Guarded maintenance",
+        "meridian-data",
+        "Quality watch unavailable",
+        "Maintenance read needs attention",
+        "No maintenance executions recorded."
       ]
     },
     {
@@ -1233,7 +1300,7 @@
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "Settings tasks",
+      "waitForText": "Setup checklist",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1249,7 +1316,7 @@
       "waitForTexts": [
         "Personalize my workstation",
         "Connect a provider",
-        "Investigate a problem"
+        "Review diagnostic exceptions"
       ]
     },
     {

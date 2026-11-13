@@ -48,6 +48,16 @@ identity fallback, while hosts can compose the narrow services independently.
 The original aggregate-query constructor remains available with its original CLR signature and
 optional arguments for existing compiled callers.
 
+`AddMeridianBacktesting` builds that service itself when a host registers the Security Master
+(corporate-action query plus resolver) but no `ICorporateActionAdjustmentService`, so
+`AdjustForCorporateActions` behaves the same on the browser/CLI host as on WPF; without a Security
+Master the engine still reports that corporate actions were not applied.
+`SecurityMasterAssetEventSource` (`IBacktestAssetEventSource`) maps confirmed cash distributions
+and share splits to `AssetEvent`s for raw-price runs. The engine uses it only when
+`BacktestRequest.PopulateAssetEventsFromSecurityMaster` is set and the request supplies no events,
+and rejects it together with `AdjustForCorporateActions`, because back-adjusted prices already
+contain those actions. Mergers, spin-offs and other position transformations are not mapped.
+
 ## Key folders and files
 
 - `Meridian.Backtesting.csproj` - backtesting runtime project boundary.
@@ -150,6 +160,13 @@ tracked by `PRD-106`; the scope decision does not close these implementation or 
 See the [expanded objectives](../../docs/product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives).
 
 ## Execution realism and result trustworthiness
+
+Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
+metrics, and stitched walk-forward metrics use the same 365-observation annualization because
+the native snapshot series includes weekends. Trade cash flows contain only consideration;
+commission cash flows carry fees separately, and their sum reconciles to the cash movement.
+Fill models apply fixed, minimum, and maximum commissions cumulatively per order across all
+accepted partial fills rather than charging each execution as a new order.
 
 - `BacktestRequest.FillTiming` defaults to `NextBar`: an order can only fill against events
   strictly later than the event that generated it, eliminating same-bar look-ahead. Under

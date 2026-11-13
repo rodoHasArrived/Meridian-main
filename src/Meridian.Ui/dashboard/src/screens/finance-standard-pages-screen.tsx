@@ -1,7 +1,9 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { DesignSystemStatus } from "@/design-system/status";
+import { EntityLink } from "@/components/meridian/entity-inspector";
 import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
 import {
-  DenseDataTableHeaderCell,
   nextDenseSort,
   sortRowsByValue,
   type DenseDataTableSortState
@@ -9,6 +11,7 @@ import {
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +33,7 @@ import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
+import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
 import { FactorPaydownPanel } from "@/screens/accounting-screen.factor-paydown-panel";
@@ -538,6 +542,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const baseCurrency = postedLedger.view.baseCurrency;
   const selectedFundId = postedLedger.selectedBook?.fundProfileId ?? "";
   const selectedBookId = postedLedger.selectedBook?.ledgerBookId ?? "";
+  const sourceLedgerContextHref = workstationRouteWithQuery("accountingLedger", {
+    ...Object.fromEntries(tabSearchParams), ledgerBookId: selectedBookId, periodId: postedLedger.selectedPeriodId
+  });
   const currentAmount = selectedAmount && active && !loading && !postedLedger.journalErrorText &&
     (!selectedAmount.ledgerBookId || selectedAmount.ledgerBookId === selectedBookId) &&
     (!selectedAmount.periodId || selectedAmount.periodId === postedLedger.selectedPeriodId) &&
@@ -552,9 +559,9 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
-  // Ledger amounts keep the currency's full minor-unit precision ($500.00, not $500): Intl's
-  // currency default supplies 2 decimals for USD/EUR and 0 for JPY.
-  const postedMoney = (value: number) => formatMoney(value, { context: "accounting", currency: baseCurrency || "USD" });
+  const postedMoney = (value: number) => baseCurrency
+    ? formatMoney(value, { context: "accounting", currency: baseCurrency })
+    : `${formatNumber(value)} (currency unavailable)`;
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -572,13 +579,27 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
       line.dimensions?.fundId,
       line.dimensions?.instrumentId,
       String(line.totalDebits),
-      String(line.totalCredits)
+      String(line.totalCredits),
+      ...(line.postedLines ?? []).flatMap((posting) => [posting.accountName, posting.symbol, posting.dimensions?.entityId, posting.dimensions?.fundId, posting.dimensions?.instrumentId, posting.description, String(posting.debit), String(posting.credit)])
     ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
   }, [journalLines, searchText]);
   const sortedRows = useMemo(() => {
     const sortValue = ledgerSort ? LEDGER_EXPLORER_COLUMNS.find((column) => column.id === ledgerSort.columnId)?.sortValue : undefined;
     return ledgerSort && sortValue ? sortRowsByValue(filteredRows, sortValue, ledgerSort.direction) : filteredRows;
   }, [filteredRows, ledgerSort]);
+
+  type PostedLine = (typeof journalLines)[number]["postedLines"][number];
+  const ledgerRows = sortedRows.flatMap((journal) => [
+    { id: `journal:${journal.journalEntryId}`, journal, posting: null as PostedLine | null },
+    ...(journal.postedLines ?? []).map((posting) => ({ id: `posting:${journal.journalEntryId}:${posting.entryId}`, journal, posting }))
+  ]);
+  function postingAmountCell(row: (typeof ledgerRows)[number], side: "debit" | "credit") {
+    const posting = row.posting;
+    const value = posting ? posting[side] : side === "debit" ? row.journal.totalDebits : row.journal.totalCredits;
+    return posting && value !== 0 ? <button type="button" className="text-foreground underline decoration-dotted underline-offset-4 hover:decoration-solid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      aria-label={`Inspect ${side} ${postedMoney(value)} for ${posting.accountName} in journal ${row.journal.journalEntryId}`}
+      onClick={() => setSelectedAmount({ subjectId: `${row.journal.journalEntryId}:${posting.entryId}:${side}`, ledgerBookId: row.journal.ledgerBookId ?? "", periodId: row.journal.periodId ?? "", fundProfileId: selectedFundId, amount: value, currency: baseCurrency ?? "", label: `${posting.accountName} ${side} ${postedMoney(value)}` })}>{postedMoney(value)}</button> : postedMoney(value);
+  }
 
   if (!active) {
     return null;
@@ -591,18 +612,8 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
           <CardTitle>Ledger Explorer</CardTitle>
           <CardDescription>Search journal activity by account, amount, journal ID, source, security, or entity.</CardDescription>
         </CardHeader>
-        {/* Three fields, three tracks: a fourth, unused track used to squeeze the period select
-            to 9rem and truncate labels such as "June 2026 · Hard closed". */}
-        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(15rem,0.7fr)]">
-          <FormRow label="Search by account, amount, journal ID, source, security, entity" labelFor="ledger-search">
-            <Input
-              id="ledger-search"
-              type="search"
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Cash, $120,500, AAPL, cash sweep"
-            />
-          </FormRow>
+        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(15rem,1fr)_minmax(15rem,1fr)]">
+
           <FormRow label="Ledger book" labelFor="ledger-book-select">
             <Select
               id="ledger-book-select"
@@ -637,6 +648,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
 
+      <AccountingPeriodComparison bookId={selectedBookId} periodId={postedLedger.selectedPeriodId} expectedBasis={postedLedger.selectedBook?.accountingBasis} enabled={postedLedger.periodsSettled} periodOptions={postedLedger.view.periodSelector.options} />
       <Card className="panel-surface">
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -652,107 +664,54 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
           <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
         </CardHeader>
         <CardContent>
-          {/* The table system's wrap and header cells (sticky header, density, sort with
-              aria-sort, numeric alignment). Rows stay hand-rendered because each entry is followed
-              by its posting lines, which span columns; sorting orders whole entries. */}
-          <div className="dense-data-table-wrap">
-            <table className="dense-data-table" aria-label="Ledger Explorer results">
-              <thead>
-                <tr>
-                  {LEDGER_EXPLORER_COLUMNS.map((column) => (
-                    <DenseDataTableHeaderCell
-                      key={column.id}
-                      column={column}
-                      sort={column.sortValue ? ledgerSort : undefined}
-                      onToggleSort={column.sortValue ? () => setLedgerSort((current) => nextDenseSort(current, column)) : undefined}
-                    />
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sortedRows.length > 0 ? sortedRows.map((line) => (
-                  <Fragment key={line.journalEntryId}>
-                  <tr>
-                    <td className="dense-data-table-numeric">{formatDateTimeLabel(line.timestamp)}</td>
-                    <td>
-                      {/* The column is the journal ID, so the link shows the ID; the accessible
-                          name keeps the visible text and states the destination. */}
-                      <Link
-                        className="break-all font-mono text-xs font-semibold text-primary underline-offset-2 hover:underline"
-                        aria-label={`Open journal ${line.journalEntryId}`}
-                        title="Open journal detail"
-                        to={workstationRouteWithQuery("accountingJournalEntryDetail", {
-                          journalEntryId: line.journalEntryId,
-                          periodId: postedLedger.selectedPeriodId
-                        })}
-                      >
-                        {line.journalEntryId}
-                      </Link>
-                    </td>
-                    <td>{line.accountScopeDisplayName ?? "Multiple accounts"}</td>
-                    <td className="dense-data-table-numeric text-right font-mono">{postedMoney(line.totalDebits)}</td>
-                    <td className="dense-data-table-numeric text-right font-mono">{postedMoney(line.totalCredits)}</td>
-                    <td>{line.entityScopeDisplayName ?? "Not scoped to one entity"}</td>
-                    <td>{line.description || "Ledger posting"}</td>
-                    <td>Posted</td>
-                  </tr>
-                  {(line.postedLines ?? []).map((posting) => (
-                    <tr key={posting.entryId} className="dense-data-table-child-row">
-                      <td className="text-muted-foreground" colSpan={2}>Posting amount</td>
-                      <td>{posting.accountName}{posting.symbol ? ` - ${posting.symbol}` : ""}</td>
-                      {(["debit", "credit"] as const).map((side) => (
-                        <td key={side} className="dense-data-table-numeric text-right font-mono">
-                          {posting[side] !== 0 ? (
-                            <button
-                              type="button"
-                              className="text-primary underline underline-offset-2"
-                              aria-label={`Inspect ${side} ${postedMoney(posting[side])} for ${posting.accountName} in journal ${line.journalEntryId}`}
-                              onClick={() => setSelectedAmount({
-                                subjectId: `${line.journalEntryId}:${posting.entryId}:${side}`,
-                                ledgerBookId: line.ledgerBookId ?? "",
-                                periodId: line.periodId ?? "",
-                                fundProfileId: selectedFundId,
-                                amount: posting[side],
-                                currency: baseCurrency ?? "",
-                                label: `${posting.accountName} ${side} ${postedMoney(posting[side])}`
-                              })}
-                            >{postedMoney(posting[side])}</button>
-                          ) : postedMoney(0)}
-                        </td>
-                      ))}
-                      <td>{posting.dimensions?.entityId ?? "Not scoped to one entity"}</td>
-                      <td>{posting.description || "Retained posting line"}</td>
-                      {/* Posting lines carry their entry's status; the proof hint lives in the
-                          card description rather than masquerading as a status value. */}
-                      <td />
-                    </tr>
-                  ))}
-                  </Fragment>
-                )) : (
-                  <tr>
-                    <td className="dense-data-table-empty" colSpan={LEDGER_EXPLORER_COLUMNS.length}>
-                      {/* "Create a ledger book and period" is an instruction, and it must not be
-                          given during an outage: the selector above reports the API error, so
-                          hard-coding emptiness here told the operator to create accounting data
-                          and showed the failure that caused it, at the same time. The view state
-                          already distinguishes these -- emptyText is null while loading or failed. */}
-                      {postedLedger.view.periodSelector.options.length === 0
-                        ? (postedLedger.view.periodSelector.errorText
-                          ?? postedLedger.view.periodSelector.loadingText
-                          ?? postedLedger.view.periodSelector.emptyText
-                          ?? "No ledger periods are available for this accounting scope.")
-                        : "No posted entries match the current search."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <TableWorkbench<(typeof ledgerRows)[number]>
+              workbenchId="accounting-ledger-search" sourceKey={`${selectedBookId}:${postedLedger.selectedPeriodId ?? "unavailable"}`}
+              exportContext={{ "Ledger book": selectedBookId, "Ledger period": postedLedger.selectedPeriodId ?? "Unavailable", Basis: postedLedger.selectedBook?.accountingBasis ?? "Unavailable", Currency: baseCurrency ?? "Unavailable" }}
+              sourceDescription={`Posted journal · ${postedLedger.view.selectedBookLabel ?? "Book unavailable"} · ${postedLedger.selectedPeriodLabel ?? "Period unavailable"} · ${postedLedger.selectedBook?.accountingBasis ?? "Basis unavailable"} · ${baseCurrency ?? "Currency unavailable"}. Journal summaries and their posting lines are separate rows; do not sum both.`}
+              completePopulation={postedLedger.periodsSettled && !loading && !postedLedger.journalErrorText}
+              filters={<FormRow label="Search by account, amount, journal ID, source, security, entity" labelFor="ledger-search">
+            <Input
+              id="ledger-search"
+              type="search"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="Cash, $120,500, AAPL, cash sweep"
+            />
+          </FormRow>}
+              filterState={{ search: searchText }}
+              sort={ledgerSort}
+              onToggleSort={(columnId) => {
+                const column = LEDGER_EXPLORER_COLUMNS.find(candidate => candidate.id === columnId);
+                if (column?.sortValue) setLedgerSort(current => nextDenseSort(current, column));
+              }}
+              onRestoreView={(view) => {
+                const next = new URLSearchParams(tabSearchParams);
+                const search = view.filters?.search ?? "";
+                if (search) next.set(LEDGER_SEARCH_PARAM, search); else next.delete(LEDGER_SEARCH_PARAM);
+                const restoredSort = parseLedgerSort(`${view.sortColumnId ?? ""}:${view.sortDirection ?? ""}`);
+                if (restoredSort) next.set(LEDGER_SORT_PARAM, `${restoredSort.columnId}:${restoredSort.direction}`); else next.delete(LEDGER_SORT_PARAM);
+                setTabSearchParams(next, { replace: true });
+              }}
+              ariaLabel="Ledger Explorer results" rows={ledgerRows} getRowId={(row) => row.id}
+              emptyText={postedLedger.view.periodSelector.options.length === 0 ? postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? postedLedger.view.periodSelector.emptyText ?? "No ledger periods are available for this accounting scope." : "No posted entries match the current search."}
+              columns={[
+                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? "Posting amount" : formatDateTimeLabel(row.journal.timestamp), exportValue: (row) => row.journal.timestamp },
+                { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatDateTimeLabel(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
+                { id: "account", label: "Account", render: (row) => row.posting ? `${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}` : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
+                { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits },
+                { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits },
+                { id: "entity", label: "Entity", render: (row) => { const entityId = row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId; return entityId ? <EntityLink record={{ kind: "entity", id: entityId, label: row.journal.entityScopeDisplayName && row.journal.entityScopeDisplayName !== entityId && row.journal.entityScopeId === entityId ? row.journal.entityScopeDisplayName : "Entity name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : "Not scoped to one entity"; }, exportValue: (row) => row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId },
+                { id: "source", label: "Source", render: (row) => row.posting?.description || row.journal.description || "Ledger posting", exportValue: (row) => row.posting?.description || row.journal.description },
+                { id: "status", label: "Status", render: (row) => row.posting ? null : <DesignSystemStatus status="posted">Posted</DesignSystemStatus>, exportValue: (row) => row.posting ? "Posting line" : "Posted journal summary" }
+              ]}
+            />
           </div>
           {filteredRows.length > 0 ? (
             <TechnicalDetails label="Journal references" className="mt-3">
               <ul className="space-y-1 text-xs text-muted-foreground">
                 {filteredRows.map((line) => (
-                  <li key={line.journalEntryId} className="break-all font-mono">{line.journalEntryId}</li>
+                  <li key={line.journalEntryId} className="break-all font-mono">{line.journalEntryId}{line.entityScopeId ? ` · Entity reference: ${line.entityScopeId}` : ""}</li>
                 ))}
               </ul>
             </TechnicalDetails>
@@ -760,10 +719,70 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
       <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
-      <FactorPaydownPanel periodVersion={postedLedger.selectedPeriodVersion} active={active} bookId={selectedBookId} periodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} fundProfileId={selectedFundId} accountingBasis={postedLedger.selectedBook?.accountingBasis} bookLabel={postedLedger.selectedBook?.displayName} periodLabel={postedLedger.selectedPeriodLabel} />
-      <ConsolidationPanel initialBookId={selectedBookId} initialPeriodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} />
+      <nav className="flex flex-wrap gap-3 text-sm" aria-label="Related accounting workflows">
+        <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown, tabSearchParams)}>Prepare factor paydown</Link>
+        <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingConsolidation, tabSearchParams)}>Open consolidation</Link>
+      </nav>
     </div>
   );
+}
+
+function scopedAccountingWorkflowPath(path: string, search: URLSearchParams): string {
+  const next = new URLSearchParams(search);
+  next.delete("view");
+  const query = next.toString();
+  return `${path}${query ? `?${query}` : ""}`;
+}
+
+/** Dedicated mutation surfaces share the posted-ledger scope resolver, never a guessed book. */
+function AccountingScopedWorkflowScreen({ kind }: { kind: "factor-paydown" | "consolidation" }) {
+  const [searchParams] = useSearchParams();
+  const postedLedger = useAccountingPostedLedgerViewModel("ledger", undefined, {
+    requestedPeriodId: searchParams.get("periodId")
+  });
+  usePostedLedgerRouteScope(postedLedger, true);
+  const bookId = postedLedger.selectedBook?.ledgerBookId ?? "";
+  const periodId = postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null;
+  return (
+    <div className="space-y-4">
+      <Card className="panel-surface">
+        <CardHeader>
+          <CardTitle>Accounting scope</CardTitle>
+          <CardDescription>Choose the governed book and period before preparing a review draft.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2">
+          <FormRow label="Ledger book" labelFor={`${kind}-book`}>
+            <Select id={`${kind}-book`} value={bookId} onChange={(event) => postedLedger.selectBook(event.target.value)}>
+              {postedLedger.view.bookOptions.length ? postedLedger.view.bookOptions.map((option) => (
+                <option key={option.id} value={option.id}>{option.label} · {option.baseCurrency}</option>
+              )) : <option value="">No ledger book available</option>}
+            </Select>
+          </FormRow>
+          <FormRow label="Ledger period" labelFor={`${kind}-period`} error={postedLedger.view.periodSelector.errorText}>
+            <Select id={`${kind}-period`} value={postedLedger.selectedPeriodId ?? ""} onChange={(event) => postedLedger.selectPeriod(event.target.value)}>
+              {postedLedger.view.periodSelector.options.length ? postedLedger.view.periodSelector.options.map((option) => (
+                <option key={option.id} value={option.id}>{option.label} · {option.statusLabel}</option>
+              )) : <option value="">No ledger period available</option>}
+            </Select>
+          </FormRow>
+          <Link className="text-sm text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingLedger, searchParams)}>Return to Ledger Explorer</Link>
+        </CardContent>
+      </Card>
+      {kind === "factor-paydown" ? (
+        <FactorPaydownPanel key={`${bookId}:${periodId ?? "pending"}`} periodVersion={postedLedger.selectedPeriodVersion} active={postedLedger.periodsSettled} bookId={bookId} periodId={periodId} fundProfileId={postedLedger.selectedBook?.fundProfileId ?? ""} accountingBasis={postedLedger.selectedBook?.accountingBasis} bookLabel={postedLedger.selectedBook?.displayName} periodLabel={postedLedger.selectedPeriodLabel} />
+      ) : periodId && bookId ? (
+        <ConsolidationPanel key={`${bookId}:${periodId}`} initialBookId={bookId} initialPeriodId={periodId} />
+      ) : <StatusBanner tone="warning" title="Accounting scope unavailable" detail={postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? "Choose an available ledger book and period before preparing consolidation."} />}
+    </div>
+  );
+}
+
+export function FactorPaydownScreen() {
+  return <AccountingScopedWorkflowScreen kind="factor-paydown" />;
+}
+
+export function ConsolidationWorkflowScreen() {
+  return <AccountingScopedWorkflowScreen kind="consolidation" />;
 }
 
 export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScreenProps) {

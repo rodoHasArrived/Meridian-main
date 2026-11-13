@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Ownership graph — entity/control structure diagram for family-office and fund
  * structures. Mirrors `FamilyOwnershipGraphDto`: nodes (household, trust, LLC, fund,
@@ -51,4 +52,4 @@ export interface OwnershipGraphProps extends React.HTMLAttributes<HTMLElement> {
   /** Makes nodes clickable buttons. */
   onSelectNode?: (id: string, node: OwnershipGraphNode) => void;
 }
-export declare function OwnershipGraph(props: OwnershipGraphProps): JSX.Element;
+export declare function OwnershipGraph(props: OwnershipGraphProps): React.JSX.Element;

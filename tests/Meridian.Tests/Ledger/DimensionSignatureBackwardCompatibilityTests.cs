@@ -88,6 +88,26 @@ public sealed class DimensionSignatureBackwardCompatibilityTests
     }
 
     [Fact]
+    public void AgreementDimensions_DistinguishApprovedVersionsInEveryDeterministicSignature()
+    {
+        var id = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb");
+        var original = BuildDto();
+        var version1 = original with { IntercompanyAgreementId = id, IntercompanyAgreementVersion = 1 };
+        var version2 = version1 with { IntercompanyAgreementVersion = 2 };
+        var domain = BuildDomain();
+        var domain1 = domain with { IntercompanyAgreementId = id, IntercompanyAgreementVersion = 1 };
+        var domain2 = domain1 with { IntercompanyAgreementVersion = 2 };
+
+        AssertDistinct(typeof(TrialBalanceProjectionService), "DimensionSignature", original, version1, version2);
+        AssertDistinct(typeof(AccountingSystemIntegrationService), "FormatDimensionsForHash", original, version1, version2);
+        AssertDistinct(typeof(LedgerEndpoints), "BuildDimensionSignature", original, version1, version2);
+        AssertDistinct(typeof(PostgresLedgerBookService), "BuildDimensionsKey", original, version1, version2);
+        AssertDistinct(typeof(AutomatedJournalIntakeRunner), "DimensionKey", domain, domain1, domain2);
+        AssertDistinct(typeof(PeriodCloseProjector), "DimensionKey", domain, domain1, domain2);
+        ComputeArtifactHash(version1).Should().NotBe(ComputeArtifactHash(original)).And.NotBe(ComputeArtifactHash(version2));
+    }
+
+    [Fact]
     public void ReportHashes_PreserveLegacyBytes_AndDistinguishPositions()
     {
         var legacy = BuildDto();

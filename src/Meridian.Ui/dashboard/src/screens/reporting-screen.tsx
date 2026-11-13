@@ -1,8 +1,10 @@
-import { DetailFieldItem } from "@/components/meridian/detail-pane";
+import { EntityLink } from "@/components/meridian/entity-inspector";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
+import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +17,8 @@ import { OperationalTrustSummary } from "@/components/meridian/operational-trust
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { ReportingLineageSummary } from "@/components/meridian/reporting-lineage-summary";
 import { ReportingProductionSurface } from "@/components/meridian/reporting-production-surface";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { DetailRail } from "@/components/meridian/detail-rail";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { deleteReportingSchedule, disableReportingSchedule } from "@/lib/reporting-schedule-api";
 import { resolveReportingScheduleDueAtUtc, resolveReportingSchedulePeriodDueAtUtc } from "@/lib/reporting-schedule-due";
@@ -32,6 +35,7 @@ import {
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
+import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
 import { buildReportingHubModel, formatReportingFamilyLabel } from "@/lib/reporting-hub";
 import { buildReportingProductionSurfaceViewModel } from "@/screens/reporting-screen.production-surface";
 import {
@@ -187,10 +191,11 @@ function normalizeReportingStatus(status: string): string {
 }
 
 const defaultExportsReportRunRequester = "browser-workstation";
-const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
+const reportingProfileColumns: TableWorkbenchColumn<ReportingProfileRow>[] = [
   {
     id: "profile",
     label: "Profile",
+    exportValue: (profile) => profile.name,
     render: (profile) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{profile.name}</span>
@@ -200,6 +205,7 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "target",
     label: "Target",
+    exportValue: (profile) => profile.targetLabel,
     render: (profile) => (
       <span className="block min-w-0">
         <span className="block font-medium text-foreground">{profile.targetLabel}</span>
@@ -210,11 +216,13 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "format",
     label: "Format",
+    exportValue: (profile) => profile.formatLabel,
     render: (profile) => <span className="font-mono text-xs text-foreground">{profile.formatLabel}</span>
   },
   {
     id: "evidence",
     label: "Evidence",
+    exportValue: (profile) => profile.badges.map(badge => badge.label).join("; "),
     render: (profile) => (
       <span className="flex flex-wrap gap-1.5">
         {profile.badges.length > 0 ? profile.badges.map((badge) => (
@@ -234,6 +242,13 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const reportingData = normalizeReportingWorkspace(data);
   const accountingData = accounting ?? null;
   const vm = useReportingScreenViewModel(reportingData, undefined, pathname);
+  const [selectedReviewRunId, setSelectedReviewRunId] = useState<string | null>(null);
+  const selectedReviewRun = vm.runStatusRows.find((run) => run.id === selectedReviewRunId) ?? vm.runStatusRows[0] ?? null;
+  const runReviewKeyboard = useQueueKeyboard({
+    rows: vm.runStatusRows, selectedId: selectedReviewRun?.id ?? null,
+    getId: (run: ReportingRunStatusRow) => run.id,
+    onSelect: (run: ReportingRunStatusRow) => setSelectedReviewRunId(run.id)
+  });
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, reportingData?.dailyWork ?? []),
     [reportingData?.dailyWork, vm.runStatusRows, vm.templateRows]
@@ -274,6 +289,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(reportingData));
   const reportWriterDatasetSources = reportingData?.reportWriterDatasetSources ?? [];
+  const [newCustomWriterGrids, setNewCustomWriterGrids] = useState<ReportingWriterGridRow[]>([]);
   const {
     writerDraftStatus,
     writerPreviewStatus,
@@ -362,7 +378,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     : reportBuilderFamilyTemplates.length > 0
       ? reportBuilderFamilyTemplates
       : vm.templateRows;
-  const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
+  const writerGrids = [...newCustomWriterGrids, ...writerTemplateRows.flatMap((template) => template.writerGrids)];
   const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
   const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
   const reportPackWorkflowRecord = [...(reportingData?.workflowRecords ?? [])]
@@ -1497,6 +1513,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       />
       ) : null}
 
+      {isReportBuilderTaskMode ? (
+        <NewCustomReportBar templates={vm.templateRows} datasetSources={reportWriterDatasetSources} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
+      ) : null}
+
       {isReportBuilderTaskMode && writerGrids.length > 0 ? (
         <ReportingReportWriterSection>
           {writerGrids.map((grid) => (
@@ -1681,13 +1701,20 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             <div className="eyebrow-label">Run status</div>
             <CardTitle>Report run audit and lineage</CardTitle>
             <CardDescription>Recent manifests keep approval status, retry attempts, and dataset lineage visible.</CardDescription>
+            <p id="report-run-keyboard-help" className="text-xs text-muted-foreground">j/k select a run. Tab to its review and evidence controls. Approval and release stay in the governed workflow.</p>
           </CardHeader>
           <CardContent className="space-y-2">
-            {vm.hasRunStatusRows ? vm.runStatusRows.map((run) => (
-              <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+            {vm.hasRunStatusRows ? <div role="list" aria-label="Report run review queue" aria-describedby="report-run-keyboard-help" onKeyDownCapture={runReviewKeyboard} className="space-y-2">{vm.runStatusRows.map((run) => (
+              <div key={run.id} role="listitem" aria-label={`Review run ${run.id}`} aria-current={run.id === selectedReviewRun?.id ? "true" : undefined}
+                data-dense-row-id={run.id} data-reporting-review-run={run.id} tabIndex={run.id === selectedReviewRun?.id ? 0 : -1}
+                onFocus={() => setSelectedReviewRunId(run.id)} onClick={() => setSelectedReviewRunId(run.id)}
+                className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                style={run.id === selectedReviewRun?.id ? { backgroundColor: "var(--ws-row-selected)", boxShadow: "inset 3px 0 0 var(--ws-selection-edge)" } : undefined}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-foreground">{run.templateLabel}</span>
+                    <EntityLink record={{ kind: "run", id: run.id, label: run.templateLabel,
+                      workspaceHref: workstationRouteWithQuery("reportingRunDetail", { runId: run.id }),
+                      summary: [{ label: "Report", value: run.templateLabel }, { label: "Family", value: presentReportingIdentifier(run.family, "Report") }, { label: "As of", value: presentReportingAsOfDate(run.asOfDateLabel) }] }} />
                     <span className="mt-0.5 block text-xs text-muted-foreground">
                       {presentReportingIdentifier(run.family, "Report")} · {hasRetainedReportingAsOfDate(run.asOfDateLabel)
                         ? `As of ${presentReportingAsOfDate(run.asOfDateLabel)}`
@@ -1741,7 +1768,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                   </div>
                 ) : null}
               </div>
-            )) : (
+            ))}</div> : (
               <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
                 No report runs have been generated yet.
               </p>
@@ -2352,7 +2379,12 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             </div>
             <div>
               {vm.hasRows ? (
-                <DenseDataTable
+                <TableWorkbench
+                  workbenchId="reporting-export-profiles"
+                  sourceKey={JSON.stringify(reportingData)}
+                  completePopulation
+                  sourceDescription="Configured export profiles in the authorized Reporting workspace."
+                  getSearchText={(profile) => `${profile.name} ${profile.targetLabel} ${profile.formatLabel} ${profile.description}`}
                   columns={reportingProfileColumns}
                   rows={vm.rows}
                   getRowId={(profile) => profile.id}
@@ -2378,28 +2410,14 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
           </CardContent>
         </Card>
 
-        <aside
+        <DetailRail
           id={vm.detailId}
-          role="region"
-          aria-label={vm.statusTitle}
-          aria-live="polite"
-          className="row-detail-panel h-fit min-w-0"
+          title={vm.selectedProfile?.title ?? vm.statusTitle}
+          ariaLabel={vm.statusTitle}
+          status={<Badge variant={vm.statusBadgeVariant}>{vm.statusBadgeLabel}</Badge>}
+          fields={vm.selectedProfile?.fields.map((field) => ({ label: field.label, value: field.value })) ?? []}
         >
-          <div className="head flex items-center justify-between gap-3">
-            <span>Selected profile inspector</span>
-            <Badge variant={vm.statusBadgeVariant}>
-              {vm.statusBadgeLabel}
-            </Badge>
-          </div>
-          <div className="body">
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-foreground">
-                {vm.selectedProfile?.title ?? vm.statusTitle}
-              </h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {vm.selectedProfile ? vm.selectedProfile.subtitle : vm.nextAction}
-              </p>
-            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{vm.selectedProfile?.subtitle ?? vm.nextAction}</p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
             {vm.exportStatus ? (
               <ReportingExportStatusPanel status={vm.exportStatus} className="mt-3" />
@@ -2415,11 +2433,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 >
                   {vm.selectedProfile.readinessSummary}
                 </div>
-                <dl className="border-t border-border/60">
-                  {vm.selectedProfile.fields.map((field) => (
-                    <DetailFieldItem key={field.label} label={field.label} value={field.value} valueClassName={field.className} />
-                  ))}
-                </dl>
                 <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
                   {vm.selectedProfile.actions.map((action) => (
                     <div
@@ -2466,8 +2479,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 </div>
               </div>
             ) : null}
-          </div>
-        </aside>
+        </DetailRail>
       </section>
       ) : null}
         </>
@@ -2584,7 +2596,7 @@ export function buildExportsReportRunRequest(
       name: template.templateName,
       version: template.versionNumber
     },
-    asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
+    asOfDate: normalizeDraftText(draft.asOfDate, defaultReportingAsOfDate()),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
     datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
@@ -2634,7 +2646,7 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     ?? null;
   const templateId = normalizeIdentifierToken(schedule?.templateId ?? template?.templateId, "investor-monthly-statement");
   const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
-  const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
+  const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, defaultReportingAsOfDate());
   const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
   const retainedTemplate = schedule?.template
     ?? (template
@@ -2695,7 +2707,7 @@ function buildReportingScheduleUpsertRequest(
 ): ReportingScheduleUpsertRequest {
   const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
   const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
-  const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
+  const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, defaultReportingAsOfDate());
   const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
   const brandingThemeOverride = buildReportBrandingOverride(brandingDraft);
   const parameterValidation = validateAndBuildReportingRunParameters(draft.runParameters, nextAsOfDate);
@@ -2862,8 +2874,10 @@ function buildReportTemplateDraftRequest(
     sections: [],
     parameters: [],
     family: grid.family || "CustomReport",
-    basedOnVersion: parseReportTemplateVersion(grid.templateVersion),
-    rationale: `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
+    basedOnVersion: grid.isNew ? null : parseReportTemplateVersion(grid.templateVersion),
+    rationale: grid.isNew
+      ? `New no-code custom report ${grid.title}.`
+      : `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
     grids: [gridDefinition],
     accessPolicy: buildReportAccessPolicy(settings)
   };
@@ -2878,10 +2892,11 @@ function buildRenderReportTemplateRequest(
   formatRules?: ReportWriterFormatRuleDraft[] | null
 ): RenderReportTemplateRequest {
   const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings, chartDraft, formatRules);
+  const renderTemplate = grid.previewHost ?? grid;
   return {
     templateId: {
-      name: grid.templateId,
-      version: parseReportTemplateVersion(grid.templateVersion) ?? 1
+      name: renderTemplate.templateId,
+      version: parseReportTemplateVersion(renderTemplate.templateVersion) ?? 1
     },
     parameters: {
       period: "preview-period",
@@ -2892,6 +2907,16 @@ function buildRenderReportTemplateRequest(
     datasetRows: customDatasetRows ?? buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
     grids: [gridDefinition]
   };
+}
+
+/**
+ * The as-of date used when a report run or schedule draft leaves it blank. Deliberately the UTC
+ * calendar day, not the operator's local day: it is the same day the reporting period switcher
+ * starts from (`todayIsoDate`), and the schedule default built from it is a UTC instant
+ * (`T20:00:00Z`).
+ */
+function defaultReportingAsOfDate(): string {
+  return utcToday();
 }
 
 function formatReportingMoney(value: number, currency: string): string {

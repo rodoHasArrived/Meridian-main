@@ -63,7 +63,8 @@ public enum AssetAccountingLifecycleStageDto
     Approved = 3,
     Posted = 4,
     Reconciled = 5,
-    Reported = 6
+    Reported = 6,
+    PreparerAttested = 7
 }
 
 /// <summary>
@@ -208,9 +209,16 @@ public sealed record AssetAccountingEventSpineDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    /// <summary>Reviewed redemption disposal frozen before drafting; omitted on historical events.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetLotMutationInstructionDto? Disposal { get; init; }
+
     // Keep the populated recovery payload's original order for retained canonical fingerprints.
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPreparerAttestationDto? PreparerAttestation { get; init; }
 
     /// <summary>Retained before drafting; historical events are Long and omit this property.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -247,6 +255,10 @@ public sealed record ProjectAssetAccountingEventRequestDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
+    /// <summary>Reviewed redemption disposal frozen before drafting; omitted on historical events.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetLotMutationInstructionDto? Disposal { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public OpenLotDirection Direction { get; init; }
 
@@ -593,7 +605,8 @@ public static class AssetAccountingEventSpineValidator
         {
             for (var index = 0; index < spine.Stages.Count; index++)
             {
-                if (spine.Stages[index].Stage != LifecycleOrder[index])
+                if (spine.Stages[index].Stage != LifecycleOrder[index]
+                    && !(index == 3 && spine.Stages[index].Stage == AssetAccountingLifecycleStageDto.PreparerAttested))
                 {
                     issues.Add("Asset accounting lifecycle stages must be the ordered contiguous Expected-to-Reported prefix.");
                     break;
@@ -609,6 +622,27 @@ public static class AssetAccountingEventSpineValidator
 
         var approvedStage = spine.Stages.FirstOrDefault(static stage =>
             stage.Stage == AssetAccountingLifecycleStageDto.Approved);
+        var preparerStage = spine.Stages.FirstOrDefault(static stage =>
+            stage.Stage == AssetAccountingLifecycleStageDto.PreparerAttested);
+        if ((preparerStage is not null) != (spine.PreparerAttestation is not null))
+            issues.Add("The PreparerAttested lifecycle and its typed native decision must be retained together.");
+        if (preparerStage is not null)
+        {
+            if (approvedStage is not null || spine.EventKind != AssetAccountingEventKindDto.CorporateAction
+                || spine.Correction is not null || spine.DraftedLotMutation is not null || spine.TaxLotMutationBatchId is not null
+                || spine.CorporateAction is not null || spine.CapitalReturn is not null || spine.FactorPaydown is not null
+                || spine.Direction != OpenLotDirection.Long)
+                issues.Add("Preparer-attested cash dividends cannot claim ordinary approval, correction, short or lot authority.");
+            issues.AddRange(AssetAccountingPreparerAttestationDto.Validate(spine.PreparerAttestation,
+                spine.Scope.LedgerBookId, spine.Scope.PeriodId, spine.EventId, spine.EventVersion,
+                spine.Scope.TenantId, spine.Scope.CompanyId, preparerStage.AttestedBy, spine.Currency, spine.EventAmount));
+            if (spine.PreparerAttestation is { Receipt: { } nativeReceipt } decision
+                && (preparerStage.ReferenceId != Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary.ReceiptReference(nativeReceipt.AttestationId)
+                    || preparerStage.AttestedAtUtc != nativeReceipt.AttestedAtUtc
+                    || spine.DraftedCandidateFingerprint != decision.DraftedCandidateFingerprint
+                    || !string.Equals(spine.DraftedCandidate?.Actor.Trim(), preparerStage.AttestedBy.Trim(), StringComparison.OrdinalIgnoreCase)))
+                issues.Add("The preparer lifecycle must bind the exact native receipt, preparer, timestamp and Drafted candidate fingerprint.");
+        }
         foreach (var stage in spine.Stages)
         {
             if (string.IsNullOrWhiteSpace(stage.AttestedBy) ||
@@ -626,7 +660,8 @@ public static class AssetAccountingEventSpineValidator
                 issues.Add($"{stage.Stage} stage cannot attest evidence before it was reviewed and retained.");
             if (stage.Stage is AssetAccountingLifecycleStageDto.Expected or
                 AssetAccountingLifecycleStageDto.Projected or
-                AssetAccountingLifecycleStageDto.Drafted &&
+                AssetAccountingLifecycleStageDto.Drafted or
+                AssetAccountingLifecycleStageDto.PreparerAttested &&
                 stage.Evidence.Any(evidence => !spine.RetainedEvidence.Contains(evidence)))
             {
                 issues.Add($"{stage.Stage} stage evidence must exactly match an immutable retained event evidence identity.");
@@ -636,7 +671,9 @@ public static class AssetAccountingEventSpineValidator
             {
                 AssetAccountingLifecycleStageDto.Expected or
                 AssetAccountingLifecycleStageDto.Projected or
-                AssetAccountingLifecycleStageDto.Drafted => AssetAccountingEvidenceSubjects.Event,
+                AssetAccountingLifecycleStageDto.Drafted or
+                AssetAccountingLifecycleStageDto.PreparerAttested => AssetAccountingEvidenceSubjects.Event,
+                AssetAccountingLifecycleStageDto.Posted when preparerStage is not null => AssetAccountingEvidenceSubjects.Event,
                 AssetAccountingLifecycleStageDto.Approved or
                 AssetAccountingLifecycleStageDto.Posted => AssetAccountingEvidenceSubjects.PostingApproval,
                 AssetAccountingLifecycleStageDto.Reconciled => AssetAccountingEvidenceSubjects.Reconciliation,
@@ -647,7 +684,9 @@ public static class AssetAccountingEventSpineValidator
             {
                 AssetAccountingLifecycleStageDto.Expected or
                 AssetAccountingLifecycleStageDto.Projected or
-                AssetAccountingLifecycleStageDto.Drafted => spine.EventId.ToString("D"),
+                AssetAccountingLifecycleStageDto.Drafted or
+                AssetAccountingLifecycleStageDto.PreparerAttested => spine.EventId.ToString("D"),
+                AssetAccountingLifecycleStageDto.Posted when preparerStage is not null => spine.EventId.ToString("D"),
                 AssetAccountingLifecycleStageDto.Approved or
                 AssetAccountingLifecycleStageDto.Posted => BuildExpectedPostingApprovalSubjectId(
                     spine,
@@ -753,6 +792,17 @@ public static class AssetAccountingEventSpineValidator
         }
         if (hasDraftedStage && !PayloadEquals(spine.CapitalReturn, spine.DraftedLotMutation?.CapitalReturn))
             issues.Add("The canonical capital-return instruction cannot be dropped or replaced between Projected and Drafted.");
+        if (spine.Disposal is { } retainedDisposal)
+        {
+            if (spine.EventKind != AssetAccountingEventKindDto.Disposal)
+                issues.Add("Retained disposal authority requires the canonical Disposal event kind.");
+            issues.AddRange(AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.Disposal,
+                retainedDisposal, spine.EventAmount, spine.EffectiveDate, spine.RetainedEvidence));
+            if (hasDraftedStage && !PayloadEquals(
+                AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(retainedDisposal),
+                AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(spine.DraftedLotMutation)))
+                issues.Add("The retained disposal instruction cannot be dropped or replaced between Projected and Drafted.");
+        }
         if (spine.FactorPaydown is { } factorPaydown)
         {
             issues.AddRange(AssetLotMutationInstructionValidator.Validate(spine.EventKind,
@@ -985,6 +1035,20 @@ public static class AssetAccountingEventSpineValidator
 public static class AssetLotMutationInstructionValidator
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    /// <summary>
+    /// Orders a disposal's versioned selections by their retained ordinal before freezing or
+    /// comparing the instruction. Every selection field and all other instruction fields remain exact.
+    /// Null historical instructions and already ordered instructions keep their original shape.
+    /// </summary>
+    public static AssetLotMutationInstructionDto? CanonicalizeDisposalSelections(AssetLotMutationInstructionDto? instruction)
+    {
+        if (instruction is not { Intent: AssetLotMutationIntentDto.Dispose })
+            return instruction;
+        var ordered = instruction.DisposalSelections.OrderBy(static selection => selection.SelectionOrdinal).ToArray();
+        return instruction.DisposalSelections.SequenceEqual(ordered)
+            ? instruction : instruction with { DisposalSelections = ordered };
+    }
 
     public static IReadOnlyList<string> Validate(
         AssetAccountingEventKindDto eventKind,

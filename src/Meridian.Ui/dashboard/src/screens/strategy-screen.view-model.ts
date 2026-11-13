@@ -20,6 +20,7 @@ import {
 } from "@/screens/strategy-screen.formatters";
 import { buildStrategyStatusAnnouncement } from "@/screens/strategy-screen.status-announcement";
 import type {
+  EquityCurveSummary,
   MetricSnapshot,
   MetricsDiff,
   ParameterDiff,
@@ -37,6 +38,7 @@ import type {
   RunDiff
 } from "@/types";
 import { formatCount as formatCountValue } from "@/lib/format";
+import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
 export type StrategyCommand = "compare" | "diff" | "history";
 export type StrategyPlotToolView = "workspace" | "statistics";
@@ -48,6 +50,12 @@ export interface StrategyRunLibraryServices {
   evaluatePromotion: (runId: string) => Promise<PromotionEvaluationResult>;
   approvePromotion: (request: ApprovePromotionRequest) => Promise<PromotionDecisionResult>;
   getRunReviewPacket: (runId: string) => Promise<StrategyRunReviewPacket>;
+  /**
+   * Published equity curve of one run, read only when the operator charts equity paths. Optional
+   * so callers that inject the run-library commands keep working; the existing workstation
+   * client is used when it is left out.
+   */
+  getRunEquityCurve?: (runId: string) => Promise<EquityCurveSummary>;
 }
 
 export type PromoteState = "idle" | "evaluating" | "evaluated" | "approving" | "done";
@@ -474,6 +482,7 @@ export interface StrategyPromotionHistoryDetailState {
 }
 
 export interface StrategyPlotToolState {
+  analyticsEvidenceStatus?: "Retained" | "Illustrative" | "Unavailable" | "Unverified";
   studies: StrategyPlotStudyItem[];
   workspace: StrategyPlotWorkspaceState;
   statistics: StrategyPlotStatisticsState;
@@ -715,7 +724,8 @@ const defaultStrategyServices: StrategyRunLibraryServices = {
   getPromotionHistory: () => workstationApi.getPromotionHistory(),
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
   approvePromotion: (request) => workstationApi.approvePromotion(request),
-  getRunReviewPacket: (runId) => workstationApi.getRunReviewPacket(runId)
+  getRunReviewPacket: (runId) => workstationApi.getRunReviewPacket(runId),
+  getRunEquityCurve: defaultGetRunEquityCurve
 };
 
 export function useStrategyRunLibraryViewModel(
@@ -1123,6 +1133,8 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledgement: updatePromotionAcknowledgement
   };
 }
+
+export * from "@/screens/strategy-screen.equity-paths.view-model";
 
 export function buildStrategyRunLibraryState({
   runs,
@@ -1807,8 +1819,22 @@ function buildPlotToolStateFromApiOrFallback(
   if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
     const workspace = plotToolFromApi.workspace as StrategyPlotWorkspaceState;
     const statistics = plotToolFromApi.statistics as StrategyPlotStatisticsState;
+    const status = plotToolFromApi.analyticsEvidenceStatus;
+    if (status !== "Retained" && status !== "Illustrative") {
+      const empty = buildEmptyPlotToolState();
+      const detail = "No retained statistical observations are connected. Run metadata does not establish a scatter history, distribution or regression.";
+      return {
+        ...empty,
+        analyticsEvidenceStatus: status === "Unavailable" ? "Unavailable" : "Unverified",
+        studies: Array.isArray(plotToolFromApi.studies) ? plotToolFromApi.studies as StrategyPlotStudyItem[] : [],
+        workspace: { ...empty.workspace, title: "Statistical observations unavailable", description: detail,
+          studyTableEmptyText: detail, statusBadgeLabel: "ANALYTICS UNAVAILABLE", metaItems: ["Statistical evidence unavailable"] },
+        statistics: { ...empty.statistics, title: "Statistical evidence unavailable", description: detail }
+      };
+    }
 
     return {
+      analyticsEvidenceStatus: status,
       studies: (plotToolFromApi.studies as StrategyPlotStudyItem[]) ?? [],
       workspace: ensurePlotToolWorkspaceChartState(workspace),
       statistics: ensurePlotToolStatisticsChartState(statistics)
@@ -1829,6 +1855,7 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
   };
 
   return {
+    analyticsEvidenceStatus: "Unavailable",
     studies: [],
     workspace: {
       eyebrow: "Strategy · PlotTool",
@@ -1984,6 +2011,7 @@ export function buildPlotToolState({
   }));
 
   return {
+    analyticsEvidenceStatus: "Illustrative",
     studies: studyRows,
     workspace: {
       eyebrow: "Strategy · PlotTool",
@@ -2017,6 +2045,7 @@ export function buildPlotToolState({
       points: plotToolScatterPoints,
       scatterChart: buildPlotToolScatterChartState({
         points: plotToolScatterPoints,
+        illustrative: true,
         xTicks: plotToolXTicks,
         yTicks: plotToolYTicks,
         xAxisLabel,
@@ -3019,8 +3048,8 @@ function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState
     return workspace;
   }
 
-  const points = workspace.points?.length ? workspace.points : plotToolScatterPoints;
-  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1] ?? plotToolScatterPoints[0];
+  const points = workspace.points ?? [];
+  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1] ?? { x: 0, y: 0, emphasis: false };
   const focusPoint = workspace.focusPoint ?? {
     label: "Current marker",
     xValueText: "Unavailable",
@@ -3030,16 +3059,16 @@ function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState
 
   return {
     ...workspace,
-    xTicks: workspace.xTicks ?? plotToolXTicks,
-    yTicks: workspace.yTicks ?? plotToolYTicks,
+    xTicks: workspace.xTicks ?? [],
+    yTicks: workspace.yTicks ?? [],
     xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
     yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
     points,
     focusPoint,
     scatterChart: buildPlotToolScatterChartState({
       points,
-      xTicks: workspace.xTicks ?? plotToolXTicks,
-      yTicks: workspace.yTicks ?? plotToolYTicks,
+      xTicks: workspace.xTicks ?? [],
+      yTicks: workspace.yTicks ?? [],
       xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
       yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
       markerPoint,
@@ -3054,7 +3083,7 @@ function ensurePlotToolStatisticsChartState(statistics: StrategyPlotStatisticsSt
     return statistics;
   }
 
-  const distributionBars = statistics.distributionBars?.length ? statistics.distributionBars : plotToolDistributionBars;
+  const distributionBars = statistics.distributionBars ?? [];
 
   return {
     ...statistics,
@@ -3071,7 +3100,8 @@ function buildPlotToolScatterChartState({
   yAxisLabel,
   markerPoint,
   focusPoint,
-  chartStudyLabel
+  chartStudyLabel,
+  illustrative = false
 }: {
   points: StrategyPlotScatterPoint[];
   xTicks: StrategyPlotAxisTick[];
@@ -3081,6 +3111,7 @@ function buildPlotToolScatterChartState({
   markerPoint: StrategyPlotScatterPoint;
   focusPoint: StrategyPlotFocusPointState;
   chartStudyLabel: string;
+  illustrative?: boolean;
 }): StrategyPlotScatterChartState {
   const labelX = Math.min(markerPoint.x + 10, 512);
   const labelY = Math.max(markerPoint.y - 26, 52);
@@ -3099,7 +3130,7 @@ function buildPlotToolScatterChartState({
     xAxisLabel,
     yAxisLabel,
     trendLine: {
-      points: "90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54",
+      points: illustrative ? "90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54" : "",
       stroke: "var(--chart-up)",
       strokeWidth: 2,
       strokeDasharray: "5 4"

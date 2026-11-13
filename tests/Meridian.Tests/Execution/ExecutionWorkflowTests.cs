@@ -432,7 +432,7 @@ public sealed class ExecutionWorkflowTests
         await oms.StartAsync();
         var result = await oms.PlaceOrderAsync(Request());
         result.Success.Should().BeFalse();
-        result.OrderState.Status.Should().Be(OrderStatus.Rejected);
+        result.OrderState.Should().BeOfType<OrderState>().Which.Status.Should().Be(OrderStatus.Rejected);
         throttle.CurrentUsage.Should().Be(0);
         gateway.Verify(value => value.SubmitOrderAsync(It.IsAny<OrderRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }

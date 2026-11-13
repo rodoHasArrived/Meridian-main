@@ -6,14 +6,31 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui
 
+The served Accounting configuration bundle includes the intercompany agreement registry, immutable
+revision/evidence inspection and governed proposal review over shared tenant-scoped APIs. Optional
+journal-line reference editing follows the server's rollout capability; the browser retains exact
+rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
+The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
+rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
+preserve exact decimal text from fixed-income responses; calculation and review authority remains
+in the shared services. See the dashboard README for these workflows and rebuild validation.
+
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
 after source changes; the shared analytics endpoint remains the calculation authority.
+
+The browser `/accounting/capital-calls` workflow consumes the shared commitment-to-cash API and
+retained reporting notice summaries. It presents commitment approval, call planning, posted activity,
+funding review and notice governance as distinct states. No browser-local balances, WPF state fork,
+new root navigation or live payment capability is introduced. See the dashboard and UI Shared
+READMEs for the exact support boundary and validation.
 
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
@@ -178,6 +195,9 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
 
+The host-served bundle includes Trading's governed approvals panel showing each parked order's
+economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
@@ -187,6 +207,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |
 <!-- source-roadmap-traceability:end -->

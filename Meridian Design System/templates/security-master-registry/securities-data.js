@@ -275,7 +275,7 @@
       id: "eurusd-fwd-citi", name: "EUR/USD FX Forward Contract", shortCode: "EURUSD FWD 6M",
       securityId: "0XDEURUSDFWDCITI20261122FX", cusip: "—", isin: "—", sedol: "—", ticker: "—",
       issuer: "Citibank N.A.", assetClass: "Derivative", currency: "USD",
-      issueDate: "2026-05-22", maturityDate: "2026-11-22", sector: "Financial Services", rating: "—", flags: [],
+      issueDate: "2026-05-22", maturityDate: "2026-11-22", sector: "Financial Services", rating: "—", flags: [], lifecycle: "Pending",
       sections: [
         { type: "fields", title: "Identifiers", fields: [
           { label: "Security ID", value: "0XDEURUSDFWDCITI20261122FX" }, { label: "CUSIP", value: "—" },
@@ -409,7 +409,7 @@
       id: "octagon-clo-23-1a", name: "Octagon Investment Partners CLO 2023-1A Class A", shortCode: "OCTAGON CLO 23-1A A",
       securityId: "0XC675445AA8OCT2023A1CLASSA", cusip: "675445AA8", isin: "US675445AA87", sedol: "—", ticker: "OCT 2023-1A A",
       issuer: "Octagon Investment Partners", assetClass: "CLO", currency: "USD",
-      issueDate: "2023-04-19", maturityDate: "2034-05-21", sector: "Financial Services", rating: "AAA", flags: [],
+      issueDate: "2023-04-19", maturityDate: "2034-05-21", sector: "Financial Services", rating: "AAA", flags: [], lifecycle: "Called",
       sections: [
         { type: "fields", title: "Identifiers", fields: [
           { label: "Security ID", value: "0XC675445AA8OCT2023A1CLASSA" }, { label: "CUSIP", value: "675445AA8" },
@@ -522,6 +522,65 @@
       compliance: { restricted: false, sanctionsScreened: true, watchlist: false, lastReview: "2026-03-10", reviewedBy: "Compliance — E. Torres", status: "Ready" },
       notesSeed: [],
       audit: [ { ts: "2024-02-14 00:00Z", user: "system", field: "Record created", oldValue: "—", newValue: "—" } ],
+    },
+    {
+      id: "cmlt-2021r3-a2", name: "Cascade Mortgage Loan Trust 2021-R3 Class A2", shortCode: "CMLT 2021-R3 A2",
+      securityId: "0XA14789RAB6CASCADE2021R3CLASSA2", cusip: "14789RAB6", isin: "US14789RAB63", sedol: "—", ticker: "CMLT 2021-R3 A2",
+      issuer: "Cascade Mortgage Loan Trust 2021-R3", assetClass: "RMBS", currency: "USD",
+      issueDate: "2021-08-25", maturityDate: "2061-08-25", sector: "Structured Product", rating: "AA", flags: [],
+      // Held in two portfolios on two accounting bases — see templates/position-detail.
+      sections: [
+        { type: "fields", title: "Identifiers", fields: [
+          { label: "Security ID", value: "0XA14789RAB6CASCADE2021R3CLASSA2" }, { label: "CUSIP", value: "14789RAB6" },
+          { label: "ISIN", value: "US14789RAB63" }, { label: "SEDOL", value: "—" },
+          { label: "Ticker", value: "CMLT 2021-R3 A2" }, { label: "Issuer", value: "Cascade Mortgage Loan Trust 2021-R3", accent: true } ] },
+        { type: "fields", title: "Security Details", fields: [
+          { label: "Issue Date", value: "2021-08-25" }, { label: "Stated Maturity", value: "2061-08-25" },
+          { label: "Currency", value: "USD" }, { label: "Country", value: "United States" },
+          { label: "Seniority Level", value: "Class A2 — Senior sequential" }, { label: "Collateral Type", value: "Re-performing residential mortgage loans" },
+          { label: "Sponsor", value: "Cascade Residential Capital LLC" }, { label: "Servicer", value: "Northline Loan Servicing" } ] },
+        { type: "fields", title: "Issuance Details", fields: [
+          { label: "Coupon Type", value: "Fixed" }, { label: "Coupon", value: "3.750%" },
+          { label: "Original Deal Size", value: "$684,200,000" }, { label: "Original Class Size", value: "$212,000,000" },
+          { label: "Class Factor", value: "0.6412" }, { label: "Current Class Balance", value: "$135,934,400" } ] },
+        { type: "fields", title: "Fixed Income Conventions", fields: [
+          { label: "Day Count Method", value: "30/360" }, { label: "Coupon Frequency", value: "Monthly, 25th" },
+          { label: "Business Day Convention", value: "Following" }, { label: "Payment Calendar", value: "US Federal" } ] },
+        { type: "fields", title: "Structure", fields: [
+          { label: "Payment Priority", value: "Sequential pay, shifting interest" }, { label: "Subordination Below", value: "12.40%" },
+          { label: "Credit Enhancement", value: "12.95%" }, { label: "Overcollateralization", value: "0.55%" },
+          { label: "Excess Spread", value: "1.18%" }, { label: "Stepdown Date (earliest)", value: "2027-08-25" },
+          { label: "Clean-up Call", value: "10% of original balance" }, { label: "Trustee", value: "Harbor Institutional Trust" } ] },
+        { type: "fields", title: "Collateral", fields: [
+          { label: "Loan Count", value: "1,428" }, { label: "Weighted Avg Coupon", value: "4.62%" },
+          { label: "Weighted Avg Loan Age", value: "187 months" }, { label: "Weighted Avg LTV", value: "68.4%" },
+          { label: "Weighted Avg FICO", value: "702" }, { label: "Modified Loans", value: "61.7% of balance" },
+          { label: "Top States", value: "CA 21.3% · FL 11.8% · NY 9.4%" }, { label: "60+ Delinquency", value: "4.10%" } ] },
+        { type: "fields", title: "Analytics & Metrics", fields: [
+          { label: "Yield to Maturity (%)", value: "4.41" }, { label: "Yield to Worst (%)", value: "4.38" },
+          { label: "Duration", value: "3.84" }, { label: "Spread Duration", value: "4.21" },
+          { label: "Convexity", value: "−1.42" }, { label: "DV01", value: "$384 per $1mm" },
+          { label: "OAS", value: "168 bp" }, { label: "Weighted Average Life", value: "5.2 yrs" } ] },
+        { type: "fields", title: "Behavioural Assumptions", fields: [
+          { label: "CPR (3-month)", value: "6.8" }, { label: "CPR (12-month)", value: "7.4" },
+          { label: "CDR (3-month)", value: "0.42" }, { label: "Loss Severity Assumption", value: "38%" },
+          { label: "Cumulative Loss To Date", value: "0.38%" }, { label: "Prepay Model", value: "Meridian RMBS prepay v4.2" } ] },
+        { type: "fields", title: "Classification", fields: [
+          { label: "Sector", value: "Structured Product" }, { label: "Industry", value: "Non-Agency RMBS" },
+          { label: "Accounting Classification", value: "Loan-backed and structured securities" }, { label: "Tax Classification", value: "Taxable" } ] },
+        { type: "fields", title: "Operational", fields: [
+          { label: "Custodian", value: "Harbor Institutional Trust" }, { label: "Data Steward", value: "Priya Raman" } ] },
+        { type: "checklist", title: "Compliance Flags", items: [
+          { label: "Restricted", checked: false }, { label: "Impaired", checked: false }, { label: "Defaulted", checked: false } ] },
+        { type: "fields", title: "Valuation & Pricing", fields: [
+          { label: "Fair Value Level", value: "Level 2" }, { label: "Pricing Source", value: "Anchorage Pricing Service" },
+          { label: "Valuation Method", value: "Evaluated bid" }, { label: "Rating", value: "AA (KBRA) · A+ (Fitch)" },
+          { label: "NAIC Model", value: "NAIC 2026 RMBS model · vintage 2026-05" }, { label: "Manual Price Override", value: "—" } ] },
+      ],
+      validation: [ { code: "VAL-090", severity: "Ready", message: "Collateral performance within base-case CPR/CDR assumptions; stepdown test failing as expected" } ],
+      compliance: { restricted: false, sanctionsScreened: true, watchlist: false, lastReview: "2026-06-30", reviewedBy: "Compliance — E. Torres", status: "Ready" },
+      notesSeed: [],
+      audit: [ { ts: "2021-08-25 00:00Z", user: "system", field: "Record created", oldValue: "—", newValue: "—" } ],
     },
   ];
 

@@ -96,6 +96,8 @@ export interface DenseDataTableColumn<T> {
   hideable?: boolean;
   /** Starts hidden until an operator shows it (implies `hideable`). */
   defaultHidden?: boolean;
+  /** Preserve the identity-cell header relationship for evidence matrices and record lists. */
+  rowHeader?: boolean;
   render: (row: T) => ReactNode;
 }
 
@@ -127,6 +129,8 @@ export interface DenseDataTableProps<T> {
   emptyText: string;
   ariaLabel: string;
   tableId?: string;
+  /** Retains a screen's minimum-width or layout contract inside the shared scroll area. */
+  tableClassName?: string;
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
@@ -183,6 +187,7 @@ function DenseDataTableComponent<T>({
   emptyText,
   ariaLabel,
   tableId,
+  tableClassName,
   caption,
   sort: controlledSort = null,
   onToggleSort,
@@ -350,7 +355,10 @@ function DenseDataTableComponent<T>({
       return;
     }
 
-    const targetIndex = resolveKeyboardTargetRowIndex(event.key, currentIndex, navRows.length);
+    const navigationKey = !event.ctrlKey && !event.metaKey && !event.altKey
+      ? event.key === "j" ? "ArrowDown" : event.key === "k" ? "ArrowUp" : event.key
+      : event.key;
+    const targetIndex = resolveKeyboardTargetRowIndex(navigationKey, currentIndex, navRows.length);
     if (targetIndex !== null) {
       event.preventDefault();
       moveToRow(targetIndex);
@@ -439,7 +447,7 @@ function DenseDataTableComponent<T>({
     <table
       id={tableId}
       role={exposesExpandedRows ? "treegrid" : undefined}
-      className="dense-data-table"
+      className={cn("dense-data-table", tableClassName)}
       aria-label={ariaLabel}
       aria-describedby={selectableRows ? keyboardInstructionsId : undefined}
       aria-rowcount={isVirtual ? rows.length + 1 : undefined}
@@ -504,14 +512,16 @@ function DenseDataTableComponent<T>({
                   onContextMenu={onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined}
                   onKeyDown={selectable ? (event) => handleRowKeyDown(event, absoluteIndex) : undefined}
                 >
-                  {columns.map((column) => (
-                    <td
+                  {columns.map((column) => {
+                    const Cell = column.rowHeader ? "th" : "td";
+                    return <Cell
                       key={column.id}
+                      scope={column.rowHeader ? "row" : undefined}
                       className={cn(columnCellClassName(column), column.className)}
                     >
                       {column.render(row)}
-                    </td>
-                  ))}
+                    </Cell>;
+                  })}
                 </tr>
               );
             })}
@@ -529,6 +539,9 @@ function DenseDataTableComponent<T>({
   const wrapElement = (
     <div
       className={cn("dense-data-table-wrap", isVirtual ? "dense-data-table-wrap-virtual" : undefined)}
+      role={!selectableRows ? "region" : undefined}
+      aria-label={!selectableRows ? `${ariaLabel} scroll area` : undefined}
+      tabIndex={!selectableRows ? 0 : undefined}
       data-empty={rows.length === 0 ? "true" : undefined}
       data-density={density}
       ref={wrapRef}

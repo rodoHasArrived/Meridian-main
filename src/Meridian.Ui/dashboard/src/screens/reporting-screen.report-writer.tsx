@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TextArea } from "@/components/ui/text-area";
 import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { ReportWriterExtraFilters } from "@/screens/reporting-screen.report-writer-filters";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
@@ -996,7 +997,7 @@ export function ReportWriterDesignerGrid({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">{presentReportingIdentifier(grid.templateId)} · v{grid.templateVersion}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">{settings.gridKind}</Badge>
@@ -1127,11 +1128,11 @@ export function ReportWriterDesignerGrid({
       {settings.previewDataset === "customRows" ? (
         <label className="mt-3 block space-y-1">
           <span className="text-[10px] text-muted-foreground">Custom dataset rows</span>
-          <textarea
+          <TextArea
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
             aria-label={`${grid.title} custom dataset rows`}
-            className="min-h-28 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground shadow-xs outline-hidden transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-28 font-mono text-xs"
             spellCheck={false}
             placeholder={'[{"sector":"Technology","strategy":"Core","marketValue":"150","pnl":"15"}]\n\nsector,strategy,marketValue,pnl\nTechnology,Core,150,15'}
           />
@@ -1516,8 +1517,8 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
         </div>
         <Badge variant="outline">{preview.kind}</Badge>
       </div>
-      <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60">
-        <table className="min-w-full table-fixed text-left text-xs">
+      <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60" role="region" aria-label={`${grid.title} preview table scroll area`} tabIndex={0}>
+        <table className="min-w-full table-fixed text-left text-xs" aria-label={`${grid.title} preview rows`}>
           <thead className="bg-secondary/40 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               {preview.columns.map((column) => (
@@ -1743,55 +1744,72 @@ function ReportWriterTokenChip({
       role="listitem"
       draggable={draggable}
       onDragStart={(event) => onDragStart(event, token, dragOrigin ?? null)}
-      className="inline-flex max-w-full items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
+      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
       title={token.detail}
     >
-      <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
-      <span className="truncate font-mono">{token.label}</span>
-      {onMove ? (
-        <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
-            aria-label={`Move ${token.label} left`}
-            disabled={!canMovePrevious}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onMove(-1);
-            }}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
-            aria-label={`Move ${token.label} right`}
-            disabled={!canMoveNext}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onMove(1);
-            }}
-          >
-            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
+      <span className={cn("inline-flex min-w-0 flex-wrap items-center gap-1.5", (onMove || onRemove) && "w-full")}>
+        <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
+        <span className="max-w-full break-all font-mono">{token.label}</span>
+      </span>
+      {(onMove || onRemove) ? (
+        <span className="inline-flex shrink-0 items-center gap-0.5">
+          {onMove ? (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                style={{ width: 24, height: 24 }}
+                aria-label={`Move ${token.label} left`}
+                disabled={!canMovePrevious}
+                disabledReason="This token is already first in the list."
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onMove(-1);
+                }}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                style={{ width: 24, height: 24 }}
+                aria-label={`Move ${token.label} right`}
+                disabled={!canMoveNext}
+                disabledReason="This token is already last in the list."
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onMove(1);
+                }}
+              >
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
+            </>
+          ) : null}
+          {onRemove ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              style={{ width: 24, height: 24 }}
+              aria-label={`Remove ${token.label}`}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRemove();
+              }}
+            >
+              <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
+          ) : null}
         </span>
-      ) : null}
-      {onRemove ? (
-        <button
-          type="button"
-          className="ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`Remove ${token.label}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onRemove();
-          }}
-        >
-          <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
       ) : null}
     </span>
   );

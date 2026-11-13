@@ -20,7 +20,7 @@
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
 // in by rerunning with --write). Usage:
 //   node scripts/design-system-ratchets.mjs            # report
-//   node scripts/design-system-ratchets.mjs --write    # rewrite the baseline from the tree
+//   node scripts/design-system-ratchets.mjs --write    # record reductions only; never allow growth
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -115,8 +115,58 @@ export function scanRatchets() {
   return result;
 }
 
-export function readBaseline() {
-  return JSON.parse(fs.readFileSync(BASELINE_PATH, "utf8"));
+function validateCounts(counts, label) {
+  const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  if (!object(counts) || Object.keys(counts).length !== Object.keys(RATCHETS).length
+      || Object.keys(counts).some((name) => !Object.hasOwn(RATCHETS, name))) {
+    throw new Error(`${label}: expected exactly the known ratchet categories`);
+  }
+  for (const name of Object.keys(RATCHETS)) {
+    if (!object(counts[name])) throw new Error(`${label}: ${name} must be a file/count object`);
+    for (const [file, count] of Object.entries(counts[name])) {
+      if (!file.startsWith("src/screens/") || file.includes("\\") || file.includes("\0")
+          || file.split("/").some((part) => !part || part === "." || part === "..")
+          || !/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) {
+        throw new Error(`${label}: unsafe or non-screen source path ${file}`);
+      }
+      if (!Number.isSafeInteger(count) || count <= 0) {
+        throw new Error(`${label}: ${name}/${file} must have a positive integer count`);
+      }
+    }
+  }
+  return counts;
+}
+
+export function readBaseline(baselinePath = BASELINE_PATH) {
+  try {
+    return validateCounts(JSON.parse(fs.readFileSync(baselinePath, "utf8")), "Baseline");
+  } catch (error) {
+    throw new Error(`Cannot use ratchet baseline ${baselinePath}: ${error.message}`, { cause: error });
+  }
+}
+
+/** Atomically record improvements. A rejected update never writes to the baseline. */
+export function writeReducedBaseline(current = scanRatchets(), baselinePath = BASELINE_PATH) {
+  const baseline = readBaseline(baselinePath);
+  validateCounts(current, "Current counts");
+  const { regressions, improvements } = compareWithBaseline(current, baseline);
+  if (regressions.length) {
+    throw new Error(`Refusing to increase the ratchet baseline:\n${regressions.join("\n")}`);
+  }
+  if (!improvements.length) return false;
+
+  const sorted = Object.fromEntries(Object.keys(RATCHETS).map((name) => [
+    name, Object.fromEntries(Object.entries(current[name]).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0))
+  ]));
+  const temporaryDirectory = fs.mkdtempSync(path.join(path.dirname(baselinePath), ".ratchet-update-"));
+  try {
+    const temporaryFile = path.join(temporaryDirectory, "baseline.json");
+    fs.writeFileSync(temporaryFile, `${JSON.stringify(sorted, null, 2)}\n`, { flag: "wx" });
+    fs.renameSync(temporaryFile, baselinePath);
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  }
+  return true;
 }
 
 /** Differences between the tree and the baseline: regressions and unrecorded improvements. */
@@ -150,15 +200,21 @@ function totals(scan) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const scan = scanRatchets();
-  if (process.argv.includes("--write")) {
-    fs.writeFileSync(BASELINE_PATH, `${JSON.stringify(scan, null, 2)}\n`);
-    console.log(`Wrote ${path.relative(DASHBOARD_ROOT, BASELINE_PATH)}`, JSON.stringify(totals(scan)));
-  } else {
-    const { regressions, improvements } = compareWithBaseline(scan);
-    console.log(JSON.stringify(totals(scan)));
-    for (const line of regressions) console.log(`REGRESSION ${line}`);
-    for (const line of improvements) console.log(`IMPROVED   ${line} (rerun with --write to lock it in)`);
-    process.exitCode = regressions.length > 0 ? 1 : 0;
+  try {
+    if (process.argv.slice(2).some((arg) => arg !== "--write")) throw new Error("Usage: design-system-ratchets.mjs [--write]");
+    const scan = scanRatchets();
+    if (process.argv.includes("--write")) {
+      const changed = writeReducedBaseline(scan);
+      console.log(`${changed ? "Reduced" : "Unchanged"} ${path.relative(DASHBOARD_ROOT, BASELINE_PATH)}`, JSON.stringify(totals(scan)));
+    } else {
+      const { regressions, improvements } = compareWithBaseline(scan);
+      console.log(JSON.stringify(totals(scan)));
+      for (const line of regressions) console.log(`REGRESSION ${line}`);
+      for (const line of improvements) console.log(`IMPROVED   ${line} (rerun with --write to lock it in)`);
+      process.exitCode = regressions.length > 0 ? 1 : 0;
+    }
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
   }
 }

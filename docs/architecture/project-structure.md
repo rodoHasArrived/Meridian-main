@@ -21,6 +21,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Domain/` | Active source code | Domain events, collectors, market abstractions |
 | `src/Meridian.Infrastructure*/` | Active source code | Provider and infrastructure adapters |
 | `src/Meridian.Storage/` | Active source code | WAL, sinks, archival, packaging, lineage |
+| `src/Meridian.Storage.Accounting/` | Active source code | PostgreSQL business persistence adapters, linked legacy source paths and unchanged migration outputs |
 | `src/Meridian.ProviderSdk/` | Active source code | Provider-facing interfaces |
 | `src/Meridian.Execution*/` | Active source code | Execution and broker gateway seams |
 | `src/Meridian.Risk/` | Active source code | Pre-trade risk rules |
@@ -124,3 +125,10 @@ entry, and `tests/Meridian.DesignModules.Tests` in the same change.
   archived code, and agent/skill prompt copies.
 - Should retain: active source, tests, CI workflows, canonical docs, design-system
   assets, and archive material with traceability value.
+
+## Focused storage and execution tests
+
+`tests/Meridian.Storage.Tests` and `tests/Meridian.Execution.Tests` compile source-linked primitive
+and execution tests. Shared manifests remove those same source files from `Meridian.Tests`, so
+each case has one discovery owner. Business persistence and UI composition integration tests stay
+in the broad suite with their shared fixtures. See [boundary extractions](review-boundary-extractions.md).

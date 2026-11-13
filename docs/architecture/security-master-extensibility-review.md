@@ -852,6 +852,254 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 — the flat codec is generated from a binding table (cohort 1) — 2026-11-11
+
+Stage 3 allowed the codec arms to be generated or fully asserted, and until now they were
+asserted: the 32-class decode switch in `SecurityMasterMapping.ToSecurityKind` and the per-kind
+F# writer in `SecurityMasterSnapshotWrapper` were hand-written, with schema-driven sweeps
+holding them to the schema. A new class still cost one arm in each. For 20 of the 32 classes
+both arms are now generated.
+
+**The table.** `SecurityAssetTermsCodecBindings` (Contracts) states, per class, which flat key
+carries which member of the class's record, as `Field.Member`. Key types and requiredness stay
+in `SecurityAssetTermsSchema`, and record shapes are read from the F# types, so a row names only
+what neither says: the member, the reader's tolerance (plain, strict or convention-aware), and
+the few values a class fixes or derives. Three kinds of row cover the cohort:
+
+| Row | Meaning | Count in cohort 1 |
+| --- | --- | --- |
+| Plain | Key read into the member and written from it | 138 |
+| Written through a record property | The writer reads the record's own computed property, which supplies the written form a missing required value takes | 24 of the plain rows |
+| Fixed or derived | The decode sets the member without reading a key of its own (a treasury bill's issuer, a CDS issue date read from the effective date), or reads it through its own vocabulary (the option exercise style) | 5 |
+
+A member with no row decodes as absent, which is what `SecurityKindPersistence` refuses on a
+directly built record.
+
+**The output.** `SecurityFlatCodecGenerator` (tests) emits two committed source files:
+`SecurityMasterMapping.GeneratedDecode.cs` (one `DecodeGenerated<Class>` method per class) and
+`Interop.SecurityMaster.GeneratedWriter.fs` (one `GeneratedFlatWriter.write<Class>` function per
+class). They are ordinary code, compiled with the rest, with no reflection at run time; the
+hand-written arms for these classes are deleted and call the generated ones.
+`SecurityFlatCodecGenerationTests` regenerates both and fails when the committed text differs,
+requires every generated class to be a catalog class, and requires each class's rows to write
+exactly the keys the schema declares. The generator itself refuses a row that names a member the
+record lacks, binds a member twice, reads an optional key as required, or leaves a non-optional
+member unbound.
+
+**Behaviour.** Unchanged. The generated arms read the same keys through the same readers in
+the same order and write the same anonymous-record shapes, so no golden, corpus or fixture
+moved and no existing test changed apart from the asset-class literal ratchet, which lists the
+two new class-naming files.
+
+**Cohort 1 (20 classes).** Option, Future, FxSpot, MoneyMarketFund, TreasuryBill, Repo,
+OtherSecurity, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, Commodity,
+CryptoCurrency, Cfd, Warrant, FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption,
+CapFloor, StructuredNote.
+
+**Still hand-written (12 classes), and why.**
+
+| Classes | What the generator lacks |
+| --- | --- |
+| Deposit, CertificateOfDeposit, CommercialPaper, CashSweep | A module built by a helper or a vocabulary conversion (the scalar call module, the coupon-kind constant, the asset-backed flag, the sweep vehicle and frequency) |
+| Bond, Swap, DirectLoan, StructuredCredit, CommitmentGuarantee | Structural members: coupon structures, schedules, legs, covenants, the declared-schedule containers and their version gating |
+| Equity, InvestmentFund, CustomAsset | A bespoke classification decode, a pinned historical read order, and the verbatim profile document |
+
+The first group needs only a module-level row kind. The second needs the structural codecs
+named in the table. Neither is started.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23); adjacent suites —
+5,142 passed, 134 skipped; `Meridian.FSharp.Tests` — 642 passed; `Meridian.FundStructure.Tests` —
+231 passed; `Meridian.Contracts.UnitTests` — 384 passed. `dotnet format whitespace
+--verify-no-changes` and schema-control verification pass. The full local `bash scripts/ci.sh`
+was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+### ADR-027 stage-3 — the codec-only validation remainder ends — 2026-11-11
+
+The follow-through contraction (pull request #3496) put every per-class field on a shared term
+module but left 55 rules in `validateCodecOnlyKindTerms`, still reading the per-class record.
+Their subject data now has a module home, so each rule is expressed on the definition surface
+over that module, with the same code and message:
+
+| Class | Rules | Module read |
+| --- | --- | --- |
+| Bond | 13: subclass canonicality, principal schedule, step and inflation coupon structure | `debtClassification`, `principalSchedule`, `bondRedemption`, `bondCoupon`, `maturity` |
+| Swap | 10: the legs | `swapLegs`, `maturity` |
+| StructuredNote | 5: payoff | `structuredPayoff` |
+| StructuredCredit | 4: tranche points and period ends | `trancheContract`, `maturity` |
+| CreditDefaultSwap | 3: protection | `creditProtection` |
+| PrivateCompanyEquity, RealEstateHolding | 3 each: valuation | `privateAssetValuation` |
+| CommitmentGuarantee | 3: fee and covenant entries | `contractualRate`, `loanCovenants` |
+| DirectLoan | 2: covenant entries | `loanCovenants` |
+| Future | 2: listing | `listingDetail` |
+| Swaption | 2: expiry against the underlying swap's dates | `maturity`, `underlyingSwap` |
+| OtherSecurity | 2: category | `classificationDetail` |
+| Commodity, Cfd, PrivateFundInterest | 1 each | `commodityContract`, `underlyingExposure`, `privateAssetValuation` |
+
+`validateCodecOnlyKindTerms` has no rule left and is removed. `validateKindTerms` is
+`validateDefinitionTerms` over `modulesFromKind`, and `definitionExpressibleCodes` is the
+complete list of term-rule codes rather than one side of a partition. On the definition
+surface a module can be absent altogether: a rule over a value the class requires then fails,
+and a rule over an optional value has nothing to check.
+
+Forty-nine of the codes are proven on both surfaces by a mutation-table row. Six cannot be
+reached through the flat codec — it refuses a non-positive instalment, a negative step rate, a
+repeated step date and a leg with a blank type or currency, and reads a blank leg payment
+frequency as absent — so they are pinned on directly built records in
+`SecurityDefinitionValidationTests.fs` and listed in `CodesCoveredByFSharpTests`.
+
+**History.** This work was first done on a different design. Pull request #3475 carried its own
+record contraction and module homes; #3496 merged the same contraction with another module
+vocabulary while #3475 was open, the two could not both stand, and the owner kept #3496. #3475
+was then reduced to what main lacked. Five defects had been found in automated review of the
+superseded design. Each was re-tested against this one:
+
+| Finding on the superseded design | Here | Disposition |
+| --- | --- | --- |
+| The retained-document fold refills a value an amendment cleared | Reproduces: cleared covenants, a cleared principal schedule and a cleared tranche kind all came back | Fixed, below |
+| The same, for a mapping with a flag fallback (the tranche kind) | Reproduces | Fixed with the first |
+| A bond sinking fund's pro-rata flag is reset on replay | Does not arise: principal is homed on `principalSchedule`, so `sinkingFund` is untouched by the rebuild | Pinned by a regression test |
+| An option accepts an exercise style the decode does not read back | Reproduces | Fixed, below |
+| A record accepts a module member its class does not persist | Reproduces | Recorded as a limitation at the time; fixed in the follow-up below |
+
+**Retained-document fold.** `FoldRetainedEconomicTerms` fills any module or field the rebuild
+has empty from a row's retained document, on the reasoning that empty means the flat row could
+not carry it. For a value the row now carries, empty can also mean an amendment cleared it. A
+row that kept its retained document (because the document holds a module no flat row
+expresses, say) had its cleared covenants or principal schedule written back into the next
+economic event, and recovered again on the next replay. The fold now takes the class's
+`FlatAuthoritativeFields` and never fills one of those; a retained module left with nothing
+else is not folded. The list is the stage-3 homes the flat row carries exactly: every member of
+a structural module the class recovers, and every field a flattening copies verbatim from a
+module added after the identity gate. Two things are left out on purpose. `declaredSchedule`
+keeps the existing rule that an empty declared call or put list is filled from the retained
+document, so it stays in step with the older `call` summary module. And fields the economic
+document carried before stage 3 are not on the list, because historical and hand-shaped documents
+hold values there that the flat decode does not reproduce; at this entry's merge, clearing one
+of those on a row with a retained document was still refilled. The second follow-up below
+closes that.
+`EveryFlatAuthoritativeField_IsRebuiltFromTheFlatRow` proves, for every asset class, that each
+listed field is reproduced from the flat row alone.
+
+**Option exercise style.** The exercise module holds the style as text, the flat writer writes
+it verbatim, and the option decode reads any spelling but `American`, `European` or `Bermudan`
+as no style. A directly built option with another spelling passed validation and lost its
+style on the next read. `option_exercise_style_invalid` requires one of the three, matched
+exactly because the reader matches exactly.
+
+**Members a class does not persist (limitation at merge, closed below).** A per-class record
+holds whole term modules, so a directly built record can set a member its class's flat row does
+not write — a warrant's exercise style or premium, for example. Validation accepted it, the
+economic definition carried it, the flat writer omitted it and the decode read it back as
+absent. Every in-tree path builds records through the flat decode, which sets only a class's
+own members, so no payload through the codec was affected; the exposure was to code that
+constructs a record directly. This entry merged with that recorded and left; the next
+subsection closes it.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,916 passed, 1 skipped; `Meridian.FSharp.Tests` — 637 passed. No golden or corpus
+byte changed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
+#### Follow-up — a record is refused a member its class does not persist — 2026-11-11
+
+`SecurityKindPersistence` (`src/Meridian.FSharp/Domain/SecurityKindPersistence.fs`) is the list
+the record types stopped being: for each class and each term module its record embeds, the
+members the flat row carries. `validateKind` refuses a record that holds a value anywhere else.
+
+| Code | Refuses | Example |
+| --- | --- | --- |
+| `term_member_not_persisted` | A value in a member the class's row has no key for | A warrant's `Exercise.ExerciseStyle`; a deposit's `Dates.IssueDate`; a bond's `IssuerTerms.LeiCode` |
+| `term_member_value_not_persisted` | A value other than the derived one in a member the row derives instead of storing | A treasury bill's issuer other than `US Treasury`; a swap issued on a date other than its effective date; a certificate of deposit marked callable without a call date |
+
+The message names the class and every offending member as `Field.Member` over the per-class
+record. A derived member left absent is accepted, since the decode fills it.
+
+These are rules over the record and not over the economic definition, so they sit beside
+`day_count_invalid` in `validateKind` and are not in the `definitionExpressibleCodes` ledger. An
+economic document may hold members no flat row has; the row keeps them in its retained
+document, and nothing here touches that path.
+
+**Where the list comes from.** It was not written from the module definitions. A probe set
+every member of every embedded module on each class's fully populated record, wrote the record
+through `SecurityMasterSnapshotWrapper` and read it back through `SecurityMasterMapping`: 245
+members across the classes did not survive, and 11 more came back as a value the class fixes.
+The result was then checked against the decode, which passes a literal `null` for exactly those
+members. Production code is explicit per class and uses no reflection.
+
+**What keeps it true.** `SecurityKindPersistenceTests` repeats the probe as a theory over every
+asset class and requires the list to refuse a member exactly when the round trip does not
+return the value it was given. A member added to a module, or a flat key added to or removed
+from a class, fails there until the list is brought into step. Three things are stated
+explicitly rather than inferred:
+
+- The declared-schedule containers and the rate-unit declaration are read before they are
+  written (ADR-024). The decode sets them from a stored row, so the list does not refuse them,
+  and they are the only members the theory does not walk; the set is asserted.
+- An option's exercise style is persisted; a spelling the decode does not read back is refused
+  by `option_exercise_style_invalid`, not by this list.
+- A cash-sweep frequency and a structured-credit coupon type come back as the open case of
+  their union carrying the same label. The value is carried, so they are not refused.
+
+The theory also requires that a record the flat decode builds holds nothing the list refuses,
+for every class.
+
+**Not covered.** The list is over the members of each embedded module. Members nested inside
+an entry (a swap leg, a covenant, a declared call) are structural documents the row stores
+whole and were not walked.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,983 passed, 1 skipped (the 6,916 before, plus this suite's 67);
+`Meridian.FSharp.Tests` — 642 passed. With three errors planted in the list (a member wrongly
+accepted, a persisted member wrongly refused, a derived rule removed) the suite failed on each.
+No golden or corpus byte changed, and no existing test needed a change. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+#### Follow-up — the fold stops refilling any value the row held — 2026-11-11
+
+The fold fix above covered the stage-3 homes only. A value in a field the economic document
+carried before stage 3 — a bond's call date, issue date or issuer name, a loan's reference
+index, a treasury bill's auction date, a repo's haircut, a pool id — was still written back
+after an amendment cleared it, on any row that kept a retained document. Eight such cases were
+added to `SecurityRetainedFoldClearedValueTests` and all eight failed before the change.
+
+No per-class list can settle these: a historical or hand-shaped document can hold a value in
+one of those fields that the flat decode never reproduced, and that value must keep folding
+back. So the question is asked of the document itself. On the write path
+(`SecurityEconomicDefinitionAdapter.FieldsTheFlatRowCarried`) the retained document is flattened
+for the row's class, exactly as the replay that attached it did, and rebuilt with no carry. A
+field that rebuild populates was on the row, so a revision that has it empty cleared it and the
+fold leaves it empty. A field the rebuild leaves empty, or fills with a different value, was
+never on the row and is filled as before. The second case matters where the rebuild derives a
+field from another key: a structured-credit row stores only the pool id and derives the issuer
+name from it, so a document whose issuer name differs from its pool id keeps that name folding
+back when the pool id is cleared. (Found in automated review; pinned by
+`AValueTheRebuildDerivesFromAnotherKey_IsNotTreatedAsCarried`.) The static stage-3 list is kept and unioned with this, and a document that cannot be
+flattened or rebuilt names no field, which leaves the fold exactly as it was.
+
+With no amendment the rebuild and the row are the same thing, so nothing a replay produces
+changes: the replay corpus and every golden are untouched. One side effect is a correction, not
+a regression: a derived value no longer folds back after the terms that derived it change (a
+bond amended from fixed to floating no longer gets its old scalar coupon rate written back into
+the coupon module).
+
+Tests: the eight cleared-value cases; a bond document carrying both an issuer name (on the row)
+and an LEI (not on the row), where clearing the name loses the name and keeps the LEI; the
+fixed-to-floating amendment above; and the existing sinking-fund and ESG cases, unchanged.
+
+**The floating-coupon bond and the identity gate.** The stage-1 notes recorded that a
+floating-coupon bond image did not shed its retained document at the identity gate. That is no
+longer true and had not been re-checked since the stage-3 contraction. A theory over every
+asset class now pins it: each class's fully populated image, the floating bond included, sheds
+its carry on replay.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,024 passed, 1 skipped (the 6,983 before, plus 41 new cases); the
+fixed-to-floating case was added after that sweep and passes with its suite and the replay
+corpus (165 passed). Adjacent suites — 5,142 passed, 134 skipped. No golden or corpus byte
+changed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 
 The last of the four themes the census named. A new `profileEnvelope` term module

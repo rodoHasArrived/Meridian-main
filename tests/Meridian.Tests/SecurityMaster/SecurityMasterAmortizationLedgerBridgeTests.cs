@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -352,5 +353,183 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
 
         posted.Should().Be(0);
         ledger.Journal.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_AmortizedThrough_ExcludesAmortizationAlreadyRecognized()
+    {
+        // 365-day life from 2026-01-01; 20 of premium. Posting only the second half must not
+        // repeat the amortization already recognized through 2026-07-02 (182 of 365 days).
+        var projection = Projection(TermsWith(maturity: new DateOnly(2027, 1, 1)), Period(2027, 1, 1, interest: 20m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var whole = new DomainLedger();
+        var remainder = new DomainLedger();
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, whole,
+            new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)]));
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, remainder,
+            new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)],
+                AmortizedThrough: new DateOnly(2026, 7, 2)));
+
+        whole.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        remainder.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-10.03m);
+        remainder.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_ProjectionAsOf_RequestsTheProjectionForThatInstant()
+    {
+        var asOf = new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero);
+        var service = Substitute.For<ISecurityMasterCashFlowService>();
+        service.GetProjectionAsOfAsync(SecurityId, StructuredCashFlowScenario.Base, asOf, Arg.Any<CancellationToken>())
+            .Returns(Projection(Period(2026, 3, 31, interest: 30m)));
+        var ledger = new DomainLedger();
+
+        var posted = await BuildBridge(service).PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
+            new AmortizationLedgerPostingContext(ProjectionAsOf: asOf));
+
+        posted.Should().Be(1);
+        await service.DidNotReceive().GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_AccrualWindow_AccruesEachMonthsShareOfASemiAnnualCoupon()
+    {
+        // A 181-day coupon period of 1,810 accrues 10 a day: 310 for January, 280 for February,
+        // and the six monthly windows together recognize the coupon exactly once.
+        var period = Period(2026, 6, 30, interest: 1_810m) with
+        {
+            AccrualStart = new DateOnly(2025, 12, 31),
+            AccrualEnd = new DateOnly(2026, 6, 30)
+        };
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(maturity: new DateOnly(2026, 6, 30)), period)));
+        var monthly = new List<decimal>();
+
+        for (var month = 1; month <= 6; month++)
+        {
+            var start = new DateOnly(2026, month, 1);
+            var end = start.AddMonths(1).AddDays(-1);
+            var ledger = new DomainLedger();
+            var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
+                new AmortizationLedgerPostingContext(AccrualWindow: new AmortizationAccrualWindow(start, end)));
+            posted.Should().Be(1);
+            ledger.Journal.Should().ContainSingle().Which.Metadata.EffectiveDate.Should().Be(end);
+            monthly.Add(ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)));
+        }
+
+        monthly.Should().Equal(310m, 280m, 310m, 300m, 310m, 300m);
+        monthly.Sum().Should().Be(1_810m);
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_AccrualWindow_AmortizesOnlyTheWindowsDays()
+    {
+        // 365-day life from 2026-01-01 with 20 of premium; February is 28 of those days.
+        var period = Period(2027, 1, 1, interest: 0m);
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(maturity: new DateOnly(2027, 1, 1)), period)));
+        var ledger = new DomainLedger();
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [Lot(quantity: 10m, unitCost: 102m)],
+            AccrualWindow: new AmortizationAccrualWindow(new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 28))));
+
+        // Cumulative 3.18 through 28 February less 1.64 through 31 January.
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-1.54m);
+    }
+
+    [Theory]
+    [InlineData(SecurityLotUnitKind.FaceValue, 1, 1000, 100)]
+    [InlineData(SecurityLotUnitKind.FaceValue, 100, 10, 100)]
+    [InlineData(SecurityLotUnitKind.CurrencyAmount, 1, 1000, 1)]
+    [InlineData(SecurityLotUnitKind.Notional, 1, 1000, 1)]
+    public async Task AccrualWindow_ScalesCouponBySharedLotExposure(
+        SecurityLotUnitKind unit, int multiplier, int quantity, int unitCost)
+    {
+        var period = Period(2026, 2, 1, interest: 310m) with
+        {
+            InterestMeasuredFrom = new DateOnly(2026, 1, 1),
+            InterestMeasuredTo = new DateOnly(2026, 2, 1),
+        };
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(TermsWith(new DateOnly(2026, 2, 1)), period)));
+        var ledger = new DomainLedger();
+        var lot = new LedgerTaxLot("held", new DateOnly(2026, 1, 1), quantity, unitCost, SecurityId)
+        {
+            UnitKind = unit,
+            Multiplier = multiplier,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [lot], CouponPrincipalBasis: 10_000m,
+            AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
+
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(31m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+        ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AccrualWindow_UsesRemainingFaceAndAcquisitionDateExactlyOnce()
+    {
+        var period = Period(2026, 2, 1, interest: 310m) with
+        {
+            InterestMeasuredFrom = new DateOnly(2026, 1, 1),
+            InterestMeasuredTo = new DateOnly(2026, 2, 1),
+            Factor = 0.5m,
+        };
+        var ledger = new DomainLedger();
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(period)));
+        // The shared lot already holds 500 of remaining face after its paydown.
+        var lot = new LedgerTaxLot("pool", new DateOnly(2026, 1, 16), 500m, 100m, SecurityId)
+        {
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
+            OpenLots: [lot], CouponPrincipalBasis: 10_000m,
+            AccrualWindow: new(new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1))));
+
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(8m);
+    }
+
+    [Theory]
+    [InlineData(SecurityQuoteConvention.PercentOfPar, 102)]
+    [InlineData(SecurityQuoteConvention.PerUnit, 1.02)]
+    public async Task Amortization_UsesSharedFaceAndDeclaredQuote(
+        SecurityQuoteConvention quote, double price)
+    {
+        var bridge = BuildBridge(CashFlowServiceWith(Projection(
+            TermsWith(new DateOnly(2026, 2, 1)), Period(2026, 2, 1, interest: 0m))));
+        var ledger = new DomainLedger();
+        var lot = new LedgerTaxLot("canonical", new DateOnly(2026, 1, 1), 1000m, (decimal)price, SecurityId)
+        {
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
+        };
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
+            new AmortizationLedgerPostingContext(OpenLots: [lot], QuoteConvention: quote));
+
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        ledger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EmptyBlockedProjection_ReportsTheBlockBeforeNothingToPost()
+    {
+        const string reason = "Negative interest is unsupported.";
+        var logger = Substitute.For<ILogger<SecurityMasterAmortizationLedgerBridge>>();
+        var bridge = new SecurityMasterAmortizationLedgerBridge(
+            CashFlowServiceWith(Projection() with { BlockedReason = reason }), logger);
+        var ledger = new DomainLedger();
+
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(0);
+
+        ledger.Journal.Should().BeEmpty();
+        logger.ReceivedCalls().Should().Contain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Warning
+            && call.GetArguments()[2]!.ToString()!.Contains(reason));
+        logger.ReceivedCalls().Should().NotContain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Debug);
     }
 }

@@ -11,6 +11,10 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.Execution
 
+Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
+The original symbol remains authoritative for probing and order validation, and a failed probe
+still refuses the order.
+
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
 
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
@@ -158,7 +162,7 @@ service.
 
 ### Execution preview and operational evidence
 
-`OrderPreviewService` observes the shared admission/risk path without reservations or side effects. `ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state evidence in a synchronous WAL. FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as unavailable. `ExecutionAlertService` supplies persistent alerts and outbox selection. See [execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and verification details.
+`OrderPreviewService` observes the shared admission/risk path without reservations or side effects. `ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state evidence in a synchronous WAL. FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as unavailable. Restarting a local paper portfolio without restoring its positions retains an economic coverage gap, preserving order history while withholding cross-book P&L. `ExecutionAlertService` supplies persistent alerts and outbox selection. See [execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and verification details.
 
 All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
 gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
@@ -435,6 +439,12 @@ count cap cannot support a claim like "no breach in the last hour": enough unrel
 the window silently evicts the very entry the claim is about. Entries are inserted in timestamp
 order rather than appended, since `RecordAsync` accepts a caller-built entry with any timestamp and
 concurrent callers can complete out of order.
+
+`TradeExecutedEvent` carries the placing order's optional `StrategyId` and `RunId`, stamped once
+when the event is created. `LedgerPostingConsumer` writes them to the fill journal's
+`JournalEntryMetadata.StrategyId` and a `strategy.runId` tag. A journal retained before this
+lineage existed still matches when the same fill is redelivered: the candidate is compared in the
+retained shape and the retained record is never rewritten.
 
 An absolute ceiling of twenty times the count cap stops a pathological burst from growing memory
 without bound. **When that ceiling bites, the effect is operational, not cosmetic:**

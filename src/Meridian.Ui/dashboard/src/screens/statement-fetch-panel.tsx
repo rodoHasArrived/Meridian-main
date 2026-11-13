@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { ArrowRight, Play, Plus, RefreshCw, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -308,41 +309,26 @@ function StatementFetchSchedulesTable({
         ) : null}
         {viewModel.schedules.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-xs" aria-label="Statement fetch schedules">
-              <caption className="sr-only">Persisted remote statement fetch schedules and run posture</caption>
-              <thead>
-                <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  <th scope="col" className="px-2 py-2">Schedule</th>
-                  <th scope="col" className="px-2 py-2">Account</th>
-                  <th scope="col" className="px-2 py-2">Cadence</th>
-                  <th scope="col" className="px-2 py-2">Last result</th>
-                  <th scope="col" className="px-2 py-2">Next due</th>
-                  <th scope="col" className="px-2 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {viewModel.schedules.map((schedule) => (
-                  <tr key={schedule.scheduleId} className="border-b border-border/60 align-top">
-                    <td className="px-2 py-2">
+            <TableWorkbench<(typeof viewModel.schedules)[number]> tableClassName={"w-full border-collapse text-xs"} maxVisibleRows={null}  workbenchId="accounting-statement-schedules" sourceKey={JSON.stringify(viewModel.schedules)} rows={viewModel.schedules} columns={[{id:"field-0",label:"Schedule",exportValue:schedule=>schedule.scheduleId,render:schedule=><>
                       <div className="font-mono font-semibold">{schedule.scheduleId}</div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         <Badge variant={schedule.enabled ? "success" : "outline"}>{schedule.enabled ? "Enabled" : "Paused"}</Badge>
                         <Badge variant="paper">{schedule.connectorId}</Badge>
                         <Badge variant="outline" className="capitalize">{schedule.sourceKind}</Badge>
                       </div>
-                    </td>
-                    <td className="px-2 py-2">
+                    </>},
+{id:"field-1",label:"Account",exportValue:schedule=>`${schedule.sourceInstitution}; ${schedule.externalAccountId}; ${schedule.fundAccountId}`,render:schedule=><>
                       <div>{schedule.sourceInstitution}</div>
                       <div className="font-mono text-muted-foreground">{schedule.externalAccountId}</div>
                       <div className="font-mono text-muted-foreground">{schedule.fundAccountId}</div>
-                    </td>
-                    <td className="px-2 py-2 font-mono">Every {schedule.cadenceHours}h</td>
-                    <td className="max-w-64 px-2 py-2">
+                    </>},
+{id:"field-2",label:"Cadence",exportValue:schedule=>schedule.cadenceHours,render:schedule=><>Every {schedule.cadenceHours}h</>},
+{id:"field-3",label:"Last result",exportValue:schedule=>schedule.lastRunStatus,render:schedule=><>
                       <div>{schedule.lastRunStatus ?? "Not run"}</div>
                       <div className="font-mono text-[10px] text-muted-foreground">{formatTimestamp(schedule.lastRunAtUtc)}</div>
-                    </td>
-                    <td className="px-2 py-2 font-mono">{formatTimestamp(schedule.nextDueAtUtc)}</td>
-                    <td className="px-2 py-2">
+                    </>},
+{id:"field-4",label:"Next due",exportValue:schedule=>schedule.nextDueAtUtc,render:schedule=><>{formatTimestamp(schedule.nextDueAtUtc)}</>},
+{id:"field-5",label:"Actions",render:schedule=><>
                       <div className="flex flex-wrap justify-end gap-1.5">
                         <Button
                           type="button"
@@ -385,6 +371,7 @@ function StatementFetchSchedulesTable({
                           <p
                             id={`statement-fetch-delete-${schedule.scheduleId}-status`}
                             role="status"
+                            aria-label="Schedule deletion confirmation"
                             aria-live="polite"
                             className="basis-full text-right text-[11px] leading-4 text-warning"
                           >
@@ -392,11 +379,7 @@ function StatementFetchSchedulesTable({
                           </p>
                         ) : null}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </>}]} getRowId={schedule=>schedule.scheduleId} getSearchText={schedule=>[schedule.scheduleId,schedule.sourceInstitution,schedule.externalAccountId,schedule.fundAccountId].join(" ")} completePopulation sourceDescription="Authorized persisted statement schedules; cadence is in hours and timestamps are UTC." ariaLabel="Statement fetch schedules" caption="Persisted remote statement fetch schedules and run posture" emptyText="No statement schedules returned." />
           </div>
         ) : null}
       </CardContent>

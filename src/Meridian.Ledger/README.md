@@ -6,14 +6,54 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ledger
 
+Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
+economic face represented by that quantity and retains decimal unit-cost precision; share rounding
+is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
+split, factor, amortization, capital-return and wash-sale monetary transform.
+
+`JournalEntryMetadata.PreparerAttestation` retains the exact native cash-dividend preparer receipt,
+owner scope and posting fingerprints on the immutable journal for current and frozen report proof.
+The absent property is omitted from JSON so historical journal hashes remain unchanged. This
+classification establishes preparer attestation only; source verification, independent approval
+and financial coverage remain separate.
+
+`LedgerLineDimensionSet` retains optional `IntercompanyAgreementId` and approved version as a pair.
+Canonicalization, grouping and replay preserve the distinction between agreement revisions without
+changing legacy signatures when references are absent. Agreement provenance explains a line; it
+does not create paired postings, settlement or agreement-level consolidation. The durable storage
+boundary validates supplied references and historical reversals. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`StructuredNoteAccountingTemplate` recognizes dated fair-value gains and losses in profit or loss
+through the existing governed daily-valuation drafts. It converts face quantities and raw percentage
+quotes through the shared lot model, applies currency minor units, and retains template/convention
+evidence with its retry identity. Structured notes do not enter the bond coupon-accrual route.
+
 `LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
 
 Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
+
+`PrivateCapitalPostingAuthority` binds frozen call plans and approved commitment revisions to
+governed issuance/funding drafts. Native funding has a distinct stable receipt identity for each
+partial receipt while retaining the originating installment and fund-event identity. Historical
+factory calls without a receipt identity retain their previous idempotency keys. Bank evidence
+must identify a positive, unvoided `CapitalCallFunding` transaction matching entity, currency,
+amount and effective date; source snapshots are hashed and rechecked before posting.
+
+`IPrivateCapitalStore` exposes durable commitment revisions, frozen call plans, and immutable posting
+receipts without owning a storage engine. `PrivateCapitalAuthorityRules` validates explicit scope
+and source terms; `PrivateCapitalCallPlanHash` binds the reviewed allocation while excluding later
+posting observations. The commitment-to-cash workflow reuses the existing capital-call kernel and
+requires source-backed opening authority instead of inferring commitments from assignments.
+Call allocation uses called capital as of its notice date. The shared authority rule also walks
+all posted issuance dates and approved effective-date checkpoints, so backdated calls cannot break
+a future reduction and later increases cannot authorize an earlier overcall. At one effective date,
+the highest approved revision owns the cap; superseded and draft terms do not constrain the timeline.
 
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
@@ -143,13 +183,28 @@ Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
 `ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
 default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
 QuestPDF/ClosedXML output for client delivery).
+Text cells in both builders' CSV artifacts pass through `LedgerCsvCell`, which prefixes
+formula-looking text (leading `=`, `+`, `@`, tab, or a non-numeric `-`) with an apostrophe so
+spreadsheets open it as text; ordinary values and negative amounts keep their existing bytes.
 The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
 complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
 explicit support for opening balances instead of being omitted from a current-period proof.
+When a chart row aggregates multiple investor, financial-account, or symbol identities under one
+account path, its provenance resolves the actual posted accounts of that type and path. The
+as-of, financial-account, and line-dimension filters still apply, so an aggregate retains every
+contributing journal without widening the selected scope.
 Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and
 `MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
+
+`LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted after the
+period start and up to the as-of time, the same window as the period statements, inside the pack's financial-account and dimension scope) and
+`pnl-by-strategy-symbol.csv` (period revenue and expense grouped by the journal's `StrategyId` and
+the line's symbol; lines without either are kept under an empty key, and closing journals that only
+transfer revenue and expense to retained earnings are left out so the rows sum to the period's
+result from activity). `manifest.csv` carries control totals over the GL detail: journal-entry count, line
+count, total debits, total credits, and their variance.
 
 Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
 simple preferred return on a contribution timeline), `EuropeanDistributionWaterfall` (return of
@@ -172,6 +227,11 @@ uncalled. The `CommitmentRollForwardCalculator` and `DefaultInterestCalculator` 
 F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
+`JournalTemplate.Calculation` marks a template whose lines come from a registered posting
+calculation each period; the recurring-journal runner uses it to draft management fees,
+performance fees, expense accruals, bond coupon and amortization, and FX revaluation for approval
+(see `docs/domain/recurring-journal.md`). `PostingCalculationNotYetConnectedAttribute` records a
+finished draft or line builder that deliberately has no production caller yet.
 `MultiCurrencyJournalProjector` converts local-currency debit/credit journal inputs into balanced
 base-currency ledger posting lines while preserving local amount, currency, and FX-rate evidence.
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
@@ -242,9 +302,14 @@ restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — 
 splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
 before relief, keeping the ledger engine free of Security Master contracts while relieving basis
 against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
-the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
-matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
-entries so cash flow projections are booked instead of remaining display-only.
+the master and produces those adjustments. The separate `SecurityMasterAmortizationLedgerBridge`
+remains available to the recurring `FixedIncomeAccrualCalculation`, which invokes it on a scratch
+ledger and retains coupon-accrual and premium-amortization/discount-accretion lines in a governed
+draft. This recurring route requires explicit Bond accrual admission, measured coupon intervals,
+dated holdings and matching book currency; real posting follows the ordinary approval lifecycle.
+Projected principal paydowns are excluded from that draft and arrive through cash activity.
+The retired `StructuredCashFlowLedgerBridge` and `BuildLedgerPostingsAsync` facade do not provide
+an alternate whole-coupon posting path.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
@@ -255,10 +320,9 @@ ledger journal entry.
 `LedgerJournalReversal` is the general correction primitive: it books a balanced reversing entry
 for any posted journal by swapping every line's debit and credit under a new journal id, linking
 back to the original via a `reversal.of` tag — so corrections stay immutable (reverse/rebook) rather
-than mutating posted history. The Application-layer `SecurityMasterLedgerBridge` uses it (opt-in via
-`CorporateActionLedgerPostingContext.AutoReverseSupersededPostings`) to automatically reverse a
-previously-posted corporate action when it is cancelled, and to reverse-then-rebook when it is
-amended.
+than mutating posted history. The retired direct corporate-action poster is retained only as a
+historical test fixture. Current corporate actions use governed accounting candidates and their
+canonical lot instructions.
 `IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
 projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
 while durable implementations can append the same approved projection to the governed journal
@@ -370,6 +434,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-LEDGER -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

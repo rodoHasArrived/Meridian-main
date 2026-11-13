@@ -189,8 +189,7 @@ internal sealed class OrderAdmissionPolicy
     internal async Task<OrderAdmissionRefusal?> EvaluateDispatchMarketChecksAsync(OrderRequest request, CancellationToken ct)
     {
         var requiresReference = await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false);
-        if (request.SessionIntent == OrderSessionIntent.QueueNextSession
-            && await EvaluateSessionAsync(request, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+        if (await EvaluateSessionAsync(request, ct).ConfigureAwait(false) is { Status: "blocked" } session)
             return new(session.Message, "market session", session.Code);
         // Read the quote after the asynchronous session check so it cannot age during that wait.
         return requiresReference ? EvaluateMarketReference(request) : null;

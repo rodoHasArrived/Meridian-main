@@ -18,6 +18,8 @@ import type {
   CloseCommandCenterViewState
 } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 export const CLOSE_COCKPIT_FRESHNESS_BUDGET_MS = 15 * 60_000;
 
@@ -696,28 +698,22 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 </div>
                 {view.closingEntriesGate.balances.length > 0 ? (
                   <div className="overflow-x-auto rounded-md border border-border/70">
-                    <table className="w-full text-left text-xs" aria-label="Scoped temporary-account balances">
-                      <thead className="bg-secondary/35 text-muted-foreground">
-                        <tr>
-                          <th scope="col" className="px-3 py-2 font-semibold">Account</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Type</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Balance</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Scope</th>
-                          <th scope="col" className="px-3 py-2 font-semibold">Financial account</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {view.closingEntriesGate.balances.map((balance) => (
-                          <tr key={balance.rowId} className="border-t border-border/60">
-                            <td className="px-3 py-2 font-semibold text-foreground">{balance.accountLabel}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{balance.accountTypeLabel}</td>
-                            <td className="px-3 py-2 font-mono text-foreground">{balance.balanceLabel}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{balance.scopeLabel}</td>
-                            <td className="px-3 py-2 font-mono text-muted-foreground">{balance.financialAccountLabel}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Account", className: "px-3 py-2 font-semibold text-foreground", render: (balance) => <>{balance.accountLabel}</> },
+            { id: "column-2", label: "Type", className: "px-3 py-2 text-muted-foreground", render: (balance) => <>{balance.accountTypeLabel}</> },
+            { id: "column-3", label: "Balance", className: "px-3 py-2 font-mono text-foreground", render: (balance) => <>{balance.balanceLabel}</> },
+            { id: "column-4", label: "Scope", className: "px-3 py-2 text-muted-foreground", render: (balance) => <>{balance.scopeLabel}</> },
+            { id: "column-5", label: "Financial account", className: "px-3 py-2 font-mono text-muted-foreground", render: (balance) => <>{balance.financialAccountLabel}</> }
+          ]}
+          rows={view.closingEntriesGate.balances}
+          getRowId={(balance) => String(balance.rowId)}
+          getRowClassName={() => "border-t border-border/60"}
+          ariaLabel={"Scoped temporary-account balances"}
+          tableClassName={"w-full text-left text-xs"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No non-zero scoped temporary-account balances were returned.</p>
@@ -1063,8 +1059,8 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Sign-off matrix</span>
-                  <textarea
-                    className="min-h-[88px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                  <TextArea rows={2}
+                    className="min-h-[88px] w-full text-sm"
                     value={view.closeSetupDraft.taskSignOffRequirements}
                     onChange={(event) => view.updateCloseSetupDraft({ taskSignOffRequirements: event.target.value })}
                   />

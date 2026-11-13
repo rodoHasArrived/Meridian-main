@@ -1,16 +1,23 @@
 # Meridian Design System — Getting Started
 
-Welcome to **Meridian**, a production-ready design system for operator workstations. This guide walks you through setup, consumption, and common patterns.
+Meridian is a design-system package for operator workstations. This guide covers
+setup, consumption, and common patterns. The declared release channel and current
+source census are generated in [Metrics](METRICS.md); current export verification
+and dependency boundaries are documented in [Export handoff](EXPORT_4_3_0.md).
 
 ## 30-second overview
 
-Meridian ships **109 components**, **14 pre-built templates**, and **331 design tokens** grounded in the **"Programmed Institutionalism"** language: light institutional workstation on warm drafting stock, hairline borders, one copper accent, desaturated semantics, no gradients or shadows.
+Meridian implements **Programmed Institutionalism**: an institutional workstation
+with a paper/plate/well hierarchy, fine borders, a terracotta brand/scenario
+signal, independent blue interaction roles, and restrained semantic colors.
+Use `_ds_manifest.json` and the generated [Metrics](METRICS.md) for current
+component, template, token, theme, and maturity counts.
 
-- **Light canvas** `#F2F0EC` (Soft Stone) with panels in Architect White `#FBFAF8`
-- **Hard edges** (0–2px radii, visible borders, no card shadows)
-- **One accent** copper `#A85436` for primary actions (hover `#AF6143`, pressed `#8C4429`)
-- **Mono data** (Cascadia/JetBrains Mono) for all prices, IDs, counts, timestamps
-- **Motion** 100–150ms ease on color/border; no springs, no entrance animation
+- **Light canvas** `#F2F0EB` with panels in gray-white
+- **Tight geometry** (tokenized 2/4/6/8px radii, fine rules, no card shadows)
+- **One signal** terracotta `#C56343` for brand/scenario moments; graphite `#29323A` for primary actions
+- **Mono data** (IBM Plex Mono) for all prices, IDs, counts, timestamps
+- **Motion** uses the tokenized 80/120/180/240/280ms ramp; respect reduced motion
 - **Keyboard-first** (Ctrl-K command palette, arrow navigation, focus rings)
 
 ---
@@ -28,6 +35,12 @@ cp -r templates/dashboard-workstation/ ../my-project/meridian-dashboard/
 
 ### Step 2: Open the template and edit
 
+These `.dc.html` templates require the Design Component host and its JSX runtime.
+Opening one as ordinary HTML is not sufficient. For a standard browser check,
+use the ordinary HTML smoke entry included in the export; it exercises the
+component bundle without claiming full template-host compatibility. Keep shared
+helpers and the design-system asset tree available when copying a template.
+
 1. Navigate to the template folder: `cd ../my-project/meridian-dashboard/`
 2. Open `DashboardWorkstation.dc.html` in your browser
 3. Edit the markup directly — the file is a **Design Component** (streamable, editable HTML)
@@ -43,12 +56,12 @@ cp -r templates/dashboard-workstation/ ../my-project/meridian-dashboard/
 
 ### Step 3: Reference the design system
 
-Once the bundle loads, all components are available on `window.MeridianDesignSystem_4f61be`:
+Once the bundle loads, all components are available on `window.MeridianDesignSystem_205d17`:
 
 ```html
-<script src="../../Meridian/_ds_bundle.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script>
-  const { Button, DenseDataTable, Modal } = window.MeridianDesignSystem_4f61be;
+  const { Button, DataGrid, Dialog } = window.MeridianDesignSystem_205d17;
 </script>
 ```
 
@@ -73,55 +86,60 @@ Templates are **directly editable in the browser** — click any text or element
 
 | Template | Use when | Components highlighted |
 |----------|----------|------------------------|
-| **dashboard-workstation** | Building an operator overview (portfolio, equity curve, positions) | `WorkstationTopbar`, `NavRail`, `StatusBar`, `MetricCard`, `EquityCurve`, `DenseDataTable` |
-| **security-master-registry** | Building a symbol/identifier registry with search and detail panes | `FilteredDataTable`, `Drawer`, `EntitySummary`, `TreeView` |
-| **charting-workstation** | Building a charting terminal (candlesticks, studies, crosshair readout) | `CandleChart`, `CommandPalette`, `ContextMenu`, `LinearGauge` |
-| **accounting-workstation** | Building a books workstation (GL, trial balance, reconciliation) | `LedgerTable`, `StatementTable`, `AccountTree`, `ReconciliationPanel` |
-| **journaling-workstation** | Building a double-entry posting workstation | `JournalEntryForm`, `DenseDataTable`, `Modal`, `FormValidation` |
-| **basket-builder** | Building a basket/portfolio construction workflow (constituents, concentration risk) | `DenseDataTable`, `CorrelationHeatmap`, `SegmentedControl`, `BulkActionBar` |
-| **report-library** | Building a report catalog with search/filter and a set-parameters-and-run flow | `FilteredDataTable`, `Modal`, `SeverityBadge` |
-| **strategy-builder** (+ `field-formula`, `amx-governance`, `backtest-builder`, `strategy-onboarding`, `strategy-runs`) | Building a cell-based research/strategy workflow end to end — six cross-linked screens sharing one nav rail | `WorksheetGrid`, `GateRail`, `Stepper`, `EquityCurve`, `Histogram` |
+| **dashboard-workstation** | Building an operator overview (portfolio, equity curve, positions) — the 4.0 reference: declared regions, one grid, enveloped P&L | `ScreenComposition`, `DataGrid`, `ValueEnvelope`, `MetricCard`, `WorkstationTopbar`, `NavRail`, `StatusBar` |
+| **security-master-registry** | Building a symbol/identifier registry with search and detail panes | `DataGrid`, `Drawer`, `EntitySummary`, `TreeView` |
+| **charting-workstation** | Building a charting terminal (candlesticks, studies, crosshair readout) | `CandleChart`, `CommandPalette`, `ContextMenu`, `TimeframeSwitcher` |
+| **accounting-workstation** | Building a books workstation (GL, trial balance, reconciliation, FX reval, period close) — journal posting is its compose mode (`view=gl&compose=1`) | `LedgerTable`, `StatementTable`, `AccountTree`, `ReconciliationPanel`, `JournalEntryForm` |
+| **basket-builder** | Building a basket/portfolio construction workflow (constituents, concentration risk) | `DataGrid`, `CorrelationHeatmap`, `SegmentedControl`, `BulkActionBar` |
+| **report-library** | Building a report catalog with search/filter and a set-parameters-and-run flow | `DataGrid`, `Dialog`, `SeverityBadge` |
+| **strategy-formation** (+ `field-formula`, `strategy-runs`, `strategy-governance`) | Building a cell-based research/strategy workflow end to end — formation stages + builder worksheet, run ledger with backtest/compare/lab views, governance; one shared store and nav rail | `WorksheetGrid`, `GateRail`, `Stepper`, `EquityCurve`, `Histogram` |
 
-**New tip:** If you want a blank canvas with just the shell (topbar, nav rail, status bar), use **`blank-workstation`** — it has zero hardcoded content, just the wrapper.
+**Tip:** For a blank canvas with just the shell, copy **`blank-workstation`** — one `WorkstationShell` with topbar, nav rail, status bar and an empty content canvas.
 
 ---
 
 ## Component reference
 
-**All 109 components are documented in `docs/COMPONENT_API_REFERENCE.card.html`** (plus sub-cards for each family). Open that file in your browser to see live examples, prop defaults, and keyboard behavior.
+Start with `docs/COMPONENT_API_REFERENCE.card.html` and each component's `.d.ts`,
+`.prompt.md`, and specimen card for props, states, and keyboard behavior. Use
+`api/families.json` for current family membership and per-export stability; the
+reference card is a discovery aid, not a separate authoritative export count.
 
 Quick reference by category:
 
-### **Core UI (64 components)**
-Buttons, inputs, selects, checkboxes, toggles, badges, spinners, sliders, modals, drawers, tooltips, context menus, command palette, form helpers, layout primitives (Grid, Flex, Stack).
+### **Core UI (51 modules)**
+Buttons, inputs, selects, checkboxes, toggles, badges, spinners, sliders, dialogs, drawers, tooltips, context menus, command palette, form helpers, layout primitives (Grid, Flex, Stack).
 
-**Most common:** `Button`, `Input`, `Select`, `Modal`, `Drawer`, `DenseDataTable`, `Grid`, `Flex`.
+**Most common:** `Button`, `Input`, `Select`, `Dialog`, `Drawer`, `DataGrid`, `Grid`, `Flex`.
 
-### **Data & tables (17 components)**
-Dense data grids, filtered tables, expandable rows, virtualized lists, pagination, bulk actions, entity summaries, metric cards, skeletons.
+### **Data & tables (21 modules)**
+Dense data grids, virtualized lists, pagination, bulk actions, entity summaries, metric cards, skeletons.
 
-**Most common:** `DenseDataTable`, `FilteredDataTable`, `ExpandableDataTable`, `MetricCard`, `KeyValueGrid`.
+**Most common:** `DataGrid`, `MetricCard`, `KeyValueGrid`.
 
-### **Accounting (7 components)**
-Ledger tables, GL trees, statements, journal entry forms, tax lots, reconciliation panels.
+### **Accounting (17 modules)**
+Ledger tables, GL trees, statements, journal entry forms, tax lots, reconciliation panels, the investment-event lifecycle set, and the shared `Money` arithmetic.
 
 **Most common:** `LedgerTable`, `JournalEntryForm`, `AccountTree`.
 
-### **Charts (9 components)**
-Candlestick, equity curve, drawdown, histogram, depth profile, correlation heatmap, scatter, sparkline, chart wrapper.
+### **Charts (23 modules)**
+Candlestick, equity curve, drawdown, histogram, depth profile, correlation heatmap, scatter, sparkline, treemap, waterfall, yield curve, ownership graph, plus the v2.1 visualization-grammar set (TraceChart, ComparisonPlate, IntervalBar, LineageGraph).
 
 **Most common:** `CandleChart`, `EquityCurve`, `ChartCard`.
 
-### **Shell (3 components)**
-Topbar, nav rail, status bar — the workstation frame.
+### **Shell (5 modules)**
+`WorkstationShell` (the frame: chrome slots around a crash-isolated main + optional evidence rail), topbar, nav rail, status bar, session controls.
 
-### **Operations (7 components)**
-The operator readiness/severity domain layer: `SeverityBadge`, `ReadinessPanel`, `GateRail`, `ValidationIssueList`, `EvidenceLink`, `TrustStrip`, `WorkspaceSection`. Encodes Ready/ReviewRequired/Blocked statuses, the gate pipeline (Ingest→Reconcile→Approve), validation issues, and evidence references.
+### **Operations (17 modules)**
+The operator readiness/severity layer (`SeverityBadge`, `ReadinessPanel`, `GateRail`, `ValidationIssueList`, `EvidenceLink`, `TrustStrip`, `WorkspaceSection`, `DiffView`, `LogTail`, `EventTimeline`, `CaseQueue`, `SlaChip`, `ProvenanceChip`) plus the v2.1 evidence layer (`ClaimHeader`, `DataCondition`, `EvidenceInspector`, `ConnectionState`).
 
 **Most common:** `SeverityBadge`, `ReadinessPanel`, `GateRail`.
 
-### **Feedback (2 components)**
-`Toast` + `ToastProvider` — transient action confirmations, `aria-live` announced.
+### **Trading (6 modules)**
+`OrderTicket` (live confirm gate), `Blotter`, `FillsFeed`, `DepthLadder`, `OptionChainTable`, `TimeAndSalesTape`.
+
+### **Feedback**
+`Toast` + `ToastProvider` (in `core/`) — transient action confirmations, `aria-live` announced.
 
 ---
 
@@ -135,7 +153,7 @@ Link Meridian's stylesheet in your HTML `<head>`:
 <link rel="stylesheet" href="../../Meridian/styles.css" />
 ```
 
-This imports **all 331 design tokens** (colors, spacing, typography, elevation) and **component stylesheets**.
+This imports **all 632 design tokens** (colors, spacing, typography, elevation) and **component stylesheets**.
 
 ### Token categories
 
@@ -212,7 +230,7 @@ To customize colors for your brand, override tokens in a `<style>` block **after
 ### Display a data table with sorting
 
 ```html
-<DenseDataTable
+<DataGrid
   columns={[
     { key: "symbol", label: "Symbol" },
     { key: "price", label: "Price", align: "right" },
@@ -227,25 +245,22 @@ To customize colors for your brand, override tokens in a `<style>` block **after
 
 **See:** `data/data.card.html` for sorting, filtering, pagination, and selection.
 
-### Show a modal with a form
+### Show a dialog with a form
 
 ```html
-<ModalForm open={open} onClose={close} title="New Account" onSubmit={submit}>
-  <ModalBody>
-    <FormField label="Code" required>
-      <Input value={code} onChange={setCode} />
-    </FormField>
-  </ModalBody>
-  <ModalFooter>
-    <Button variant="ghost" onClick={close}>Cancel</Button>
-    <Button variant="primary" onClick={submit}>Create</Button>
-  </ModalFooter>
-</ModalForm>
+<DialogForm open={open} onClose={close} title="New account"
+  size="lg" submitLabel="Create account" onSubmit={submit}>
+  <FormField label="Code" required>
+    <Input value={code} onChange={setCode} />
+  </FormField>
+</DialogForm>
 ```
 
-**See:** `core/modal.card.html` for all overlay patterns.
+For a confirm, use `Dialog size="sm"` with your own `DialogBody` / `DialogFooter`.
 
-### Display a metric card with a gauge
+**See:** `core/dialog.card.html` for all overlay patterns.
+
+### Display a metric card with a bounded ratio
 
 ```html
 <MetricCard
@@ -256,8 +271,8 @@ To customize colors for your brand, override tokens in a `<style>` block **after
 />
 
 <PanelSurface>
-  <Eyebrow>Fill rate</Eyebrow>
-  <Gauge value={78} label="30d" color="var(--green)" />
+  <Eyebrow>Fill rate · 30d</Eyebrow>
+  <ProgressBar value={78} target={95} showValue />
 </PanelSurface>
 ```
 
@@ -285,7 +300,7 @@ All interactive components follow these conventions:
 
 | Component | Key | Behavior |
 |-----------|-----|----------|
-| Modal / Drawer | `Escape` | Close |
+| Dialog / Drawer | `Escape` | Close |
 | Select / Combobox | `Arrow Down/Up` | Cycle options |
 | TreeView | `Arrow Right` | Expand; Left collapses |
 | Table | `Click` to select row; `Ctrl+Click` for multi-select |
@@ -304,7 +319,7 @@ If you're building with React, import the bundle and use components as you would
 import React, { useState } from 'react';
 
 // Load the design system bundle
-const { Button, Modal, Input } = window.MeridianDesignSystem_4f61be;
+const { Button, Dialog, Input } = window.MeridianDesignSystem_205d17;
 
 export function MyComponent() {
   const [open, setOpen] = useState(false);
@@ -313,9 +328,9 @@ export function MyComponent() {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open</Button>
-      <Modal open={open} onClose={() => setOpen(false)}>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Edit">
         <Input value={value} onChange={(e) => setValue(e.target.value)} />
-      </Modal>
+      </Dialog>
     </>
   );
 }
@@ -356,16 +371,16 @@ export function MyComponent() {
 
 1. **Copy a template** — start with `dashboard-workstation`
 2. **Explore components** — open `components/core/core.card.html` in your browser
-3. **Read PATTERNS.md** — decision trees for choosing the right component
+3. **Read guidelines/PATTERNS.md** — decision trees for choosing the right component
 4. **Customize tokens** — override `--accent` and other tokens for your brand
-5. **Build** — use the shell (topbar, nav rail, status bar) and compose with core components
+5. **Build** — start from `WorkstationShell` (it owns the chrome and the `<main>` landmark) and compose with core components
 
 ---
 
 ## Questions?
 
 - **Component API:** Open any `<Name>.card.html` in your browser for live props and examples
-- **Patterns & architecture:** See `PATTERNS.md`
+- **Patterns & architecture:** See `guidelines/PATTERNS.md`
 - **Visual foundations:** See `guidelines/VISUAL_FOUNDATIONS.md`
 - **Icons & brand:** See `guidelines/ICONOGRAPHY.md`
 

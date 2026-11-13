@@ -58,7 +58,18 @@ internal static partial class SecurityEconomicDefinitionAdapter
         var economicTerms = BuildEconomicTermsJson(definition);
         if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
         {
-            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(economicTerms, retained);
+            // A field the flat row carried is never filled from the retained document: empty
+            // there means the flat revision cleared it (covenants removed, a call date dropped),
+            // not that the row could not hold it. Two sources name those fields: the stage-3 homes
+            // the class's row carries exactly, and whatever a row flattened from this very
+            // document rebuilds on its own.
+            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(
+                economicTerms,
+                retained,
+                [
+                    .. SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields(projection.AssetClass),
+                    .. FieldsTheFlatRowCarried(retained, projection)
+                ]);
         }
 
         return new SecurityEconomicDefinitionRecord(
@@ -82,6 +93,66 @@ internal static partial class SecurityEconomicDefinitionAdapter
             projection.Identifiers,
             projection.AssetClass,
             projection.AssetSpecificTerms);
+    }
+
+    /// <summary>
+    /// The module fields of a retained economic document that its own flat row held: the document
+    /// is flattened for the row's class, as the replay that attached it did, and rebuilt with no
+    /// retained carry. A field that rebuild reproduces exactly is one the flat family carried for
+    /// this document, so a later revision that has it empty cleared it. A field the rebuild leaves
+    /// empty, or fills with another value (derived from a different key), is one the row never
+    /// held (a historical or hand-shaped value the decode does not reproduce) and keeps the fill. A document that cannot be flattened or rebuilt names no
+    /// field, which leaves the fold as it was.
+    /// </summary>
+    private static IReadOnlyList<(string Module, string Field)> FieldsTheFlatRowCarried(
+        JsonElement retained, SecurityProjectionRecord projection)
+    {
+        try
+        {
+            var flattened = SecurityAssetSpecificTermsUpcasterChain.Normalize(retained, projection.AssetClass).Payload;
+            var baseline = BuildEconomicTermsJson(
+                ToEconomicDefinition(projection with { AssetSpecificTerms = RemoveRetainedKey(flattened) }));
+            if (baseline.ValueKind != JsonValueKind.Object)
+            {
+                return [];
+            }
+
+            var carried = new List<(string Module, string Field)>();
+            foreach (var module in baseline.EnumerateObject())
+            {
+                if (module.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                if (!retained.TryGetProperty(module.Name, out var retainedModule)
+                    || retainedModule.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                foreach (var field in module.Value.EnumerateObject())
+                {
+                    var empty = field.Value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
+                                || (field.Value.ValueKind == JsonValueKind.Array && field.Value.GetArrayLength() == 0);
+                    // Populated is not enough: the rebuild can fill a field from another key the
+                    // row carries (a structured-credit issuer name derived from the pool id). The
+                    // retained value was on the row only when the rebuild reproduces it.
+                    if (!empty
+                        && retainedModule.TryGetProperty(field.Name, out var retainedValue)
+                        && JsonElement.DeepEquals(field.Value, retainedValue))
+                    {
+                        carried.Add((module.Name, field.Name));
+                    }
+                }
+            }
+
+            return carried;
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or KeyNotFoundException or JsonException or FormatException)
+        {
+            return [];
+        }
     }
 
     public static string GetAssetClass(SecurityProjectionRecord projection)
@@ -238,7 +309,7 @@ internal static partial class SecurityEconomicDefinitionAdapter
         {
             var legacy = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(source, assetClass).Payload;
             var fragment = new JsonObject();
-            foreach (var field in new[] { "scheduleConventions", "callSchedule", "putSchedule" })
+            foreach (var field in new[] { SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })
                 if (legacy.TryGetProperty(field, out var value))
                     fragment[field] = JsonNode.Parse(value.GetRawText());
             return JsonNode.DeepEquals(fragment, declaration);
