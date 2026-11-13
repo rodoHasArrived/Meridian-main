@@ -1960,21 +1960,21 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 .DeserializeAsync<EvidenceVaultIdentityDto>(stream, _jsonOptions, ct)
                 .ConfigureAwait(false);
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be deserialized ({ErrorKind}).", nameof(JsonException));
             return null;
         }
-        catch (IOException ex)
+        catch (IOException)
         {
             // A locked or transiently unreadable file must skip this entry, not fail the
             // whole vault listing.
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be read.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be read ({ErrorKind}).", nameof(IOException));
             return null;
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be accessed.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be accessed ({ErrorKind}).", nameof(UnauthorizedAccessException));
             return null;
         }
     }

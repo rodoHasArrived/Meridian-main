@@ -366,6 +366,37 @@ public sealed class OptionsChainServiceTests
         sut.GetCachedChain("AAPL", expiry).Should().BeSameAs(fallbackChain);
     }
 
+    [Fact]
+    public async Task FetchChainSnapshotAsync_WhenProviderFails_LogsSafeDiagnosticsWithoutChangingFallback()
+    {
+        const string symbol = "PRIVATE-SYMBOL\r\nforged-symbol";
+        const string providerId = "primary\r\nforged-provider";
+        const string providerError = "private-provider-response\r\nforged-error";
+        var expiry = new DateOnly(2026, 3, 21);
+        var fallbackChain = CreateChainSnapshot(symbol, expiry);
+        var primary = new StubOptionsChainProvider(
+            providerId, "Primary", priority: 1, chainException: new TimeoutException(providerError));
+        var fallback = new StubOptionsChainProvider("fallback", "Fallback", priority: 2, chain: fallbackChain);
+        var logger = new RecordingLogger<OptionsChainService>();
+        var sut = new OptionsChainService(
+            _collector, logger, _healthSourceMock.Object, new IOptionsChainProvider[] { primary, fallback });
+
+        var result = await sut.FetchChainSnapshotAsync(symbol, expiry);
+
+        result.Should().BeSameAs(fallbackChain);
+        sut.GetCachedChain(symbol, expiry).Should().BeSameAs(fallbackChain);
+        _healthSourceMock.Verify(health => health.GetHealthAsync(
+            providerId, providerId, It.IsAny<CancellationToken>()), Times.Once);
+        logger.Entries.Should().NotBeEmpty();
+        logger.Entries.Should().Contain(entry => entry.Message.Contains("fallback", StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry =>
+            entry.Exception == null
+            && !entry.Message.Contains(symbol, StringComparison.Ordinal)
+            && !entry.Message.Contains(providerError, StringComparison.Ordinal)
+            && !entry.Message.Contains('\r')
+            && !entry.Message.Contains('\n'));
+    }
+
     #endregion
 
 
