@@ -1,5 +1,6 @@
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import type { PromotionEvaluationResult } from "@/types";
+import { formatDecimal, formatPercent } from "@/lib/format";
 
 /** Pure promotion form normalization and keyed evidence checks; command transport stays in the view model. */
 export type PromotionGateField =
@@ -286,7 +287,7 @@ export function buildPromotionApprovalChecklist(
       label: "Risk metrics",
       status: evaluation && !evaluation.isEligible ? "blocked" : evidenceStatus("RISK_CONTROLS_REVIEWED"),
       description: evaluation
-        ? `Eligibility metrics: Sharpe ${evaluation.sharpeRatio.toFixed(2)} · Max DD ${evaluation.maxDrawdownPercent.toFixed(1)}% · Return ${evaluation.totalReturn.toFixed(1)}%; keyed review evidence remains authoritative`
+        ? `Eligibility metrics: Sharpe ${formatDecimal(evaluation.sharpeRatio, 2)} · Max DD ${formatPercent(evaluation.maxDrawdownPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} · Return ${formatPercent(evaluation.totalReturn, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}; keyed review evidence remains authoritative`
         : "Metrics and retained risk-control evidence require review"
     },
     {

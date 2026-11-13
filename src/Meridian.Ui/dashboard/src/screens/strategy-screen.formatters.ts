@@ -1,4 +1,4 @@
-import { formatCount as formatCountValue, type MoneyFormatOptions, type SignableNumberFormatOptions } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, type MoneyFormatOptions, type SignableNumberFormatOptions } from "@/lib/format";
 
 /** Strategy-run money for `formatMoney` from `@/lib/format`: whole dollars, "Unavailable" when missing, e.g. "-$1,235". */
 export const STRATEGY_MONEY: MoneyFormatOptions = { context: "summary", fallback: "Unavailable" };
@@ -20,9 +20,7 @@ export function formatOptionalNotes(value: string | null | undefined): string {
 }
 
 export function formatNullableNumber(value: number | null | undefined, digits: number): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value.toFixed(digits)
-    : "Unavailable";
+  return formatDecimal(value, digits, { fallback: "Unavailable" });
 }
 
 export function countBy<T>(items: T[], selector: (item: T) => string): Map<string, number> {

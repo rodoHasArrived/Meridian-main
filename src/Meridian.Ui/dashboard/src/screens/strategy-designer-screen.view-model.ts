@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatMoney, formatNumber, formatPnl, formatPrefixedCurrency } from "@/lib/format";
+import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1700,8 +1700,8 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
       instrument: leg.instrument,
       notional,
       share,
-      sharePercent: `${(share * 100).toFixed(1)}%`,
-      barWidth: `${(share * 100).toFixed(2)}%`,
+      sharePercent: formatPercent(share * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+      barWidth: `${formatFixed(share * 100, 2)}%`,
       tone: leg.direction === "Long" ? "long" : "short",
       detail: buildSliceDetail(leg)
     };

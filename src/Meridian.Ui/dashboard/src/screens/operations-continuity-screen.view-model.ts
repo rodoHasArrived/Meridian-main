@@ -3689,7 +3689,7 @@ function buildAccountingRecordSummaryViewModel(
 
   const readiness = summary.auditPackReadiness ?? null;
   const missingCount = readiness?.missingEvidenceCategories?.length ?? 0;
-  const generatedIn = readiness ? `${readiness.generatedInSeconds.toFixed(3)}s` : "not measured";
+  const generatedIn = readiness ? `${formatNumber(readiness.generatedInSeconds, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}s` : "not measured";
 
   return {
     title: "Accounting record",

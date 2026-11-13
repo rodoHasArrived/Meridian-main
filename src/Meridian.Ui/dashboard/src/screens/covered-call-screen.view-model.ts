@@ -15,7 +15,7 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatFixed, formatPrefixedCurrency } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
@@ -1191,7 +1191,7 @@ function buildCoveredCallPayoffChart(
     };
   }
   const path = samples
-    .map((sample, index) => `${index === 0 ? "M" : "L"}${xScale(sample.spot).toFixed(1)},${yScale(sample.payoff).toFixed(1)}`)
+    .map((sample, index) => `${index === 0 ? "M" : "L"}${formatFixed(xScale(sample.spot), 1)},${formatFixed(yScale(sample.payoff), 1)}`)
     .join(" ");
 
   return {

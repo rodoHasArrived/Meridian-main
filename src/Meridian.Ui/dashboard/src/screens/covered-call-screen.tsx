@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatDecimal, formatPrefixedCurrency, formatRatioAsPercent } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
@@ -630,8 +630,8 @@ function ResultsActionPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewModel["run"]["result"]> }) {
   const rows: [string, string][] = [
     ["CAGR", fmtPct(result.metrics.cagr)],
-    ["Sharpe", result.metrics.sharpeRatio.toFixed(2)],
-    ["Sortino", result.metrics.sortinoRatio.toFixed(2)],
+    ["Sharpe", formatDecimal(result.metrics.sharpeRatio, 2)],
+    ["Sortino", formatDecimal(result.metrics.sortinoRatio, 2)],
     ["Max DD", fmtPct(result.metrics.maxDrawdownPct)],
     ["Win rate", fmtPct(result.metrics.winRate)],
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
@@ -871,6 +871,5 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 
 /** Input is a fraction of 1 (0.425 -> "42.50%"), not percent units. */
 function fmtPct(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(2)}%`;
+  return formatRatioAsPercent(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }

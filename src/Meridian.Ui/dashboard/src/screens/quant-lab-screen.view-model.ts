@@ -1177,7 +1177,7 @@ export function buildToolbarItems(
 }
 
 function formatWholeNumber(value: number): string {
-  return Number.isFinite(value) ? value.toFixed(0) : "0";
+  return formatNumberAmount(value, { maximumFractionDigits: 0, fallback: "0" });
 }
 
 function formatQuantTradeTimestamp(value: string): string {

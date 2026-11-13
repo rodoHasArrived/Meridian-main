@@ -36,7 +36,7 @@ import type {
   RunComparisonRow,
   RunDiff
 } from "@/types";
-import { formatCount as formatCountValue, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
 export type StrategyCommand = "compare" | "diff" | "history";
@@ -1550,27 +1550,9 @@ export function buildStrategyCommandStates({
   };
 }
 
-function formatDecimal(value: number | null | undefined, digits: number): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  return value.toFixed(digits);
-}
-
-/**
- * Input is a fraction of 1 (0.425 -> "42.5%"), not percent units.
- *
- * Kept local rather than delegating to `@/lib/format` because these promotion
- * metrics render ungrouped (`toFixed`) — the shared helper adds thousands
- * separators, which would change existing output.
- */
+/** Input is a fraction of 1 (0.425 -> "42.5%"), not percent units; "Unavailable" when missing. */
 function formatRatioAsPercent(value: number | null | undefined, digits: number): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Unavailable";
-  }
-
-  return `${(value * 100).toFixed(digits)}%`;
+  return formatRatioAsPercentValue(value, { minimumFractionDigits: digits, maximumFractionDigits: digits, fallback: "Unavailable" });
 }
 
 export function buildPromotionEvaluationState(
@@ -1589,7 +1571,7 @@ export function buildPromotionEvaluationState(
     titleTone: promotionEval.isEligible ? "success" : "danger",
     reason: promotionEval.reason.trim() || "Promotion evaluation returned no reason.",
     metricRows: [
-      { id: "sharpe", label: "Sharpe", value: formatDecimal(promotionEval.sharpeRatio, 2) },
+      { id: "sharpe", label: "Sharpe", value: formatNullableNumber(promotionEval.sharpeRatio, 2) },
       { id: "drawdown", label: "Max DD", value: formatRatioAsPercent(promotionEval.maxDrawdownPercent, 1) },
       { id: "return", label: "Return", value: formatRatioAsPercent(promotionEval.totalReturn, 1) }
     ],
@@ -2033,9 +2015,9 @@ export function buildPlotToolState({
       metaItems: [
         datasetName,
         `${formatCountValue(observationCount)} obs`,
-        `β ${beta.toFixed(2)}`,
-        `R² ${rSquared.toFixed(2)}`,
-        `ρ ${correlation.toFixed(2)}`
+        `β ${formatDecimal(beta, 2)}`,
+        `R² ${formatDecimal(rSquared, 2)}`,
+        `ρ ${formatDecimal(correlation, 2)}`
       ],
       xAxisLabel,
       yAxisLabel,
@@ -2072,14 +2054,14 @@ export function buildPlotToolState({
         {
           id: "correlation",
           label: "Correlation",
-          value: correlation.toFixed(2),
+          value: formatDecimal(correlation, 2),
           detail: `${studyName} paired with ${datasetName}`,
           tone: "success"
         },
         {
           id: "regression",
           label: "Regression beta",
-          value: beta.toFixed(2),
+          value: formatDecimal(beta, 2),
           detail: "OLS slope on the active notebook",
           tone: "default"
         },
@@ -2124,35 +2106,35 @@ export function buildPlotToolState({
         {
           id: "mean-y",
           label: "Mean (Y)",
-          value: meanY.toFixed(2),
+          value: formatDecimal(meanY, 2),
           detail: "σ̂ ±18.30",
           tone: "default"
         },
         {
           id: "mean-x",
           label: "Mean (X)",
-          value: meanX.toFixed(2),
+          value: formatDecimal(meanX, 2),
           detail: "σ̂ ±32.41",
           tone: "default"
         },
         {
           id: "correlation",
           label: "Correlation",
-          value: correlation.toFixed(2),
+          value: formatDecimal(correlation, 2),
           detail: "Pearson ρ",
           tone: "success"
         },
         {
           id: "r-squared",
           label: "R²",
-          value: rSquared.toFixed(2),
+          value: formatDecimal(rSquared, 2),
           detail: "OLS fit",
           tone: "success"
         },
         {
           id: "beta",
           label: "β (slope)",
-          value: beta.toFixed(2),
+          value: formatDecimal(beta, 2),
           detail: "SE 0.014",
           tone: "success"
         },
@@ -2180,7 +2162,7 @@ export function buildPlotToolState({
       ],
       distributionBars: plotToolDistributionBars,
       distributionChart: buildPlotToolDistributionChartState(plotToolDistributionBars),
-      distributionSummary: `${formatCountValue(observationCount)} samples centered on spread ${meanX.toFixed(2)} and IV ${meanY.toFixed(2)}.`,
+      distributionSummary: `${formatCountValue(observationCount)} samples centered on spread ${formatDecimal(meanX, 2)} and IV ${formatDecimal(meanY, 2)}.`,
       distributionFootnote: `Latest observation ${latestObservation.timestamp} · ${latestObservation.signalText} · z-score ${latestObservation.zScoreText}.`,
       moments: momentRows,
       momentsTable: buildPlotToolMomentsTable(momentRows),

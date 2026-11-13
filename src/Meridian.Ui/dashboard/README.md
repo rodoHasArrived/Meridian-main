@@ -695,10 +695,13 @@ not been recorded.
   - *Exact amounts*: the accounting helpers in `@/components/accounting/money` read amounts as
     exact decimals (`parseExactDecimal`); `formatMoney` formats a decimal string from its digits
     and `sumAmounts` sums exactly, so a server amount is never rounded through a float.
-  - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
-    counts `.toFixed(` in screens, which skips separators and the sign convention;
+  - *Enforcement*: two ratchets keep screens on `@/lib/format`, and both baselines are empty,
+    so a new occurrence fails the ratchet test. `handRolledNumberFormatting` counts `.toFixed(`
+    in screens, which skips separators and the sign convention: a displayed figure with fixed
+    decimals uses `formatDecimal(value, digits)` (or `formatPercent`, `formatRatioAsPercent`,
+    `formatMoney`), and an SVG coordinate or CSS length uses the ungrouped `formatFixed`.
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
-    imported from `@/lib/format`; its baseline is empty, so a new one fails the ratchet test.
+    imported from `@/lib/format`.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
   to every `MetricSnapshot`, so a screen cannot opt out by accident:
   - *Source*: a figure states where it comes from. `provenance` carries source, as-of time

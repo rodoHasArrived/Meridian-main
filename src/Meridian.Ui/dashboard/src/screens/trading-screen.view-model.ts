@@ -31,7 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction 
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
+import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
 import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
@@ -4474,9 +4474,9 @@ function buildPromotionEvaluationPanel(
     eligibleLabel: evaluation.isEligible ? "Eligible: Yes" : "Eligible: No",
     eligibleTone: evaluation.isEligible ? "success" : "warning",
     metrics: [
-      { id: "sharpe", label: "Sharpe", value: evaluation.sharpeRatio.toFixed(2) },
-      { id: "max-drawdown", label: "Max DD", value: `${evaluation.maxDrawdownPercent.toFixed(1)}%` },
-      { id: "total-return", label: "Return", value: `${evaluation.totalReturn.toFixed(1)}%` }
+      { id: "sharpe", label: "Sharpe", value: formatDecimal(evaluation.sharpeRatio, 2) },
+      { id: "max-drawdown", label: "Max DD", value: formatPercent(evaluation.maxDrawdownPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) },
+      { id: "total-return", label: "Return", value: formatPercent(evaluation.totalReturn, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }
     ],
     reason: evaluation.reason?.trim() ? evaluation.reason : null,
     warnings,

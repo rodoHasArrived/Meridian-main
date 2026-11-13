@@ -9,6 +9,8 @@ import {
   formatCompactCurrency,
   formatCurrency,
   formatCurrencyWithCode,
+  formatDecimal,
+  formatFixed,
   formatNumber,
   formatPercent,
   formatPrefixedCurrency,
@@ -50,6 +52,33 @@ describe("formatNumber", () => {
     expect(formatNumber(-0, { signed: true })).toBe("0");
     expect(formatNumber(0.001, { signed: true, minimumFractionDigits: 2 })).toBe("+0.00");
     expect(formatNumber(Number.NaN, { signed: true, fallback: "Unavailable" })).toBe("Unavailable");
+  });
+});
+
+describe("formatDecimal", () => {
+  it("pins exactly the requested fraction digits and groups thousands", () => {
+    expect(formatDecimal(0.84, 2)).toBe("0.84");
+    expect(formatDecimal(1.5, 3)).toBe("1.500");
+    expect(formatDecimal(1234.5, 2)).toBe("1,234.50");
+    expect(formatDecimal(-12.345678, 6)).toBe("-12.345678");
+    expect(formatDecimal(42.4, 0)).toBe("42");
+    expect(formatDecimal(-0, 2)).toBe("0.00");
+  });
+
+  it("signs explicitly when asked and renders the fallback for missing values", () => {
+    expect(formatDecimal(1.234, 2, { signed: true })).toBe("+1.23");
+    expect(formatDecimal(-1.234, 2, { signed: true })).toBe("-1.23");
+    expect(formatDecimal(null, 2)).toBe("—");
+    expect(formatDecimal(Number.NaN, 2, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+});
+
+describe("formatFixed", () => {
+  it("renders ungrouped machine-readable fixed-point strings for geometry", () => {
+    expect(formatFixed(12.5, 2)).toBe("12.50");
+    expect(formatFixed(1234.567, 1)).toBe("1234.6");
+    expect(formatFixed(-0, 1)).toBe("0.0");
+    expect(formatFixed(100 / 3, 2)).toBe("33.33");
   });
 });
 

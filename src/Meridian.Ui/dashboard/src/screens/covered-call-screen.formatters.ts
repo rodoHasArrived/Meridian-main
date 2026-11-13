@@ -1,25 +1,25 @@
-import { formatCount as formatCountShared, formatUtcTimestamp } from "@/lib/format";
+import {
+  formatCount as formatCountShared,
+  formatDecimal as formatDecimalShared,
+  formatRatioAsPercent as formatRatioAsPercentShared,
+  formatUtcTimestamp
+} from "@/lib/format";
 
 export function formatPrice(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toFixed(2);
+  return formatDecimalShared(value, 2);
 }
 
 export function formatDecimal(value: number, digits: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toFixed(digits);
+  return formatDecimalShared(value, digits);
 }
 
 /**
  * Input is a fraction of 1 (0.425 -> "42.5%"), not percent units.
  *
  * Implied volatility and CAGR arrive from the covered-call API as fractions.
- * Kept local rather than delegating to `@/lib/format` because these render
- * ungrouped (`toFixed`); the shared helper adds thousands separators.
  */
 export function formatRatioAsPercent(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(1)}%`;
+  return formatRatioAsPercentShared(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 export function formatCount(value: number): string {

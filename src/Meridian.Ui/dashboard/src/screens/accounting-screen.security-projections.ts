@@ -31,7 +31,7 @@ import type {
   SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
-import { formatAmountWithCode, formatCount as formatCountValue, formatNumber } from "@/lib/format";
+import { formatAmountWithCode, formatCount as formatCountValue, formatDecimal, formatNumber, formatPercent } from "@/lib/format";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -589,7 +589,7 @@ export function buildSecurityScheduleDetailViewState(row: SecurityScheduleRowVie
       { label: "Event type", value: row.eventTypeLabel },
       { label: "Payment date", value: row.paymentDateLabel },
       { label: "Accrual window", value: accrualWindow, tone: accrualWindow.includes("—") ? "warning" : "default" },
-      { label: "Coupon rate", value: row.couponRatePct !== null ? `${row.couponRatePct.toFixed(3)}%` : "—" },
+      { label: "Coupon rate", value: row.couponRatePct !== null ? formatPercent(row.couponRatePct, { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : "—" },
       { label: "Interest", value: formatScheduleAmount(row.interestAmount, row.currency) },
       { label: "Principal", value: formatScheduleAmount(row.principalAmount, row.currency) },
       { label: "Expected", value: row.expectedAmountLabel },
@@ -826,7 +826,7 @@ export function buildSecurityOpenLotDetailViewState(
 ): SecurityOpenLotDetailViewState {
   const quantityModel = readModel?.quantityModel || "Unspecified quantity model";
   const factor = readModel?.currentFactor !== null && readModel?.currentFactor !== undefined
-    ? readModel.currentFactor.toFixed(6)
+    ? formatDecimal(readModel.currentFactor, 6)
     : "—";
 
   return {
@@ -1428,8 +1428,8 @@ export function formatScheduleFactor(start: number | null, end: number | null): 
     return "—";
   }
 
-  const startLabel = start === null ? "—" : start.toFixed(6);
-  const endLabel = end === null ? "—" : end.toFixed(6);
+  const startLabel = start === null ? "—" : formatDecimal(start, 6);
+  const endLabel = end === null ? "—" : formatDecimal(end, 6);
   return `${startLabel} → ${endLabel}`;
 }
 

@@ -69,6 +69,32 @@ export function formatNumber(value: NullableNumber, options: SignableNumberForma
   return value.toLocaleString(FORMAT_LOCALE, localeOptions);
 }
 
+/**
+ * Display number with exactly `digits` fraction digits, grouped and locale-pinned, e.g.
+ * `formatDecimal(1234.5, 2)` -> "1,234.50", `formatDecimal(0.84, 2)` -> "0.84". This is the
+ * replacement for a displayed `value.toFixed(digits)`; `signed` gives "+0.84" / "-0.84".
+ * Ties round on the shortest decimal form, so 0.35 at one digit reads "0.4" (toFixed gives "0.3").
+ */
+export function formatDecimal(
+  value: NullableNumber,
+  digits: number,
+  options: Omit<SignableNumberFormatOptions, "minimumFractionDigits" | "maximumFractionDigits"> = {}
+): string {
+  // -0 reads "0.00" as it did under toFixed, not "-0.00".
+  return formatNumber(value === 0 ? 0 : value, { ...options, minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+/**
+ * Machine-readable fixed-point string for values a browser parses rather than an operator reads:
+ * SVG path coordinates, polyline points and CSS lengths, e.g. `formatFixed(12.5, 2)` -> "12.50".
+ * Never grouped and never localized, with exactly `Number#toFixed` digits (exact binary rounding,
+ * "NaN" for NaN) so geometry stays byte-stable. Do not use it for a displayed figure: a number an
+ * operator reads goes through `formatDecimal`, `formatNumber`, `formatPercent` or `formatMoney`.
+ */
+export function formatFixed(value: number, digits: number): string {
+  return value.toFixed(digits);
+}
+
 // PERCENT UNITS: the workstation carries percent-like values in two different units,
 // and picking the wrong helper is a silent 100x error in financial output. Read the
 // producing field before choosing:

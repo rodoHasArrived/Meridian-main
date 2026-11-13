@@ -1,4 +1,4 @@
-import { pluralizeCount, formatUtcTimestamp } from "@/lib/format";
+import { formatNumber, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -17,9 +17,7 @@ export function formatBytes(value: number): string {
     unitIndex += 1;
   }
 
-  const formatted = size >= 10 || unitIndex === 0
-    ? size.toFixed(0)
-    : size.toFixed(1).replace(/\.0$/, "");
+  const formatted = formatNumber(size, { maximumFractionDigits: size >= 10 || unitIndex === 0 ? 0 : 1 });
   return `${formatted} ${units[unitIndex]}`;
 }
 

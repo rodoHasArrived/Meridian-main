@@ -85,7 +85,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatNumber, formatPercent } from "@/lib/format";
+import { formatCount, formatDecimal, formatNumber, formatPercent } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -4236,7 +4236,7 @@ function formatDataUploadFileSize(bytes: number): string {
 
   if (bytes >= 1024 * 1024) {
     const megabytes = bytes / (1024 * 1024);
-    return `${Number.isInteger(megabytes) ? megabytes.toFixed(0) : megabytes.toFixed(1)} MB`;
+    return `${formatDecimal(megabytes, Number.isInteger(megabytes) ? 0 : 1)} MB`;
   }
 
   return `${Math.ceil(bytes / 1024)} KB`;

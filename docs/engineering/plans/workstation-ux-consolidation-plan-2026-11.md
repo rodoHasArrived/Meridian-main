@@ -94,9 +94,18 @@ inbox keeps its assignment, snooze and acknowledge controls. The two sources sti
 tables: interleaving them into one grid needs a shared row model for workspace signals and inbox
 items, which is a follow-up.
 
+**P3 `.toFixed()` burn-down (landed 2026-11-13):** `handRolledNumberFormatting` is at 0 (was
+72), so both formatter ratchets in the Phase 1 criteria are met.
+- `@/lib/format` gained `formatDecimal(value, digits)` for displayed figures (grouped, signed
+  option, "—" for non-finite values) and `formatFixed(value, digits)` for SVG and CSS geometry
+  only.
+- Output changes:
+  - Thousands separators on figures of 1,000 or more.
+  - Decimal ties round on the shortest decimal form, so 0.35 at one digit reads 0.4.
+  - "—" replaces "NaN" and "Infinity" where there was no guard.
+
 **Remaining in Phase 1:**
 - Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
-- Bring `handRolledNumberFormatting` (now 72) to 0.
 - One date format with a time-zone preference.
 - A single interleaved Today grid (shared row model) and the P4 scope bar.
 
