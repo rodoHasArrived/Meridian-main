@@ -91,9 +91,6 @@ import type {
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialRecordExplorerSelectedRecordDto,
   ExportAnalysisResult,
-  ExecutionCircuitBreakerActivationResponse,
-  ExecutionControlSnapshot,
-  ExecutionAuditEntry,
   AccountingWorkspaceResponse,
   AssetOperationsDetail,
   FinancialOperationsCommandCenter,
@@ -117,8 +114,6 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
-  PaperSessionDetail,
-  PaperSessionReplayVerification,
   ProviderConnectionRow,
   ProviderCredentialMutationResult,
   ProviderCredentialUpsertRequest,
@@ -238,8 +233,6 @@ import type {
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride,
-  UpdateExecutionCircuitBreakerRequest,
-  UpdateExecutionPositionLimitRequest,
   FeatureCapabilitySettingsResponse,
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
@@ -340,6 +333,7 @@ import type {
   MaintenanceSchedulesResponse
 } from "@/types";
 import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
+import { createExecutionEvidenceApi } from "@/lib/api/execution-evidence.api";
 import { createProviderModulesApi } from "@/lib/api/provider-modules.api";
 import {
   AUTH_API_ENDPOINTS,
@@ -375,14 +369,10 @@ import {
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
-  executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
   executionPositionCloseEndpoint,
-  executionSymbolPositionLimitEndpoint,
   executionSessionCloseEndpoint,
-  executionSessionEndpoint,
-  executionSessionReplayEndpoint,
   riskRuleConfigEndpoint,
   riskRuleStatusEndpoint,
   historicalBarsEndpoint,
@@ -2810,33 +2800,15 @@ export function closePaperSession(sessionId: string) {
   return postJson<TradingActionResult>(executionSessionCloseEndpoint(sessionId));
 }
 
-export function getPaperSessionDetail(sessionId: string) {
-  return getJson<PaperSessionDetail>(executionSessionEndpoint(sessionId));
-}
-
-export function getPaperSessionReplayVerification(sessionId: string) {
-  return getJson<PaperSessionReplayVerification>(executionSessionReplayEndpoint(sessionId));
-}
-
-export function getExecutionAudit(take = 20) {
-  return getJson<ExecutionAuditEntry[]>(executionAuditEndpoint(take));
-}
-
-export function getExecutionControls() {
-  return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
-}
-
-export function updateExecutionCircuitBreaker(request: UpdateExecutionCircuitBreakerRequest) {
-  return postJson<ExecutionCircuitBreakerActivationResponse>(EXECUTION_API_ENDPOINTS.circuitBreaker, request);
-}
-
-export function updateExecutionDefaultPositionLimit(request: UpdateExecutionPositionLimitRequest) {
-  return postJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.defaultPositionLimit, request);
-}
-
-export function updateExecutionSymbolPositionLimit(symbol: string, request: UpdateExecutionPositionLimitRequest) {
-  return postJson<ExecutionControlSnapshot>(executionSymbolPositionLimitEndpoint(symbol), request);
-}
+export const {
+  getPaperSessionDetail,
+  getPaperSessionReplayVerification,
+  getExecutionAudit,
+  getExecutionControls,
+  updateExecutionCircuitBreaker,
+  updateExecutionDefaultPositionLimit,
+  updateExecutionSymbolPositionLimit
+} = createExecutionEvidenceApi(getJson, postJson);
 
 export function getRiskRules() {
   return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
