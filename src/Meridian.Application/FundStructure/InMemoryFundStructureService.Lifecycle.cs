@@ -15,7 +15,8 @@ public sealed partial class InMemoryFundStructureService
             throw new InvalidOperationException("A lifecycle projection must match the latest retained revision.");
         var now = DateTimeOffset.UtcNow;
         var state = retained.Timeline.SingleOrDefault(item => item.EffectiveFrom <= now && (!item.EffectiveTo.HasValue || now < item.EffectiveTo.Value));
-        if (state is null) return;
+        if (state is null)
+            return;
         (long Version, string Json)? snapshot;
         lock (_gate)
         {

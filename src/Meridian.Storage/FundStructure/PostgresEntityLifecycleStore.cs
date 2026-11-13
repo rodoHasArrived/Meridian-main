@@ -14,7 +14,8 @@ public sealed class PostgresEntityLifecycleStore(FundStructureStoreOptions optio
     private async Task<NpgsqlConnection> OpenAsync(CancellationToken ct)
     {
         var connection = new NpgsqlConnection(options.ConnectionString);
-        try { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
+        try
+        { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
         catch { await connection.DisposeAsync().ConfigureAwait(false); throw; }
     }
 
@@ -43,13 +44,15 @@ public sealed class PostgresEntityLifecycleStore(FundStructureStoreOptions optio
             await LockAsync(connection, transaction, tenantId, entityIds, shared: true, ct).ConfigureAwait(false);
             return new EntityLifecycleLeaseGate.Lease(async () =>
             {
-                try { await transaction.DisposeAsync().ConfigureAwait(false); }
+                try
+                { await transaction.DisposeAsync().ConfigureAwait(false); }
                 finally { await connection.DisposeAsync().ConfigureAwait(false); }
             });
         }
         catch
         {
-            if (transaction is not null) await transaction.DisposeAsync().ConfigureAwait(false);
+            if (transaction is not null)
+                await transaction.DisposeAsync().ConfigureAwait(false);
             await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }

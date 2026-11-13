@@ -81,7 +81,8 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         // advisory lock also protects an absent head during simultaneous first-draft creation.
         if (structureAuthority is null)
             await LockEntitiesAsync(connection, transaction, ct).ConfigureAwait(false);
-        else ValidateStructureProof(connection, structureAuthority);
+        else
+            ValidateStructureProof(connection, structureAuthority);
         await LockAgreementAsync(connection, transaction, tenant, agreementId, shared: false, ct).ConfigureAwait(false);
         var original = await ReadStateAsync(connection, transaction, tenant, agreementId, ct).ConfigureAwait(false);
         var unit = new CommandTransaction(this, connection, transaction, tenant, Clone(original));
@@ -126,7 +127,8 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
             transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
             if (structureAuthority is null)
                 await LockEntitiesAsync(connection, transaction, ct).ConfigureAwait(false);
-            else ValidateStructureProof(connection, structureAuthority);
+            else
+                ValidateStructureProof(connection, structureAuthority);
             var states = new List<IntercompanyAgreementStoreState>(ids.Length);
             foreach (var id in ids)
             {

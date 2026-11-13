@@ -1,4 +1,5 @@
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Text;
 
 namespace Meridian.Entities.FundStructure;
 
@@ -14,7 +15,7 @@ public static class IntercompanyAccountingArrangementPolicy
             || !string.Equals(arrangement.CanonicalPayloadHash, legal.PayloadHash, StringComparison.Ordinal)
             || legal.Action == IntercompanyAgreementActionDto.Terminate)
             throw new ArgumentException("The accounting arrangement must pin one exact approved native legal revision.");
-        RequireText(arrangement.ArrangementReference, "reference");
+        RequireArrangementText(arrangement.ArrangementReference, "reference");
         if (!Enum.IsDefined(arrangement.TemplateKind) || !Enum.IsDefined(arrangement.Status))
             throw new ArgumentException("Accounting template or workflow status is invalid.");
         if (arrangement.EffectiveFrom == default || arrangement.EffectiveTo <= arrangement.EffectiveFrom)
@@ -34,9 +35,11 @@ public static class IntercompanyAccountingArrangementPolicy
             IntercompanyAccountingTemplateKindDto.Manual => true,
             _ => false
         };
-        if (!compatible) throw new ArgumentException("The accounting template is incompatible with the canonical legal agreement type.");
+        if (!compatible)
+            throw new ArgumentException("The accounting template is incompatible with the canonical legal agreement type.");
         if (arrangement.TemplateKind is IntercompanyAccountingTemplateKindDto.Guarantee or IntercompanyAccountingTemplateKindDto.Manual
-            && arrangement.PartyMappings is { Count: 0 }) return;
+            && arrangement.PartyMappings is { Count: 0 })
+            return;
         if (arrangement.PartyMappings is null || arrangement.PartyMappings.Count != 2
             || arrangement.PartyMappings.Any(item => item is null)
             || arrangement.PartyMappings.Select(item => item.EntityId).Distinct().Count() != 2
@@ -46,21 +49,21 @@ public static class IntercompanyAccountingArrangementPolicy
         {
             if ((mapping.EntityId != legal.Terms.PartyOneId && mapping.EntityId != legal.Terms.PartyTwoId) || mapping.LedgerBookId == Guid.Empty)
                 throw new ArgumentException("Accounting mappings must belong to the pinned legal parties.");
-            RequireText(mapping.ReceivableAccountNodeId, "receivable node");
-            RequireText(mapping.PayableAccountNodeId, "payable node");
+            RequireArrangementText(mapping.ReceivableAccountNodeId, "receivable node");
+            RequireArrangementText(mapping.PayableAccountNodeId, "payable node");
             if (mapping.ReceivableAccountNodeId == mapping.PayableAccountNodeId)
                 throw new ArgumentException("Receivable and payable require different chart nodes.");
         }
     }
     public static IntercompanyAccountingArrangementStatusDto Transition(IntercompanyAccountingArrangementStatusDto status,
         IntercompanyAccountingArrangementActionDto action) => (status, action) switch
-    {
-        (IntercompanyAccountingArrangementStatusDto.Draft or IntercompanyAccountingArrangementStatusDto.Rejected, IntercompanyAccountingArrangementActionDto.Submit) => IntercompanyAccountingArrangementStatusDto.Submitted,
-        (IntercompanyAccountingArrangementStatusDto.Submitted, IntercompanyAccountingArrangementActionDto.Approve) => IntercompanyAccountingArrangementStatusDto.Approved,
-        (IntercompanyAccountingArrangementStatusDto.Submitted, IntercompanyAccountingArrangementActionDto.Reject) => IntercompanyAccountingArrangementStatusDto.Rejected,
-        (IntercompanyAccountingArrangementStatusDto.Approved, IntercompanyAccountingArrangementActionDto.Retire) => IntercompanyAccountingArrangementStatusDto.Retired,
-        _ => throw new InvalidOperationException($"An accounting arrangement in {status} cannot perform {action}.")
-    };
-    public static string RequireText(string? value, string field) => !string.IsNullOrWhiteSpace(value)
-        ? value.Trim() : throw new ArgumentException($"Accounting arrangement {field} is required.");
+        {
+            (IntercompanyAccountingArrangementStatusDto.Draft or IntercompanyAccountingArrangementStatusDto.Rejected, IntercompanyAccountingArrangementActionDto.Submit) => IntercompanyAccountingArrangementStatusDto.Submitted,
+            (IntercompanyAccountingArrangementStatusDto.Submitted, IntercompanyAccountingArrangementActionDto.Approve) => IntercompanyAccountingArrangementStatusDto.Approved,
+            (IntercompanyAccountingArrangementStatusDto.Submitted, IntercompanyAccountingArrangementActionDto.Reject) => IntercompanyAccountingArrangementStatusDto.Rejected,
+            (IntercompanyAccountingArrangementStatusDto.Approved, IntercompanyAccountingArrangementActionDto.Retire) => IntercompanyAccountingArrangementStatusDto.Retired,
+            _ => throw new InvalidOperationException($"An accounting arrangement in {status} cannot perform {action}.")
+        };
+    public static string RequireArrangementText(string? value, string field) => TextPrimitives.NormalizeOptional(value)
+        ?? throw new ArgumentException($"Accounting arrangement {field} is required.");
 }

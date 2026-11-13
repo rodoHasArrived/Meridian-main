@@ -25,7 +25,8 @@ internal sealed class EntityLifecycleLeaseGate
         return new Lease(async () =>
         {
             await _readersGate.WaitAsync().ConfigureAwait(false);
-            try { if (--_readers == 0) _resource.Release(); }
+            try
+            { if (--_readers == 0) _resource.Release(); }
             finally { _readersGate.Release(); }
         });
     }

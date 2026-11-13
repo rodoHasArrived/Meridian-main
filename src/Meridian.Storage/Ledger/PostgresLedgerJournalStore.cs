@@ -158,7 +158,8 @@ public sealed partial class PostgresLedgerJournalStore :
                 "Consolidation requires the standalone append transaction so authoritative ownership and policy remain locked through commit.");
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(transaction);
-        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false)) return;
+        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
+            return;
         await AppendCoreAsync(connection, transaction, entry, ct, verifiedAmortizationReversal).ConfigureAwait(false);
     }
 
@@ -197,7 +198,8 @@ public sealed partial class PostgresLedgerJournalStore :
         }
 
         await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
-        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false)) return;
+        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
+            return;
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(
                 connection,

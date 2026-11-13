@@ -550,8 +550,8 @@ Declared public members:
 | <code>public async Task SearchAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:2340](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L2340) |  |
 | <code>public async Task LoadDetailAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:2420](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L2420) |  |
 | <code>public async Task LoadSelectedTrustSnapshotAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:2423](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L2423) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:3448](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L3448) |  |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:3478](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L3478) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:3303](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L3303) |  |
+| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:3333](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L3333) |  |
 
 Source: [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Import.cs:15](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.Import.cs#L15).
 

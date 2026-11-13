@@ -44,12 +44,14 @@ internal static class CashDividendEntitlementLock
         private int _disposed;
         public async ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) != 0 || connection.State != ConnectionState.Open) return;
+            if (Interlocked.Exchange(ref _disposed, 1) != 0 || connection.State != ConnectionState.Open)
+                return;
             await using var command = connection.CreateCommand();
             command.CommandTimeout = 5;
             command.CommandText = "select pg_advisory_unlock_shared(hashtextextended(@scope, 0))";
             command.Parameters.AddWithValue("scope", $"cash-dividend-entitlement-book:{bookId:D}");
-            try { _ = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false); }
+            try
+            { _ = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false); }
             catch
             {
                 // Do not let an uncertain session lock survive on a pooled connector, including

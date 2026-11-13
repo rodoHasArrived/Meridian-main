@@ -28,12 +28,12 @@ public sealed class ConsolidationTransitionPostgresTests
         await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
         await connection.OpenAsync();
         foreach (var table in new[] { "consolidation_transition_receipts", "consolidation_transition_previews" })
-        foreach (var mutation in new[] { $"update \"{database.Options.SchemaName}\".{table} set tenant_id='rewritten'",
+            foreach (var mutation in new[] { $"update \"{database.Options.SchemaName}\".{table} set tenant_id='rewritten'",
                      $"delete from \"{database.Options.SchemaName}\".{table}", $"truncate \"{database.Options.SchemaName}\".{table}" })
-        {
-            await using var command = new NpgsqlCommand(mutation, connection);
-            await Assert.ThrowsAsync<PostgresException>(() => command.ExecuteNonQueryAsync());
-        }
+            {
+                await using var command = new NpgsqlCommand(mutation, connection);
+                await Assert.ThrowsAsync<PostgresException>(() => command.ExecuteNonQueryAsync());
+            }
     }
 
     [LedgerDatabaseFact]
@@ -89,7 +89,8 @@ public sealed class ConsolidationTransitionPostgresTests
 
         async Task<Exception?> TryAppend(ConsolidationTransitionPreviewDto value)
         {
-            try { await store.AppendAsync(ConsolidationTransitionStoreTests.Receipt(value)); return null; }
+            try
+            { await store.AppendAsync(ConsolidationTransitionStoreTests.Receipt(value)); return null; }
             catch (Exception exception) { return exception; }
         }
     }

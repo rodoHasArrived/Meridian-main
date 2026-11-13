@@ -62,7 +62,8 @@ public sealed class LedgerBookControlsPostgresTests
         while (directory is not null)
         {
             var path = Path.Combine(directory.FullName, "src", "Meridian.Storage", "Ledger", "Migrations", "V_ledger_061__entity_controls.sql");
-            if (File.Exists(path)) return path;
+            if (File.Exists(path))
+                return path;
             directory = directory.Parent;
         }
         throw new DirectoryNotFoundException("The entity control migration could not be located.");

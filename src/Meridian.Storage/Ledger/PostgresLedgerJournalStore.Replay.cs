@@ -18,7 +18,8 @@ public sealed partial class PostgresLedgerJournalStore
         var mappings = await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
         var collisions = await FindPostingIdentityCollisionsAsync(connection, transaction,
             LedgerPostingIdentity.FromWrite(entry), ct).ConfigureAwait(false);
-        if (collisions.Count == 0) return false;
+        if (collisions.Count == 0)
+            return false;
         if (collisions.Count != 1 || !RetainedPostingEquivalence.Matches(collisions[0], entry, out _))
             throw new LedgerValidationException("Posting identity collision: retained accounting content differs from the requested posting.");
         // Retained records identify their book through the authoritative period, not a candidate

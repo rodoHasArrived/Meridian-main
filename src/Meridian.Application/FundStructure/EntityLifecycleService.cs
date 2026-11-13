@@ -45,7 +45,8 @@ public sealed class EntityLifecycleService(
     {
         ArgumentNullException.ThrowIfNull(request);
         var tenant = Tenant();
-        if (string.IsNullOrWhiteSpace(actor)) throw new InvalidOperationException("An authenticated lifecycle actor is required.");
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new InvalidOperationException("An authenticated lifecycle actor is required.");
         var graph = await RequireEntityAsync(request.EntityId, ct).ConfigureAwait(false);
         EntityLifecyclePolicy.ValidateTimeline(request.EntityId, request.Timeline);
         foreach (var successorId in request.Timeline.Where(state => state.SuccessorEntityId.HasValue).Select(state => state.SuccessorEntityId!.Value).Distinct())
@@ -56,10 +57,12 @@ public sealed class EntityLifecycleService(
             var next = successorId;
             while (true)
             {
-                if (!visited.Add(next)) throw new InvalidOperationException("Lifecycle successors cannot form a cycle.");
+                if (!visited.Add(next))
+                    throw new InvalidOperationException("Lifecycle successors cannot form a cycle.");
                 var history = await store.GetLatestAsync(tenant, next, ct).ConfigureAwait(false);
                 var successor = history?.Timeline.LastOrDefault()?.SuccessorEntityId;
-                if (!successor.HasValue) break;
+                if (!successor.HasValue)
+                    break;
                 next = successor.Value;
             }
         }

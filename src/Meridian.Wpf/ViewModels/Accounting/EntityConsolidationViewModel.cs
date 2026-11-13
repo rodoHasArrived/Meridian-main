@@ -35,7 +35,8 @@ public sealed class EntityConsolidationViewModel : BindableBase
         LoadTimelineCommand = new AsyncRelayCommand(LoadTimelineAsync, () => _client is not null && !IsBusy && SelectedOrganization is not null && SelectedEntity is not null && AsOf.HasValue);
         PreviewCommand = new AsyncRelayCommand(PreviewAsync, () => _client is not null && !IsBusy && Request is not null);
         CreateDraftsCommand = new AsyncRelayCommand(CreateDraftsAsync, () => !IsBusy && _preview is { CanCreateDrafts: true } && _preview.Blockers.Count == 0 && _preview.Request == Request);
-        if (client is null) _status = "Entity and consolidation inspection is unavailable: the workstation API client is not registered.";
+        if (client is null)
+            _status = "Entity and consolidation inspection is unavailable: the workstation API client is not registered.";
     }
 
     public IAsyncRelayCommand LoadChoicesCommand { get; }
@@ -69,14 +70,16 @@ public sealed class EntityConsolidationViewModel : BindableBase
         get => _organization;
         set
         {
-            if (!SetProperty(ref _organization, value)) return;
+            if (!SetProperty(ref _organization, value))
+                return;
             Invalidate();
             SelectedEntity = null;
             SelectedOwnershipRoot = null;
             var businessIds = _structure?.Businesses.Where(item => item.OrganizationId == value?.OrganizationId).Select(item => item.BusinessId).ToHashSet() ?? [];
             Replace(OwnershipRoots, _structure?.Funds.Where(item => item.BusinessId.HasValue && businessIds.Contains(item.BusinessId.Value)) ?? []);
             var reachable = new HashSet<Guid>();
-            if (value is not null) reachable.Add(value.OrganizationId);
+            if (value is not null)
+                reachable.Add(value.OrganizationId);
             if (_structure is not null)
             {
                 bool changed;
@@ -84,7 +87,8 @@ public sealed class EntityConsolidationViewModel : BindableBase
                 {
                     changed = false;
                     foreach (var link in _structure.OwnershipLinks)
-                        if (reachable.Contains(link.ParentNodeId)) changed |= reachable.Add(link.ChildNodeId);
+                        if (reachable.Contains(link.ParentNodeId))
+                            changed |= reachable.Add(link.ChildNodeId);
                 } while (changed);
             }
             Replace(Entities, _structure?.Entities.Where(item => reachable.Contains(item.EntityId)) ?? []);
@@ -97,11 +101,13 @@ public sealed class EntityConsolidationViewModel : BindableBase
         get => _book;
         set
         {
-            if (!SetProperty(ref _book, value)) return;
+            if (!SetProperty(ref _book, value))
+                return;
             Invalidate();
             SelectedPeriod = null;
             Periods.Clear();
-            if (value is not null && _client is not null) _ = LoadPeriodsAsync(value.LedgerBookId);
+            if (value is not null && _client is not null)
+                _ = LoadPeriodsAsync(value.LedgerBookId);
         }
     }
     public LedgerPeriodDto? SelectedPeriod { get => _period; set { if (SetProperty(ref _period, value)) Invalidate(); } }
@@ -141,8 +147,17 @@ public sealed class EntityConsolidationViewModel : BindableBase
         Cancel();
         _preview = null;
         _timeline = null;
-        Balances.Clear(); Matches.Clear(); Drafts.Clear(); Sources.Clear(); TranslationReserveRows.Clear(); Blockers.Clear();
-        TimelineRows.Clear(); OwnershipRows.Clear(); AgreementRows.Clear(); BookRows.Clear(); Warnings.Clear();
+        Balances.Clear();
+        Matches.Clear();
+        Drafts.Clear();
+        Sources.Clear();
+        TranslationReserveRows.Clear();
+        Blockers.Clear();
+        TimelineRows.Clear();
+        OwnershipRows.Clear();
+        AgreementRows.Clear();
+        BookRows.Clear();
+        Warnings.Clear();
         SelectedSource = null;
         ScopeDetail = "Scope changed. Preview again to inspect current server evidence.";
         EntityDetail = "Scope changed. Load the selected entity timeline again.";
@@ -159,7 +174,8 @@ public sealed class EntityConsolidationViewModel : BindableBase
         return RunAsync(async ct =>
         {
             var structure = await _client!.GetStructureAsync(ct);
-            if (ct.IsCancellationRequested) return;
+            if (ct.IsCancellationRequested)
+                return;
             _structure = structure;
             Replace(Organizations, _structure.Organizations);
             Status = Organizations.Count == 0 ? "No organizations are available in this authenticated scope." : "Choose an organization, entity and consolidation scope.";
@@ -169,21 +185,28 @@ public sealed class EntityConsolidationViewModel : BindableBase
     private Task LoadPeriodsAsync(Guid bookId) => RunAsync(async ct =>
     {
         var periods = await _client!.GetPeriodsAsync(bookId, ct);
-        if (ct.IsCancellationRequested || SelectedEliminationBook?.LedgerBookId != bookId) return;
+        if (ct.IsCancellationRequested || SelectedEliminationBook?.LedgerBookId != bookId)
+            return;
         Replace(Periods, periods.OrderByDescending(item => item.StartDate));
         Status = Periods.Count == 0 ? "No periods are available for the selected elimination book." : "Select the elimination period and preview the consolidation.";
     });
 
     public Task LoadTimelineAsync()
     {
-        if (SelectedOrganization is not { } organization || SelectedEntity is not { } entity || AsOf is not { } date) return Task.CompletedTask;
+        if (SelectedOrganization is not { } organization || SelectedEntity is not { } entity || AsOf is not { } date)
+            return Task.CompletedTask;
         _timeline = null;
-        TimelineRows.Clear(); OwnershipRows.Clear(); AgreementRows.Clear(); BookRows.Clear(); Warnings.Clear();
+        TimelineRows.Clear();
+        OwnershipRows.Clear();
+        AgreementRows.Clear();
+        BookRows.Clear();
+        Warnings.Clear();
         return RunAsync(async ct =>
         {
             var timeline = await _client!.GetTimelineAsync(organization.OrganizationId, entity.EntityId,
                 new DateTimeOffset(DateTime.SpecifyKind(date.Date, DateTimeKind.Utc)), ct);
-            if (ct.IsCancellationRequested) return;
+            if (ct.IsCancellationRequested)
+                return;
             _timeline = timeline;
             EntityDetail = $"{timeline.Entity.Name} · {timeline.Entity.LifecycleStatus} · {timeline.Entity.BaseCurrency} · as of {timeline.AsOf:yyyy-MM-dd HH:mm} UTC";
             Replace(Warnings, timeline.Warnings);
@@ -214,9 +237,15 @@ public sealed class EntityConsolidationViewModel : BindableBase
     public Task PreviewAsync()
     {
         var request = Request;
-        if (request is null) return Task.CompletedTask;
+        if (request is null)
+            return Task.CompletedTask;
         _preview = null;
-        Balances.Clear(); Matches.Clear(); Drafts.Clear(); Sources.Clear(); TranslationReserveRows.Clear(); Blockers.Clear();
+        Balances.Clear();
+        Matches.Clear();
+        Drafts.Clear();
+        Sources.Clear();
+        TranslationReserveRows.Clear();
+        Blockers.Clear();
         ScopeDetail = "Loading fresh server consolidation evidence.";
         RaisePropertyChanged(nameof(Preview));
         RaisePropertyChanged(nameof(HasDrafts));
@@ -227,16 +256,23 @@ public sealed class EntityConsolidationViewModel : BindableBase
     public Task CreateDraftsAsync()
     {
         if (IsBusy || _preview is not { CanCreateDrafts: true } || _preview.Blockers.Count != 0
-            || Request is not { } request || _preview.Request != request) return Task.CompletedTask;
+            || Request is not { } request || _preview.Request != request)
+            return Task.CompletedTask;
         return RunAsync(async ct =>
         {
-            try { var result = await _client!.CreateDraftsAsync(request, ct); if (!ct.IsCancellationRequested) Apply(result); }
+            try
+            { var result = await _client!.CreateDraftsAsync(request, ct); if (!ct.IsCancellationRequested) Apply(result); }
             catch
             {
                 if (!ct.IsCancellationRequested)
                 {
                     _preview = null;
-                    Balances.Clear(); Matches.Clear(); Drafts.Clear(); Sources.Clear(); TranslationReserveRows.Clear(); Blockers.Clear();
+                    Balances.Clear();
+                    Matches.Clear();
+                    Drafts.Clear();
+                    Sources.Clear();
+                    TranslationReserveRows.Clear();
+                    Blockers.Clear();
                     ScopeDetail = "The draft command did not return current evidence. Preview again before continuing.";
                     RaisePropertyChanged(nameof(Preview));
                     RaisePropertyChanged(nameof(HasDrafts));
@@ -268,32 +304,39 @@ public sealed class EntityConsolidationViewModel : BindableBase
 
     private async Task RunAsync(Func<CancellationToken, Task> action)
     {
-        if (_client is null) return;
+        if (_client is null)
+            return;
         Cancel();
         var generation = _generation;
         using var cts = new CancellationTokenSource();
         _inFlight = cts;
         IsBusy = true;
         Status = "Loading governed evidence…";
-        try { await action(cts.Token); }
+        try
+        { await action(cts.Token); }
         catch (OperationCanceledException) when (cts.IsCancellationRequested) { }
         catch (Exception exception) { if (generation == _generation) Status = $"Unavailable: {exception.Message}"; }
         finally
         {
-            if (generation == _generation) IsBusy = false;
-            if (ReferenceEquals(_inFlight, cts)) _inFlight = null;
+            if (generation == _generation)
+                IsBusy = false;
+            if (ReferenceEquals(_inFlight, cts))
+                _inFlight = null;
         }
     }
 
     private void NotifyCommands()
     {
-        LoadChoicesCommand.NotifyCanExecuteChanged(); LoadTimelineCommand.NotifyCanExecuteChanged();
-        PreviewCommand.NotifyCanExecuteChanged(); CreateDraftsCommand.NotifyCanExecuteChanged();
+        LoadChoicesCommand.NotifyCanExecuteChanged();
+        LoadTimelineCommand.NotifyCanExecuteChanged();
+        PreviewCommand.NotifyCanExecuteChanged();
+        CreateDraftsCommand.NotifyCanExecuteChanged();
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> values)
     {
         target.Clear();
-        foreach (var value in values) target.Add(value);
+        foreach (var value in values)
+            target.Add(value);
     }
 }

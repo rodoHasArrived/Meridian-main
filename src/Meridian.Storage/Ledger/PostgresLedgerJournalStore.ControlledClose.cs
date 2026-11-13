@@ -52,13 +52,16 @@ public sealed partial class PostgresLedgerJournalStore : IControlledCloseAuthori
             + (id.HasValue ? "authorization_id=@id" : "ledger_book_id=@book and journal_entry_id=@journal and draft_version=@version")
             + " and (lower(trim(tenant_id))=lower(trim(@tenant)) or (tenant_id is null and @tenant='')) order by recorded_at_utc desc,authorization_id desc limit 1";
         command.Parameters.AddWithValue("tenant", ResolveCallerTenant() ?? string.Empty);
-        if (id.HasValue) command.Parameters.AddWithValue("id", id.Value);
-        else { command.Parameters.AddWithValue("book", book!.Value); command.Parameters.AddWithValue("journal", journal!.Value); command.Parameters.AddWithValue("version", version!.Value); }
+        if (id.HasValue)
+            command.Parameters.AddWithValue("id", id.Value);
+        else
+        { command.Parameters.AddWithValue("book", book!.Value); command.Parameters.AddWithValue("journal", journal!.Value); command.Parameters.AddWithValue("version", version!.Value); }
         ControlledCloseAuthorizationDto? result;
         Guid foundBook;
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+            if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+                return null;
             foundBook = reader.GetGuid(0);
             result = JsonSerializer.Deserialize<ControlledCloseAuthorizationDto>(reader.GetString(1), JsonOptions);
         }

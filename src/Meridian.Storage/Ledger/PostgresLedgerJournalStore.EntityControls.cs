@@ -37,7 +37,8 @@ public sealed partial class PostgresLedgerJournalStore
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entries);
-        if (entries.Count == 0) return EmptyLedgerAuthorityLease.Instance;
+        if (entries.Count == 0)
+            return EmptyLedgerAuthorityLease.Instance;
         RequireWriteTenant();
         if (_postingAuthorityScopes.TryGetValue(transaction, out _))
             throw new LedgerValidationException("A posting authority scope already exists for this transaction.");
@@ -103,9 +104,11 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         var leases = new List<IAsyncDisposable>();
-        foreach (var context in contexts) context.IsReviewOnly = reviewOnly;
+        foreach (var context in contexts)
+            context.IsReviewOnly = reviewOnly;
         if (retainedStructureAuthority is not null)
-            foreach (var context in contexts) context.RetainStructureAuthority(retainedStructureAuthority);
+            foreach (var context in contexts)
+                context.RetainStructureAuthority(retainedStructureAuthority);
         try
         {
             if (contexts.Count == 0)
@@ -125,7 +128,8 @@ public sealed partial class PostgresLedgerJournalStore
             foreach (var authority in authorities.Where(item => item.ControlName != "intercompany"))
                 leases.Add(await authority.AcquireAsync(contexts.Where(item => item.Book.LedgerBookId != Guid.Empty).ToArray(), ct).ConfigureAwait(false));
             var canonical = await AcquireCanonicalBatchAuthorityAsync(connection, transaction, contexts, ct).ConfigureAwait(false);
-            if (canonical is not null) leases.Add(canonical);
+            if (canonical is not null)
+                leases.Add(canonical);
             foreach (var authority in authorities.Where(item => item.ControlName == "intercompany"))
                 leases.Add(await authority.AcquireAsync(contexts.Where(item => item.Book.LedgerBookId != Guid.Empty).ToArray(), ct).ConfigureAwait(false));
             foreach (var context in contexts)
@@ -169,7 +173,9 @@ public sealed partial class PostgresLedgerJournalStore
         var fingerprint = PostingAuthorityFingerprint(write);
         var context = scope.Contexts.SingleOrDefault(item => item.Write.Entry.JournalEntryId == write.Entry.JournalEntryId
             && PostingAuthorityFingerprint(item.Write) == fingerprint
-            && (period.LedgerBookId ?? Guid.Empty) == item.Book.LedgerBookId)
+            && (period.LedgerBookId is { } authoritativeBook
+                ? authoritativeBook == item.Book.LedgerBookId
+                : item.Book.LedgerBookId == Guid.Empty))
             ?? throw new LedgerValidationException("The journal changed after posting authority was acquired.");
         return WithControlDecision(write, context.Controls.Mode, context.Controls.Version, context.Decisions.ToArray());
     }
@@ -179,11 +185,19 @@ public sealed partial class PostgresLedgerJournalStore
     {
         var tags = new Dictionary<string, string>(write.Entry.Metadata.Tags ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase)
         {
-            [ControlDecisionTag] = JsonSerializer.Serialize(new { Mode = mode, PolicyVersion = "entity-intercompany-v1",
-                Version = version, Decisions = decisions }, JsonOptions)
+            [ControlDecisionTag] = JsonSerializer.Serialize(new
+            {
+                Mode = mode,
+                PolicyVersion = "entity-intercompany-v1",
+                Version = version,
+                Decisions = decisions
+            }, JsonOptions)
         };
-        return write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
-            write.Entry.Description, write.Entry.Lines, write.Entry.Metadata with { Tags = tags }) };
+        return write with
+        {
+            Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
+            write.Entry.Description, write.Entry.Lines, write.Entry.Metadata with { Tags = tags })
+        };
     }
 
     private static string PostingAuthorityFingerprint(LedgerJournalEntryWrite write)
@@ -206,7 +220,8 @@ public sealed partial class PostgresLedgerJournalStore
         public bool Disposed { get; private set; }
         public async ValueTask DisposeAsync()
         {
-            if (Disposed) return;
+            if (Disposed)
+                return;
             Disposed = true;
             owner._postingAuthorityScopes.Remove(transaction);
             for (var index = leases.Count - 1; index >= 0; index--)
@@ -229,7 +244,8 @@ public sealed partial class PostgresLedgerJournalStore
         command.CommandText = $"select ledger_book_id,mode,version,policy_version,created_at_utc,activated_at_utc,activated_by,migration_receipt_id from {Qualified("ledger_book_controls")} where ledger_book_id=@book {(forUpdate ? "for update" : transaction is null ? "" : "for share")};";
         command.Parameters.AddWithValue("book", bookId);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return new(reader.GetGuid(0), Enum.Parse<LedgerBookControlModeDto>(reader.GetString(1)), reader.GetInt64(2),
             reader.GetString(3), ReadUtcDateTimeOffset(reader, 4), reader.IsDBNull(5) ? null : ReadUtcDateTimeOffset(reader, 5),
             reader.IsDBNull(6) ? null : reader.GetString(6), reader.IsDBNull(7) ? null : reader.GetString(7));
@@ -247,8 +263,10 @@ public sealed partial class PostgresLedgerJournalStore
         await EnsureBookWriteAuthorityAsync(connection, transaction, bookId, ct).ConfigureAwait(false);
         var profile = await LoadBookControlsAsync(connection, transaction, bookId, true, ct).ConfigureAwait(false)
             ?? throw new LedgerValidationException("Book control profile is missing.");
-        if (profile.Version != expectedVersion) throw new LedgerValidationException("Book controls changed; repeat migration preflight.");
-        if (profile.Mode == LedgerBookControlModeDto.Enforced) return profile;
+        if (profile.Version != expectedVersion)
+            throw new LedgerValidationException("Book controls changed; repeat migration preflight.");
+        if (profile.Mode == LedgerBookControlModeDto.Enforced)
+            return profile;
         var book = await LoadLedgerBookAsync(connection, transaction, bookId, ct).ConfigureAwait(false)
             ?? throw new LedgerValidationException("Book was not found.");
         await using var preflight = await AcquireControlPreflightAsync(book, profile, ct).ConfigureAwait(false);
@@ -311,7 +329,8 @@ public sealed partial class PostgresLedgerJournalStore
         }
         catch
         {
-            for (var index = leases.Count - 1; index >= 0; index--) await leases[index].Lease.DisposeAsync().ConfigureAwait(false);
+            for (var index = leases.Count - 1; index >= 0; index--)
+                await leases[index].Lease.DisposeAsync().ConfigureAwait(false);
             throw;
         }
     }
@@ -321,7 +340,8 @@ public sealed partial class PostgresLedgerJournalStore
         public LedgerBookControlPreflightDto Result { get; } = result;
         public async ValueTask DisposeAsync()
         {
-            for (var index = leases.Count - 1; index >= 0; index--) await leases[index].Lease.DisposeAsync().ConfigureAwait(false);
+            for (var index = leases.Count - 1; index >= 0; index--)
+                await leases[index].Lease.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

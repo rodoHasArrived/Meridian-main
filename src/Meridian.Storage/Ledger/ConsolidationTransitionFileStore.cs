@@ -46,7 +46,8 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
         var state = await ReadAsync(ct).ConfigureAwait(false);
         var rows = state.Receipts.Where(row => row.TenantId == tenant && row.Request.OrganizationId == organizationId
             && row.Request.OwnershipRootId == ownershipRootId).OrderBy(row => row.RootVersion).ToArray();
-        foreach (var row in rows) await RequireBooksAsync(row.Request, tenant, row.CompanyId, ct).ConfigureAwait(false);
+        foreach (var row in rows)
+            await RequireBooksAsync(row.Request, tenant, row.CompanyId, ct).ConfigureAwait(false);
         return rows;
     }
 
@@ -54,7 +55,8 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
     {
         var tenant = Tenant();
         var row = (await ReadAsync(ct).ConfigureAwait(false)).Receipts.SingleOrDefault(item => item.TransitionId == transitionId && item.TenantId == tenant);
-        if (row is not null) await RequireBooksAsync(row.Request, tenant, row.CompanyId, ct).ConfigureAwait(false);
+        if (row is not null)
+            await RequireBooksAsync(row.Request, tenant, row.CompanyId, ct).ConfigureAwait(false);
         return row;
     }
 
@@ -62,7 +64,8 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
     {
         var tenant = Tenant();
         var row = (await ReadAsync(ct).ConfigureAwait(false)).Previews.SingleOrDefault(item => item.PreviewId == previewId && item.TenantId == tenant);
-        if (row is not null) await RequireBooksAsync(row.Request, tenant, row.CompanyId, ct).ConfigureAwait(false);
+        if (row is not null)
+            await RequireBooksAsync(row.Request, tenant, row.CompanyId, ct).ConfigureAwait(false);
         return row;
     }
 
@@ -70,7 +73,8 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
     {
         ConsolidationTransitionRules.ValidatePreview(preview);
         var tenant = Tenant();
-        if (tenant != preview.TenantId) throw new TenantScopeRejectedException("foreign transition preview");
+        if (tenant != preview.TenantId)
+            throw new TenantScopeRejectedException("foreign transition preview");
         await _persistence.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -105,7 +109,8 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
         ArgumentNullException.ThrowIfNull(acquireAuthority);
         ArgumentNullException.ThrowIfNull(revalidate);
         var tenant = Tenant();
-        if (tenant != receipt.TenantId) throw new TenantScopeRejectedException("foreign reporting transition");
+        if (tenant != receipt.TenantId)
+            throw new TenantScopeRejectedException("foreign reporting transition");
         await using var domainAuthority = await acquireAuthority(ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Transition domain authority did not retain its validation lease.");
         await using var writer = await EntityLifecycleLeaseGate.For("consolidation-transition:" + _path).EnterWriteAsync(ct).ConfigureAwait(false);
@@ -127,7 +132,8 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
             ConsolidationTransitionRules.ValidateAppend(receipt, state.Receipts.Where(item => item.TenantId == tenant
                 && item.Request.OrganizationId == receipt.Request.OrganizationId && item.Request.OwnershipRootId == receipt.Request.OwnershipRootId).ToArray());
             _writerDepth.Value++;
-            try { await revalidate(ct).ConfigureAwait(false); }
+            try
+            { await revalidate(ct).ConfigureAwait(false); }
             finally { _writerDepth.Value--; }
             await WriteAsync(state with { Receipts = [.. state.Receipts, receipt] }, ct).ConfigureAwait(false);
             return ConsolidationTransitionPostgresStore.Clone(receipt);
@@ -152,14 +158,16 @@ public sealed class ConsolidationTransitionFileStore : IConsolidationTransitionS
 
     private async Task<ConsolidationTransitionFileState> ReadAsync(CancellationToken ct)
     {
-        if (!File.Exists(_path)) return new([], []);
+        if (!File.Exists(_path))
+            return new([], []);
         var state = JsonSerializer.Deserialize(await File.ReadAllTextAsync(_path, ct).ConfigureAwait(false),
             ConsolidationTransitionFileJsonContext.Default.ConsolidationTransitionFileState)
             ?? throw new InvalidDataException("Retained reporting transition state is empty.");
         if (state.Previews.Select(item => item.PreviewId).Distinct().Count() != state.Previews.Count
             || state.Receipts.Select(item => item.TransitionId).Distinct().Count() != state.Receipts.Count)
             throw new InvalidDataException("Retained transition identities are duplicated.");
-        foreach (var preview in state.Previews) ConsolidationTransitionRules.ValidatePreview(preview);
+        foreach (var preview in state.Previews)
+            ConsolidationTransitionRules.ValidatePreview(preview);
         foreach (var group in state.Receipts.GroupBy(item => (item.TenantId, item.Request.OrganizationId, item.Request.OwnershipRootId)))
         {
             var prior = new List<ConsolidationTransitionReceiptDto>();

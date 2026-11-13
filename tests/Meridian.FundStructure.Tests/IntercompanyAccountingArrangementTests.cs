@@ -60,8 +60,11 @@ public sealed class IntercompanyAccountingArrangementTests
     public async Task CreateRejectsMissingVersionOrMismatchedCanonicalHash(int version, bool wrongHash)
     {
         var fixture = new ArrangementFixture();
-        var request = fixture.Request() with { CanonicalAgreementVersion = version,
-            CanonicalPayloadHash = wrongHash ? new string('b', 64) : LegalHash };
+        var request = fixture.Request() with
+        {
+            CanonicalAgreementVersion = version,
+            CanonicalPayloadHash = wrongHash ? new string('b', 64) : LegalHash
+        };
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.CreateAsync("tenant-a", "owner", request));
         Assert.Empty(await fixture.Store.ListAsync("tenant-a"));
         Assert.Equal(0, fixture.Native.ActiveLeases);
@@ -81,8 +84,12 @@ public sealed class IntercompanyAccountingArrangementTests
         await Assert.ThrowsAsync<ArgumentException>(() => fixture.Service.CreateAsync("tenant-a", "owner",
             request with { PartyMappings = [request.PartyMappings[0], request.PartyMappings[1] with { EntityId = Guid.NewGuid() }] }));
         await fixture.Service.CreateAsync("tenant-a", "owner", request);
-        await fixture.Service.CreateAsync("tenant-a", "owner", request with { RequestId = Guid.NewGuid(),
-            ArrangementId = Guid.NewGuid(), ArrangementReference = "separate-profile" });
+        await fixture.Service.CreateAsync("tenant-a", "owner", request with
+        {
+            RequestId = Guid.NewGuid(),
+            ArrangementId = Guid.NewGuid(),
+            ArrangementReference = "separate-profile"
+        });
         Assert.Equal(2, (await fixture.Service.ListAsync("tenant-a")).Count);
         Assert.Null(await fixture.Service.GetAsync("tenant-b", request.ArrangementId));
         Assert.Empty(await fixture.Service.ListAsync("tenant-b"));
@@ -101,7 +108,7 @@ public sealed class IntercompanyAccountingArrangementTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ResolveApprovedRevisionAsync(
             "tenant-a", approved.ArrangementId, approved.RevisionId, Cutoff));
         var unbounded = await fixture.Service.CreateAsync("tenant-a", "owner", request with
-            { RequestId = Guid.NewGuid(), ArrangementId = Guid.NewGuid(), EffectiveTo = null });
+        { RequestId = Guid.NewGuid(), ArrangementId = Guid.NewGuid(), EffectiveTo = null });
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ApplyActionAsync("tenant-a", "owner",
             unbounded.ArrangementId, IntercompanyAccountingArrangementActionDto.Submit, new(Guid.NewGuid(), unbounded.Version)));
         Assert.Contains("cutoff", error.Message, StringComparison.OrdinalIgnoreCase);
@@ -174,7 +181,8 @@ public sealed class IntercompanyAccountingArrangementTests
         var lease = await fixture.Store.AcquireAuthorityLeaseAsync();
         var mutation = fixture.Service.ApplyActionAsync("tenant-a", "owner", draft.ArrangementId,
             IntercompanyAccountingArrangementActionDto.Submit, new(Guid.NewGuid(), draft.Version));
-        try { Assert.False(mutation.IsCompleted); }
+        try
+        { Assert.False(mutation.IsCompleted); }
         finally { await lease.DisposeAsync(); }
         await mutation;
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ApplyActionAsync("tenant-a", "owner",
@@ -222,7 +230,8 @@ public sealed class IntercompanyAccountingArrangementTests
         var finish = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         fixture.Scope.DuringValidation = async (_, active) =>
         {
-            if (active) { validated.TrySetResult(); await finish.Task; }
+            if (active)
+            { validated.TrySetResult(); await finish.Task; }
         };
         var approval = fixture.Service.ApplyActionAsync("tenant-a", "owner", draft.ArrangementId,
             IntercompanyAccountingArrangementActionDto.Approve, new(Guid.NewGuid(), submitted.Version));
@@ -236,7 +245,8 @@ public sealed class IntercompanyAccountingArrangementTests
         }
         finally { finish.TrySetResult(); }
         var approved = await approval;
-        if (amendment is not null) await amendment;
+        if (amendment is not null)
+            await amendment;
         Assert.Equal(IntercompanyAccountingArrangementStatusDto.Approved, approved.Status);
         Assert.Equal(0, fixture.Native.ActiveLeases);
     }
@@ -333,12 +343,19 @@ public sealed class IntercompanyAccountingArrangementTests
                 new(Legal.Terms.PartyTwoId, Guid.NewGuid(), "ar", "ap", "cash")]);
         public IntercompanyAgreementRevisionDto NextLegal(bool termination) => Legal with
         {
-            AgreementVersion = 2, PredecessorAgreementVersion = 1, BaseAgreementVersion = 1,
+            AgreementVersion = 2,
+            PredecessorAgreementVersion = 1,
+            BaseAgreementVersion = 1,
             Action = termination ? IntercompanyAgreementActionDto.Terminate : IntercompanyAgreementActionDto.Amend,
-            Terms = Legal.Terms with { EffectiveFrom = termination ? Legal.Terms.EffectiveFrom : DateOnly.FromDateTime(Cutoff.UtcDateTime),
+            Terms = Legal.Terms with
+            {
+                EffectiveFrom = termination ? Legal.Terms.EffectiveFrom : DateOnly.FromDateTime(Cutoff.UtcDateTime),
                 Action = termination ? IntercompanyAgreementActionDto.Terminate : IntercompanyAgreementActionDto.Amend,
-                TerminationEffectiveDate = termination ? DateOnly.FromDateTime(Cutoff.UtcDateTime) : null },
-            ProposalId = Guid.NewGuid(), PayloadHash = new string('b', 64), ApprovedAtUtc = Cutoff
+                TerminationEffectiveDate = termination ? DateOnly.FromDateTime(Cutoff.UtcDateTime) : null
+            },
+            ProposalId = Guid.NewGuid(),
+            PayloadHash = new string('b', 64),
+            ApprovedAtUtc = Cutoff
         };
     }
 
@@ -391,7 +408,8 @@ public sealed class IntercompanyAccountingArrangementTests
         public async Task ReplaceAsync(params IntercompanyAgreementRevisionDto[] revisions)
         {
             await _authority.WaitAsync();
-            try { _revisions = revisions; }
+            try
+            { _revisions = revisions; }
             finally { _authority.Release(); }
         }
         private sealed class NativeLease(NativeStore owner, IReadOnlyList<IntercompanyAgreementStoreState> agreements)

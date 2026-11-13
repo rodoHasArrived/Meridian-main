@@ -22,7 +22,8 @@ public static class IntercompanyEntityServiceRegistration
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
-        if (services.Any(x => x.ServiceType == typeof(RegistrationMarker))) return services;
+        if (services.Any(x => x.ServiceType == typeof(RegistrationMarker)))
+            return services;
         services.AddSingleton(new RegistrationMarker());
         services.AddFundScopeTenantServices();
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
@@ -200,7 +201,8 @@ public static class IntercompanyEntityServiceRegistration
         public Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            foreach (var context in contexts) context.Decisions.Add(Decision());
+            foreach (var context in contexts)
+                context.Decisions.Add(Decision());
             return Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
         }
         public Task<LedgerBookControlPreflightLease> CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default)

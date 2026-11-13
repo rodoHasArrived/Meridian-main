@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Strategies.Storage.StrategyRunStoreOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1662](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1662).
+Source: [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1669](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1669).
 
 ```csharp
 public sealed record StrategyRunStoreOptions(string RootDirectory)
@@ -20,4 +20,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1664](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1664) |  |
+| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1671](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1671) |  |

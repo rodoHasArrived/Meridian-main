@@ -423,7 +423,7 @@ public sealed record HistoricalPriceAccessSummaryDto(bool IsAvailable, bool HasS
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:85](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L85).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:86](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L86).
 
 Native legal read/lease adapter. Mapping approval cannot manufacture legal approval.
 
@@ -435,16 +435,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:87](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L87) |  |
-| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:89](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L89) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:91](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L91) |  |
-| <code>Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:93](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L93) |  |
+| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:88](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L88) |  |
+| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:90](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L90) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:92](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L92) |  |
+| <code>Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:94](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L94) |  |
 
 ## IIntercompanyAccountingArrangementLegalLease
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:97](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L97).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:98](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L98).
 
 ```csharp
 public interface IIntercompanyAccountingArrangementLegalLease : IAsyncDisposable
@@ -454,9 +454,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IntercompanyAgreementRevisionDto ResolveExact(IntercompanyCanonicalAgreementReferenceDto reference);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:99](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L99) |  |
-| <code>IntercompanyAgreementRevisionDto ResolveEffective(IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:100](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L100) |  |
-| <code>void ValidateWindow(IntercompanyCanonicalAgreementReferenceDto reference, DateTimeOffset from, DateTimeOffset? to);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:101](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L101) |  |
+| <code>IntercompanyAgreementRevisionDto ResolveExact(IntercompanyCanonicalAgreementReferenceDto reference);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:100](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L100) |  |
+| <code>IntercompanyAgreementRevisionDto ResolveEffective(IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:101](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L101) |  |
+| <code>void ValidateWindow(IntercompanyCanonicalAgreementReferenceDto reference, DateTimeOffset from, DateTimeOffset? to);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:102](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L102) |  |
 
 ## ILegalEntityReadAuthorityLease
 
@@ -523,7 +523,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:81](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L81).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:82](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L82).
 
 ```csharp
 public sealed record IntercompanyAccountingArrangementActionRequest(Guid RequestId, long ExpectedVersion, string? Reason = null, DateTimeOffset? EffectiveAt = null, Guid? RevisionId = null);
@@ -545,13 +545,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore] public IntercompanyCanonicalAgreementReferenceDto CanonicalReference =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:29](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L29) |  |
+| <code>[JsonIgnore] public IntercompanyCanonicalAgreementReferenceDto CanonicalReference =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:30](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L30) |  |
 
 ## IntercompanyAccountingArrangementEventDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:61](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L61).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:62](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L62).
 
 ```csharp
 public sealed record IntercompanyAccountingArrangementEventDto(Guid RequestId, string RequestDigest, IntercompanyAccountingArrangementActionDto Action, string Actor, DateTimeOffset RecordedAt, string? Reason, IntercompanyAccountingArrangementDto Snapshot, string PreviousHash = "", string ContentHash = "", Guid? TargetRevisionId = null, IntercompanyAccountingArrangementDto? TargetRevisionSnapshot = null)
@@ -561,13 +561,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore] public IntercompanyAccountingArrangementDto AffectedRevision =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:66](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L66) |  |
+| <code>[JsonIgnore] public IntercompanyAccountingArrangementDto AffectedRevision =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:67](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L67) |  |
 
 ## IntercompanyAccountingArrangementHistoryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:68](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L68).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L69).
 
 ```csharp
 public sealed record IntercompanyAccountingArrangementHistoryDto(IReadOnlyList<IntercompanyAccountingArrangementEventDto> Events)
@@ -577,7 +577,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyAccountingArrangementDto Current =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:70](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L70) |  |
+| <code>public IntercompanyAccountingArrangementDto Current =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L71) |  |
 
 ## IntercompanyAccountingArrangementRevisionResolver
 
@@ -601,7 +601,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementsJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:116](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L116).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:117](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L117).
 
 ```csharp
 public sealed partial class IntercompanyAccountingArrangementsJsonContext : JsonSerializerContext;

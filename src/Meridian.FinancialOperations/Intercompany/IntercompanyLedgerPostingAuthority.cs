@@ -26,15 +26,18 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
             if (ConsolidationPostingEvidenceGuard.Validate(context.Write) is not null)
                 context.Decisions.Add(new("intercompany", "DelegatedConsolidationAuthority", true,
                     "The governed consolidation append retains specialized mapping, source and policy authority."));
-            else ordinary.Add(context);
+            else
+                ordinary.Add(context);
         }
-        if (ordinary.Count == 0) return EmptyLedgerAuthorityLease.Instance;
+        if (ordinary.Count == 0)
+            return EmptyLedgerAuthorityLease.Instance;
         var leases = new List<IAsyncDisposable>();
         try
         {
             leases.Add(await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             leases.Add(await agreements.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
-            if (fxAuthority is not null) leases.Add(await fxAuthority.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
+            if (fxAuthority is not null)
+                leases.Add(await fxAuthority.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             foreach (var context in ordinary.OrderBy(x => x.Book.LedgerBookId))
             {
                 var date = context.Write.PostingCommand?.EffectiveDate ?? context.Write.Entry.Metadata.EffectiveDate
@@ -77,7 +80,8 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
                                 $"{originalId:D}:{retainedOriginalEffectiveDate:yyyy-MM-dd}"));
                         }
                     }
-                    if (!retainedInverse) Check(context, "InvalidIntercompanyReversal", false, "A source-linked reversal must be the exact economic inverse of its immutable original journal.");
+                    if (!retainedInverse)
+                        Check(context, "InvalidIntercompanyReversal", false, "A source-linked reversal must be the exact economic inverse of its immutable original journal.");
                 }
                 context.Decisions.Add(new("intercompany", "IntercompanyControlsEvaluated", true, "Intercompany account and agreement checks evaluated."));
                 foreach (var line in context.Write.Entry.Lines)
@@ -101,10 +105,12 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
                         || historical.Any(x => x.AccountName == line.Account.Name || x.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal))
                         || workspace?.ChartOfAccounts.Any(x => x.IntercompanyRole is not null &&
                             (x.AccountName == line.Account.Name || x.NodeId == dimensions?.ChartAccountNodeId)) == true;
-                    if (matches.Length == 0 && dimensions?.AccountingArrangementId is null && !knownIntercompany) continue;
+                    if (matches.Length == 0 && dimensions?.AccountingArrangementId is null && !knownIntercompany)
+                        continue;
                     try
                     {
-                        if (matches.Length != 1) throw new InvalidOperationException("The intercompany account binding is missing or ambiguous.");
+                        if (matches.Length != 1)
+                            throw new InvalidOperationException("The intercompany account binding is missing or ambiguous.");
                         var binding = matches[0];
                         var chart = workspace?.ChartOfAccounts.SingleOrDefault(x => x.NodeId == binding.ChartAccountNodeId);
                         if (binding.IsArchived || chart is null || chart.IsArchived || chart.IntercompanyRole != binding.Role
@@ -238,7 +244,8 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
                 decisions.Add(new("intercompany", "LegacyBalanceAttribution", valid,
                     $"Outstanding source journal {record.Entry.JournalEntryId:D}, line {line.EntryId:D} requires exact approved agreement attribution."));
             }
-            if (decisions.Count == 0) decisions.Add(new("intercompany", "NoIntercompanyBalances", true,
+            if (decisions.Count == 0)
+                decisions.Add(new("intercompany", "NoIntercompanyBalances", true,
                 "No unresolved intercompany balances or account-role mappings were found; new postings remain checked."));
             return new(decisions, new Lease(leases));
         }

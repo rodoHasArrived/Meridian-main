@@ -16,7 +16,8 @@ internal static class EntityLifecycleSnapshotProjection
             var history = await store.GetLatestAsync(tenant, entities[index].EntityId, ct).ConfigureAwait(false);
             var state = history?.Timeline.SingleOrDefault(item => item.EffectiveFrom <= asOf
                 && (!item.EffectiveTo.HasValue || asOf < item.EffectiveTo.Value));
-            if (state is not null) entities[index] = entities[index] with { LifecycleStatus = state.Status };
+            if (state is not null)
+                entities[index] = entities[index] with { LifecycleStatus = state.Status };
         }
         return snapshot with { Entities = entities };
     }

@@ -92,8 +92,11 @@ public sealed class IntercompanyProposalPostgresTests
             100m, 0m, first.Description, dimensions: first.Dimensions! with { IntercompanyTransactionId = "loan-two" });
         var unrelated = new LedgerEntry(Guid.NewGuid(), first.JournalEntryId, first.Timestamp,
             new("Income:Unrelated", LedgerAccountType.Revenue), 0m, 100m, first.Description);
-        write = write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
-            write.Entry.Description, [first, second, write.Entry.Lines[1], unrelated], write.Entry.Metadata) };
+        write = write with
+        {
+            Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp,
+            write.Entry.Description, [first, second, write.Entry.Lines[1], unrelated], write.Entry.Metadata)
+        };
 
         await fixture.Journals.AppendAsync(write);
 
@@ -336,10 +339,15 @@ public sealed class IntercompanyProposalPostgresTests
             IntercompanyProposalTestData.BookB, proposal.Source.ProposalId);
         var delivery = Correction(fixture.TargetPeriod, counterpart, AccountingPostingIntentDto.Reversal,
             journalId: proposal.Source.ProposalId);
-        delivery = delivery with { Entry = new(delivery.Entry.JournalEntryId, delivery.Entry.Timestamp,
+        delivery = delivery with
+        {
+            Entry = new(delivery.Entry.JournalEntryId, delivery.Entry.Timestamp,
             delivery.Entry.Description, delivery.Entry.Lines, delivery.Entry.Metadata with
-            { Tags = new Dictionary<string, string>(delivery.Entry.Metadata.Tags!)
-                { ["intercompany.proposalId"] = proposal.Source.ProposalId.ToString("D"), ["intercompany.sourceDigest"] = proposal.SourceDigest } }) };
+            {
+                Tags = new Dictionary<string, string>(delivery.Entry.Metadata.Tags!)
+                { ["intercompany.proposalId"] = proposal.Source.ProposalId.ToString("D"), ["intercompany.sourceDigest"] = proposal.SourceDigest }
+            })
+        };
 
         await fixture.Journals.AppendAsync(delivery);
 
@@ -361,10 +369,15 @@ public sealed class IntercompanyProposalPostgresTests
             IntercompanyProposalTestData.BookB, proposal.Source.ProposalId);
         var prepared = Correction(fixture.TargetPeriod, counterpart, AccountingPostingIntentDto.Reversal,
             journalId: proposal.Source.ProposalId);
-        prepared = prepared with { Entry = new(prepared.Entry.JournalEntryId, prepared.Entry.Timestamp,
+        prepared = prepared with
+        {
+            Entry = new(prepared.Entry.JournalEntryId, prepared.Entry.Timestamp,
             prepared.Entry.Description, prepared.Entry.Lines, prepared.Entry.Metadata with
-            { Tags = new Dictionary<string, string>(prepared.Entry.Metadata.Tags!)
-                { ["intercompany.proposalId"] = proposal.Source.ProposalId.ToString("D"), ["intercompany.sourceDigest"] = proposal.SourceDigest } }) };
+            {
+                Tags = new Dictionary<string, string>(prepared.Entry.Metadata.Tags!)
+                { ["intercompany.proposalId"] = proposal.Source.ProposalId.ToString("D"), ["intercompany.sourceDigest"] = proposal.SourceDigest }
+            })
+        };
         // The generated inverse is already prepared and delivered when a reviewer posts a manual
         // correction. Only the append-time check can prevent a second inverse of the same target.
         var manual = Correction(fixture.TargetPeriod, counterpart, AccountingPostingIntentDto.Reversal);
@@ -393,7 +406,8 @@ public sealed class IntercompanyProposalPostgresTests
         var unrelatedCommand = new AccountingPostingCommandDto(Guid.NewGuid(), IntercompanyProposalTestData.BookB,
             fixture.TargetPeriod.PeriodId, IntercompanyProposalTestData.Date, counterpart.Timestamp, unrelatedId.ToString("D"),
             ApprovalState: AccountingPostingApprovalStateDto.Approved, OperatorRationale: "Unrelated transfer fixture",
-            LedgerBookId: IntercompanyProposalTestData.BookB) { Actor = "reviewer" };
+            LedgerBookId: IntercompanyProposalTestData.BookB)
+        { Actor = "reviewer" };
         await fixture.Journals.AppendAsync(new(unrelated, IntercompanyProposalTestData.BookB, fixture.TargetPeriod.PeriodId,
             unrelatedCommand.CommandId, PostingCommand: unrelatedCommand, LedgerBookId: IntercompanyProposalTestData.BookB));
         foreach (var changed in new[] { "originating", "missing-source", "foreign-source", "unmarked-source", "conflicting-source", "digest",
@@ -404,18 +418,31 @@ public sealed class IntercompanyProposalPostgresTests
                 : changed == "unmarked-source" ? unrelatedId : counterpart.JournalEntryId;
             var correction = Correction(fixture.TargetPeriod, counterpart, AccountingPostingIntentDto.Reversal,
                 scale: changed == "amount" ? 0.5m : 1m, sourceId: sourceId);
-            if (changed == "originating") correction = correction with
-            { PostingCommand = correction.PostingCommand! with { Intent = AccountingPostingIntentDto.Originating } };
-            if (changed == "conflicting-source") correction = correction with
-            { PostingCommand = correction.PostingCommand! with { SourceJournalEntryId = Guid.NewGuid() } };
-            if (changed == "unreviewed") correction = correction with
-            { PostingCommand = correction.PostingCommand! with { ApprovalState = AccountingPostingApprovalStateDto.NotRequired }, AdjustmentApproval = null };
-            if (changed is "digest" or "project") correction = correction with { Entry = new(correction.Entry.JournalEntryId,
+            if (changed == "originating")
+                correction = correction with
+                { PostingCommand = correction.PostingCommand! with { Intent = AccountingPostingIntentDto.Originating } };
+            if (changed == "conflicting-source")
+                correction = correction with
+                { PostingCommand = correction.PostingCommand! with { SourceJournalEntryId = Guid.NewGuid() } };
+            if (changed == "unreviewed")
+                correction = correction with
+                { PostingCommand = correction.PostingCommand! with { ApprovalState = AccountingPostingApprovalStateDto.NotRequired }, AdjustmentApproval = null };
+            if (changed is "digest" or "project")
+                correction = correction with
+                {
+                    Entry = new(correction.Entry.JournalEntryId,
                 correction.Entry.Timestamp, correction.Entry.Description, correction.Entry.Lines,
-                correction.Entry.Metadata with { ProjectId = changed == "project" ? "another-project" : correction.Entry.Metadata.ProjectId,
+                correction.Entry.Metadata with
+                {
+                    ProjectId = changed == "project" ? "another-project" : correction.Entry.Metadata.ProjectId,
                     Tags = new Dictionary<string, string>(correction.Entry.Metadata.Tags!)
-                    { ["intercompany.sourceDigest"] = changed == "digest" ? new string('0', 64) : proposal.SourceDigest } }) };
-            if (changed is "transaction" or "contra-account") correction = correction with { Entry = new(correction.Entry.JournalEntryId,
+                    { ["intercompany.sourceDigest"] = changed == "digest" ? new string('0', 64) : proposal.SourceDigest }
+                })
+                };
+            if (changed is "transaction" or "contra-account")
+                correction = correction with
+                {
+                    Entry = new(correction.Entry.JournalEntryId,
                 correction.Entry.Timestamp, correction.Entry.Description, correction.Entry.Lines.Select(line => new LedgerEntry(
                     line.EntryId, line.JournalEntryId, line.Timestamp,
                     changed == "contra-account" && line.Dimensions?.AccountingArrangementId is null
@@ -423,7 +450,8 @@ public sealed class IntercompanyProposalPostgresTests
                     line.Debit, line.Credit, line.Description,
                     changed == "transaction" && line.Dimensions?.AccountingArrangementId is not null
                         ? line.Dimensions with { IntercompanyTransactionId = "another-occurrence" } : line.Dimensions, line.Currency)).ToArray(),
-                correction.Entry.Metadata) };
+                correction.Entry.Metadata)
+                };
 
             var error = await Record.ExceptionAsync(() => fixture.Journals.AppendAsync(correction));
             Assert.True(error is LedgerValidationException, $"{changed}: {error}");
@@ -446,8 +474,10 @@ public sealed class IntercompanyProposalPostgresTests
         {
             IntercompanyAgreementId = proposal.Source.IntercompanyAgreementId,
             IntercompanyAgreementVersion = proposal.Source.IntercompanyAgreementVersion,
-            AccountingArrangementId = proposal.Source.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = proposal.Source.AccountingArrangementRevisionId.ToString("D"),
-            IntercompanyTransactionId = proposal.Source.TransactionId, ChartAccountNodeId = "b-payable",
+            AccountingArrangementId = proposal.Source.AccountingArrangementId.ToString("D"),
+            AccountingArrangementRevisionId = proposal.Source.AccountingArrangementRevisionId.ToString("D"),
+            IntercompanyTransactionId = proposal.Source.TransactionId,
+            ChartAccountNodeId = "b-payable",
             AccountBindingRevisionId = Guid.NewGuid().ToString("D")
         };
         var entry = new JournalEntry(id, now, description, [
@@ -457,7 +487,8 @@ public sealed class IntercompanyProposalPostgresTests
             { ["companyId"] = "company-a", ["intercompany.proposalId"] = id.ToString("D"), ["intercompany.sourceDigest"] = proposal.SourceDigest }));
         var command = new AccountingPostingCommandDto(Guid.NewGuid(), IntercompanyProposalTestData.BookB, fixture.TargetPeriod.PeriodId,
             IntercompanyProposalTestData.Date, now, id.ToString("D"), ApprovalState: AccountingPostingApprovalStateDto.Approved,
-            OperatorRationale: "Reviewed generated counterpart", LedgerBookId: IntercompanyProposalTestData.BookB) { Actor = "reviewer" };
+            OperatorRationale: "Reviewed generated counterpart", LedgerBookId: IntercompanyProposalTestData.BookB)
+        { Actor = "reviewer" };
         await fixture.Journals.AppendAsync(new(entry, IntercompanyProposalTestData.BookB, fixture.TargetPeriod.PeriodId,
             command.CommandId, PostingCommand: command, LedgerBookId: IntercompanyProposalTestData.BookB));
         return (proposal, Assert.Single(await fixture.Journals.GetByPeriodAsync(fixture.TargetPeriod.PeriodId)).Entry);
@@ -477,14 +508,19 @@ public sealed class IntercompanyProposalPostgresTests
             description, line.Dimensions, line.Currency is { } currency ? new(currency.TransactionCurrency, currency.FunctionalCurrency,
                 (reverse ? currency.TransactionCredit : currency.TransactionDebit) * scale,
                 (reverse ? currency.TransactionDebit : currency.TransactionCredit) * scale, currency.FxRateToFunctional) : null)).ToArray(),
-            source.Metadata with { IdempotencyKey = id.ToString("D"), Tags = source.Metadata.Tags!
+            source.Metadata with
+            {
+                IdempotencyKey = id.ToString("D"),
+                Tags = source.Metadata.Tags!
                 .Where(pair => pair.Key is "companyId" or "intercompany.proposalId" or "intercompany.sourceDigest")
-                .ToDictionary(pair => pair.Key, pair => pair.Value) });
+                .ToDictionary(pair => pair.Key, pair => pair.Value)
+            });
         var approvalId = $"approval:{id:D}";
         var command = new AccountingPostingCommandDto(Guid.NewGuid(), bookId, period.PeriodId,
             IntercompanyProposalTestData.Date, now, id.ToString("D"), intent, SourceJournalEntryId: originalId,
             ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: approvalId,
-            OperatorRationale: "Reviewed correction with retained original", LedgerBookId: bookId) { Actor = "reviewer" };
+            OperatorRationale: "Reviewed correction with retained original", LedgerBookId: bookId)
+        { Actor = "reviewer" };
         return new(entry, bookId, period.PeriodId, command.CommandId,
             SourceJournalEntryId: originalId, PostingKind: LedgerPostingKindDto.Adjustment,
             AdjustmentApproval: new(approvalId, LedgerAdjustmentApprovalStatusDto.Approved, "reviewer", now,
@@ -521,8 +557,11 @@ public sealed class IntercompanyProposalPostgresTests
         {
             IntercompanyAgreementId = IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
             IntercompanyAgreementVersion = IntercompanyProposalTestData.Agreement().CanonicalAgreementVersion,
-            AccountingArrangementId = IntercompanyProposalTestData.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
-            IntercompanyTransactionId = transaction, ChartAccountNodeId = "a-receivable", AccountBindingRevisionId = Guid.NewGuid().ToString("D")
+            AccountingArrangementId = IntercompanyProposalTestData.AccountingArrangementId.ToString("D"),
+            AccountingArrangementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
+            IntercompanyTransactionId = transaction,
+            ChartAccountNodeId = "a-receivable",
+            AccountBindingRevisionId = Guid.NewGuid().ToString("D")
         };
         var entry = new JournalEntry(journalId, now, "Synthetic intercompany source", [
             new(Guid.NewGuid(), journalId, now, new("Assets:Due from B", LedgerAccountType.Asset), 100m, 0m, "Synthetic intercompany source", dimensions: dimensions),
@@ -530,7 +569,8 @@ public sealed class IntercompanyProposalPostgresTests
             new JournalEntryMetadata(Tags: new Dictionary<string, string> { ["companyId"] = "company-a" }));
         var command = new AccountingPostingCommandDto(Guid.NewGuid(), IntercompanyProposalTestData.BookA, period.PeriodId,
             IntercompanyProposalTestData.Date, now, journalId.ToString("D"), ApprovalState: AccountingPostingApprovalStateDto.Approved,
-            OperatorRationale: "Synthetic fixture posting", LedgerBookId: IntercompanyProposalTestData.BookA) { Actor = "synthetic-reviewer" };
+            OperatorRationale: "Synthetic fixture posting", LedgerBookId: IntercompanyProposalTestData.BookA)
+        { Actor = "synthetic-reviewer" };
         return new(entry, IntercompanyProposalTestData.BookA, period.PeriodId, command.CommandId, null,
             PostingCommand: command, LedgerBookId: IntercompanyProposalTestData.BookA);
     }

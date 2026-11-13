@@ -243,4 +243,3 @@ public sealed class FixedIncomeAccrualCalculation(
     private static bool SameHolding(LedgerTaxLot[] left, LedgerTaxLot[] right)
         => left.SequenceEqual(right);
 }
-

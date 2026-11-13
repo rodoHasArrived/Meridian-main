@@ -36,13 +36,18 @@ public static partial class LedgerEndpoints
         group.MapPost("/rate-sets/approve", async (ConsolidationFxRateSetDto request, HttpContext context) =>
             await WithFxStoreAsync(context, async store =>
             {
-                if (!EndpointAuthorization.TryResolveActor(context, out var actor)) return Results.Unauthorized();
+                if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                    return Results.Unauthorized();
                 var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var existing = await store.GetRateSetAsync(tenant.TenantId!, tenant.CompanyId!, request.RateSetId, request.Revision, context.RequestAborted).ConfigureAwait(false);
                 var approved = request with
                 {
-                    TenantId = tenant.TenantId!, CompanyId = tenant.CompanyId!, PreparedBy = actor,
-                    ApprovedBy = actor, ApprovedAt = existing?.ApprovedAt ?? DateTimeOffset.UtcNow, ContentHash = null
+                    TenantId = tenant.TenantId!,
+                    CompanyId = tenant.CompanyId!,
+                    PreparedBy = actor,
+                    ApprovedBy = actor,
+                    ApprovedAt = existing?.ApprovedAt ?? DateTimeOffset.UtcNow,
+                    ContentHash = null
                 };
                 await store.RetainRateSetAsync(approved, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(await store.GetRateSetAsync(tenant.TenantId!, tenant.CompanyId!, request.RateSetId, request.Revision, context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -54,7 +59,8 @@ public static partial class LedgerEndpoints
         group.MapGet("/books/{bookId:guid}/configuration", async (Guid bookId, DateOnly asOf, HttpContext context) =>
             await WithFxStoreAsync(context, async store =>
             {
-                if (!await CanAccessPreparationBookAsync(context, bookId).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+                if (!await CanAccessPreparationBookAsync(context, bookId).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
                 var result = await store.GetConfigurationAsync(bookId, asOf, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
             }).ConfigureAwait(false))
@@ -64,7 +70,8 @@ public static partial class LedgerEndpoints
         group.MapGet("/books/{bookId:guid}/configuration/{revision:int}", async (Guid bookId, int revision, HttpContext context) =>
             await WithFxStoreAsync(context, async store =>
             {
-                if (!await CanAccessPreparationBookAsync(context, bookId).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+                if (!await CanAccessPreparationBookAsync(context, bookId).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
                 var result = await store.GetConfigurationRevisionAsync(bookId, revision, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
             }).ConfigureAwait(false))
@@ -74,15 +81,21 @@ public static partial class LedgerEndpoints
         group.MapPost("/books/{bookId:guid}/configuration/approve", async (Guid bookId, ConsolidationFxBookConfigurationDto request, HttpContext context) =>
             await WithFxStoreAsync(context, async store =>
             {
-                if (!EndpointAuthorization.TryResolveActor(context, out var actor)) return Results.Unauthorized();
-                if (request.LedgerBookId != bookId) return Results.BadRequest(new { error = "The route and configuration book must agree." });
-                if (!await CanAccessPreparationBookAsync(context, bookId).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+                if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                    return Results.Unauthorized();
+                if (request.LedgerBookId != bookId)
+                    return Results.BadRequest(new { error = "The route and configuration book must agree." });
+                if (!await CanAccessPreparationBookAsync(context, bookId).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
                 var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var existing = await store.GetConfigurationRevisionAsync(bookId, request.Revision, context.RequestAborted).ConfigureAwait(false);
                 var approved = request with
                 {
-                    TenantId = tenant.TenantId!, CompanyId = tenant.CompanyId!, ApprovedBy = actor,
-                    ApprovedAt = existing?.ApprovedAt ?? DateTimeOffset.UtcNow, ContentHash = null
+                    TenantId = tenant.TenantId!,
+                    CompanyId = tenant.CompanyId!,
+                    ApprovedBy = actor,
+                    ApprovedAt = existing?.ApprovedAt ?? DateTimeOffset.UtcNow,
+                    ContentHash = null
                 };
                 await store.RetainConfigurationAsync(approved, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(await store.GetConfigurationRevisionAsync(bookId, request.Revision, context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -95,8 +108,10 @@ public static partial class LedgerEndpoints
     private static async Task<IResult> WithFxStoreAsync(HttpContext context, Func<IConsolidationFxStore, Task<IResult>> action)
     {
         var store = context.RequestServices.GetService<IConsolidationFxStore>();
-        if (store is null) return ServiceUnavailable("Governed consolidation FX storage is unavailable.");
-        try { return await action(store).ConfigureAwait(false); }
+        if (store is null)
+            return ServiceUnavailable("Governed consolidation FX storage is unavailable.");
+        try
+        { return await action(store).ConfigureAwait(false); }
         catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         catch (InvalidDataException) { return ServiceUnavailable("Retained FX authority is corrupt or unavailable."); }

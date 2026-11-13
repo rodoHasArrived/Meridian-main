@@ -49,10 +49,16 @@ public sealed class ConsolidationTransitionStoreTests : IDisposable
     {
         var first = Preview();
         var sibling = Preview(first.Request with { TransitionId = Guid.NewGuid(), NewEliminationBookId = Guid.NewGuid() });
-        var reuse = Preview(first.Request with { TransitionId = Guid.NewGuid(), PreviousEliminationBookId = first.Request.NewEliminationBookId,
-            NewEliminationBookId = first.Request.PreviousEliminationBookId, CutoverDate = first.Request.CutoverDate.AddDays(2) }, 2, first.Request.TransitionId);
+        var reuse = Preview(first.Request with
+        {
+            TransitionId = Guid.NewGuid(),
+            PreviousEliminationBookId = first.Request.NewEliminationBookId,
+            NewEliminationBookId = first.Request.PreviousEliminationBookId,
+            CutoverDate = first.Request.CutoverDate.AddDays(2)
+        }, 2, first.Request.TransitionId);
         var store = Store(first, previews: [sibling, reuse]);
-        foreach (var value in new[] { first, sibling, reuse }) await store.RetainPreviewAsync(value);
+        foreach (var value in new[] { first, sibling, reuse })
+            await store.RetainPreviewAsync(value);
         await store.AppendAsync(Receipt(first));
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.AppendAsync(Receipt(sibling)));
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.AppendAsync(Receipt(reuse)));
@@ -129,9 +135,9 @@ public sealed class ConsolidationTransitionStoreTests : IDisposable
     {
         var journals = new Mock<ILedgerJournalStore>();
         foreach (var value in new[] { preview }.Concat(previews ?? []))
-        foreach (var book in new[] { value.Request.PreviousEliminationBookId, value.Request.NewEliminationBookId })
-            journals.Setup(x => x.GetLedgerBookAsync(book, It.IsAny<CancellationToken>())).ReturnsAsync(new LedgerBookRecord(book, "fund",
-                value.Request.OwnershipRootId, FundStructureNodeKindDto.Fund, "Elimination book", "USD", preview.PreparedAt, preview.PreparedAt));
+            foreach (var book in new[] { value.Request.PreviousEliminationBookId, value.Request.NewEliminationBookId })
+                journals.Setup(x => x.GetLedgerBookAsync(book, It.IsAny<CancellationToken>())).ReturnsAsync(new LedgerBookRecord(book, "fund",
+                    value.Request.OwnershipRootId, FundStructureNodeKindDto.Fund, "Elimination book", "USD", preview.PreparedAt, preview.PreparedAt));
         var owners = new Mock<IFundProfileTenancyRegistry>();
         owners.Setup(x => x.ResolveAsync("fund", It.IsAny<CancellationToken>())).ReturnsAsync(new FundProfileOwnership("fund", "tenant-a", company));
         return new(path ?? Path.Combine(_directory, "transitions.json"), new TenantAccessor(tenant), journals.Object, owners.Object);

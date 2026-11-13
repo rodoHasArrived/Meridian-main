@@ -500,7 +500,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.StorageEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L17).
+Source: [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L18).
 
 Extension methods for registering storage operation API endpoints. Implements Phase 3B.2 — replaces 19 stub endpoints with working handlers.
 
@@ -512,7 +512,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapStorageEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L19) |  |
+| <code>public static void MapStorageEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L20) |  |
 
 ## StorageQualityEndpoints
 

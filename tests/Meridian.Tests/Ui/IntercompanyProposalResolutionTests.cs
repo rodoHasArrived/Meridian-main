@@ -36,10 +36,16 @@ public sealed class IntercompanyProposalResolutionTests
         var fixture = Fixture();
         var reversal = Record(IntercompanyProposalTestData.BookA, fixture.Proposal.Source.SourceJournalId,
             new(2026, 7, 1), -100m, 2);
-        fixture.SourceRecords.Add(reversal with { SourceJournalEntryId = null,
+        fixture.SourceRecords.Add(reversal with
+        {
+            SourceJournalEntryId = null,
             Entry = new(reversal.Entry.JournalEntryId, reversal.Entry.Timestamp, reversal.Entry.Description, reversal.Entry.Lines,
-                reversal.Entry.Metadata with { Tags = new Dictionary<string, string>
-                { [LedgerJournalReversal.ReversalOfTag] = fixture.Proposal.Source.SourceJournalId.ToString("D") } }) });
+                reversal.Entry.Metadata with
+                {
+                    Tags = new Dictionary<string, string>
+                    { [LedgerJournalReversal.ReversalOfTag] = fixture.Proposal.Source.SourceJournalId.ToString("D") }
+                })
+        });
 
         Assert.Single(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
     }
@@ -62,8 +68,11 @@ public sealed class IntercompanyProposalResolutionTests
         var otherLines = other.Entry.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), original.Entry.JournalEntryId,
             original.Entry.Timestamp, line.Account, line.Debit, line.Credit, line.Description,
             line.Dimensions is { } dimensions ? dimensions with { IntercompanyTransactionId = "another-equal-invoice" } : null)).ToArray();
-        fixture.SourceRecords[0] = original with { Entry = new(original.Entry.JournalEntryId, original.Entry.Timestamp,
-            original.Entry.Description, [.. original.Entry.Lines, .. otherLines], original.Entry.Metadata) };
+        fixture.SourceRecords[0] = original with
+        {
+            Entry = new(original.Entry.JournalEntryId, original.Entry.Timestamp,
+            original.Entry.Description, [.. original.Entry.Lines, .. otherLines], original.Entry.Metadata)
+        };
 
         Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
     }
@@ -94,9 +103,12 @@ public sealed class IntercompanyProposalResolutionTests
         fixture.TargetRecords.Clear();
         var manual = Record(IntercompanyProposalTestData.BookB, null, new(2026, 6, 30), -100m, 1);
         fixture.TargetRecords.Add(manual);
-        fixture.SetProposal(fixture.Proposal with { Status = status,
+        fixture.SetProposal(fixture.Proposal with
+        {
+            Status = status,
             TargetBookId = status == IntercompanyProposalStatusDto.Pending ? null : IntercompanyProposalTestData.BookB,
-            TargetJournalId = status == IntercompanyProposalStatusDto.Pending ? null : fixture.Proposal.Source.ProposalId });
+            TargetJournalId = status == IntercompanyProposalStatusDto.Pending ? null : fixture.Proposal.Source.ProposalId
+        });
         await fixture.Drafts.SaveAsync(GeneratedDraft(fixture.Proposal, ManualJournalEntryStatusDto.Rejected));
         RejectedIntercompanyDraftEvidenceDto? retained = null;
         fixture.Proposals.Setup(x => x.LinkRejectedDraftAsync("tenant-a", fixture.Proposal.Source.ProposalId,
@@ -149,15 +161,21 @@ public sealed class IntercompanyProposalResolutionTests
     private static ManualJournalEntryDraftDto GeneratedDraft(IntercompanyProposalDto proposal, ManualJournalEntryStatusDto status)
         => IntercompanyProposalDraftBuilder.Build(proposal, IntercompanyProposalTestData.Agreement(), IntercompanyProposalTestData.TargetBook(),
             IntercompanyProposalTestData.Period(), [], IntercompanyProposalTestData.TargetBindings(), IntercompanyProposalTestData.Chart(), null, IntercompanyProposalTestData.Now)
-            with { Status = status, Version = 2, TenantId = "tenant-a", CompanyId = "company-a" };
+            with
+        { Status = status, Version = 2, TenantId = "tenant-a", CompanyId = "company-a" };
 
     private static ResolutionFixture Fixture()
     {
         var proposal = IntercompanyProposalTestData.Proposal();
         var source = Record(IntercompanyProposalTestData.BookA, null, new(2026, 6, 30), 100m, 1);
         var target = Record(IntercompanyProposalTestData.BookB, null, new(2026, 6, 30), -100m, 1, proposal.Source.ProposalId);
-        proposal = proposal with { Source = proposal.Source with { SourceJournalId = source.Entry.JournalEntryId },
-            Status = IntercompanyProposalStatusDto.Drafted, TargetBookId = IntercompanyProposalTestData.BookB, TargetJournalId = target.Entry.JournalEntryId };
+        proposal = proposal with
+        {
+            Source = proposal.Source with { SourceJournalId = source.Entry.JournalEntryId },
+            Status = IntercompanyProposalStatusDto.Drafted,
+            TargetBookId = IntercompanyProposalTestData.BookB,
+            TargetJournalId = target.Entry.JournalEntryId
+        };
         var initial = proposal;
         var sourceRecords = new List<LedgerJournalEntryRecord> { source };
         var targetRecords = new List<LedgerJournalEntryRecord> { target };
@@ -198,8 +216,10 @@ public sealed class IntercompanyProposalResolutionTests
         {
             IntercompanyAgreementId = IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
             IntercompanyAgreementVersion = IntercompanyProposalTestData.Agreement().CanonicalAgreementVersion,
-            AccountingArrangementId = IntercompanyProposalTestData.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
-            ChartAccountNodeId = source ? "a-receivable" : "b-payable", IntercompanyTransactionId = "invoice-100"
+            AccountingArrangementId = IntercompanyProposalTestData.AccountingArrangementId.ToString("D"),
+            AccountingArrangementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
+            ChartAccountNodeId = source ? "a-receivable" : "b-payable",
+            IntercompanyTransactionId = "invoice-100"
         };
         var entry = new JournalEntry(journal, timestamp, "Posted finance", [
             new(Guid.NewGuid(), journal, timestamp, new(source ? "Assets:Due from B" : "Liabilities:Due to A", source ? LedgerAccountType.Asset : LedgerAccountType.Liability),

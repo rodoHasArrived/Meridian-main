@@ -21,11 +21,13 @@ public sealed class IntercompanyJournalFamily
 
     public IReadOnlyList<LedgerJournalEntryRecord> Resolve(Guid anchor)
     {
-        if (!_records.TryGetValue(anchor, out var root)) return [];
+        if (!_records.TryGetValue(anchor, out var root))
+            return [];
         var ancestors = new HashSet<Guid> { anchor };
         while (Parent(root) is { } parent)
         {
-            if (!ancestors.Add(parent)) throw new InvalidOperationException("The retained correction lineage contains a cycle.");
+            if (!ancestors.Add(parent))
+                throw new InvalidOperationException("The retained correction lineage contains a cycle.");
             if (!_records.TryGetValue(parent, out root))
                 throw new InvalidOperationException("The retained correction parent is unavailable in the same book and as-of population.");
         }
@@ -35,10 +37,12 @@ public sealed class IntercompanyJournalFamily
         var visited = new HashSet<Guid>();
         while (queue.TryDequeue(out var record))
         {
-            if (!visited.Add(record.Entry.JournalEntryId)) throw new InvalidOperationException("The retained correction lineage is ambiguous.");
+            if (!visited.Add(record.Entry.JournalEntryId))
+                throw new InvalidOperationException("The retained correction lineage is ambiguous.");
             result.Add(record);
             if (_children.TryGetValue(record.Entry.JournalEntryId, out var children))
-                foreach (var child in children) queue.Enqueue(child);
+                foreach (var child in children)
+                    queue.Enqueue(child);
         }
         return result;
     }
@@ -48,10 +52,12 @@ public sealed class IntercompanyJournalFamily
 
     private static Guid? Parent(LedgerJournalEntryRecord record)
     {
-        if (record.SourceJournalEntryId is { } authoritative) return authoritative;
+        if (record.SourceJournalEntryId is { } authoritative)
+            return authoritative;
         var tags = record.Entry.Metadata.Tags;
         foreach (var key in new[] { "reversalOfJournalEntryId", LedgerJournalReversal.ReversalOfTag, "rebookedFromJournalEntryId", "sourceJournalEntryId" })
-            if (Guid.TryParse(tags?.GetValueOrDefault(key), out var parent)) return parent;
+            if (Guid.TryParse(tags?.GetValueOrDefault(key), out var parent))
+                return parent;
         return null;
     }
 }

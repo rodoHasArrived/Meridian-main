@@ -1,7 +1,7 @@
 namespace Meridian.Contracts.FundStructure;
 
 /// <summary>Invocation-bound proof of a live PostgreSQL legal-entity read fence.</summary>
-/// <remarks>Only the storage assembly can mint a proof; consumers cannot manufacture a fence from request data.</remarks>
+/// <remarks>Only the accounting storage assembly can mint a proof; consumers cannot manufacture a fence from request data.</remarks>
 public sealed class LegalEntityReadAuthorityProof
 {
     private readonly Func<bool> _isActive;

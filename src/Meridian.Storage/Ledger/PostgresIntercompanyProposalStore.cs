@@ -71,7 +71,8 @@ public sealed class PostgresIntercompanyProposalStore(LedgerJournalStoreOptions 
     public async Task CompleteAsync(string tenantId, Guid proposalId, string claimToken, Guid targetBookId,
         Guid targetJournalId, CancellationToken ct = default)
     {
-        if (targetBookId == Guid.Empty || targetJournalId == Guid.Empty) throw new ArgumentException("Target identities are required.");
+        if (targetBookId == Guid.Empty || targetJournalId == Guid.Empty)
+            throw new ArgumentException("Target identities are required.");
         await using var connection = await OpenAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
         var current = await LockProposalAsync(connection, transaction, tenantId, proposalId, ct).ConfigureAwait(false);
@@ -240,7 +241,8 @@ public sealed class PostgresIntercompanyProposalStore(LedgerJournalStoreOptions 
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Reason);
-        if (request.RequestId == Guid.Empty) throw new ArgumentException("Retry identity is required.");
+        if (request.RequestId == Guid.Empty)
+            throw new ArgumentException("Retry identity is required.");
         await using var connection = await OpenAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
@@ -274,7 +276,8 @@ public sealed class PostgresIntercompanyProposalStore(LedgerJournalStoreOptions 
 
     private static async Task<int> ExecuteMutationAsync(NpgsqlCommand command, CancellationToken ct)
     {
-        try { return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false); }
+        try
+        { return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false); }
         catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.UniqueViolation)
         {
             throw new InvalidOperationException("The counterpart journal or request identity is already retained by another reviewed proposal. Reload and select the correct transaction.", error);

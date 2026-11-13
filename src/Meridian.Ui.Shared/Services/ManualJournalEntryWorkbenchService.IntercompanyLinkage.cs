@@ -16,7 +16,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var draft = await _draftStore.GetAsync(fund, journalId, ct, tenant, company).ConfigureAwait(false);
         if (draft is null)
         {
-            if (requireExisting) throw new InvalidOperationException("The original delivered counterpart draft is unavailable.");
+            if (requireExisting)
+                throw new InvalidOperationException("The original delivered counterpart draft is unavailable.");
             await retainLink(null).ConfigureAwait(false);
             return;
         }

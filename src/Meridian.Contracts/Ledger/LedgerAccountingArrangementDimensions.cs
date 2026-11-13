@@ -14,7 +14,8 @@ public static class LedgerAccountingArrangementDimensions
             ("accountBindingRevisionId", dimensions.AccountBindingRevisionId),
             ("intercompanyTransactionId", dimensions.IntercompanyTransactionId)
         })
-            if (!string.IsNullOrWhiteSpace(value)) signature += separator + key + "=" + Uri.EscapeDataString(value.Trim());
+            if (!string.IsNullOrWhiteSpace(value))
+                signature += separator + key + "=" + Uri.EscapeDataString(value.Trim());
         return signature;
     }
 }

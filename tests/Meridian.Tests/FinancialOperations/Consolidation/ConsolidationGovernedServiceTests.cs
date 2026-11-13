@@ -159,8 +159,11 @@ public sealed class ConsolidationGovernedServiceTests
                 LegacyIntercompanyAttributionRules.SourceDigest(book, record, line), agreement, arrangement.RevisionId,
                 binding.RevisionId, binding.ChartAccountNodeId, "transaction-one", "maker", "reviewer", Fixture.Time,
                 "evidence:legacy-adoption", "tenant-test", "company-test")
-            { IntercompanyAgreementId = arrangement.CanonicalAgreementId, IntercompanyAgreementVersion = arrangement.CanonicalAgreementVersion,
-                IntercompanyAgreementPayloadHash = arrangement.CanonicalPayloadHash });
+            {
+                IntercompanyAgreementId = arrangement.CanonicalAgreementId,
+                IntercompanyAgreementVersion = arrangement.CanonicalAgreementVersion,
+                IntercompanyAgreementPayloadHash = arrangement.CanonicalPayloadHash
+            });
         }
         var calculation = await service.CalculateAsync(Request());
         Assert.Equal(4, calculation.ProposedLines.Count);
@@ -181,7 +184,7 @@ public sealed class ConsolidationGovernedServiceTests
     {
         var fixture = existing ?? new Fixture();
         var book = (await fixture.Store.Object.GetLedgerBookAsync(Fixture.OverlayBookId))! with
-            { AccountingPolicyId = "governed-test", AccountingPolicyVersion = version };
+        { AccountingPolicyId = "governed-test", AccountingPolicyVersion = version };
         fixture.Store.Setup(x => x.GetLedgerBookAsync(Fixture.OverlayBookId, It.IsAny<CancellationToken>())).ReturnsAsync(book);
         var rules = new List<AccountingPolicyRuleDto>
         {

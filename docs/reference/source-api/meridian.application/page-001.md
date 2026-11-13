@@ -800,7 +800,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Backfill.HistoricalBackfillService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:24](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L24).
+Source: [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:25](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L25).
 
 Orchestrates historical backfills from free/public data providers into the storage pipeline.
 
@@ -812,10 +812,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public HistoricalBackfillService(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ILogger? logger = null, IEventMetrics? metrics = null, BackfillJobsConfig? jobsConfig = null, BackfillStatusStore? checkpointStore = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:34](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L34) |  |
-| <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:50](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L50) |  |
-| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:52](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L52) |  |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:81](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L81) |  |
+| <code>public HistoricalBackfillService(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ILogger? logger = null, IEventMetrics? metrics = null, BackfillJobsConfig? jobsConfig = null, BackfillStatusStore? checkpointStore = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, TimeZoneInfo? intradaySessionTimeZone = null);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:36](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L36) |  |
+| <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:56](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L56) |  |
+| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:64](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L64) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:93](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L93) |  |
 
 ## IBackfillExecutionGateway
 

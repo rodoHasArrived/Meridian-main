@@ -348,7 +348,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:556](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L556).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:623](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L623).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -358,7 +358,7 @@ public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFi
 
 Qualified name: <code>Meridian.Storage.Services.TierMigrationService</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:13](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L13).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:14](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L14).
 
 Service for managing data migration between storage tiers.
 
@@ -370,17 +370,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:29](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L29) |  |
-| <code>public async Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:35](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L35) |  |
-| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:144](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L144) |  |
-| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:206](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L206) |  |
-| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:225](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L225) |  |
+| <code>public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:33](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L33) |  |
+| <code>public async Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:40](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L40) |  |
+| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:155](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L155) |  |
+| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:217](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L217) |  |
+| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:236](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L236) |  |
 
 ## TierStatistics
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:551](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L551).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:618](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L618).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -410,7 +410,7 @@ public sealed record TransformationRecord(DateTime TimestampUtc, string Type, st
 
 Qualified name: <code>Meridian.Storage.Sinks.CatalogSyncSink</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:16](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L16).
+Source: [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:17](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L17).
 
 Decorator around any IStorageSink that automatically updates the IStorageCatalogService whenever data is flushed to disk. This keeps directory indexes and the global catalog in sync with live writes without requiring periodic RebuildCatalogAsync calls.
 
@@ -422,16 +422,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CatalogSyncSink(IStorageSink inner, IStorageCatalogService catalog, IStoragePolicy policy, string rootPath, ILogger&lt;CatalogSyncSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:29](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L29) |  |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:43](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L43) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:54](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L54) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:63](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L63) |  |
+| <code>public CatalogSyncSink(IStorageSink inner, IStorageCatalogService catalog, IStoragePolicy policy, string rootPath, ILogger&lt;CatalogSyncSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:32](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L32) |  |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:46](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L46) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:61](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L61) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/CatalogSyncSink.cs:77](../../../../src/Meridian.Storage/Sinks/CatalogSyncSink.cs#L77) |  |
 
 ## CompositeSink
 
 Qualified name: <code>Meridian.Storage.Sinks.CompositeSink</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:55](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L55).
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:56](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L56).
 
 Fans out events to multiple storage sinks, enabling multi-format storage (e.g., JSONL + Parquet simultaneously) without modifying the EventPipeline. Includes per-sink circuit breaker health tracking to avoid hammering a persistently failing sink.
 
@@ -443,24 +443,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CompositeSink(IEnumerable&lt;IStorageSink&gt; sinks, ILogger&lt;CompositeSink&gt;? logger = null, int maxConsecutiveFailures = 5, TimeSpan? circuitResetTimeout = null, FailurePolicy failurePolicy = FailurePolicy.ContinueOnPartialFailure, TimeProvider? timeProvider = null);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:73](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L73) |  |
-| <code>public int SinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:111](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L111) | Gets the number of underlying sinks. |
-| <code>public long AppendFailures =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:114](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L114) | Gets the total number of individual sink append failures since startup. |
-| <code>public FailurePolicy FailurePolicy =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:117](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L117) | Gets the configured failure policy. |
-| <code>public int HealthySinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:120](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L120) | Gets the number of sinks currently in the SinkHealthState.Healthy state. |
-| <code>public int DegradedSinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:123](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L123) | Gets the number of sinks currently in the SinkHealthState.Degraded state. |
-| <code>public int FailedSinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:126](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L126) | Gets the number of sinks currently in the SinkHealthState.Failed state (circuit open). |
-| <code>public long TotalCircuitBreaks { get; }</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:129](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L129) | Gets the total number of circuit breaker trip events across all sinks. |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:161](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L161) | Appends the event to every child sink whose circuit is not open. Under FailurePolicy.ContinueOnPartialFailure individual sink failures are tolerated only while at least one sink accepts the write. When no sink accepts it (every sink failed or had its circuit open) this method throws, so callers such as the EventPipeline never treat an unpersisted event as durable and commit or truncate the write-ahead log that is still holding it. Under FailurePolicy.FailOnAnyFailure a sink whose circuit is open is not skipped: the append throws for as long as the circuit stays open, exactly as it does when that sink&#x27;s write fails. |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:294](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L294) | Flushes every child sink whose circuit is not open. Throws when any attempted flush fails, and also when no sink was flushed at all because every circuit is open: a flush that persisted nothing must not let callers treat buffered events as durable. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:334](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L334) |  |
-| <code>public IReadOnlyList&lt;SinkHealth&gt; GetSinkHealthReport();</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:355](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L355) | Returns a health report for every registered sink, including circuit breaker state, failure counts, and reset times. Useful for Prometheus metrics and diagnostics endpoints. |
+| <code>public CompositeSink(IEnumerable&lt;IStorageSink&gt; sinks, ILogger&lt;CompositeSink&gt;? logger = null, int maxConsecutiveFailures = 5, TimeSpan? circuitResetTimeout = null, FailurePolicy failurePolicy = FailurePolicy.ContinueOnPartialFailure, TimeProvider? timeProvider = null);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:85](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L85) |  |
+| <code>public int SinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:123](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L123) | Gets the number of underlying sinks. |
+| <code>public long AppendFailures =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:126](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L126) | Gets the total number of individual sink append failures since startup. |
+| <code>public FailurePolicy FailurePolicy =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:129](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L129) | Gets the configured failure policy. |
+| <code>public int HealthySinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:132](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L132) | Gets the number of sinks currently in the SinkHealthState.Healthy state. |
+| <code>public int DegradedSinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:135](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L135) | Gets the number of sinks currently in the SinkHealthState.Degraded state. |
+| <code>public int FailedSinkCount =&gt; …;</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:138](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L138) | Gets the number of sinks currently in the SinkHealthState.Failed state (circuit open). |
+| <code>public long TotalCircuitBreaks { get; }</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:141](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L141) | Gets the total number of circuit breaker trip events across all sinks. |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:173](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L173) | Appends the event to every child sink whose circuit is not open. Under FailurePolicy.ContinueOnPartialFailure individual sink failures are tolerated only while at least one sink accepts the write. When no sink accepts it (every sink failed or had its circuit open) this method throws, so callers such as the EventPipeline never treat an unpersisted event as durable and commit or truncate the write-ahead log that is still holding it. Under FailurePolicy.FailOnAnyFailure a sink whose circuit is open is not skipped: the append throws for as long as the circuit stays open, exactly as it does when that sink&#x27;s write fails. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:329](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L329) | Flushes every child sink whose circuit is not open. Throws when any attempted flush fails, and also when no sink was flushed at all because every circuit is open: a flush that persisted nothing must not let callers treat buffered events as durable. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:372](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L372) |  |
+| <code>public IReadOnlyList&lt;SinkHealth&gt; GetSinkHealthReport();</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:393](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L393) | Returns a health report for every registered sink, including circuit breaker state, failure counts, and reset times. Useful for Prometheus metrics and diagnostics endpoints. |
 
 ## FailurePolicy
 
 Qualified name: <code>Meridian.Storage.Sinks.FailurePolicy</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:40](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L40).
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:41](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L41).
 
 Determines how the composite sink behaves when one or more child sinks fail.
 
@@ -472,8 +472,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ContinueOnPartialFailure</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:43](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L43) | Continue writing to remaining healthy sinks when one fails (default). |
-| <code>FailOnAnyFailure</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:46](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L46) | Throw if any sink fails an append or cannot be written because its circuit is open. |
+| <code>ContinueOnPartialFailure</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:44](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L44) | Continue writing to remaining healthy sinks when one fails (default). |
+| <code>FailOnAnyFailure</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:47](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L47) | Throw if any sink fails an append or cannot be written because its circuit is open. |
 
 ## JsonlBatchOptions
 
@@ -525,15 +525,15 @@ Declared public members:
 | <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:174](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L174) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
 | <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:193](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L193) | Creates a JsonlStorageSink with configurable batch options. |
 | <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:241](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L241) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:401](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L401) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:417](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L417) |  |
-| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:482](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L482) | Returns a diagnostics snapshot for buffered JSONL persistence. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:407](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L407) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:424](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L424) |  |
+| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:489](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L489) | Returns a diagnostics snapshot for buffered JSONL persistence. |
 
 ## JsonlStorageSinkStatistics
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1139](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1139).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1146](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1146).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);
@@ -562,7 +562,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:723](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L723).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:728](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L728).
 
 Configuration options for Parquet storage.
 
@@ -574,12 +574,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:728](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L728) | Number of events to buffer before writing to disk. |
-| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:733](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L733) | Maximum time between flushes. |
-| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:738](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L738) | Compression method for Parquet files. |
-| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:740](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L740) |  |
-| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:742](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L742) |  |
-| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:748](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L748) |  |
+| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:733](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L733) | Number of events to buffer before writing to disk. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:738](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L738) | Maximum time between flushes. |
+| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:743](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L743) | Compression method for Parquet files. |
+| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:745](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L745) |  |
+| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) |  |
+| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:753](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L753) |  |
 
 ## ParquetStorageSink
 
@@ -599,14 +599,14 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:106](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L106) |  |
 | <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:134](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L134) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:153](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L153) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:677](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L677) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:156](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L156) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:682](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L682) |  |
 
 ## SinkHealth
 
 Qualified name: <code>Meridian.Storage.Sinks.SinkHealth</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:27](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L27).
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:28](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L28).
 
 Immutable snapshot of per-sink health information, suitable for metrics and diagnostics.
 
@@ -618,7 +618,7 @@ public sealed record SinkHealth(string SinkType, int SinkIndex, SinkHealthState 
 
 Qualified name: <code>Meridian.Storage.Sinks.SinkHealthState</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:12](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L12).
+Source: [src/Meridian.Storage/Sinks/CompositeSink.cs:13](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L13).
 
 Health state of an individual storage sink within the composite.
 
@@ -630,9 +630,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:15](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L15) | Sink is operating normally. |
-| <code>Degraded</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:18](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L18) | Sink has experienced failures but is still receiving writes. |
-| <code>Failed</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:21](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L21) | Sink circuit breaker is open; writes are being skipped. |
+| <code>Healthy</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:16](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L16) | Sink is operating normally. |
+| <code>Degraded</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:19](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L19) | Sink has experienced failures but is still receiving writes. |
+| <code>Failed</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:22](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L22) | Sink circuit breaker is open; writes are being skipped. |
 
 ## StorageConfigExtensions
 

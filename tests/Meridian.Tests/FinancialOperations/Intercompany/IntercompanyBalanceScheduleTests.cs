@@ -113,7 +113,8 @@ public sealed class IntercompanyBalanceScheduleTests
             var dimensions = new LedgerLineDimensionSet(EntityId: book.FundStructureNodeId.ToString("D"),
                 CounterpartyId: (debit ? IntercompanyProposalTestData.EntityB : IntercompanyProposalTestData.EntityA).ToString("D"))
             {
-                ChartAccountNodeId = chart.NodeId, AccountBindingRevisionId = legacy ? null : binding.RevisionId.ToString("D"),
+                ChartAccountNodeId = chart.NodeId,
+                AccountBindingRevisionId = legacy ? null : binding.RevisionId.ToString("D"),
                 IntercompanyAgreementId = legacy ? null : IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
                 IntercompanyAgreementVersion = legacy ? null : IntercompanyProposalTestData.Agreement().CanonicalAgreementVersion,
                 AccountingArrangementId = legacy ? null : IntercompanyProposalTestData.AccountingArrangementId.ToString("D"),
@@ -162,12 +163,27 @@ public sealed class IntercompanyBalanceScheduleTests
             original = original with { Arrangement = original.Arrangement with { EffectiveTo = boundary } };
             var successor = original with
             {
-                Arrangement = original.Arrangement with { RevisionId = Guid.NewGuid(), RevisionNumber = 2, Version = 6,
-                    CanonicalAgreementVersion = 2, CanonicalPayloadHash = new string('b', 64),
-                    EffectiveFrom = boundary, EffectiveTo = null, SupersedesRevisionId = original.RevisionId },
-                LegalRevision = original.LegalRevision with { AgreementVersion = 2, PredecessorAgreementVersion = 1,
-                    BaseAgreementVersion = 1, Action = IntercompanyAgreementActionDto.Amend, PayloadHash = new string('b', 64),
-                    Terms = original.LegalRevision.Terms with { EffectiveFrom = IntercompanyProposalTestData.Date }, ApprovedAtUtc = boundary }
+                Arrangement = original.Arrangement with
+                {
+                    RevisionId = Guid.NewGuid(),
+                    RevisionNumber = 2,
+                    Version = 6,
+                    CanonicalAgreementVersion = 2,
+                    CanonicalPayloadHash = new string('b', 64),
+                    EffectiveFrom = boundary,
+                    EffectiveTo = null,
+                    SupersedesRevisionId = original.RevisionId
+                },
+                LegalRevision = original.LegalRevision with
+                {
+                    AgreementVersion = 2,
+                    PredecessorAgreementVersion = 1,
+                    BaseAgreementVersion = 1,
+                    Action = IntercompanyAgreementActionDto.Amend,
+                    PayloadHash = new string('b', 64),
+                    Terms = original.LegalRevision.Terms with { EffectiveFrom = IntercompanyProposalTestData.Date },
+                    ApprovedAtUtc = boundary
+                }
             };
             agreements.Setup(x => x.GetAsync(tenant, original.ArrangementId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new IntercompanyAccountingArrangementHistoryDto([
@@ -178,13 +194,19 @@ public sealed class IntercompanyBalanceScheduleTests
                 It.IsAny<DateOnly>(), It.IsAny<CancellationToken>())).ReturnsAsync(successor.LegalRevision);
             agreementService = new(agreements.Object, Mock.Of<IIntercompanyAccountingArrangementScopeAuthority>(), legal.Object);
             var sourceEntry = sourceRecords[0].Entry;
-            sourceRecords[0] = sourceRecords[0] with { Entry = new(sourceEntry.JournalEntryId, sourceEntry.Timestamp, sourceEntry.Description,
-                sourceEntry.Lines, sourceEntry.Metadata with { EffectiveDate = IntercompanyProposalTestData.Date.AddDays(-1) }) };
+            sourceRecords[0] = sourceRecords[0] with
+            {
+                Entry = new(sourceEntry.JournalEntryId, sourceEntry.Timestamp, sourceEntry.Description,
+                sourceEntry.Lines, sourceEntry.Metadata with { EffectiveDate = IntercompanyProposalTestData.Date.AddDays(-1) })
+            };
             var targetEntry = targetRecords[0].Entry;
-            targetRecords[0] = targetRecords[0] with { Entry = new(targetEntry.JournalEntryId, targetEntry.Timestamp, targetEntry.Description,
+            targetRecords[0] = targetRecords[0] with
+            {
+                Entry = new(targetEntry.JournalEntryId, targetEntry.Timestamp, targetEntry.Description,
                 targetEntry.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account,
                     line.Debit, line.Credit, line.Description, line.Dimensions is { } dimensions ? dimensions with
-                    { AccountingArrangementRevisionId = successor.RevisionId.ToString("D"), IntercompanyAgreementVersion = 2 } : null, line.Currency)).ToArray(), targetEntry.Metadata) };
+                    { AccountingArrangementRevisionId = successor.RevisionId.ToString("D"), IntercompanyAgreementVersion = 2 } : null, line.Currency)).ToArray(), targetEntry.Metadata)
+            };
         }
         var sidecars = new Mock<ILegacyIntercompanyAttributionStore>();
         sidecars.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(EmptyLedgerAuthorityLease.Instance);
@@ -194,9 +216,11 @@ public sealed class IntercompanyBalanceScheduleTests
                 IntercompanyProposalTestData.AccountingArrangementId, IntercompanyProposalTestData.RevisionId, binding.RevisionId,
                 binding.ChartAccountNodeId, "legacy-transaction", "preparer", "reviewer", IntercompanyProposalTestData.Now,
                 "retained-migration-evidence", tenant, company)
-            { IntercompanyAgreementId = IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
+            {
+                IntercompanyAgreementId = IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
                 IntercompanyAgreementVersion = IntercompanyProposalTestData.Agreement().CanonicalAgreementVersion,
-                IntercompanyAgreementPayloadHash = IntercompanyProposalTestData.Agreement().CanonicalPayloadHash };
+                IntercompanyAgreementPayloadHash = IntercompanyProposalTestData.Agreement().CanonicalPayloadHash
+            };
         var sourceAttribution = Attribution(sourceBook, sourceRecords[0], sourceBinding);
         var targetAttribution = Attribution(targetBook, targetRecords[0], targetBinding);
         sidecars.Setup(x => x.ListAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns((Guid book, CancellationToken _) =>

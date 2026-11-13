@@ -579,7 +579,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ScoreComponent</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:472](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L472).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:481](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L481).
 
 Describes a health-score component&#x27;s weight, raw score, and weighted contribution.
 
@@ -591,9 +591,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int Weight { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:474](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L474) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:475](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L475) |  |
-| <code>public double WeightedScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:476](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L476) |  |
+| <code>public int Weight { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:483](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L483) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:484](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L484) |  |
+| <code>public double WeightedScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:485](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L485) |  |
 
 ## SearchOptions
 
@@ -1145,10 +1145,10 @@ Declared public members:
 | <code>public async Task&lt;ManualJournalEntryWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L15) |  |
 | <code>public async Task&lt;PrivateCapitalActivityProjectionDto&gt; GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L25) |  |
 | <code>public Task&lt;ManualJournalEntryDraftDto&gt; SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L30) |  |
-| <code>public Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:35](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L35) |  |
-| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L39) |  |
-| <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L43) |  |
-| <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L47) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L40) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L44) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L48) |  |
+| <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L52) |  |
 
 ## AcknowledgeResponse
 

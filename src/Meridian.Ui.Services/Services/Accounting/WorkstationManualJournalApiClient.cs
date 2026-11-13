@@ -29,8 +29,13 @@ public sealed class WorkstationManualJournalApiClient(ApiClientService api) : IW
 
     public Task<ManualJournalEntryDraftDto> SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)
         => Post<ManualJournalEntryDraftDto>(UiApiRoutes.LedgerManualJournalEntryDrafts,
-            request with { TenantId = null, CompanyId = null, ReportGroupPrincipalIds = null,
-                Draft = request.Draft with { TenantId = null, CompanyId = null } }, ct);
+            request with
+            {
+                TenantId = null,
+                CompanyId = null,
+                ReportGroupPrincipalIds = null,
+                Draft = request.Draft with { TenantId = null, CompanyId = null }
+            }, ct);
 
     public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default)
         => Post<ManualJournalEntryDraftDto>(UiApiRoutes.LedgerManualJournalEntryValidate,
@@ -54,8 +59,10 @@ public sealed class WorkstationManualJournalApiClient(ApiClientService api) : IW
     private static string Scope(string? fund, Guid? book)
     {
         var values = new List<string>();
-        if (!string.IsNullOrWhiteSpace(fund)) values.Add("fundProfileId=" + Uri.EscapeDataString(fund));
-        if (book.HasValue) values.Add($"ledgerBookId={book:D}");
+        if (!string.IsNullOrWhiteSpace(fund))
+            values.Add("fundProfileId=" + Uri.EscapeDataString(fund));
+        if (book.HasValue)
+            values.Add($"ledgerBookId={book:D}");
         return values.Count == 0 ? string.Empty : "?" + string.Join("&", values);
     }
 

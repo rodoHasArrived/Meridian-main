@@ -19,7 +19,8 @@ public static class IntercompanyJournalCorrectionEvidence
             var index = unmatched.FindIndex(source => SameLineScope(line, source)
                 && AmountsMatch(source.Debit, line.Credit) && AmountsMatch(source.Credit, line.Debit)
                 && InverseCurrency(line, source));
-            if (index < 0) return false;
+            if (index < 0)
+                return false;
             unmatched.RemoveAt(index);
         }
         return unmatched.Count == 0;
@@ -37,7 +38,8 @@ public static class IntercompanyJournalCorrectionEvidence
 
     private static bool InverseCurrency(LedgerEntry inverse, LedgerEntry original)
     {
-        if (original.Currency is not { } source) return inverse.Currency is null;
+        if (original.Currency is not { } source)
+            return inverse.Currency is null;
         var reversed = new LedgerEntryCurrency(source.TransactionCurrency, source.FunctionalCurrency,
             source.TransactionCredit, source.TransactionDebit, source.FxRateToFunctional);
         return CurrencyMatches(reversed, inverse.Currency, inverse.Debit, inverse.Credit);

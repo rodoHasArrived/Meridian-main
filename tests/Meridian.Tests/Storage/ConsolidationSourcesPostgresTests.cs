@@ -23,7 +23,7 @@ public sealed class ConsolidationSourcesPostgresTests
         var transitions = new ConsolidationTransitionPostgresStore(new LedgerJournalStoreOptions
         {
             ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
-                { ApplicationName = activationName }.ConnectionString,
+            { ApplicationName = activationName }.ConnectionString,
             SchemaName = database.Options.SchemaName
         }, new ConsolidationTransitionStoreTests.TenantAccessor("tenant-a"));
         await transitions.RetainPreviewAsync(preview, ct);
@@ -40,7 +40,7 @@ public sealed class ConsolidationSourcesPostgresTests
             await authority.Entered.Task.WaitAsync(ct);
             var metadataName = $"transition-metadata-order-{Guid.NewGuid():N}";
             await using var metadataConnection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
-                { ApplicationName = metadataName }.ConnectionString);
+            { ApplicationName = metadataName }.ConnectionString);
             await metadataConnection.OpenAsync(ct);
             await using var metadataTransaction = await metadataConnection.BeginTransactionAsync(ct);
             var metadataWrite = ChangeBookMetadataAsync();
@@ -236,7 +236,8 @@ public sealed class ConsolidationSourcesPostgresTests
             Entered.TrySetResult();
             await Continue.Task.WaitAsync(ct);
             var policy = await policies.AcquireConsolidationAuthorityLeaseAsync(ct);
-            try { return new PolicyRouteLease(policy, await transitions.AcquireAuthorityLeaseAsync(ct)); }
+            try
+            { return new PolicyRouteLease(policy, await transitions.AcquireAuthorityLeaseAsync(ct)); }
             catch { await policy.DisposeAsync(); throw; }
         }
     }
@@ -245,7 +246,8 @@ public sealed class ConsolidationSourcesPostgresTests
     {
         public async ValueTask DisposeAsync()
         {
-            try { await route.DisposeAsync(); }
+            try
+            { await route.DisposeAsync(); }
             finally { await policy.DisposeAsync(); }
         }
     }

@@ -20,12 +20,14 @@ public static partial class LedgerEndpoints
         group.MapGet("", async (Guid organizationId, Guid ownershipRootId, HttpContext context) =>
         {
             var store = context.RequestServices.GetService<IConsolidationTransitionStore>();
-            if (store is null) return ServiceUnavailable();
+            if (store is null)
+                return ServiceUnavailable();
             try
             {
                 var rows = await store.ListAsync(organizationId, ownershipRootId, context.RequestAborted).ConfigureAwait(false);
                 foreach (var row in rows)
-                    if (!await TransitionBooksAccessibleAsync(context, row.Request).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+                    if (!await TransitionBooksAccessibleAsync(context, row.Request).ConfigureAwait(false))
+                        return EndpointHelpers.Forbidden();
                 return Results.Json(rows, jsonOptions);
             }
             catch (TenantScopeRejectedException) { return EndpointHelpers.Forbidden(); }
@@ -33,21 +35,26 @@ public static partial class LedgerEndpoints
         group.MapGet("/previews/{previewId:guid}", async (Guid previewId, HttpContext context) =>
         {
             var store = context.RequestServices.GetService<IConsolidationTransitionStore>();
-            if (store is null) return ServiceUnavailable();
+            if (store is null)
+                return ServiceUnavailable();
             try
             {
                 var preview = await store.GetPreviewAsync(previewId, context.RequestAborted).ConfigureAwait(false);
-                if (preview is null) return Results.NotFound();
-                if (!await TransitionBooksAccessibleAsync(context, preview.Request).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+                if (preview is null)
+                    return Results.NotFound();
+                if (!await TransitionBooksAccessibleAsync(context, preview.Request).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
                 return Results.Json(preview, jsonOptions);
             }
             catch (TenantScopeRejectedException) { return EndpointHelpers.Forbidden(); }
         }).RequireWorkstationTenantCompanyScope();
         group.MapPost("/preview", async (ConsolidationTransitionRequestDto request, HttpContext context) =>
         {
-            if (!TryResolveActor(context, out var actor) || !await TransitionBooksAccessibleAsync(context, request).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+            if (!TryResolveActor(context, out var actor) || !await TransitionBooksAccessibleAsync(context, request).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
             var service = context.RequestServices.GetService<ConsolidationTransitionService>();
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             try
             {
@@ -60,16 +67,20 @@ public static partial class LedgerEndpoints
         }).RequireWorkstationTenantCompanyScope().RequireFundScopedWriteTenant().RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
         group.MapPost("/activate", async (ApproveConsolidationTransitionRequestDto request, HttpContext context) =>
         {
-            if (!TryResolveActor(context, out var actor)) return EndpointHelpers.Forbidden();
+            if (!TryResolveActor(context, out var actor))
+                return EndpointHelpers.Forbidden();
             var service = context.RequestServices.GetService<ConsolidationTransitionService>();
             var store = context.RequestServices.GetService<IConsolidationTransitionStore>();
-            if (service is null || store is null) return ServiceUnavailable();
+            if (service is null || store is null)
+                return ServiceUnavailable();
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             try
             {
                 var preview = await store.GetPreviewAsync(request.PreviewId, context.RequestAborted).ConfigureAwait(false);
-                if (preview is null) return Results.NotFound();
-                if (!await TransitionBooksAccessibleAsync(context, preview.Request).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
+                if (preview is null)
+                    return Results.NotFound();
+                if (!await TransitionBooksAccessibleAsync(context, preview.Request).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
                 return Results.Json(await service.ActivateAsync(request, tenant.TenantId!, tenant.CompanyId, actor,
                     context.RequestAborted).ConfigureAwait(false), jsonOptions);
             }

@@ -375,8 +375,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         {
             try
             {
-                var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-                return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
+                return Path.Combine(configService.ConfiguredDataRoot, "workstation", "accounting");
             }
             catch (Exception ex)
             {

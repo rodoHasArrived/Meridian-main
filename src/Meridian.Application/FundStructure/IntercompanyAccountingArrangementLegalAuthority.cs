@@ -21,7 +21,8 @@ public sealed class IntercompanyAccountingArrangementLegalAuthority(IIntercompan
         {
             var selected = IntercompanyAgreementTimeline.Resolve(state.Revisions, economicDate);
             if (selected.Status == IntercompanyAgreementStatusDto.Active && selected.Revision is { } revision
-                && (revision.Terms.PartyOneId == entityId || revision.Terms.PartyTwoId == entityId)) results.Add(revision);
+                && (revision.Terms.PartyOneId == entityId || revision.Terms.PartyTwoId == entityId))
+                results.Add(revision);
         }
         return results.OrderBy(item => item.Terms.Code, StringComparer.Ordinal).ThenBy(item => item.AgreementId).ToArray();
     }
@@ -29,7 +30,8 @@ public sealed class IntercompanyAccountingArrangementLegalAuthority(IIntercompan
         IReadOnlyList<IntercompanyCanonicalAgreementReferenceDto> references,
         LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default)
     {
-        if (references.Count == 0) throw new InvalidOperationException("Canonical agreement references are required.");
+        if (references.Count == 0)
+            throw new InvalidOperationException("Canonical agreement references are required.");
         // Without an existing proof this must be the caller's first authority acquisition:
         // the native store then owns graph plus legal authority. Mapping workflows that
         // already hold graph/lifecycle authority pass their live proof instead of relocking.
@@ -39,7 +41,8 @@ public sealed class IntercompanyAccountingArrangementLegalAuthority(IIntercompan
             : await store.AcquirePostingLeaseAsync(tenantId, ids, structureAuthority, ct).ConfigureAwait(false);
         try
         {
-            foreach (var reference in references) _ = Exact(Required(lease.Agreements, reference.AgreementId), reference);
+            foreach (var reference in references)
+                _ = Exact(Required(lease.Agreements, reference.AgreementId), reference);
             return new LegalLease(lease);
         }
         catch { await lease.DisposeAsync().ConfigureAwait(false); throw; }

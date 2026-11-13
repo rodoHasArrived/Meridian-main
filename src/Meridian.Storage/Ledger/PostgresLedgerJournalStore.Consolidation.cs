@@ -295,7 +295,8 @@ public static class ConsolidationPostingEvidenceGuard
             binding.RevisionId.ToString("D") == line.Dimensions?.AccountBindingRevisionId &&
             binding.AccountPath == line.AccountPath && binding.AccountName == account.Name &&
             string.Equals(binding.AccountType, account.AccountType.ToString(), StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (matches.Length != 1 || account.Symbol is not null || account.FinancialAccountId is not null) return false;
+        if (matches.Length != 1 || account.Symbol is not null || account.FinancialAccountId is not null)
+            return false;
         return (matches[0].Role, account.AccountType) switch
         {
             (IntercompanyAccountRoleDto.Receivable, LedgerAccountType.Asset) => true,

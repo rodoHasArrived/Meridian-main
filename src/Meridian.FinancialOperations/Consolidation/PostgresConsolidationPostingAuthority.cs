@@ -91,10 +91,12 @@ public sealed class PostgresConsolidationPostingAuthority(ConsolidationService c
 
     private static async ValueTask DisposeAllAsync(IAsyncDisposable?[] leases, int index)
     {
-        if (index == leases.Length) return;
+        if (index == leases.Length)
+            return;
         try
         {
-            if (leases[index] is { } lease) await lease.DisposeAsync().ConfigureAwait(false);
+            if (leases[index] is { } lease)
+                await lease.DisposeAsync().ConfigureAwait(false);
         }
         finally { await DisposeAllAsync(leases, index + 1).ConfigureAwait(false); }
     }

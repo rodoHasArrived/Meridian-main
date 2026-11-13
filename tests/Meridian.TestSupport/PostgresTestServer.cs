@@ -71,7 +71,8 @@ public sealed class PostgresTestServer : IAsyncDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionStringEnvironmentVariable);
         var read = environmentReader ?? (name => Environment.GetEnvironmentVariable(name));
         var explicitConnection = read(connectionStringEnvironmentVariable);
-        if (!string.IsNullOrWhiteSpace(explicitConnection)) return explicitConnection;
+        if (!string.IsNullOrWhiteSpace(explicitConnection))
+            return explicitConnection;
         var sharedConnection = read(TestConnectionStringEnvironmentVariable);
         return string.IsNullOrWhiteSpace(sharedConnection) ? null : sharedConnection;
     }

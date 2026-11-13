@@ -32,7 +32,8 @@ public sealed class FundStructureIntercompanyAccountingArrangementScopeAuthority
         }
         catch
         {
-            if (graphLease is not null) await graphLease.DisposeAsync().ConfigureAwait(false);
+            if (graphLease is not null)
+                await graphLease.DisposeAsync().ConfigureAwait(false);
             throw;
         }
     }
@@ -42,7 +43,8 @@ public sealed class FundStructureIntercompanyAccountingArrangementScopeAuthority
         public LegalEntityReadAuthorityProof? StructureAuthorityProof => (graph as ILegalEntityReadAuthorityLease)?.StructureAuthorityProof;
         public async ValueTask DisposeAsync()
         {
-            try { await lifecycle.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await lifecycle.DisposeAsync().ConfigureAwait(false); }
             finally { if (graph is not null) await graph.DisposeAsync().ConfigureAwait(false); }
         }
     }
@@ -56,9 +58,11 @@ public sealed class FundStructureIntercompanyAccountingArrangementScopeAuthority
             var revision = await lifecycleStore.GetLatestAsync(tenantId, id, ct).ConfigureAwait(false)
                 ?? throw new InvalidOperationException("Agreement approval requires a retained entity lifecycle baseline.");
             var eligibility = EntityLifecyclePolicy.Evaluate(revision, agreement.EffectiveFrom, EntityLifecycleOperationDto.NewAgreement, false);
-            if (!eligibility.Allowed) throw new InvalidOperationException(eligibility.Message);
+            if (!eligibility.Allowed)
+                throw new InvalidOperationException(eligibility.Message);
             var currentEligibility = EntityLifecyclePolicy.Evaluate(revision, _clock.GetUtcNow(), EntityLifecycleOperationDto.NewAgreement, false);
-            if (!currentEligibility.Allowed) throw new InvalidOperationException(currentEligibility.Message);
+            if (!currentEligibility.Allowed)
+                throw new InvalidOperationException(currentEligibility.Message);
             result.Add(new(id, revision.Revision, revision.ContentHash));
         }
         return result;
@@ -89,7 +93,8 @@ public sealed class FundStructureIntercompanyAccountingArrangementScopeAuthority
                 (agreement.EffectiveTo is null || agreement.EffectiveTo > end))
                 throw new InvalidOperationException("The agreement window must fit each party's legal existence.");
         }
-        if (requireActive) await GetLifecycleEvidenceAsync(tenantId, agreement, ct).ConfigureAwait(false);
+        if (requireActive)
+            await GetLifecycleEvidenceAsync(tenantId, agreement, ct).ConfigureAwait(false);
         foreach (var map in agreement.PartyMappings)
         {
             var book = await journals.GetLedgerBookAsync(map.LedgerBookId, ct).ConfigureAwait(false)

@@ -12,11 +12,13 @@ public sealed partial class ManualJournalEntryWorkbenchService
             return draft with { IntercompanyFx = null }; // The append guard verifies the immutable original's exact inverse.
         var lines = draft.Lines.Where(x => x.Dimensions?.AccountingArrangementId is not null
             && x.TransactionCurrency is { } original && original.Currency != draft.Currency).ToArray();
-        if (lines.Length == 0) return draft;
+        if (lines.Length == 0)
+            return draft;
         try
         {
             var authority = _intercompanyFxAuthority ?? throw new InvalidOperationException("An approved book FX configuration is required.");
-            if (draft.LedgerBookId is not { } bookId) throw new InvalidOperationException("A destination book is required for FX authority.");
+            if (draft.LedgerBookId is not { } bookId)
+                throw new InvalidOperationException("A destination book is required for FX authority.");
             var context = await authority.ResolveAsync(bookId, draft.AccountingDate, ct).ConfigureAwait(false);
             if (context.Configuration.Policy.ReportingCurrency != draft.Currency)
                 throw new InvalidOperationException("The FX configuration must translate into the draft functional currency.");
@@ -33,19 +35,24 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
         catch (InvalidOperationException error)
         {
-            return draft with { ValidationIssues = [.. draft.ValidationIssues,
+            return draft with
+            {
+                ValidationIssues = [.. draft.ValidationIssues,
                 Issue("manual-je.intercompany-fx", AccountingConfigurationValidationSeverityDto.Critical,
-                    error.Message, "transactionCurrency", "Resolve the approved book FX configuration and original amounts before review.")] };
+                    error.Message, "transactionCurrency", "Resolve the approved book FX configuration and original amounts before review.")]
+            };
         }
     }
 
     private async Task ValidateCurrentIntercompanyDraftAsync(ManualJournalEntryDraftDto draft, CancellationToken ct)
     {
-        if (_journalStore is null || draft.LedgerBookId is not { } bookId || IsConsolidationDraft(draft)) return;
+        if (_journalStore is null || draft.LedgerBookId is not { } bookId || IsConsolidationDraft(draft))
+            return;
         var workspace = await _configurationService.GetWorkspaceAsync(draft.FundProfileId, bookId, ct,
             draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         if (!draft.Lines.Any(line => line.Dimensions?.AccountingArrangementId is not null || workspace.ChartOfAccounts.Any(account =>
-            account.Path == line.AccountPath && account.IntercompanyRole is not null))) return;
+            account.Path == line.AccountPath && account.IntercompanyRole is not null)))
+            return;
         if (draft.IntercompanyFx is { } retained)
         {
             var fx = _intercompanyFxAuthority ?? throw new InvalidOperationException("Intercompany FX authority is unavailable.");
@@ -58,7 +65,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
             throw new InvalidOperationException("Authoritative lifecycle, legal agreement and accounting-profile review is unavailable.");
         var book = await _journalStore.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The intercompany draft book is unavailable.");
-        if (!Guid.TryParse(draft.PeriodId, out var periodId)) throw new InvalidOperationException("The intercompany draft requires a period.");
+        if (!Guid.TryParse(draft.PeriodId, out var periodId))
+            throw new InvalidOperationException("The intercompany draft requires a period.");
         var period = await _journalStore.GetPeriodAsync(periodId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The intercompany period is unavailable.");
         var request = new JournalEntryLifecycleActionRequestDto(draft.JournalEntryId, draft.FundProfileId,

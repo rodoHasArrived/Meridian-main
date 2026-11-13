@@ -20,10 +20,14 @@ public sealed partial class AccountingPostingCandidateServiceTests
         var candidate = BuildCandidateRequest(book, period, source, AccountingBasisKindDto.Gaap, "gaap-accrual-v1");
         var dimensions = candidate.Dimensions! with
         {
-            EntityId = entity.ToString("D"), CounterpartyId = Guid.NewGuid().ToString("D"),
-            IntercompanyAgreementId = Guid.NewGuid(), IntercompanyAgreementVersion = 3,
-            AccountingArrangementId = Guid.NewGuid().ToString("D"), AccountingArrangementRevisionId = Guid.NewGuid().ToString("D"),
-            ChartAccountNodeId = "retained-account-node", AccountBindingRevisionId = Guid.NewGuid().ToString("D"),
+            EntityId = entity.ToString("D"),
+            CounterpartyId = Guid.NewGuid().ToString("D"),
+            IntercompanyAgreementId = Guid.NewGuid(),
+            IntercompanyAgreementVersion = 3,
+            AccountingArrangementId = Guid.NewGuid().ToString("D"),
+            AccountingArrangementRevisionId = Guid.NewGuid().ToString("D"),
+            ChartAccountNodeId = "retained-account-node",
+            AccountBindingRevisionId = Guid.NewGuid().ToString("D"),
             IntercompanyTransactionId = "reviewed-transaction-1"
         };
         var request = new PostPostingRuleJournalCandidateRequestDto(candidate with { Dimensions = dimensions, CounterpartyId = dimensions.CounterpartyId },

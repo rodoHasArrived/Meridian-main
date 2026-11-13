@@ -21,7 +21,8 @@ public sealed class FileIntercompanyAccountingArrangementStore(string rootDirect
     public async Task<IntercompanyAccountingArrangementHistoryDto?> GetAsync(string tenantId, Guid agreementId, CancellationToken ct = default)
     {
         var path = HistoryPath(tenantId, agreementId);
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete,
             4096, FileOptions.Asynchronous);
         using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -31,14 +32,17 @@ public sealed class FileIntercompanyAccountingArrangementStore(string rootDirect
     public async Task<IReadOnlyList<IntercompanyAccountingArrangementDto>> ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default)
     {
         var directory = TenantDirectory(tenantId);
-        if (!Directory.Exists(directory)) return [];
+        if (!Directory.Exists(directory))
+            return [];
         var result = new List<IntercompanyAccountingArrangementDto>();
         foreach (var path in Directory.EnumerateFiles(directory, "*.json"))
         {
-            if (!Guid.TryParse(Path.GetFileNameWithoutExtension(path), out var id)) throw new InvalidDataException("Agreement history file identity is invalid.");
+            if (!Guid.TryParse(Path.GetFileNameWithoutExtension(path), out var id))
+                throw new InvalidDataException("Agreement history file identity is invalid.");
             var history = await GetAsync(tenantId, id, ct).ConfigureAwait(false)
                 ?? throw new InvalidDataException("A retained agreement disappeared during enumeration.");
-            if (organizationId is null || history.Current.OrganizationId == organizationId) result.Add(history.Current);
+            if (organizationId is null || history.Current.OrganizationId == organizationId)
+                result.Add(history.Current);
         }
         return result.OrderBy(x => x.ArrangementReference).ThenBy(x => x.ArrangementId).ToArray();
     }
@@ -46,7 +50,8 @@ public sealed class FileIntercompanyAccountingArrangementStore(string rootDirect
     public Task<IntercompanyAccountingArrangementDto> AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default)
         => MutateAsync(tenantId, item.Snapshot.ArrangementId, item.RequestId, item.RequestDigest, (old, _) =>
         {
-            if ((old?.Current.Version ?? 0) != expectedVersion) throw new InvalidOperationException("The agreement version changed.");
+            if ((old?.Current.Version ?? 0) != expectedVersion)
+                throw new InvalidOperationException("The agreement version changed.");
             return Task.FromResult(item);
         }, ct);
 
@@ -58,12 +63,14 @@ public sealed class FileIntercompanyAccountingArrangementStore(string rootDirect
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await using var lease = await AcquireLeaseAsync(path + ".lock", ct).ConfigureAwait(false);
         var old = await GetAsync(tenantId, agreementId, ct).ConfigureAwait(false);
-        if (IntercompanyAccountingArrangementStoreRules.Retry(old, requestId, requestDigest) is { } retry) return retry;
+        if (IntercompanyAccountingArrangementStoreRules.Retry(old, requestId, requestDigest) is { } retry)
+            return retry;
         var item = await build(old, ct).ConfigureAwait(false);
         if (item.Snapshot.ArrangementId != agreementId || item.RequestId != requestId || item.RequestDigest != requestDigest)
             throw new InvalidOperationException("The agreement mutation changed its locked identity.");
         var result = IntercompanyAccountingArrangementStoreRules.Append(old, old?.Current.Version ?? 0, item);
-        if (!result.Changed) return result.Result;
+        if (!result.Changed)
+            return result.Result;
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
@@ -88,7 +95,8 @@ public sealed class FileIntercompanyAccountingArrangementStore(string rootDirect
         while (true)
         {
             ct.ThrowIfCancellationRequested();
-            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try
+            { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) when (elapsed.Elapsed < TimeSpan.FromSeconds(30))
             { await Task.Delay(25, ct).ConfigureAwait(false); }
             catch (IOException ex) { throw new TimeoutException("Timed out waiting for the agreement writer lease.", ex); }

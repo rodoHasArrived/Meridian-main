@@ -35,10 +35,16 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
         var fixture = Fixture();
         var entry = fixture.Original.Entry;
         var timestamp = entry.Timestamp;
-        fixture = fixture with { Original = fixture.Original with { Entry = new(entry.JournalEntryId, timestamp, entry.Description,
+        fixture = fixture with
+        {
+            Original = fixture.Original with
+            {
+                Entry = new(entry.JournalEntryId, timestamp, entry.Description,
             [.. entry.Lines,
                 new(Guid.NewGuid(), entry.JournalEntryId, timestamp, new("Expenses:Tax", LedgerAccountType.Expense), 200m, 0m, entry.Description),
-                new(Guid.NewGuid(), entry.JournalEntryId, timestamp, new("Assets:Cash", LedgerAccountType.Asset), 0m, 200m, entry.Description)], entry.Metadata) } };
+                new(Guid.NewGuid(), entry.JournalEntryId, timestamp, new("Assets:Cash", LedgerAccountType.Asset), 0m, 200m, entry.Description)], entry.Metadata)
+            }
+        };
 
         Assert.Throws<InvalidOperationException>(() => Build(fixture));
     }
@@ -49,9 +55,15 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
         var fixture = Fixture();
         var entry = fixture.Original.Entry;
         var contra = entry.Lines[1];
-        fixture = fixture with { Original = fixture.Original with { Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description,
+        fixture = fixture with
+        {
+            Original = fixture.Original with
+            {
+                Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description,
             [entry.Lines[0], new(contra.EntryId, entry.JournalEntryId, entry.Timestamp, contra.Account, contra.Debit, contra.Credit,
-                contra.Description, contra.Dimensions! with { CostCenterId = "unrelated-business" })], entry.Metadata) } };
+                contra.Description, contra.Dimensions! with { CostCenterId = "unrelated-business" })], entry.Metadata)
+            }
+        };
 
         Assert.Throws<InvalidOperationException>(() => Build(fixture));
     }
@@ -62,9 +74,17 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
     public void EqualAmountOtherEvent_CannotAuthorizeThisReversal(string difference)
     {
         var fixture = Fixture();
-        fixture = fixture with { Prior = fixture.Prior with { Source = fixture.Prior.Source with
-        { TransactionId = difference == "transaction" ? "same-amount-other-invoice" : fixture.Prior.Source.TransactionId,
-            AccountingArrangementRevisionId = difference == "revision" ? Guid.NewGuid() : fixture.Prior.Source.AccountingArrangementRevisionId } } };
+        fixture = fixture with
+        {
+            Prior = fixture.Prior with
+            {
+                Source = fixture.Prior.Source with
+                {
+                    TransactionId = difference == "transaction" ? "same-amount-other-invoice" : fixture.Prior.Source.TransactionId,
+                    AccountingArrangementRevisionId = difference == "revision" ? Guid.NewGuid() : fixture.Prior.Source.AccountingArrangementRevisionId
+                }
+            }
+        };
 
         Assert.Throws<InvalidOperationException>(() => Build(fixture));
     }
@@ -98,26 +118,63 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
     internal static ReversalFixture Fixture(bool foreign = false)
     {
         var prior = IntercompanyProposalTestData.Proposal();
-        if (foreign) prior = prior with { Source = prior.Source with
-        { SourceFunctionalCurrency = "EUR", Lines = prior.Source.Lines.Select(line => line with { Currency = "EUR" }).ToArray() } };
+        if (foreign)
+            prior = prior with
+            {
+                Source = prior.Source with
+                { SourceFunctionalCurrency = "EUR", Lines = prior.Source.Lines.Select(line => line with { Currency = "EUR" }).ToArray() }
+            };
         var originalId = Guid.NewGuid();
-        prior = prior with { Status = IntercompanyProposalStatusDto.Drafted, TargetBookId = IntercompanyProposalTestData.BookB,
+        prior = prior with
+        {
+            Status = IntercompanyProposalStatusDto.Drafted,
+            TargetBookId = IntercompanyProposalTestData.BookB,
             TargetJournalId = prior.Source.ProposalId,
             LatestLink = new("tenant-a", Guid.NewGuid(), prior.Source.ProposalId, IntercompanyProposalTestData.BookB,
-                originalId, "reviewer", "Posted manual replacement after rejecting generated draft", IntercompanyProposalTestData.Now) };
-        var proposal = prior with { Source = prior.Source with { ProposalId = Guid.NewGuid(), SourceJournalId = Guid.NewGuid(),
-            ReversesJournalId = prior.Source.SourceJournalId, EffectiveDate = new(2026, 7, 2),
-            Lines = prior.Source.Lines.Select(line => line with { Debit = line.Credit, Credit = line.Debit,
-                TransactionDebit = line.TransactionCredit, TransactionCredit = line.TransactionDebit }).ToArray() },
-            TargetBookId = null, TargetJournalId = null, LatestLink = null, Status = IntercompanyProposalStatusDto.Pending };
+                originalId, "reviewer", "Posted manual replacement after rejecting generated draft", IntercompanyProposalTestData.Now)
+        };
+        var proposal = prior with
+        {
+            Source = prior.Source with
+            {
+                ProposalId = Guid.NewGuid(),
+                SourceJournalId = Guid.NewGuid(),
+                ReversesJournalId = prior.Source.SourceJournalId,
+                EffectiveDate = new(2026, 7, 2),
+                Lines = prior.Source.Lines.Select(line => line with
+                {
+                    Debit = line.Credit,
+                    Credit = line.Debit,
+                    TransactionDebit = line.TransactionCredit,
+                    TransactionCredit = line.TransactionDebit
+                }).ToArray()
+            },
+            TargetBookId = null,
+            TargetJournalId = null,
+            LatestLink = null,
+            Status = IntercompanyProposalStatusDto.Pending
+        };
         var mainDimensions = new LedgerLineDimensionSet(FundId: "target-fund", EntityId: IntercompanyProposalTestData.EntityB.ToString("D"),
             CounterpartyId: IntercompanyProposalTestData.EntityA.ToString("D"), BookId: IntercompanyProposalTestData.BookB.ToString("D"))
-        { IntercompanyAgreementId = prior.Source.IntercompanyAgreementId, IntercompanyAgreementVersion = prior.Source.IntercompanyAgreementVersion,
-                ChartAccountNodeId = "b-payable", AccountingArrangementId = prior.Source.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = prior.Source.AccountingArrangementRevisionId.ToString("D"),
-            IntercompanyTransactionId = prior.Source.TransactionId, AccountBindingRevisionId = Guid.NewGuid().ToString("D") };
-        var contraDimensions = mainDimensions with { IntercompanyAgreementId = prior.Source.IntercompanyAgreementId, IntercompanyAgreementVersion = prior.Source.IntercompanyAgreementVersion,
-                ChartAccountNodeId = "b-cash", AccountingArrangementId = null, AccountingArrangementRevisionId = null,
-            IntercompanyTransactionId = null, AccountBindingRevisionId = null };
+        {
+            IntercompanyAgreementId = prior.Source.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = prior.Source.IntercompanyAgreementVersion,
+            ChartAccountNodeId = "b-payable",
+            AccountingArrangementId = prior.Source.AccountingArrangementId.ToString("D"),
+            AccountingArrangementRevisionId = prior.Source.AccountingArrangementRevisionId.ToString("D"),
+            IntercompanyTransactionId = prior.Source.TransactionId,
+            AccountBindingRevisionId = Guid.NewGuid().ToString("D")
+        };
+        var contraDimensions = mainDimensions with
+        {
+            IntercompanyAgreementId = prior.Source.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = prior.Source.IntercompanyAgreementVersion,
+            ChartAccountNodeId = "b-cash",
+            AccountingArrangementId = null,
+            AccountingArrangementRevisionId = null,
+            IntercompanyTransactionId = null,
+            AccountBindingRevisionId = null
+        };
         var amount = foreign ? 125m : 100m;
         var timestamp = IntercompanyProposalTestData.Now;
         var entry = new JournalEntry(originalId, timestamp, "Reviewed manual counterpart", [
@@ -135,9 +192,14 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
         var entry = new JournalEntry(source.SourceJournalId, timestamp, "Source event", source.Lines.Select(line => new LedgerEntry(line.LineId,
             source.SourceJournalId, timestamp, new(line.AccountName, Enum.Parse<LedgerAccountType>(line.AccountType)), line.Debit, line.Credit, "Source event",
             new LedgerLineDimensionSet(EntityId: source.SourceEntityId.ToString("D"), CounterpartyId: source.CounterpartyEntityId.ToString("D"))
-            { IntercompanyAgreementId = source.IntercompanyAgreementId, IntercompanyAgreementVersion = source.IntercompanyAgreementVersion,
-                ChartAccountNodeId = line.ChartAccountNodeId, AccountingArrangementId = source.AccountingArrangementId.ToString("D"),
-                AccountingArrangementRevisionId = source.AccountingArrangementRevisionId.ToString("D"), IntercompanyTransactionId = source.TransactionId })).ToArray(),
+            {
+                IntercompanyAgreementId = source.IntercompanyAgreementId,
+                IntercompanyAgreementVersion = source.IntercompanyAgreementVersion,
+                ChartAccountNodeId = line.ChartAccountNodeId,
+                AccountingArrangementId = source.AccountingArrangementId.ToString("D"),
+                AccountingArrangementRevisionId = source.AccountingArrangementRevisionId.ToString("D"),
+                IntercompanyTransactionId = source.TransactionId
+            })).ToArray(),
             new JournalEntryMetadata(EffectiveDate: source.EffectiveDate));
         return new(entry, Guid.NewGuid(), Guid.NewGuid(), null, null, 1, timestamp);
     }

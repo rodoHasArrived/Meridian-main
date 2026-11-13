@@ -86,7 +86,10 @@ public sealed class IntercompanyAgreementEvidenceAuthorityTests : IDisposable
         var intake = await store.WriteIntakeArtifactAsync(new("accounting-record", "current", "upload",
             "signed-agreement.pdf", Convert.ToBase64String(bytes), "application/pdf", ReceivedBy: "owner")
         {
-            Actor = "owner", TenantId = Tenant, Scope = Company, Classification = classification,
+            Actor = "owner",
+            TenantId = Tenant,
+            Scope = Company,
+            Classification = classification,
             ObjectLinks = [new(linkKind, (linkedAgreement ?? agreementId).ToString("D"), Relationship: "supports")]
         });
         var document = intake.Document!;
@@ -105,7 +108,8 @@ public sealed class IntercompanyAgreementEvidenceAuthorityTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
     }
 
     private WorkstationIntercompanyAgreementEvidenceAuthority Authority(string company = Company)

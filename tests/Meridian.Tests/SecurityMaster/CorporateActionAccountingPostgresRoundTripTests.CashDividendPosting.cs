@@ -457,7 +457,8 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         private bool _disposed;
         public ValueTask DisposeAsync()
         {
-            if (!_disposed) { _disposed = true; onDispose(); }
+            if (!_disposed)
+            { _disposed = true; onDispose(); }
             return ValueTask.CompletedTask;
         }
     }

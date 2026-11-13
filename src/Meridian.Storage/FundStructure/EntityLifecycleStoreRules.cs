@@ -13,12 +13,14 @@ internal static class EntityLifecycleStoreRules
             var next = target;
             while (true)
             {
-                if (!visited.Add(next)) throw new InvalidOperationException("Lifecycle successors cannot form a cycle.");
+                if (!visited.Add(next))
+                    throw new InvalidOperationException("Lifecycle successors cannot form a cycle.");
                 var history = await resolve(next).ConfigureAwait(false);
                 if (history is not null && history.TenantId != revision.TenantId)
                     throw new InvalidOperationException("Lifecycle successors must share the entity tenant.");
                 var successor = history?.Timeline.LastOrDefault()?.SuccessorEntityId;
-                if (!successor.HasValue) break;
+                if (!successor.HasValue)
+                    break;
                 next = successor.Value;
             }
         }

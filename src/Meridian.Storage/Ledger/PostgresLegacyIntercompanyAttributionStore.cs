@@ -101,7 +101,8 @@ public sealed class PostgresLegacyIntercompanyAttributionStore : ILegacyIntercom
         }
         catch
         {
-            if (transaction is not null) await transaction.DisposeAsync().ConfigureAwait(false);
+            if (transaction is not null)
+                await transaction.DisposeAsync().ConfigureAwait(false);
             await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -136,7 +137,8 @@ public sealed class PostgresLegacyIntercompanyAttributionStore : ILegacyIntercom
         command.Parameters.AddWithValue("company", company ?? "");
         var result = new List<LegacyIntercompanyAttributionDto>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false)) result.Add(Deserialize(reader.GetString(0)));
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(Deserialize(reader.GetString(0)));
         return result;
     }
 
@@ -150,7 +152,8 @@ public sealed class PostgresLegacyIntercompanyAttributionStore : ILegacyIntercom
     private async Task<NpgsqlConnection> OpenAsync(CancellationToken ct)
     {
         var connection = new NpgsqlConnection(_options.ConnectionString);
-        try { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
+        try
+        { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
         catch { await connection.DisposeAsync().ConfigureAwait(false); throw; }
     }
     private string Qualified(string table) => $"\"{_options.SchemaName}\".\"{table}\"";

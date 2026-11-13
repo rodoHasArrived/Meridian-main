@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.FundStructure;
 
@@ -20,7 +19,8 @@ internal static class IntercompanyAccountingArrangementStoreRules
     }
     public static void ValidateHistory(IntercompanyAccountingArrangementHistoryDto history)
     {
-        if (history.Events is null || history.Events.Count == 0) throw new InvalidDataException("Accounting arrangement history is empty.");
+        if (history.Events is null || history.Events.Count == 0)
+            throw new InvalidDataException("Accounting arrangement history is empty.");
         var id = history.Events[0].Snapshot.ArrangementId;
         var seen = new HashSet<Guid>();
         var previousHash = "";
@@ -98,7 +98,8 @@ internal static class IntercompanyAccountingArrangementStoreRules
     public static (IntercompanyAccountingArrangementHistoryDto History, IntercompanyAccountingArrangementDto Result, bool Changed) Append(
         IntercompanyAccountingArrangementHistoryDto? history, long expectedVersion, IntercompanyAccountingArrangementEventDto item)
     {
-        if (history is not null) ValidateHistory(history);
+        if (history is not null)
+            ValidateHistory(history);
         if (history?.Events.SingleOrDefault(x => x.RequestId == item.RequestId) is { } retry)
         {
             if (retry.RequestDigest != item.RequestDigest || retry.Actor != item.Actor || retry.Action != item.Action)
@@ -114,19 +115,28 @@ internal static class IntercompanyAccountingArrangementStoreRules
     }
     public static IntercompanyAccountingArrangementDto? Retry(IntercompanyAccountingArrangementHistoryDto? history, Guid requestId, string requestDigest)
     {
-        if (history is null) return null;
+        if (history is null)
+            return null;
         ValidateHistory(history);
         var retained = history.Events.SingleOrDefault(x => x.RequestId == requestId);
-        if (retained is null) return null;
-        if (retained.RequestDigest != requestDigest) throw new InvalidOperationException("The accounting arrangement request ID is retained with different content.");
+        if (retained is null)
+            return null;
+        if (retained.RequestDigest != requestDigest)
+            throw new InvalidOperationException("The accounting arrangement request ID is retained with different content.");
         return retained.Snapshot;
     }
-    public static string FileKey(string tenant, Guid id) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Tenant(tenant) + ":" + id.ToString("D"))));
-    private static string Hash(IntercompanyAccountingArrangementEventDto item) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
-        JsonSerializer.Serialize(item, IntercompanyAccountingArrangementsJsonContext.Default.IntercompanyAccountingArrangementEventDto))));
+    public static string FileKey(string tenant, Guid id) => Sha256Digest.ComputeUtf8(Tenant(tenant) + ":" + id.ToString("D"));
+    private static string Hash(IntercompanyAccountingArrangementEventDto item) => Sha256Digest.ComputeUtf8(
+        JsonSerializer.Serialize(item, IntercompanyAccountingArrangementsJsonContext.Default.IntercompanyAccountingArrangementEventDto));
     private static string Terms(IntercompanyAccountingArrangementDto item) => JsonSerializer.Serialize(item with
     {
-        Version = 0, Status = IntercompanyAccountingArrangementStatusDto.Draft, UpdatedBy = "", UpdatedAt = default,
-        ApprovedBy = null, ApprovedAt = null, RetiredAt = null, LifecycleEvidence = null
+        Version = 0,
+        Status = IntercompanyAccountingArrangementStatusDto.Draft,
+        UpdatedBy = "",
+        UpdatedAt = default,
+        ApprovedBy = null,
+        ApprovedAt = null,
+        RetiredAt = null,
+        LifecycleEvidence = null
     }, IntercompanyAccountingArrangementsJsonContext.Default.IntercompanyAccountingArrangementDto);
 }

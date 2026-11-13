@@ -27,7 +27,8 @@ public sealed partial class AccountingConfigureViewModel
         set
         {
             if (!SetProperty(ref _selectedManualJournalDraftRow, value) || value is null
-                || !Guid.TryParse(value.Key, out var id) || !_loadedManualDrafts.TryGetValue(id, out var draft)) return;
+                || !Guid.TryParse(value.Key, out var id) || !_loadedManualDrafts.TryGetValue(id, out var draft))
+                return;
             _selectedDraft = draft;
             DraftMemo = draft.Memo;
             DraftCurrency = draft.Currency;
@@ -44,8 +45,10 @@ public sealed partial class AccountingConfigureViewModel
     private void RememberManualJournalDrafts(IReadOnlyList<ManualJournalEntryDraftDto> drafts)
     {
         _loadedManualDrafts.Clear();
-        foreach (var draft in drafts) _loadedManualDrafts[draft.JournalEntryId] = draft;
-        if (_selectedDraft is { } selected) _selectedDraft = _loadedManualDrafts.GetValueOrDefault(selected.JournalEntryId);
+        foreach (var draft in drafts)
+            _loadedManualDrafts[draft.JournalEntryId] = draft;
+        if (_selectedDraft is { } selected)
+            _selectedDraft = _loadedManualDrafts.GetValueOrDefault(selected.JournalEntryId);
     }
 
     private bool CanApplySelectedJournalAction(JournalEntryLifecycleActionDto action)
@@ -73,7 +76,8 @@ public sealed partial class AccountingConfigureViewModel
 
     private ManualJournalEntryDraftDto BuildManualJournalDraft()
     {
-        if (IsReadOnlyRetainedDraft && _selectedDraft is { } retained) return retained;
+        if (IsReadOnlyRetainedDraft && _selectedDraft is { } retained)
+            return retained;
         // Save retries must rebuild identical input. The service supplies the committed update
         // time; client-generated timestamps and a new draft ID stay fixed until a save succeeds.
         var now = _selectedDraft?.UpdatedAtUtc ?? _newManualJournalDraftTimestamp;
@@ -84,7 +88,7 @@ public sealed partial class AccountingConfigureViewModel
         var accountingDate = _selectedDraft?.AccountingDate ?? DateOnly.FromDateTime(now.UtcDateTime);
         var periodId = _selectedDraft?.PeriodId
             ?? _selectedManualJournalPeriod?.PeriodId.ToString("D", CultureInfo.InvariantCulture)
-            ?? CreateStableGuid(
+            ?? AccountingWorkbenchPresentation.CreateStableGuid(
                 "manual-je-period",
                 fundProfileId,
                 ledgerBookId?.ToString("D") ?? "fund-level",

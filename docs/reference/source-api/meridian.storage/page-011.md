@@ -735,7 +735,7 @@ public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
 
 Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:879](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L879).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:932](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L932).
 
 ```csharp
 public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
@@ -745,13 +745,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:888](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L888) |  |
+| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:941](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L941) |  |
+| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943) |  |
 
 ## DefragResult
 
 Qualified name: <code>Meridian.Storage.Services.DefragResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:891](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L891).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:946](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L946).
 
 ```csharp
 public sealed record DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration, int MergeGroupsAttempted = 0, int MergeGroupsSucceeded = 0, int FilesDeleted = 0, IReadOnlyList<string>? Errors = null);

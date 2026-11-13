@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -18,7 +16,7 @@ public static class ConsolidationTransitionRules
         { PreviewId = Guid.Empty, PreparedAt = default, Fingerprint = string.Empty }, ConsolidationTransitionJsonContext.Default.ConsolidationTransitionPreviewDto));
 
     public static Guid PreviewId(ConsolidationTransitionPreviewDto preview)
-        => new(SHA256.HashData(Encoding.UTF8.GetBytes($"{preview.Request.TransitionId:D}:{PreviewFingerprint(preview)}")).AsSpan(0, 16));
+        => new(Sha256Digest.ComputeBytesUtf8($"{preview.Request.TransitionId:D}:{PreviewFingerprint(preview)}").AsSpan(0, 16));
 
     public static string ReceiptHash(ConsolidationTransitionReceiptDto receipt)
         => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(receipt with { ContentHash = string.Empty }, ConsolidationTransitionJsonContext.Default.ConsolidationTransitionReceiptDto));

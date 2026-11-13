@@ -72,8 +72,10 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
     {
         var fixture = await Fixture.CreateAsync();
         var node = fixture.Workspace.ChartOfAccounts[0];
-        if (changed == "archived") fixture.Workspace = fixture.Workspace with { ChartOfAccounts = [node with { IsArchived = true }] };
-        if (changed == "retyped") fixture.Workspace = fixture.Workspace with { ChartOfAccounts = [node with { AccountType = "Liability" }] };
+        if (changed == "archived")
+            fixture.Workspace = fixture.Workspace with { ChartOfAccounts = [node with { IsArchived = true }] };
+        if (changed == "retyped")
+            fixture.Workspace = fixture.Workspace with { ChartOfAccounts = [node with { AccountType = "Liability" }] };
         var write = fixture.Write(symbol: changed == "symbol" ? "UNAUTHORIZED" : null,
             financialAccount: changed == "financial-account" ? "another-account" : null);
         await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Authority().AcquireAsync([fixture.Context(write)]));
@@ -116,8 +118,11 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         var oldLine = original.Entry.Lines[0];
         var legacyLine = new LedgerEntry(oldLine.EntryId, oldLine.JournalEntryId, oldLine.Timestamp,
             new(accountName, accountType), oldLine.Debit, oldLine.Credit, oldLine.Description, currency: oldLine.Currency);
-        var write = original with { Entry = new(original.Entry.JournalEntryId, original.Entry.Timestamp,
-            original.Entry.Description, [legacyLine, original.Entry.Lines[1]], original.Entry.Metadata) };
+        var write = original with
+        {
+            Entry = new(original.Entry.JournalEntryId, original.Entry.Timestamp,
+            original.Entry.Description, [legacyLine, original.Entry.Lines[1]], original.Entry.Metadata)
+        };
         Assert.Null(legacyLine.Dimensions);
         var error = await Assert.ThrowsAsync<LedgerValidationException>(() =>
             fixture.Authority().AcquireAsync([fixture.Context(write)], cancellation.Token));
@@ -177,18 +182,25 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             sourceOverride: changed == "missing-source" ? Guid.NewGuid() : null,
             revisionOverride: changed == "agreement-revision" ? Guid.NewGuid().ToString("D") : null,
             transactionOverride: changed == "transaction" ? "different-economic-occurrence" : null);
-        if (changed == "conflicting-source") reversal = reversal with
-        { PostingCommand = reversal.PostingCommand! with { SourceJournalEntryId = Guid.NewGuid() } };
-        if (changed is "contra-scope" or "contra-project") reversal = reversal with { Entry = new(reversal.Entry.JournalEntryId,
+        if (changed == "conflicting-source")
+            reversal = reversal with
+            { PostingCommand = reversal.PostingCommand! with { SourceJournalEntryId = Guid.NewGuid() } };
+        if (changed is "contra-scope" or "contra-project")
+            reversal = reversal with
+            {
+                Entry = new(reversal.Entry.JournalEntryId,
             reversal.Entry.Timestamp, reversal.Entry.Description, reversal.Entry.Lines.Select(line => new LedgerEntry(line.EntryId,
                 line.JournalEntryId, line.Timestamp,
                 changed == "contra-scope" && line.Dimensions?.AccountingArrangementId is null
                     ? line.Account with { FinancialAccountId = "another-cash-account" } : line.Account,
                 line.Debit, line.Credit, line.Description,
                 changed == "contra-project" && line.Dimensions?.AccountingArrangementId is null
-                    ? new LedgerLineDimensionSet(ProjectId: "another-project") : line.Dimensions, line.Currency)).ToArray(), reversal.Entry.Metadata) };
+                    ? new LedgerLineDimensionSet(ProjectId: "another-project") : line.Dimensions, line.Currency)).ToArray(), reversal.Entry.Metadata)
+            };
         if (changed is "binding-revision" or "renamed-account" or "canonical-id" or "canonical-version")
-            reversal = reversal with { Entry = new(reversal.Entry.JournalEntryId, reversal.Entry.Timestamp,
+            reversal = reversal with
+            {
+                Entry = new(reversal.Entry.JournalEntryId, reversal.Entry.Timestamp,
                 reversal.Entry.Description, reversal.Entry.Lines.Select(line => new LedgerEntry(line.EntryId,
                     line.JournalEntryId, line.Timestamp,
                     changed == "renamed-account" && line.Dimensions?.AccountingArrangementId is not null
@@ -199,7 +211,8 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
                         AccountBindingRevisionId = changed == "binding-revision" ? Guid.NewGuid().ToString("D") : line.Dimensions.AccountBindingRevisionId,
                         IntercompanyAgreementId = changed == "canonical-id" ? Guid.NewGuid() : line.Dimensions.IntercompanyAgreementId,
                         IntercompanyAgreementVersion = changed == "canonical-version" ? 2 : line.Dimensions.IntercompanyAgreementVersion
-                    } : line.Dimensions, line.Currency)).ToArray(), reversal.Entry.Metadata) };
+                    } : line.Dimensions, line.Currency)).ToArray(), reversal.Entry.Metadata)
+            };
         var context = fixture.Context(reversal);
         var error = await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Authority().AcquireAsync([context], cancellation.Token));
         Assert.Contains("exact economic inverse", error.Message, StringComparison.OrdinalIgnoreCase);
@@ -228,9 +241,12 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
     {
         var fixture = await Fixture.CreateAsync();
         var original = fixture.ConsolidationWrite();
-        var invalid = original with { Entry = new(original.Entry.JournalEntryId, original.Entry.Timestamp,
+        var invalid = original with
+        {
+            Entry = new(original.Entry.JournalEntryId, original.Entry.Timestamp,
             original.Entry.Description, original.Entry.Lines, original.Entry.Metadata with
-            { Tags = new Dictionary<string, string> { [ConsolidationService.EvidenceTag] = "{}", [ConsolidationService.DigestTag] = Sha256Digest.ComputeUtf8("{}") } }) };
+            { Tags = new Dictionary<string, string> { [ConsolidationService.EvidenceTag] = "{}", [ConsolidationService.DigestTag] = Sha256Digest.ComputeUtf8("{}") } })
+        };
         await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Authority().AcquireAsync([fixture.Context(invalid)]));
         fixture.Bindings.Verify(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -269,8 +285,13 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             value.LegalAuthority = IntercompanyArrangementTestData.LegalAuthority(value._agreement);
             value._service = new(value._store, new Scope(), value.LegalAuthority.Object);
             var approved = value._agreement.Arrangement;
-            var draft = approved with { Version = 1, Status = IntercompanyAccountingArrangementStatusDto.Draft,
-                ApprovedBy = null, ApprovedAt = null };
+            var draft = approved with
+            {
+                Version = 1,
+                Status = IntercompanyAccountingArrangementStatusDto.Draft,
+                ApprovedBy = null,
+                ApprovedAt = null
+            };
             await value._store.AppendAsync(Tenant, 0, new(Guid.NewGuid(), new string('a', 64),
                 IntercompanyAccountingArrangementActionDto.Create, "owner", Time, null, draft));
             await value._store.AppendAsync(Tenant, 1, new(Guid.NewGuid(), new string('b', 64),
@@ -314,12 +335,22 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             var rates = FxContext.RateSet;
             if (rateSet)
             {
-                rates = rates with { Revision = rates.Revision + 1, PreviousHash = rates.ContentHash, ContentHash = null,
-                    SourceEvidence = "Corrected source provenance; same observed value" };
+                rates = rates with
+                {
+                    Revision = rates.Revision + 1,
+                    PreviousHash = rates.ContentHash,
+                    ContentHash = null,
+                    SourceEvidence = "Corrected source provenance; same observed value"
+                };
                 rates = rates with { ContentHash = ConsolidationFxValidation.Hash(rates) };
             }
-            var config = FxContext.Configuration with { Revision = FxContext.Configuration.Revision + 1,
-                PreviousHash = FxContext.Configuration.ContentHash, ContentHash = null, RateSetRevision = rates.Revision };
+            var config = FxContext.Configuration with
+            {
+                Revision = FxContext.Configuration.Revision + 1,
+                PreviousHash = FxContext.Configuration.ContentHash,
+                ContentHash = null,
+                RateSetRevision = rates.Revision
+            };
             config = config with { ContentHash = ConsolidationFxValidation.Hash(config) };
             FxContext = new(config, rates);
         }
@@ -339,8 +370,13 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         public async Task EndAgreementAsync(DateOnly cutoff, bool novated = false)
         {
             var effective = new DateTimeOffset(cutoff.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-            var retired = _agreement.Arrangement with { Version = _agreement.Version + 1,
-                Status = IntercompanyAccountingArrangementStatusDto.Retired, RetiredAt = effective, UpdatedAt = effective };
+            var retired = _agreement.Arrangement with
+            {
+                Version = _agreement.Version + 1,
+                Status = IntercompanyAccountingArrangementStatusDto.Retired,
+                RetiredAt = effective,
+                UpdatedAt = effective
+            };
             await _store.AppendAsync(Tenant, _agreement.Version, new(Guid.NewGuid(), new string('d', 64),
                 IntercompanyAccountingArrangementActionDto.Retire, "owner", effective, "Retire completed mapping", retired));
             LegalAuthority.Setup(authority => authority.GetEffectiveRevisionAsync(Tenant, _agreement.Arrangement.CanonicalReference,
@@ -368,15 +404,29 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             var lines = original.Entry.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), id, time, line.Account,
                 line.Credit * scale, line.Debit * scale, description,
                 line.Dimensions is { } dimensions ? dimensions with
-                { AccountingArrangementRevisionId = revisionOverride ?? dimensions.AccountingArrangementRevisionId,
-                    IntercompanyTransactionId = transactionOverride ?? dimensions.IntercompanyTransactionId } : null,
+                {
+                    AccountingArrangementRevisionId = revisionOverride ?? dimensions.AccountingArrangementRevisionId,
+                    IntercompanyTransactionId = transactionOverride ?? dimensions.IntercompanyTransactionId
+                } : null,
                 line.Currency is { } currency ? new(currency.TransactionCurrency, currency.FunctionalCurrency,
                     currency.TransactionCredit * scale, currency.TransactionDebit * scale, currency.FxRateToFunctional) : null)).ToArray();
             var sourceId = sourceOverride ?? original.Entry.JournalEntryId;
-            var command = original.PostingCommand! with { CommandId = Guid.NewGuid(), EffectiveDate = effectiveDate,
-                PostingDate = time, Intent = AccountingPostingIntentDto.Reversal, SourceJournalEntryId = sourceId, IntercompanyFx = null };
-            return original with { Entry = new(id, time, description, lines, new(EffectiveDate: effectiveDate)),
-                CommandId = command.CommandId, PostingCommand = command, SourceJournalEntryId = sourceId };
+            var command = original.PostingCommand! with
+            {
+                CommandId = Guid.NewGuid(),
+                EffectiveDate = effectiveDate,
+                PostingDate = time,
+                Intent = AccountingPostingIntentDto.Reversal,
+                SourceJournalEntryId = sourceId,
+                IntercompanyFx = null
+            };
+            return original with
+            {
+                Entry = new(id, time, description, lines, new(EffectiveDate: effectiveDate)),
+                CommandId = command.CommandId,
+                PostingCommand = command,
+                SourceJournalEntryId = sourceId
+            };
         }
 
         public LedgerPostingAuthorityContext Context(LedgerJournalEntryWrite write, LedgerBookControlModeDto mode = LedgerBookControlModeDto.Enforced)
@@ -386,7 +436,8 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
 
         public LedgerJournalEntryWrite Write(bool includeAgreement = true, string functionalCurrency = "USD", string? symbol = null, string? financialAccount = null)
         {
-            var id = Guid.NewGuid(); var period = Guid.NewGuid();
+            var id = Guid.NewGuid();
+            var period = Guid.NewGuid();
             var binding = CurrentBindings.FirstOrDefault();
             var dimensions = new LedgerLineDimensionSet(EntityId: EntityId.ToString("D"), CounterpartyId: OtherEntityId.ToString("D"))
             {
@@ -395,7 +446,8 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
                 IntercompanyAgreementId = includeAgreement ? _agreement.CanonicalAgreementId : null,
                 IntercompanyAgreementVersion = includeAgreement ? _agreement.CanonicalAgreementVersion : null,
                 IntercompanyTransactionId = includeAgreement ? "economic-occurrence-one" : null,
-                ChartAccountNodeId = "ar", AccountBindingRevisionId = binding?.RevisionId.ToString("D")
+                ChartAccountNodeId = "ar",
+                AccountBindingRevisionId = binding?.RevisionId.ToString("D")
             };
             var entry = new JournalEntry(id, Time, "Intercompany draw", [
                 new(Guid.NewGuid(), id, Time, new("IC receivable", LedgerAccountType.Asset, symbol, financialAccount), 120m, 0m,
@@ -410,7 +462,8 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
 
         public LedgerJournalEntryWrite ConsolidationWrite()
         {
-            var id = Guid.NewGuid(); var period = Guid.NewGuid();
+            var id = Guid.NewGuid();
+            var period = Guid.NewGuid();
             var lines = new LedgerEntry[] {
                 new(Guid.NewGuid(), id, Time, new("Assets:Intercompany Receivable", LedgerAccountType.Asset), 100m, 0m, "Elimination"),
                 new(Guid.NewGuid(), id, Time, new("Liabilities:Intercompany Payable", LedgerAccountType.Liability), 0m, 100m, "Elimination") };
@@ -423,8 +476,11 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
                 Tags: new Dictionary<string, string> { [ConsolidationService.EvidenceTag] = json, [ConsolidationService.DigestTag] = Sha256Digest.ComputeUtf8(json) }));
             var command = new AccountingPostingCommandDto(Guid.NewGuid(), BookId, period, Date, Time, "consolidation",
                 ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "consolidation-review", LedgerBookId: BookId)
-            { Actor = "poster", BookContext = new(BookId, Fund, EntityId, FundStructureNodeKindDto.Entity, "Elimination book", "USD",
-                AccountingBasisKindDto.Primary, "consolidation", "w10-v1") };
+            {
+                Actor = "poster",
+                BookContext = new(BookId, Fund, EntityId, FundStructureNodeKindDto.Entity, "Elimination book", "USD",
+                AccountingBasisKindDto.Primary, "consolidation", "w10-v1")
+            };
             return new(entry, BookId, period, command.CommandId, RuleId: ConsolidationService.RuleId, RuleVersion: "w10-v1",
                 PostingCommand: command, LedgerBookId: BookId);
         }

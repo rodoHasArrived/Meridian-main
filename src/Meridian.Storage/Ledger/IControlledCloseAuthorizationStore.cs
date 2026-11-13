@@ -18,14 +18,30 @@ public static class ControlledCloseFingerprint
     public static string Compute(LedgerJournalEntryWrite write)
     {
         write = AccountingPostingCommandValidator.NormalizeAndValidate(write);
-        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new {
-            write.Entry.JournalEntryId, write.Entry.Description, write.Entry.Lines,
-            write.PeriodId, write.LedgerBookId, write.AccountingBasis, write.AccountingPolicyId,
-            write.AccountingPolicyVersion, write.SourceJournalEntryId,
-            write.PostingCommand?.EffectiveDate, write.PostingCommand?.Intent,
-            write.PostingCommand?.ApprovalId, write.PostingCommand?.TreasuryContext,
-            Evidence = write.PostingCommand?.Evidence.Select(item => new { item.EvidenceId, item.Uri, item.Kind,
-                item.SourceSystem, item.SubjectId, item.ContentHash }).OrderBy(item => item.EvidenceId, StringComparer.Ordinal).ToArray()
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+        {
+            write.Entry.JournalEntryId,
+            write.Entry.Description,
+            write.Entry.Lines,
+            write.PeriodId,
+            write.LedgerBookId,
+            write.AccountingBasis,
+            write.AccountingPolicyId,
+            write.AccountingPolicyVersion,
+            write.SourceJournalEntryId,
+            write.PostingCommand?.EffectiveDate,
+            write.PostingCommand?.Intent,
+            write.PostingCommand?.ApprovalId,
+            write.PostingCommand?.TreasuryContext,
+            Evidence = write.PostingCommand?.Evidence.Select(item => new
+            {
+                item.EvidenceId,
+                item.Uri,
+                item.Kind,
+                item.SourceSystem,
+                item.SubjectId,
+                item.ContentHash
+            }).OrderBy(item => item.EvidenceId, StringComparer.Ordinal).ToArray()
         }, Json));
     }
 }

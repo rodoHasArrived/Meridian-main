@@ -90,7 +90,8 @@ public sealed class ConsolidationArrangementMatchingTests
             new DateTimeOffset(Fixture.Date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), version: 6, canonicalVersion: 2) : first;
         var events = new List<IntercompanyAccountingArrangementEventDto>
         { new(Guid.NewGuid(), "first-approval", IntercompanyAccountingArrangementActionDto.Approve, "reviewer", first.EffectiveFrom, "Approved", first.Arrangement) };
-        if (splitRevisions) events.Add(new(Guid.NewGuid(), "second-approval", IntercompanyAccountingArrangementActionDto.Approve,
+        if (splitRevisions)
+            events.Add(new(Guid.NewGuid(), "second-approval", IntercompanyAccountingArrangementActionDto.Approve,
             "reviewer", second.EffectiveFrom, "Approved successor", second.Arrangement with { SupersedesRevisionId = first.RevisionId }));
         var store = new Mock<IIntercompanyAccountingArrangementStore>();
         store.Setup(x => x.GetAsync("tenant-test", arrangementId, It.IsAny<CancellationToken>()))
@@ -108,9 +109,13 @@ public sealed class ConsolidationArrangementMatchingTests
     }
 
     private static LedgerLineDimensionSet Pins(LedgerLineDimensionSet dimensions, ResolvedIntercompanyAccountingArrangementDto profile)
-        => dimensions with { AccountingArrangementId = profile.ArrangementId.ToString("D"),
-            AccountingArrangementRevisionId = profile.RevisionId.ToString("D"), IntercompanyAgreementId = profile.CanonicalAgreementId,
-            IntercompanyAgreementVersion = profile.CanonicalAgreementVersion };
+        => dimensions with
+        {
+            AccountingArrangementId = profile.ArrangementId.ToString("D"),
+            AccountingArrangementRevisionId = profile.RevisionId.ToString("D"),
+            IntercompanyAgreementId = profile.CanonicalAgreementId,
+            IntercompanyAgreementVersion = profile.CanonicalAgreementVersion
+        };
 
     private static void RewriteSource(Fixture fixture, Guid book, Func<LedgerLineDimensionSet, LedgerLineDimensionSet> change,
         DateOnly? effectiveDate = null)
@@ -121,8 +126,11 @@ public sealed class ConsolidationArrangementMatchingTests
             line.Account, line.Debit, line.Credit, line.Description,
             line.Account.Name is ConsolidationService.ReceivableAccount or ConsolidationService.PayableAccount
                 ? change(line.Dimensions!) : line.Dimensions, line.Currency)).ToArray();
-        fixture.Records[book][0] = record with { Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, lines,
-            effectiveDate is { } date ? entry.Metadata with { EffectiveDate = date } : entry.Metadata) };
+        fixture.Records[book][0] = record with
+        {
+            Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, lines,
+            effectiveDate is { } date ? entry.Metadata with { EffectiveDate = date } : entry.Metadata)
+        };
     }
 
     private static void PostPreservingProfile(Fixture fixture, ManualJournalEntryDraftDto draft, long sequence)
@@ -132,10 +140,12 @@ public sealed class ConsolidationArrangementMatchingTests
         var entry = record.Entry;
         var lines = entry.Lines.Select((line, index) => new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp,
             line.Account, line.Debit, line.Credit, line.Description, line.Dimensions! with
-            { AccountingArrangementId = draft.Lines[index].Dimensions!.AccountingArrangementId,
+            {
+                AccountingArrangementId = draft.Lines[index].Dimensions!.AccountingArrangementId,
                 AccountingArrangementRevisionId = draft.Lines[index].Dimensions!.AccountingArrangementRevisionId,
                 ChartAccountNodeId = draft.Lines[index].Dimensions!.ChartAccountNodeId,
-                AccountBindingRevisionId = draft.Lines[index].Dimensions!.AccountBindingRevisionId }, line.Currency)).ToArray();
+                AccountBindingRevisionId = draft.Lines[index].Dimensions!.AccountBindingRevisionId
+            }, line.Currency)).ToArray();
         fixture.Records[Fixture.OverlayBookId][^1] = record with { Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata) };
     }
 

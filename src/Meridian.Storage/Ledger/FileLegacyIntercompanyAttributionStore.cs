@@ -26,7 +26,8 @@ public sealed class FileLegacyIntercompanyAttributionStore(string path, IFundSco
     public async Task<LegacyIntercompanyAttributionDto> AppendAsync(LegacyIntercompanyAttributionDto attribution,
         Guid? expectedPreviousAttributionId, CancellationToken ct = default)
     {
-        if (attribution.TenantId != RequireTenant()) throw new TenantScopeRejectedException("foreign legacy attribution");
+        if (attribution.TenantId != RequireTenant())
+            throw new TenantScopeRejectedException("foreign legacy attribution");
         await using var authority = await validator.AcquireAuthorityLeaseAsync(attribution, ct).ConfigureAwait(false);
         await validator.ValidateAsync(attribution, ct).ConfigureAwait(false);
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -52,7 +53,8 @@ public sealed class FileLegacyIntercompanyAttributionStore(string path, IFundSco
     private string RequireTenant()
     {
         var tenant = tenants.ResolveCallerTenant() ?? FundScopeTenantAuthority.CurrentTenantId;
-        if (!TenantReadPredicate.IsResolvedTenant(tenant)) throw new TenantScopeRejectedException("legacy attribution without a concrete tenant");
+        if (!TenantReadPredicate.IsResolvedTenant(tenant))
+            throw new TenantScopeRejectedException("legacy attribution without a concrete tenant");
         return tenant!.Trim();
     }
     private async Task<IReadOnlyList<LegacyIntercompanyAttributionDto>> ReadAsync(CancellationToken ct)

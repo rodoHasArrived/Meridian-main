@@ -17,20 +17,23 @@ public sealed class InMemoryEntityLifecycleStore : IEntityLifecycleStore
     public Task<EntityLifecycleRevisionDto?> GetLatestAsync(string tenantId, Guid entityId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        lock (_gate) return Task.FromResult(_history.TryGetValue(Key(tenantId, entityId), out var rows) ? Copy(rows[^1]) : null);
+        lock (_gate)
+            return Task.FromResult(_history.TryGetValue(Key(tenantId, entityId), out var rows) ? Copy(rows[^1]) : null);
     }
 
     public Task<EntityLifecycleRevisionDto?> GetRevisionAsync(string tenantId, Guid entityId, long revision, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        lock (_gate) return Task.FromResult(_history.TryGetValue(Key(tenantId, entityId), out var rows)
+        lock (_gate)
+            return Task.FromResult(_history.TryGetValue(Key(tenantId, entityId), out var rows)
             ? rows.Where(row => row.Revision == revision).Select(Copy).SingleOrDefault() : null);
     }
 
     public Task<IReadOnlyList<EntityLifecycleRevisionDto>> GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        lock (_gate) return Task.FromResult<IReadOnlyList<EntityLifecycleRevisionDto>>(_history.TryGetValue(Key(tenantId, entityId), out var rows)
+        lock (_gate)
+            return Task.FromResult<IReadOnlyList<EntityLifecycleRevisionDto>>(_history.TryGetValue(Key(tenantId, entityId), out var rows)
             ? rows.Select(Copy).ToArray() : []);
     }
 

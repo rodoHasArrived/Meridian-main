@@ -55,7 +55,8 @@ public sealed class IntercompanyAccountBindingPostgresTests
 
         async Task<Exception?> TryAppendAsync(IntercompanyAccountBindingDto binding)
         {
-            try { await store.AppendAsync(binding, initial.RevisionId); return null; }
+            try
+            { await store.AppendAsync(binding, initial.RevisionId); return null; }
             catch (Exception exception) { return exception; }
         }
     }

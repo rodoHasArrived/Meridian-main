@@ -33,12 +33,22 @@ public sealed partial class ConsolidationService
         var policy = await policies.ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary,
             request.AsOf, book.AccountingPolicyId, book.FundProfileId, book.FundStructureNodeId,
             PolicyVersion: version), ct).ConfigureAwait(false);
-        if (policy.Version != version) throw new InvalidOperationException("The resolved policy version differs from the book policy.");
+        if (policy.Version != version)
+            throw new InvalidOperationException("The resolved policy version differs from the book policy.");
         _ = RequireGovernedRule(policy, RuleId, version);
-        if (income) RequireGovernedRule(policy, RevenueExpenseRuleId, version);
+        if (income)
+            RequireGovernedRule(policy, RevenueExpenseRuleId, version);
         var ids = perimeter.Entities.Select(x => x.EntityId.ToString("D")).Order(StringComparer.Ordinal).ToArray();
-        var scope = "consolidation:" + Hash(new { request.OrganizationId, request.OwnershipRootId,
-            request.EliminationBookId, request.PeriodId, request.AsOf, Entities = ids, RuleVersion = version });
+        var scope = "consolidation:" + Hash(new
+        {
+            request.OrganizationId,
+            request.OwnershipRootId,
+            request.EliminationBookId,
+            request.PeriodId,
+            request.AsOf,
+            Entities = ids,
+            RuleVersion = version
+        });
         var mappings = new List<IntercompanyAccountBindingDto>();
         var overlayBindings = await bindingStore.ListAsync(book.LedgerBookId, request.AsOf, ct).ConfigureAwait(false);
         mappings.AddRange(overlayBindings);
@@ -51,8 +61,10 @@ public sealed partial class ConsolidationService
         }
         _ = Output(IntercompanyAccountRoleDto.Receivable);
         _ = Output(IntercompanyAccountRoleDto.Payable);
-        if (income) { _ = Output(IntercompanyAccountRoleDto.Revenue); _ = Output(IntercompanyAccountRoleDto.Expense); }
-        if (translates) _ = Output(IntercompanyAccountRoleDto.TranslationReserve);
+        if (income)
+        { _ = Output(IntercompanyAccountRoleDto.Revenue); _ = Output(IntercompanyAccountRoleDto.Expense); }
+        if (translates)
+            _ = Output(IntercompanyAccountRoleDto.TranslationReserve);
         var sources = new List<ConsolidationSourceDto>();
         var records = new List<LedgerJournalEntryRecord>();
         var versions = new List<ConsolidationBookVersionDto>();
@@ -63,7 +75,8 @@ public sealed partial class ConsolidationService
         {
             var books = (await journals.ListLedgerBooksAsync(book.FundProfileId, entity.EntityId,
                 FundStructureNodeKindDto.Entity, ct).ConfigureAwait(false)).Where(x => x.AccountingBasis == AccountingBasisKindDto.Primary).ToArray();
-            if (books.Length != 1) throw new InvalidOperationException("Each perimeter entity must have exactly one Primary source book.");
+            if (books.Length != 1)
+                throw new InvalidOperationException("Each perimeter entity must have exactly one Primary source book.");
             var entityBook = books[0];
             if (!string.Equals(entityBook.BaseCurrency, entity.BaseCurrency, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("The source book functional currency disagrees with its authoritative entity.");
@@ -161,12 +174,16 @@ public sealed partial class ConsolidationService
                         postingEntity.ToString("D"), counterparty, supportedRole ? Output(binding!.Role).AccountPath : line.Account.Name,
                         line.Debit, line.Credit, EffectiveDate(record), $"journal:{record.Entry.JournalEntryId:D}/line:{line.EntryId:D}")
                     {
-                        AccountType = line.Account.AccountType.ToString(), OriginalAccountPath = line.Account.Name,
+                        AccountType = line.Account.AccountType.ToString(),
+                        OriginalAccountPath = line.Account.Name,
                         CounterpartyDisposition = formerExternal ? "FormerPerimeterExternal" : null,
-                        Currency = entityBook.BaseCurrency, ChartAccountNodeId = binding?.ChartAccountNodeId,
+                        Currency = entityBook.BaseCurrency,
+                        ChartAccountNodeId = binding?.ChartAccountNodeId,
                         AccountBindingRevisionId = attribution?.AccountBindingRevisionId.ToString("D") ?? binding?.RevisionId.ToString("D"),
-                        AccountingArrangementId = arrangementId, AccountingArrangementRevisionId = arrangementRevision,
-                        IntercompanyAgreementId = canonicalId, IntercompanyAgreementVersion = canonicalVersion,
+                        AccountingArrangementId = arrangementId,
+                        AccountingArrangementRevisionId = arrangementRevision,
+                        IntercompanyAgreementId = canonicalId,
+                        IntercompanyAgreementVersion = canonicalVersion,
                         IntercompanyAgreementPayloadHash = canonicalHash,
                         IntercompanyTransactionId = attribution?.IntercompanyTransactionId ?? line.Dimensions?.IntercompanyTransactionId,
                         TransactionCurrency = line.Currency?.TransactionCurrency ?? entityBook.BaseCurrency,
@@ -217,20 +234,35 @@ public sealed partial class ConsolidationService
         var orderedSources = sources.OrderBy(x => x.JournalEntryId).ThenBy(x => x.LineId).ToArray();
         var orderedVersions = versions.OrderBy(x => x.LedgerBookId).ToArray();
         var perimeterFingerprint = Hash(perimeter);
-        var fingerprint = Hash(new { Versions = orderedVersions, Perimeter = perimeterFingerprint, Policy = policy,
-            Sources = orderedSources, AccountBindings = orderedMappings, Translation = translationFingerprint,
-            LegacyAttributions = attributions.OrderBy(x => x.AttributionId).ToArray() });
+        var fingerprint = Hash(new
+        {
+            Versions = orderedVersions,
+            Perimeter = perimeterFingerprint,
+            Policy = policy,
+            Sources = orderedSources,
+            AccountBindings = orderedMappings,
+            Translation = translationFingerprint,
+            LegacyAttributions = attributions.OrderBy(x => x.AttributionId).ToArray()
+        });
         var evidence = new ConsolidationEvidenceDto(request, scope, fingerprint, orderedVersions, perimeterFingerprint,
             version, overlay.Select(x => x.Entry.JournalEntryId).Order().ToArray(), proposed, book.BaseCurrency, ids,
             perimeter.OwnershipEvidence, orderedSources)
-        { AccountBindings = orderedMappings, TranslationFingerprint = translationFingerprint, TranslationEvidenceJson = translationEvidence,
-          LegacyAttributions = attributions.OrderBy(x => x.AttributionId).ToArray(),
-          RulePackReference = new(policy.RulePack!.RulePackId, policy.RulePack.RulePackVersion, RuleId, version),
-          ParticipatingRules = income ? [new(RuleId, version), new(RevenueExpenseRuleId, version)] : [new(RuleId, version)] };
+        {
+            AccountBindings = orderedMappings,
+            TranslationFingerprint = translationFingerprint,
+            TranslationEvidenceJson = translationEvidence,
+            LegacyAttributions = attributions.OrderBy(x => x.AttributionId).ToArray(),
+            RulePackReference = new(policy.RulePack!.RulePackId, policy.RulePack.RulePackVersion, RuleId, version),
+            ParticipatingRules = income ? [new(RuleId, version), new(RevenueExpenseRuleId, version)] : [new(RuleId, version)]
+        };
         return new ConsolidationCalculation(request, book, period, perimeter, policy, sources, records, overlay,
             matches, proposed, evidence, blockers.Distinct().ToArray())
-        { GovernedSources = sources, TranslationReserve = reserve,
-          TranslationDifferences = translationDifferences, RoundingDifferences = roundingDifferences };
+        {
+            GovernedSources = sources,
+            TranslationReserve = reserve,
+            TranslationDifferences = translationDifferences,
+            RoundingDifferences = roundingDifferences
+        };
     }
 
     private static AccountingPolicyRuleDto RequireGovernedRule(AccountingPolicyDto policy, string ruleId, string version)
@@ -247,7 +279,8 @@ public sealed partial class ConsolidationService
     {
         var candidates = bindings.Where(x => (nodeId is null || x.ChartAccountNodeId == nodeId) &&
             (x.AccountName == name || x.AccountPath == name || x.HistoricalNames.Contains(name, StringComparer.Ordinal))).ToArray();
-        if (candidates.Length > 1) throw new InvalidOperationException("Historical account identity resolves to multiple chart nodes.");
+        if (candidates.Length > 1)
+            throw new InvalidOperationException("Historical account identity resolves to multiple chart nodes.");
         return candidates.SingleOrDefault();
     }
 

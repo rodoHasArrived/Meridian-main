@@ -26,7 +26,8 @@ public sealed record IntercompanyAccountingArrangementDto(
     Guid? PredecessorRevisionId = null, IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>? LifecycleEvidence = null,
     Guid? SupersedesRevisionId = null)
 {
-    [JsonIgnore] public IntercompanyCanonicalAgreementReferenceDto CanonicalReference =>
+    [JsonIgnore]
+    public IntercompanyCanonicalAgreementReferenceDto CanonicalReference =>
         new(CanonicalAgreementId, CanonicalAgreementVersion, CanonicalPayloadHash);
 }
 

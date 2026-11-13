@@ -32,7 +32,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
         head.Parameters.AddWithValue("id", value.RateSetId);
         var history = new List<(int Revision, string Hash)>();
         await using (var reader = await head.ExecuteReaderAsync(ct).ConfigureAwait(false))
-            while (await reader.ReadAsync(ct).ConfigureAwait(false)) history.Add((reader.GetInt32(0), reader.GetString(1)));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                history.Add((reader.GetInt32(0), reader.GetString(1)));
         if (history.Any(x => x.Revision == value.Revision))
         {
             if (!Sha256Digest.FixedEquals(history.Single(x => x.Revision == value.Revision).Hash, value.ContentHash))
@@ -63,7 +64,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
         command.Parameters.AddWithValue("id", rateSetId);
         command.Parameters.AddWithValue("revision", revision);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         var result = ReadRateSet(reader);
         if (result.TenantId != tenantId || result.CompanyId != companyId || result.RateSetId != rateSetId || result.Revision != revision)
             throw new InvalidDataException("Retained FX rate-set scope does not match its indexed identity.");
@@ -144,7 +146,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
         command.Parameters.AddWithValue("book", ledgerBookId);
         command.Parameters.AddWithValue("asof", asOf);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         var value = JsonSerializer.Deserialize(reader.GetString(0), ConsolidationFxJsonContext.Default.ConsolidationFxBookConfigurationDto)
             ?? throw new InvalidDataException("The retained FX configuration is empty.");
         ConsolidationFxCurrencyRules.Validate(value);
@@ -167,7 +170,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
         }
         catch
         {
-            if (transaction is not null) await transaction.DisposeAsync().ConfigureAwait(false);
+            if (transaction is not null)
+                await transaction.DisposeAsync().ConfigureAwait(false);
             await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -181,7 +185,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
         command.Parameters.AddWithValue("book", ledgerBookId);
         command.Parameters.AddWithValue("revision", revision);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         var value = JsonSerializer.Deserialize(reader.GetString(0), ConsolidationFxJsonContext.Default.ConsolidationFxBookConfigurationDto)
             ?? throw new InvalidDataException("The retained FX configuration is empty.");
         ConsolidationFxCurrencyRules.Validate(value);
@@ -203,7 +208,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
     private async Task<NpgsqlConnection> OpenAsync(CancellationToken ct)
     {
         var connection = new NpgsqlConnection(_options.ConnectionString);
-        try { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
+        try
+        { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
         catch { await connection.DisposeAsync().ConfigureAwait(false); throw; }
     }
     private static void Scope(NpgsqlCommand command, string tenant, string company)
@@ -223,7 +229,8 @@ public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
     {
         public async ValueTask DisposeAsync()
         {
-            try { await transaction.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await transaction.DisposeAsync().ConfigureAwait(false); }
             finally { await connection.DisposeAsync().ConfigureAwait(false); }
         }
     }

@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
 
@@ -67,7 +66,8 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
         var payload = JsonSerializer.Serialize(request, IntercompanyAccountingArrangementsJsonContext.Default.CreateIntercompanyAccountingArrangementRequest);
         var digest = Digest(actor, IntercompanyAccountingArrangementActionDto.Create, payload);
         request = JsonSerializer.Deserialize(payload, IntercompanyAccountingArrangementsJsonContext.Default.CreateIntercompanyAccountingArrangementRequest)!;
-        if (await RetryAsync(tenantId, request.ArrangementId, request.RequestId, digest, ct).ConfigureAwait(false) is { } retry) return retry;
+        if (await RetryAsync(tenantId, request.ArrangementId, request.RequestId, digest, ct).ConfigureAwait(false) is { } retry)
+            return retry;
         var now = _clock.GetUtcNow();
         var arrangement = new IntercompanyAccountingArrangementDto(request.ArrangementId, request.OrganizationId,
             Require(request.ArrangementReference, "reference"), request.TemplateKind, request.CanonicalAgreementId,
@@ -81,7 +81,8 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
             scope.StructureAuthorityProof, ct).ConfigureAwait(false);
         return await store.MutateAsync(tenantId, arrangement.ArrangementId, request.RequestId, digest, async (history, token) =>
         {
-            if (history is not null) throw new InvalidOperationException("The accounting arrangement identity already exists.");
+            if (history is not null)
+                throw new InvalidOperationException("The accounting arrangement identity already exists.");
             var retained = arrangement with { CreatedAt = _clock.GetUtcNow(), UpdatedAt = _clock.GetUtcNow() };
             var resolved = new ResolvedIntercompanyAccountingArrangementDto(retained, legal.ResolveExact(retained.CanonicalReference));
             IntercompanyAccountingArrangementPolicy.Validate(retained, resolved.LegalRevision);
@@ -96,19 +97,31 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
         var payload = JsonSerializer.Serialize(request, IntercompanyAccountingArrangementsJsonContext.Default.ReviseIntercompanyAccountingArrangementRequest);
         var digest = Digest(actor, IntercompanyAccountingArrangementActionDto.Revise, payload);
         request = JsonSerializer.Deserialize(payload, IntercompanyAccountingArrangementsJsonContext.Default.ReviseIntercompanyAccountingArrangementRequest)!;
-        if (await RetryAsync(tenantId, arrangementId, request.RequestId, digest, ct).ConfigureAwait(false) is { } retry) return retry;
+        if (await RetryAsync(tenantId, arrangementId, request.RequestId, digest, ct).ConfigureAwait(false) is { } retry)
+            return retry;
         var history = await RequiredHistoryAsync(tenantId, arrangementId, ct).ConfigureAwait(false);
         var old = history.Current;
         if (old.Version != request.ExpectedVersion || old.Status == IntercompanyAccountingArrangementStatusDto.Submitted)
             throw new InvalidOperationException("The accounting arrangement changed or its mapping revision is submitted.");
         var revised = old with
         {
-            ArrangementReference = Require(request.ArrangementReference, "reference"), TemplateKind = request.TemplateKind,
-            CanonicalAgreementVersion = request.CanonicalAgreementVersion, CanonicalPayloadHash = request.CanonicalPayloadHash,
-            EffectiveFrom = request.EffectiveFrom.ToUniversalTime(), EffectiveTo = request.EffectiveTo?.ToUniversalTime(),
-            PartyMappings = request.PartyMappings, RevisionId = Guid.NewGuid(), RevisionNumber = old.RevisionNumber + 1,
-            Version = old.Version + 1, Status = IntercompanyAccountingArrangementStatusDto.Draft, UpdatedBy = actor,
-            UpdatedAt = _clock.GetUtcNow(), ApprovedBy = null, ApprovedAt = null, RetiredAt = null, LifecycleEvidence = null,
+            ArrangementReference = Require(request.ArrangementReference, "reference"),
+            TemplateKind = request.TemplateKind,
+            CanonicalAgreementVersion = request.CanonicalAgreementVersion,
+            CanonicalPayloadHash = request.CanonicalPayloadHash,
+            EffectiveFrom = request.EffectiveFrom.ToUniversalTime(),
+            EffectiveTo = request.EffectiveTo?.ToUniversalTime(),
+            PartyMappings = request.PartyMappings,
+            RevisionId = Guid.NewGuid(),
+            RevisionNumber = old.RevisionNumber + 1,
+            Version = old.Version + 1,
+            Status = IntercompanyAccountingArrangementStatusDto.Draft,
+            UpdatedBy = actor,
+            UpdatedAt = _clock.GetUtcNow(),
+            ApprovedBy = null,
+            ApprovedAt = null,
+            RetiredAt = null,
+            LifecycleEvidence = null,
             PredecessorRevisionId = old.RevisionId,
             SupersedesRevisionId = history.Events.LastOrDefault(item => item.Action == IntercompanyAccountingArrangementActionDto.Approve)?.AffectedRevision.RevisionId
         };
@@ -120,8 +133,12 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
         {
             if (locked is null || locked.Current.Version != request.ExpectedVersion || locked.Current.Status == IntercompanyAccountingArrangementStatusDto.Submitted)
                 throw new InvalidOperationException("The accounting arrangement version changed; reload before revising.");
-            var retained = revised with { Version = locked.Current.Version + 1, UpdatedAt = _clock.GetUtcNow(),
-                SupersedesRevisionId = locked.Events.LastOrDefault(item => item.Action == IntercompanyAccountingArrangementActionDto.Approve)?.AffectedRevision.RevisionId };
+            var retained = revised with
+            {
+                Version = locked.Current.Version + 1,
+                UpdatedAt = _clock.GetUtcNow(),
+                SupersedesRevisionId = locked.Events.LastOrDefault(item => item.Action == IntercompanyAccountingArrangementActionDto.Approve)?.AffectedRevision.RevisionId
+            };
             var resolved = new ResolvedIntercompanyAccountingArrangementDto(retained, legal.ResolveExact(retained.CanonicalReference));
             IntercompanyAccountingArrangementPolicy.Validate(retained, resolved.LegalRevision);
             await scopeAuthority.ValidateAsync(tenantId, resolved, requireActive: false, token).ConfigureAwait(false);
@@ -134,7 +151,8 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
     {
         ValidateRequest(tenantId, actor, request.RequestId);
         var digest = Digest(actor, action, JsonSerializer.Serialize(request, IntercompanyAccountingArrangementsJsonContext.Default.IntercompanyAccountingArrangementActionRequest));
-        if (await RetryAsync(tenantId, arrangementId, request.RequestId, digest, ct).ConfigureAwait(false) is { } retry) return retry;
+        if (await RetryAsync(tenantId, arrangementId, request.RequestId, digest, ct).ConfigureAwait(false) is { } retry)
+            return retry;
         var history = await RequiredHistoryAsync(tenantId, arrangementId, ct).ConfigureAwait(false);
         var source = SelectRevision(history, action, request.RevisionId);
         var probe = await ResolveExactAsync(tenantId, source, ct).ConfigureAwait(false);
@@ -158,8 +176,12 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
             var recorded = _clock.GetUtcNow();
             var next = selected with { Version = locked.Current.Version + 1, Status = status, UpdatedBy = actor, UpdatedAt = recorded };
             if (action == IntercompanyAccountingArrangementActionDto.Approve)
-                next = next with { ApprovedBy = actor, ApprovedAt = recorded,
-                    LifecycleEvidence = await scopeAuthority.GetLifecycleEvidenceAsync(tenantId, resolved, token).ConfigureAwait(false) };
+                next = next with
+                {
+                    ApprovedBy = actor,
+                    ApprovedAt = recorded,
+                    LifecycleEvidence = await scopeAuthority.GetLifecycleEvidenceAsync(tenantId, resolved, token).ConfigureAwait(false)
+                };
             if (action == IntercompanyAccountingArrangementActionDto.Retire)
             {
                 var effective = request.EffectiveAt?.ToUniversalTime() ?? recorded;
@@ -177,7 +199,8 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
     private static IntercompanyAccountingArrangementDto SelectRevision(IntercompanyAccountingArrangementHistoryDto history,
         IntercompanyAccountingArrangementActionDto action, Guid? revisionId)
     {
-        if (revisionId is null || revisionId == history.Current.RevisionId) return history.Current;
+        if (revisionId is null || revisionId == history.Current.RevisionId)
+            return history.Current;
         if (action != IntercompanyAccountingArrangementActionDto.Retire)
             throw new InvalidOperationException("Only retirement may target a prior mapping revision.");
         return history.Events.Select(item => item.AffectedRevision).LastOrDefault(item => item.RevisionId == revisionId)
@@ -197,8 +220,8 @@ public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccoun
         return retained?.Snapshot;
     }
     private static string Digest(string actor, IntercompanyAccountingArrangementActionDto action, string payload)
-        => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(actor + "\n" + action + "\n" + payload)));
+        => Sha256Digest.ComputeUtf8(actor + "\n" + action + "\n" + payload);
     private static void ValidateRequest(string tenant, string actor, Guid requestId)
     { Require(tenant, "tenant"); Require(actor, "actor"); if (requestId == Guid.Empty) throw new ArgumentException("Request ID is required."); }
-    private static string Require(string? value, string field) => IntercompanyAccountingArrangementPolicy.RequireText(value, field);
+    private static string Require(string? value, string field) => IntercompanyAccountingArrangementPolicy.RequireArrangementText(value, field);
 }

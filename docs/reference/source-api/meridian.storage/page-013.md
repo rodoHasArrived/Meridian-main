@@ -147,8 +147,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public MarketEventBuffer(int initialCapacity = 1000) : base(initialCapacity);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:233](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L233) |  |
-| <code>public IReadOnlyList&lt;MarketEvent&gt; DrainBySymbol(string symbol);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:247](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L247) | Drain events for a specific symbol in a single lock acquisition. Non-matching events remain in the buffer and preserve their original ordering. |
+| <code>public MarketEventBuffer(int initialCapacity = 1000) : base(initialCapacity);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:259](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L259) |  |
+| <code>public IReadOnlyList&lt;MarketEvent&gt; DrainBySymbol(string symbol);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:273](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L273) | Drain events for a specific symbol in a single lock acquisition. Non-matching events remain in the buffer and preserve their original ordering. |
 
 ## MetadataTagService
 
@@ -191,7 +191,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.MigrationOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:502](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L502).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:569](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L569).
 
 ```csharp
 public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChecksum = true, bool ConvertFormat = false, int ParallelFiles = 4, Action<MigrationProgress>? OnProgress = null);
@@ -201,7 +201,7 @@ public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChec
 
 Qualified name: <code>Meridian.Storage.Services.MigrationPlan</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:527](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L527).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:594](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L594).
 
 ```csharp
 public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon, IReadOnlyList<PlannedMigrationAction> Actions, long EstimatedBytesToMigrate, TimeSpan EstimatedDuration);
@@ -211,7 +211,7 @@ public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon,
 
 Qualified name: <code>Meridian.Storage.Services.MigrationProgress</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:510](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L510).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:577](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L577).
 
 ```csharp
 public sealed record MigrationProgress(string CurrentFile, int FilesProcessed, int TotalFiles, long BytesProcessed);
@@ -231,7 +231,7 @@ public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, s
 
 Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:517](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L517).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:584](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L584).
 
 ```csharp
 public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
@@ -268,7 +268,7 @@ public sealed record OperationalState(bool IsRealTimeCollectionActive, TradingSe
 
 Qualified name: <code>Meridian.Storage.Services.OrphanedFile</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:911](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L911).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:966](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L966).
 
 ```csharp
 public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified);
@@ -278,7 +278,7 @@ public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, Da
 
 Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:905](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L905).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L960).
 
 ```csharp
 public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
@@ -307,7 +307,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:535](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L535).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:602](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L602).
 
 ```csharp
 public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings);
@@ -594,7 +594,7 @@ public sealed record RebuildOptions(int ParallelIndexers = 4);
 
 Qualified name: <code>Meridian.Storage.Services.RepairOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:844](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L844).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:897](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L897).
 
 ```csharp
 public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false, bool BackupBeforeRepair = true, string? BackupPath = null, RepairScope Scope = RepairScope.All, string? ScopeTarget = null);
@@ -604,7 +604,7 @@ public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false,
 
 Qualified name: <code>Meridian.Storage.Services.RepairResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:865](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L865).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:918](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L918).
 
 ```csharp
 public sealed record RepairResult(int FilesProcessed, int FilesRepaired, IReadOnlyList<string> Errors, bool DryRun, IReadOnlyList<string>? PlannedActions)
@@ -614,15 +614,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:873](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L873) |  |
-| <code>public int FilesChanged { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:874](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L874) |  |
-| <code>public int FilesUnresolved =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:875](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L875) |  |
+| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:926](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L926) |  |
+| <code>public int FilesChanged { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+| <code>public int FilesUnresolved =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:928](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L928) |  |
 
 ## RepairScope
 
 Qualified name: <code>Meridian.Storage.Services.RepairScope</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916).
 
 ```csharp
 public enum RepairScope : byte
@@ -632,18 +632,18 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>SingleFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
-| <code>Directory</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
-| <code>Symbol</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
-| <code>DateRange</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
-| <code>EventType</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
-| <code>All</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
+| <code>SingleFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
+| <code>Directory</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
+| <code>Symbol</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
+| <code>DateRange</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
+| <code>EventType</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
+| <code>All</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
 
 ## RepairStrategy
 
 Qualified name: <code>Meridian.Storage.Services.RepairStrategy</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:853](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L853).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:906](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L906).
 
 ```csharp
 public enum RepairStrategy : byte
@@ -653,12 +653,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>RestoreFromBackup</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:855](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L855) |  |
-| <code>BackfillFromSource</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:856](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L856) |  |
-| <code>TruncateCorrupted</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:857](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L857) |  |
-| <code>RebuildIndex</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:858](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L858) |  |
-| <code>MergeFragments</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:859](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L859) |  |
-| <code>RecompressOptimal</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:860](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L860) |  |
+| <code>RestoreFromBackup</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:908](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L908) |  |
+| <code>BackfillFromSource</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:909](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L909) |  |
+| <code>TruncateCorrupted</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:910](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L910) |  |
+| <code>RebuildIndex</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:911](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L911) |  |
+| <code>MergeFragments</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:912](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L912) |  |
+| <code>RecompressOptimal</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:913](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L913) |  |
 
 ## ResourceLimits
 

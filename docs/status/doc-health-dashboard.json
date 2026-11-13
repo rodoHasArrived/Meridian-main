@@ -1,11 +1,11 @@
 {
-  "total_files": 1199,
-  "orphaned_count": 397,
+  "total_files": 1292,
+  "orphaned_count": 401,
   "no_heading_count": 233,
   "stale_count": 0,
-  "todo_count": 330,
-  "health_score": 84,
-  "signal_digest": "sha256:50ee91e005bf3a085daf7fca02ec0ced8cfd3a4ec0670aa9836c4f9e8fb55d24",
+  "todo_count": 332,
+  "health_score": 85,
+  "signal_digest": "sha256:b844a68442071be234d2ca73a82c038e8876f1a7db9c066bf7126b22f9e8edb9",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -336,6 +336,9 @@
     "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "build/schema-control/runs/4093deac448e-lbur_c97/candidate/reports/summary.md",
+    "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/reports/schema-diff.md",
+    "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/reports/summary.md",
     "docs/ai/claude/CLAUDE.api.md",
     "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
     "docs/ai/claude/CLAUDE.structure.md",
@@ -348,6 +351,7 @@
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
     "docs/engineering/archive-compression-replay-safety.md",
+    "docs/engineering/plans/review-remediation-2026-11-12.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
@@ -1133,6 +1137,629 @@
       "stale": false
     },
     {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/asset-operations-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/asset-operations-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/asset-operations-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/banking-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/direct-lending-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/direct-lending-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/direct-lending-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/fund-governance-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/fund-governance-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/fund-governance-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/fund-governance-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/identity-access-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts-page-04.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts-page-06.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/ledger-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/money-market-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/reporting-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-04.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-06.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts-page-07.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/contracts/security-master-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/data-object-catalog.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/asset_operations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/banking.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/fund_accounts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/fund_structure.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/identity_access.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/ledger.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/money_market.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/operator_triage.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/public.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/reporting.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/modules/security_master.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/docs/schema-catalog.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-lbur_c97/candidate/reports/summary.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/asset-operations-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/asset-operations-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/asset-operations-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/banking-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/direct-lending-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/direct-lending-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/direct-lending-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/fund-governance-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/fund-governance-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/fund-governance-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/fund-governance-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/identity-access-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts-page-04.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts-page-06.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/ledger-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/money-market-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/reporting-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-01.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-02.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-04.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-06.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts-page-07.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/contracts/security-master-contracts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/data-object-catalog.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/asset_operations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/banking.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/fund_accounts.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/fund_structure.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/identity_access.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/ledger.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/money_market.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/operator_triage.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/public.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/reporting.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/modules/security_master.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/docs/schema-catalog.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/reports/schema-diff.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "build/schema-control/runs/4093deac448e-q2oqcw_j/candidate/reports/summary.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "build/scripts/docs/README.md",
       "has_heading": true,
       "todo_count": 8,
@@ -1729,6 +2356,13 @@
     },
     {
       "path": "docs/architecture/reporting-workstation-model.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/review-boundary-extractions.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2554,6 +3188,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/security-master-review-remediation-plan.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2779,6 +3420,13 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-06.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4739,13 +5387,6 @@
     },
     {
       "path": "docs/reference/source-api/meridian.infrastructure/page-007.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/reference/source-api/meridian.infrastructure/page-008.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -8749,6 +9390,13 @@
       "stale": false
     },
     {
+      "path": "src/Meridian.Reporting.ReadModels/README.md",
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "src/Meridian.Reporting/README.md",
       "has_heading": true,
       "todo_count": 1,
@@ -8766,6 +9414,13 @@
       "path": "src/Meridian.Setup/README.md",
       "has_heading": true,
       "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Storage.Accounting/README.md",
+      "has_heading": true,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

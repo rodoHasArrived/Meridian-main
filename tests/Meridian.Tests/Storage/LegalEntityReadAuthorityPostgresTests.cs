@@ -15,7 +15,7 @@ public sealed class LegalEntityReadAuthorityPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var bookId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
-            { NoResetOnClose = true }.ConnectionString);
+        { NoResetOnClose = true }.ConnectionString);
         await connection.OpenAsync();
         await using var entitlement = await CashDividendEntitlementLock.AcquireSessionSharedAsync(connection, bookId, CancellationToken.None);
         await using (var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.Serializable))
@@ -42,8 +42,11 @@ public sealed class LegalEntityReadAuthorityPostgresTests
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         var ct = timeout.Token;
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
-        var options = new FundStructureStoreOptions { ConnectionString = database.Options.ConnectionString,
-            Schema = database.Options.SchemaName + "_graph_order" };
+        var options = new FundStructureStoreOptions
+        {
+            ConnectionString = database.Options.ConnectionString,
+            Schema = database.Options.SchemaName + "_graph_order"
+        };
         try
         {
             await new FundStructureMigrationRunner(options).EnsureMigratedAsync(ct);
@@ -58,11 +61,11 @@ public sealed class LegalEntityReadAuthorityPostgresTests
             var nativeName = "native-graph-order-" + Guid.NewGuid().ToString("N");
             var writerName = "queued-graph-order-" + Guid.NewGuid().ToString("N");
             await using var native = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(options.ConnectionString)
-                { ApplicationName = nativeName }.ConnectionString);
+            { ApplicationName = nativeName }.ConnectionString);
             await native.OpenAsync(ct);
             await using var nativeTransaction = await native.BeginTransactionAsync(ct);
             await using var writer = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(options.ConnectionString)
-                { ApplicationName = writerName }.ConnectionString);
+            { ApplicationName = writerName }.ConnectionString);
             await writer.OpenAsync(ct);
             await using var writerTransaction = await writer.BeginTransactionAsync(ct);
             await using var existingReader = await graph.AcquireConsolidationAuthorityLeaseAsync(ct);
@@ -133,7 +136,7 @@ public sealed class LegalEntityReadAuthorityPostgresTests
         await CashDividendEntitlementLock.AcquireAsync(native, nativeTransaction, book.LedgerBookId, true, ct);
         var name = "strict-entitlement-order-" + Guid.NewGuid().ToString("N");
         await using var ordinary = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
-            { ApplicationName = name }.ConnectionString);
+        { ApplicationName = name }.ConnectionString);
         await ordinary.OpenAsync(ct);
         await using var ordinaryTransaction = await ordinary.BeginTransactionAsync(ct);
         try
@@ -164,8 +167,11 @@ public sealed class LegalEntityReadAuthorityPostgresTests
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         var ct = timeout.Token;
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
-        var options = new FundStructureStoreOptions { ConnectionString = database.Options.ConnectionString,
-            Schema = database.Options.SchemaName + "_structure" };
+        var options = new FundStructureStoreOptions
+        {
+            ConnectionString = database.Options.ConnectionString,
+            Schema = database.Options.SchemaName + "_structure"
+        };
         try
         {
             await new FundStructureMigrationRunner(options).EnsureMigratedAsync(ct);
@@ -175,7 +181,7 @@ public sealed class LegalEntityReadAuthorityPostgresTests
             var proof = Assert.IsAssignableFrom<ILegalEntityReadAuthorityLease>(graphLease).StructureAuthorityProof;
             var writerName = "legal-entity-queued-" + Guid.NewGuid().ToString("N");
             await using var writer = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(options.ConnectionString)
-                { ApplicationName = writerName }.ConnectionString);
+            { ApplicationName = writerName }.ConnectionString);
             await writer.OpenAsync(ct);
             await using var transaction = await writer.BeginTransactionAsync(ct);
             await using var command = new NpgsqlCommand($"update {options.Schema}.legal_entity set name=name", writer, transaction);
@@ -192,7 +198,7 @@ public sealed class LegalEntityReadAuthorityPostgresTests
                 Assert.True(await agreements.ExecuteAsync("tenant-a", Guid.NewGuid(), proof,
                     (state, _) => Task.FromResult(state.State is null), ct).WaitAsync(TimeSpan.FromSeconds(5), ct));
                 var foreign = new PostgresIntercompanyAgreementStore(new FundStructureStoreOptions
-                    { ConnectionString = options.ConnectionString, Schema = options.Schema + "_other" });
+                { ConnectionString = options.ConnectionString, Schema = options.Schema + "_other" });
                 await Assert.ThrowsAsync<IntercompanyAgreementValidationException>(() =>
                     foreign.AcquirePostingLeaseAsync("tenant-a", [], proof, ct));
             }
@@ -220,7 +226,8 @@ public sealed class LegalEntityReadAuthorityPostgresTests
         await connection.OpenAsync(ct);
         await using var command = new NpgsqlCommand("select exists(select 1 from pg_stat_activity where application_name=@name and cardinality(pg_blocking_pids(pid))>0)", connection);
         command.Parameters.AddWithValue("name", applicationName);
-        while (!(bool)(await command.ExecuteScalarAsync(ct))!) await Task.Delay(10, ct);
+        while (!(bool)(await command.ExecuteScalarAsync(ct))!)
+            await Task.Delay(10, ct);
     }
 
     // Isolates real graph/entitlement/period exclusion. Lifecycle eligibility itself is covered

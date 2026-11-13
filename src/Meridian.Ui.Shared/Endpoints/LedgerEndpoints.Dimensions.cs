@@ -45,11 +45,16 @@ public static partial class LedgerEndpoints
             signature += $"|intercompanyAgreementId={filter.IntercompanyAgreementId}";
         if (filter.IntercompanyAgreementVersion is not null)
             signature += $"|intercompanyAgreementVersion={filter.IntercompanyAgreementVersion}";
-        if (filter.AccountingArrangementId is not null) signature += "|accountingArrangementId=" + Uri.EscapeDataString(filter.AccountingArrangementId);
-        if (filter.AccountingArrangementRevisionId is not null) signature += "|accountingArrangementRevisionId=" + Uri.EscapeDataString(filter.AccountingArrangementRevisionId);
-        if (filter.ChartAccountNodeId is not null) signature += "|chartAccountNodeId=" + Uri.EscapeDataString(filter.ChartAccountNodeId);
-        if (filter.AccountBindingRevisionId is not null) signature += "|accountBindingRevisionId=" + Uri.EscapeDataString(filter.AccountBindingRevisionId);
-        if (filter.IntercompanyTransactionId is not null) signature += "|intercompanyTransactionId=" + Uri.EscapeDataString(filter.IntercompanyTransactionId);
+        if (filter.AccountingArrangementId is not null)
+            signature += "|accountingArrangementId=" + Uri.EscapeDataString(filter.AccountingArrangementId);
+        if (filter.AccountingArrangementRevisionId is not null)
+            signature += "|accountingArrangementRevisionId=" + Uri.EscapeDataString(filter.AccountingArrangementRevisionId);
+        if (filter.ChartAccountNodeId is not null)
+            signature += "|chartAccountNodeId=" + Uri.EscapeDataString(filter.ChartAccountNodeId);
+        if (filter.AccountBindingRevisionId is not null)
+            signature += "|accountBindingRevisionId=" + Uri.EscapeDataString(filter.AccountBindingRevisionId);
+        if (filter.IntercompanyTransactionId is not null)
+            signature += "|intercompanyTransactionId=" + Uri.EscapeDataString(filter.IntercompanyTransactionId);
         return signature;
     }
 

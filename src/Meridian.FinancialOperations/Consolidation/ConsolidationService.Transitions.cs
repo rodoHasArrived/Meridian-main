@@ -9,7 +9,8 @@ public sealed partial class ConsolidationService
     public async Task<ConsolidationCalculation> CalculateAsync(ConsolidationRequestDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (transitions is null) return await CalculateUnroutedAsync(request, ct).ConfigureAwait(false);
+        if (transitions is null)
+            return await CalculateUnroutedAsync(request, ct).ConfigureAwait(false);
         var book = await journals.GetLedgerBookAsync(request.EliminationBookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The elimination book is unavailable.");
         var history = await transitions.ListAsync(request.OrganizationId, request.OwnershipRootId, ct).ConfigureAwait(false);
@@ -31,10 +32,12 @@ public sealed partial class ConsolidationService
             foreach (var other in await journals.ListLedgerBooksAsync(book.FundProfileId, request.OwnershipRootId,
                 FundStructureNodeKindDto.Fund, ct).ConfigureAwait(false))
             {
-                if (other.LedgerBookId == book.LedgerBookId || other.AccountingBasis != AccountingBasisKindDto.Primary) continue;
+                if (other.LedgerBookId == book.LedgerBookId || other.AccountingBasis != AccountingBasisKindDto.Primary)
+                    continue;
                 var retired = history.Any(x => x.Request.PreviousEliminationBookId == other.LedgerBookId && request.AsOf >= x.Request.CutoverDate);
                 var notYetEffective = history.Any(x => x.Request.NewEliminationBookId == other.LedgerBookId && request.AsOf < x.Request.CutoverDate);
-                if (retired || notYetEffective) continue;
+                if (retired || notYetEffective)
+                    continue;
                 if ((await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: other.LedgerBookId), ct).ConfigureAwait(false))
                     .Any(record => record.Entry.Metadata.Tags?.ContainsKey(EvidenceTag) == true ||
                         record.Entry.Metadata.IdempotencyKey?.StartsWith("consolidation:", StringComparison.OrdinalIgnoreCase) == true))
@@ -50,7 +53,8 @@ public sealed partial class ConsolidationService
             .FirstOrDefault(x => x is not null);
         if (expectedMembers is not null && !members.SequenceEqual(expectedMembers.Order(StringComparer.Ordinal)))
             throw new InvalidOperationException("The reporting membership changed. Prepare a reviewed cutover into a new dedicated elimination book.");
-        if (entering is null) return calculation;
+        if (entering is null)
+            return calculation;
         var lineage = history.Where(x => x.RootVersion <= entering.RootVersion).OrderBy(x => x.RootVersion)
             .Select(x => new ConsolidationTransitionLineageDto(x.TransitionId, x.ContentHash, x.Request.CutoverDate, x.Request.PreviousEliminationBookId)).ToArray();
         var evidence = calculation.Evidence with

@@ -915,9 +915,9 @@ items:
       - type: source
         path: src/Meridian/DemoWorkspaceCli.cs
       - type: test
-        path: tests/Meridian.Tests/Demo/DemoWorkspaceSeederTests.cs
+        path: tests/Meridian.Demo.Tests/Demo/DemoWorkspaceSeederTests.cs
       - type: test
-        path: tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs
+        path: tests/Meridian.Demo.Tests/Demo/DemoWorkspaceGuardTests.cs
       - type: source
         path: src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs
       - type: source
@@ -1994,6 +1994,7 @@ items:
       - Balances are compared and eliminated in one declared consolidation currency translated at governed as-of rates, with translation differences retained separately and elimination blocked when a rate is unavailable, so a currency gap never reads as an intercompany mismatch. Balances that still do not agree between the two sides surface as their own reported break class rather than being netted away.
       - Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the treatment rule, the perimeter enforcement, the elimination drafts, and the unmatched-intercompany tests.
     source_modules:
+      - SRC-STORAGE-ACCOUNTING
       - SRC-DESIGN-FINANCIAL-OPERATIONS
       - SRC-LEDGER
       - SRC-CONTRACTS
@@ -3039,6 +3040,7 @@ items:
       - Close and provider intercompany controls consume a structured due-to/from schedule and expose incomplete coverage rather than accepting keyword-only management records as proof.
       - Added unit, PostgreSQL, API and shared workstation evidence is recorded before acceptance; no external posting or live-provider certification is implied.
     source_modules:
+      - SRC-STORAGE-ACCOUNTING
       - SRC-APP
       - SRC-CONTRACTS
       - SRC-DESIGN-ENTITIES
@@ -3089,6 +3091,7 @@ items:
       - Read models retain lifecycle revisions, ownership, agreements, successor links and books, and consolidation never silently omits residual balances because of lifecycle status.
       - Tenant, replay, concurrent transition, migration and shared browser/WPF tests are evidenced before acceptance; Windows execution is reported separately.
     source_modules:
+      - SRC-STORAGE-ACCOUNTING
       - SRC-APP
       - SRC-CONTRACTS
       - SRC-DESIGN-ENTITIES

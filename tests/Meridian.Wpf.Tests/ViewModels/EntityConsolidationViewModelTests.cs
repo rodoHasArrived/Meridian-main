@@ -115,7 +115,8 @@ public sealed class EntityConsolidationViewModelTests
         public Task<ConsolidationViewDto> CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default)
         {
             CreateCalls++;
-            if (RefuseCreate) throw new InvalidOperationException("Source evidence changed; repeat preview.");
+            if (RefuseCreate)
+                throw new InvalidOperationException("Source evidence changed; repeat preview.");
             return Task.FromResult(View(request, Allowed, Blocked));
         }
         public static ConsolidationViewDto View(ConsolidationRequestDto request, bool allowed, bool blocked)

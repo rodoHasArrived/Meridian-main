@@ -31,15 +31,18 @@ public sealed partial class ConsolidationService
         foreach (var line in posted.SelectMany(x => x.Entry.Lines))
         {
             var role = ResolveBinding(overlayBindings, line.Account.Name, line.Dimensions?.ChartAccountNodeId)?.Role;
-            if (role is null or IntercompanyAccountRoleDto.TranslationReserve) continue;
+            if (role is null or IntercompanyAccountRoleDto.TranslationReserve)
+                continue;
             var first = role is IntercompanyAccountRoleDto.Receivable or IntercompanyAccountRoleDto.Revenue;
             var isIncome = role is IntercompanyAccountRoleDto.Revenue or IntercompanyAccountRoleDto.Expense;
-            if (isIncome && !income) continue;
+            if (isIncome && !income)
+                continue;
             var creditor = first ? line.Dimensions!.EntityId! : line.Dimensions!.CounterpartyId!;
             var debtor = first ? line.Dimensions!.CounterpartyId! : line.Dimensions!.EntityId!;
             if (grouped.Keys.Any(x => x.Creditor == creditor && x.Debtor == debtor &&
                 x.Agreement == line.Dimensions!.AccountingArrangementId && x.Revision == line.Dimensions.AccountingArrangementRevisionId && x.IsIncome == isIncome &&
-                (!isIncome || x.Transaction == line.Dimensions.IntercompanyTransactionId))) continue;
+                (!isIncome || x.Transaction == line.Dimensions.IntercompanyTransactionId)))
+                continue;
             grouped.TryAdd(new MatchKey(creditor, debtor, line.Dimensions!.AccountingArrangementId, line.Dimensions.AccountingArrangementRevisionId, book.BaseCurrency,
                 isIncome, isIncome ? line.Dimensions.IntercompanyTransactionId : null), []);
         }
@@ -89,23 +92,35 @@ public sealed partial class ConsolidationService
                 Add(output(IntercompanyAccountRoleDto.TranslationReserve), key.Creditor, key.Debtor, -(firstDelta + secondDelta));
             matches.Add(new ConsolidationMatchDto(key.Creditor, key.Debtor, firstReporting, secondReporting,
                 Math.Min(firstTarget, secondTarget), firstReporting - firstTarget, secondReporting - secondTarget, group.ToArray())
-            { AccountingArrangementId = key.Agreement, AccountingArrangementRevisionId = key.Revision, Treatment = key.IsIncome ? RevenueExpenseRuleId : RuleId,
-              IntercompanyTransactionId = key.Transaction, MatchingCurrency = key.Currency,
-              MatchedTransactionAmount = matchedOriginal, UnmatchedFirstTransactionAmount = firstOriginal - matchedOriginal,
-              UnmatchedSecondTransactionAmount = secondOriginal - matchedOriginal,
-              TranslationDifference = firstTarget - secondTarget });
+            {
+                AccountingArrangementId = key.Agreement,
+                AccountingArrangementRevisionId = key.Revision,
+                Treatment = key.IsIncome ? RevenueExpenseRuleId : RuleId,
+                IntercompanyTransactionId = key.Transaction,
+                MatchingCurrency = key.Currency,
+                MatchedTransactionAmount = matchedOriginal,
+                UnmatchedFirstTransactionAmount = firstOriginal - matchedOriginal,
+                UnmatchedSecondTransactionAmount = secondOriginal - matchedOriginal,
+                TranslationDifference = firstTarget - secondTarget
+            });
 
             void Add(IntercompanyAccountBindingDto binding, string entity, string cp, decimal signed)
             {
-                if (signed == 0m) return;
+                if (signed == 0m)
+                    return;
                 proposed.Add(new ManualJournalEntryLineDto($"line-{proposed.Count + 1}",
                     signed > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
                     Math.Abs(signed), book.BaseCurrency, binding.AccountPath, EntityId: entity,
                     Description: key.IsIncome ? "Reviewed intercompany income elimination" : "Reviewed intercompany balance elimination",
                     EvidenceLink: $"consolidation:{scope}", Dimensions: new LedgerDimensionSetDto(
                         FundId: request.OwnershipRootId.ToString("D"), EntityId: entity, CounterpartyId: cp)
-                    { AccountingArrangementId = key.Agreement, AccountingArrangementRevisionId = key.Revision, IntercompanyTransactionId = key.Transaction,
-                      ChartAccountNodeId = binding.ChartAccountNodeId, AccountBindingRevisionId = binding.RevisionId.ToString("D") }));
+                    {
+                        AccountingArrangementId = key.Agreement,
+                        AccountingArrangementRevisionId = key.Revision,
+                        IntercompanyTransactionId = key.Transaction,
+                        ChartAccountNodeId = binding.ChartAccountNodeId,
+                        AccountBindingRevisionId = binding.RevisionId.ToString("D")
+                    }));
             }
         }
         return (matches, proposed);

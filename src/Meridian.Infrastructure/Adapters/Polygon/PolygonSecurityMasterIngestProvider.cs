@@ -20,6 +20,7 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
     private readonly HttpClient _http;
     private readonly bool _ownsHttpClient;
     private readonly RateLimiter _rateLimiter;
+    private readonly bool _ownsRateLimiter;
     private readonly ILogger<PolygonSecurityMasterIngestProvider> _logger;
     private readonly string? _apiKey;
     private readonly string? _encodedApiKey;
@@ -27,7 +28,8 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
 
     public PolygonSecurityMasterIngestProvider(
         ILogger<PolygonSecurityMasterIngestProvider> logger,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        RateLimiter? rateLimiter = null)
     {
         _logger = logger;
         _apiKey = Environment.GetEnvironmentVariable("POLYGON_API_KEY")
@@ -39,7 +41,8 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
         _http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Meridian/1.0");
 
         // Polygon free tier: 5 req/min; unlimited tiers support much higher rates.
-        _rateLimiter = new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(12), null);
+        _ownsRateLimiter = rateLimiter is null;
+        _rateLimiter = rateLimiter ?? new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(12), null);
     }
 
     /// <summary>
@@ -71,15 +74,16 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
         var results = new List<CreateSecurityRequest>();
         var nextUrl = BuildInitialUrl(exchange, assetType);
         int pagesProcessed = 0;
+        var pagination = new PaginationCursorGuard("Polygon Security Master");
 
         while (!string.IsNullOrEmpty(nextUrl))
         {
             ct.ThrowIfCancellationRequested();
+            var pageUri = PolygonPagination.GetAuthenticatedPageUri(nextUrl, _apiKey!);
+            pagination.Visit(PolygonPagination.GetPageIdentity(pageUri));
             await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
-            var page = await FetchPageAsync(nextUrl, ct).ConfigureAwait(false);
-            if (page is null)
-                break;
+            var page = await FetchPageAsync(pageUri, ct).ConfigureAwait(false);
 
             foreach (var ticker in page.Results ?? Enumerable.Empty<PolygonTickerItem>())
             {
@@ -94,9 +98,7 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
             _logger.LogDebug("Polygon ingest page {Page}: {Count} tickers fetched so far", pagesProcessed, results.Count);
 
             // Follow cursor-based pagination via next_url
-            nextUrl = page.NextUrl is not null
-                ? AppendApiKey(page.NextUrl)
-                : null;
+            nextUrl = page.NextUrl;
         }
 
         _logger.LogInformation(
@@ -118,38 +120,22 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
         return url;
     }
 
-    private string AppendApiKey(string url)
+    private async Task<PolygonTickersPage> FetchPageAsync(Uri uri, CancellationToken ct)
     {
-        // Polygon next_url includes all params except apiKey
-        return url.Contains("apiKey=", StringComparison.OrdinalIgnoreCase)
-            ? url
-            : url + $"&apiKey={_encodedApiKey}";
-    }
+        using var response = await _http.GetAsync(uri, ct).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning("Polygon ingest request returned {Status}", response.StatusCode);
+            // Do not include the request URI or response body: either may contain credentials.
+            throw new HttpRequestException("Polygon Security Master ingest failed.", null, response.StatusCode);
+        }
 
-    private async Task<PolygonTickersPage?> FetchPageAsync(string url, CancellationToken ct)
-    {
-        try
-        {
-            using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-                _logger.LogWarning("Polygon ingest request returned {Status}: {Body}", response.StatusCode, body);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<PolygonTickersPage>(json);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Polygon ingest page fetch failed");
-            return null;
-        }
+        var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var page = JsonSerializer.Deserialize<PolygonTickersPage>(json)
+            ?? throw new InvalidOperationException("Polygon returned an empty ticker response.");
+        if (!string.Equals(page.Status, "OK", StringComparison.OrdinalIgnoreCase) || page.Results is null)
+            throw new InvalidOperationException("Polygon returned an invalid ticker response.");
+        return page;
     }
 
     private static CreateSecurityRequest? MapToCreateRequest(PolygonTickerItem ticker)
@@ -216,7 +202,8 @@ public sealed class PolygonSecurityMasterIngestProvider : IDisposable
         if (_disposed)
             return;
         _disposed = true;
-        _rateLimiter.Dispose();
+        if (_ownsRateLimiter)
+            _rateLimiter.Dispose();
         if (_ownsHttpClient)
             _http.Dispose();
     }

@@ -18,8 +18,11 @@ public sealed class EntityPostingReviewPostgresTests
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         var ct = timeout.Token;
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
-        var options = new FundStructureStoreOptions { ConnectionString = database.Options.ConnectionString,
-            Schema = database.Options.SchemaName + "_review_structure" };
+        var options = new FundStructureStoreOptions
+        {
+            ConnectionString = database.Options.ConnectionString,
+            Schema = database.Options.SchemaName + "_review_structure"
+        };
         try
         {
             await new FundStructureMigrationRunner(options).EnsureMigratedAsync(ct);
@@ -46,8 +49,11 @@ public sealed class EntityPostingReviewPostgresTests
             await store.SaveLedgerBookAsync(book, ct);
             var period = await store.SavePeriodAsync(ConsolidationStorageFixture.Period(book), 0, ct: ct);
             var write = ConsolidationStorageFixture.Write(book, period);
-            var review = write with { PostingCommand = write.PostingCommand! with
-                { ApprovalState = AccountingPostingApprovalStateDto.NotRequired, ApprovalId = null } };
+            var review = write with
+            {
+                PostingCommand = write.PostingCommand! with
+                { ApprovalState = AccountingPostingApprovalStateDto.NotRequired, ApprovalId = null }
+            };
 
             await store.ValidateEntityPostingControlsAsync(review, ct);
             Assert.Empty(await store.GetByPeriodAsync(period.PeriodId, ct));
@@ -57,9 +63,12 @@ public sealed class EntityPostingReviewPostgresTests
             // Review defers lifecycle operation eligibility, not native legal provenance.
             var line = review.Entry.Lines[0];
             var canonical = new LedgerLineDimensionSet(EntityId: book.FundStructureNodeId.ToString("D"), CounterpartyId: Guid.NewGuid().ToString("D"))
-                { IntercompanyAgreementId = Guid.NewGuid(), IntercompanyAgreementVersion = 1 };
-            var unverifiedLegal = review with { Entry = new(review.Entry.JournalEntryId, review.Entry.Timestamp, review.Entry.Description,
-                [new(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit, line.Description, canonical), review.Entry.Lines[1]], review.Entry.Metadata) };
+            { IntercompanyAgreementId = Guid.NewGuid(), IntercompanyAgreementVersion = 1 };
+            var unverifiedLegal = review with
+            {
+                Entry = new(review.Entry.JournalEntryId, review.Entry.Timestamp, review.Entry.Description,
+                [new(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit, line.Description, canonical), review.Entry.Lines[1]], review.Entry.Metadata)
+            };
             var missingLegal = await Assert.ThrowsAsync<LedgerValidationException>(() => store.ValidateEntityPostingControlsAsync(unverifiedLegal, ct));
             Assert.Contains("intercompany agreement validation is unavailable", missingLegal.Message);
             Assert.Empty(await store.GetByPeriodAsync(period.PeriodId, ct));
@@ -73,8 +82,11 @@ public sealed class EntityPostingReviewPostgresTests
             var changedLines = write.Entry.Lines.Select(item => new LedgerEntry(item.EntryId, item.JournalEntryId, item.Timestamp,
                 item.Account, item.Debit > 0m ? item.Debit + 20m : 0m, item.Credit > 0m ? item.Credit + 20m : 0m,
                 item.Description, item.Dimensions, item.Currency)).ToArray();
-            var changed = authorized with { Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
-                changedLines, write.Entry.Metadata) };
+            var changed = authorized with
+            {
+                Entry = new(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+                changedLines, write.Entry.Metadata)
+            };
             await Assert.ThrowsAsync<InvalidOperationException>(() => store.AppendAsync(changed, ct));
             Assert.Empty(await store.GetByPeriodAsync(period.PeriodId, ct));
             await store.AppendAsync(authorized, ct);

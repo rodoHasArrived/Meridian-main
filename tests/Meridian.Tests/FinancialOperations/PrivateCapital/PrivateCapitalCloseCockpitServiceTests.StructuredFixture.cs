@@ -36,7 +36,8 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
         private IntercompanyBalanceScheduleService Source(string? tenant, string? company, string? fund, Guid? book)
         {
             var key = (tenant ?? "tenant-a", company ?? "company-a", fund ?? FundProfileId, book ?? FixtureBook);
-            if (!_sources.TryGetValue(key, out var source)) _sources[key] = source = IntercompanyBalanceScheduleTests.ReadySchedule(key.Item3, key.Item4, key.Item1, key.Item2);
+            if (!_sources.TryGetValue(key, out var source))
+                _sources[key] = source = IntercompanyBalanceScheduleTests.ReadySchedule(key.Item3, key.Item4, key.Item1, key.Item2);
             return source;
         }
     }

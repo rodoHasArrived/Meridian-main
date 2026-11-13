@@ -27,8 +27,13 @@ public sealed class EntityLifecyclePostgresTests(FundAccountDatabaseFixture fixt
             await history.AppendAsync(first, 0);
             Assert.Null(await history.GetLatestAsync("tenant-b", entity.EntityId));
 
-            var next = EntityLifecycleRevisionIntegrity.Seal(first with { Revision = 2, PreviousHash = first.ContentHash,
-                Reason = "Evidenced dissolution", Timeline = [first.Timeline[0] with { Status = LegalEntityLifecycleStatusDto.Dissolved }] });
+            var next = EntityLifecycleRevisionIntegrity.Seal(first with
+            {
+                Revision = 2,
+                PreviousHash = first.ContentHash,
+                Reason = "Evidenced dissolution",
+                Timeline = [first.Timeline[0] with { Status = LegalEntityLifecycleStatusDto.Dissolved }]
+            });
             await using var lease = await history.AcquireReadLeaseAsync("tenant-a", [entity.EntityId]);
             using (var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => history.AppendAsync(next, 1, cancellation.Token));

@@ -64,7 +64,8 @@ public sealed class IntercompanyAccountBindingFileTests
             _ownership.Setup(x => x.ResolveAsync("local-fund", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FundProfileOwnership("local-fund", Binding.TenantId, Binding.CompanyId));
             var chart = new ChartOfAccountsNodeDto(Binding.ChartAccountNodeId, Binding.AccountPath,
-                Binding.AccountName, Binding.AccountType) { IntercompanyRole = Binding.Role };
+                Binding.AccountName, Binding.AccountType)
+            { IntercompanyRole = Binding.Role };
             _configuration.Setup(x => x.GetAsync("local-fund", Binding.LedgerBookId, It.IsAny<CancellationToken>(),
                 Binding.TenantId, Binding.CompanyId)).ReturnsAsync(new AccountingConfigurationWorkspaceDto(
                     "local-fund", Binding.LedgerBookId, AccountingConfigurationStatusDto.Draft, "v1", Binding.RecordedAt,

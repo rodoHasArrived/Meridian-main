@@ -106,7 +106,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Entities.FundStructure.IntercompanyAccountingArrangementPolicy</code>. Kind: `class`.
 
-Source: [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:6](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L6).
+Source: [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:7](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L7).
 
 Accounting configuration rules; canonical legal approval and consolidation scope remain separate authorities.
 
@@ -118,9 +118,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void Validate(IntercompanyAccountingArrangementDto arrangement, IntercompanyAgreementRevisionDto legal);</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:8](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L8) |  |
-| <code>public static IntercompanyAccountingArrangementStatusDto Transition(IntercompanyAccountingArrangementStatusDto status, IntercompanyAccountingArrangementActionDto action) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:55](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L55) |  |
-| <code>public static string RequireText(string? value, string field) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:64](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L64) |  |
+| <code>public static void Validate(IntercompanyAccountingArrangementDto arrangement, IntercompanyAgreementRevisionDto legal);</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:9](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L9) |  |
+| <code>public static IntercompanyAccountingArrangementStatusDto Transition(IntercompanyAccountingArrangementStatusDto status, IntercompanyAccountingArrangementActionDto action) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:58](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L58) |  |
+| <code>public static string RequireArrangementText(string? value, string field) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:67](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L67) |  |
 
 ## LedgerGroupingRules
 

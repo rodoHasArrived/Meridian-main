@@ -50,7 +50,9 @@ public sealed partial class PostgresFundStructureStore
         {
             _connection = connection;
             _transaction = transaction;
-            StructureAuthorityProof = new(connection.Host, connection.Port, connection.Database, schema.ToLowerInvariant(),
+            var host = connection.Host ?? throw new InvalidOperationException(
+                "A configured PostgreSQL host is required to establish legal-entity endpoint authority.");
+            StructureAuthorityProof = new(host, connection.Port, connection.Database, schema.ToLowerInvariant(),
                 () => Volatile.Read(ref _disposed) == 0 && _transaction.Connection is not null);
         }
         public LegalEntityReadAuthorityProof StructureAuthorityProof { get; }

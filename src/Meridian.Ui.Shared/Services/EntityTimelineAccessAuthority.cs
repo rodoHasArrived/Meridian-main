@@ -19,10 +19,13 @@ public sealed class HttpContextEntityTimelineAccessAuthority(IHttpContextAccesso
         IReadOnlyList<Guid> entityIds, CancellationToken ct = default)
     {
         var http = accessor.HttpContext;
-        if (http is null || entityIds.Count == 0 || entityIds.Any(id => id == Guid.Empty)) return false;
+        if (http is null || entityIds.Count == 0 || entityIds.Any(id => id == Guid.Empty))
+            return false;
         var scope = HttpContextWorkstationTenantContextAccessor.Resolve(http);
-        if (!scope.HasTenantScope || scope.TenantId != caller.TenantId || scope.Actor != caller.Actor) return false;
-        if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance)) return true;
+        if (!scope.HasTenantScope || scope.TenantId != caller.TenantId || scope.Actor != caller.Actor)
+            return false;
+        if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance))
+            return true;
         var ids = entityIds.ToHashSet();
         var allowed = new HashSet<Guid>();
         foreach (var permission in new[] { UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports,

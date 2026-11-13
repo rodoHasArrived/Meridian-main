@@ -64,7 +64,8 @@ public sealed partial class PostgresLedgerJournalStore
         Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof? structureAuthority = null)
     {
         var request = await BuildAgreementAuthorityRequestAsync(connection, transaction, write, ct, structureAuthority).ConfigureAwait(false);
-        if (request is null) return null;
+        if (request is null)
+            return null;
         var authority = _intercompanyAgreementAuthority?.Invoke()
             ?? throw new LedgerValidationException("Authoritative intercompany agreement validation is unavailable; posting is blocked.");
         try
@@ -117,9 +118,11 @@ public sealed partial class PostgresLedgerJournalStore
         {
             var request = await BuildAgreementAuthorityRequestAsync(connection, transaction, context.Write, ct,
                 context.StructureAuthorityProof).ConfigureAwait(false);
-            if (request is not null) requested.Add((context, request));
+            if (request is not null)
+                requested.Add((context, request));
         }
-        if (requested.Count == 0) return null;
+        if (requested.Count == 0)
+            return null;
         var authority = _intercompanyAgreementAuthority?.Invoke()
             ?? throw new LedgerValidationException("Authoritative intercompany agreement validation is unavailable; posting is blocked.");
         try

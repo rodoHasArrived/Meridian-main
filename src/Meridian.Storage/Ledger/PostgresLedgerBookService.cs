@@ -74,7 +74,8 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         {
             var existingForBasis = existing.FirstOrDefault(book => book.AccountingBasis == accountingBasis &&
                 !Dedicated(book.FundStructureNodeKind, book.AccountingBasis, book.AccountingPolicyId, book.AccountingPolicyVersion));
-            if (existingForBasis is not null) return MapBook(existingForBasis);
+            if (existingForBasis is not null)
+                return MapBook(existingForBasis);
         }
 
         var now = DateTimeOffset.UtcNow;

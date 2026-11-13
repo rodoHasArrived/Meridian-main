@@ -6,7 +6,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Evidence;

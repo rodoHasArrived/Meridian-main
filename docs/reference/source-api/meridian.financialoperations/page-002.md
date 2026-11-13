@@ -489,14 +489,14 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeaseAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L19) |  |
 | <code>public async Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeasesAsync(string tenantId, IReadOnlyList&lt;ResolvedIntercompanyAccountingArrangementDto&gt; agreements, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L22) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyEntityLifecycleReferenceDto&gt;&gt; GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L50) |  |
-| <code>public async Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, bool requireActive, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:67](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L67) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyEntityLifecycleReferenceDto&gt;&gt; GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:52](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L52) |  |
+| <code>public async Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, bool requireActive, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:71](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L71) |  |
 
 ## IIntercompanyAccountingArrangementScopeAuthority
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyAccountingArrangementScopeAuthority</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L14).
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L13).
 
 ```csharp
 public interface IIntercompanyAccountingArrangementScopeAuthority
@@ -506,15 +506,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeaseAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:16](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L16) |  |
-| <code>Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, bool requireActive, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:18](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L18) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyEntityLifecycleReferenceDto&gt;&gt; GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L19) |  |
+| <code>Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeaseAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:15](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L15) |  |
+| <code>Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, bool requireActive, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:17](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L17) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyEntityLifecycleReferenceDto&gt;&gt; GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:18](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L18) |  |
 
 ## IIntercompanyAccountingArrangementScopeLease
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyAccountingArrangementScopeLease</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:10](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L10).
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:9](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L9).
 
 ```csharp
 public interface IIntercompanyAccountingArrangementScopeLease : IAsyncDisposable
@@ -524,7 +524,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>LegalEntityReadAuthorityProof? StructureAuthorityProof { get; }</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L12) |  |
+| <code>LegalEntityReadAuthorityProof? StructureAuthorityProof { get; }</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L11) |  |
 
 ## IIntercompanyBalanceScheduleSource
 
@@ -547,7 +547,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAccountingArrangementService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:24](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L24).
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L23).
 
 Approves accounting configuration only; native legal terms, review and history are never authored here.
 
@@ -559,14 +559,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;ResolvedIntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:29](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L29) |  |
-| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto?&gt; GetAsync(string tenantId, Guid id, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:37](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L37) |  |
-| <code>public Task&lt;IntercompanyAccountingArrangementHistoryDto?&gt; GetHistoryAsync(string tenantId, Guid id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:42](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L42) |  |
-| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto&gt; ResolveApprovedRevisionAsync(string tenantId, Guid arrangementId, Guid revisionId, DateTimeOffset economicDate, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:44](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L44) |  |
-| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto&gt; GetApprovedRevisionAsync(string tenantId, Guid arrangementId, Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:54](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L54) | Exact immutable configuration for proven source inverses/history; does not grant new posting eligibility. |
-| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; CreateAsync(string tenantId, string actor, CreateIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:63](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L63) |  |
-| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ReviseAsync(string tenantId, string actor, Guid arrangementId, ReviseIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:92](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L92) |  |
-| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ApplyActionAsync(string tenantId, string actor, Guid arrangementId, IntercompanyAccountingArrangementActionDto action, IntercompanyAccountingArrangementActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:132](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L132) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ResolvedIntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:28](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L28) |  |
+| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto?&gt; GetAsync(string tenantId, Guid id, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:36](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L36) |  |
+| <code>public Task&lt;IntercompanyAccountingArrangementHistoryDto?&gt; GetHistoryAsync(string tenantId, Guid id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:41](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L41) |  |
+| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto&gt; ResolveApprovedRevisionAsync(string tenantId, Guid arrangementId, Guid revisionId, DateTimeOffset economicDate, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:43](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L43) |  |
+| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto&gt; GetApprovedRevisionAsync(string tenantId, Guid arrangementId, Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:53](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L53) | Exact immutable configuration for proven source inverses/history; does not grant new posting eligibility. |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; CreateAsync(string tenantId, string actor, CreateIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:62](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L62) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ReviseAsync(string tenantId, string actor, Guid arrangementId, ReviseIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:93](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L93) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ApplyActionAsync(string tenantId, string actor, Guid arrangementId, IntercompanyAccountingArrangementActionDto action, IntercompanyAccountingArrangementActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:149](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L149) |  |
 
 ## IntercompanyBalanceScheduleService
 
@@ -585,7 +585,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:25](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L25) |  |
-| <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetForCloseAsync(string? tenant, string? company, string? fund, Guid? book, string? periodId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:201](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L201) |  |
+| <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetForCloseAsync(string? tenant, string? company, string? fund, Guid? book, string? periodId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:235](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L235) |  |
 
 ## IntercompanyCounterpartReversalBuilder
 
@@ -625,7 +625,7 @@ Declared public members:
 | <code>public IntercompanyJournalFamily(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L12) |  |
 | <code>public bool Contains(Guid id) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:20](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L20) |  |
 | <code>public IReadOnlyList&lt;LedgerJournalEntryRecord&gt; Resolve(Guid anchor);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L22) |  |
-| <code>public static DateOnly EffectiveDate(LedgerJournalEntryRecord record) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:46](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L46) |  |
+| <code>public static DateOnly EffectiveDate(LedgerJournalEntryRecord record) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L50) |  |
 
 ## IntercompanyLedgerPostingAuthority
 
@@ -645,7 +645,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L19) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L21) |  |
-| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:188](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L188) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:194](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L194) |  |
 
 ## IntercompanyProposalDraftBuilder
 

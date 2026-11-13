@@ -30,14 +30,16 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
     private async Task<NpgsqlConnection> OpenAsync(CancellationToken ct)
     {
         var connection = new NpgsqlConnection(_options.ConnectionString);
-        try { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
+        try
+        { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
         catch { await connection.DisposeAsync().ConfigureAwait(false); throw; }
     }
 
     public async Task<IAsyncDisposable> AcquireAuthorityLeaseAsync(CancellationToken ct = default)
     {
         _ = Tenant();
-        if (_writerDepth.Value > 0) return EmptyLedgerAuthorityLease.Instance;
+        if (_writerDepth.Value > 0)
+            return EmptyLedgerAuthorityLease.Instance;
         var connection = await OpenAsync(ct).ConfigureAwait(false);
         NpgsqlTransaction? transaction = null;
         try
@@ -48,7 +50,8 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
         }
         catch
         {
-            if (transaction is not null) await transaction.DisposeAsync().ConfigureAwait(false);
+            if (transaction is not null)
+                await transaction.DisposeAsync().ConfigureAwait(false);
             await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -72,7 +75,8 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
         var tenant = Tenant();
         await using var connection = await OpenAsync(ct).ConfigureAwait(false);
         var results = await ReadReceiptsAsync(connection, null, tenant, organizationId, ownershipRootId, null, ct).ConfigureAwait(false);
-        foreach (var result in results) await RequireBooksAsync(connection, null, tenant, result.CompanyId, result.Request, ct).ConfigureAwait(false);
+        foreach (var result in results)
+            await RequireBooksAsync(connection, null, tenant, result.CompanyId, result.Request, ct).ConfigureAwait(false);
         return results;
     }
 
@@ -81,7 +85,8 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
         var tenant = Tenant();
         await using var connection = await OpenAsync(ct).ConfigureAwait(false);
         var result = (await ReadReceiptsAsync(connection, null, tenant, null, null, transitionId, ct).ConfigureAwait(false)).SingleOrDefault();
-        if (result is not null) await RequireBooksAsync(connection, null, tenant, result.CompanyId, result.Request, ct).ConfigureAwait(false);
+        if (result is not null)
+            await RequireBooksAsync(connection, null, tenant, result.CompanyId, result.Request, ct).ConfigureAwait(false);
         return result;
     }
 
@@ -90,7 +95,8 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
         var tenant = Tenant();
         await using var connection = await OpenAsync(ct).ConfigureAwait(false);
         var result = await ReadPreviewAsync(connection, null, tenant, previewId, ct).ConfigureAwait(false);
-        if (result is not null) await RequireBooksAsync(connection, null, tenant, result.CompanyId, result.Request, ct).ConfigureAwait(false);
+        if (result is not null)
+            await RequireBooksAsync(connection, null, tenant, result.CompanyId, result.Request, ct).ConfigureAwait(false);
         return result;
     }
 
@@ -199,7 +205,8 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
         var history = await ReadReceiptsAsync(connection, transaction, tenant, receipt.Request.OrganizationId, receipt.Request.OwnershipRootId, null, ct).ConfigureAwait(false);
         ConsolidationTransitionRules.ValidateAppend(receipt, history);
         _writerDepth.Value++;
-        try { await revalidate(ct).ConfigureAwait(false); }
+        try
+        { await revalidate(ct).ConfigureAwait(false); }
         finally { _writerDepth.Value--; }
         await using var insert = connection.CreateCommand();
         insert.Transaction = transaction;
@@ -252,12 +259,15 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"select document::text from {Q("consolidation_transition_previews")} where preview_id=@id and tenant_id=@tenant;";
-        command.Parameters.AddWithValue("id", id); command.Parameters.AddWithValue("tenant", tenant);
+        command.Parameters.AddWithValue("id", id);
+        command.Parameters.AddWithValue("tenant", tenant);
         var json = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
-        if (json is null) return null;
+        if (json is null)
+            return null;
         var value = JsonSerializer.Deserialize(json, ConsolidationTransitionJsonContext.Default.ConsolidationTransitionPreviewDto)
             ?? throw new InvalidDataException("The retained transition preview is empty.");
-        if (value.TenantId != tenant || value.PreviewId != id) throw new InvalidDataException("Transition preview storage scope is inconsistent.");
+        if (value.TenantId != tenant || value.PreviewId != id)
+            throw new InvalidDataException("Transition preview storage scope is inconsistent.");
         ConsolidationTransitionRules.ValidatePreview(value);
         return value;
     }
@@ -265,12 +275,15 @@ public sealed class ConsolidationTransitionPostgresStore : IConsolidationTransit
     private async Task<IReadOnlyList<ConsolidationTransitionReceiptDto>> ReadReceiptsAsync(NpgsqlConnection connection,
         NpgsqlTransaction? transaction, string tenant, Guid? organization, Guid? root, Guid? id, CancellationToken ct)
     {
-        await using var command = connection.CreateCommand(); command.Transaction = transaction;
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText = $"select document::text from {Q("consolidation_transition_receipts")} where tenant_id=@tenant"
             + (organization.HasValue ? " and organization_id=@organization and ownership_root_id=@root" : " and transition_id=@id") + " order by root_version;";
         command.Parameters.AddWithValue("tenant", tenant);
-        if (organization.HasValue) { command.Parameters.AddWithValue("organization", organization.Value); command.Parameters.AddWithValue("root", root!.Value); }
-        else command.Parameters.AddWithValue("id", id!.Value);
+        if (organization.HasValue)
+        { command.Parameters.AddWithValue("organization", organization.Value); command.Parameters.AddWithValue("root", root!.Value); }
+        else
+            command.Parameters.AddWithValue("id", id!.Value);
         var results = new List<ConsolidationTransitionReceiptDto>();
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {

@@ -23,10 +23,12 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
             if (ConsolidationPostingEvidenceGuard.Validate(context.Write) is not null)
                 context.Decisions.Add(new("entity-lifecycle", "delegated-to-consolidation", true,
                     "Validated group eliminations use the dedicated ownership/perimeter authority retained through standalone append."));
-            else ordinary.Add(context);
+            else
+                ordinary.Add(context);
         }
         contexts = ordinary;
-        if (contexts.Count == 0) return EmptyLedgerAuthorityLease.Instance;
+        if (contexts.Count == 0)
+            return EmptyLedgerAuthorityLease.Instance;
         var leases = new List<IAsyncDisposable>();
         try
         {
@@ -34,7 +36,8 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
             {
                 var graphLease = await structureAuthority(ct).ConfigureAwait(false);
                 leases.Add(graphLease);
-                foreach (var context in contexts) context.RetainStructureAuthority(graphLease);
+                foreach (var context in contexts)
+                    context.RetainStructureAuthority(graphLease);
             }
             var graph = await structure.GetOrganizationStructureAsync(new OrganizationStructureQuery(ActiveOnly: false), ct).ConfigureAwait(false);
             foreach (var group in contexts.GroupBy(item => item.TenantId ?? string.Empty).OrderBy(item => item.Key, StringComparer.Ordinal))
@@ -42,7 +45,8 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
                 var entityIds = group.SelectMany(item => ResolveEntities(item.Book, graph)).Distinct().Order().ToArray();
                 if (entityIds.Length > 0 && string.IsNullOrWhiteSpace(group.Key))
                 {
-                    foreach (var context in group) context.Decisions.Add(new("entity-lifecycle", "tenant-required", false,
+                    foreach (var context in group)
+                        context.Decisions.Add(new("entity-lifecycle", "tenant-required", false,
                         "Entity lifecycle controls require an attributed tenant."));
                     continue;
                 }
@@ -126,30 +130,30 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
         var graphLease = structureAuthority is not null ? await structureAuthority(ct).ConfigureAwait(false) : EmptyLedgerAuthorityLease.Instance;
         try
         {
-        var graph = await structure.GetOrganizationStructureAsync(new OrganizationStructureQuery(ActiveOnly: false), ct).ConfigureAwait(false);
-        var owners = ResolveEntities(book, graph);
-        if (owners.Count == 0)
-        {
-            var known = book.FundStructureNodeKind != FundStructureNodeKindDto.Entity
-                && graph.Nodes.Any(item => item.NodeId == book.FundStructureNodeId && item.Kind == book.FundStructureNodeKind);
-            return new([new("entity-lifecycle", "owner-mapping", known,
-                known ? "Structural book owner is authorized." : "Entity mapping must be resolved before activation.")], graphLease);
-        }
-        if (string.IsNullOrWhiteSpace(tenantId))
-            return new([new("entity-lifecycle", "tenant-required", false, "A tenant is required to activate entity controls.")], graphLease);
-        var lease = await history.AcquireReadLeaseAsync(tenantId, owners, ct).ConfigureAwait(false);
-        try
-        {
-            var decisions = new List<LedgerControlDecisionDto>();
-            foreach (var entity in owners)
+            var graph = await structure.GetOrganizationStructureAsync(new OrganizationStructureQuery(ActiveOnly: false), ct).ConfigureAwait(false);
+            var owners = ResolveEntities(book, graph);
+            if (owners.Count == 0)
             {
-                var revision = await history.GetLatestAsync(tenantId, entity, ct).ConfigureAwait(false);
-                decisions.Add(new("entity-lifecycle", $"baseline:{entity:D}", revision is not null,
-                    revision is not null ? "Retained lifecycle baseline is available." : "An evidenced lifecycle baseline is required.", revision?.ContentHash));
+                var known = book.FundStructureNodeKind != FundStructureNodeKindDto.Entity
+                    && graph.Nodes.Any(item => item.NodeId == book.FundStructureNodeId && item.Kind == book.FundStructureNodeKind);
+                return new([new("entity-lifecycle", "owner-mapping", known,
+                known ? "Structural book owner is authorized." : "Entity mapping must be resolved before activation.")], graphLease);
             }
-            return new(decisions, new LeaseSet([graphLease, lease]));
-        }
-        catch { await lease.DisposeAsync().ConfigureAwait(false); throw; }
+            if (string.IsNullOrWhiteSpace(tenantId))
+                return new([new("entity-lifecycle", "tenant-required", false, "A tenant is required to activate entity controls.")], graphLease);
+            var lease = await history.AcquireReadLeaseAsync(tenantId, owners, ct).ConfigureAwait(false);
+            try
+            {
+                var decisions = new List<LedgerControlDecisionDto>();
+                foreach (var entity in owners)
+                {
+                    var revision = await history.GetLatestAsync(tenantId, entity, ct).ConfigureAwait(false);
+                    decisions.Add(new("entity-lifecycle", $"baseline:{entity:D}", revision is not null,
+                        revision is not null ? "Retained lifecycle baseline is available." : "An evidenced lifecycle baseline is required.", revision?.ContentHash));
+                }
+                return new(decisions, new LeaseSet([graphLease, lease]));
+            }
+            catch { await lease.DisposeAsync().ConfigureAwait(false); throw; }
         }
         catch { await graphLease.DisposeAsync().ConfigureAwait(false); throw; }
     }
@@ -168,7 +172,8 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
     {
         public async ValueTask DisposeAsync()
         {
-            for (var index = leases.Count - 1; index >= 0; index--) await leases[index].DisposeAsync().ConfigureAwait(false);
+            for (var index = leases.Count - 1; index >= 0; index--)
+                await leases[index].DisposeAsync().ConfigureAwait(false);
         }
     }
 }

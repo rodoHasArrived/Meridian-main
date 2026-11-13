@@ -34,7 +34,8 @@ public static class ConsolidationFxTranslator
                 throw new InvalidOperationException("Exactly one approved transaction-date rate is required for counterpart conversion.");
             inverse = candidates[0].FromCurrency != fromCurrency;
             rate = inverse ? 1m / candidates[0].Rate : candidates[0].Rate;
-            if (rate <= 0m) throw new InvalidOperationException("The approved inverse quote cannot be represented at supported decimal precision.");
+            if (rate <= 0m)
+                throw new InvalidOperationException("The approved inverse quote cannot be represented at supported decimal precision.");
             rateId = candidates[0].RateId;
         }
         return new(Round(amount * rate, configuration.Policy), currency, rate, rateId, inverse,
@@ -114,13 +115,14 @@ public static class ConsolidationFxTranslator
                 // It is never retranslated at today's closing rate.
                 translated.Add(new(line, Round(Math.Max(opening, 0m), policy),
                     Round(Math.Max(-opening, 0m), policy), 1m, null, false, method.Value)
-                    { UnroundedSignedAmount = opening });
+                { UnroundedSignedAmount = opening });
                 continue;
             }
             if (line.FunctionalCurrency == policy.ReportingCurrency)
             {
                 translated.Add(new(line, Round(line.Debit, policy), Round(line.Credit, policy),
-                    1m, null, false, method.Value) { UnroundedSignedAmount = line.Debit - line.Credit });
+                    1m, null, false, method.Value)
+                { UnroundedSignedAmount = line.Debit - line.Credit });
                 continue;
             }
             DateOnly date;
@@ -133,7 +135,8 @@ public static class ConsolidationFxTranslator
                 }
                 date = historicalDate;
             }
-            else date = method == ConsolidationFxRateKindDto.Closing
+            else
+                date = method == ConsolidationFxRateKindDto.Closing
                 ? policy.ClosingRateDates?.SingleOrDefault(x => x.AsOf == asOf)?.RateDate ?? asOf
                 : line.EffectiveDate;
             if (method == ConsolidationFxRateKindDto.PeriodAverage &&
@@ -163,14 +166,21 @@ public static class ConsolidationFxTranslator
                 continue;
             }
             translated.Add(new(line, Round(line.Debit * rateValue, policy), Round(line.Credit * rateValue, policy),
-                rateValue, selected.RateId, inverse, method.Value) { UnroundedSignedAmount = (line.Debit - line.Credit) * rateValue });
+                rateValue, selected.RateId, inverse, method.Value)
+            { UnroundedSignedAmount = (line.Debit - line.Credit) * rateValue });
         }
         // A partial result is inspectable but must never be exposed as a consolidated balance.
         var reserve = blockers.Count == 0 ? -translated.Sum(x => x.Debit - x.Credit) : 0m;
         var fingerprint = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            rates.RateSetId, rates.Revision, ContentHash = rates.ContentHash ?? ConsolidationFxValidation.Hash(rates), Policy = policy, AsOf = asOf,
-            Lines = translated, Reserve = reserve, Blockers = blockers
+            rates.RateSetId,
+            rates.Revision,
+            ContentHash = rates.ContentHash ?? ConsolidationFxValidation.Hash(rates),
+            Policy = policy,
+            AsOf = asOf,
+            Lines = translated,
+            Reserve = reserve,
+            Blockers = blockers
         }));
         var reserves = blockers.Count == 0
             ? translated.GroupBy(x => (x.Source.LedgerBookId, x.Source.EntityId))

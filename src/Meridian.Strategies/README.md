@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Strategies
@@ -198,7 +198,10 @@ on read. The exact legacy XIRR string `"NaN"` remains readable; infinite XIRR va
 Profit factor and Sortino preserve their defined positive-infinity outcomes through their scoped
 SDK attributes, while unrelated nonfinite metrics remain invalid. General SDK and comparison API
 JSON serialization retain the named XIRR marker contract; the null override applies only to durable
-strategy snapshots.
+strategy snapshots. Durable append APIs report a caller snapshot rejected by a JSON converter as
+an invalid `entry` argument before retaining history; the original converter exception is preserved.
+Live summary fills remain in `BacktestResult.Fills`; they do not establish completed outcomes for
+`TotalTrades`, win rate, or profit factor.
 
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation

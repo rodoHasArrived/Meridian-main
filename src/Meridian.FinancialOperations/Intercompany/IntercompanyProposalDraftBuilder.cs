@@ -46,12 +46,14 @@ public static class IntercompanyProposalDraftBuilder
         if (monetary.Any(x => x.Currency != agreement.Currency))
             throw new InvalidOperationException("The source must retain agreement-currency amounts.");
         var signed = monetary.Sum(x => x.TransactionDebit - x.TransactionCredit);
-        if (signed == 0m) throw new InvalidOperationException("A zero monetary source cannot create a counterpart journal.");
+        if (signed == 0m)
+            throw new InvalidOperationException("A zero monetary source cannot create a counterpart journal.");
         var originalAmount = Math.Abs(signed);
         var functionalAmount = agreement.Currency == target.BaseCurrency ? originalAmount
             : fx is not null && fx.Currency == target.BaseCurrency ? fx.Amount
             : throw new InvalidOperationException("An approved transaction-date conversion into the destination functional currency is required.");
-        if (functionalAmount <= 0m) throw new InvalidOperationException("The converted proposal amount must be positive.");
+        if (functionalAmount <= 0m)
+            throw new InvalidOperationException("The converted proposal amount must be positive.");
         var intercompanyNode = sourceReceivable ? targetMap.PayableAccountNodeId : targetMap.ReceivableAccountNodeId;
         var operatingLegs = source.Lines.Where(line =>
             (sourceMap.RevenueAccountNodeId is { } revenue && IsAccount(line, revenue))

@@ -22,7 +22,8 @@ public sealed class IntercompanyProposalReversalDeliveryTests
         var source = IntercompanyCounterpartReversalBuilderTests.SourceRecord(fixture.Prior.Source);
         var inverse = IntercompanyCounterpartReversalBuilderTests.InverseRecord(source, fixture.Proposal.Source.SourceJournalId, fixture.Proposal.Source.EffectiveDate);
         var targets = new List<LedgerJournalEntryRecord> { fixture.Original };
-        if (targetAlreadyReversed) targets.Add(IntercompanyCounterpartReversalBuilderTests.InverseRecord(fixture.Original, Guid.NewGuid(), fixture.Proposal.Source.EffectiveDate));
+        if (targetAlreadyReversed)
+            targets.Add(IntercompanyCounterpartReversalBuilderTests.InverseRecord(fixture.Original, Guid.NewGuid(), fixture.Proposal.Source.EffectiveDate));
         var claim = fixture.Proposal with { ClaimToken = "worker-lease" };
         var proposals = new Mock<IIntercompanyProposalStore>();
         proposals.Setup(x => x.ClaimAsync("worker", 20, It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>())).ReturnsAsync([claim]);

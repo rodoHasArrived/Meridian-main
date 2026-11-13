@@ -40,8 +40,10 @@ public sealed class EntityTimelineService(IFundStructureService structures, IEnt
         var books = await journals.ListLedgerBooksAsync(fundStructureNodeId: entityId,
             fundStructureNodeKind: FundStructureNodeKindDto.Entity, ct: ct).ConfigureAwait(false);
         var warnings = new List<string>();
-        if (revisions.Count == 0) warnings.Add("Lifecycle history has not been established; earlier eligibility is unknown.");
-        else if (revisions[0].LegacySnapshot) warnings.Add("The first revision is a legacy snapshot; it does not establish earlier lifecycle history.");
+        if (revisions.Count == 0)
+            warnings.Add("Lifecycle history has not been established; earlier eligibility is unknown.");
+        else if (revisions[0].LegacySnapshot)
+            warnings.Add("The first revision is a legacy snapshot; it does not establish earlier lifecycle history.");
         return new(organizationId, entity, asOf, revisions,
             graph.OwnershipLinks.Where(x => x.ChildNodeId == entityId || x.ParentNodeId == entityId).ToArray(), contracts, profiles,
             books.Select(x => new LedgerBookDto(x.LedgerBookId, x.FundProfileId, x.FundStructureNodeId,

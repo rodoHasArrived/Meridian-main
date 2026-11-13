@@ -78,7 +78,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.FileOperationsWorkflowAuditStore</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:597](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L597).
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:599](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L599).
 
 Persists workflow audit envelopes and validates their retained hash-chain evidence.
 
@@ -90,9 +90,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileOperationsWorkflowAuditStore(string dataDirectory, ILogger&lt;FileOperationsWorkflowAuditStore&gt; logger);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:608](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L608) |  |
-| <code>public async Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:618](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L618) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:637](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L637) |  |
+| <code>public FileOperationsWorkflowAuditStore(string dataDirectory, ILogger&lt;FileOperationsWorkflowAuditStore&gt; logger);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:610](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L610) |  |
+| <code>public async Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:620](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L620) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:639](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L639) |  |
 
 ## FinancialOperationsCommandCenterReadService
 

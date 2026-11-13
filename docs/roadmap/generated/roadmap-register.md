@@ -1307,6 +1307,7 @@ Rank 11 of the W10 depth slate. The merged first slice retains exact w10-v1 evid
 
 ### Source Modules
 
+- `SRC-STORAGE-ACCOUNTING`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`
@@ -1684,6 +1685,7 @@ User-directed P4 implementation retains immutable effective lifecycle timelines 
 
 ### Source Modules
 
+- `SRC-STORAGE-ACCOUNTING`
 - `SRC-APP`
 - `SRC-CONTRACTS`
 - `SRC-DESIGN-ENTITIES`
@@ -1758,6 +1760,7 @@ User-directed P1 implementation reuses the native legal registry and links immut
 
 ### Source Modules
 
+- `SRC-STORAGE-ACCOUNTING`
 - `SRC-APP`
 - `SRC-CONTRACTS`
 - `SRC-DESIGN-ENTITIES`

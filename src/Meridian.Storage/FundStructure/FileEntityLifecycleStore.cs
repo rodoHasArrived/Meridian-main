@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.FundStructure;
 
@@ -12,12 +11,13 @@ public sealed class FileEntityLifecycleStore(string directory) : IEntityLifecycl
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private string Key(string tenantId, Guid entityId) => $"{_directory}:{InMemoryEntityLifecycleStore.NormalizeTenant(tenantId)}:{entityId:D}";
     private string EntityDirectory(string tenantId, Guid entityId)
-        => Path.Combine(_directory, Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(InMemoryEntityLifecycleStore.NormalizeTenant(tenantId)))), entityId.ToString("N"));
+        => Path.Combine(_directory, Sha256Digest.ComputeUtf8(InMemoryEntityLifecycleStore.NormalizeTenant(tenantId)), entityId.ToString("N"));
 
     public async Task<IReadOnlyList<EntityLifecycleRevisionDto>> GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default)
     {
         var path = EntityDirectory(tenantId, entityId);
-        if (!Directory.Exists(path)) return [];
+        if (!Directory.Exists(path))
+            return [];
         var rows = new List<EntityLifecycleRevisionDto>();
         foreach (var file in Directory.EnumerateFiles(path, "*.json").OrderBy(value => value, StringComparer.Ordinal))
         {

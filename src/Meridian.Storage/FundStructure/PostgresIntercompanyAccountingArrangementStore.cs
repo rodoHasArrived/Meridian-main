@@ -36,13 +36,15 @@ public sealed class PostgresIntercompanyAccountingArrangementStore : IIntercompa
             var retainedTransaction = transaction;
             return new IntercompanyAccountingArrangementAuthorityLease(async () =>
             {
-                try { await retainedTransaction.DisposeAsync().ConfigureAwait(false); }
+                try
+                { await retainedTransaction.DisposeAsync().ConfigureAwait(false); }
                 finally { await connection.DisposeAsync().ConfigureAwait(false); }
             });
         }
         catch
         {
-            if (transaction is not null) await transaction.DisposeAsync().ConfigureAwait(false);
+            if (transaction is not null)
+                await transaction.DisposeAsync().ConfigureAwait(false);
             await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -81,7 +83,8 @@ public sealed class PostgresIntercompanyAccountingArrangementStore : IIntercompa
                 throw new InvalidDataException("Agreement payload contradicts its immutable database identity.");
             events.Add(item);
         }
-        if (events.Count == 0) return null;
+        if (events.Count == 0)
+            return null;
         var history = new IntercompanyAccountingArrangementHistoryDto(events);
         IntercompanyAccountingArrangementStoreRules.ValidateHistory(history);
         return history;
@@ -97,14 +100,16 @@ public sealed class PostgresIntercompanyAccountingArrangementStore : IIntercompa
             command.CommandText = $"select distinct arrangement_id from {_options.Schema}.intercompany_accounting_arrangement_events where tenant_id=@tenant order by arrangement_id";
             command.Parameters.AddWithValue("tenant", tenant);
             await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-            while (await reader.ReadAsync(ct).ConfigureAwait(false)) ids.Add(reader.GetGuid(0));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                ids.Add(reader.GetGuid(0));
         }
         var results = new List<IntercompanyAccountingArrangementDto>();
         foreach (var id in ids)
         {
             var history = await ReadAsync(connection, null, tenant, id, ct).ConfigureAwait(false)
                 ?? throw new InvalidDataException("Agreement history disappeared.");
-            if (organizationId is null || history.Current.OrganizationId == organizationId) results.Add(history.Current);
+            if (organizationId is null || history.Current.OrganizationId == organizationId)
+                results.Add(history.Current);
         }
         return results.OrderBy(x => x.ArrangementReference).ThenBy(x => x.ArrangementId).ToArray();
     }
@@ -112,7 +117,8 @@ public sealed class PostgresIntercompanyAccountingArrangementStore : IIntercompa
     public Task<IntercompanyAccountingArrangementDto> AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default)
         => MutateAsync(tenantId, item.Snapshot.ArrangementId, item.RequestId, item.RequestDigest, (old, _) =>
         {
-            if ((old?.Current.Version ?? 0) != expectedVersion) throw new InvalidOperationException("The agreement version changed.");
+            if ((old?.Current.Version ?? 0) != expectedVersion)
+                throw new InvalidOperationException("The agreement version changed.");
             return Task.FromResult(item);
         }, ct);
 

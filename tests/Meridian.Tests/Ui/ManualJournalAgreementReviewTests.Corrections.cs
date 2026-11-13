@@ -57,7 +57,8 @@ public sealed partial class ManualJournalAgreementReviewTests
         Assert.Equal(AccountingPostingApprovalStateDto.Approved, final.PostingCommand!.ApprovalState);
         Assert.Equal(approved.ApprovalId, final.PostingCommand.ApprovalId);
         AssertExactPins(fixture.Draft, final);
-        if (kind == "normal") Assert.Null(final.AdjustmentApproval);
+        if (kind == "normal")
+            Assert.Null(final.AdjustmentApproval);
         else
         {
             Assert.Equal(approved.ApprovalId, final.AdjustmentApproval!.ApprovalId);
@@ -94,7 +95,8 @@ public sealed partial class ManualJournalAgreementReviewTests
         var dimensions = new LedgerDimensionSetDto(EntityId: domain.EntityId, CounterpartyId: domain.CounterpartyId,
             FundId: book.FundProfileId, BookId: book.LedgerBookId.ToString("D"))
         {
-            IntercompanyAgreementId = domain.IntercompanyAgreementId, IntercompanyAgreementVersion = 1,
+            IntercompanyAgreementId = domain.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = 1,
             AccountingArrangementId = profiled ? Guid.NewGuid().ToString("D") : null,
             AccountingArrangementRevisionId = profiled ? Guid.NewGuid().ToString("D") : null,
             ChartAccountNodeId = profiled ? "receivable" : null,

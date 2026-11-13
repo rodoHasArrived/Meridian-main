@@ -238,7 +238,8 @@ public sealed partial class IntercompanyAgreementService(
         foreach (var date in new[] { new DateTimeOffset(effectiveFrom.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)), _clock.GetUtcNow() })
         {
             var eligibility = EntityLifecyclePolicy.Evaluate(revision, date, EntityLifecycleOperationDto.NewAgreement, false);
-            if (!eligibility.Allowed) throw new IntercompanyAgreementValidationException(eligibility.Message);
+            if (!eligibility.Allowed)
+                throw new IntercompanyAgreementValidationException(eligibility.Message);
         }
     }
 

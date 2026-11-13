@@ -120,10 +120,14 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
             calculation.Perimeter.Entities.Select(x => x.EntityId.ToString("D")).ToArray(),
             calculation.Perimeter.OwnershipEvidence.Select(x => x.OwnershipLinkId).ToArray(), rows,
             calculation.Matches, summaries, calculation.Blockers, calculation.Evidence.SourceFingerprint)
-        { RuleVersion = calculation.Evidence.RuleVersion, TranslationFingerprint = calculation.Evidence.TranslationFingerprint,
-          TranslationReserve = calculation.TranslationReserve,
-          TranslationDifferences = calculation.TranslationDifferences, RoundingDifferences = calculation.RoundingDifferences,
-          EntityNames = calculation.Perimeter.Entities.ToDictionary(entity => entity.EntityId.ToString("D"), entity => entity.Name) };
+        {
+            RuleVersion = calculation.Evidence.RuleVersion,
+            TranslationFingerprint = calculation.Evidence.TranslationFingerprint,
+            TranslationReserve = calculation.TranslationReserve,
+            TranslationDifferences = calculation.TranslationDifferences,
+            RoundingDifferences = calculation.RoundingDifferences,
+            EntityNames = calculation.Perimeter.Entities.ToDictionary(entity => entity.EntityId.ToString("D"), entity => entity.Name)
+        };
     }
 
     private static ConsolidationBalanceDto[] ProjectGovernedBalances(ConsolidationCalculation calculation)

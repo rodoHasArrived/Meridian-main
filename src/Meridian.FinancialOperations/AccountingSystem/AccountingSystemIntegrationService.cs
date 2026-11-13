@@ -227,7 +227,8 @@ public sealed partial class AccountingSystemIntegrationService
             {
                 var schedule = await _intercompanyBalances.GetAsync(tenantId, companyId, fundProfileId,
                     request.LedgerBookId, periodEnd, ct).ConfigureAwait(false);
-                if (schedule.Available) evidenceLinks = [.. evidenceLinks, $"intercompany-schedule:{schedule.ContentHash}"];
+                if (schedule.Available)
+                    evidenceLinks = [.. evidenceLinks, $"intercompany-schedule:{schedule.ContentHash}"];
             }
         }
         validationIssues = [.. validationIssues, .. await ValidateProviderExportAsync(providerId, fundProfileId,
@@ -600,7 +601,8 @@ public sealed partial class AccountingSystemIntegrationService
             _latestImports.TryGetValue(ImportKey(providerId, fundProfileId, ledgerBookId, tenantId, companyId), out var import);
             issues.AddRange(await validator.ValidateExportAsync(new(ledgerBookId, periodStart, periodEnd, import, lines, evidenceLinks), ct).ConfigureAwait(false));
         }
-        if (!IsNetSuiteProvider(providerId)) return issues;
+        if (!IsNetSuiteProvider(providerId))
+            return issues;
         if (_intercompanyBalances is null)
         {
             issues.Add(IntercompanyExportIssue("Unavailable", "The structured intercompany balance/mapping authority is unavailable."));

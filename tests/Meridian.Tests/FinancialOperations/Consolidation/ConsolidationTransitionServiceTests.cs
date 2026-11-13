@@ -67,14 +67,16 @@ public sealed class ConsolidationTransitionServiceTests
     {
         using var fixture = await TransitionFixture.Create(remove: true);
         var preview = await fixture.Service.PreviewAsync(fixture.Request, "tenant-test", "company-test", "maker");
-        if (changed == "source") fixture.Engine.AddSourceOn(TransitionFixture.Cutover, Fixture.FirstBookId, Fixture.FirstId, 9,
+        if (changed == "source")
+            fixture.Engine.AddSourceOn(TransitionFixture.Cutover, Fixture.FirstBookId, Fixture.FirstId, 9,
             (ConsolidationService.ReceivableAccount, 5m, Fixture.SecondId.ToString("D")), ("Equity:Opening", -5m, null));
         if (changed == "mapping")
         {
             var index = fixture.Bindings.FindIndex(x => x.LedgerBookId == fixture.NewBook.LedgerBookId && x.Role == IntercompanyAccountRoleDto.Receivable);
             fixture.Bindings[index] = fixture.Bindings[index] with { RevisionId = Guid.NewGuid(), RevisionNumber = 2 };
         }
-        if (changed == "membership") fixture.ChangeNewMemberName();
+        if (changed == "membership")
+            fixture.ChangeNewMemberName();
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.ActivateAsync(new(preview.PreviewId, preview.Fingerprint), "tenant-test", "company-test", "reviewer"));
         Assert.Null(await fixture.Transitions.GetAsync(fixture.Request.TransitionId));
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Calculate(fixture.NewBook.LedgerBookId, TransitionFixture.Cutover));
@@ -157,8 +159,10 @@ public sealed class ConsolidationTransitionServiceTests
             legacy.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => EmptyLedgerAuthorityLease.Instance);
             var fx = new Mock<IConsolidationFxAuthority>();
             fx.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => EmptyLedgerAuthorityLease.Instance);
-            var tenants = new Mock<IFundScopeTenantAccessor>(); tenants.Setup(x => x.ResolveCallerTenant()).Returns("tenant-test");
-            var owners = new Mock<IFundProfileTenancyRegistry>(); owners.Setup(x => x.ResolveAsync(Fixture.Profile, It.IsAny<CancellationToken>())).ReturnsAsync(new FundProfileOwnership(Fixture.Profile, "tenant-test", "company-test"));
+            var tenants = new Mock<IFundScopeTenantAccessor>();
+            tenants.Setup(x => x.ResolveCallerTenant()).Returns("tenant-test");
+            var owners = new Mock<IFundProfileTenancyRegistry>();
+            owners.Setup(x => x.ResolveAsync(Fixture.Profile, It.IsAny<CancellationToken>())).ReturnsAsync(new FundProfileOwnership(Fixture.Profile, "tenant-test", "company-test"));
             Transitions = new ConsolidationTransitionFileStore(Path.Combine(_directory, "route.json"), tenants.Object, Engine.Store.Object, owners.Object);
             Consolidation = new(new(Engine.Structure.Object), Engine.Store.Object, Engine.Policies,
                 new AccountingJournalDraftService(Engine.Policies, new AccountingBasisProjectionService(Engine.Policies)), bindings.Object,

@@ -154,22 +154,28 @@ do_not_edit: true
 | `SRC-PROVIDER-SDK` | Provider SDK | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-QUANTSCRIPT` | QuantScript | `W3-CONT-001` | Research to paper continuity |
 | `SRC-QUANTSCRIPT` | QuantScript | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-RISK` | Meridian risk | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-RISK` | Meridian risk | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-RISK` | Meridian risk | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
-| `SRC-STORAGE` | Meridian storage | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
-| `SRC-STORAGE` | Meridian storage | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
-| `SRC-STORAGE` | Meridian storage | `W1-DATA-001` | Provider trust gate and data confidence baseline |
-| `SRC-STORAGE` | Meridian storage | `W2-TRD-001` | Paper trading cockpit reliability |
-| `SRC-STORAGE` | Meridian storage | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
-| `SRC-STORAGE` | Meridian storage | `W4-RPT-001` | Governed report pack readiness |
-| `SRC-STORAGE` | Meridian storage | `W5-ACCT-001` | Accounting records and operational evidence |
-| `SRC-STORAGE` | Meridian storage | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
-| `SRC-STORAGE` | Meridian storage | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
-| `SRC-STORAGE` | Meridian storage | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
-| `SRC-STORAGE` | Meridian storage | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
-| `SRC-STORAGE` | Meridian storage | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
-| `SRC-STORAGE` | Meridian storage | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
+| `SRC-STORAGE` | Meridian storage primitives | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
+| `SRC-STORAGE` | Meridian storage primitives | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
+| `SRC-STORAGE` | Meridian storage primitives | `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `SRC-STORAGE` | Meridian storage primitives | `W2-TRD-001` | Paper trading cockpit reliability |
+| `SRC-STORAGE` | Meridian storage primitives | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-STORAGE` | Meridian storage primitives | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-STORAGE` | Meridian storage primitives | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-STORAGE` | Meridian storage primitives | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `SRC-STORAGE` | Meridian storage primitives | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `SRC-STRATEGIES` | Meridian strategies | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-STRATEGIES` | Meridian strategies | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-STRATEGIES` | Meridian strategies | `W3-CONT-001` | Research to paper continuity |

@@ -98,7 +98,8 @@ public static class IntercompanyCounterpartReversalBuilder
             {
                 IntercompanyAgreementId = retainedDimensions.IntercompanyAgreementId,
                 IntercompanyAgreementVersion = retainedDimensions.IntercompanyAgreementVersion,
-                ChartAccountNodeId = retainedDimensions.ChartAccountNodeId, AccountingArrangementId = retainedDimensions.AccountingArrangementId,
+                ChartAccountNodeId = retainedDimensions.ChartAccountNodeId,
+                AccountingArrangementId = retainedDimensions.AccountingArrangementId,
                 AccountingArrangementRevisionId = retainedDimensions.AccountingArrangementRevisionId,
                 AccountBindingRevisionId = retainedDimensions.AccountBindingRevisionId,
                 IntercompanyTransactionId = retainedDimensions.IntercompanyTransactionId
@@ -149,8 +150,11 @@ public static class IntercompanyCounterpartReversalBuilder
         => Guid.TryParse(dimensions.EntityId, out var entity) && entity == source.CounterpartyEntityId
             && Guid.TryParse(dimensions.CounterpartyId, out var counterparty) && counterparty == source.SourceEntityId
             && dimensions.FundId == target.FundProfileId && Guid.TryParse(dimensions.BookId, out var book) && book == target.LedgerBookId
-            && dimensions is { SleeveId: null, StrategyId: null, InvestorId: null, CapitalAccountId: null, InstrumentId: null,
+            && dimensions is
+            {
+                SleeveId: null, StrategyId: null, InvestorId: null, CapitalAccountId: null, InstrumentId: null,
                 TaxLotId: null, CostCenterId: null, OrganizationId: null, PortfolioId: null, AccountId: null,
-                CustomerId: null, VendorId: null, ProjectId: null, PositionId: null }
+                CustomerId: null, VendorId: null, ProjectId: null, PositionId: null
+            }
             && dimensions.ExternalGlDimensions.Count == 0;
 }

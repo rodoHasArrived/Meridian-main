@@ -118,9 +118,12 @@ public sealed class IntercompanyAccountBindingRulesTests
     internal static IntercompanyAccountBindingDto Successor(IntercompanyAccountBindingDto initial)
         => initial with
         {
-            RevisionId = Guid.NewGuid(), RevisionNumber = initial.RevisionNumber + 1,
-            PreviousRevisionId = initial.RevisionId, RecordedAt = initial.RecordedAt.AddDays(1),
-            EffectiveFrom = initial.EffectiveFrom.AddDays(1), Reason = "Reviewed account mapping successor"
+            RevisionId = Guid.NewGuid(),
+            RevisionNumber = initial.RevisionNumber + 1,
+            PreviousRevisionId = initial.RevisionId,
+            RecordedAt = initial.RecordedAt.AddDays(1),
+            EffectiveFrom = initial.EffectiveFrom.AddDays(1),
+            Reason = "Reviewed account mapping successor"
         };
 
     private static readonly Guid BookId = Guid.Parse("23863b67-0acd-4329-a759-62ed3ab59e9a");

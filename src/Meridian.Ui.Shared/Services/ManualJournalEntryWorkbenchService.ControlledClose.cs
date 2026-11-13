@@ -27,7 +27,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
             || !draft.EvidenceLinks.Contains(request.SourceObligationEvidence, StringComparer.Ordinal))
             throw new InvalidOperationException("The source obligation evidence must be retained on the approved journal before authorization.");
         var bookId = draft.LedgerBookId ?? throw new InvalidOperationException("A durable ledger book is required.");
-        if (!Guid.TryParse(draft.PeriodId, out var periodId)) throw new InvalidOperationException("A durable period is required.");
+        if (!Guid.TryParse(draft.PeriodId, out var periodId))
+            throw new InvalidOperationException("A durable period is required.");
         var book = await journalStore.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The ledger book was not found.");
         var period = await journalStore.GetPeriodAsync(periodId, ct).ConfigureAwait(false)

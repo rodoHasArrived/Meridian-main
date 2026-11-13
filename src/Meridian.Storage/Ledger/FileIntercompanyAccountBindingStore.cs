@@ -30,9 +30,11 @@ public sealed class FileIntercompanyAccountBindingStore(string path, IFundScopeT
     {
         var tenant = RequireTenant();
         var revision = (await ReadAsync(ct).ConfigureAwait(false)).SingleOrDefault(x => x.RevisionId == revisionId && Same(x.TenantId, tenant));
-        if (revision is null) return null;
+        if (revision is null)
+            return null;
         var (_, owner) = await RequireOwnerAsync(revision.LedgerBookId, ct).ConfigureAwait(false);
-        if (!Same(Company(owner.CompanyId), Company(revision.CompanyId))) throw new TenantScopeRejectedException("foreign account binding company");
+        if (!Same(Company(owner.CompanyId), Company(revision.CompanyId)))
+            throw new TenantScopeRejectedException("foreign account binding company");
         return revision;
     }
 
@@ -79,13 +81,15 @@ public sealed class FileIntercompanyAccountBindingStore(string path, IFundScopeT
         var book = await journals.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
             ?? throw new TenantScopeRejectedException("account bindings for an unavailable ledger book");
         var owner = await ownership.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
-        if (owner is null || !owner.IsHeldBy(tenant)) throw new TenantScopeRejectedException("account bindings for an unowned or foreign book");
+        if (owner is null || !owner.IsHeldBy(tenant))
+            throw new TenantScopeRejectedException("account bindings for an unowned or foreign book");
         return (book, owner);
     }
     private string RequireTenant()
     {
         var tenant = tenants.ResolveCallerTenant() ?? FundScopeTenantAuthority.CurrentTenantId;
-        if (!TenantReadPredicate.IsResolvedTenant(tenant)) throw new TenantScopeRejectedException("account bindings without a concrete owning tenant");
+        if (!TenantReadPredicate.IsResolvedTenant(tenant))
+            throw new TenantScopeRejectedException("account bindings without a concrete owning tenant");
         return tenant!.Trim();
     }
     private async Task<IReadOnlyList<IntercompanyAccountBindingDto>> ReadAsync(CancellationToken ct)

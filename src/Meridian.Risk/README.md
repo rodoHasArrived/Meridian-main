@@ -20,6 +20,11 @@ live admission, independently of configurable exposure ceilings. Scoped exposure
 holdings, cash, buying power and currency, with remaining working orders reserved in the same
 account. Local paper projections keep their existing aggregation behavior.
 
+Risk admission depends on `Meridian.Execution.Sdk` contracts, including explicit circuit-breaker,
+approval-queue and audit authorities. Concrete Execution services stay at the host composition
+boundary. Rebuild all host/plugin consumers after the constructor contract extraction described in
+[boundary extractions](../../docs/architecture/review-boundary-extractions.md).
+
 ## Purpose
 
 Risk contains pre-trade validation rules and order-safety checks used before execution workflows proceed.

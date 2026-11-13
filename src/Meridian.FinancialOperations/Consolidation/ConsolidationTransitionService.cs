@@ -67,7 +67,8 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
     private async Task<ConsolidationTransitionPreviewDto> ComputeAsync(ConsolidationTransitionRequestDto request,
         string tenantId, string? companyId, string preparedBy, DateTimeOffset preparedAt, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(preparedBy)) throw new InvalidOperationException("A transition preparer is required.");
+        if (string.IsNullOrWhiteSpace(preparedBy))
+            throw new InvalidOperationException("A transition preparer is required.");
         var (oldBook, newBook) = await RequireBooksAsync(request, tenantId, companyId, ct).ConfigureAwait(false);
         var history = await transitions.ListAsync(request.OrganizationId, request.OwnershipRootId, ct).ConfigureAwait(false);
         var head = history.MaxBy(x => x.RootVersion);
@@ -76,7 +77,8 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
         if (history.Any(x => x.Request.NewEliminationBookId == newBook.LedgerBookId || x.Request.PreviousEliminationBookId == newBook.LedgerBookId))
             throw new InvalidOperationException("The new reporting book must not reuse an earlier path book.");
         var oldRows = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: oldBook.LedgerBookId), ct).ConfigureAwait(false);
-        if (oldRows.Count == 0) throw new InvalidOperationException("The predecessor must have retained posted elimination history.");
+        if (oldRows.Count == 0)
+            throw new InvalidOperationException("The predecessor must have retained posted elimination history.");
         var previousEvidence = new Dictionary<Guid, ConsolidationEvidenceDto>();
         foreach (var record in oldRows)
         {
@@ -99,7 +101,8 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
             FundStructureNodeKindDto.Fund, ct).ConfigureAwait(false))
         {
             if (other.LedgerBookId == oldBook.LedgerBookId || other.LedgerBookId == newBook.LedgerBookId ||
-                history.Any(x => x.Request.PreviousEliminationBookId == other.LedgerBookId && request.CutoverDate >= x.Request.CutoverDate)) continue;
+                history.Any(x => x.Request.PreviousEliminationBookId == other.LedgerBookId && request.CutoverDate >= x.Request.CutoverDate))
+                continue;
             if ((await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: other.LedgerBookId), ct).ConfigureAwait(false))
                 .Any(x => x.Entry.Metadata.Tags?.ContainsKey(ConsolidationService.EvidenceTag) == true))
                 throw new InvalidOperationException("Multiple established current overlay books make the root path ambiguous.");
@@ -113,7 +116,8 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
             throw new InvalidOperationException("A new reporting target cannot subtract predecessor or other book overlays.");
         var newMembers = calculation.Evidence.EntityIds ?? [];
         var blockers = calculation.Blockers.ToList();
-        if (!string.Equals(calculation.Period.Status, "Open", StringComparison.OrdinalIgnoreCase)) blockers.Add("The new book period must be open.");
+        if (!string.Equals(calculation.Period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            blockers.Add("The new book period must be open.");
         var preview = new ConsolidationTransitionPreviewDto(Guid.Empty, request, (head?.RootVersion ?? 0) + 1, head?.TransitionId,
             tenantId, Company(companyId), preparedBy, preparedAt, ConsolidationService.Hash(new
             { Book = oldBook, Records = oldRows.OrderBy(x => x.GlobalSequence).ToArray() }),
@@ -168,7 +172,8 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
                 var legal = await (legalAuthority ?? throw new InvalidOperationException("Canonical reporting transition authority is unavailable."))
                     .AcquireLeaseAsync(tenantId, pins, (graph as ILegalEntityReadAuthorityLease)?.StructureAuthorityProof, ct).ConfigureAwait(false);
                 held.Add(legal);
-                foreach (var pin in pins) _ = legal.ResolveExact(pin);
+                foreach (var pin in pins)
+                    _ = legal.ResolveExact(pin);
             }
             held.Add(await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
             if (arrangements is not null)
@@ -189,7 +194,8 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
     {
         public async ValueTask DisposeAsync()
         {
-            for (var index = leases.Count - 1; index >= 0; index--) await leases[index].DisposeAsync().ConfigureAwait(false);
+            for (var index = leases.Count - 1; index >= 0; index--)
+                await leases[index].DisposeAsync().ConfigureAwait(false);
         }
     }
 }

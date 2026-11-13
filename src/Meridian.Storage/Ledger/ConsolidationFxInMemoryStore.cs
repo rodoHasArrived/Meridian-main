@@ -36,7 +36,8 @@ public class ConsolidationFxInMemoryStore : IConsolidationFxStore
                 next = _state with { RateSets = [.. _state.RateSets, retained] };
             }
             await PersistAsync(next, ct).ConfigureAwait(false);
-            lock (_sync) _state = next;
+            lock (_sync)
+                _state = next;
         }
         finally { _authority.Release(); }
     }
@@ -54,7 +55,8 @@ public class ConsolidationFxInMemoryStore : IConsolidationFxStore
     public Task<IReadOnlyList<ConsolidationFxRateSetDto>> ListRateSetsAsync(string tenantId, string companyId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        lock (_sync) return Task.FromResult<IReadOnlyList<ConsolidationFxRateSetDto>>(_state.RateSets
+        lock (_sync)
+            return Task.FromResult<IReadOnlyList<ConsolidationFxRateSetDto>>(_state.RateSets
             .Where(x => x.TenantId == tenantId && x.CompanyId == companyId)
             .OrderBy(x => x.RateSetId).ThenBy(x => x.Revision).Select(Clone).ToArray());
     }
@@ -87,7 +89,8 @@ public class ConsolidationFxInMemoryStore : IConsolidationFxStore
                 next = _state with { Configurations = [.. _state.Configurations, retained] };
             }
             await PersistAsync(next, ct).ConfigureAwait(false);
-            lock (_sync) _state = next;
+            lock (_sync)
+                _state = next;
         }
         finally { _authority.Release(); }
     }
@@ -131,7 +134,8 @@ public class ConsolidationFxInMemoryStore : IConsolidationFxStore
             {
                 ConsolidationFxCurrencyRules.Validate(value);
                 RequirePredecessor(value.Revision, value.PreviousHash, previous?.Revision, previous?.ContentHash);
-                if (value.ContentHash is null) throw new InvalidDataException("Retained FX evidence is missing its content hash.");
+                if (value.ContentHash is null)
+                    throw new InvalidDataException("Retained FX evidence is missing its content hash.");
                 previous = value;
             }
         }
@@ -148,7 +152,8 @@ public class ConsolidationFxInMemoryStore : IConsolidationFxStore
                 previous = value;
             }
         }
-        lock (_sync) _state = state;
+        lock (_sync)
+            _state = state;
     }
 
     internal static void RequirePredecessor(int revision, string? hash, int? priorRevision, string? priorHash)
@@ -167,7 +172,8 @@ public class ConsolidationFxInMemoryStore : IConsolidationFxStore
         private int _disposed;
         public ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0) semaphore.Release();
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                semaphore.Release();
             return ValueTask.CompletedTask;
         }
     }
@@ -184,7 +190,8 @@ public sealed class ConsolidationFxFileStore : ConsolidationFxInMemoryStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         _path = Path.GetFullPath(path);
-        if (File.Exists(_path)) Restore(JsonSerializer.Deserialize(File.ReadAllText(_path), ConsolidationFxStateJsonContext.Default.ConsolidationFxState)
+        if (File.Exists(_path))
+            Restore(JsonSerializer.Deserialize(File.ReadAllText(_path), ConsolidationFxStateJsonContext.Default.ConsolidationFxState)
             ?? throw new InvalidDataException("The retained FX state is empty."));
     }
     protected override Task PersistAsync(ConsolidationFxState state, CancellationToken ct)

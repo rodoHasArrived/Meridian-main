@@ -30,35 +30,35 @@ public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyA
         try
         {
             foreach (var request in requests)
-            foreach (var line in request.Lines)
-            {
-                var state = lease.Agreements.SingleOrDefault(agreement => agreement.AgreementId == line.AgreementId);
-                var revision = state?.Revisions.SingleOrDefault(item => item.AgreementVersion == line.AgreementVersion);
-                if (revision is null || revision.Action == IntercompanyAgreementActionDto.Terminate)
-                    throw new LedgerValidationException("The referenced approved agreement revision is unavailable.");
-                var terms = revision.Terms;
-                if (line.PostingEntityId != request.BookEntityId || line.PostingEntityId == line.CounterpartyId
-                    || !((terms.PartyOneId == line.PostingEntityId && terms.PartyTwoId == line.CounterpartyId)
-                         || (terms.PartyTwoId == line.PostingEntityId && terms.PartyOneId == line.CounterpartyId)))
-                    throw new LedgerValidationException("Agreement parties do not match the posting entity and counterparty.");
-                if (!string.Equals(terms.Currency, line.TransactionCurrency, StringComparison.OrdinalIgnoreCase))
-                    throw new LedgerValidationException("Agreement currency does not match the transaction currency.");
-                var first = await lease.GetLegalEntityAsync(terms.PartyOneId, ct).ConfigureAwait(false);
-                var second = await lease.GetLegalEntityAsync(terms.PartyTwoId, ct).ConfigureAwait(false);
-                if (first is null || second is null)
-                    throw new LedgerValidationException("Agreement legal-entity authority is unavailable.");
-                if (!request.IsVerifiedSourceReversal)
+                foreach (var line in request.Lines)
                 {
-                    var selection = IntercompanyAgreementTimeline.Resolve(state!.Revisions, request.AccountingDate);
-                    if (selection.Status != IntercompanyAgreementStatusDto.Active
-                        || selection.Revision?.AgreementVersion != line.AgreementVersion)
-                        throw new LedgerValidationException("Agreement authority changed or is not effective on the accounting date; renew journal review.");
-                    var date = new DateTimeOffset(request.AccountingDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-                    if (date < first.EffectiveFrom || first.EffectiveTo is { } firstEnd && date >= firstEnd
-                        || date < second.EffectiveFrom || second.EffectiveTo is { } secondEnd && date >= secondEnd)
-                        throw new LedgerValidationException("Agreement parties do not exist on the accounting date.");
+                    var state = lease.Agreements.SingleOrDefault(agreement => agreement.AgreementId == line.AgreementId);
+                    var revision = state?.Revisions.SingleOrDefault(item => item.AgreementVersion == line.AgreementVersion);
+                    if (revision is null || revision.Action == IntercompanyAgreementActionDto.Terminate)
+                        throw new LedgerValidationException("The referenced approved agreement revision is unavailable.");
+                    var terms = revision.Terms;
+                    if (line.PostingEntityId != request.BookEntityId || line.PostingEntityId == line.CounterpartyId
+                        || !((terms.PartyOneId == line.PostingEntityId && terms.PartyTwoId == line.CounterpartyId)
+                             || (terms.PartyTwoId == line.PostingEntityId && terms.PartyOneId == line.CounterpartyId)))
+                        throw new LedgerValidationException("Agreement parties do not match the posting entity and counterparty.");
+                    if (!string.Equals(terms.Currency, line.TransactionCurrency, StringComparison.OrdinalIgnoreCase))
+                        throw new LedgerValidationException("Agreement currency does not match the transaction currency.");
+                    var first = await lease.GetLegalEntityAsync(terms.PartyOneId, ct).ConfigureAwait(false);
+                    var second = await lease.GetLegalEntityAsync(terms.PartyTwoId, ct).ConfigureAwait(false);
+                    if (first is null || second is null)
+                        throw new LedgerValidationException("Agreement legal-entity authority is unavailable.");
+                    if (!request.IsVerifiedSourceReversal)
+                    {
+                        var selection = IntercompanyAgreementTimeline.Resolve(state!.Revisions, request.AccountingDate);
+                        if (selection.Status != IntercompanyAgreementStatusDto.Active
+                            || selection.Revision?.AgreementVersion != line.AgreementVersion)
+                            throw new LedgerValidationException("Agreement authority changed or is not effective on the accounting date; renew journal review.");
+                        var date = new DateTimeOffset(request.AccountingDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+                        if (date < first.EffectiveFrom || first.EffectiveTo is { } firstEnd && date >= firstEnd
+                            || date < second.EffectiveFrom || second.EffectiveTo is { } secondEnd && date >= secondEnd)
+                            throw new LedgerValidationException("Agreement parties do not exist on the accounting date.");
+                    }
                 }
-            }
             return lease;
         }
         catch

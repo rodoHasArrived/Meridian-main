@@ -153,8 +153,12 @@ public sealed class LedgerReplayAfterControlsPostgresTests
             var cutoff = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
             return History.AppendAsync(EntityLifecyclePolicy.Seal(Initial with
             {
-                Revision = 2, PreviousHash = Initial.ContentHash, ContentHash = "", RecordedAtUtc = DateTimeOffset.UtcNow,
-                Reason = "Evidenced fixture dissolution", EvidenceReference = "fixture:dissolution",
+                Revision = 2,
+                PreviousHash = Initial.ContentHash,
+                ContentHash = "",
+                RecordedAtUtc = DateTimeOffset.UtcNow,
+                Reason = "Evidenced fixture dissolution",
+                EvidenceReference = "fixture:dissolution",
                 Timeline = [Initial.Timeline[0] with { EffectiveTo = cutoff },
                     new(Guid.NewGuid(), cutoff, null, LegalEntityLifecycleStatusDto.Dissolved, LegalEntityLifecycleEventKindDto.Dissolution)]
             }), 1);
@@ -167,7 +171,8 @@ public sealed class LedgerReplayAfterControlsPostgresTests
         public string ControlName => "intercompany";
         public Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)
         {
-            foreach (var context in contexts) context.Decisions.Add(new(ControlName, "ordinary-synthetic-fixture", true,
+            foreach (var context in contexts)
+                context.Decisions.Add(new(ControlName, "ordinary-synthetic-fixture", true,
                 "This replay fixture contains no intercompany accounts."));
             return Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
         }

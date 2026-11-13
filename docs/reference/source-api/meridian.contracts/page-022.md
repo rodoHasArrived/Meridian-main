@@ -405,7 +405,7 @@ public sealed record CreateFundRequest(Guid FundId, string Code, string Name, st
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:73](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L73).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L74).
 
 ```csharp
 public sealed record CreateIntercompanyAccountingArrangementRequest(Guid RequestId, Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings);
@@ -560,7 +560,7 @@ public sealed record EntityLifecycleRevisionDto(string TenantId, Guid EntityId, 
 
 Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:8](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L8).
+Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:7](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L7).
 
 Canonical immutable revision integrity shared by domain and storage boundaries.
 
@@ -572,9 +572,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void ValidateTimeline(Guid entityId, IReadOnlyList&lt;EntityLifecycleStateDto&gt; timeline);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:12](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L12) |  |
-| <code>public static EntityLifecycleRevisionDto Seal(EntityLifecycleRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:35](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L35) |  |
-| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:59](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L59) |  |
+| <code>public static void ValidateTimeline(Guid entityId, IReadOnlyList&lt;EntityLifecycleStateDto&gt; timeline);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:11](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L11) |  |
+| <code>public static EntityLifecycleRevisionDto Seal(EntityLifecycleRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:34](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L34) |  |
+| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:58](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L58) |  |
 
 ## EntityLifecycleStateDto
 

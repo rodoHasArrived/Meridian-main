@@ -102,8 +102,11 @@ public sealed class LegacyIntercompanyAttributionTests
             { IntercompanyAgreementId = canonicalId, IntercompanyAgreementVersion = retainedCanonicalVersion };
             var attributed = new LedgerEntry(first.EntryId, first.JournalEntryId, first.Timestamp, first.Account,
                 first.Debit, first.Credit, first.Description, dimensions, first.Currency);
-            record = record with { Entry = new JournalEntry(source.JournalEntryId, source.Timestamp, source.Description,
-                [attributed, .. source.Lines.Skip(1)], source.Metadata) };
+            record = record with
+            {
+                Entry = new JournalEntry(source.JournalEntryId, source.Timestamp, source.Description,
+                [attributed, .. source.Lines.Skip(1)], source.Metadata)
+            };
             fixture.Records[Fixture.FirstBookId][0] = record;
         }
         var line = record.Entry.Lines[0];
@@ -122,17 +125,25 @@ public sealed class LegacyIntercompanyAttributionTests
             "reviewer", Fixture.Time, "Reviewed", agreement) };
         if (superseded)
             events.Add(new(Guid.NewGuid(), "successor", IntercompanyAccountingArrangementActionDto.Approve, "reviewer", Fixture.Time,
-                "Approved successor", agreement with { RevisionId = Guid.NewGuid(), RevisionNumber = 2, Version = 2,
-                    EffectiveFrom = Fixture.Time.AddDays(-1), SupersedesRevisionId = agreement.RevisionId }));
+                "Approved successor", agreement with
+                {
+                    RevisionId = Guid.NewGuid(),
+                    RevisionNumber = 2,
+                    Version = 2,
+                    EffectiveFrom = Fixture.Time.AddDays(-1),
+                    SupersedesRevisionId = agreement.RevisionId
+                }));
         agreements.Setup(x => x.GetAsync("tenant-test", agreement.ArrangementId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new IntercompanyAccountingArrangementHistoryDto(events));
         var fact = new LegacyIntercompanyAttributionDto(Guid.NewGuid(), 1, book.LedgerBookId, record.Entry.JournalEntryId,
             line.EntryId, LegacyIntercompanyAttributionRules.SourceDigest(book, record, line), agreement.ArrangementId,
             agreement.RevisionId, binding.RevisionId, binding.ChartAccountNodeId, "legacy-transaction-one",
             "preparer", "reviewer", Fixture.Time, "evidence:reviewed-opening-schedule", "tenant-test", "company-test")
-        { IntercompanyAgreementId = resolved.CanonicalAgreementId,
+        {
+            IntercompanyAgreementId = resolved.CanonicalAgreementId,
             IntercompanyAgreementVersion = resolved.CanonicalAgreementVersion,
-            IntercompanyAgreementPayloadHash = resolved.CanonicalPayloadHash };
+            IntercompanyAgreementPayloadHash = resolved.CanonicalPayloadHash
+        };
         return (fixture, new LegacyIntercompanyAttributionValidator(fixture.Store.Object, bindings.Object, agreements.Object, IntercompanyArrangementTestData.LegalAuthority(resolved).Object), fact);
     }
 }

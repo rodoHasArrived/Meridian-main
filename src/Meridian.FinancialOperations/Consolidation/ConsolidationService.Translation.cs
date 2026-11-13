@@ -38,8 +38,12 @@ public sealed partial class ConsolidationService
             translated.Add(new ConsolidationSourceDto(reserve.LedgerBookId, Guid.Empty, id, reserve.EntityId, null,
                 reserveBinding.AccountPath, Math.Max(reserve.SignedAmount, 0m), Math.Max(-reserve.SignedAmount, 0m),
                 request.AsOf, $"fx-rate-set:{context.RateSet.RateSetId:D}/{context.RateSet.Revision}")
-            { AccountType = "Equity", Currency = result.Currency, ChartAccountNodeId = reserveBinding.ChartAccountNodeId,
-              AccountBindingRevisionId = reserveBinding.RevisionId.ToString("D") });
+            {
+                AccountType = "Equity",
+                Currency = result.Currency,
+                ChartAccountNodeId = reserveBinding.ChartAccountNodeId,
+                AccountBindingRevisionId = reserveBinding.RevisionId.ToString("D")
+            });
         }
         return new GovernedTranslation(translated, Hash(new { context, result.Fingerprint }),
             JsonSerializer.Serialize(new { Context = context, Input = input, Result = result }),

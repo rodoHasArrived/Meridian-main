@@ -288,8 +288,11 @@ public sealed class ConsolidationFxTests
         var prior = (await store.GetConfigurationAsync(Book, AsOf))!;
         await store.RetainConfigurationAsync(prior with
         {
-            Revision = 2, PreviousHash = prior.ContentHash, ContentHash = null,
-            EffectiveFrom = new(2026, 6, 1), EffectiveTo = new(2026, 6, 15)
+            Revision = 2,
+            PreviousHash = prior.ContentHash,
+            ContentHash = null,
+            EffectiveFrom = new(2026, 6, 1),
+            EffectiveTo = new(2026, 6, 15)
         });
         Assert.Null(await store.GetConfigurationAsync(Book, AsOf));
         Assert.NotNull(await store.GetConfigurationRevisionAsync(Book, 1));

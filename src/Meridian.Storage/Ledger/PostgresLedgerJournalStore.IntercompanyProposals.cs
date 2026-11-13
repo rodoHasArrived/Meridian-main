@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
@@ -14,8 +12,14 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerJournalEntryWrite write, CancellationToken ct)
     {
         var groups = write.Entry.Lines.Where(line => line.Dimensions?.AccountingArrangementId is not null)
-            .GroupBy(line => new { line.Dimensions!.AccountingArrangementId, line.Dimensions.AccountingArrangementRevisionId,
-                line.Dimensions.IntercompanyTransactionId, line.Dimensions.EntityId, line.Dimensions.CounterpartyId })
+            .GroupBy(line => new
+            {
+                line.Dimensions!.AccountingArrangementId,
+                line.Dimensions.AccountingArrangementRevisionId,
+                line.Dimensions.IntercompanyTransactionId,
+                line.Dimensions.EntityId,
+                line.Dimensions.CounterpartyId
+            })
             .OrderBy(group => group.Key.AccountingArrangementId, StringComparer.Ordinal).ToArray();
         if (groups.Length == 0 || ConsolidationPostingEvidenceGuard.Validate(write) is not null)
             return;
@@ -33,7 +37,8 @@ public sealed partial class PostgresLedgerJournalStore
             tenant = await scope.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
         }
         // Legacy unattributed books retain their existing warning posture, never a fabricated tenant.
-        if (string.IsNullOrWhiteSpace(tenant)) return;
+        if (string.IsNullOrWhiteSpace(tenant))
+            return;
         if (write.Entry.Metadata.Tags?.GetValueOrDefault("intercompany.proposalId") is { } originId)
         {
             await ValidateIntercompanyCounterpartOriginAsync(connection, transaction, write, book, tenant, originId, ct)
@@ -56,10 +61,11 @@ public sealed partial class PostgresLedgerJournalStore
                         && revision.AgreementVersion == legalIds[0].IntercompanyAgreementVersion)
                 : null;
             // Warning-mode legacy writes do not gain fabricated legal authority or delivery intent.
-            if (legal is null) continue;
+            if (legal is null)
+                continue;
             var key = $"intercompany-mirror-v1:{write.Entry.JournalEntryId:D}:{agreementId:D}:{revisionId:D}:" +
                 $"{group.Key.IntercompanyTransactionId}:{entityId:D}:{counterpartyId:D}";
-            var proposalId = new Guid(SHA256.HashData(Encoding.UTF8.GetBytes(key)).AsSpan(0, 16));
+            var proposalId = new Guid(Sha256Digest.ComputeBytesUtf8(key).AsSpan(0, 16));
             var source = new IntercompanyProposalSourceDto(proposalId, tenant,
                 write.Entry.Metadata.Tags?.GetValueOrDefault("companyId"), write.Entry.JournalEntryId,
                 bookId, entityId, counterpartyId, agreementId, revisionId, group.Key.IntercompanyTransactionId,

@@ -1,6 +1,5 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Contracts.FundStructure;
 
@@ -52,7 +51,7 @@ public static class EntityLifecycleRevisionIntegrity
             }).ToArray(),
             ContentHash = string.Empty
         };
-        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(normalized, JsonOptions))));
+        var hash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(normalized, JsonOptions));
         return normalized with { ContentHash = hash };
     }
 

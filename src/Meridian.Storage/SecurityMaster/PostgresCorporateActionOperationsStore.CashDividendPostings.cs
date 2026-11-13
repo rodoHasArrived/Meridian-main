@@ -128,7 +128,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
         {
             // Roll back an unsuccessful invocation before releasing external lifecycle/mapping
             // authority; successful invocations have already committed this same transaction.
-            try { await transaction.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await transaction.DisposeAsync().ConfigureAwait(false); }
             finally { await lease.DeactivateAsync().ConfigureAwait(false); }
         }
     }

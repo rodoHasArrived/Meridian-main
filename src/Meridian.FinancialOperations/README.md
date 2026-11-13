@@ -38,6 +38,10 @@ reviewed overlay reclassification but never changes source journals. Missing aut
 See [versioned consolidation](../../docs/domain/intercompany-consolidation.md); current tests and
 Windows evidence remain separate from source implementation status.
 
+Unreadable operations-close snapshots report the exception type without the workflow path,
+identity or exception payload. Reviewed posting candidates require trusted human authority before
+store access; nonhuman and undefined origins cannot append a journal.
+
 `AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
 default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
 candidate through existing accounting authority, checks the declared receivable/income account

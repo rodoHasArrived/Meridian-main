@@ -11,7 +11,8 @@ public sealed partial class AccountingConfigureViewModel
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is not null && !dispatcher.CheckAccess())
             dispatcher.Invoke(() => EntityConsolidation.SetBooks(books));
-        else EntityConsolidation.SetBooks(books);
+        else
+            EntityConsolidation.SetBooks(books);
     }
 
     public async Task<bool> OpenConsolidationDraftsAsync(CancellationToken ct = default)

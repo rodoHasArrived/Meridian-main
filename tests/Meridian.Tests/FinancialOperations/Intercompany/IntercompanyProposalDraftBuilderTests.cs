@@ -41,12 +41,15 @@ public sealed class IntercompanyProposalDraftBuilderTests
     public void SourceCanonicalLegalPin_MustMatchTheExactApprovedAccountingArrangement(string changed)
     {
         var proposal = IntercompanyProposalTestData.Proposal();
-        proposal = proposal with { Source = changed switch
+        proposal = proposal with
         {
-            "id" => proposal.Source with { IntercompanyAgreementId = Guid.NewGuid() },
-            "version" => proposal.Source with { IntercompanyAgreementVersion = 999 },
-            _ => proposal.Source with { IntercompanyAgreementPayloadHash = new string('b', 64) }
-        } };
+            Source = changed switch
+            {
+                "id" => proposal.Source with { IntercompanyAgreementId = Guid.NewGuid() },
+                "version" => proposal.Source with { IntercompanyAgreementVersion = 999 },
+                _ => proposal.Source with { IntercompanyAgreementPayloadHash = new string('b', 64) }
+            }
+        };
         Assert.Throws<InvalidOperationException>(() => Build(proposal));
     }
 
@@ -110,9 +113,15 @@ public sealed class IntercompanyProposalDraftBuilderTests
     public void UnrelatedBalancedActivity_CannotBeSilentlyExcludedFromSourceTemplate()
     {
         var source = IntercompanyProposalTestData.Proposal();
-        source = source with { Source = source.Source with { Lines = [.. source.Source.Lines,
+        source = source with
+        {
+            Source = source.Source with
+            {
+                Lines = [.. source.Source.Lines,
             new(Guid.NewGuid(), "Expenses:Unrelated", "Expense", "unrelated-expense", 25m, 0m, "USD", 25m, 0m),
-            new(Guid.NewGuid(), "Assets:Unrelated", "Asset", "unrelated-asset", 0m, 25m, "USD", 0m, 25m)] } };
+            new(Guid.NewGuid(), "Assets:Unrelated", "Asset", "unrelated-asset", 0m, 25m, "USD", 0m, 25m)]
+            }
+        };
 
         var error = Assert.Throws<InvalidOperationException>(() => Build(source));
 
@@ -123,9 +132,15 @@ public sealed class IntercompanyProposalDraftBuilderTests
     public void MixedGrossOperatingRoles_CannotCollapseIntoOneNetCounterpartExpense()
     {
         var source = IntercompanyProposalTestData.Proposal();
-        source = source with { Source = source.Source with { Lines = [source.Source.Lines[0],
+        source = source with
+        {
+            Source = source.Source with
+            {
+                Lines = [source.Source.Lines[0],
             new(Guid.NewGuid(), "Expenses:Recharge", "Expense", "a-expense", 100m, 0m, "USD", 100m, 0m),
-            new(Guid.NewGuid(), "Income:Recharge", "Revenue", "a-revenue", 0m, 200m, "USD", 0m, 200m)] } };
+            new(Guid.NewGuid(), "Income:Recharge", "Revenue", "a-revenue", 0m, 200m, "USD", 0m, 200m)]
+            }
+        };
         var agreement = IntercompanyProposalTestData.Agreement(template: IntercompanyAccountingTemplateKindDto.CostRecharge,
             mappings: IntercompanyProposalTestData.Agreement().PartyMappings.Select(mapping => mapping.EntityId == IntercompanyProposalTestData.EntityA
                 ? mapping with { RevenueAccountNodeId = "a-revenue", ExpenseAccountNodeId = "a-expense" } : mapping).ToArray());
@@ -139,11 +154,17 @@ public sealed class IntercompanyProposalDraftBuilderTests
     public void ExpenseSharing_CanRechargeAnExpenseWithoutInventingSourceRevenue()
     {
         var source = IntercompanyProposalTestData.Proposal();
-        source = source with { Source = source.Source with { Lines = [source.Source.Lines[0],
-            new(Guid.NewGuid(), "Expenses:Shared", "Expense", "a-expense", 0m, 100m, "USD", 0m, 100m)] } };
+        source = source with
+        {
+            Source = source.Source with
+            {
+                Lines = [source.Source.Lines[0],
+            new(Guid.NewGuid(), "Expenses:Shared", "Expense", "a-expense", 0m, 100m, "USD", 0m, 100m)]
+            }
+        };
         var agreement = IntercompanyProposalTestData.Agreement(template: IntercompanyAccountingTemplateKindDto.ExpenseShare,
             mappings: IntercompanyProposalTestData.Agreement().PartyMappings.Select(mapping => mapping with
-                { ExpenseAccountNodeId = mapping.EntityId == IntercompanyProposalTestData.EntityA ? "a-expense" : "b-expense" }).ToArray());
+            { ExpenseAccountNodeId = mapping.EntityId == IntercompanyProposalTestData.EntityA ? "a-expense" : "b-expense" }).ToArray());
         var expense = new ChartOfAccountsNodeDto("b-expense", "Expenses:Shared", "Expenses:Shared", "Expense",
             IntercompanyRole: IntercompanyAccountRoleDto.Expense);
         var binding = new IntercompanyAccountBindingDto(Guid.NewGuid(), Guid.NewGuid(), 1, IntercompanyProposalTestData.BookB,
@@ -195,9 +216,11 @@ internal static class IntercompanyProposalTestData
                 "USD", sourceDebit ? 100m : 0m, sourceDebit ? 0m : 100m),
              new(Guid.NewGuid(), "Assets:Cash", "Asset", "a-cash", sourceDebit ? 0m : 100m, sourceDebit ? 100m : 0m,
                 "USD", sourceDebit ? 0m : 100m, sourceDebit ? 100m : 0m)])
-        { IntercompanyAgreementId = Agreement().CanonicalAgreementId,
+        {
+            IntercompanyAgreementId = Agreement().CanonicalAgreementId,
             IntercompanyAgreementVersion = Agreement().CanonicalAgreementVersion,
-            IntercompanyAgreementPayloadHash = Agreement().CanonicalPayloadHash };
+            IntercompanyAgreementPayloadHash = Agreement().CanonicalPayloadHash
+        };
         return new(source, "retained-source-digest", IntercompanyProposalStatusDto.Pending, 0, Now);
     }
     public static IReadOnlyList<ChartOfAccountsNodeDto> Chart() => [

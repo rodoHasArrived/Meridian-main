@@ -668,7 +668,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.FundStructure.FileEntityLifecycleStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:9](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L9).
+Source: [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:8](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L8).
 
 Local immutable revision files published by rename after fsync; never rewrites history.
 
@@ -680,7 +680,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:17](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L17) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:16](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L16) |  |
 | <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetLatestAsync(string tenantId, Guid entityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:34](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L34) |  |
 | <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetRevisionAsync(string tenantId, Guid entityId, long revision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:37](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L37) |  |
 | <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendAsync(EntityLifecycleRevisionDto revision, long expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:40](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L40) |  |
@@ -704,9 +704,9 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:12](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L12) |  |
 | <code>public async Task&lt;IntercompanyAccountingArrangementHistoryDto?&gt; GetAsync(string tenantId, Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:21](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L21) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:31](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L31) |  |
-| <code>public Task&lt;IntercompanyAccountingArrangementDto&gt; AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:46](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L46) |  |
-| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; MutateAsync(string tenantId, Guid agreementId, Guid requestId, string requestDigest, Func&lt;IntercompanyAccountingArrangementHistoryDto?, CancellationToken, Task&lt;IntercompanyAccountingArrangementEventDto&gt;&gt; build, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:53](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L53) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:32](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L32) |  |
+| <code>public Task&lt;IntercompanyAccountingArrangementDto&gt; AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:50](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L50) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; MutateAsync(string tenantId, Guid agreementId, Guid requestId, string requestDigest, Func&lt;IntercompanyAccountingArrangementHistoryDto?, CancellationToken, Task&lt;IntercompanyAccountingArrangementEventDto&gt;&gt; build, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:58](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L58) |  |
 
 ## FundStructureLegacyImportRequest
 

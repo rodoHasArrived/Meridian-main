@@ -62,14 +62,18 @@ public sealed partial class PostgresLedgerJournalStore
             || entry.PeriodId != lease.Projection.PeriodId
             || entry.Entry.Lines.Sum(line => line.Debit) != lease.Attestation.GrossImpactUsd)
             throw new LedgerValidationException("A cash-dividend journal requires its active native producer lease and exact retained attestation.");
-        await lease.EnsureCurrentAsync(command.Actor, lease.Projection.LedgerBookId, entry.PeriodId,
+        var actor = command.Actor;
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new LedgerValidationException("A cash-dividend journal requires an identified posting actor.");
+        await lease.EnsureCurrentAsync(actor, lease.Projection.LedgerBookId, entry.PeriodId,
             lease.Projection.DraftedCandidateFingerprint, lease.Projection.PostingIntentHash, ct).ConfigureAwait(false);
         RejectJournalOnlySuccessorPosting(entry);
         // Only this producer-verified path may normalize native preparer authority. Generic
         // eligibility remains mandatory and is retained by the outer case transaction's lease.
         var postingAuthority = await AcquirePostingAuthorityCoreAsync(connection, transaction, [entry], true, ct,
             lease.StructureAuthorityLease).ConfigureAwait(false);
-        try { lease.RetainPostingAuthority(postingAuthority); }
+        try
+        { lease.RetainPostingAuthority(postingAuthority); }
         catch { await postingAuthority.DisposeAsync().ConfigureAwait(false); throw; }
         await AppendCoreAsync(connection, transaction, entry, ct, verifiedCashDividendAttestation: true).ConfigureAwait(false);
     }

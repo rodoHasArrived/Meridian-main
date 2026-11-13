@@ -84,8 +84,11 @@ public sealed partial class IntercompanyAgreementServiceTests
         await LifecycleBaselineAsync(lifecycle, fixture, LegalEntityLifecycleStatusDto.Active);
         await fixture.ApproveAsync(fixture.Draft);
         await EnterWindingDownAsync(lifecycle, fixture);
-        await fixture.ApproveAsync(fixture.Draft with { Action = IntercompanyAgreementActionDto.Terminate,
-            TerminationEffectiveDate = new(2026, 11, 30) });
+        await fixture.ApproveAsync(fixture.Draft with
+        {
+            Action = IntercompanyAgreementActionDto.Terminate,
+            TerminationEffectiveDate = new(2026, 11, 30)
+        });
         var detail = await fixture.Service.GetAsync(fixture.Author, fixture.AgreementId, new(2026, 11, 30));
         Assert.Equal(IntercompanyAgreementStatusDto.Terminated, detail!.EffectiveStatus);
         Assert.Equal(2, fixture.Store.State!.Revisions.Count);
@@ -108,10 +111,15 @@ public sealed partial class IntercompanyAgreementServiceTests
         {
             var previous = (await store.GetLatestAsync("tenant-a", id))!;
             var cutoff = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero);
-            var next = EntityLifecycleRevisionIntegrity.Seal(previous with { Revision = previous.Revision + 1,
-                PreviousHash = previous.ContentHash, ContentHash = "", Timeline =
+            var next = EntityLifecycleRevisionIntegrity.Seal(previous with
+            {
+                Revision = previous.Revision + 1,
+                PreviousHash = previous.ContentHash,
+                ContentHash = "",
+                Timeline =
                 [previous.Timeline[0] with { EffectiveTo = cutoff }, new(Guid.NewGuid(), cutoff, null,
-                    LegalEntityLifecycleStatusDto.WindingDown, LegalEntityLifecycleEventKindDto.Dissolution)] });
+                    LegalEntityLifecycleStatusDto.WindingDown, LegalEntityLifecycleEventKindDto.Dissolution)]
+            });
             await store.AppendAsync(next, previous.Revision);
         }
     }

@@ -161,7 +161,8 @@ public sealed partial class ConsolidationServiceTests
         {
             bindings.Add(Output(IntercompanyAccountRoleDto.Revenue, "Revenue:IC Fees", "Revenue") with { LedgerBookId = Fixture.FirstBookId });
             bindings.Add(Output(IntercompanyAccountRoleDto.Expense, "Expense:IC Fees", "Expense") with { LedgerBookId = Fixture.SecondBookId });
-            AddIncome(true); AddIncome(false);
+            AddIncome(true);
+            AddIncome(false);
         }
         var calculation = await service.CalculateAsync(new(Fixture.OrganizationId, Fixture.RootId, Fixture.OverlayBookId, Fixture.PeriodId, Fixture.Date));
         var writes = new List<LedgerJournalEntryWrite>();
@@ -203,9 +204,13 @@ public sealed partial class ConsolidationServiceTests
             var binding = bindings.Single(x => x.LedgerBookId == book && x.Role == role);
             var monetary = bindings.Single(x => x.LedgerBookId == book && x.Role == (creditor ? IntercompanyAccountRoleDto.Receivable : IntercompanyAccountRoleDto.Payable));
             var dimensions = new LedgerLineDimensionSet(EntityId: entity.ToString("D"), CounterpartyId: cp.ToString("D"))
-                { IntercompanyAgreementId = arrangement.CanonicalAgreementId, IntercompanyAgreementVersion = arrangement.CanonicalAgreementVersion,
-                  AccountingArrangementId = "aaaaaaaa-1234-1234-1234-123456789012", AccountingArrangementRevisionId = "bbbbbbbb-1234-1234-1234-123456789012",
-                  IntercompanyTransactionId = "fee-transaction-one" };
+            {
+                IntercompanyAgreementId = arrangement.CanonicalAgreementId,
+                IntercompanyAgreementVersion = arrangement.CanonicalAgreementVersion,
+                AccountingArrangementId = "aaaaaaaa-1234-1234-1234-123456789012",
+                AccountingArrangementRevisionId = "bbbbbbbb-1234-1234-1234-123456789012",
+                IntercompanyTransactionId = "fee-transaction-one"
+            };
             var lines = new[]
             {
                 new LedgerEntry(Guid.NewGuid(), id, Fixture.Time, new(monetary.AccountName, creditor ? LedgerAccountType.Asset : LedgerAccountType.Liability),

@@ -211,7 +211,8 @@ public sealed class PostgresIntercompanyAccountBindingStore : IIntercompanyAccou
     private async Task<NpgsqlConnection> OpenAsync(CancellationToken ct)
     {
         var connection = new NpgsqlConnection(_options.ConnectionString);
-        try { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
+        try
+        { await connection.OpenAsync(ct).ConfigureAwait(false); return connection; }
         catch { await connection.DisposeAsync().ConfigureAwait(false); throw; }
     }
 
@@ -227,7 +228,8 @@ public sealed class PostgresIntercompanyAccountBindingStore : IIntercompanyAccou
     {
         public async ValueTask DisposeAsync()
         {
-            try { await transaction.DisposeAsync().ConfigureAwait(false); }
+            try
+            { await transaction.DisposeAsync().ConfigureAwait(false); }
             finally { await connection.DisposeAsync().ConfigureAwait(false); }
         }
     }

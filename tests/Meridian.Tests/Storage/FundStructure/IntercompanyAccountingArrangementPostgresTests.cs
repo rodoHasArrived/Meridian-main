@@ -12,8 +12,11 @@ public sealed class IntercompanyAccountingArrangementPostgresTests(FundAccountDa
     [FundAccountDatabaseFact]
     public async Task History_IsScopedIdempotentImmutableAndFencedAcrossStoreInstances()
     {
-        var options = new FundStructureStoreOptions { ConnectionString = fixture.Options.ConnectionString,
-            Schema = "fs_arrangements_" + Guid.NewGuid().ToString("N") };
+        var options = new FundStructureStoreOptions
+        {
+            ConnectionString = fixture.Options.ConnectionString,
+            Schema = "fs_arrangements_" + Guid.NewGuid().ToString("N")
+        };
         try
         {
             await new FundStructureMigrationRunner(options).EnsureMigratedAsync();
@@ -68,7 +71,8 @@ public sealed class IntercompanyAccountingArrangementPostgresTests(FundAccountDa
 
     private static IntercompanyAccountingArrangementDto Draft()
     {
-        var first = Guid.NewGuid(); var second = Guid.NewGuid();
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
         var now = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         return new(Guid.NewGuid(), Guid.NewGuid(), "accounting-profile", IntercompanyAccountingTemplateKindDto.Loan,
             Guid.NewGuid(), 3, new string('d', 64), now, null, Guid.NewGuid(), 1, 1, IntercompanyAccountingArrangementStatusDto.Draft,

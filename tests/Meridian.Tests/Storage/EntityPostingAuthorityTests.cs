@@ -122,7 +122,8 @@ public sealed class EntityPostingAuthorityTests
             new(Guid.Parse("c7777777-7777-7777-7777-777777777777"), JournalId, timestamp, new("Cash", LedgerAccountType.Asset), 0m, amount, "Tax close")]);
         var command = new AccountingPostingCommandDto(Guid.Parse("c8888888-8888-8888-8888-888888888888"), BookId, period,
             DateOnly.FromDateTime(timestamp.UtcDateTime), timestamp, "close-tax", ApprovalState: AccountingPostingApprovalStateDto.Approved,
-            ApprovalId: "approval", OperatorRationale: "Tax close", LedgerBookId: BookId) { Actor = "poster" };
+            ApprovalId: "approval", OperatorRationale: "Tax close", LedgerBookId: BookId)
+        { Actor = "poster" };
         return new(entry, BookId, period, command.CommandId, null, PostingCommand: command, LedgerBookId: BookId);
     }
 

@@ -160,6 +160,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs#L48).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs#L22).
 
 Operator Inbox composition for the workstation API surface: builds the prioritized operator work-item inbox (trading-readiness work items, run-review packets, reconciliation-break work items), continuity metrics, operator navigation routing, and the inbox summary. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline inbox route lambda and the shared GetTradingOperatorReadinessAsync / NormalizeOperatorInboxToken helpers remain in core.
@@ -242,6 +248,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCas
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationRegistration.cs#L48).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs#L13).
 
 ```csharp
@@ -271,6 +283,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs#L16).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs#L48).
 
 ```csharp
 public static partial class WorkstationEndpoints

@@ -51,7 +51,8 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
     public async Task<IAsyncDisposable> AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default)
     {
         var source = await journals.QueryAsync(new(LedgerBookId: fact.LedgerBookId, JournalEntryId: fact.JournalEntryId), ct).ConfigureAwait(false);
-        if (source.Count != 1) throw new InvalidOperationException("The exact immutable legacy source is unavailable.");
+        if (source.Count != 1)
+            throw new InvalidOperationException("The exact immutable legacy source is unavailable.");
         var date = source[0].Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(source[0].Entry.Timestamp.UtcDateTime);
         var reference = new IntercompanyCanonicalAgreementReferenceDto(fact.IntercompanyAgreementId,
             fact.IntercompanyAgreementVersion, fact.IntercompanyAgreementPayloadHash);
@@ -71,7 +72,8 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
     {
         public async ValueTask DisposeAsync()
         {
-            for (var i = leases.Count - 1; i >= 0; i--) await leases[i].DisposeAsync().ConfigureAwait(false);
+            for (var i = leases.Count - 1; i >= 0; i--)
+                await leases[i].DisposeAsync().ConfigureAwait(false);
         }
     }
 

@@ -259,11 +259,11 @@ modules:
 
   - id: SRC-STORAGE
     path: src/Meridian.Storage
-    name: Meridian storage
+    name: Meridian storage primitives
     layer: Storage
     status: active
     owner_lane: Accounting and Ledger
-    purpose: WAL-backed persistence, archival packaging, backfill status/checkpoint sidecar persistence, shared-storage coordination lease persistence, storage catalogs, replay, ledger storage, immutable reporting artifact blobs/catalogs, hash-chained governance state and audit, exact close/reconciliation evidence, scoped access grants, durable delivery jobs and provider receipts, provider integration manifest/raw-payload/quarantine/staging stores, storage-option mapping from shared config, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
+    purpose: Market-data WAL, sinks, archival, catalog, replay, maintenance, packaging, backfill checkpoints, storage coordination, symbol registry and durable IO primitives. Business PostgreSQL adapters are compiled by SRC-STORAGE-ACCOUNTING.
     readme: src/Meridian.Storage/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -300,6 +300,31 @@ modules:
       - DIA-STORAGE-TOPOLOGY
     todos: []
     last_reviewed: 2026-11-12
+  - id: SRC-STORAGE-ACCOUNTING
+    path: src/Meridian.Storage.Accounting
+    name: Meridian accounting persistence adapters
+    layer: Storage Adapter
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
+    readme: src/Meridian.Storage.Accounting/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W4-RPT-001
+      - W5-ACCT-001
+      - W9-ASSET-010
+    stage_gates:
+      - PortfolioLedgerReview
+      - GovernedReportPack
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~ReviewBoundaryTests
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-11-12
+
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -889,6 +914,28 @@ modules:
       - DIA-ASSURANCE-LOOP
     todos: []
     last_reviewed: 2026-06-06
+
+  - id: SRC-REPORTING-READMODELS
+    path: src/Meridian.Reporting.ReadModels
+    name: Reporting and journal-backed read models
+    layer: Read Model Adapter
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Independent shared readers for retained reporting comparisons, report access, journal-backed disposal tax, partners capital, exact ledger-population replay and amount bindings; excludes endpoint and workstation orchestration dependencies.
+    readme: src/Meridian.Reporting.ReadModels/README.md
+    roadmap_items:
+      - W4-RPT-001
+      - W5-ACCT-001
+    stage_gates:
+      - GovernedReportPack
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Reporting.ReadModels/Meridian.Reporting.ReadModels.csproj
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingReadModelBoundaryTests|FullyQualifiedName~ReportingIncomeComparisonServiceTests|FullyQualifiedName~LedgerDisposalTaxReadServiceTests|FullyQualifiedName~ReportPeriodRangeTests"
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-11-12
 
   - id: SRC-DESIGN-REPORTING
     path: src/Meridian.Reporting
