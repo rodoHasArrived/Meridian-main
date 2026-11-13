@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SessionStatus
+
+Qualified name: <code>Meridian.Contracts.Session.SessionStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:110](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L110).
+
+Session status constants.
+
+```csharp
+public static class SessionStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:115](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L115) | Session is waiting to start. |
+| <code>public const string Active = &quot;Active&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:120](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L120) | Session is actively collecting data. |
+| <code>public const string Paused = &quot;Paused&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:125](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L125) | Session is temporarily paused. |
+| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:130](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L130) | Session has completed successfully. |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:135](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L135) | Session has failed due to an error. |
+
+## MarketDataQuery
+
+Qualified name: <code>Meridian.Contracts.Store.MarketDataQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Store/MarketDataQuery.cs:23](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L23).
+
+Immutable query specification for IMarketDataStore. All parameters are optional — an empty query returns all stored events up to Limit.
+
+```csharp
+public sealed record MarketDataQuery(SymbolId? Symbol = null, DateTimeOffset? From = null, DateTimeOffset? To = null, MarketEventType? EventType = null, string? Source = null, int? Limit = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MarketDataQuery WithSymbol(SymbolId symbol) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:32](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L32) | Returns a new query that adds a symbol filter. |
+| <code>public MarketDataQuery WithTimeRange(DateTimeOffset from, DateTimeOffset to) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:35](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L35) | Returns a new query restricted to a time window. |
+| <code>public MarketDataQuery WithEventType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:39](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L39) | Returns a new query restricted to a specific event type. |
+| <code>public MarketDataQuery WithSource(string source) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:42](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L42) | Returns a new query restricted to a specific data source. |
+| <code>public MarketDataQuery WithLimit(int limit) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:45](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L45) | Returns a new query with a maximum result count. |
+
+## StrategyEngineDataAvailability
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataAvailability</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:171](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L171).
+
+```csharp
+public sealed record StrategyEngineDataAvailability(string DependencyId, bool IsAvailable, DateTimeOffset? AvailableFrom = null, DateTimeOffset? AvailableTo = null, DateTimeOffset? LastUpdatedAt = null, string? SourceReference = null, IReadOnlyList<string>? MissingFields = null, string? DegradationReason = null);
+```
+
 ## StrategyEngineDataDependency
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependency</code>. Kind: `record`.
@@ -785,34 +839,4 @@ Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:77](../../../../src/
 
 ```csharp
 public sealed record ActivationOutcomeDto(string Key, string Label, string ActionLabel, string Route, bool IsComplete, DateTimeOffset? CompletedAtUtc);
-```
-
-## AlpacaBrokerageConnectionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AlpacaBrokerageConnectionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L104).
-
-```csharp
-public sealed record AlpacaBrokerageConnectionRequestDto(string? KeyId, string? SecretKey, string? Environment = "paper");
-```
-
-## ApprovalDecision
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L31).
-
-```csharp
-public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
-```
-
-## ApprovalPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L23).
-
-```csharp
-public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
 ```

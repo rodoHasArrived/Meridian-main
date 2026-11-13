@@ -6,6 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackDeliveryEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:363](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L363).
+
+Adds retained report-pack delivery attempts and artifacts to an evidence graph.
+
+```csharp
+public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportPackDeliveryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:367](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L367) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:372](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L372) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:374](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L374) |  |
+| <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:377](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L377) |  |
+
+## ReportPackEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:172](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L172).
+
+Adds report-pack lifecycle and supporting output evidence to an evidence graph.
+
+```csharp
+public sealed class ReportPackEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportPackEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:176](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L176) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:181](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L181) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L183) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:187](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L187) |  |
+
+## SecurityMasterConflictEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.SecurityMasterConflictEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1059](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1059).
+
+Adds Security Master conflict and resolution evidence to an evidence graph.
+
+```csharp
+public sealed class SecurityMasterConflictEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterConflictEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1063](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1063) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1068](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1068) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1070](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1070) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1073](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1073) |  |
+
+## SinglePrincipalAttestationAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationAuthority</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L9).
+
+Server-derived authority; this type is never bound from an HTTP request body.
+
+```csharp
+public sealed record SinglePrincipalAttestationAuthority(string Actor, OperationsActionOriginDto Origin, bool CanRead, bool CanAdministerDeclaration = false, bool CanAttest = false, bool CanRevoke = false, bool CanModifyTarget = false, bool CanModifyDraftTarget = false);
+```
+
 ## SinglePrincipalAttestationException
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationException</code>. Kind: `class`.
@@ -952,78 +1027,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public AccountingProductionReadinessService(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L19) |  |
 | <code>public async Task&lt;AccountingProductionReadinessDto&gt; AssessAsync(AccountingProductionReadinessRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:24](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L24) |  |
-
-## AccountingWorkspaceReadScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingWorkspaceReadScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs:68](../../../../src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs#L68).
-
-Which embedded families the caller may see inside the accounting workspace payload, which the governance workspace serves under a second name from the same builder. The workspace admits a deliberately wide set, because it is the screen the reconciliation, direct-lending, Security Master and trading desks all open to see where the period stands. What it may not do is treat that admission as authority for everything it aggregates: the payload carries the break queue, the manual-journal workbench, and the authoritative reporting projection, each of which is served head-on by a route with a strictly narrower gate. A composite&#x27;s admission is the narrowest of what it carries, not the widest. Each flag mirrors the permissions of the route that serves that family directly, so a caller sees through the workspace exactly what it could fetch on its own and nothing more. An unreadable family is not loaded at all rather than loaded and discarded, so withholding it also costs nothing. Headline counters are deliberately outside this scope. Metrics and the workspace summary are counts - open breaks, timing drift, security gaps, audit-ready runs - and a count is what the workspace exists to show every desk it admits. Withholding the number as well as the records would make the screen blank for the operators it was widened for, without withholding anything the records do not already disclose in far more detail.
-
-```csharp
-public sealed record AccountingWorkspaceReadScope(bool BreakQueue, bool ManualJournal, bool Reporting, bool StrategyRuns, bool KernelObservability)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly AccountingWorkspaceReadScope All = new (BreakQueue : true, ManualJournal : true, Reporting : true, StrategyRuns : true, KernelObservability : true);</code> | [src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs:75](../../../../src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs#L75) |  |
-
-## AggregatePortfolioExposureProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AggregatePortfolioExposureProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:32](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L32).
-
-Feeds IPortfolioExposureProvider from the live IAggregatePortfolioService, so the portfolio-aware pre-trade rules (gross exposure, symbol concentration, order notional) evaluate against the same aggregated cross-run positions the Portfolio workspace reports. Positions are valued at the same live marks the trading screen shows (quote mid, then last trade) — but only while those marks are still fresh, since a stalled feed would otherwise price risk at a quote the market has left behind — falling back to each contribution&#x27;s cost basis when no current mark exists. Portfolio value spans the same scope as the positions: the sum across every portfolio registered in the PortfolioRegistry (the host state is itself registered, so it is counted exactly once), falling back to the host IPortfolioState and finally to gross exposure so concentration percentages stay defined for thinner compositions. Accepted-but-unfilled orders reserve their remaining exposure in the snapshot, so a burst of working orders cannot each observe a flat book and collectively breach a ceiling that none of them breaches alone.
-
-```csharp
-public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolioExposureProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly TimeSpan DefaultMarkMaxAge = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L51) | How old a quote or trade may be and still price an order. A stalled feed keeps serving its last mark forever; valuing risk at one would let a symbol cached before an outage measure orders at a price the market left behind. |
-| <code>public AggregatePortfolioExposureProvider(IAggregatePortfolioService aggregatePortfolio, IPortfolioState? portfolioState = null, PortfolioRegistry? registry = null, QuoteCollector? quotes = null, TradeDataCollector? trades = null, Func&lt;IOrderManager?&gt;? orderManagerAccessor = null, TimeSpan? markMaxAge = null, Func&lt;DateTimeOffset&gt;? clock = null, Func&lt;ILiveFeedAdapter?&gt;? liveFeedAccessor = null, Func&lt;bool&gt;? paperMatchingIsAuthoritative = null, Func&lt;LiveBrokeragePortfolioSyncService?&gt;? livePortfolioAccessor = null);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:53](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L53) |  |
-| <code>public decimal? TryGetExecutablePrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:97](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L97) |  |
-| <code>public decimal? TryGetTouchPrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:104](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L104) |  |
-| <code>public decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:189](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L189) | Resolves the stop-trigger reference from the same observation the matcher will consume, rather than reconstructing it here. Reconstruction was the bug. Every accessor above filters its sources through DefaultMarkMaxAge, because valuing risk off a stalled feed is how a symbol cached before an outage measures a 1,000-share order at a price the market left behind. The matcher applies no such filter: PaperMarketObservation.Capture takes the feed&#x27;s cached last trade, bar, and quote as they are. So a six-minute-old print at 130 with a fresh 100 ask fires a buy stop at 125 immediately, while an age-filtered reconstruction drops that print, falls to the 100 ask, and approves the order as resting. Reconstructing the precedence and the freshness policy correctly is not something to get right twice — so this reads the matcher&#x27;s observation directly and resolves through the matcher&#x27;s own PaperMarketObservation.ResolveStopTriggerPrice. The question this accessor answers is not &quot;what is this worth&quot; but &quot;will the engine fire this&quot;, and where the two disagree the engine is the authority. That is also why the age filter is deliberately absent here and deliberately present everywhere else on this class. Against a live broker the same resolution is the best available proxy, and it errs toward the most recent print — the conservative direction for catching a wrong-side stop. With no feed composed there is no matcher observation to share, so this falls back to the interface default: last trade, then bar close, then touch, from the collectors. |
-| <code>public decimal? TryGetLastTradePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:220](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L220) |  |
-| <code>public decimal? TryGetReferencePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:540](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L540) |  |
-| <code>public PortfolioExposureSnapshot GetSnapshot();</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:547](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L547) |  |
-| <code>public PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:654](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L654) |  |
-
-## AlpacaBrokerageConnectionService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AlpacaBrokerageConnectionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:20](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L20).
-
-Manages Alpaca Trading API-key connectivity for one tenant-owned provider connection.
-
-```csharp
-public sealed class AlpacaBrokerageConnectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AlpacaBrokerageConnectionService(ILogger&lt;AlpacaBrokerageConnectionService&gt; logger, ProviderConnectionLifecycleService lifecycle, IHttpClientFactory? httpClientFactory = null);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:37](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L37) |  |
-| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; GetStatusAsync(string? connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:53](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L53) | Reads the status of one Alpaca connection owned by tenantId. |
-| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; ConnectAsync(string? connectionId, string tenantId, AlpacaBrokerageConnectionRequestDto request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:81](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L81) | Verifies the submitted keys against the connection&#x27;s retained account and environment, then stores them in that connection&#x27;s vault scope. Keys that cannot be shown to belong to the retained account are never stored, so they cannot replace a working credential. |
-| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; RevokeAsync(string? connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:148](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L148) | Deletes the credentials of one owned connection; other connections are untouched. |
-
-## ApprovalDecision
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:71](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L71).
-
-```csharp
-public sealed record ApprovalDecision(bool RequiresDualControl, IReadOnlyList<ApprovalStep> Steps);
-```

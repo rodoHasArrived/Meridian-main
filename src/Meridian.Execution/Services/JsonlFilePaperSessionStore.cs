@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Core.IO;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -630,9 +631,9 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
                 if (item is not null)
                     results.Add(item);
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                logger.LogWarning(ex, "Skipping corrupt JSONL record in {Path}", path);
+                logger.LogWarning("Skipping corrupt JSONL record in {Path} ({ErrorKind})", LogSanitizer.Sanitize(path), nameof(JsonException));
             }
         }
 

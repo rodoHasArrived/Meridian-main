@@ -1,5 +1,6 @@
 export const CORPORATE_ACTION_DATE_KINDS: Record<string, { symbol: string; label: string }> = {
   ExDate: { symbol: "×", label: "Ex-date" }, RecordDate: { symbol: "○", label: "Record date" }, PaymentDate: { symbol: "◆", label: "Payment date" },
+  ElectionDeadline: { symbol: "E", label: "Source election deadline" },
   IssuerElection: { symbol: "!", label: "Issuer election deadline" }, BrokerElection: { symbol: "B", label: "Broker election deadline" }, CustodianElection: { symbol: "C", label: "Custodian election deadline" }
 };
 export function isCalendarDate(value: string): boolean {

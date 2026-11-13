@@ -65,7 +65,8 @@ public sealed record CorporateActionCalendarEventDto(
     IReadOnlyList<CorporateActionCalendarCaseReferenceDto> Cases,
     CorporateActionProviderEventIdentityDto Source,
     string ProposalState,
-    CorporateActionDeadlineHistoryDto? Deadline = null);
+    CorporateActionDeadlineHistoryDto? Deadline = null,
+    CorporateActionElectionCutoffDto? SourceCutoff = null);
 
 public sealed record CorporateActionCalendarPageDto(
     DateOnly From,

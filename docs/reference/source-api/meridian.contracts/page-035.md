@@ -956,12 +956,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const int MaxLegs = 50;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:12](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L12) |  |
-| <code>public static string ExactDecimal(string? value, string name, bool positive = false);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:17](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L17) |  |
-| <code>public static BrokerOptionAssessment Normalize(BrokerOptionAssessment value, string? legsCsv = null);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:39](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L39) |  |
-| <code>public static string BasketFingerprint(BrokerOptionAssessment assessment) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:103](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L103) |  |
-| <code>public static string Digest(byte[] bytes);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:106](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L106) |  |
-| <code>public static byte[] CanonicalBytes&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:111](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L111) |  |
-| <code>public static IReadOnlyList&lt;OptionAssessmentLeg&gt; ParseLegsCsv(string csv);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:167](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L167) |  |
+| <code>public static string ExactDecimal(string? value, string name, bool positive = false);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:24](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L24) |  |
+| <code>public static BrokerOptionAssessment Normalize(BrokerOptionAssessment value, string? legsCsv = null);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:46](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L46) |  |
+| <code>public static string BasketFingerprint(BrokerOptionAssessment assessment) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:110](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L110) |  |
+| <code>public static string Digest(byte[] bytes);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:113](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L113) |  |
+| <code>public static byte[] CanonicalBytes&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:118](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L118) |  |
+| <code>public static IReadOnlyList&lt;OptionAssessmentLeg&gt; ParseLegsCsv(string csv);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:175](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L175) |  |
 
 ## OptionChainSnapshotDto
 

@@ -212,6 +212,7 @@ describe("bond analytics calculation versions", () => {
     await screen.findByText("Calculation ready.");
     expect(calculate.mock.calls[0][1]).toMatchObject({ calculationVersion: "bond-analytics-v1" });
     expect(screen.getByText("Model: bond-analytics-v1")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Callable-bond horizon" })).toBeInTheDocument();
     expect(screen.getByText("YTM (annual fraction)")).toBeInTheDocument();
     expect(screen.queryByText(/SpreadDv01/)).not.toBeInTheDocument();
     expect(screen.queryByText("Fixing / source")).not.toBeInTheDocument();
@@ -236,6 +237,7 @@ describe("bond analytics calculation versions", () => {
       yieldConvention: "NominalPeriodic"
     }, expect.objectContaining({ allowDevelopmentFallback: false }));
     expect(screen.getByText("Model: bond-analytics-v3")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Callable-bond horizon" })).not.toBeInTheDocument();
     expect(screen.getByText("Projected-flow yield (annual fraction)")).toBeInTheDocument();
     expect(screen.getByText(/not a discount margin/)).toBeInTheDocument();
     expect(screen.getByText("DV01 (price points / 100 / bp)")).toBeInTheDocument();

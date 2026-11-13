@@ -2,11 +2,28 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 568. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_DeclareSecurityUnderlyingLinkRequest["DeclareSecurityUnderlyingLinkRequest"] {
+        +string? CreatedBy
+        +string? Notes
+        +string? Reference
+        +SecurityUnderlyingRole Role
+        +Guid SecurityId
+        +Guid? UnderlyingSecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+        +decimal? Weight
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal["DeclaredScheduleRefusal"] {
+        +DeclaredScheduleRefusalCode Code
+        +string Message
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode["DeclaredScheduleRefusalCode"] {
+    }
     class Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution["DeclaredScheduleResolution"] {
         +ScheduleConventionTerms Conventions
         +DeclaredScheduleRefusal? Refusal
@@ -426,16 +443,8 @@ classDiagram
         +decimal ValuedAmount
         +DateOnly ValuedAsOf
     }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralJsonContext["OtcCollateralJsonContext"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralKind["OtcCollateralKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto["OtcCollateralMovementDto"] {
-        +decimal Amount
-        +string Currency
-        +OtcMovementKind Kind
-        +OtcMovementParty Mover
-    }
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_IssuerFactSnapshot
@@ -456,7 +465,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
-    Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralDirection
-    Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
 ```

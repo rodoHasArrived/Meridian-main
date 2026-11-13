@@ -24,7 +24,7 @@ public sealed class PrivateCapitalRecordAuthority(
         {
             ct.ThrowIfCancellationRequested();
             var page = await securities.SearchAsync(new SecuritySearchRequest("", Take: 200, Skip: skip, ActiveOnly: true), ct).ConfigureAwait(false);
-            vehicles.AddRange(page.Where(item => item.AssetClass == "PrivateFundInterest")
+            vehicles.AddRange(page.Where(item => SecurityAssetClassCatalog.GetOrDefault(item.AssetClass).SupportsPrivateCapitalRecords)
                 .Select(item => new PrivateCapitalChoice(item.SecurityId, item.DisplayName)));
             if (page.Count < 200)
                 break;
@@ -42,7 +42,8 @@ public sealed class PrivateCapitalRecordAuthority(
         if (!graph.Entities.Any(item => item.EntityId == entityId && item.IsActive))
             throw new UnauthorizedAccessException("The holder entity is not available in the authorized structure.");
         var security = await securities.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || security.AssetClass != "PrivateFundInterest" || security.Status != SecurityStatusDto.Active)
+        if (security is null || !SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).SupportsPrivateCapitalRecords
+            || security.Status != SecurityStatusDto.Active)
             throw new ArgumentException("Select an active PrivateFundInterest security by its retained identity.");
         if (!string.Equals(security.Currency, currency, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Commitment currency must match the selected vehicle security's retained currency.");

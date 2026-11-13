@@ -35,10 +35,49 @@ public sealed class CorporateActionCalendarPostgresTests
         var date = new DateOnly(2026, 11, 12);
         var action = new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", date.AddMonths(-1), date,
             0.24m, "USD", null, null, null, null, null, null, null);
+        var sourceCutoffAt = new DateTimeOffset(2026, 11, 13, 23, 30, 0, TimeSpan.FromHours(-5));
+        action = action with
+        {
+            Payload = JsonSerializer.SerializeToElement(new
+            {
+                electionCalendar = new
+                {
+                    schemaVersion = 1,
+                    cutoffs = new[] { new { id = "retained-source", label = "Actual source election cutoff", deadlineAt = sourceCutoffAt,
+                        source = "Issuer notice", evidenceReference = "document://issuer/source" } }
+                }
+            })
+        };
         var hash = CorporateActionEconomicFingerprint.Compute(action);
         var proposal = await operations.RecordSourceProposalAsync(new(action,
             new("fixture-source", Guid.NewGuid().ToString(), "v1", DateTimeOffset.UtcNow, hash, "document://source/notice",
                 CorporateActionProviderReleaseStatusDto.AcceptanceEligible), "operator"), ct);
+        (await store.GetSourceProposalAsync(proposal.ProposalId, ct))!.DisplayMetadata.Should().BeNull();
+        var changedCutoffAction = action with
+        {
+            Payload = JsonSerializer.SerializeToElement(new
+            {
+                electionCalendar = new
+                {
+                    schemaVersion = 1,
+                    cutoffs = new[] { new { id = "retained-source", label = "Corrected source election cutoff", deadlineAt = sourceCutoffAt,
+                        source = "Issuer notice", evidenceReference = "document://issuer/correction" } }
+                }
+            })
+        };
+        CorporateActionEconomicFingerprint.Compute(changedCutoffAction).Should().Be(hash);
+        var changedReplay = async () => await operations.RecordSourceProposalAsync(
+            new(changedCutoffAction, proposal.ProviderIdentity, "operator"), ct);
+        await changedReplay.Should().ThrowAsync<CorporateActionIdempotencyConflictException>();
+        var exactReplay = await operations.RecordSourceProposalAsync(new(action, proposal.ProviderIdentity, "operator"), ct);
+        exactReplay.ProposalId.Should().Be(proposal.ProposalId);
+        exactReplay.DisplayMetadata.Should().BeNull();
+        CorporateActionElectionCalendar.Read(exactReplay.ProposedAction.Payload).Cutoffs.Should().ContainSingle()
+            .Which.EvidenceReference.Should().Be("document://issuer/source");
+        var changedMetadataReplay = async () => await operations.RecordSourceProposalAsync(
+            new(action, proposal.ProviderIdentity, "operator", DisplayMetadata:
+                new("CHANGED", "fixture-source", ["fixture-source"], [])), ct);
+        await changedMetadataReplay.Should().ThrowAsync<CorporateActionIdempotencyConflictException>();
         var accepted = await store.AcceptSourceProposalAsync(new(proposal.ProposalId, proposal.Version, "accept-source", scope, "operator"),
             Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, new string('a', 64), ct);
         var service = new CorporateActionCalendarService(operations, store);
@@ -58,6 +97,8 @@ public sealed class CorporateActionCalendarPostgresTests
         var reloadedStore = new PostgresCorporateActionOperationsStore(options);
         var reloaded = new CorporateActionCalendarService(new CorporateActionOperationsService(reloadedStore), reloadedStore);
         var history = await reloaded.GetDeadlinesAsync(request.CaseId, scope.TenantId, scope.CompanyId, ct);
+        (await reloadedStore.GetCaseAsync(request.CaseId, scope.TenantId, scope.CompanyId, ct))!
+            .SourceSnapshot!.DisplayMetadata.Should().BeNull();
         history.History.Should().ContainSingle().Which.Deadline.At.Should().Be(value.At);
         history.History.Should().OnlyContain(e => e.EvidenceAssurance == "OperatorRecorded");
         var replay = await reloaded.RecordAsync(request, "operator", "trace", ct);
@@ -68,6 +109,35 @@ public sealed class CorporateActionCalendarPostgresTests
         calendar.Items.Should().ContainSingle(e => e.DateKind == "BrokerElection");
         calendar.Items.Should().ContainSingle(e => e.DateKind == "PaymentDate");
         calendar.Items.Should().NotContain(e => e.DateKind == "ExDate");
+        var sourceDate = date.AddDays(1);
+        var invalidCalendars = new[]
+        {
+            JsonSerializer.SerializeToElement(new { electionCalendar = new { schemaVersion = 1, cutoffs = new { deadlineAt = "2026-11-13T23:30:00-05:00" } } }),
+            JsonSerializer.SerializeToElement(new { electionCalendar = new { schemaVersion = 1, cutoffs = new[] { new { id = "bad", label = "Bad timestamp", deadlineAt = "2026-11-13-without-offset", source = "Legacy", evidenceReference = "document://legacy" } } } }),
+            JsonSerializer.SerializeToElement(new { electionCalendar = new { schemaVersion = 9, cutoffs = new[] { new { id = "unknown", label = "Unknown schema", deadlineAt = "2026-11-13T23:30:00-05:00", source = "Legacy", evidenceReference = "document://legacy" } } } })
+        };
+        foreach (var payload in invalidCalendars)
+        {
+            var legacyAction = action with { CorpActId = Guid.NewGuid(), Payload = payload };
+            await store.RecordSourceProposalAsync(proposal with
+            {
+                ProposalId = Guid.NewGuid(),
+                ProviderIdentity = proposal.ProviderIdentity with { SourceEventId = Guid.NewGuid().ToString("N") },
+                ProposedAction = legacyAction,
+                EconomicFingerprint = CorporateActionEconomicFingerprint.Compute(legacyAction)
+            }, ct);
+        }
+        var sourceCalendar = await reloaded.GetCalendarAsync(scope.TenantId, scope.CompanyId, sourceDate, sourceDate,
+            account: "broker-account", ct: ct);
+        var sourceItem = sourceCalendar.Items.Should().ContainSingle().Which;
+        sourceItem.DateKind.Should().Be("ElectionDeadline");
+        sourceItem.SourceCutoff!.EvidenceReference.Should().Be("document://issuer/source");
+        sourceItem.At!.Value.Offset.Should().Be(sourceCutoffAt.Offset);
+        sourceItem.Date.Should().Be(sourceDate);
+        DateOnly.FromDateTime(sourceItem.At.Value.UtcDateTime).Should().Be(sourceDate.AddDays(1));
+        sourceItem.Deadline.Should().BeNull();
+        sourceItem.Cases.Should().ContainSingle().Which.CaseId.Should().Be(request.CaseId);
+        (await reloaded.GetCalendarAsync(scope.TenantId, "another-company", sourceDate, sourceDate, ct: ct)).Items.Should().BeEmpty();
 
         var corrected = await reloaded.RecordAsync(request with
         {
@@ -116,6 +186,29 @@ public sealed class CorporateActionCalendarPostgresTests
             Deadline = value with { SeriesId = Guid.NewGuid() }
         }, "operator", null, ct);
         await frozenCapture.Should().ThrowAsync<CorporateActionStateConflictException>();
+
+        // Legacy rows may retain source collections without scalar display headers. Those
+        // collections remain evidence even though empty collection defaults mean no metadata.
+        var legacyMetadata = new[]
+        {
+            new CorporateActionSourceDisplayMetadataDto(null!, null!, ["agreeing-source"], []),
+            new CorporateActionSourceDisplayMetadataDto(null!, null!, [], ["dissenting-source"]),
+            new CorporateActionSourceDisplayMetadataDto(null!, null!, [], [], [new("currency", [])])
+        };
+        foreach (var metadata in legacyMetadata)
+        {
+            var retained = await store.RecordSourceProposalAsync(proposal with
+            {
+                ProposalId = Guid.NewGuid(),
+                ProviderIdentity = proposal.ProviderIdentity with { SourceEventId = Guid.NewGuid().ToString("N") },
+                DisplayMetadata = metadata
+            }, ct);
+            var reloadedProposal = await store.GetSourceProposalAsync(retained.ProposalId, ct);
+            reloadedProposal!.DisplayMetadata.Should().NotBeNull();
+            reloadedProposal.DisplayMetadata!.AgreeingSources.Should().Equal(metadata.AgreeingSources);
+            reloadedProposal.DisplayMetadata.DissentingSources.Should().Equal(metadata.DissentingSources);
+            reloadedProposal.DisplayMetadata.DissentingFields.Should().BeEquivalentTo(metadata.DissentingFields ?? []);
+        }
     }
 
     private static async Task CreateSecurityAsync(SecurityMasterOptions options, Guid id, CancellationToken ct)

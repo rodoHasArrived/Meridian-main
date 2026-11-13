@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Meridian.Core.Resilience;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Meridian.Core.Pipeline;
@@ -111,7 +112,7 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewa
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        Logger.LogInformation("{Gateway} cancelling order {OrderId}", GatewayId, orderId);
+        Logger.LogInformation("{Gateway} cancelling order {OrderId}", GatewayId, LogSanitizer.Sanitize(orderId));
 
         var report = await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
         await PublishReportAsync(report, ct).ConfigureAwait(false);

@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCouponKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCouponKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6).
+
+The contractual coupon structure; absence never asserts a zero coupon.
+
+```csharp
+public enum SecurityCouponKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
+| <code>Fixed</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
+| <code>Floating</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
+| <code>ZeroCoupon</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
+| <code>Step</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
+| <code>InflationLinked</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
+
+## SecurityCouponRateUnit
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCouponRateUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9).
+
+The declared unit of an annual rate, independently of its magnitude.
+
+```csharp
+public enum SecurityCouponRateUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
+| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
+| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
+
+## SecurityCurveDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49).
+
+The write-once identity of a stored curve.
+
+```csharp
+public sealed record SecurityCurveDefinitionDto(Guid CurveId, string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string CreatedBy, DateTimeOffset CreatedAt);
+```
+
 ## SecurityCurveInterpolation
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveInterpolation</code>. Kind: `enum`.
@@ -858,59 +913,3 @@ Enum declarations:
 | <code>Classification = 1&lt;&lt;4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L16) |  |
 | <code>Currency = 1&lt;&lt;5</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L17) |  |
 | <code>Display = 1&lt;&lt;6</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L18) |  |
-
-## SecurityMasterConflictKinds
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L10).
-
-Canonical conflict-kind identifiers for SecurityMasterConflict.ConflictKind. Detection produces these; the workbench and the authority policy route on them. Keep them here so producers and consumers cannot drift on spelling.
-
-```csharp
-public static class SecurityMasterConflictKinds
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string IdentifierAmbiguity = &quot;IdentifierAmbiguity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L13) | An identifier that multiple distinct securities claim from different providers. |
-| <code>public const string EconomicTermMismatch = &quot;EconomicTermMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L16) | Two source systems disagree on an economic term (maturity, coupon, day count, …) of the same security. |
-| <code>public const string CommonTermMismatch = &quot;CommonTermMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L19) | Two source systems disagree on a common term (currency, country of risk, …) of the same security. |
-
-## SecurityMasterConflictRouting
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L28).
-
-Routes a SecurityMasterConflict to the review surface that owns it, by declared facts rather than by substrings of its field path. A path is split on dots and each segment is compared whole (case-insensitive, underscores ignored), so ProfileFields.providerName is not an identifier conflict because it contains &quot;provider&quot;, and EconomicTerms.issueDate is a terms conflict although no fixed word list names it.
-
-```csharp
-public static class SecurityMasterConflictRouting
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlySet&lt;string&gt; TermContainers { get; } = new[] { &quot;EconomicTerms&quot;, &quot;CommonTerms&quot;, &quot;ProfileFields&quot;, &quot;AssetSpecificTerms&quot;, &quot;EconomicDefinition&quot;, &quot;Terms&quot; }.Select(Normalize).ToFrozenSet(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L37) | The path containers that hold a record&#x27;s terms: the three conflict detection writes (EconomicTerms, CommonTerms, ProfileFields), the stored terms document and the economic definition read model. |
-| <code>public static IReadOnlySet&lt;string&gt; ProviderEvidenceSegments { get; } = new[] { &quot;Provider&quot;, &quot;Providers&quot;, &quot;ProviderMapping&quot;, &quot;ProviderMappings&quot;, &quot;ProviderSymbol&quot;, &quot;ProviderSymbols&quot;, &quot;Mapping&quot;, &quot;Mappings&quot;, &quot;Alias&quot;, &quot;Aliases&quot; }.Select(Normalize).ToFrozenSet(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L48) | The path segments that name provider evidence rather than a declared identifier kind: provider mappings and aliases, which the identity panel reviews beside identifiers. |
-| <code>public static IReadOnlySet&lt;string&gt; TermRoutingKeys(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L60) | The term keys assetClass owns for routing: each field key and alias its terms schema declares, normalized. Empty for a class the schema does not declare. |
-| <code>public static bool IsIdentityConflict(SecurityMasterConflict conflict);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L78) | Whether the conflict belongs to identity and provider evidence: an identifier ambiguity, a declared identifier name or kind in its path, or a provider-mapping or alias segment. |
-| <code>public static bool IsTermsConflict(SecurityMasterConflict conflict, string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L89) | Whether the conflict is about the record&#x27;s terms: a declared term-mismatch kind, a path under a terms container, a classification or currency name, or a term key the record&#x27;s asset class owns. |
-| <code>public static bool HasSegment(string? fieldPath, string? name) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L110) | Whether any whole segment of fieldPath equals name. |
-| <code>public static bool EndsWithValue(string? fieldPath, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L117) | Whether fieldPath is, or ends with, the whole value value (which may itself contain dots, as a provider symbol such as AAPL.O does). |
-
-## SecurityMasterCorporateActionAppendRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L21).
-
-FundProfileId optionally scopes downstream restatement-impact resolution when the append supersedes a prior event; a null scope yields an unscoped impact and no restatement proposal, mirroring the revision-publish path&#x27;s deliberate scoping rule.
-
-```csharp
-public sealed record SecurityMasterCorporateActionAppendRequestDto(Guid SecurityId, CorporateActionDto CorporateAction, string SourceSystem, string Actor, string? SourceRecordId = null, string? Reason = null, string? CorrelationId = null, string? FundProfileId = null);
-```

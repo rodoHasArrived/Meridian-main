@@ -113,7 +113,17 @@ describe("FamilyOfficeScreen", () => {
     expect(getFamilyOfficeOverview.mock.calls.at(-1)![1]).toBe(choices[1].clientId);
   });
 
-  it("has no basic accessibility violations", async () => {
+it("does not report complete source confidence when the host qualifies retained balances", async () => {
+  const overview = buildFamilyOfficeOverviewFixture();
+  overview.readiness.blockers = ["Private-capital source is unavailable; balances are excluded."];
+  getFamilyOfficeOverview.mockResolvedValue(overview);
+  renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+  await screen.findByLabelText("Family office summary panels");
+  expect(screen.getByLabelText("Family office data confidence")).toHaveAttribute("data-status-tone", "review");
+  expect(screen.getByText("Private-capital source is unavailable; balances are excluded.")).toBeInTheDocument();
+});
+
+it("has no basic accessibility violations", async () => {
     getFamilyOfficeOverview.mockResolvedValue(buildFamilyOfficeOverviewFixture());
     const { container } = renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
 

@@ -180,7 +180,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             ? `${pluralizeCount(resolvedStructure.privateAssets.length, "private asset")} · ${pluralizeCount(resolvedStructure.commitments.length, "commitment")}`
             : "No records loaded",
           detail: "Private-asset and commitment coverage",
-          tone: resolvedStructure ? "ready" : "blocked"
+          tone: resolvedStructure ? resolvedStructure.warnings?.length ? "review" : "ready" : "blocked"
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",

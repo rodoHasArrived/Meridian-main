@@ -1241,8 +1241,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             "Order {OrderId} for {Symbol} rejected by {RejectionSource}: {Reason}",
             LogSanitizer.Sanitize(orderId),
             LogSanitizer.Sanitize(request.Symbol),
-            rejectionSource,
-            message);
+            LogSanitizer.Sanitize(rejectionSource),
+            LogSanitizer.Sanitize(message));
 
         if (_auditTrail is null)
         {

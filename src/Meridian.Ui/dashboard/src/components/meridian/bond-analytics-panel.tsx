@@ -472,7 +472,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 </p>
               </>
             )}
-            <BondEconomicsHorizon key={`${result.securityId}:${result.context.asOf}:${result.context.settlementDate}:${result.cleanPrice}`} result={result} />
+            {!isFloating ? <BondEconomicsHorizon key={`${result.securityId}:${result.context.asOf}:${result.context.settlementDate}:${result.cleanPrice}`} result={result} /> : null}
             {result.diagnostics.length ? (
               <StatusBanner
                 tone="warning"

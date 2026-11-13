@@ -85,6 +85,9 @@ export function mapFamilyOfficeOverview(overview: FamilyOfficeOverview | null): 
     ownershipGraph: overview.ownershipGraph,
     publicAssets: overview.publicAssets,
     warnings: overview.readiness.blockers,
+    ownershipSource: { graph: overview.ownershipGraph, publicAssets: overview.publicAssets, privateAssets: overview.privateAssets },
+    capitalLifecycle: { commitments: overview.capitalCommitments, activities: overview.recentCapitalActivity, asOfDate: overview.asOfDate },
+    sourceWarnings: overview.readiness.blockers,
     entities: hasRoot(entities, overview.familyOfficeId)
       ? entities
       : [buildSyntheticRoot(overview, entities, privateAssets), ...entities],

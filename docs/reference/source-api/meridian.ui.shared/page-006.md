@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UiEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UiEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L29).
+
+Master extension methods for registering shared desktop/local API endpoints. Uses ServiceCompositionRoot for centralized service registration.
+
+```csharp
+public static class UiEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L37) | Registers all shared services required by UI endpoints using the centralized composition root. Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality. |
+| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
+| <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L116) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:310](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L310) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:329](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L329) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:335](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L335) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:344](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L344) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+
+## UpdateExecutionCircuitBreakerRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:99](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L99).
+
+Request to update the global execution circuit breaker.
+
+```csharp
+public sealed record UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? Reason = null, string? CorrelationId = null);
+```
+
+## UpdateExecutionDefaultPositionLimitRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:105](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L105).
+
+Request to update the default execution position limit.
+
+```csharp
+public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
+```
+
+## UpdateExecutionSymbolPositionLimitRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:110](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L110).
+
+Request to update or clear a symbol-specific execution position limit.
+
+```csharp
+public sealed record UpdateExecutionSymbolPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
+```
+
 ## UpdateMaintenanceScheduleRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateMaintenanceScheduleRequest</code>. Kind: `record`.
@@ -1244,78 +1306,3 @@ Declared public members:
 | <code>public IStatementReconciliationReportAuthorityStore AuthorityStore =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:66](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L66) | Durable authority used for raw, canonical, and run-evidence retention. Exposed so production composition can prove the workflow and evidence adapter share one authority. |
 | <code>public bool RetainsCanonicalRunEvidence =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:69](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L69) | True because this adapter retains hash-verified canonical run evidence. |
 | <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L71) |  |
-
-## ReportPackDeliveryEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackDeliveryEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:363](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L363).
-
-Adds retained report-pack delivery attempts and artifacts to an evidence graph.
-
-```csharp
-public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackDeliveryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:367](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L367) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:372](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L372) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:374](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L374) |  |
-| <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:377](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L377) |  |
-
-## ReportPackEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:172](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L172).
-
-Adds report-pack lifecycle and supporting output evidence to an evidence graph.
-
-```csharp
-public sealed class ReportPackEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:176](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L176) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:181](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L181) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L183) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:187](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L187) |  |
-
-## SecurityMasterConflictEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SecurityMasterConflictEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1059](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1059).
-
-Adds Security Master conflict and resolution evidence to an evidence graph.
-
-```csharp
-public sealed class SecurityMasterConflictEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterConflictEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1063](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1063) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1068](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1068) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1070](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1070) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1073](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1073) |  |
-
-## SinglePrincipalAttestationAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationAuthority</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L9).
-
-Server-derived authority; this type is never bound from an HTTP request body.
-
-```csharp
-public sealed record SinglePrincipalAttestationAuthority(string Actor, OperationsActionOriginDto Origin, bool CanRead, bool CanAdministerDeclaration = false, bool CanAttest = false, bool CanRevoke = false, bool CanModifyTarget = false, bool CanModifyDraftTarget = false);
-```

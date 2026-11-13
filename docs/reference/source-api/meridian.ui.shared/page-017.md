@@ -6,6 +6,105 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurePortalReportingDeliveryTransport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurePortalReportingDeliveryTransport</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:936](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L936).
+
+Delivers reporting packages through a secure portal access grant.
+
+```csharp
+public sealed class SecurePortalReportingDeliveryTransport : IReportingDeliveryTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurePortalReportingDeliveryTransport(TimeProvider? timeProvider = null, string transportId = &quot;secure-portal&quot;);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:940](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L940) |  |
+| <code>public string TransportId { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:950](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L950) |  |
+| <code>public Task&lt;ReportingDeliveryTransportResult&gt; DeliverAsync(ReportingDeliveryTransportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:952](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L952) |  |
+
+## SecureReportingAccessGrantDeniedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingAccessGrantDeniedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:345](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L345).
+
+Carries the validation status that denied access through a secure reporting grant.
+
+```csharp
+public sealed class SecureReportingAccessGrantDeniedException : UnauthorizedAccessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecureReportingAccessGrantDeniedException(ReportingAccessGrantValidationStatus status) : base(&quot;The reporting access grant is invalid or no longer available.&quot;);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:347](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L347) |  |
+| <code>public ReportingAccessGrantValidationStatus Status { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:353](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L353) |  |
+
+## SecureReportingAccessGrantSummary
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingAccessGrantSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L69).
+
+Non-secret operator view of a durable recipient access grant.
+
+```csharp
+public sealed record SecureReportingAccessGrantSummary(string GrantId, string RunId, string PackageId, string Audience, bool AllowPackageRead, IReadOnlyList<string> ArtifactIds, string State, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc, int MaxUses, int UseCount, DateTimeOffset? LastUsedAtUtc, DateTimeOffset? RevokedAtUtc, string? RevokedBy, string? RevocationReason, ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
+```
+
+## SecureReportingDeliveryQueueCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDeliveryQueueCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L22).
+
+```csharp
+public sealed record SecureReportingDeliveryQueueCommand(string RunId, string DistributionId, string TransportId, string? RecipientPrincipalId, string Destination, string Subject, string Body, IReadOnlyList<string>? ArtifactIds = null, int? GrantLifetimeSeconds = null, int? GrantMaxUses = null, int MaxAttempts = 3, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
+```
+
+## SecureReportingDeliveryReceiptCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDeliveryReceiptCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L36).
+
+```csharp
+public sealed record SecureReportingDeliveryReceiptCommand(string ProviderEventId, ReportingDeliveryReceiptKind Kind, DateTimeOffset? OccurredAtUtc = null, string? ProviderReference = null, string? EvidenceReference = null, string? Detail = null);
+```
+
+## SecureReportingDistributionCapabilityCatalog
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDistributionCapabilityCatalog</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:106](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L106).
+
+Caller-specific distribution action readiness plus configured transport truth.
+
+```csharp
+public sealed record SecureReportingDistributionCapabilityCatalog(bool CanQueueDelivery, bool CanIssueAccessGrant, bool CanRevokeAccessGrant, string? ActionDisabledReasonCode, IReadOnlyList<SecureReportingTransportCapability> Transports);
+```
+
+## SecureReportingDistributionOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDistributionOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:317](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L317).
+
+```csharp
+public sealed record SecureReportingDistributionOptions(string PortalPackageBasePath, string GrantExchangeBasePath, string? ExternalAccessBaseUri, TimeSpan DefaultGrantLifetime, TimeSpan MaximumGrantLifetime, int DefaultGrantMaxUses, int MaximumGrantMaxUses, string WorkerId, TimeSpan WorkerPollInterval, IReadOnlySet<string> ExternalGrantTransportIds)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecureReportingDistributionOptions Default { get; } = new (&quot;/portal/reporting/secure/packages&quot;, &quot;/portal/reporting/access-grants&quot;, ExternalAccessBaseUri : null, TimeSpan.FromMinutes(30), TimeSpan.FromHours(24), DefaultGrantMaxUses : 1, MaximumGrantMaxUses : 100, WorkerId : Environment.MachineName, WorkerPollInterval : TimeSpan.FromSeconds(5), ExternalGrantTransportIds : new HashSet&lt;string&gt;([&quot;http-relay&quot;], StringComparer.OrdinalIgnoreCase));</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:329](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L329) |  |
+
 ## SecureReportingGrantExchangeCommand
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantExchangeCommand</code>. Kind: `record`.
@@ -730,7 +829,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1484](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1484) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1487](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1487) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -809,160 +908,3 @@ Declared public members:
 | <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
 | <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |
-
-## QuoteStreamOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:7](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L7).
-
-Tuning knobs for the workstation quote-stream fan-out. Bindable from configuration under SectionName.
-
-```csharp
-public sealed class QuoteStreamOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;Workstation:QuoteStream&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L10) | Configuration section name. |
-| <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
-| <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
-| <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |
-
-## QuoteStreamSubscription
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L12).
-
-A live subscription to a quote topic. Read coalesced snapshots from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class QuoteStreamSubscription : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;QuotesSnapshotResponse&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L23) | Coalesced snapshot feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L25) |  |
-
-## ReportRunStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L18).
-
-Event-driven report-run fan-out. A report-run-typed configuration of StreamBroadcaster{TPayload}: implements IReportingRunNotifier so run persistence wakes it, rebuilds each watched run&#x27;s status/audit payload on the shared coalescing loop, and pushes it to every subscriber of that run. Because report-run topics are keyed by an unbounded set of run ids, empty topics are evicted on last unsubscribe so they cannot leak.
-
-```csharp
-public sealed class ReportRunStreamBroadcaster : IReportingRunNotifier, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportRunStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, FundStructureEndpoints.TryBuildReportRunAuditTrail);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L22) |  |
-| <code>public void NotifyRunChanged(string runId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:51](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L51) |  |
-| <code>public void NotifyRunChanged(string tenantId, string? companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:53](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L53) |  |
-| <code>public StreamSubscription&lt;ReportingRunAuditTrailDto&gt;? TrySubscribe(StreamTopic topic, string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:74](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L74) | Subscribe to a report-run topic&#x27;s coalesced status feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose to unsubscribe and release the session&#x27;s slot. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:80](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L80) |  |
-
-## StreamBroadcaster (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:26](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L26).
-
-Event-driven fan-out engine shared by all workstation stream kinds. Woken via WakeAll (or Wake), it rebuilds each active topic&#x27;s payload on a coalescing loop (latest-wins) and pushes it to every subscriber of that topic over a bounded, drop-oldest channel — so one build is shared across all subscribers of a topic and a slow client never blocks the loop. The payload build, coalesce comparison, and empty-topic lifecycle are supplied by the owning broadcaster (quotes, report-run, …).
-
-```csharp
-public sealed class StreamBroadcaster<TPayload>: IAsyncDisposable where TPayload : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamBroadcaster(StreamConnectionRegistry registry, Func&lt;StreamTopic, TPayload?&gt; build, IEqualityComparer&lt;TPayload&gt; coalesceComparer, int coalesceIntervalMs, int subscriberChannelCapacity, bool evictEmptyTopics, ILogger? logger = null);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:48](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L48) |  |
-| <code>public void WakeAll() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:71](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L71) | Wake the loop to rebuild every active topic (any topic may have changed). |
-| <code>public void Wake(StreamTopic topic) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:78](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L78) | Wake the loop for a change to a single topic. The loop currently rebuilds all active topics and coalesces unchanged ones to no-ops, so this is equivalent to WakeAll today; the topic argument is accepted for a future targeted-rebuild optimization. |
-| <code>public StreamSubscription&lt;TPayload&gt;? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L85) | Subscribe to a topic&#x27;s coalesced payload feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:246](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L246) |  |
-
-## StreamConnectionRegistry
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamConnectionRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:11](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L11).
-
-Tracks the number of concurrent quote-stream connections per session and enforces a per-session cap. A singleton hit concurrently by many request threads, so all counter mutations are atomic (compare-and-swap on a ConcurrentDictionary{TKey,TValue}).
-
-```csharp
-public sealed class StreamConnectionRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamConnectionRegistry(int maxConcurrentStreamsPerSession);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L16) |  |
-| <code>public bool TryReserve(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L25) | Atomically reserves a stream slot for the session. Returns false when the session is already at its cap. An empty session id is treated as unscoped and never capped. |
-| <code>public void Release(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:61](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L61) | Releases a previously reserved slot for the session. |
-| <code>public int ActiveCount(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:93](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L93) | Current number of active streams for the session. |
-| <code>public void CloseSession(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:97](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L97) | Drops all accounting for a session (e.g. on logout / session expiry). |
-
-## StreamSubscription (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
-
-A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class StreamSubscription<TPayload>: IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |
-
-## StreamTopic
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamTopic</code>. Kind: `struct`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:14](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L14).
-
-Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing. The Key encodes the topic kind and its argument: quotes:&lt;symbols&gt; for a canonical, order- and case-independent symbol set (or the &quot;all tracked symbols&quot; sentinel), and a length-prefixed tenant/company/run identity for a scoped reporting run. Topic equality is by Key, so equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
-
-```csharp
-public readonly struct StreamTopic : IEquatable<StreamTopic>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AllQuotesKey = &quot;quotes:*&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L17) | Topic key for &quot;all tracked symbols&quot;. |
-| <code>public string Key =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:32](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L32) | Canonical, stable identifier for this topic. default(StreamTopic) resolves to AllQuotesKey so the default value behaves as AllQuotes. |
-| <code>public string Argument =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:38](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L38) | The argument passed to this topic&#x27;s snapshot builder: the comma-joined symbol filter for quote topics (empty string = &quot;all tracked symbols&quot;), or the run id for report-run topics. |
-| <code>public string SymbolFilter =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:41](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L41) | Back-compat alias for quote consumers: the symbol filter for a quotes topic. |
-| <code>public static StreamTopic AllQuotes { get; } = new (AllQuotesKey, string.Empty);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:44](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L44) | Topic covering every tracked symbol. |
-| <code>public static StreamTopic Quotes(string? symbolFilter);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L52) | Build a quotes topic from a raw or normalized symbol filter (comma-separated). Symbols are trimmed, upper-cased, de-duplicated, and sorted so equivalent requests collapse to the same topic. An empty/whitespace filter yields AllQuotes. |
-| <code>public static StreamTopic ReportRun(string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:79](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L79) | Build a legacy report-run topic keyed by the exact run id (trimmed). New tenant-bound subscriptions use the scoped overload below. |
-| <code>public static StreamTopic ReportRun(string tenantId, string companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L85) |  |
-| <code>public static bool TryParseScopedReportRun(string argument, out string tenantId, out string companyId, out string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:101](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L101) |  |
-| <code>public bool Equals(StreamTopic other) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:145](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L145) |  |
-| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:147](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L147) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:149](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L149) |  |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:151](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L151) |  |
-| <code>public static bool operator == (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:153](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L153) |  |
-| <code>public static bool operator != (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:155](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L155) |  |

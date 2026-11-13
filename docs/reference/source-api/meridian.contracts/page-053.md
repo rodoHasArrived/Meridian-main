@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceDocumentSourceRecordDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentSourceRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:172](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L172).
+
+```csharp
+public sealed record EvidenceDocumentSourceRecordDto(string SourceHashSha256, DateTimeOffset ReceivedAt, string SourceChannel, EvidenceDocumentIntakeChannelDto? ChannelKind, string? Actor, string? TenantId, string? Scope, string? SourceSystem = null, string? SourceReference = null, string? ReceiptHash = null);
+```
+
+## EvidenceEdgeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceEdgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:302](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L302).
+
+```csharp
+public sealed record EvidenceEdgeDto(string FromId, string ToId, string Relationship, string Reason);
+```
+
+## EvidenceEndpointErrorDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceEndpointErrorDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:629](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L629).
+
+```csharp
+public sealed record EvidenceEndpointErrorDto(string Code, string Message, string? SubjectKind = null, string? SubjectId = null, string? FileName = null, string? VaultId = null);
+```
+
+## EvidenceExtractionStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceExtractionStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L93).
+
+```csharp
+public enum EvidenceExtractionStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotExtracted = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L95) |  |
+| <code>Extracted = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L96) |  |
+| <code>NeedsReview = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L97) |  |
+| <code>Accepted = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L98) |  |
+| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:99](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L99) |  |
+| <code>Pending = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:100](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L100) |  |
+
 ## EvidenceFreshnessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceFreshnessDto</code>. Kind: `record`.
@@ -699,50 +750,4 @@ Source: [src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:17](../../.
 
 ```csharp
 public sealed record FeatureCapabilityToggleRequest(bool IsEnabled);
-```
-
-## FinancialOperationsCloseSupportDecisionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L23).
-
-```csharp
-public sealed record FinancialOperationsCloseSupportDecisionDto(string DecisionId, string Status, bool IsReady, string Summary, string PeriodState, string LockReopenPosture, string NavReportDependencyPosture, int UnresolvedExceptionCount, int PendingApprovalCount, int RetainedEvidenceGapCount, IReadOnlyList<FinancialOperationsCloseSupportDecisionRowDto> Decisions);
-```
-
-## FinancialOperationsCloseSupportDecisionRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCloseSupportDecisionRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L36).
-
-```csharp
-public sealed record FinancialOperationsCloseSupportDecisionRowDto(string DecisionId, string Category, string Label, string Status, bool IsBlocking, string Detail, string RequiredAction, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L47) |  |
-
-## FinancialOperationsCommandCenterDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCommandCenterDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L3).
-
-```csharp
-public sealed record FinancialOperationsCommandCenterDto(DateTimeOffset GeneratedAtUtc, string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string Status, bool IsReadyToComplete, string Summary, int ActiveItemCount, int BlockedItemCount, int ReviewItemCount, IReadOnlyList<FinancialOperationsCommandCenterMetricDto> Metrics, IReadOnlyList<FinancialOperationsQueueRowDto> QueueRows, OperationsContinuityWorkflowDto? ActiveWorkflow = null, OperationsCloseCalendarDto? CloseCalendar = null, PrivateCapitalCloseCockpitDto? PrivateCapitalCloseCockpit = null, FinancialOperationsCloseSupportDecisionDto? CloseSupportDecision = null, CloseReadinessProjectionDto? CloseReadiness = null);
-```
-
-## FinancialOperationsCommandCenterMetricDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialOperationsCommandCenterMetricDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L51).
-
-```csharp
-public sealed record FinancialOperationsCommandCenterMetricDto(string MetricId, string Label, string Value, string Detail, string Status, string? RouteHint);
 ```

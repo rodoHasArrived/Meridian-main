@@ -20,6 +20,14 @@ source time. Typed corporate-action deadline evidence carries precision, origina
 correction identity outside economic payload fingerprints. Additive read fields preserve older
 payload compatibility; missing observations are not reported zeros or inferred approvals.
 
+Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
+
+The exact top-level `electionCalendar` companion is operational source evidence, excluded from
+economic payload fingerprints and compared separately for immutable source replay. A companion-only
+envelope uses the absent economic-payload representation; legacy payloads without that companion,
+including explicit empty objects and JSON null, retain their existing hashes. Original retained
+payloads and fingerprints are not rewritten to attach or correct deadlines.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

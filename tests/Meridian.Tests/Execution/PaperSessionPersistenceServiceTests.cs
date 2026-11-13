@@ -10,8 +10,10 @@ using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 
 namespace Meridian.Tests.Execution;
 
@@ -164,6 +166,63 @@ public sealed class PaperSessionPersistenceServiceTests
     }
 
     // ---- CloseSessionAsync ----
+
+    [Fact]
+    public async Task CloseSessionAsync_SanitizesLogsWithoutChangingRetainedSessionIdentity()
+    {
+        const string sessionId = "PAPER-retained\r\nFORGED";
+        var record = new PersistedSessionRecord(sessionId, "strategy", "Retained session", 100_000m,
+            DateTimeOffset.UtcNow.AddMinutes(-1), null, true, []);
+        var store = Substitute.For<IPaperSessionStore>();
+        store.LoadAllSessionsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([record]));
+        store.LoadFillRecordsAsync(sessionId, Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<PaperSessionFillRecord>>([]));
+        store.LoadSettlementsAsync(sessionId, Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<PaperSessionSettlementRecord>>([]));
+        store.LoadLedgerJournalAsync(sessionId, Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]));
+        store.LoadOrderHistoryAsync(sessionId, Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<OrderState>>([]));
+        var logger = new RecordingLogger<PaperSessionPersistenceService>();
+        await using var service = new PaperSessionPersistenceService(logger, store);
+        await service.InitialiseAsync();
+
+        (await service.CloseSessionAsync(sessionId)).Should().BeTrue();
+
+        service.GetSession(sessionId)!.Summary.SessionId.Should().Be(sessionId);
+        await store.Received(1).SaveSessionMetadataAsync(
+            Arg.Is<PersistedSessionRecord>(saved => saved.SessionId == sessionId && !saved.IsActive), Arg.Any<CancellationToken>());
+        logger.Entries.Should().Contain(entry => entry.Message.Contains("PAPER-retained__FORGED", StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
+    }
+
+    [Fact]
+    public async Task CorruptOrderHistory_LogsSafeDiagnosticsAndPreservesValidRowsAndRetainedBytes()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-jsonl-log-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var logger = new RecordingLogger<JsonlFilePaperSessionStore>();
+            var store = new JsonlFilePaperSessionStore(root, logger);
+            const string sessionId = "PAPER-logging";
+            var order = new OrderState
+            {
+                OrderId = "client-order\r\nretained", Symbol = "AAPL", Side = OrderSide.Buy,
+                Type = OrderType.Limit, Quantity = 1m, Status = OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow, LastUpdatedAt = DateTimeOffset.UtcNow
+            };
+            await store.AppendOrderUpdateAsync(sessionId, order);
+            var path = Path.Combine(root, sessionId, "orders.jsonl");
+            await File.AppendAllTextAsync(path, "{ invalid-private-record }\n");
+            var retained = await File.ReadAllBytesAsync(path);
+
+            var loaded = await store.LoadOrderHistoryAsync(sessionId);
+
+            loaded.Should().ContainSingle().Which.OrderId.Should().Be(order.OrderId);
+            (await File.ReadAllBytesAsync(path)).Should().Equal(retained);
+            logger.Entries.Should().NotBeEmpty();
+            logger.Entries.Should().OnlyContain(entry => entry.Exception == null
+                && !entry.Message.Contains("invalid-private-record", StringComparison.Ordinal)
+                && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
 
     [Fact]
     public async Task CloseSessionAsync_WhenSessionExists_ReturnsTrue()

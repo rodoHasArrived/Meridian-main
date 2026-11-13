@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationBrokerageAccountLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageAccountLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L53).
+
+```csharp
+public sealed record WorkstationBrokerageAccountLinkDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, DateTimeOffset LinkedAt, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
+```
+
+## WorkstationBrokerageSyncHealth
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncHealth</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L8).
+
+```csharp
+public enum WorkstationBrokerageSyncHealth
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unlinked = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L10) |  |
+| <code>Healthy = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L11) |  |
+| <code>Stale = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L12) |  |
+| <code>Degraded = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L13) |  |
+| <code>Failed = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L14) |  |
+
+## WorkstationBrokerageSyncRunRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncRunRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L37).
+
+```csharp
+public sealed record WorkstationBrokerageSyncRunRequestDto(string? ProviderId = null, string? ExternalAccountId = null, string? RequestedBy = null, DateTimeOffset? Since = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
+```
+
+## WorkstationBrokerageSyncStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationBrokerageSyncStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L69).
+
+```csharp
+public sealed record WorkstationBrokerageSyncStatusDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, WorkstationBrokerageSyncHealth Health, bool IsLinked, bool IsStale, DateTimeOffset? LastAttemptedSyncAt, DateTimeOffset? LastSuccessfulSyncAt, string? LastError, int PositionCount, int OpenOrderCount, int FillCount, int CashTransactionCount, int SecurityMissingCount, IReadOnlyList<string> Warnings, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
+```
+
 ## WorkstationCrossScreenCount
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCount</code>. Kind: `record`.
@@ -516,46 +566,4 @@ Lightweight reporting run status with lineage and approval posture for operator 
 
 ```csharp
 public sealed record WorkstationReportingRunLinkPayload(string Id, string Kind, string Label, string Href, string Method, bool IsBrowserNavigable, string Source);
-```
-
-## WorkstationReportingRunNextActionPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunNextActionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L578).
-
-```csharp
-public sealed record WorkstationReportingRunNextActionPayload(string Id, string Kind, string Label, string Href, string Method, bool IsEnabled, string? DisabledReason, bool IsBrowserNavigable);
-```
-
-## WorkstationReportingRunPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:601](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L601).
-
-```csharp
-public sealed record WorkstationReportingRunPayload(string RunId, string TemplateId, string Family, string Status, string Trigger, string AsOfDate, int AttemptCount, int SectionCount, int LineageLinkedSections, IReadOnlyList<string> Artifacts, IReadOnlyList<string> AuditActions, string? FailureReason, IReadOnlyList<WorkstationReportingRunLinkPayload>? DrilldownLinks = null, IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null, IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null, string? ReportWriterDatasetSourceId = null, string? ReportWriterDatasetSourceLabel = null, int? ReportWriterDatasetRowCount = null, string? RunSeriesId = null, int? RunAttemptOrdinal = null, string? PriorRunId = null, string? RetryReason = null, string? LatestGeneratedRunId = null, string? LatestApprovedRunId = null, bool? IsLatestGenerated = null, bool? IsLatestApproved = null, string? ComparisonSummary = null, int? ChangedLineCount = null, int? AddedLineCount = null, int? RemovedLineCount = null, VersionedReportTemplateIdDto? ResolvedTemplate = null, ReportingRunParametersDto? ResolvedParameters = null, ReportingRunReadinessDto? Readiness = null);
-```
-
-## WorkstationReportingTemplatePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingTemplatePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:534](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L534).
-
-```csharp
-public sealed record WorkstationReportingTemplatePayload(string TemplateId, string Family, string Name, string Version, IReadOnlyList<string> Sections, string LifecycleStatus = "Approved", bool IsBuiltIn = true, bool IsLatestApproved = true, string ApprovalSummary = "Built-in approved template", string AuthoringRoute = "/api/fund-structure/reporting/templates", IReadOnlyList<WorkstationReportWriterGridPayload>? ReportWriterGrids = null, string AccessMode = "CompanyWide", string AccessSummary = "Company-wide access", bool IsAccessible = true, string? CreatedBy = null, DateTimeOffset? CreatedAt = null, string? UpdatedBy = null, DateTimeOffset? UpdatedAt = null, string? SubmittedBy = null, DateTimeOffset? SubmittedAt = null, string? ApprovedBy = null, DateTimeOffset? ApprovedAt = null, string? RejectedBy = null, DateTimeOffset? RejectedAt = null, string? DecisionRationale = null, string? ApprovalReference = null, VersionedReportTemplateIdDto? BasedOnTemplateId = null, IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null, IReadOnlyList<string>? ValidationIssues = null, IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
-```
-
-## WorkstationReportPackDistributionPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportPackDistributionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:658](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L658).
-
-Recipient-level distribution posture for governed report-pack output.
-
-```csharp
-public sealed record WorkstationReportPackDistributionPayload(string DistributionId, string Recipient, string RecipientRole, string Channel, string State, int PendingItems, string PendingSummary, string Owner, DateTimeOffset? DueAtUtc, DateTimeOffset? LastSentAtUtc, string Route);
 ```

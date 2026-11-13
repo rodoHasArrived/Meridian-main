@@ -371,6 +371,15 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
         onCommitted={() => void panel.refresh()} /> : null}
       <WorkspaceSection title="Source facts and provenance"><SourceFacts row={row} /></WorkspaceSection>
       <WorkspaceSection title="Entitlement and election">
+        <h4 className="text-xs font-semibold">Actual election cutoffs</h4>
+        {row.electionCalendar?.evidenceState === "Available" && row.electionCalendar.cutoffs.length > 0 ? (
+          <ul className="mb-3 mt-2 space-y-2 text-xs">{row.electionCalendar.cutoffs.map((cutoff) => (
+            <li key={cutoff.id} className="break-words rounded-sm border border-border p-2">
+              <strong>{cutoff.label}</strong> · <span className="font-mono">{cutoff.deadlineAt}</span> (source offset)
+              <span className="mt-1 block text-muted-foreground">{cutoff.source} · {cutoff.evidenceReference}</span>
+            </li>
+          ))}</ul>
+        ) : <p className="mb-3 mt-1 text-xs text-muted-foreground">{row.electionCalendar?.evidenceState === "Available" ? "The source retained no actual election cutoffs." : "Actual election cutoff evidence is unavailable. Ex-date and offer expiry do not establish an election deadline."}</p>}
         {durableCase?.entitlement ? (
           <dl className="grid gap-2 text-xs sm:grid-cols-2">
             {Object.entries(durableCase.entitlement).map(([label, value]) => (
@@ -554,7 +563,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
           <ToolbarStrip
             ariaLabel="Corporate action queue summary"
             items={[
-              { id: "staged", label: "Staged", value: String(panel.model?.stagedCount ?? 0), active: true },
+              { id: "staged", label: "Staged", value: String(panel.model?.stagedCount ?? 0) },
               { id: "conflicts", label: "Conflicts", value: String(conflictCount) },
               { id: "unassigned", label: "Unassigned", value: String(unassignedCount) },
               { id: "durable", label: "Durable cases", value: String(durableCaseCount) }

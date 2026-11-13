@@ -2,11 +2,21 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 568. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcCollateralJsonContext["OtcCollateralJsonContext"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCollateralKind["OtcCollateralKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto["OtcCollateralMovementDto"] {
+        +decimal Amount
+        +string Currency
+        +OtcMovementKind Kind
+        +OtcMovementParty Mover
+    }
     class Meridian_Contracts_SecurityMaster_OtcCollateralRules["OtcCollateralRules"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcCompressionData["OtcCompressionData"] {
@@ -462,17 +472,8 @@ classDiagram
         +DateOnly? Date
         +string Message
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode["ScheduleFailureCode"] {
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult["ScheduleGenerationResult"] {
-        +IReadOnlyList~ScheduleCalendarUsage~ CalendarsUsed
-        +IReadOnlyList~ScheduleDiagnostic~ Diagnostics
-        +ScheduleFailure? Failure
-        +IReadOnlyList~SchedulePeriod~ Periods
-        +ScheduleSpec Spec
-    }
-    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerator["ScheduleGenerator"] {
-    }
+    Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementKind
+    Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
     Meridian_Contracts_SecurityMaster_OtcCompressionData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractDirection
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractStatus
@@ -486,7 +487,9 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcContractValuationRequest --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcCreditEventKind
+    Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
+    Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCollateralMovementDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcContractValuationDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcExposureSnapshotInputsDto
@@ -512,8 +515,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_RateUnitResolution_Undeclared --> Meridian_Contracts_SecurityMaster_RateUnitResolution
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure
 ```

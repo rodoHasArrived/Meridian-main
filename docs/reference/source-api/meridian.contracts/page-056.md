@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IngestionOperationDetailDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionOperationDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L39).
+
+```csharp
+public sealed record IngestionOperationDetailDto(IngestionOperationRowDto Job, IngestionCheckpointDto? Checkpoint, IReadOnlyList<IngestionSymbolProgressDto> SymbolProgress, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+```
+
+## IngestionOperationRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionOperationRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L21).
+
+```csharp
+public sealed record IngestionOperationRowDto(string JobId, string WorkloadType, string State, string Provider, IReadOnlyList<string> Symbols, DateTimeOffset CreatedAt, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, double ProgressPercent, bool IsResumable, int AttemptCount, int MaxRetries, DateTimeOffset? NextRetryAt, string? ErrorMessage, string? EvidenceRoute, IReadOnlyList<IngestionOperationActionDto> Actions);
+```
+
+## IngestionOperationsSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionOperationsSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:5](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L5).
+
+```csharp
+public sealed record IngestionOperationsSnapshotDto(DateTimeOffset GeneratedAt, IngestionOperationsSummaryDto Summary, IReadOnlyList<IngestionOperationRowDto> Jobs, IReadOnlyList<string> Providers);
+```
+
+## IngestionOperationsSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionOperationsSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L11).
+
+```csharp
+public sealed record IngestionOperationsSummaryDto(int Total, int Queued, int Running, int Paused, int Failed, int Completed, int Cancelled, int Resumable);
+```
+
 ## IngestionSymbolProgressDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.IngestionSymbolProgressDto</code>. Kind: `record`.
@@ -532,7 +572,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:633](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L633).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:637](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L637).
 
 Shared journal row for workstation audit surfaces.
 
@@ -564,7 +604,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:584](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L584).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:588](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L588).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
@@ -576,7 +616,7 @@ public sealed record LedgerSummary(string LedgerReference, string RunId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:612](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L612).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:616](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L616).
 
 Shared trial-balance row for workstation ledger views.
 
@@ -614,44 +654,4 @@ Provider-reported margin side by side with a non-authoritative Meridian estimate
 
 ```csharp
 public sealed record MarginControlAccountDto(string ProviderId = default !, string AccountId = default !, DateTimeOffset AsOf = default, string SnapshotPhase = default !, string CertificationState = default !, string Currency = default !, string MarginRegime = default !, decimal Cash = default, decimal Equity = default, decimal BuyingPower = default, decimal? ProviderInitialMargin = null, decimal? ProviderMaintenanceMargin = null, decimal? ProviderExcessLiquidity = null, decimal? ProviderMarginLoan = null, string ShadowModelName = default !, decimal? ShadowInitialMargin = null, decimal? ShadowMaintenanceMargin = null, decimal? ShadowExcessLiquidity = null, decimal? MaintenanceVariance = null, string RiskLevel = default !, bool? ActivityComplete = null, IReadOnlyList<string> Restrictions = default !, IReadOnlyList<MarginPositionContributionDto> PositionContributions = default !, int OptionLifecycleEventCount = default, int BorrowPositionCount = default, int TaxLotCount = default, string EvidencePath = default !, string? CertifiedBy = null, DateTimeOffset? CertifiedAtUtc = null, string? CertificationNote = null);
-```
-
-## MarginControlAlertDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginControlAlertDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L57).
-
-```csharp
-public sealed record MarginControlAlertDto(string Severity = default !, string ProviderId = default !, string AccountId = default !, string Code = default !, string Message = default !, string SuggestedAction = default !);
-```
-
-## MarginControlCenterDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginControlCenterDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L65).
-
-```csharp
-public sealed record MarginControlCenterDto(DateTimeOffset GeneratedAtUtc = default, IReadOnlyList<MarginControlAccountDto> Accounts = default !, IReadOnlyList<MarginControlPrimeSummaryDto> PrimeSummaries = default !, IReadOnlyList<MarginControlAlertDto> Alerts = default !, int ProviderCount = default, int AccountCount = default, int ProvisionalAccountCount = default, int EndOfDayCertificationCandidateCount = default, string AuthorityNote = default !, string NextAction = default !);
-```
-
-## MarginControlPrimeSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L49).
-
-```csharp
-public sealed record MarginControlPrimeSummaryDto(string ProviderId = default !, int AccountCount = default, decimal TotalEquity = default, decimal? ProviderMaintenanceMargin = null, decimal? ProviderExcessLiquidity = null, int CriticalAccountCount = default);
-```
-
-## MarginPositionContributionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginPositionContributionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L36).
-
-```csharp
-public sealed record MarginPositionContributionDto(string Symbol = default !, decimal Quantity = default, decimal MarketValue = default, decimal ShadowInitialMargin = default, decimal ShadowMaintenanceMargin = default, string? BorrowStatus = null, decimal? BorrowRate = null, int TaxLotCount = default, int OptionLifecycleEventCount = default, string? SecurityId = null, string? SecurityMasterSource = null);
 ```

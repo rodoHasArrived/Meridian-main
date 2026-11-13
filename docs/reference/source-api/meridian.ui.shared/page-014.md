@@ -6,6 +6,120 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioCashLadderReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioCashLadderReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L14).
+
+Read model for the portfolio-wide cash ladder: resolves the securities the portfolio actually holds (and their quantities) from an optional holdings source, runs each held instrument through the asset-operations projection surface, joins opening cash and capital-schedule rows from optional providers, and hands the assembled inputs to PortfolioCashLadderEngine.
+
+```csharp
+public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioCashLadderReadService(ISecurityMasterQueryService? securityMasterQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IPortfolioHoldingsSource? holdingsSource = null, IPortfolioCashBalanceProvider? cashBalanceProvider = null, IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L28) |  |
+| <code>public async Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L46) |  |
+
+## PortfolioLedgerCashBalanceProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioLedgerCashBalanceProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:29](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L29).
+
+Supplies the portfolio cash ladder&#x27;s opening cash by reading the actuals view of the double-entry ledger. Cash is taken from the asset-side cash accounts (LedgerAccounts.Cash and the per-currency LedgerAccounts.CashInCurrency accounts) consolidated across the project&#x27;s ledger books.
+
+```csharp
+public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioLedgerCashBalanceProvider(ProjectLedgerBook? ledgerBook = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L46) | The ProjectLedgerBook is optional so that registering this provider can never fail read-model resolution in a host that has not composed the ledger feature: when it is absent the ladder simply opens from zero cash, exactly as it does today, and the engine emits its &quot;no cash balances were provided&quot; warning. |
+| <code>public Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L51) |  |
+
+## PortfolioLedgerWorkflowStatusService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioLedgerWorkflowStatusService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs:8](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs#L8).
+
+Builds portfolio and ledger workflow status from readiness gates and operator work items.
+
+```csharp
+public static class PortfolioLedgerWorkflowStatusService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PortfolioLedgerWorkflowStatusSnapshotDto Compute(IReadOnlyList&lt;TradingAcceptanceGateDto&gt; acceptanceGates, IReadOnlyList&lt;OperatorWorkItemDto&gt; workItems);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs:10](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs#L10) |  |
+
+## PositionSnapshotAutomatedJournalDividendPositionResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PositionSnapshotAutomatedJournalDividendPositionResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:36](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L36).
+
+Loads exact-owner durable position history for a recurring dividend cycle. Each snapshot is expanded with zero-quantity tombstones for symbols absent from later snapshots, allowing the corporate-action producer to reconstruct the quantity actually held on each ex-date.
+
+```csharp
+public sealed class PositionSnapshotAutomatedJournalDividendPositionResolver : IAutomatedJournalDividendPositionResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PositionSnapshotAutomatedJournalDividendPositionResolver(IPositionSnapshotStore? snapshotStore);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:41](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L41) |  |
+| <code>public async Task&lt;AutomatedJournalDividendPositionResolution&gt; ResolveAsync(AutomatedJournalScheduleWorkItem workItem, DateTimeOffset evaluatedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:46](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L46) |  |
+
+## PostedLedgerAmountProvenanceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAmountProvenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:13](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L13).
+
+Resolves immutable posted-line identities without account-name, symbol, or case searches.
+
+```csharp
+public sealed class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
+
+## PostedPeriodComparisonService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostedPeriodComparisonService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L11).
+
+Source-backed comparisons of posted accounting periods under retained fund ownership.
+
+```csharp
+public sealed class PostedPeriodComparisonService(ILedgerJournalStore journals, ILedgerBookService books, IFundProfileTenancyRegistry tenancy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
+| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:139](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L139) |  |
+| <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L169) |  |
+
 ## PrivateCapitalBankObservationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
@@ -43,6 +157,16 @@ Declared public members:
 | <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
 | <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |
 
+## PrivateCapitalLifecycleRead
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalLifecycleRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:8](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L8).
+
+```csharp
+public sealed record PrivateCapitalLifecycleRead(IReadOnlyList<CapitalCommitmentDto> Commitments, IReadOnlyList<CapitalActivityDto> Activities, IReadOnlyList<string> Warnings, bool IsAvailable = true);
+```
+
 ## PrivateCapitalRecordAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalRecordAuthority</code>. Kind: `class`.
@@ -61,7 +185,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;PrivateCapitalChoices&gt; ChoicesAsync(PrivateCapitalScope scope, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L18) |  |
 | <code>public async Task&lt;PrivateCapitalVehicle&gt; ValidateRegisterAsync(PrivateCapitalScope scope, Guid entityId, Guid securityId, string currency, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:38](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L38) |  |
-| <code>public async Task ValidateEvidenceAsync(PrivateCapitalScope scope, PrivateCapitalEvidence evidence, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:57](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L57) |  |
+| <code>public async Task ValidateEvidenceAsync(PrivateCapitalScope scope, PrivateCapitalEvidence evidence, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs:58](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordAuthority.cs#L58) |  |
 
 ## PrivateCapitalRecordServiceCollectionExtensions
 
@@ -751,111 +875,3 @@ Immutable package metadata bound to the exact operational, access-policy, and ce
 ```csharp
 public sealed record ReportingArtifactPackageRetentionRequest(string PackageId, string RunId, string SeriesId, int Revision, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string ManifestId, string ManifestHash, ImmutableArray<ReportingRenderedArtifact> Artifacts);
 ```
-
-## ReportingArtifactRetentionAuthorityProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionAuthorityProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:191](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L191).
-
-Production service-principal identity used only for immutable artifact retention.
-
-```csharp
-public sealed class ReportingArtifactRetentionAuthorityProvider : IReportingArtifactRetentionAuthorityProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ValueTask&lt;ReportingAuthorityScope&gt; ResolveAsync(GovernedReportingRun governedRun, ReportingGovernanceCallerContext releaseCaller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:193](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L193) |  |
-
-## ReportingArtifactRetentionReceipt
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L50).
-
-```csharp
-public sealed record ReportingArtifactRetentionReceipt(ReportingRetainedArtifactPackage Package, bool CatalogAlreadyExisted, ImmutableArray<string> AuditEventIds);
-```
-
-## ReportingArtifactVaultAccessDeniedException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultAccessDeniedException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L64).
-
-Indicates that access to a reporting artifact in the vault was denied.
-
-```csharp
-public sealed class ReportingArtifactVaultAccessDeniedException : UnauthorizedAccessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingArtifactVaultAccessDeniedException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L66) |  |
-
-## ReportingArtifactVaultService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L76).
-
-Connects generated package bytes to tenant-scoped immutable blob storage and authoritative scope metadata. Every successful read is integrity checked and durably audited before bytes are returned; audit or integrity failures therefore fail closed.
-
-```csharp
-public sealed class ReportingArtifactVaultService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingArtifactVaultService(IReportingArtifactStore artifactStore, IReportingArtifactCatalog catalog, IReportingArtifactAuditStore auditStore, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L83) |  |
-| <code>public async Task&lt;ReportingArtifactRetentionReceipt&gt; RetainPackageAsync(ReportingArtifactPackageRetentionRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:95](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L95) |  |
-| <code>public async Task&lt;ReportingRetainedArtifactPackage&gt; GetPackageForReleaseAsync(string packageId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L215) |  |
-| <code>public async Task&lt;ReportingArtifactDownload&gt; ReadForDownloadAsync(string packageId, string artifactId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:256](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L256) |  |
-
-## ReportingAuthoritativeAsOfCertification
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeAsOfCertification</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L48).
-
-Exact output returned by the server-side renderer/artifact producer. Artifact ids must be the same ids declared by the completed orchestration manifest; the coordinator rejects partial or augmented output sets before retaining any bytes.
-
-```csharp
-public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
-```
-
-## ReportingAuthoritativeSourceCapture
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
-```
-
-## ReportingAuthoritativeSourceCaptureIntent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L24).
-
-Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
-| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |

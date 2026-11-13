@@ -13,14 +13,14 @@ Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarE
 Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L56).
 
 ```csharp
-public sealed record CorporateActionCalendarEventDto(string EventId, Guid SecurityId, string Ticker, string ActionType, Guid ProposalId, string DateKind, DateOnly Date, DateTimeOffset? At, IReadOnlyList<CorporateActionCalendarCaseReferenceDto> Cases, CorporateActionProviderEventIdentityDto Source, string ProposalState, CorporateActionDeadlineHistoryDto? Deadline = null);
+public sealed record CorporateActionCalendarEventDto(string EventId, Guid SecurityId, string Ticker, string ActionType, Guid ProposalId, string DateKind, DateOnly Date, DateTimeOffset? At, IReadOnlyList<CorporateActionCalendarCaseReferenceDto> Cases, CorporateActionProviderEventIdentityDto Source, string ProposalState, CorporateActionDeadlineHistoryDto? Deadline = null, CorporateActionElectionCutoffDto? SourceCutoff = null);
 ```
 
 ## CorporateActionCalendarPageDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L70).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L71).
 
 ```csharp
 public sealed record CorporateActionCalendarPageDto(DateOnly From, DateOnly To, DateTimeOffset GeneratedAtUtc, string Revision, IReadOnlyList<CorporateActionCalendarEventDto> Items, string? NextCursor, int TotalCount, string Coverage);
@@ -120,7 +120,7 @@ public sealed record CorporateActionCaseAccountingStatusDto(Guid? ProjectionId, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseActionAvailabilityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:512](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L512).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:518](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L518).
 
 Server-owned action posture consumed by browser and desktop clients.
 
@@ -154,7 +154,7 @@ public sealed record CorporateActionCaseScopeDto(string TenantId, string Company
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseSourceSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:487](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L487).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:490](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L490).
 
 Immutable provider observation retained with a processing-case read. The case owns workflow state and scope; this snapshot supplies the source/action identity needed to identify and audit the case after its accepted proposal leaves the actionable inbox.
 
@@ -237,7 +237,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:570](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L570).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:576](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L576).
 
 ```csharp
 public sealed record CorporateActionCaseTransitionDto(Guid TransitionId, Guid CaseId, string? FromState, string ToState, long ExpectedVersion, long ResultingVersion, string Actor, string Reason, string IdempotencyKey, DateTimeOffset OccurredAtUtc, string? CorrelationId = null, bool PolicyOverrideApplied = false);
@@ -267,7 +267,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:732](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L732).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:738](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L738).
 
 ```csharp
 public sealed record CorporateActionCaseTransitionResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto Transition, bool Replayed);
@@ -446,7 +446,7 @@ public sealed record CorporateActionCashDividendWorkspaceDto(int SchemaVersion, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictCandidateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:535](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L535).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:541](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L541).
 
 ```csharp
 public sealed record CorporateActionConflictCandidateDto(string Source, JsonElement Value, string? EvidenceReference = null);
@@ -456,7 +456,7 @@ public sealed record CorporateActionConflictCandidateDto(string Source, JsonElem
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:540](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L540).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:546](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L546).
 
 ```csharp
 public sealed record CorporateActionConflictDto(Guid ConflictId, Guid CaseId, string Field, string Description, IReadOnlyList<CorporateActionConflictCandidateDto> Candidates, string State, string? Resolution, long CaseVersion, string RecordedBy, DateTimeOffset RecordedAtUtc, string? ResolvedBy = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolutionEvidenceReference = null, string? ResolutionEvidenceHash = null);
@@ -466,7 +466,7 @@ public sealed record CorporateActionConflictDto(Guid ConflictId, Guid CaseId, st
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictMutationResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:717](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L717).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:723](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L723).
 
 ```csharp
 public sealed record CorporateActionConflictMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionConflictDto Conflict, bool Replayed);
@@ -476,7 +476,7 @@ public sealed record CorporateActionConflictMutationResultDto(CorporateActionPro
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictResolutionResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:722](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L722).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:728](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L728).
 
 ```csharp
 public sealed record CorporateActionConflictResolutionResultDto(CorporateActionProcessingCaseDto Case, CorporateActionConflictDto Conflict, bool Replayed);
@@ -527,7 +527,7 @@ public sealed record CorporateActionDeadlineHistoryDto(Guid EvidenceId, Corporat
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L92).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L93).
 
 ```csharp
 public sealed record CorporateActionDeadlineImportPreviewDto(string PreviewHash, long ExpectedVersion, IReadOnlyList<CorporateActionDeadlineImportRowDto> Rows, IReadOnlyList<string> Errors);
@@ -537,7 +537,7 @@ public sealed record CorporateActionDeadlineImportPreviewDto(string PreviewHash,
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L80).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L81).
 
 ```csharp
 public sealed record CorporateActionDeadlineImportRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Csv, string? PreviewHash = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
@@ -547,7 +547,7 @@ public sealed record CorporateActionDeadlineImportRequestDto(Guid CaseId, long E
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:94](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L94).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L95).
 
 ```csharp
 public sealed record CorporateActionDeadlineImportResultDto(int CommittedCount, bool Complete, IReadOnlyList<CorporateActionEvidenceMutationResultDto> Results, int? FailedRow, string? Error);
@@ -557,7 +557,7 @@ public sealed record CorporateActionDeadlineImportResultDto(int CommittedCount, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L90).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L91).
 
 ```csharp
 public sealed record CorporateActionDeadlineImportRowDto(int Row, CorporateActionElectionDeadlineDto Deadline, string EvidenceReference, string EvidenceHash, string Rationale);
@@ -567,7 +567,7 @@ public sealed record CorporateActionDeadlineImportRowDto(int Row, CorporateActio
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineInstantConverter</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L206).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L207).
 
 ```csharp
 public sealed class CorporateActionDeadlineInstantConverter : JsonConverter<DateTimeOffset?>
@@ -577,14 +577,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public override DateTimeOffset? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L208) |  |
-| <code>public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:217](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L217) |  |
+| <code>public override DateTimeOffset? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L209) |  |
+| <code>public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L218) |  |
 
 ## CorporateActionDeadlinePolicy
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L98).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L99).
 
 One validator is shared by direct capture, CSV preview, import, and persistence.
 
@@ -596,16 +596,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string EvidenceKind = &quot;ElectionDeadline&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L100) |  |
-| <code>public const string CsvHeader = &quot;seriesId,kind,sourceParty,date,at,timeZoneId,financialAccountId,custodyAccountId,evidenceReference,evidenceHash,rationale,supersedesEvidenceId,withdrawn,sourceText&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L101) |  |
-| <code>public static readonly JsonSerializerOptions JsonOptions = new (JsonSerializerDefaults.Web);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:102](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L102) |  |
-| <code>public static string? Validate(CorporateActionElectionDeadlineDto? value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L104) |  |
-| <code>public static string? ValidateEvidence(string? reference, string? hash, string? rationale);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L145) |  |
-| <code>public static string? ValidateCapture(CorporateActionElectionDeadlineDto? value, string? reference, string? hash, string? rationale) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L156) |  |
-| <code>public static string? ValidateApplicability(CorporateActionCaseScopeDto scope, CorporateActionElectionDeadlineDto value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L161) |  |
-| <code>public static string? ValidateAppend(CorporateActionElectionDeadlineDto value, Guid? currentEvidenceId, CorporateActionElectionDeadlineDto? current);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L170) |  |
-| <code>public static CorporateActionElectionDeadlineDto Read(JsonElement? metadata);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L181) |  |
-| <code>public static bool TryParseInstant(string value, out DateTimeOffset at);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:195](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L195) |  |
+| <code>public const string EvidenceKind = &quot;ElectionDeadline&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L101) |  |
+| <code>public const string CsvHeader = &quot;seriesId,kind,sourceParty,date,at,timeZoneId,financialAccountId,custodyAccountId,evidenceReference,evidenceHash,rationale,supersedesEvidenceId,withdrawn,sourceText&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:102](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L102) |  |
+| <code>public static readonly JsonSerializerOptions JsonOptions = new (JsonSerializerDefaults.Web);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L103) |  |
+| <code>public static string? Validate(CorporateActionElectionDeadlineDto? value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L105) |  |
+| <code>public static string? ValidateEvidence(string? reference, string? hash, string? rationale);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L146) |  |
+| <code>public static string? ValidateCapture(CorporateActionElectionDeadlineDto? value, string? reference, string? hash, string? rationale) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L157) |  |
+| <code>public static string? ValidateApplicability(CorporateActionCaseScopeDto scope, CorporateActionElectionDeadlineDto value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:162](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L162) |  |
+| <code>public static string? ValidateAppend(CorporateActionElectionDeadlineDto value, Guid? currentEvidenceId, CorporateActionElectionDeadlineDto? current);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:171](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L171) |  |
+| <code>public static CorporateActionElectionDeadlineDto Read(JsonElement? metadata);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:182](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L182) |  |
+| <code>public static bool TryParseInstant(string value, out DateTimeOffset at);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:196](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L196) |  |
 
 ## CorporateActionDissentEvidencePolicy
 
@@ -639,7 +639,7 @@ public sealed record CorporateActionDissentFieldDto(string Field, IReadOnlyList<
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDownstreamAuthorityRequiredException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:946](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L946).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:952](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L952).
 
 Signals that a case transition requires the governed downstream accounting or posting workflow.
 
@@ -651,8 +651,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionDownstreamAuthorityRequiredException(string targetState) : base(CorporateActionProblemCodes.DownstreamAuthorityRequired, $&quot;Transition to &#x27;{targetState}&#x27; belongs to the governed downstream accounting/posting workflow and cannot be granted by the generic corporate-action case command.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:948](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L948) |  |
-| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:956](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L956) |  |
+| <code>public CorporateActionDownstreamAuthorityRequiredException(string targetState) : base(CorporateActionProblemCodes.DownstreamAuthorityRequired, $&quot;Transition to &#x27;{targetState}&#x27; belongs to the governed downstream accounting/posting workflow and cannot be granted by the generic corporate-action case command.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:954](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L954) |  |
+| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:962](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L962) |  |
 
 ## CorporateActionDto
 
@@ -670,7 +670,7 @@ public sealed record CorporateActionDto(Guid CorpActId, Guid SecurityId, string 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:473](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L473).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:476](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L476).
 
 ```csharp
 public sealed record CorporateActionDurableInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionDurableInboxEntryDto> Staged, IReadOnlyList<string> Errors, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
@@ -685,8 +685,14 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContract
 Durable source-proposal projection shaped for the existing browser inbox. Acceptance identity, version, exact scope, and action availability are server-owned and never inferred by clients.
 
 ```csharp
-public sealed record CorporateActionDurableInboxEntryDto(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid ProposalId, long Version, string ProposalState, CorporateActionCaseScopeDto AcceptanceScope, CorporateActionSourceProposalActionAvailabilityDto ActionAvailability);
+public sealed record CorporateActionDurableInboxEntryDto(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid ProposalId, long Version, string ProposalState, CorporateActionCaseScopeDto AcceptanceScope, CorporateActionSourceProposalActionAvailabilityDto ActionAvailability)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:473](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L473) |  |
 
 ## CorporateActionEconomicFingerprint
 

@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateSecurityRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:5](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L5).
+
+```csharp
+public sealed record CreateSecurityRequest(Guid SecurityId, string AssetClass, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
+```
+
+## DataQualityRuleCategory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
+
+```csharp
+public enum DataQualityRuleCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
+| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
+| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
+| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
+| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
+| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
+| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
+| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |
+
+## DataQualityRuleSeverity
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L20).
+
+```csharp
+public enum DataQualityRuleSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Warning</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L22) |  |
+| <code>Error</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L23) |  |
+| <code>HardBlock</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L24) |  |
+
 ## DataQualityRuleViolationDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleViolationDto</code>. Kind: `record`.
@@ -622,7 +673,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:740](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L740).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:746](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L746).
 
 Manages corporate action source proposals, scoped cases, evidence, and governed workflow commands.
 
@@ -634,21 +685,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:742](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L742) |  |
-| <code>Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:746](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L746) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:748](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L748) |  |
-| <code>Task&lt;CorporateActionDurableInboxDto&gt; GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:754](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L754) |  |
-| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:759](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L759) |  |
-| <code>Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:763](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L763) |  |
-| <code>Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:767](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L767) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:773](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L773) |  |
-| <code>Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:781](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L781) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:788](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L788) |  |
-| <code>Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:796](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L796) |  |
-| <code>Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:800](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L800) |  |
-| <code>Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:804](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L804) |  |
-| <code>Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:808](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L808) |  |
-| <code>Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:812](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L812) |  |
+| <code>Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:748](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L748) |  |
+| <code>Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:752](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L752) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:754](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L754) |  |
+| <code>Task&lt;CorporateActionDurableInboxDto&gt; GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:760](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L760) |  |
+| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:765](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L765) |  |
+| <code>Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:769](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L769) |  |
+| <code>Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:773](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L773) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:779](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L779) |  |
+| <code>Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:787](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L787) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:794](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L794) |  |
+| <code>Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:802](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L802) |  |
+| <code>Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:806](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L806) |  |
+| <code>Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:810](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L810) |  |
+| <code>Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:814](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L814) |  |
+| <code>Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:818](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L818) |  |
 
 ## IDataVendorEntitlementService
 
@@ -786,77 +837,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:530](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L530) |  |
 | <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:531](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L531) |  |
-
-## IOtcCollateralStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcCollateralStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:151](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L151).
-
-Persistence for exposure snapshots, collateral balances and margin calls.
-
-```csharp
-public interface IOtcCollateralStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcExposureSnapshotDto&gt; AppendExposureSnapshotAsync(OtcExposureSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L154) | Appends the snapshot as the next version for its netting set and date, assigning the version and the digest. |
-| <code>Task&lt;OtcExposureSnapshotDto?&gt; GetExposureSnapshotAsync(Guid snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:155](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L155) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcExposureSnapshotDto&gt;&gt; ListExposureSnapshotsAsync(Guid nettingSetId, DateOnly? asOfDate = null, bool latestVersionOnly = true, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L156) |  |
-| <code>Task&lt;OtcCollateralBalanceDto&gt; UpsertCollateralBalanceAsync(UpsertOtcCollateralBalanceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L158) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcCollateralBalanceDto&gt;&gt; ListCollateralBalancesAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:159](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L159) |  |
-| <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ListNettingSetsUnderCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:165](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L165) | The netting sets that reference a collateral agreement, in id order. More than one means the agreement&#x27;s balances would be credited to each, which a computation refuses to do. |
-| <code>Task&lt;OtcMarginCallDto&gt; IssueMarginCallAsync(IssueOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L175) | Issues the call for one movement of a snapshot. Besides OtcMarginCallRules.Issue, the store refuses a snapshot that is not the netting set&#x27;s latest valuation (a later version for its date, or a snapshot for a later date no later than the current one) and one whose terms, recorded inputs or market data no longer match what it holds (OtcMarginCallRules.RequireUnchangedInputs), and keeps the terms, contracts and balances from changing until the call is recorded. |
-| <code>Task&lt;OtcMarginCallDto&gt; TransitionMarginCallAsync(TransitionOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L176) |  |
-| <code>Task&lt;OtcMarginCallDto?&gt; GetMarginCallAsync(Guid callId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L177) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcMarginCallDto&gt;&gt; ListMarginCallsAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L178) |  |
-
-## IOtcContractStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcContractStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L201).
-
-Persistence for master agreements, collateral agreements, netting sets and bilateral contracts.
-
-```csharp
-public interface IOtcContractStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcMasterAgreementDto&gt; UpsertMasterAgreementAsync(UpsertOtcMasterAgreementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:203](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L203) |  |
-| <code>Task&lt;OtcMasterAgreementDto?&gt; GetMasterAgreementAsync(Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L204) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcMasterAgreementDto&gt;&gt; ListMasterAgreementsAsync(string? counterparty = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L205) |  |
-| <code>Task&lt;OtcCollateralAgreementDto&gt; UpsertCollateralAgreementAsync(UpsertOtcCollateralAgreementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L207) |  |
-| <code>Task&lt;OtcCollateralAgreementDto?&gt; GetCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L208) |  |
-| <code>Task&lt;OtcNettingSetDto&gt; UpsertNettingSetAsync(UpsertOtcNettingSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L210) |  |
-| <code>Task&lt;OtcNettingSetViewDto?&gt; GetNettingSetAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:211](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L211) |  |
-| <code>Task&lt;OtcContractDto&gt; UpsertContractAsync(UpsertOtcContractRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:213](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L213) |  |
-| <code>Task&lt;OtcContractDto?&gt; GetContractAsync(Guid contractId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:214](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L214) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcContractDto&gt;&gt; ListContractsForSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:215](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L215) |  |
-| <code>Task&lt;OtcContractLifecycleEventDto&gt; AppendLifecycleEventAsync(AppendOtcContractLifecycleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L218) | Atomically records a typed lifecycle event and its next contract version. Compatibility stores fail closed. |
-| <code>Task&lt;IReadOnlyList&lt;OtcContractLifecycleEventDto&gt;&gt; GetLifecycleEventsAsync(Guid contractId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L222) | Reads immutable lifecycle history in contract-version order; unsupported stores do not substitute an empty history. |
-
-## IOtcContractValuationSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcContractValuationSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L14).
-
-Values one bilateral contract as of a date in a stated currency, with provenance, or says why it cannot. The mark is signed from the fund&#x27;s side with the contract&#x27;s direction applied: positive means the counterparty owes the fund. An unvalued result carries no mark and at least one blocker, never zero.
-
-```csharp
-public interface IOtcContractValuationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcContractValuationDto&gt; ValueAsync(OtcContractValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L16) |  |

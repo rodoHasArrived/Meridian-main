@@ -25,6 +25,48 @@ Declared public members:
 | <code>public static IReadOnlyList&lt;CorporateActionEffectiveState&gt; Project(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L13) |  |
 | <code>public static IReadOnlyList&lt;CorporateActionDto&gt; ProjectEffectiveActions(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L62) | Effective, non-cancelled actions only — the list economic consumers act on. |
 
+## CorporateActionElectionCalendar
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L27).
+
+Reads only the versioned electionCalendar companion retained in the provider action payload. No offer expiry, ex-date, record date, or operational due date is promoted to an election cutoff. A malformed declared calendar is unavailable as a whole, preventing a partial set of deadlines from appearing complete. Empty declared calendars explicitly mean no supplied cutoffs.
+
+```csharp
+public static partial class CorporateActionElectionCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionElectionCalendarDto Read(JsonElement? payload);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L29) |  |
+
+## CorporateActionElectionCalendarDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L16).
+
+Read-only source facts, independent of case SLA, ex-date and accounting authority.
+
+```csharp
+public sealed record CorporateActionElectionCalendarDto(string EvidenceState, IReadOnlyList<CorporateActionElectionCutoffDto> Cutoffs, IReadOnlyList<string> Messages);
+```
+
+## CorporateActionElectionCutoffDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L8).
+
+An explicitly retained election cutoff. DeadlineAt preserves the source offset.
+
+```csharp
+public sealed record CorporateActionElectionCutoffDto(string Id, string Label, DateTimeOffset DeadlineAt, string Source, string EvidenceReference);
+```
+
 ## CorporateActionElectionDeadlineDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto</code>. Kind: `record`.
@@ -131,7 +173,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEvidenceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:523](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L523).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:529](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L529).
 
 ```csharp
 public sealed record CorporateActionEvidenceDto(Guid EvidenceId, Guid CaseId, string EvidenceKind, string EvidenceReference, string? EvidenceHash, string? Description, JsonElement? Metadata, long CaseVersion, string RecordedBy, DateTimeOffset RecordedAtUtc);
@@ -168,7 +210,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEvidenceMutationResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:712](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L712).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:718](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L718).
 
 ```csharp
 public sealed record CorporateActionEvidenceMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionEvidenceDto Evidence, bool Replayed);
@@ -206,7 +248,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionIdempotencyConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:870](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L870).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:876](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L876).
 
 Signals reuse of a corporate action idempotency key with different command data.
 
@@ -218,9 +260,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionIdempotencyConflictException(Guid resourceId, string idempotencyKey) : base(CorporateActionProblemCodes.IdempotencyConflict, $&quot;Idempotency key &#x27;{idempotencyKey}&#x27; was already used for different corporate-action command data on &#x27;{resourceId:D}&#x27;.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:872](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L872) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:881](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L881) |  |
-| <code>public string IdempotencyKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:882](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L882) |  |
+| <code>public CorporateActionIdempotencyConflictException(Guid resourceId, string idempotencyKey) : base(CorporateActionProblemCodes.IdempotencyConflict, $&quot;Idempotency key &#x27;{idempotencyKey}&#x27; was already used for different corporate-action command data on &#x27;{resourceId:D}&#x27;.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:878](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L878) |  |
+| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:887](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L887) |  |
+| <code>public string IdempotencyKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:888](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L888) |  |
 
 ## CorporateActionLedgerPostingKind
 
@@ -275,7 +317,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionNotFoundException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:834](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L834).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:840](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L840).
 
 Signals that a requested corporate action resource could not be found.
 
@@ -287,15 +329,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionNotFoundException(string resourceType, Guid resourceId) : base(CorporateActionProblemCodes.NotFound, $&quot;{resourceType} &#x27;{resourceId:D}&#x27; was not found.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:836](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L836) |  |
-| <code>public string ResourceType { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:843](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L843) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:844](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L844) |  |
+| <code>public CorporateActionNotFoundException(string resourceType, Guid resourceId) : base(CorporateActionProblemCodes.NotFound, $&quot;{resourceType} &#x27;{resourceId:D}&#x27; was not found.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:842](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L842) |  |
+| <code>public string ResourceType { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:849](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L849) |  |
+| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:850](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L850) |  |
 
 ## CorporateActionOperationException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionOperationException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:820](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L820).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:826](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L826).
 
 Represents a corporate action operation failure with a stable machine-readable problem code.
 
@@ -307,8 +349,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionOperationException(string code, string message) : base(message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:822](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L822) |  |
-| <code>public string Code { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:828](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L828) |  |
+| <code>public CorporateActionOperationException(string code, string message) : base(message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:828](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L828) |  |
+| <code>public string Code { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:834](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L834) |  |
 
 ## CorporateActionPayloadFieldDescriptor
 
@@ -429,7 +471,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPermissionDeniedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:973](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L973).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:979](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L979).
 
 Signals that the caller lacks the authority required for a corporate action transition.
 
@@ -441,15 +483,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionPermissionDeniedException(string targetState, string requiredAuthority) : base(CorporateActionProblemCodes.PermissionDenied, $&quot;Transition to &#x27;{targetState}&#x27; requires &#x27;{requiredAuthority}&#x27; authority.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:975](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L975) |  |
-| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:984](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L984) |  |
-| <code>public string RequiredAuthority { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:985](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L985) |  |
+| <code>public CorporateActionPermissionDeniedException(string targetState, string requiredAuthority) : base(CorporateActionProblemCodes.PermissionDenied, $&quot;Transition to &#x27;{targetState}&#x27; requires &#x27;{requiredAuthority}&#x27; authority.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:981](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L981) |  |
+| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:990](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L990) |  |
+| <code>public string RequiredAuthority { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:991](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L991) |  |
 
 ## CorporateActionPersistenceUnavailableException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPersistenceUnavailableException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:962](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L962).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:968](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L968).
 
 Signals that the persistence authority required by a corporate action operation is unavailable.
 
@@ -461,7 +503,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionPersistenceUnavailableException(string message) : base(CorporateActionProblemCodes.PersistenceUnavailable, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:964](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L964) |  |
+| <code>public CorporateActionPersistenceUnavailableException(string message) : base(CorporateActionProblemCodes.PersistenceUnavailable, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:970](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L970) |  |
 
 ## CorporateActionProblemCodes
 
@@ -507,17 +549,23 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:492](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L492).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:495](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L495).
 
 ```csharp
-public sealed record CorporateActionProcessingCaseDto(Guid CaseId, Guid ProposalId, Guid CorporateActionId, Guid SecurityId, CorporateActionCaseScopeDto Scope, string State, long Version, string? MethodologyProfileId, string? AssignedTo, string? BlockedReason, string CreatedBy, DateTimeOffset CreatedAtUtc, string UpdatedBy, DateTimeOffset UpdatedAtUtc, CorporateActionCaseActionAvailabilityDto? ActionAvailability = null, CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null, CorporateActionCaseAccountingStatusDto? AccountingStatus = null);
+public sealed record CorporateActionProcessingCaseDto(Guid CaseId, Guid ProposalId, Guid CorporateActionId, Guid SecurityId, CorporateActionCaseScopeDto Scope, string State, long Version, string? MethodologyProfileId, string? AssignedTo, string? BlockedReason, string CreatedBy, DateTimeOffset CreatedAtUtc, string UpdatedBy, DateTimeOffset UpdatedAtUtc, CorporateActionCaseActionAvailabilityDto? ActionAvailability = null, CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null, CorporateActionCaseAccountingStatusDto? AccountingStatus = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:514](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L514) |  |
 
 ## CorporateActionProcessingOptionDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingOptionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:556](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L556).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:562](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L562).
 
 ```csharp
 public sealed record CorporateActionProcessingOptionDto(Guid OptionId, Guid CaseId, string OptionCode, string Label, string Description, string State, string? SourceMethodology, IReadOnlyList<string> Blockers, JsonElement? Parameters, long CaseVersion, string RecordedBy, DateTimeOffset RecordedAtUtc);
@@ -527,7 +575,7 @@ public sealed record CorporateActionProcessingOptionDto(Guid OptionId, Guid Case
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingOptionMutationResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:727](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L727).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:733](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L733).
 
 ```csharp
 public sealed record CorporateActionProcessingOptionMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionProcessingOptionDto Option, bool Replayed);
@@ -608,7 +656,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionScopeMismatchException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:935](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L935).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:941](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L941).
 
 Signals that corporate action data does not match the requested operating scope.
 
@@ -620,13 +668,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionScopeMismatchException(string message) : base(CorporateActionProblemCodes.ScopeMismatch, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:937](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L937) |  |
+| <code>public CorporateActionScopeMismatchException(string message) : base(CorporateActionProblemCodes.ScopeMismatch, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:943](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L943) |  |
 
 ## CorporateActionSourceConflictException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:924](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L924).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:930](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L930).
 
 Signals an unresolved conflict between corporate action source data.
 
@@ -638,7 +686,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionSourceConflictException(string message) : base(CorporateActionProblemCodes.SourceConflict, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:926](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L926) |  |
+| <code>public CorporateActionSourceConflictException(string message) : base(CorporateActionProblemCodes.SourceConflict, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:932](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L932) |  |
 
 ## CorporateActionSourceDisplayMetadataDto
 
@@ -656,7 +704,7 @@ public sealed record CorporateActionSourceDisplayMetadataDto(string Ticker, stri
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalAcceptanceResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:702](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L702).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:708](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L708).
 
 ```csharp
 public sealed record CorporateActionSourceProposalAcceptanceResultDto(CorporateActionSourceProposalDto Proposal, CorporateActionDto CorporateAction, CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto InitialTransition, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement, bool Replayed, CorporateActionConflictDto? SourceConflict = null);
@@ -678,7 +726,7 @@ public sealed record CorporateActionSourceProposalActionAvailabilityDto(bool Can
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalDecisionResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:698](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L698).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:704](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L704).
 
 ```csharp
 public sealed record CorporateActionSourceProposalDecisionResultDto(CorporateActionSourceProposalDto Proposal, bool Replayed);
@@ -740,7 +788,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionStateConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:888](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L888).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:894](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L894).
 
 Signals that a corporate action command conflicts with the resource&#x27;s current state.
 
@@ -752,8 +800,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionStateConflictException(Guid resourceId, string message) : base(CorporateActionProblemCodes.StateConflict, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:890](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L890) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:896](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L896) |  |
+| <code>public CorporateActionStateConflictException(Guid resourceId, string message) : base(CorporateActionProblemCodes.StateConflict, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:896](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L896) |  |
+| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:902](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L902) |  |
 
 ## CorporateActionTerms
 
@@ -778,7 +826,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTermsIncompleteException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:913](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L913).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:919](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L919).
 
 Signals that required corporate action terms are incomplete.
 
@@ -790,7 +838,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionTermsIncompleteException(string message) : base(CorporateActionProblemCodes.TermsIncomplete, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:915](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L915) |  |
+| <code>public CorporateActionTermsIncompleteException(string message) : base(CorporateActionProblemCodes.TermsIncomplete, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:921](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L921) |  |
 
 ## CorporateActionTypeDescriptor
 
@@ -836,7 +884,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionValidationException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:902](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L902).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:908](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L908).
 
 Signals that a corporate action command failed input validation.
 
@@ -848,13 +896,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionValidationException(string message) : base(CorporateActionProblemCodes.ValidationFailed, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:904](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L904) |  |
+| <code>public CorporateActionValidationException(string message) : base(CorporateActionProblemCodes.ValidationFailed, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:910](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L910) |  |
 
 ## CorporateActionVersionConflictException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:850](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L850).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:856](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L856).
 
 Signals that a corporate action resource changed since the caller&#x27;s expected version.
 
@@ -866,10 +914,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CorporateActionVersionConflictException(Guid resourceId, long expectedVersion, long currentVersion) : base(CorporateActionProblemCodes.VersionConflict, $&quot;Corporate-action resource &#x27;{resourceId:D}&#x27; has version {currentVersion}; expected {expectedVersion}.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:852](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L852) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:862](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L862) |  |
-| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:863](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L863) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:864](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L864) |  |
+| <code>public CorporateActionVersionConflictException(Guid resourceId, long expectedVersion, long currentVersion) : base(CorporateActionProblemCodes.VersionConflict, $&quot;Corporate-action resource &#x27;{resourceId:D}&#x27; has version {currentVersion}; expected {expectedVersion}.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:858](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L858) |  |
+| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:868](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L868) |  |
+| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:869](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L869) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:870](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L870) |  |
 
 ## CreateSecurityClosePriceSetRequest
 
@@ -882,54 +930,3 @@ The date uses UTC; account and book identities are exact, case-sensitive scopes.
 ```csharp
 public sealed record CreateSecurityClosePriceSetRequest(string AccountId, string BookId, DateOnly ValuationDate, DateTimeOffset EvaluatedAsOf, IReadOnlyList<SecurityClosePriceInputDto> Securities, decimal MaxSourceDispersionPercent, string CreatedBy, Guid? CorrectsSnapshotId = null, string? CorrectionRationale = null, DateTimeOffset? KnowledgeAsOf = null, Guid? RequestId = null);
 ```
-
-## CreateSecurityRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:5](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L5).
-
-```csharp
-public sealed record CreateSecurityRequest(Guid SecurityId, string AssetClass, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## DataQualityRuleCategory
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
-
-```csharp
-public enum DataQualityRuleCategory
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
-| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
-| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
-| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
-| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
-| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
-| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
-| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |
-
-## DataQualityRuleSeverity
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L20).
-
-```csharp
-public enum DataQualityRuleSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Warning</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L22) |  |
-| <code>Error</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L23) |  |
-| <code>HardBlock</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L24) |  |

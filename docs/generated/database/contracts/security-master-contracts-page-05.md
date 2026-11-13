@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 5 of 8
 
-Objects 321-400 of 568. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode["ScheduleFailureCode"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult["ScheduleGenerationResult"] {
+        +IReadOnlyList~ScheduleCalendarUsage~ CalendarsUsed
+        +IReadOnlyList~ScheduleDiagnostic~ Diagnostics
+        +ScheduleFailure? Failure
+        +IReadOnlyList~SchedulePeriod~ Periods
+        +ScheduleSpec Spec
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerator["ScheduleGenerator"] {
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod["SchedulePeriod"] {
         +DateOnly AccrualEnd
         +DateOnly AccrualStart
@@ -452,24 +463,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityCouponRateUnit["SecurityCouponRateUnit"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto["SecurityCurveDefinitionDto"] {
-        +DateTimeOffset CreatedAt
-        +string CreatedBy
-        +string Currency
-        +Guid CurveId
-        +string CurveKey
-        +string DayCount
-        +string? Description
-        +string? IndexName
-        +SecurityCurveInterpolation Interpolation
-        +SecurityCurveKind Kind
-        +string Source
-        +string? Tenor
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation["SecurityCurveInterpolation"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCurveKind["SecurityCurveKind"] {
-    }
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
     Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
@@ -521,6 +516,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto
-    Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
-    Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
 ```

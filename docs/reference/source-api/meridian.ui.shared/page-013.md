@@ -6,6 +6,120 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingTransportInfrastructureReadiness
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingTransportInfrastructureReadiness</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:117](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L117).
+
+Credential-free transport infrastructure truth consumed by deployment readiness. It grants no delivery authority and exposes no recipient destinations or transport credentials.
+
+```csharp
+public interface IReportingTransportInfrastructureReadiness
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;SecureReportingTransportCapability&gt; GetTransportInfrastructureCapabilities();</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:119](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L119) |  |
+
+## IReportPackDeliveryRecordStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportPackDeliveryRecordStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L28).
+
+Compatibility-only snapshot seam. Production composition does not register this store; canonical delivery authority is IReportingDeliveryStore.
+
+```csharp
+public interface IReportPackDeliveryRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L30) |  |
+| <code>void Save(IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; attempts);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:32](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L32) |  |
+
+## IReportPackSecurityLineIndex
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportPackSecurityLineIndex</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L25).
+
+Durable-by-derivation index from a security id to the report packs whose retained report-line provenance references it. It replaces the per-fund linear scan in ReportPackRestatementCandidateResolver with an O(matches) lookup, and exposes a cross-fund Lookup seam (consumed internally for now; a public cross-fund surface is a later slice). The index is a derived cache: it is always rebuildable from the report-pack workflow records (the source of truth), so it carries no independent persistence.
+
+```csharp
+public interface IReportPackSecurityLineIndex
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void RemoveReport(Guid reportId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:31](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L31) | Removes all index entries contributed by reportId. |
+| <code>void Rebuild(IEnumerable&lt;ReportPackWorkflowRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L34) | Clears and rebuilds the index from records (startup backfill / self-heal). |
+| <code>IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; LookupByFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L37) | Entries for a security scoped to a single fund profile. |
+| <code>IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; Lookup(Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:40](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L40) | All entries for a security across every fund (cross-fund seam). |
+
+## IReportPackWorkflowRecordStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportPackWorkflowRecordStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L11).
+
+Compatibility-only snapshot seam. Production composition does not register this store; canonical report-pack workflow authority is reporting governance.
+
+```csharp
+public interface IReportPackWorkflowRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L13) |  |
+| <code>void Save(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L15) |  |
+
+## IReportTemplateGovernanceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportTemplateGovernanceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L98).
+
+Loads and saves reporting template governance records.
+
+```csharp
+public interface IReportTemplateGovernanceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
+| <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
+
+## IStatementCaseworkCommitFaultInjector
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
+
+Provides fault-injection callbacks at retained statement casework commit boundaries.
+
+```csharp
+public interface IStatementCaseworkCommitFaultInjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |
+
 ## IStatementReconciliationCaseworkHandoffService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationCaseworkHandoffService</code>. Kind: `interface`.
@@ -930,117 +1044,3 @@ Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:29](../../
 ```csharp
 public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDualApproval, bool RequiresPrivilegedRole, bool RequiresMfa);
 ```
-
-## PortfolioCashLadderReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioCashLadderReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L14).
-
-Read model for the portfolio-wide cash ladder: resolves the securities the portfolio actually holds (and their quantities) from an optional holdings source, runs each held instrument through the asset-operations projection surface, joins opening cash and capital-schedule rows from optional providers, and hands the assembled inputs to PortfolioCashLadderEngine.
-
-```csharp
-public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioCashLadderReadService(ISecurityMasterQueryService? securityMasterQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IPortfolioHoldingsSource? holdingsSource = null, IPortfolioCashBalanceProvider? cashBalanceProvider = null, IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L28) |  |
-| <code>public async Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L46) |  |
-
-## PortfolioLedgerCashBalanceProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioLedgerCashBalanceProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:29](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L29).
-
-Supplies the portfolio cash ladder&#x27;s opening cash by reading the actuals view of the double-entry ledger. Cash is taken from the asset-side cash accounts (LedgerAccounts.Cash and the per-currency LedgerAccounts.CashInCurrency accounts) consolidated across the project&#x27;s ledger books.
-
-```csharp
-public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioLedgerCashBalanceProvider(ProjectLedgerBook? ledgerBook = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L46) | The ProjectLedgerBook is optional so that registering this provider can never fail read-model resolution in a host that has not composed the ledger feature: when it is absent the ladder simply opens from zero cash, exactly as it does today, and the engine emits its &quot;no cash balances were provided&quot; warning. |
-| <code>public Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L51) |  |
-
-## PortfolioLedgerWorkflowStatusService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioLedgerWorkflowStatusService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs:8](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs#L8).
-
-Builds portfolio and ledger workflow status from readiness gates and operator work items.
-
-```csharp
-public static class PortfolioLedgerWorkflowStatusService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PortfolioLedgerWorkflowStatusSnapshotDto Compute(IReadOnlyList&lt;TradingAcceptanceGateDto&gt; acceptanceGates, IReadOnlyList&lt;OperatorWorkItemDto&gt; workItems);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs:10](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerWorkflowStatusService.cs#L10) |  |
-
-## PositionSnapshotAutomatedJournalDividendPositionResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PositionSnapshotAutomatedJournalDividendPositionResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:36](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L36).
-
-Loads exact-owner durable position history for a recurring dividend cycle. Each snapshot is expanded with zero-quantity tombstones for symbols absent from later snapshots, allowing the corporate-action producer to reconstruct the quantity actually held on each ex-date.
-
-```csharp
-public sealed class PositionSnapshotAutomatedJournalDividendPositionResolver : IAutomatedJournalDividendPositionResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PositionSnapshotAutomatedJournalDividendPositionResolver(IPositionSnapshotStore? snapshotStore);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:41](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L41) |  |
-| <code>public async Task&lt;AutomatedJournalDividendPositionResolution&gt; ResolveAsync(AutomatedJournalScheduleWorkItem workItem, DateTimeOffset evaluatedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:46](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L46) |  |
-
-## PostedLedgerAmountProvenanceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAmountProvenanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:13](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L13).
-
-Resolves immutable posted-line identities without account-name, symbol, or case searches.
-
-```csharp
-public sealed class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
-
-## PostedPeriodComparisonService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedPeriodComparisonService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L11).
-
-Source-backed comparisons of posted accounting periods under retained fund ownership.
-
-```csharp
-public sealed class PostedPeriodComparisonService(ILedgerJournalStore journals, ILedgerBookService books, IFundProfileTenancyRegistry tenancy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
-| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:139](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L139) |  |
-| <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L169) |  |

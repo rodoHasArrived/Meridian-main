@@ -20,6 +20,7 @@ export * from "./types/cash-dividend-attestation";
 export * from "./types/consolidation";
 export * from "./types/entity-operations";
 export * from "./types/cross-screen-counts";
+export * from "./types/corporate-action-inbox";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
 export * from "./types/provider-integration-identity";

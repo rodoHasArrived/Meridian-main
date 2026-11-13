@@ -1,4 +1,4 @@
-import type { FamilyOwnershipGraph, FamilyAssetSummary } from "@/types/family-office.types";
+import type { FamilyOwnershipGraph, FamilyAssetSummary, PrivateAssetSummary, CapitalCommitment, CapitalActivity } from "@/types/family-office.types";
 import { formatCompactCurrency as formatCurrency, formatNumber, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
@@ -82,6 +82,9 @@ export interface FamilyOfficeEntityStructure {
   ownershipGraph?: FamilyOwnershipGraph;
   publicAssets?: FamilyAssetSummary[];
   warnings?: string[];
+  ownershipSource?: { graph: FamilyOwnershipGraph; publicAssets: FamilyAssetSummary[]; privateAssets: PrivateAssetSummary[] };
+  capitalLifecycle?: { commitments: CapitalCommitment[]; activities: CapitalActivity[]; asOfDate: string };
+  sourceWarnings?: string[];
 }
 
 export interface FamilyOfficeOwnershipNode {

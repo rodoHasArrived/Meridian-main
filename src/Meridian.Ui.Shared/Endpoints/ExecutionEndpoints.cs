@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -274,11 +275,11 @@ public static partial class ExecutionEndpoints
 
             if (result.Success)
             {
-                logger.LogInformation("Trading action {ActionId}: cancel order {OrderId} — succeeded", actionId, orderId);
+                logger.LogInformation("Trading action {ActionId}: cancel order {OrderId} — succeeded", actionId, LogSanitizer.Sanitize(orderId));
             }
             else
             {
-                logger.LogWarning("Trading action {ActionId}: cancel order {OrderId} — rejected: {Reason}", actionId, orderId, result.ErrorMessage);
+                logger.LogWarning("Trading action {ActionId}: cancel order {OrderId} — rejected: {Reason}", actionId, LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(result.ErrorMessage));
             }
 
             var actionResult = new TradingActionResult(
@@ -379,73 +380,7 @@ public static partial class ExecutionEndpoints
         .Produces<OrderGatewayCapabilities>(200)
         .Produces(503);
 
-        group.MapGet("/audit", async (int? take, HttpContext context) =>
-        {
-            var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
-            if (auditTrail is null)
-            {
-                return Results.Json(Array.Empty<ExecutionAuditEntry>(), jsonOptions);
-            }
-
-            var entries = await auditTrail
-                .GetRecentAsync(take ?? 100, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(entries, jsonOptions);
-        })
-        .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
-        .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
-
-        group.MapGet("/audit/search", async (
-            string? searchText,
-            string? runId,
-            string? category,
-            string? action,
-            string? outcome,
-            string? actor,
-            string? symbol,
-            string? correlationId,
-            string? objectKind,
-            string? objectId,
-            string? relatedObjectId,
-            DateTimeOffset? fromUtc,
-            DateTimeOffset? toUtc,
-            int? limit,
-            HttpContext context) =>
-        {
-            if (!await AuditTrailHttpAuthority.CanReadExecutionFeedAsync(context).ConfigureAwait(false))
-                return EndpointHelpers.Forbidden();
-            var explorer = context.RequestServices.GetService<AuditTrailExplorerService>();
-            if (explorer is null)
-            {
-                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
-                explorer = auditTrail is null
-                    ? new AuditTrailExplorerService()
-                    : new AuditTrailExplorerService(auditTrail);
-            }
-
-            var result = await explorer.SearchAuthorizedAsync(
-                new AuditTrailExplorerQueryDto(
-                    SearchText: searchText,
-                    RunId: runId,
-                    Category: category,
-                    Action: action,
-                    Outcome: outcome,
-                    Actor: actor,
-                    Symbol: symbol,
-                    CorrelationId: correlationId,
-                    ObjectKind: objectKind,
-                    ObjectId: objectId,
-                    RelatedObjectId: relatedObjectId,
-                    FromUtc: fromUtc,
-                    ToUtc: toUtc,
-                    Limit: limit ?? 100),
-                (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token),
-                context.RequestAborted).ConfigureAwait(false);
-
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("SearchExecutionAuditTrail").RequirePermission(UserPermission.ViewTrades)
-        .Produces<AuditTrailExplorerResultDto>(200);
+        MapExecutionAuditEndpoints(group, jsonOptions);
 
         group.MapGet("/controls", (HttpContext context) =>
         {
@@ -1361,6 +1296,11 @@ public static partial class ExecutionEndpoints
         JsonSerializerOptions jsonOptions,
         HttpContext context)
     {
+        if (!TryResolveActor(context, out var actor))
+        {
+            return Results.Unauthorized();
+        }
+
         if (quantity <= 0m)
         {
             var invalid = new TradingActionResult(
@@ -1410,10 +1350,6 @@ public static partial class ExecutionEndpoints
 
         var logger = GetLogger(context.RequestServices);
         var actionId = GenerateActionId();
-        if (!TryResolveActor(context, out var actor))
-        {
-            return Results.Unauthorized();
-        }
 
         var gateDecision = BrokerageOrderPlacementGate.Evaluate(
             context.RequestServices.GetService<BrokerageConfiguration>(),

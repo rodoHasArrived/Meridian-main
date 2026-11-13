@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 1 of 8
 
-Objects 1-80 of 568. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -378,7 +378,7 @@ classDiagram
         +string ProposalState
         +Guid SecurityId
         +CorporateActionProviderEventIdentityDto Source
-        +string Ticker
+        +CorporateActionElectionCutoffDto? SourceCutoff
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionCalendarPageDto["CorporateActionCalendarPageDto"] {
         +string Coverage

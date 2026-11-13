@@ -2,11 +2,17 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 568. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityQuoteConvention["SecurityQuoteConvention"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityQuoteStatus["SecurityQuoteStatus"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRateConstructionMethod["SecurityRateConstructionMethod"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration["SecurityRateFieldDeclaration"] {
         +bool AllowsNegative
         +string AssetClass
@@ -447,41 +453,11 @@ classDiagram
         +decimal? MinimumTradeIncrement
         +decimal? PriceIncrement
     }
-    class Meridian_Contracts_SecurityMaster_TransitionCorporateActionCaseRequestDto["TransitionCorporateActionCaseRequestDto"] {
-        +string Actor
-        +string? AssignedTo
-        +CorporateActionCaseTransitionAuthorityDto? Authority
-        +string? BlockedReason
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +bool PolicyOverride
-        +string Reason
-        +CorporateActionCaseScopeDto? ScopeAssertion
-    }
-    class Meridian_Contracts_SecurityMaster_TransitionOtcMarginCallRequest["TransitionOtcMarginCallRequest"] {
-        +OtcMarginCallAction Action
-        +decimal? Amount
-        +Guid CallId
-        +string? Notes
-        +string? Reason
-        +DateOnly? SettledOn
-        +string? UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest["UpsertCashFlowSourceRequest"] {
-        +string Actor
-        +string? ClientConfirmedBy
-        +bool Force
-        +bool IsClientOverride
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-    }
     Meridian_Contracts_SecurityMaster_SecurityRateFieldUnits --> Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration
     Meridian_Contracts_SecurityMaster_SecurityRateIngestionPointDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityRateObservationDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationKind
     Meridian_Contracts_SecurityMaster_SecurityRateObservationDto --> Meridian_Contracts_SecurityMaster_SecurityRateUnit
+    Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateConstructionMethod
     Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
@@ -526,5 +502,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
-    Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
 ```

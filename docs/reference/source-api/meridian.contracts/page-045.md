@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetProfileAccountingImpactHintDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileAccountingImpactHintDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L29).
+
+```csharp
+public enum SecurityAssetProfileAccountingImpactHintDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Valuation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L31) |  |
+| <code>LedgerClassification</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L32) |  |
+| <code>CommitmentAccounting</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L33) |  |
+| <code>NavBasedValuation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L34) |  |
+| <code>FactorSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L35) |  |
+| <code>OwnershipPercentage</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L36) |  |
+| <code>IncomeAccrual</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L37) |  |
+
+## SecurityAssetProfileApprovalMetadataDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileApprovalMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L111).
+
+```csharp
+public sealed record SecurityAssetProfileApprovalMetadataDto(string ApprovedBy, DateTimeOffset ApprovedAtUtc, string ApprovalReference);
+```
+
+## SecurityAssetProfileApprovalRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileApprovalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L130).
+
+```csharp
+public sealed record SecurityAssetProfileApprovalRequestDto(string ProfileId, int Version, DateOnly EffectiveFrom, string ApprovalReference, string? RequestedBy, string Rationale, string? CorrelationId = null);
+```
+
 ## SecurityAssetProfileDateOrderRuleDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileDateOrderRuleDto</code>. Kind: `record`.
@@ -737,58 +779,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L85) |  |
-
-## SecurityCouponKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCouponKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6).
-
-The contractual coupon structure; absence never asserts a zero coupon.
-
-```csharp
-public enum SecurityCouponKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>Fixed</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>Floating</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>ZeroCoupon</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>Step</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>InflationLinked</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-
-## SecurityCouponRateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCouponRateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9).
-
-The declared unit of an annual rate, independently of its magnitude.
-
-```csharp
-public enum SecurityCouponRateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-
-## SecurityCurveDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49).
-
-The write-once identity of a stored curve.
-
-```csharp
-public sealed record SecurityCurveDefinitionDto(Guid CurveId, string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string CreatedBy, DateTimeOffset CreatedAt);
-```

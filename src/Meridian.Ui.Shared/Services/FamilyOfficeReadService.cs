@@ -21,20 +21,24 @@ public sealed class FamilyOfficeReadService
     private readonly IFundAccountService? _fundAccountService;
     private readonly StrategyRunReadService? _strategyRunReadService;
     private readonly TimeProvider _timeProvider;
+    private readonly IPrivateCapitalLifecycleSource? _privateCapitalSource;
 
     public FamilyOfficeReadService(
         IFundStructureService? fundStructureService,
         IFundAccountService? fundAccountService,
         StrategyRunReadService? strategyRunReadService = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IPrivateCapitalLifecycleSource? privateCapitalSource = null)
     {
         _fundStructureService = fundStructureService;
         _fundAccountService = fundAccountService;
         _strategyRunReadService = strategyRunReadService;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _privateCapitalSource = privateCapitalSource;
     }
 
-    public async Task<FamilyOfficeOverviewDto> GetOverviewAsync(CancellationToken ct = default, Guid? familyOfficeId = null)
+    public async Task<FamilyOfficeOverviewDto> GetOverviewAsync(CancellationToken ct = default, Guid? familyOfficeId = null,
+        DateOnly? ownershipAsOf = null)
     {
         var generatedAt = _timeProvider.GetUtcNow();
         if (_fundStructureService is null)
@@ -42,6 +46,11 @@ public sealed class FamilyOfficeReadService
             return BuildEmptyOverview(generatedAt, ["Family-office structure service is not registered."]);
         }
 
+        var today = DateOnly.FromDateTime(generatedAt.UtcDateTime);
+        if (ownershipAsOf > today)
+            throw new ArgumentOutOfRangeException(nameof(ownershipAsOf), "Ownership structure date cannot be in the future.");
+        var structureAt = ownershipAsOf is { } requested && requested < today
+            ? new DateTimeOffset(requested.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc)) : generatedAt;
         var graph = await _fundStructureService
             .GetOrganizationStructureAsync(new OrganizationStructureQuery(ActiveOnly: true, AsOf: generatedAt), ct)
             .ConfigureAwait(false);
@@ -66,11 +75,29 @@ public sealed class FamilyOfficeReadService
             { AvailableClients = choices };
 
         var warnings = new List<string>();
+        if (ownershipAsOf is not null)
+            warnings.Add("Ownership structure uses the selected effective date; financial balances retain their independently supplied as-of and valuation dates.");
 
         var asOfDate = DateOnly.FromDateTime(generatedAt.UtcDateTime);
         var relevant = SelectRelevantGraph(graph, familyClient, warnings);
         var entities = BuildEntities(relevant, warnings);
         var ownershipGraph = BuildOwnershipGraph(relevant, asOfDate);
+        if (ownershipAsOf is not null)
+        {
+            var historicalGraph = await _fundStructureService.GetOrganizationStructureAsync(
+                new OrganizationStructureQuery(ActiveOnly: false, AsOf: structureAt), ct).ConfigureAwait(false);
+            var historicalClient = historicalGraph.Clients.FirstOrDefault(client => client.ClientId == familyClient.ClientId);
+            if (historicalClient is not null)
+                ownershipGraph = BuildOwnershipGraph(SelectRelevantGraph(historicalGraph, historicalClient, warnings), ownershipAsOf.Value);
+            else
+            {
+                ownershipGraph = new FamilyOwnershipGraphDto(ownershipAsOf.Value, [], [], []);
+                warnings.Add("The selected family-office identity has no ownership structure at the selected date; financial population remains current.");
+            }
+        }
+        if (ownershipGraph.Edges.Any(edge => !ownershipGraph.Nodes.Any(node => node.NodeId == edge.SourceNodeId)
+            || !ownershipGraph.Nodes.Any(node => node.NodeId == edge.TargetNodeId)))
+            warnings.Add("One or more ownership relationships reach a node outside the available family-office structure; the legal path is incomplete.");
         var evidenceLinks = BuildStructureEvidenceLinks(relevant, asOfDate);
         var accountContexts = await BuildAccountContextsAsync(relevant.Accounts, generatedAt, ct).ConfigureAwait(false);
         if (relevant.Accounts.Count > 0 && accountContexts.Count == 0)
@@ -81,9 +108,27 @@ public sealed class FamilyOfficeReadService
         var accounts = accountContexts.Select(static context => context.Summary).ToArray();
         var publicAssets = BuildPublicAssets(accountContexts, warnings);
         var privateAssets = BuildPrivateAssets(relevant, asOfDate, warnings);
-        var commitments = BuildCommitments(relevant, asOfDate, warnings);
+        var source = _privateCapitalSource is null
+            ? new PrivateCapitalLifecycleRead([], [], ["No retained private-capital lifecycle source is registered; balances are unavailable."], IsAvailable: false)
+            : await _privateCapitalSource.ReadAsync(familyClient.ClientId.ToString("D"),
+                entities.Select(static entity => entity.EntityId).ToHashSet(StringComparer.Ordinal), asOfDate, generatedAt, ct,
+                historicalEntityScope: async (date, token) =>
+                {
+                    var historicalAt = date < today
+                        ? new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc)) : generatedAt;
+                    var historical = await _fundStructureService.GetOrganizationStructureAsync(
+                        new OrganizationStructureQuery(ActiveOnly: false, AsOf: historicalAt), token).ConfigureAwait(false);
+                    // The structure service applies current identity/tenant authorization even for
+                    // historical reads. A source's family label never grants historical membership.
+                    var client = historical.Clients.FirstOrDefault(value => value.ClientId == familyClient.ClientId);
+                    return client is null ? new HashSet<string>(StringComparer.Ordinal)
+                        : BuildEntities(SelectRelevantGraph(historical, client, []), [])
+                            .Select(static entity => entity.EntityId).ToHashSet(StringComparer.Ordinal);
+                }).ConfigureAwait(false);
+        warnings.AddRange(source.Warnings);
+        var commitments = BuildCommitments(relevant, asOfDate, source.Commitments, warnings);
         AddEvidenceAndReconciliationWarnings(accounts, publicAssets, privateAssets, commitments, warnings);
-        var balanceSheet = BuildBalanceSheet(familyClient, accountContexts, privateAssets, commitments, warnings, generatedAt, asOfDate);
+        var balanceSheet = BuildBalanceSheet(familyClient, accountContexts, privateAssets, commitments, source.IsAvailable, warnings, generatedAt, asOfDate);
         var readiness = BuildReadiness(warnings, evidenceLinks, generatedAt, accounts, entities.Count, balanceSheet);
 
         return new FamilyOfficeOverviewDto(
@@ -98,7 +143,7 @@ public sealed class FamilyOfficeReadService
             PublicAssets: publicAssets,
             PrivateAssets: privateAssets,
             CapitalCommitments: commitments,
-            RecentCapitalActivity: [],
+            RecentCapitalActivity: source.Activities,
             Readiness: readiness,
             EvidenceLinks: evidenceLinks,
             AvailableClients: choices);
@@ -521,18 +566,22 @@ public sealed class FamilyOfficeReadService
             LastReviewedAtUtc: null)).ToArray();
     }
 
-    private static IReadOnlyList<CapitalCommitmentDto> BuildCommitments(RelevantFamilyGraph graph, DateOnly asOfDate, List<string> warnings)
+    private static IReadOnlyList<CapitalCommitmentDto> BuildCommitments(RelevantFamilyGraph graph, DateOnly asOfDate,
+        IReadOnlyList<CapitalCommitmentDto> retained, List<string> warnings)
     {
         var commitmentAssignments = graph.Assignments
             .Where(static assignment => assignment.AssignmentType.Equals("CapitalCommitment", StringComparison.OrdinalIgnoreCase))
             .ToArray();
         if (commitmentAssignments.Length == 0)
         {
-            warnings.Add("No unfunded commitment source is configured for the family-office entity graph.");
-            return [];
+            if (retained.Count == 0)
+                warnings.Add("No unfunded commitment source is configured for the family-office entity graph.");
+            return retained;
         }
 
-        return commitmentAssignments.Select(assignment => new CapitalCommitmentDto(
+        var retainedIds = retained.Select(static row => row.CommitmentId).ToHashSet(StringComparer.Ordinal);
+        var unavailable = commitmentAssignments.Where(assignment => !retainedIds.Contains(assignment.AssignmentId.ToString("D")))
+            .Select(assignment => new CapitalCommitmentDto(
             CommitmentId: assignment.AssignmentId.ToString("D"),
             EntityId: assignment.NodeId.ToString("D"),
             VehicleName: assignment.AssignmentReference,
@@ -548,10 +597,15 @@ public sealed class FamilyOfficeReadService
             SourceDocumentId: assignment.AssignmentReference,
             AsOfDate: asOfDate,
             ValuationDate: null,
-            EvidenceCompleteness: "Partial",
+            EvidenceCompleteness: "Missing",
             ReconciliationStatus: "NotReconciled",
             LastReviewedBy: null,
-            LastReviewedAtUtc: null)).ToArray();
+            LastReviewedAtUtc: null,
+            BalancesAvailable: false,
+            BalanceStatus: "Unavailable")).ToArray();
+        if (unavailable.Length > 0)
+            warnings.Add("One or more capital commitment assignments have no retained balances; displayed placeholders are unavailable, not zero.");
+        return retained.Concat(unavailable).ToArray();
     }
 
     private static void AddEvidenceAndReconciliationWarnings(
@@ -583,13 +637,19 @@ public sealed class FamilyOfficeReadService
         IReadOnlyList<AccountContext> accounts,
         IReadOnlyList<PrivateAssetSummaryDto> privateAssets,
         IReadOnlyList<CapitalCommitmentDto> commitments,
+        bool privateCapitalSourceAvailable,
         List<string> warnings,
         DateTimeOffset generatedAt,
         DateOnly asOfDate)
     {
         var cash = accounts.Sum(static account => account.Summary.CashBalance);
         var securities = accounts.Sum(static account => account.Summary.MarketValue);
-        var privateValue = privateAssets.Sum(static asset => asset.CurrentValue) + commitments.Sum(static commitment => commitment.CurrentNav);
+        var hasUnmappedLifecycleBalances = commitments.Any(static commitment => commitment.BalancesAvailable);
+        if (commitments.Any(commitment => commitment.BalancesAvailable && !commitment.Currency.Equals(familyClient.BaseCurrency, StringComparison.Ordinal)))
+            warnings.Add("Private-capital balances in other currencies are excluded from household scalar totals; inspect currency-separated lifecycle rows.");
+        if (hasUnmappedLifecycleBalances)
+            warnings.Add("Retained private-capital lifecycle balances remain outside consolidated totals until explicit reconciliation and representation mapping prevents duplicate counting; inspect the separately reported lifecycle rows.");
+        var privateValue = privateAssets.Sum(static asset => asset.CurrentValue);
         var liabilities = accounts.Sum(static account => account.RunDetail?.Ledger?.LiabilityBalance ?? 0m);
         var totalAssets = cash + securities + accounts.Sum(static account => account.Summary.AccruedIncome) + privateValue;
         var latestAsOf = accounts.Select(static account => account.Summary.AsOfDate).DefaultIfEmpty(asOfDate).Max();
@@ -611,13 +671,20 @@ public sealed class FamilyOfficeReadService
             PrivateAssets: privateValue,
             RealAssets: 0m,
             CashAndEquivalents: cash,
-            UnfundedCommitments: commitments.Sum(static commitment => commitment.UnfundedAmount),
+            UnfundedCommitments: 0m,
             SourceSystem: "family-office-read-service",
             SourceDocumentId: null,
             AsOfDate: latestAsOf,
             ValuationDate: latestAsOf == FallbackAsOfDate ? null : latestAsOf,
-            EvidenceCompleteness: accounts.All(static account => account.Summary.EvidenceCompleteness == "Complete") ? "Complete" : "Partial",
-            ReconciliationStatus: accounts.All(static account => account.Summary.ReconciliationStatus == "Reconciled") ? "Reconciled" : "NeedsReview",
+            EvidenceCompleteness: privateCapitalSourceAvailable && !hasUnmappedLifecycleBalances
+                && accounts.All(static account => account.Summary.EvidenceCompleteness == "Complete")
+                && privateAssets.All(static asset => asset.EvidenceCompleteness == "Complete")
+                && commitments.All(commitment => commitment.BalancesAvailable && commitment.EvidenceCompleteness == "Complete"
+                    && commitment.Currency.Equals(familyClient.BaseCurrency, StringComparison.Ordinal)) ? "Complete" : "Partial",
+            ReconciliationStatus: privateCapitalSourceAvailable && !hasUnmappedLifecycleBalances
+                && accounts.All(static account => account.Summary.ReconciliationStatus == "Reconciled")
+                && privateAssets.All(static asset => asset.ReconciliationStatus == "Reconciled")
+                && commitments.All(static commitment => commitment.BalancesAvailable && commitment.ReconciliationStatus == "Reconciled") ? "Reconciled" : "NeedsReview",
             LastReviewedBy: null,
             LastReviewedAtUtc: null);
     }

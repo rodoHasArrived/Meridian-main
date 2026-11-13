@@ -6,6 +6,114 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingArtifactRetentionAuthorityProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionAuthorityProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:191](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L191).
+
+Production service-principal identity used only for immutable artifact retention.
+
+```csharp
+public sealed class ReportingArtifactRetentionAuthorityProvider : IReportingArtifactRetentionAuthorityProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValueTask&lt;ReportingAuthorityScope&gt; ResolveAsync(GovernedReportingRun governedRun, ReportingGovernanceCallerContext releaseCaller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:193](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L193) |  |
+
+## ReportingArtifactRetentionReceipt
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L50).
+
+```csharp
+public sealed record ReportingArtifactRetentionReceipt(ReportingRetainedArtifactPackage Package, bool CatalogAlreadyExisted, ImmutableArray<string> AuditEventIds);
+```
+
+## ReportingArtifactVaultAccessDeniedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultAccessDeniedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L64).
+
+Indicates that access to a reporting artifact in the vault was denied.
+
+```csharp
+public sealed class ReportingArtifactVaultAccessDeniedException : UnauthorizedAccessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingArtifactVaultAccessDeniedException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L66) |  |
+
+## ReportingArtifactVaultService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L76).
+
+Connects generated package bytes to tenant-scoped immutable blob storage and authoritative scope metadata. Every successful read is integrity checked and durably audited before bytes are returned; audit or integrity failures therefore fail closed.
+
+```csharp
+public sealed class ReportingArtifactVaultService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingArtifactVaultService(IReportingArtifactStore artifactStore, IReportingArtifactCatalog catalog, IReportingArtifactAuditStore auditStore, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L83) |  |
+| <code>public async Task&lt;ReportingArtifactRetentionReceipt&gt; RetainPackageAsync(ReportingArtifactPackageRetentionRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:95](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L95) |  |
+| <code>public async Task&lt;ReportingRetainedArtifactPackage&gt; GetPackageForReleaseAsync(string packageId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L215) |  |
+| <code>public async Task&lt;ReportingArtifactDownload&gt; ReadForDownloadAsync(string packageId, string artifactId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:256](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L256) |  |
+
+## ReportingAuthoritativeAsOfCertification
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeAsOfCertification</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L48).
+
+Exact output returned by the server-side renderer/artifact producer. Artifact ids must be the same ids declared by the completed orchestration manifest; the coordinator rejects partial or augmented output sets before retaining any bytes.
+
+```csharp
+public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
+```
+
+## ReportingAuthoritativeSourceCapture
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
+
+```csharp
+public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
+```
+
+## ReportingAuthoritativeSourceCaptureIntent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L24).
+
+Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
+
+```csharp
+public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
+| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |
+
 ## ReportingAuthoritativeSourceUnavailableException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceUnavailableException</code>. Kind: `class`.
@@ -734,136 +842,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReportingRunReadinessDependencyEvaluator(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:38](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L38) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReportingRunReadinessCheckDto&gt;&gt; EvaluateAsync(ReportingRunRequestDto request, ReportingTemplateMetadata template, ReportingRunParametersDto parameters, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L43) |  |
-
-## ReportingRunReadinessOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L27).
-
-```csharp
-public sealed record ReportingRunReadinessOptions(bool AllowLegacyUnscopedDrafts = false, bool AllowDraftWhenDependencyEvaluatorIsUnavailable = false);
-```
-
-## ReportingRunReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:455](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L455).
-
-Combines request and dependency checks into a reporting run readiness assessment.
-
-```csharp
-public sealed class ReportingRunReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunReadinessService(IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, IReportingRunReadinessDependencyEvaluator? dependencyEvaluator = null, Func&lt;DateTimeOffset&gt;? utcNow = null, ReportingRunReadinessOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:463](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L463) |  |
-| <code>public async Task&lt;ReportingRunReadinessDto&gt; AssessAsync(ReportingRunRequestDto request, ReportAccessQueryContext? accessContext = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:477](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L477) |  |
-
-## ReportingRunStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L15).
-
-```csharp
-public sealed record ReportingRunStoreOptions(string RootDirectory);
-```
-
-## ReportingScheduleHostedService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L28).
-
-Server-owned schedule clock. Public due-run mutation routes are retired; this worker discovers due records internally and lets ReportingScheduleService reconstruct a separate, exact tenant/company authority for every scheduled run.
-
-```csharp
-public sealed class ReportingScheduleHostedService : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingScheduleHostedService(ReportingScheduleService scheduleService, TimeProvider timeProvider, ILogger&lt;ReportingScheduleHostedService&gt; logger, ReportingScheduleWorkerOptions? options = null) : this(scheduleService, timeProvider, logger, options, readiness : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L39) |  |
-| <code>public ReportingScheduleHostedService(ReportingScheduleService scheduleService, TimeProvider timeProvider, ILogger&lt;ReportingScheduleHostedService&gt; logger, ReportingScheduleWorkerOptions? options, ReportingScheduleWorkerReadinessState? readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L48) |  |
-
-## ReportingSchedulePeriodMatch
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSchedulePeriodMatch</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L7).
-
-A durable accounting period: its canonical selector (the period id) and its boundaries.
-
-```csharp
-public sealed record ReportingSchedulePeriodMatch(string Selector, DateOnly StartDate, DateOnly EndDate);
-```
-
-## ReportingScheduleService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L22).
-
-Manages scoped reporting schedules and coordinates their governed execution state.
-
-```csharp
-public sealed partial class ReportingScheduleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[Obsolete(&quot;Use the constructor overload accepting Meridian.Reporting.IReportingScheduleStore.&quot;)] public ReportingScheduleService(IReportingOrchestrationService orchestrationService, IReportingScheduleStore? store = null, ReportPackDeliveryService? deliveryService = null, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, ReportWriterDatasetSourceService? datasetSourceService = null, ReportingRunReadinessService? readinessService = null, ReportingRunCertificationService? certificationService = null, IReportingGovernanceEndpointCoordinator? governanceCoordinator = null, IReportingRecipientDestinationResolver? destinationResolver = null) : this(orchestrationService, store, deliveryService, governedTemplateCatalog, datasetSourceService, readinessService, certificationService, governanceCoordinator, destinationResolver, deploymentReadinessService : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:41](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L41) |  |
-| <code>[Obsolete(&quot;Use the constructor overload accepting Meridian.Reporting.IReportingScheduleStore.&quot;)] public ReportingScheduleService(IReportingOrchestrationService orchestrationService, IReportingScheduleStore? store, ReportPackDeliveryService? deliveryService, GovernedReportingTemplateCatalog? governedTemplateCatalog, ReportWriterDatasetSourceService? datasetSourceService, ReportingRunReadinessService? readinessService, ReportingRunCertificationService? certificationService, IReportingGovernanceEndpointCoordinator? governanceCoordinator, IReportingRecipientDestinationResolver? destinationResolver, IReportingDeploymentReadinessService? deploymentReadinessService) : this(orchestrationService, (Meridian.Reporting.IReportingScheduleStore?) store, deliveryService, governedTemplateCatalog, datasetSourceService, readinessService, certificationService, governanceCoordinator, destinationResolver, deploymentReadinessService);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:67](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L67) |  |
-| <code>public ReportingScheduleService(IReportingOrchestrationService orchestrationService, Meridian.Reporting.IReportingScheduleStore? store, ReportPackDeliveryService? deliveryService = null, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, ReportWriterDatasetSourceService? datasetSourceService = null, ReportingRunReadinessService? readinessService = null, ReportingRunCertificationService? certificationService = null, IReportingGovernanceEndpointCoordinator? governanceCoordinator = null, IReportingRecipientDestinationResolver? destinationResolver = null) : this(orchestrationService, store, deliveryService, governedTemplateCatalog, datasetSourceService, readinessService, certificationService, governanceCoordinator, destinationResolver, deploymentReadinessService : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L93) |  |
-| <code>public ReportingScheduleService(IReportingOrchestrationService orchestrationService, Meridian.Reporting.IReportingScheduleStore? store, ReportPackDeliveryService? deliveryService, GovernedReportingTemplateCatalog? governedTemplateCatalog, ReportWriterDatasetSourceService? datasetSourceService, ReportingRunReadinessService? readinessService, ReportingRunCertificationService? certificationService, IReportingGovernanceEndpointCoordinator? governanceCoordinator, IReportingRecipientDestinationResolver? destinationResolver, IReportingDeploymentReadinessService? deploymentReadinessService);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:117](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L117) |  |
-| <code>public IReadOnlyList&lt;ReportingScheduleRecordDto&gt; ListSchedules(int limit = 100) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:153](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L153) |  |
-| <code>public IReadOnlyList&lt;ReportingScheduleRecordDto&gt; ListSchedules(ReportAccessQueryContext? accessContext, int limit = 100);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L156) |  |
-| <code>public ReportingScheduleRecordDto Upsert(ReportingScheduleUpsertRequestDto request);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:175](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L175) |  |
-| <code>public ReportingScheduleRecordDto Upsert(ReportingScheduleUpsertRequestDto request, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:181](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L181) |  |
-| <code>public Task&lt;ReportingScheduleRecordDto&gt; UpsertAsync(ReportingScheduleUpsertRequestDto request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:196](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L196) |  |
-| <code>public async Task&lt;ReportingScheduleRecordDto&gt; UpsertAsync(ReportingScheduleUpsertRequestDto request, ReportAccessQueryContext? accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:207](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L207) |  |
-| <code>public ReportingScheduleRecordDto SetState(string scheduleId, ReportingScheduleStateDto state) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:431](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L431) |  |
-| <code>public ReportingScheduleRecordDto SetState(string scheduleId, ReportingScheduleStateDto state, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:434](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L434) |  |
-| <code>public Task&lt;ReportingScheduleRunResultDto&gt; RunNowAsync(string scheduleId, string? requestedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:494](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L494) |  |
-| <code>public async Task&lt;ReportingScheduleRunResultDto&gt; RunNowAsync(string scheduleId, string? requestedBy, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:501](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L501) |  |
-| <code>public async Task&lt;ReportingDueScheduleRunResultDto&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:555](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L555) |  |
-| <code>public async Task&lt;ReportingDueScheduleRunResultDto&gt; RunDueAsync(DateTimeOffset nowUtc, ReportAccessQueryContext? accessContext, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:578](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L578) |  |
-| <code>public IReadOnlyList&lt;ReportingScheduledReleaseHandoffDto&gt; GetPendingReleaseHandoffs(string runId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:709](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L709) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleService.DeliveryAuthority.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.DeliveryAuthority.cs#L10).
-
-```csharp
-public sealed partial class ReportingScheduleService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs#L7).
-
-```csharp
-public sealed partial class ReportingScheduleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReportingSchedulePeriodResolver? PeriodResolver { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs#L20) | Ledger authority for the accounting period a period-close schedule reports on. When it is absent, or cannot name a unique period, the retained selector is left untouched. |
-| <code>public ReportingScheduleRecordDto Delete(string scheduleId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs:607](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs#L607) | Permanently removes a schedule. Runs it already produced are retained by the run store; only the recurring definition is deleted. A schedule that is executing on this host is refused so an in-flight run cannot resurrect or lose its advance. |
-
-## ReportingScheduleStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L19).
-
-```csharp
-public sealed record ReportingScheduleStoreOptions(string SnapshotPath);
-```

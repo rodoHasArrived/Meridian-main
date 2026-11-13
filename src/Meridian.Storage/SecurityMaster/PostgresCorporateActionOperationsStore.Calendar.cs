@@ -49,6 +49,12 @@ public sealed partial class PostgresCorporateActionOperationsStore
                             or p.proposed_action ->> 'recordDate' between @from_date and @to_date
                             or p.proposed_action ->> 'payDate' between @from_date and @to_date
                             or exists (
+                                select 1 from jsonb_array_elements(case
+                                    when jsonb_typeof(p.proposed_action #> '{payload,electionCalendar,cutoffs}') = 'array'
+                                    then p.proposed_action #> '{payload,electionCalendar,cutoffs}' else '[]'::jsonb end) cutoff
+                                where left(cutoff ->> 'deadlineAt', 10) between @from_date and @to_date
+                            )
+                            or exists (
                                 select 1 from {{Qualified("corporate_action_processing_cases")}} pc
                                 join {{Qualified("corporate_action_case_evidence")}} e on e.case_id = pc.case_id
                                 where pc.proposal_id = p.proposal_id and {{scopedCasePredicate}}

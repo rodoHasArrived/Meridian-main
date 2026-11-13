@@ -22,7 +22,16 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Family-office read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var overview = await service.GetOverviewAsync(context.RequestAborted, familyOfficeId).ConfigureAwait(false);
+            DateOnly? ownershipAsOf = null;
+            if (context.Request.Query.TryGetValue("asOf", out var asOfText))
+            {
+                if (asOfText.Count != 1 || !DateOnly.TryParseExact(asOfText[0], "yyyy-MM-dd",
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed)
+                    || parsed > DateOnly.FromDateTime(DateTime.UtcNow))
+                    return Results.Problem("asOf must be a non-future date in YYYY-MM-DD form for ownership structure.", statusCode: 400);
+                ownershipAsOf = parsed;
+            }
+            var overview = await service.GetOverviewAsync(context.RequestAborted, familyOfficeId, ownershipAsOf).ConfigureAwait(false);
             return Results.Json(overview, FamilyOfficeJsonContext.Default.FamilyOfficeOverviewDto);
         })
         .WithName("GetWorkstationFamilyOfficeOverview").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance)

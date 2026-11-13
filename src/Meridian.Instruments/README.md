@@ -23,6 +23,8 @@ expiration coverage before DTE filtering. Screening treats unavailable discovery
 successfully discovered dates outside the requested DTE range produce a valid empty screen.
 The existing list-only expiration read keeps its compatibility behavior.
 
+Fixed/zero-coupon analytics also return authoritative maturity/exercise alternatives and all governing yield-to-worst ties for the browser horizon. Issuer calls and maturity govern YTW; holder puts remain distinct. Interest and principal retain per-100-face units and maturity projection semantics. Floating v3 keeps its separate observed/forecast evidence and does not gain unsupported callable analytics.
+
 Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing
 already-reset periods. Security/version, index, currency, exact reset date and economic/knowledge
 eligibility must agree. Existing declared fixings remain authoritative; duplicate source selections

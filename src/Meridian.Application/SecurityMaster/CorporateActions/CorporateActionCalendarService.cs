@@ -148,6 +148,15 @@ public sealed class CorporateActionCalendarService(
             AddDate("ExDate", proposal.ProposedAction.ExDate);
             AddDate("RecordDate", proposal.ProposedAction.RecordDate);
             AddDate("PaymentDate", proposal.ProposedAction.PayDate);
+            foreach (var cutoff in CorporateActionElectionCalendar.Read(proposal.ProposedAction.Payload).Cutoffs)
+            {
+                var date = DateOnly.FromDateTime(cutoff.DeadlineAt.DateTime);
+                if (date < from || date > to)
+                    continue;
+                result.Add(new CorporateActionCalendarEventDto($"{proposal.ProposalId:N}:source-election:{Uri.EscapeDataString(cutoff.Id)}",
+                    proposal.SecurityId, ticker, proposal.ProposedAction.EventType, proposal.ProposalId, "ElectionDeadline",
+                    date, cutoff.DeadlineAt, references, proposal.ProviderIdentity, proposal.State, SourceCutoff: cutoff));
+            }
             foreach (var processingCase in cases)
                 foreach (var record in ProjectHistory(snapshot.Evidence.Where(e => e.CaseId == processingCase.CaseId).ToArray()).Where(e => e.IsCurrent && !e.Deadline.Withdrawn))
                 {

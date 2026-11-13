@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapitalCallNoticeReportingService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeReportingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:136](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L136).
+
+Creates a governed Draft notice; approval, release, grants, and delivery use existing Reporting controls.
+
+```csharp
+public sealed class CapitalCallNoticeReportingService(CapitalCallNoticeSourceValidator source, ILedgerJournalStore journals, ReportingRunCommandService reporting, IReportingRunStore? runStore = null, IReportingGovernanceRepository? governance = null, IReportingDeliveryStore? deliveries = null, IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceRetentionStore? reconciliationRetention = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TemplateId = &quot;capital-call-notice&quot;;</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:146](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L146) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt;&gt; ReadNoticeSummariesAsync(PrivateCapitalScopeDto scope, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L150) | Projects retained notice associations; callers cannot attach an arbitrary reporting run to a call. |
+| <code>public async Task&lt;ReportingRunResultDto&gt; GenerateAsync(PrivateCapitalScopeDto scope, string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access, ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:206](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L206) |  |
+
+## CapitalCallNoticeSourceValidator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallNoticeSourceValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:24](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L24).
+
+Resolves notice inputs from retained authority, including the independently posted issuance.
+
+```csharp
+public sealed class CapitalCallNoticeSourceValidator(IPrivateCapitalStore capitalStore, IEnumerable<CapitalCallNoticeRecipientBinding>? recipientBindings = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;(PrivateCapitalCallDto Call, PrivateCapitalCallLineDto Line, PrivateCapitalCommitmentDto Commitment, string Recipient, string ReviewGroup)&gt; ResolveAsync(PrivateCapitalScopeDto scope, string callId, string investorId, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L30) |  |
+| <code>public async Task ValidateAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:66](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L66) |  |
+| <code>public static void ValidateRows(ReportingRunParametersDto parameters, ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:92](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L92) |  |
+
+## CashForecastPoint
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CashForecastPoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:73](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L73).
+
+```csharp
+public sealed record CashForecastPoint(DateOnly Date, string AccountId, string Currency, decimal ExpectedInflow, decimal ExpectedOutflow, decimal Net);
+```
+
+## CashOperationsOrchestratorService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CashOperationsOrchestratorService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:22](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L22).
+
+Builds cash synchronization windows, validation decisions, approval requirements, forecasts, and settlement trails.
+
+```csharp
+public sealed class CashOperationsOrchestratorService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CashSyncWindow&gt; BuildDailySyncWindows(DateTimeOffset nowUtc, IReadOnlyList&lt;CashSyncWindow&gt; configuredWindows);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:24](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L24) |  |
+| <code>public WorkstationSyncValidationResult ValidateSync(IReadOnlyList&lt;SyncCompletenessResult&gt; completeness, IReadOnlyList&lt;DeltaOutlierResult&gt; outliers);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:36](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L36) |  |
+| <code>public WorkstationApprovalDecision EvaluateApproval(decimal amount, string currency, Guid accountId, string riskBucket, WorkstationApprovalPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:52](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L52) |  |
+| <code>public DateOnly ResolveSettlementDateWithCutoff(DateTimeOffset bookingTimeLocal, TimeOnly cutoffLocal, int normalSettlementLagDays);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:102](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L102) |  |
+| <code>public CashForecastResult BuildCashForecast(DateOnly asOf, IReadOnlyDictionary&lt;(Guid AccountId, string Currency), decimal&gt; openingBalances, IReadOnlyList&lt;WorkstationPaymentInstruction&gt; payments, IReadOnlyList&lt;WorkstationSettlementInstruction&gt; settlements, IReadOnlyList&lt;WorkstationCouponEvent&gt; coupons, IReadOnlyList&lt;WorkstationFxConversionReference&gt; fx, decimal liquidityWarningThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:110](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L110) |  |
+| <code>public IReadOnlyList&lt;WorkstationStpStateTransition&gt; BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L150) |  |
+
 ## CashSyncOrchestrationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CashSyncOrchestrationService</code>. Kind: `class`.
@@ -413,7 +486,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1111](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1111).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1127](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1127).
 
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);
@@ -428,8 +501,18 @@ Source: [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFa
 Result returned by ICoveredCallChainProviderFactory.PreviewAsync.
 
 ```csharp
-public sealed record CoveredCallChainPreviewResult(decimal UnderlyingPrice, IReadOnlyList<OptionCandidateInfo> Candidates);
+public sealed record CoveredCallChainPreviewResult(decimal UnderlyingPrice, IReadOnlyList<OptionCandidateInfo> Candidates)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CoverageKnown { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L40) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; RequestedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:41](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L41) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:42](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L42) |  |
+| <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:43](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L43) |  |
+| <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:44](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L44) |  |
 
 ## CoveredCallChainProviderAdapter
 
@@ -471,7 +554,7 @@ Declared public members:
 | <code>public CoveredCallChainProviderFactory(OptionsChainService chainService, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, ILoggerFactory loggerFactory);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L25) |  |
 | <code>public async ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L37) |  |
 | <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:161](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L161) |  |
-| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:225](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L225) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
+| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:239](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L239) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
 
 ## ICoveredCallBacktestService
 
@@ -840,74 +923,3 @@ Outcome of tearing down the demo workspace.
 ```csharp
 public sealed record DemoWorkspaceResetReport(string DemoRoot, bool Deleted);
 ```
-
-## DemoWorkspaceSeeder
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeeder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:44](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L44).
-
-Provisions and tears down the isolated Meridian demo workspace used by the --seed-demo / --reset-demo host verbs and by the --demo serve mode.
-
-```csharp
-public sealed class DemoWorkspaceSeeder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DemoWorkspaceSeeder(string baseDataRoot, ILoggerFactory? loggerFactory = null);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:69](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L69) | Creates a seeder for the demo root derived from baseDataRoot. |
-| <code>public string DemoRoot =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:79](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L79) | The isolated demo root this seeder operates on. |
-| <code>public async Task&lt;DemoWorkspaceSeedReport&gt; SeedAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:85](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L85) | Seeds the demo workspace durably and idempotently. Creates the demo root, writes the demo sentinel, and provisions the reconciliation and strategy desks through the real desk stores. |
-| <code>public Task&lt;DemoWorkspaceResetReport&gt; ResetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:383](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L383) | Tears down the demo workspace, guarded so only the dedicated, sentinel-marked demo root can be deleted. A missing demo root is a no-op, not an error. |
-
-## DemoWorkspaceSeedReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeedReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:418](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L418).
-
-Outcome of seeding the demo workspace.
-
-```csharp
-public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
-```
-
-## DesktopLaunchTicketService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:12](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L12).
-
-Issues short-lived, single-use launch claims so the desktop workstation never trusts browser-selected identity or navigation state directly from process arguments.
-
-```csharp
-public sealed class DesktopLaunchTicketService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopLaunchTicketService(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:18](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L18) |  |
-| <code>public string Issue(string username, string page);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:23](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L23) |  |
-| <code>public DesktopLaunchTicketRedemptionDto? Redeem(IPAddress? remoteAddress, string token);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:35](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L35) |  |
-
-## DesktopWorkstationLaunchService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DesktopWorkstationLaunchService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:8](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L8).
-
-Issues a desktop launch ticket and attempts to open the desktop workstation.
-
-```csharp
-public sealed class DesktopWorkstationLaunchService(DesktopLaunchTicketService tickets)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool TryLaunch(string username, string hostBaseAddress, string? requestedPage, out string message);</code> | [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:15](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L15) |  |

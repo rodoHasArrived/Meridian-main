@@ -10,6 +10,13 @@ namespace Meridian.Contracts.Options;
 public static partial class OptionAssessmentValidation
 {
     public const int MaxLegs = 50;
+    // Basket wire kinds retain their canonical strings in normalized evidence and fingerprints.
+    private enum LegKind
+    {
+        Option,
+        Equity
+    }
+
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     [GeneratedRegex(@"^-?\d+(?:\.\d+)?$", RegexOptions.CultureInvariant)]
     private static partial Regex DecimalLiteral();
@@ -113,11 +120,12 @@ public static partial class OptionAssessmentValidation
     private static OptionAssessmentLeg NormalizeLeg(OptionAssessmentLeg value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var kind = Choice(value.InstrumentType, "instrumentType", "Option", "Equity");
+        var instrumentType = Choice(value.InstrumentType, "instrumentType", "Option", "Equity");
+        var kind = Enum.Parse<LegKind>(instrumentType);
         var result = value with
         {
             LegId = Required(value.LegId, "legId", 128),
-            InstrumentType = kind,
+            InstrumentType = instrumentType,
             Symbol = Required(value.Symbol, "symbol", 256),
             Currency = Currency(value.Currency),
             Side = Choice(value.Side, "side", "Buy", "Sell"),
@@ -126,7 +134,7 @@ public static partial class OptionAssessmentValidation
             Exchange = Optional(value.Exchange),
             Deliverable = Optional(value.Deliverable)
         };
-        if (kind == "Option")
+        if (kind == LegKind.Option)
         {
             if (!DateOnly.TryParseExact(value.Expiration, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var expiry))
                 throw new ArgumentException("Option legs require an exact expiration date (yyyy-MM-dd).");

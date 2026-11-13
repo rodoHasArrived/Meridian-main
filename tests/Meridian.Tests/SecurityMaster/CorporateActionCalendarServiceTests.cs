@@ -24,6 +24,40 @@ public sealed class CorporateActionCalendarServiceTests
     }
 
     [Fact]
+    public void RetainedSourceCutoffs_PreserveOffsetsEvidenceAndScopedCaseReferencesWithoutOperatorHistory()
+    {
+        var proposal = Proposal(Week.AddMonths(-1), null);
+        var at = new DateTimeOffset(2026, 11, 11, 23, 30, 0, TimeSpan.FromHours(-5));
+        proposal = proposal with
+        {
+            ProposedAction = proposal.ProposedAction with
+            {
+                Payload = JsonSerializer.SerializeToElement(new
+                {
+                    electionCalendar = new
+                    {
+                        schemaVersion = 1,
+                        cutoffs = new[] { new { id = "source-cutoff", label = "Actual election deadline", deadlineAt = at,
+                            source = "Source notice", evidenceReference = "document://source/notice" } }
+                    }
+                })
+            }
+        };
+        var cases = new[] { Case(proposal), Case(proposal) };
+        var projected = CorporateActionCalendarService.ProjectCalendar(new([proposal], cases, []), Week, Week.AddDays(6), null, null);
+        var item = projected.Should().ContainSingle().Which;
+        item.DateKind.Should().Be("ElectionDeadline");
+        item.Date.Should().Be(new DateOnly(2026, 11, 11));
+        item.At!.Value.Offset.Should().Be(TimeSpan.FromHours(-5));
+        item.SourceCutoff!.EvidenceReference.Should().Be("document://source/notice");
+        item.SourceCutoff.Label.Should().Be("Actual election deadline");
+        item.Deadline.Should().BeNull();
+        item.Cases.Select(value => value.CaseId).Should().BeEquivalentTo(cases.Select(value => value.CaseId));
+        CorporateActionCalendarService.ProjectCalendar(new([proposal], cases, []), Week, Week.AddDays(6), null, null)
+            .Should().ContainSingle().Which.EventId.Should().Be(item.EventId);
+    }
+
+    [Fact]
     public void CorrectionAndWithdrawal_KeepHistoryAndRemoveWithdrawnCalendarMarker()
     {
         var proposal = Proposal(Week.AddMonths(-1), null);
@@ -141,6 +175,45 @@ public sealed class CorporateActionCalendarServiceTests
         store.ReadCalendarAsync("tenant", "company", Week, Week.AddDays(6), null, null, Arg.Any<CancellationToken>())
             .Returns(new CorporateActionCalendarReadSet(proposals.Skip(1).ToArray(), [], []));
         var changed = async () => await service.GetCalendarAsync("tenant", "company", Week, Week.AddDays(6), cursor: first.NextCursor);
+        await changed.Should().ThrowAsync<CorporateActionStateConflictException>();
+    }
+
+    [Fact]
+    public async Task SourceCutoffProvenanceOutsideTheFirstPage_InvalidatesCursorWithoutChangingEconomics()
+    {
+        var store = Substitute.For<ICorporateActionOperationsStore>();
+        var operations = Substitute.For<ICorporateActionOperationsService>();
+        var proposal = Proposal(Week.AddMonths(-1), null);
+        CorporateActionSourceProposalDto WithCutoffs(string evidence) => proposal with
+        {
+            ProposedAction = proposal.ProposedAction with
+            {
+                Payload = JsonSerializer.SerializeToElement(new
+                {
+                    electionCalendar = new
+                    {
+                        schemaVersion = 1,
+                        cutoffs = new[]
+                        {
+                            new { id = "first", label = "First cutoff", deadlineAt = "2026-11-10T16:00:00-05:00", source = "Notice", evidenceReference = "document://first" },
+                            new { id = "second", label = "Second cutoff", deadlineAt = "2026-11-11T16:00:00-05:00", source = "Notice", evidenceReference = evidence }
+                        }
+                    }
+                })
+            }
+        };
+        var firstSource = WithCutoffs("document://second");
+        store.ReadCalendarAsync("tenant", "company", Week, Week.AddDays(6), null, null, Arg.Any<CancellationToken>())
+            .Returns(new CorporateActionCalendarReadSet([firstSource], [], []));
+        var service = new CorporateActionCalendarService(operations, store);
+        var first = await service.GetCalendarAsync("tenant", "company", Week, Week.AddDays(6), take: 1);
+        first.NextCursor.Should().NotBeNull();
+        var correctedSource = WithCutoffs("document://corrected-second");
+        CorporateActionEconomicFingerprint.Compute(correctedSource.ProposedAction)
+            .Should().Be(CorporateActionEconomicFingerprint.Compute(firstSource.ProposedAction));
+        store.ReadCalendarAsync("tenant", "company", Week, Week.AddDays(6), null, null, Arg.Any<CancellationToken>())
+            .Returns(new CorporateActionCalendarReadSet([correctedSource], [], []));
+        var changed = async () => await service.GetCalendarAsync("tenant", "company", Week, Week.AddDays(6), cursor: first.NextCursor, take: 1);
         await changed.Should().ThrowAsync<CorporateActionStateConflictException>();
     }
 

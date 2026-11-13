@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcContractLifecycleEventDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L49).
+
+Immutable lifecycle evidence, including the exact predecessor and deterministic successor snapshots.
+
+```csharp
+public sealed record OtcContractLifecycleEventDto([property : JsonRequired] Guid EventId, [property : JsonRequired] int PayloadVersion, [property : JsonRequired] OtcContractLifecycleKind Kind, [property : JsonRequired] DateOnly EffectiveDate, [property : JsonRequired] string SourceReference, [property : JsonRequired] string Actor, [property : JsonRequired] DateTimeOffset RecordedAt, [property : JsonRequired] OtcContractDto Before, [property : JsonRequired] OtcContractDto After, [property : JsonRequired] OtcContractLifecycleData Data, OtcContractDto? NovationSuccessor = null, OtcContractLifecycleTarget? Target = null);
+```
+
+## OtcContractLifecycleKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L9).
+
+A retained servicing fact on one bilateral contract, separate from its shared instrument.
+
+```csharp
+public enum OtcContractLifecycleKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RateReset</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L9) |  |
+| <code>Compression</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L9) |  |
+| <code>Novation</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L9) |  |
+| <code>CreditEvent</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L9) |  |
+| <code>AuctionSettlement</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L9) |  |
+
+## OtcContractLifecycleRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L59).
+
+Pure write and replay rules. Lifecycle records do not themselves authorize a ledger posting or transfer of cash.
+
+```csharp
+public static class OtcContractLifecycleRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int CurrentPayloadVersion = 1;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L61) |  |
+| <code>public static AppendOtcContractLifecycleRequest Normalize(AppendOtcContractLifecycleRequest request);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L69) |  |
+| <code>public static OtcContractLifecycleKind KindOf(OtcContractLifecycleData data) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L97) |  |
+| <code>public static OtcContractLifecycleEventDto Create(OtcContractDto current, AppendOtcContractLifecycleRequest request, DateTimeOffset recordedAt, IReadOnlyList&lt;OtcContractLifecycleEventDto&gt;? prior = null, OtcContractDto? successor = null, OtcContractLifecycleTarget? target = null);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:108](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L108) | Builds a retained event from a confirmed predecessor, validated prior history and any novation successor. |
+| <code>public static OtcContractDto Replay(OtcContractDto initial, IReadOnlyList&lt;OtcContractLifecycleEventDto&gt; events);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L154) | Replays a contiguous lifecycle sequence. CRUD gaps, unknown versions and altered before/after snapshots refuse replay. |
+| <code>public static string Serialize(OtcContractLifecycleEventDto item);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L174) |  |
+| <code>public static OtcContractLifecycleEventDto Deserialize(string json);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:180](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L180) |  |
+| <code>public static bool IsRetry(OtcContractLifecycleEventDto item, AppendOtcContractLifecycleRequest request) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:188](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L188) |  |
+| <code>public static OtcContractLifecycleTarget? TargetFor(OtcContractDto contract, OtcContractLifecycleData data, SecurityDetailDto instrument);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:258](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L258) | Validates the target against the authoritative instrument revision, never a caller-supplied fixing target. |
+
 ## OtcContractLifecycleTarget
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleTarget</code>. Kind: `record`.
@@ -745,44 +805,4 @@ No unit is declared for the value; magnitude alone never decides one.
 
 ```csharp
 public sealed record Undeclared(decimal Raw) : RateUnitResolution(Raw);
-```
-
-## RateUnitSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RateUnitSource</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L20).
-
-Where the unit of a resolved rate came from.
-
-```csharp
-public enum RateUnitSource
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RecordDeclared</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L23) | The record itself declared the unit (scheduleConventions.couponRateUnit or a leg&#x27;s rate unit). |
-| <code>FieldDefault</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L26) | The unit the field declares by default in SecurityRateFieldUnits. |
-| <code>UnitInvariantZero</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L32) | The value is zero, which is the same amount in every unit. No unit is inferred: the resolved fraction is exactly zero whatever the unit would have been. |
-
-## RecordCorporateActionConflictRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:631](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L631).
-
-```csharp
-public sealed record RecordCorporateActionConflictRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Field, string Description, IReadOnlyList<CorporateActionConflictCandidateDto> Candidates, string Actor, Guid? ConflictId = null, string? CorrelationId = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## RecordCorporateActionDeadlineRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RecordCorporateActionDeadlineRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L23).
-
-```csharp
-public sealed record RecordCorporateActionDeadlineRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, CorporateActionElectionDeadlineDto Deadline, string EvidenceReference, string EvidenceHash, string Rationale, CorporateActionCaseScopeDto? ScopeAssertion = null);
 ```

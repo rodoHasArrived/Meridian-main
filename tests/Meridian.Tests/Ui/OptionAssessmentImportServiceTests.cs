@@ -40,6 +40,70 @@ public sealed class OptionAssessmentImportServiceTests : IDisposable
         Assert.Contains(value.Basket.Legs, leg => leg.Right == "Put");
     }
 
+    [Fact]
+    public void LegKinds_NormalizeWireStringsWithoutChangingCanonicalBasketFingerprint()
+    {
+        var canonical = Assessment();
+        var mixedCase = canonical with
+        {
+            Basket = canonical.Basket with
+            {
+                Legs = canonical.Basket.Legs.Select(leg => leg with
+                {
+                    InstrumentType = leg.LegId == "c" ? " eQuItY " : " oPtIoN "
+                }).ToArray()
+            }
+        };
+
+        var normalized = OptionAssessmentValidation.Normalize(mixedCase);
+
+        Assert.Equal(["Option", "Option", "Equity"], normalized.Basket.Legs.Select(leg => leg.InstrumentType));
+        Assert.Equal(OptionAssessmentValidation.CanonicalBytes(OptionAssessmentValidation.Normalize(canonical)),
+            OptionAssessmentValidation.CanonicalBytes(normalized));
+        Assert.Equal(OptionAssessmentValidation.BasketFingerprint(canonical),
+            OptionAssessmentValidation.BasketFingerprint(normalized));
+    }
+
+    [Theory]
+    [InlineData("Warrant")]
+    [InlineData("Bond")]
+    [InlineData("1")]
+    [InlineData("Option, Equity")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void LegKinds_RejectUnknownWireValuesBeforeTypedDispatch(string? instrumentType)
+    {
+        var assessment = Assessment();
+        var changed = assessment with
+        {
+            Basket = assessment.Basket with
+            {
+                Legs = [assessment.Basket.Legs[0] with { InstrumentType = instrumentType! }]
+            }
+        };
+
+        var error = Assert.Throws<ArgumentException>(() => OptionAssessmentValidation.Normalize(changed));
+
+        Assert.Equal("instrumentType must be one of Option, Equity.", error.Message);
+    }
+
+    [Fact]
+    public void LegKinds_EquityCannotRetainOptionIdentityFields()
+    {
+        var assessment = Assessment();
+        var changed = assessment with
+        {
+            Basket = assessment.Basket with
+            {
+                Legs = [assessment.Basket.Legs[0] with { InstrumentType = "Equity" }]
+            }
+        };
+
+        var error = Assert.Throws<ArgumentException>(() => OptionAssessmentValidation.Normalize(changed));
+
+        Assert.Equal("Equity legs cannot carry option-specific identity fields.", error.Message);
+    }
+
     [Theory]
     [InlineData("0.12345678901234567890123456789")]
     [InlineData("1e3")]

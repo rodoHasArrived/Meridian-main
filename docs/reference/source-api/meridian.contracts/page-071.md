@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationReportingRunNextActionPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunNextActionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L578).
+
+```csharp
+public sealed record WorkstationReportingRunNextActionPayload(string Id, string Kind, string Label, string Href, string Method, bool IsEnabled, string? DisabledReason, bool IsBrowserNavigable);
+```
+
+## WorkstationReportingRunPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:601](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L601).
+
+```csharp
+public sealed record WorkstationReportingRunPayload(string RunId, string TemplateId, string Family, string Status, string Trigger, string AsOfDate, int AttemptCount, int SectionCount, int LineageLinkedSections, IReadOnlyList<string> Artifacts, IReadOnlyList<string> AuditActions, string? FailureReason, IReadOnlyList<WorkstationReportingRunLinkPayload>? DrilldownLinks = null, IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null, IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null, string? ReportWriterDatasetSourceId = null, string? ReportWriterDatasetSourceLabel = null, int? ReportWriterDatasetRowCount = null, string? RunSeriesId = null, int? RunAttemptOrdinal = null, string? PriorRunId = null, string? RetryReason = null, string? LatestGeneratedRunId = null, string? LatestApprovedRunId = null, bool? IsLatestGenerated = null, bool? IsLatestApproved = null, string? ComparisonSummary = null, int? ChangedLineCount = null, int? AddedLineCount = null, int? RemovedLineCount = null, VersionedReportTemplateIdDto? ResolvedTemplate = null, ReportingRunParametersDto? ResolvedParameters = null, ReportingRunReadinessDto? Readiness = null);
+```
+
+## WorkstationReportingTemplatePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingTemplatePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:534](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L534).
+
+```csharp
+public sealed record WorkstationReportingTemplatePayload(string TemplateId, string Family, string Name, string Version, IReadOnlyList<string> Sections, string LifecycleStatus = "Approved", bool IsBuiltIn = true, bool IsLatestApproved = true, string ApprovalSummary = "Built-in approved template", string AuthoringRoute = "/api/fund-structure/reporting/templates", IReadOnlyList<WorkstationReportWriterGridPayload>? ReportWriterGrids = null, string AccessMode = "CompanyWide", string AccessSummary = "Company-wide access", bool IsAccessible = true, string? CreatedBy = null, DateTimeOffset? CreatedAt = null, string? UpdatedBy = null, DateTimeOffset? UpdatedAt = null, string? SubmittedBy = null, DateTimeOffset? SubmittedAt = null, string? ApprovedBy = null, DateTimeOffset? ApprovedAt = null, string? RejectedBy = null, DateTimeOffset? RejectedAt = null, string? DecisionRationale = null, string? ApprovalReference = null, VersionedReportTemplateIdDto? BasedOnTemplateId = null, IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null, IReadOnlyList<string>? ValidationIssues = null, IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
+```
+
+## WorkstationReportPackDistributionPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportPackDistributionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:658](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L658).
+
+Recipient-level distribution posture for governed report-pack output.
+
+```csharp
+public sealed record WorkstationReportPackDistributionPayload(string DistributionId, string Recipient, string RecipientRole, string Channel, string State, int PendingItems, string PendingSummary, string Owner, DateTimeOffset? DueAtUtc, DateTimeOffset? LastSentAtUtc, string Route);
+```
+
 ## WorkstationReportWriterDatasetSourcePayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterDatasetSourcePayload</code>. Kind: `record`.
@@ -138,7 +180,7 @@ public sealed record WorkstationSecurityCoverageReferencePayload(string Source, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:486](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L486).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:490](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L490).
 
 Security Master coverage state associated with a workstation security reference.
 
@@ -150,16 +192,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:488](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L488) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:489](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L489) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:490](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L490) |  |
-| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:491](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L491) |  |
+| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:492](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L492) |  |
+| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:493](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L493) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:494](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L494) |  |
+| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:495](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L495) |  |
 
 ## WorkstationSecurityReference
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityReference</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:503](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L503).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:507](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L507).
 
 Lightweight Security Master reference used by workstation portfolio and ledger surfaces. SubType is the most specific classification available at query time (e.g. &quot;CommonShare&quot;, &quot;Bond&quot;, &quot;OptionContract&quot;). It is derived from the security&#x27;s asset class and is null when the asset class does not map to a unique sub-type. RiskCountry is extracted from the CommonTerms JSON blob when available. IssuerType is only populated by full workbench queries; the lightweight symbol-lookup path leaves it null to avoid an extra round-trip.
 

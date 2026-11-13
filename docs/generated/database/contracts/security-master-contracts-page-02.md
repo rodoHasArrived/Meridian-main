@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 8
 
-Objects 81-160 of 568. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -105,10 +105,10 @@ classDiagram
         +bool AutoApplied
         +string? Currency
         +IReadOnlyList~string~ DissentingSources
+        +CorporateActionElectionCalendarDto? ElectionCalendar
         +DateOnly ExDate
         +DateOnly? PayableDate
         +Guid ProposalId
-        +string ProposalState
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionEconomicFingerprint["CorporateActionEconomicFingerprint"] {
     }
@@ -119,6 +119,20 @@ classDiagram
         +IReadOnlyList~CorporateActionDto~ Timeline
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionEffectiveStateProjector["CorporateActionEffectiveStateProjector"] {
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendar["CorporateActionElectionCalendar"] {
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto["CorporateActionElectionCalendarDto"] {
+        +IReadOnlyList~CorporateActionElectionCutoffDto~ Cutoffs
+        +string EvidenceState
+        +IReadOnlyList~string~ Messages
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionElectionCutoffDto["CorporateActionElectionCutoffDto"] {
+        +DateTimeOffset DeadlineAt
+        +string EvidenceReference
+        +string Id
+        +string Label
+        +string Source
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto["CorporateActionElectionDeadlineDto"] {
         +DateTimeOffset? At
@@ -219,10 +233,10 @@ classDiagram
         +Guid CorporateActionId
         +DateTimeOffset CreatedAtUtc
         +string CreatedBy
+        +CorporateActionElectionCalendarDto? ElectionCalendar
         +string? MethodologyProfileId
         +Guid ProposalId
         +CorporateActionCaseScopeDto Scope
-        +Guid SecurityId
     }
     class Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto["CorporateActionProcessingOptionDto"] {
         +IReadOnlyList~string~ Blockers
@@ -418,23 +432,6 @@ classDiagram
         +string SourceSystem
         +string UpdatedBy
     }
-    class Meridian_Contracts_SecurityMaster_DeclareSecurityUnderlyingLinkRequest["DeclareSecurityUnderlyingLinkRequest"] {
-        +string? CreatedBy
-        +string? Notes
-        +string? Reference
-        +SecurityUnderlyingRole Role
-        +Guid SecurityId
-        +Guid? UnderlyingSecurityId
-        +DateTimeOffset ValidFrom
-        +DateTimeOffset? ValidTo
-        +decimal? Weight
-    }
-    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal["DeclaredScheduleRefusal"] {
-        +DeclaredScheduleRefusalCode Code
-        +string Message
-    }
-    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode["DeclaredScheduleRefusalCode"] {
-    }
     Meridian_Contracts_SecurityMaster_CorporateActionConflictResolutionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineEvidenceDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineHistoryDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto
@@ -444,8 +441,10 @@ classDiagram
     Meridian_Contracts_SecurityMaster_CorporateActionDownstreamAuthorityRequiredException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
     Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxDto --> Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto
     Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
+    Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto
     Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalActionAvailabilityDto
     Meridian_Contracts_SecurityMaster_CorporateActionEffectiveState --> Meridian_Contracts_SecurityMaster_CorporateActionDto
+    Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionCutoffDto
     Meridian_Contracts_SecurityMaster_CorporateActionEventTypeNormalizationResult --> Meridian_Contracts_SecurityMaster_CorporateActionEventTypeCount
     Meridian_Contracts_SecurityMaster_CorporateActionEventTypeNormalizationResult --> Meridian_Contracts_SecurityMaster_CorporateActionEventTypeRename
     Meridian_Contracts_SecurityMaster_CorporateActionEvidenceMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionEvidenceDto
@@ -456,6 +455,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_CorporateActionPayloadSchemaDescriptor --> Meridian_Contracts_SecurityMaster_CorporateActionPayloadFieldDescriptor
     Meridian_Contracts_SecurityMaster_CorporateActionPermissionDeniedException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
     Meridian_Contracts_SecurityMaster_CorporateActionPersistenceUnavailableException --> Meridian_Contracts_SecurityMaster_CorporateActionOperationException
+    Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
@@ -481,5 +481,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorDataType
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorEntitlementStatus
     Meridian_Contracts_SecurityMaster_DayCountPeriodContext --> Meridian_Contracts_SecurityMaster_DayCountReferencePeriod
-    Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
 ```

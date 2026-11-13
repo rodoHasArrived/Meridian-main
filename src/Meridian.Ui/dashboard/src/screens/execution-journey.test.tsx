@@ -30,8 +30,7 @@ describe("execution journey", () => {
     const user = userEvent.setup();
     render(<ExecutionJourneyPanel orderId="order-1" fills={[fill]} />);
     await screen.findByText(/Submission: OrderSubmitted/);
-    expect(search).toHaveBeenCalledWith({ objectId: "order-1", limit: 1000 }, expect.objectContaining({ allowDevelopmentFallback: false }));
-    expect(search).toHaveBeenCalledWith({ relatedObjectId: "order-1", limit: 1000 }, expect.objectContaining({ allowDevelopmentFallback: false }));
+    expect(search).toHaveBeenCalledWith({ orderId: "order-1", limit: 1000 }, expect.objectContaining({ allowDevelopmentFallback: false }));
     expect(screen.getByText(/Control outcomes are unknown/)).toBeInTheDocument();
     await user.click(screen.getByText(/Submission: OrderSubmitted/));
     expect(screen.getByText("original evidence")).toBeVisible();
@@ -46,11 +45,19 @@ describe("execution journey", () => {
     expect(await screen.findByText(/Execution audit source is not configured/)).toBeInTheDocument();
     expect(screen.getByText(/Results truncated/)).toBeInTheDocument();
   });
+  it("does not mix ambiguous order evidence with previous links or loaded fills", async () => {
+    const ambiguous = { ...result([audit]), orderIdentityStatus: "Ambiguous" };
+    expect(buildExecutionJourney("order-1", [ambiguous, result([audit])], [fill]).events).toEqual([]);
+    search.mockResolvedValue(ambiguous);
+    render(<ExecutionJourneyPanel orderId="order-1" fills={[fill]} />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Order identity is ambiguous");
+    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+  });
 
   it("discards an old order response after selection changes", async () => {
     let resolveOld!: (value: AuditTrailExplorerResult) => void;
     const old = new Promise<AuditTrailExplorerResult>((resolve) => { resolveOld = resolve; });
-    search.mockImplementation((query) => query?.objectId === "order-1" || query?.relatedObjectId === "order-1" ? old : Promise.resolve(result([{ ...audit, auditId: "new", objectId: "order-2", action: "SecondOrder", }])));
+    search.mockImplementation((query) => query?.orderId === "order-1" ? old : Promise.resolve(result([{ ...audit, auditId: "new", objectId: "order-2", action: "SecondOrder", }])));
     const { rerender } = render(<ExecutionJourneyPanel orderId="order-1" />);
     rerender(<ExecutionJourneyPanel orderId="order-2" />);
     await screen.findByText(/SecondOrder/);

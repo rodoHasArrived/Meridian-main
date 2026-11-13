@@ -28,6 +28,7 @@ export interface CorporateActionCalendarEvent {
   cases: Array<{ caseId: string; version: number; state: string; scope: CorporateActionCaseScope }>;
   source: CorporateActionCaseSourceSnapshotDto["providerIdentity"]; proposalState: string;
   deadline?: CorporateActionDeadlineHistory | null;
+  sourceCutoff?: { id: string; label: string; deadlineAt: string; source: string; evidenceReference: string } | null;
 }
 export interface CorporateActionCalendarPage {
   from: string; to: string; generatedAtUtc: string; revision: string; items: CorporateActionCalendarEvent[];

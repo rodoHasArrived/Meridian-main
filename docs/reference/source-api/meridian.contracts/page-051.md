@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlpacaBrokerageConnectionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AlpacaBrokerageConnectionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L104).
+
+```csharp
+public sealed record AlpacaBrokerageConnectionRequestDto(string? KeyId, string? SecretKey, string? Environment = "paper");
+```
+
+## ApprovalDecision
+
+Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L31).
+
+```csharp
+public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
+```
+
+## ApprovalPolicy
+
+Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L23).
+
+```csharp
+public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
+```
+
 ## ApprovalStep
 
 Qualified name: <code>Meridian.Contracts.Workstation.ApprovalStep</code>. Kind: `record`.
@@ -67,26 +97,26 @@ Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8](../../.
 Query contract for cross-object audit trail exploration.
 
 ```csharp
-public sealed record AuditTrailExplorerQueryDto(string? SearchText = null, string? RunId = null, string? Category = null, string? Action = null, string? Outcome = null, string? Actor = null, string? Symbol = null, string? CorrelationId = null, string? ObjectKind = null, string? ObjectId = null, string? RelatedObjectId = null, DateTimeOffset? FromUtc = null, DateTimeOffset? ToUtc = null, int Limit = 100);
+public sealed record AuditTrailExplorerQueryDto(string? SearchText = null, string? RunId = null, string? Category = null, string? Action = null, string? Outcome = null, string? Actor = null, string? Symbol = null, string? CorrelationId = null, string? ObjectKind = null, string? ObjectId = null, string? RelatedObjectId = null, DateTimeOffset? FromUtc = null, DateTimeOffset? ToUtc = null, int Limit = 100, string? OrderId = null);
 ```
 
 ## AuditTrailExplorerResultDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L54).
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L57).
 
 Result contract for cross-object audit trail search.
 
 ```csharp
-public sealed record AuditTrailExplorerResultDto(DateTimeOffset AsOf, int TotalMatched, int Returned, IReadOnlyList<AuditTrailTimelineEntryDto> Entries, AuditTrailSourceAvailabilityDto? SourceAvailability = null);
+public sealed record AuditTrailExplorerResultDto(DateTimeOffset AsOf, int TotalMatched, int Returned, IReadOnlyList<AuditTrailTimelineEntryDto> Entries, AuditTrailSourceAvailabilityDto? SourceAvailability = null, IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null, string? CoverageNote = null, string? OrderIdentityStatus = null);
 ```
 
 ## AuditTrailObjectKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailObjectKindDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L70).
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L79).
 
 Stable object-kind vocabulary for audit explorer rows.
 
@@ -98,21 +128,21 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Audit</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L72) |  |
-| <code>Order</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73) |  |
-| <code>ExecutionControl</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L74) |  |
-| <code>OperatorAction</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L75) |  |
-| <code>Promotion</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L76) |  |
-| <code>Run</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L77) |  |
-| <code>Reconciliation</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L78) |  |
-| <code>Report</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L79) |  |
-| <code>Evidence</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L80) |  |
+| <code>Audit</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L81) |  |
+| <code>Order</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L82) |  |
+| <code>ExecutionControl</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L83) |  |
+| <code>OperatorAction</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L84) |  |
+| <code>Promotion</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L85) |  |
+| <code>Run</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L86) |  |
+| <code>Reconciliation</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L87) |  |
+| <code>Report</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L88) |  |
+| <code>Evidence</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L89) |  |
 
 ## AuditTrailSourceAvailabilityDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L62).
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L68).
 
 Distinguishes an empty retained trail from a source that is not configured.
 
@@ -120,16 +150,28 @@ Distinguishes an empty retained trail from a source that is not configured.
 public sealed record AuditTrailSourceAvailabilityDto(bool ExecutionAudit, bool OperationsContinuity);
 ```
 
+## AuditTrailSourceStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
+
+Source availability is independent of the number of matching records.
+
+```csharp
+public sealed record AuditTrailSourceStatusDto(string Source, string State);
+```
+
 ## AuditTrailTimelineEntryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailTimelineEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L27).
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L28).
 
 Normalized timeline row used by shared audit explorer surfaces.
 
 ```csharp
-public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null);
+public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null, string? OrderId = null, string? BrokerName = null);
 ```
 
 ## AutomatedJournalCapitalAccountReconciliationDto
@@ -223,7 +265,7 @@ public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:271](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L271).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:275](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L275).
 
 Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
 
@@ -235,7 +277,7 @@ public sealed record BiasDisclosureDto(string FillTiming, string FillConservatis
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:260](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L260).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:264](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L264).
 
 One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
 
@@ -461,7 +503,7 @@ public sealed record CashFinancingSummary(string Currency, decimal TotalCash, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:936](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L936).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:940](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L940).
 
 A single historical cash-flow entry from a strategy run.
 
@@ -493,7 +535,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:946](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L946).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:950](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L950).
 
 A single time-bucket within a projected cash ladder.
 
@@ -544,7 +586,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1128](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1128).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1132](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1132).
 
 Workstation-facing summary of a closed lot for a strategy run.
 
@@ -572,50 +614,4 @@ A contributor&#x27;s retained records and evaluation posture for the selected cl
 
 ```csharp
 public sealed record CloseReadinessContributionDto(string ContributorId, string Owner, string Status, DateTimeOffset? EvaluatedAtUtc, IReadOnlyList<string> RecordIds);
-```
-
-## CloseReadinessProjectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessProjectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L46).
-
-Shared server-owned close decision; incomplete evidence is always blocking.
-
-```csharp
-public sealed record CloseReadinessProjectionDto(CloseReadinessScopeDto Scope, DateTimeOffset EvaluatedAtUtc, string Status, bool IsComplete, bool IsReadyToClose, IReadOnlyList<CloseReadinessContributionDto> Contributors, IReadOnlyList<CloseReadinessBlockerDto> Blockers);
-```
-
-## CloseReadinessScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L4).
-
-The explicitly selected subject of a close decision. No dimension is inferred from a workflow.
-
-```csharp
-public sealed record CloseReadinessScopeDto(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? EntityId, string? PeriodId);
-```
-
-## CloseReadinessSubjectDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessSubjectDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L12).
-
-Authoritative book/account/entity membership, including a token for the retained source snapshot.
-
-```csharp
-public sealed record CloseReadinessSubjectDto(CloseReadinessScopeDto Scope, string Status, DateTimeOffset EvaluatedAtUtc, string EvidenceVersion, IReadOnlyList<string> RecordIds);
-```
-
-## CloseWorkflow
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseWorkflow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:31](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L31).
-
-```csharp
-public sealed record CloseWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 ```

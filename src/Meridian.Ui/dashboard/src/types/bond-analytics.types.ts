@@ -3,6 +3,15 @@ export type BondDecimal = number | string;
 export type BondYieldConvention = "NominalPeriodic" | "AnnualEffective" | "Simple";
 export type BondCalculationVersion = "bond-analytics-v1" | "bond-analytics-v2" | "bond-analytics-v3";
 
+export interface BondExerciseScenario {
+  kind: string;
+  exerciseDate: string;
+  redemptionPrice: BondDecimal;
+  yield: BondDecimal;
+  latestNoticeDate?: string | null;
+  earliestNoticeDate?: string | null;
+}
+
 export interface BondCalculationContext {
   asOf: string;
   settlementDate?: string | null;
@@ -46,6 +55,8 @@ export interface BondAnalyticsResult {
   yieldToWorst: BondDecimal | null;
   maturityDate?: string | null;
   governingYieldScenarios?: Array<{ kind: string; date: string; yield: BondDecimal }> | null;
+  redemptionScenarios?: BondExerciseScenario[];
+  yieldToWorstScenarios?: BondExerciseScenario[];
   cashFlows: Array<{
     flowId: string;
     paymentDate: string;

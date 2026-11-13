@@ -419,7 +419,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                         requireDurableSuccess: true).ConfigureAwait(false);
                     _logger.LogInformation(
                         "Persisted {Count} ledger entries for paper session {SessionId}",
-                        ledger.JournalEntryCount, sessionId);
+                        ledger.JournalEntryCount, LogSanitizer.Sanitize(sessionId));
                 }
 
                 // The close record is the final fallible persistence step while the session gate
@@ -438,7 +438,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
 
             _logger.LogInformation(
                 "Closed paper session {SessionId} — final equity: {Equity:C}",
-                sessionId, finalEquity);
+                LogSanitizer.Sanitize(sessionId), finalEquity);
 
             return true;
         }
@@ -467,6 +467,18 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             return null;
         }
         return BuildSessionDetailDto(session);
+    }
+
+    /// <summary>Detached execution-report evidence without rebuilding the session portfolio or ledger.</summary>
+    public IReadOnlyList<ExecutionReport> GetSessionFillHistory(string sessionId)
+    {
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
+            return [];
+        lock (session.SyncRoot)
+        {
+            return session.FillHistory.Select(CloneExecutionReport).ToArray();
+        }
     }
 
     /// <summary>Returns a defensive portfolio snapshot for an active session, or null.</summary>

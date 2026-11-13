@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DemoWorkspaceSeeder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeeder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:44](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L44).
+
+Provisions and tears down the isolated Meridian demo workspace used by the --seed-demo / --reset-demo host verbs and by the --demo serve mode.
+
+```csharp
+public sealed class DemoWorkspaceSeeder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DemoWorkspaceSeeder(string baseDataRoot, ILoggerFactory? loggerFactory = null);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:69](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L69) | Creates a seeder for the demo root derived from baseDataRoot. |
+| <code>public string DemoRoot =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:79](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L79) | The isolated demo root this seeder operates on. |
+| <code>public async Task&lt;DemoWorkspaceSeedReport&gt; SeedAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:85](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L85) | Seeds the demo workspace durably and idempotently. Creates the demo root, writes the demo sentinel, and provisions the reconciliation and strategy desks through the real desk stores. |
+| <code>public Task&lt;DemoWorkspaceResetReport&gt; ResetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:383](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L383) | Tears down the demo workspace, guarded so only the dedicated, sentinel-marked demo root can be deleted. A missing demo root is a no-op, not an error. |
+
+## DemoWorkspaceSeedReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeedReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:418](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L418).
+
+Outcome of seeding the demo workspace.
+
+```csharp
+public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
+```
+
+## DesktopLaunchTicketService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:12](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L12).
+
+Issues short-lived, single-use launch claims so the desktop workstation never trusts browser-selected identity or navigation state directly from process arguments.
+
+```csharp
+public sealed class DesktopLaunchTicketService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopLaunchTicketService(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:18](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L18) |  |
+| <code>public string Issue(string username, string page);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:23](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L23) |  |
+| <code>public DesktopLaunchTicketRedemptionDto? Redeem(IPAddress? remoteAddress, string token);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:35](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L35) |  |
+
+## DesktopWorkstationLaunchService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesktopWorkstationLaunchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:8](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L8).
+
+Issues a desktop launch ticket and attempts to open the desktop workstation.
+
+```csharp
+public sealed class DesktopWorkstationLaunchService(DesktopLaunchTicketService tickets)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool TryLaunch(string username, string hostBaseAddress, string? requestedPage, out string message);</code> | [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:15](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L15) |  |
+
 ## DeterministicReportingCertifiedArtifactProducer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DeterministicReportingCertifiedArtifactProducer</code>. Kind: `class`.
@@ -297,11 +368,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FamilyOfficeReadService(IFundStructureService? fundStructureService, IFundAccountService? fundAccountService, StrategyRunReadService? strategyRunReadService = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:25](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L25) |  |
-| <code>public async Task&lt;FamilyOfficeOverviewDto&gt; GetOverviewAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:37](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L37) |  |
-| <code>public async Task&lt;FamilyOfficeBalanceSheetResponseDto&gt; GetBalanceSheetAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:107](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L107) |  |
-| <code>public async Task&lt;FamilyOfficeEntitiesResponseDto&gt; GetEntitiesAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:113](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L113) |  |
-| <code>public async Task&lt;FamilyOfficeOwnershipGraphResponseDto&gt; GetOwnershipGraphAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:119](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L119) |  |
+| <code>public FamilyOfficeReadService(IFundStructureService? fundStructureService, IFundAccountService? fundAccountService, StrategyRunReadService? strategyRunReadService = null, TimeProvider? timeProvider = null, IPrivateCapitalLifecycleSource? privateCapitalSource = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:26](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L26) |  |
+| <code>public async Task&lt;FamilyOfficeOverviewDto&gt; GetOverviewAsync(CancellationToken ct = default, Guid? familyOfficeId = null, DateOnly? ownershipAsOf = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:40](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L40) |  |
+| <code>public async Task&lt;FamilyOfficeBalanceSheetResponseDto&gt; GetBalanceSheetAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:152](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L152) |  |
+| <code>public async Task&lt;FamilyOfficeEntitiesResponseDto&gt; GetEntitiesAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:158](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L158) |  |
+| <code>public async Task&lt;FamilyOfficeOwnershipGraphResponseDto&gt; GetOwnershipGraphAsync(CancellationToken ct = default, Guid? familyOfficeId = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:164](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L164) |  |
 
 ## FeatureCapabilitySettingsService
 
@@ -781,6 +852,25 @@ Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:14](../
 public sealed record Snapshot(IReadOnlyList<OnboardingWorkspaceDto> Workspaces);
 ```
 
+## FilePrivateCapitalLifecycleSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FilePrivateCapitalLifecycleSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:26](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L26).
+
+Reads a versioned retained source cut under the workstation data directory. Provisioners replace the document atomically and retain prior snapshot revisions. No writes or approval authority.
+
+```csharp
+public sealed class FilePrivateCapitalLifecycleSource(string dataDirectory) : IPrivateCapitalLifecycleSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:31](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L31) |  |
+| <code>public static PrivateCapitalLifecycleRead Project(PrivateCapitalLifecycleDocumentDto document, string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, IReadOnlyDictionary&lt;DateOnly, IReadOnlySet&lt;string&gt;&gt;? historicalEntityScopes = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:68](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L68) |  |
+
 ## FileReconciliationSlaCalendarResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileReconciliationSlaCalendarResolver</code>. Kind: `class`.
@@ -820,133 +910,3 @@ Declared public members:
 | <code>public FileReportingReconciliationEvidenceStore(string snapshotPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;A reporting reconciliation evidence snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:147](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L147) |  |
 | <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:180](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L180) |  |
 | <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:212](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L212) |  |
-
-## Snapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingReconciliationEvidenceStore.Snapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:572](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L572).
-
-```csharp
-public sealed record Snapshot(string SchemaVersion, IReadOnlyList<ReportingReconciliationEvidenceReceipt> Receipts, string ContentHashSha256)
-```
-
-## FileReportingRunStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingRunStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L69).
-
-Persists reporting run snapshots, output manifests, revisions, and audit history to disk.
-
-```csharp
-public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOnlyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportingRunStore(ReportingRunStoreOptions options, ILogger&lt;FileReportingRunStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:92](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L92) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:106](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L106) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:114](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L114) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:129](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L129) |  |
-| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:135](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L135) |  |
-| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:162](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L162) |  |
-| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:172](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L172) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:183](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L183) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:193](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L193) |  |
-| <code>public string? GetRevision(string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:204](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L204) |  |
-| <code>public string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:221](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L221) |  |
-| <code>public async Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:242](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L242) |  |
-| <code>public async Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:306](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L306) |  |
-| <code>public async Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:349](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L349) |  |
-| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:377](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L377) |  |
-| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:383](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L383) |  |
-| <code>public Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:396](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L396) |  |
-| <code>public bool HasLegacyRuns(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:561](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L561) |  |
-| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyRunInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:567](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L567) |  |
-| <code>public string ExportLegacyRun(string runId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:576](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L576) |  |
-| <code>public async Task&lt;ReportingLegacyArchiveReceipt&gt; ArchiveLegacySnapshotAsync(ReportAccessQueryContext recoveryAuthority, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:589](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L589) |  |
-
-## FileReportingScheduleStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingScheduleStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:163](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L163).
-
-Persists reporting schedules, execution authority, and legacy schedule recovery evidence.
-
-```csharp
-public sealed partial class FileReportingScheduleStore : IReportingScheduleStore, INonProductionOnlyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportingScheduleStore(ReportingScheduleStoreOptions options, ILogger&lt;FileReportingScheduleStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:182](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L182) |  |
-| <code>public IReadOnlyList&lt;ReportingScheduleRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:195](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L195) |  |
-| <code>public void Save(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:205](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L205) |  |
-| <code>public void Upsert(ReportingScheduleRecordDto schedule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L236) |  |
-| <code>public void Upsert(ReportingScheduleRecordDto schedule, DateTimeOffset? expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L239) |  |
-| <code>public bool Delete(string tenantId, string companyId, string scheduleId, DateTimeOffset expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:303](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L303) |  |
-| <code>public bool HasLegacySchedules(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:337](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L337) |  |
-| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyScheduleInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:346](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L346) |  |
-| <code>public string ExportLegacySchedule(string scheduleId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:372](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L372) |  |
-| <code>public ReportingLegacyArchiveReceipt ArchiveLegacySnapshot(ReportAccessQueryContext recoveryAuthority, string reason);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:392](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L392) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L7).
-
-```csharp
-public sealed partial class FileReportingScheduleStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingScheduleExecutionLease? TryClaimExecution(ReportingScheduleRecordDto schedule, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L14) |  |
-| <code>public ReportingScheduleExecutionLease? RenewExecutionLease(ReportingScheduleRecordDto schedule, ReportingScheduleExecutionLease lease, DateTimeOffset nowUtc, TimeSpan leaseDuration);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L61) |  |
-| <code>public void ReleaseExecutionLease(string tenantId, string companyId, string scheduleId, ReportingScheduleExecutionLease lease);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:99](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L99) |  |
-| <code>public void UpsertClaimedExecution(ReportingScheduleRecordDto schedule, DateTimeOffset expectedUpdatedAtUtc, ReportingScheduleExecutionLease lease);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:125](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L125) |  |
-
-## FileReportingStarterKitStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingStarterKitStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:52](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L52).
-
-Persists tenant and company reporting starter-kit state to disk.
-
-```csharp
-public sealed class FileReportingStarterKitStore : IReportingStarterKitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportingStarterKitStore(ReportingStarterKitStoreOptions options, ILogger&lt;FileReportingStarterKitStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:62](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L62) |  |
-| <code>public ReportingStarterKitStateDto? Load(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L71) |  |
-| <code>public void Save(string tenantId, string companyId, ReportingStarterKitStateDto state);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L89) |  |
-
-## FileReportPackDeliveryRecordStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportPackDeliveryRecordStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:38](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L38).
-
-Persists report-pack delivery attempts and retained artifact content to disk.
-
-```csharp
-public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecordStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportPackDeliveryRecordStore(ReportPackDeliveryStoreOptions options, ILogger&lt;FileReportPackDeliveryRecordStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:60](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L60) |  |
-| <code>public void Save(IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; attempts);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:81](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L81) |  |

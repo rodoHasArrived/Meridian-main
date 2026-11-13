@@ -51,6 +51,16 @@ describe("corporate action calendar", () => {
     expect(await screen.findByText(/Case not authorized or unavailable/)).toBeInTheDocument();
     expect(api.getCorporateActionCaseDeadlines).toHaveBeenCalledWith("missing", expect.anything());
   });
+  it("shows a validated source cutoff with its supplied offset without inventing intermediary or account scope", async () => {
+    vi.mocked(api.getCorporateActionCalendar).mockResolvedValue({ ...calendar, items: [{ ...calendar.items[0], eventId: "source-cutoff", dateKind: "ElectionDeadline", at: "2026-11-12T23:30:00-05:00", cases: [], sourceCutoff: { id: "cutoff-1", label: "Instruction cutoff", deadlineAt: "2026-11-12T23:30:00-05:00", source: "Custodian notice", evidenceReference: "document://source-notice/v2" } }] });
+    const user = userEvent.setup();
+    renderWithRouter(<CorporateActionCalendarPanel scopeKey="tenant-1" onCaseSelected={vi.fn()} onChanged={vi.fn()} />, { initialEntries: ["/data/corporate-actions?caFrom=2026-11-12&caTo=2026-11-18"] });
+    await user.click(await screen.findByRole("button", { name: "Source election deadline for ABC on 2026-11-12 at 2026-11-12T23:30:00-05:00" }));
+    expect(screen.getByText(/Source-reported cutoff: Instruction cutoff/)).toHaveTextContent("2026-11-12T23:30:00-05:00");
+    expect(screen.getByText(/Source-reported cutoff: Instruction cutoff/)).toHaveTextContent("document://source-notice/v2");
+    expect(screen.getByText(/Intermediary role and account applicability are not reported/)).toBeInTheDocument();
+    expect(screen.queryByText(/operator-recorded/)).not.toBeInTheDocument();
+  });
   it("discards an old range response when the date selection changes", async () => {
     let oldResolve!: (value: CorporateActionCalendarPage) => void;
     const old = new Promise<CorporateActionCalendarPage>((resolve) => { oldResolve = resolve; });

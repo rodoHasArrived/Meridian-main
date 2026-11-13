@@ -22,6 +22,7 @@ import {
   type AuditTrailTone
 } from "@/screens/trading-screen.audit-trail.view-model";
 import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
+import { ExecutionJourney } from "@/screens/execution-journey";
 
 const AUDIT_LIMIT = 50;
 
@@ -75,6 +76,7 @@ export function ExecutionAuditTrailPanel() {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        <ExecutionJourney recent={result} />
         {error ? <StatusBanner tone="danger" title="Audit trail unavailable" detail={error} /> : null}
         {result?.sourceAvailability?.executionAudit === false ? <StatusBanner tone="warning" title="Execution audit source unavailable" detail="The execution audit service is not configured. Empty results do not establish that no actions occurred." /> : null}
         {vm.truncationNotice ? (

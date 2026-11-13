@@ -2,11 +2,29 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 568. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 571. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto["SecurityCurveDefinitionDto"] {
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +string Currency
+        +Guid CurveId
+        +string CurveKey
+        +string DayCount
+        +string? Description
+        +string? IndexName
+        +SecurityCurveInterpolation Interpolation
+        +SecurityCurveKind Kind
+        +string Source
+        +string? Tenor
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation["SecurityCurveInterpolation"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCurveKind["SecurityCurveKind"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCurvePointDto["SecurityCurvePointDto"] {
         +DateOnly Date
         +SecurityRatePointEvidenceDto? RateEvidence
@@ -410,12 +428,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityQuotationConvention["SecurityQuotationConvention"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityQuoteConvention["SecurityQuoteConvention"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityQuoteStatus["SecurityQuoteStatus"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityRateConstructionMethod["SecurityRateConstructionMethod"] {
-    }
+    Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
+    Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
@@ -443,6 +457,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
     Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityPriceBasis
     Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityQuotationConvention
-    Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityQuoteStatus
     Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
 ```

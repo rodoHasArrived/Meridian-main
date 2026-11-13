@@ -1610,6 +1610,12 @@ only the revision actually available and does not manufacture overwritten versio
 unprovable historical provenance. This store owns integration configuration persistence; provider
 alias and capability-factory composition remain in their existing ProviderSdk/Infrastructure owners.
 
+`IProviderIntegrationIdentityDecisionStore` retains each identity decision under its sync-run and
+decision IDs. The file-backed implementation takes a per-decision cross-process lease, accepts an
+identical retry, and refuses changed content for a retained decision before an atomic write. Listing
+reads only the requested sync-run directory; the existing tenant-store partition remains the scope
+boundary. Retention records the decision evidence and does not itself grant activation authority.
+
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases
 in `accounting_configuration_rule_test_cases` so service-owned dry-run regression suites round-trip

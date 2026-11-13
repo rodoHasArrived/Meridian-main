@@ -1050,17 +1050,20 @@ public sealed partial class PostgresCorporateActionOperationsStore
             reader.IsDBNull(30) ? null : reader.GetString(30),
             reader.IsDBNull(31) ? null : reader.GetString(31),
             releaseStatus);
-        var displayMetadata = reader.IsDBNull(33) && reader.IsDBNull(34) && reader.IsDBNull(37)
+        var agreeingSources = JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(35), JsonOptions) ?? [];
+        var dissentingSources = JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(36), JsonOptions) ?? [];
+        var dissentingFields = reader.IsDBNull(37)
+            ? []
+            : JsonSerializer.Deserialize<IReadOnlyList<CorporateActionDissentFieldDto>>(reader.GetString(37), JsonOptions) ?? [];
+        var displayMetadata = reader.IsDBNull(33) && reader.IsDBNull(34)
+            && agreeingSources.Count == 0 && dissentingSources.Count == 0 && dissentingFields.Count == 0
             ? null
             : new CorporateActionSourceDisplayMetadataDto(
                 reader.IsDBNull(33) ? string.Empty : reader.GetString(33),
                 reader.IsDBNull(34) ? providerIdentity.ProviderId : reader.GetString(34),
-                JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(35), JsonOptions) ?? [],
-                JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(36), JsonOptions) ?? [],
-                reader.IsDBNull(37)
-                    ? []
-                    : JsonSerializer.Deserialize<IReadOnlyList<CorporateActionDissentFieldDto>>(
-                        reader.GetString(37), JsonOptions) ?? []);
+                agreeingSources,
+                dissentingSources,
+                dissentingFields);
         var sourceSnapshot = new CorporateActionCaseSourceSnapshotDto(
             proposedAction,
             providerIdentity,

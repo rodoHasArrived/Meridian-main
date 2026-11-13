@@ -73,6 +73,19 @@ Imports report each committed row and any failed row. After an uncertain or part
 retry the exact original request with its retained command identity rather than starting another import.
 Calendar coverage stays partial until every page loads; a changed revision requires a fresh range read.
 
+Validated source-reported cutoffs also appear with their original offset and source evidence,
+separately from operator-captured deadline history. Their account/intermediary applicability is
+unreported when the source companion supplies no scope. Cutoff metadata does not change economic
+identity. Changed source facts under the same provider event/version are rejected as an immutable
+source conflict; use the existing source-correction/version path or append separately reviewed case
+evidence, without replacing the retained source payload. Cutoff/provenance changes invalidate an
+open calendar cursor even when economic terms are unchanged.
+
+Pre-existing source versions that included this companion in their stored economic fingerprint
+retain that fingerprint and payload. They may require governed source correction/review before
+canonical acceptance under the separated projection; do not rewrite retained records to bypass
+that check. Existing case deadline capture/history remains independent of those source records.
+
 ## Imported broker option assessments
 
 Construct the exact basket first: resolved contracts and deliverables, sides, opening/closing intent,
