@@ -3,6 +3,7 @@ import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type
 import { formatCurrency, formatUtcTimestamp } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 
 const money = (value: number | null | undefined) => value == null ? "Unavailable" : formatCurrency(value);
@@ -58,7 +59,7 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
       <div className="grid gap-2 md:grid-cols-3">
         <label className="text-xs">From date (UTC)<Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
         <label className="text-xs">Before date (UTC)<Input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} /></label>
-        <label className="text-xs">Status<select className="block h-9 w-full rounded-md border border-border bg-background px-2" value={status} onChange={(event) => setStatus(event.target.value)}><option value="">All statuses</option>{["PendingNew", "Accepted", "PartiallyFilled", "Filled", "PendingCancel", "Cancelled", "Rejected", "Expired"].map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label className="text-xs">Status<Select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">All statuses</option>{["PendingNew", "Accepted", "PartiallyFilled", "Filled", "PendingCancel", "Cancelled", "Rejected", "Expired"].map((value) => <option key={value}>{value}</option>)}</Select></label>
       </div>
       {error ? <p role="alert">{error}</p> : null}
       {totals ? <dl className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4"><div><dt>Gross / net realized P&amp;L</dt><dd>{money(totals.realizedPnl)} / {money(totals.netRealizedPnl)}</dd></div><div><dt>Commissions / fees</dt><dd>{money(totals.commissions)} / {money(totals.fees)}</dd></div><div><dt>Execution slippage</dt><dd>{money(totals.slippage)}</dd></div><div><dt>Account coverage for selected dates</dt><dd>{totals.coverage}</dd></div></dl> : null}
@@ -73,7 +74,7 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
         ariaLabel="Retained orders for the selected account"
         emptyText={loading ? "Loading retained orders…" : "No retained orders match these filters. This does not establish complete historical coverage."}
         columns={[
-          { id: "order", label: "Order", render: (order) => <button type="button" className="underline" onClick={() => setSelected({ orderId: order.orderId, attemptId: order.attemptId })} aria-expanded={detail?.orderId === order.orderId && detail?.attemptId === order.attemptId}>{order.orderId}</button>, exportValue: (order) => order.orderId },
+          { id: "order", label: "Order", render: (order) => <Button type="button" size="sm" variant="ghost" className="px-1" onClick={() => setSelected({ orderId: order.orderId, attemptId: order.attemptId })} aria-expanded={detail?.orderId === order.orderId && detail?.attemptId === order.attemptId}>{order.orderId}</Button>, exportValue: (order) => order.orderId },
           { id: "symbol", label: "Symbol", render: (order) => order.symbol, exportValue: (order) => order.symbol },
           { id: "side", label: "Side", render: (order) => order.side, exportValue: (order) => order.side },
           { id: "status", label: "Status", render: (order) => order.status, exportValue: (order) => order.status },

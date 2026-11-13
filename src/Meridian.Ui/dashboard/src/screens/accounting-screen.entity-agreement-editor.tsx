@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -69,7 +70,7 @@ export function AccountingArrangementEditor({ scope, arrangement, initialOrganiz
   return <form onSubmit={(event) => void save(event)} className="space-y-4 rounded border border-border p-4" aria-label="Accounting profile editor">
     <h4 className="font-semibold">{arrangement ? `Revise ${arrangement.arrangementReference}` : "New intercompany accounting profile"}</h4>
     <p className="text-sm text-muted-foreground">Select an approved legal agreement version, then configure its books, accounts and counterpart template. Legal parties, currency, dates and signed evidence come from that exact retained version.</p>
-    <Link className="inline-block text-sm underline underline-offset-4" to={canonicalAgreementPath(canonicalId, scope.book.ledgerBookId)}>Open canonical legal agreement registry</Link>
+    <Button asChild variant="ghost" size="sm" className="underline underline-offset-4"><Link to={canonicalAgreementPath(canonicalId, scope.book.ledgerBookId)}>Open canonical legal agreement registry</Link></Button>
     <FormRow label="Accounting profile ID" labelFor="accounting-profile-identity"><Input id="accounting-profile-identity" readOnly value={arrangementId} onFocus={(event) => event.target.select()} /></FormRow>
     <fieldset disabled={mutation.busy || !scope.capabilities.canManageAgreements} className="space-y-4"><FormGrid columns={3}>
       <OperationField label="Accounting profile organization" value={organizationId} onChange={setOrganizationId} required disabled={Boolean(arrangement)}><option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}</OperationField>
@@ -88,7 +89,7 @@ export function AccountingArrangementEditor({ scope, arrangement, initialOrganiz
     {legalList.data?.nextCursor ? <Button type="button" variant="outline" onClick={() => setCursor(legalList.data!.nextCursor!)}>Next legal agreement page</Button> : null}
     {cursor ? <Button type="button" variant="outline" onClick={() => setCursor("")}>First legal agreement page</Button> : null}
     {chosen ? <CanonicalTerms revision={chosen} entityName={entityName} /> : <p role="status" className="text-sm text-muted-foreground">An exact approved legal version is required before this accounting profile can be saved.</p>}
-    {template === "Guarantee" ? <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={accountingMapping} onChange={(event) => setAccountingMapping(event.target.checked)} />Include accounting book mappings for this guarantee</label> : null}
+    {template === "Guarantee" ? <Checkbox checked={accountingMapping} onCheckedChange={setAccountingMapping} label="Include accounting book mappings for this guarantee" /> : null}
     {chosen && (template !== "Guarantee" || accountingMapping) ? [chosen.terms.partyOneId, chosen.terms.partyTwoId].map((entityId, index) => {
       const party = parties.find((item) => item.entityId === entityId) ?? emptyParty(entityId);
       return <fieldset key={entityId} className="rounded border border-border p-3"><legend className="px-1 text-sm font-semibold">{entityName(entityId)} · {index === 0 ? chosen.terms.partyOneRole : chosen.terms.partyTwoRole}</legend>
@@ -97,7 +98,7 @@ export function AccountingArrangementEditor({ scope, arrangement, initialOrganiz
         </FormGrid></fieldset>;
     }) : null}
     {arrangement ? <OperationField label="Accounting profile revision reason" value={reason} onChange={setReason} required /> : null}
-    <div className="flex flex-wrap gap-2"><Button type="submit" disabled={!chosen || legal.loading || (Boolean(arrangement) && !reason.trim())}>Save accounting profile draft</Button><Button type="button" variant="outline" onClick={onCancel}>Cancel profile editing</Button></div>
+    <div className="flex flex-wrap gap-2"><Button type="submit" disabled={!chosen || legal.loading || (Boolean(arrangement) && !reason.trim())} disabledReason={legal.loading ? "Wait for the approved legal version to load." : !chosen ? "Select an exact approved legal agreement version." : "Enter a reason for this accounting profile revision."}>Save accounting profile draft</Button><Button type="button" variant="outline" onClick={onCancel}>Cancel profile editing</Button></div>
     </fieldset><MutationFeedback state={mutation} />
   </form>;
 }

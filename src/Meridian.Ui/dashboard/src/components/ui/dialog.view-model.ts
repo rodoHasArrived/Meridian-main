@@ -6,6 +6,7 @@ const focusableSelector = [
   "textarea:not([disabled])",
   "input:not([disabled]):not([type='hidden'])",
   "select:not([disabled])",
+  "summary",
   "[contenteditable='true']",
   "[tabindex]:not([tabindex='-1'])"
 ].join(",");
@@ -50,9 +51,10 @@ export function useDialogInteractionViewModel({ open, onOpenChange }: DialogInte
       return;
     }
 
-    // An expanded combobox owns its first Escape; the next Escape closes the dialog.
+    // Expanded calendars and comboboxes own their first Escape.
     if (event.key === "Escape" && event.target instanceof Element &&
-      event.target.closest('[role="combobox"][aria-expanded="true"]')) {
+      (event.target.closest('[role="combobox"][aria-expanded="true"]') ||
+        event.target.closest('[data-date-field-open="true"]'))) {
       return;
     }
 
@@ -170,7 +172,7 @@ export function getFocusableDialogElements(root: HTMLElement | null): HTMLElemen
   }
 
   return Array.from(root.querySelectorAll<HTMLElement>(focusableSelector))
-    .filter(isDialogElementFocusable);
+    .filter((element) => element.tabIndex >= 0 && isDialogElementAvailable(element));
 }
 
 export function resolveInitialDialogFocus(
@@ -181,12 +183,13 @@ export function resolveInitialDialogFocus(
     return null;
   }
 
-  if (isHTMLElement(activeElement) && root.contains(activeElement) && activeElement !== root) {
+  if (isHTMLElement(activeElement) && root.contains(activeElement) && activeElement !== root && isDialogElementAvailable(activeElement)) {
     return activeElement;
   }
 
   const preferred = root.querySelector<HTMLElement>("[data-dialog-autofocus], [autofocus]");
-  if (preferred && isDialogElementFocusable(preferred)) {
+  if (preferred && isDialogElementAvailable(preferred) &&
+    (preferred.tabIndex >= 0 || preferred.hasAttribute("tabindex") || preferred.isContentEditable)) {
     return preferred;
   }
 
@@ -232,12 +235,21 @@ function getActiveElement(): HTMLElement | null {
   return isHTMLElement(document.activeElement) ? document.activeElement : null;
 }
 
-function isDialogElementFocusable(element: HTMLElement): boolean {
-  if (element.hasAttribute("disabled") || element.getAttribute("aria-hidden") === "true") {
+function isDialogElementAvailable(element: HTMLElement): boolean {
+  if (element.matches(":disabled") || element.closest("[hidden], [inert], [aria-hidden='true']")) {
     return false;
   }
 
-  return element.tabIndex >= 0 || element.hasAttribute("autofocus") || element.hasAttribute("data-dialog-autofocus");
+  const view = element.ownerDocument.defaultView;
+  for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
+    const style = view?.getComputedStyle(ancestor);
+    if (style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse" || style?.contentVisibility === "hidden") return false;
+    if (ancestor.tagName === "DETAILS" && !ancestor.hasAttribute("open") && ancestor !== element) {
+      const summary = Array.from(ancestor.children).find((child) => child.tagName === "SUMMARY");
+      if (!summary?.contains(element)) return false;
+    }
+  }
+  return true;
 }
 
 function isHTMLElement(value: unknown): value is HTMLElement {

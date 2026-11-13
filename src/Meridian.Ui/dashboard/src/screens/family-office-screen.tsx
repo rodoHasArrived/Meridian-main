@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/data/empty-state";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
@@ -23,6 +24,7 @@ import {
 } from "@/screens/family-office-screen.view-model";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { pluralizeCount } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -97,15 +99,20 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
     setQuery(next);
   };
   const familyOfficeId = query.get("familyOfficeId") ?? "";
+  const appliedStructureDate = query.get("structureAsOf") ?? "";
+  const [structureDate, setStructureDate] = useState(appliedStructureDate);
+  const readScopeKey = JSON.stringify([familyOfficeId, appliedStructureDate]);
   const selectedNodeId = query.get("ownershipNode");
   const showTableFallback = query.get("ownershipView") === "table";
   const [availableClients, setAvailableClients] = useState<Array<{ clientId: string; displayName: string }>>([]);
-  const [loadedClientScope, setLoadedClientScope] = useState("");
+  const [loadedReadScope, setLoadedReadScope] = useState("");
   const [loadedStructure, setLoadedStructure] = useState<FamilyOfficeEntityStructure | null>(null);
   const [loadState, setLoadState] = useState<FamilyOfficeLoadState>(
     entityStructure === undefined ? "loading" : "idle"
   );
   const [reloadToken, setReloadToken] = useState(0);
+
+  useEffect(() => { setStructureDate(appliedStructureDate); }, [appliedStructureDate]);
 
   useEffect(() => {
     if (entityStructure !== undefined) {
@@ -116,14 +123,14 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
     let active = true;
     setLoadState("loading");
     setLoadedStructure(null);
-    getFamilyOfficeOverview({ signal: controller.signal }, familyOfficeId || undefined)
+    getFamilyOfficeOverview({ signal: controller.signal }, familyOfficeId || undefined, appliedStructureDate || undefined)
       .then((overview) => {
         if (!active) {
           return;
         }
 
         setAvailableClients(overview.availableClients ?? []);
-        setLoadedClientScope(familyOfficeId);
+        setLoadedReadScope(readScopeKey);
         setLoadedStructure(mapFamilyOfficeOverview(overview));
         setLoadState("ready");
       })
@@ -137,10 +144,10 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       active = false;
       controller.abort();
     };
-  }, [entityStructure, reloadToken, familyOfficeId]);
+  }, [entityStructure, reloadToken, familyOfficeId, appliedStructureDate, readScopeKey]);
 
   const resolvedStructure = entityStructure === undefined
-    ? loadedClientScope === familyOfficeId ? loadedStructure : null
+    ? loadedReadScope === readScopeKey ? loadedStructure : null
     : entityStructure;
   const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
   const selectNode = (nodeId: string) => {
@@ -158,6 +165,23 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           updateQuery((current) => { const next = new URLSearchParams(current); next.set("familyOfficeId", event.target.value); next.delete("ownershipNode"); return next; });
         }}><option value="">Select a family office</option>{availableClients.map((client) => <option key={client.clientId} value={client.clientId}>{client.displayName}</option>)}</select>
       </label> : null}
+      {entityStructure === undefined ? <form className="flex flex-wrap items-end gap-3 rounded-sm border border-border p-3" onSubmit={(event) => {
+        event.preventDefault();
+        updateQuery((current) => {
+          const next = new URLSearchParams(current);
+          if (structureDate) next.set("structureAsOf", structureDate); else next.delete("structureAsOf");
+          next.delete("ownershipNode");
+          return next;
+        });
+      }}>
+        <label className="text-sm">Ownership structure on<Input type="date" max={utcToday()} className="mt-1" value={structureDate} onChange={(event) => setStructureDate(event.target.value)} /></label>
+        <Button type="submit" variant="outline" size="sm" disabled={loadState === "loading"} disabledReason="Wait for the selected ownership structure to finish loading.">Apply structure date</Button>
+        <Button type="button" variant="outline" size="sm" disabled={loadState === "loading"} disabledReason="Wait for the selected ownership structure to finish loading." onClick={() => {
+          setStructureDate("");
+          updateQuery((current) => { const next = new URLSearchParams(current); next.delete("structureAsOf"); next.delete("ownershipNode"); return next; });
+        }}>Current structure</Button>
+        <p className="w-full text-xs text-muted-foreground">Date selection changes ownership structure only. Financial balances and valuations retain their own source dates.</p>
+      </form> : null}
       <OperationalTrustSummary
         label="Family office data confidence"
         source={{
@@ -296,7 +320,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         </CardContent>
       </Card>
       ) : null}
-      {resolvedStructure ? <PrivateCapitalLifecyclePanel holderEntityIds={resolvedStructure.entities.map((entity) => entity.entityId)} scopeKey={resolvedStructure.familyOfficeId} asOfDate={resolvedStructure.asOfDate} onViewStateChange={(patch) => updateQuery((current) => {
+      {resolvedStructure ? <PrivateCapitalLifecyclePanel holderEntityIds={resolvedStructure.entities.map((entity) => entity.entityId)} scopeKey={JSON.stringify([resolvedStructure.familyOfficeId, appliedStructureDate])} asOfDate={resolvedStructure.asOfDate} onViewStateChange={(patch) => updateQuery((current) => {
         for (const [key, value] of Object.entries(patch)) { if (value === null) current.delete(key); else current.set(key, value); }
         return current;
       })} /> : null}

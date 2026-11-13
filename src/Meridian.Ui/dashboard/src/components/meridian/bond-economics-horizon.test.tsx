@@ -16,6 +16,26 @@ const result = {
 } as BondAnalyticsResult;
 
 describe("bond economics horizon", () => {
+  it("keeps negative interest and principal visible below separate zero lines and inside the payment hit area", () => {
+    const { container } = render(<BondEconomicsHorizon result={{ ...result, cashFlows: [
+      ...result.cashFlows,
+      { ...result.cashFlows[0], flowId: "negative", paymentDate: "2027-01-17", interest: "-5.125", principal: "-200.0001" }
+    ] }} />);
+    const payment = screen.getByRole("button", { name: "Inspect projected payment 2027-01-17" });
+    const [hitArea, interest, principal] = payment.querySelectorAll("rect");
+    const bottom = (rect: Element) => Number(rect.getAttribute("y")) + Number(rect.getAttribute("height"));
+    for (const [bar, axis] of [[interest, "Interest / 100"], [principal, "Principal / 100"]] as const) {
+      expect(Number(bar.getAttribute("height"))).toBeGreaterThan(0);
+      expect(Number(bar.getAttribute("y"))).toBe(Number(screen.getByText(axis).getAttribute("y")));
+      expect(Number(bar.getAttribute("y"))).toBeGreaterThanOrEqual(Number(hitArea.getAttribute("y")));
+      expect(bottom(bar)).toBeLessThanOrEqual(bottom(hitArea));
+    }
+    expect(bottom(interest)).toBeLessThan(Number(screen.getByText("Principal / 100").getAttribute("y")) - 28);
+    expect(bottom(principal)).toBeLessThan(Number(container.querySelector("svg")!.getAttribute("viewBox")!.split(" ")[3]));
+    fireEvent.keyDown(payment, { key: "Enter" });
+    expect(screen.getByRole("status")).toHaveTextContent("interest -5.125 / 100 · principal -200.0001 / 100");
+  });
+
   it("highlights every supplied governing scenario and retains holder puts and exact notice evidence", async () => {
     const { container } = render(<BondEconomicsHorizon result={result} />);
     expect(screen.getByRole("button", { name: "Maturity 2028-01-15 · YTW" })).toBeInTheDocument();

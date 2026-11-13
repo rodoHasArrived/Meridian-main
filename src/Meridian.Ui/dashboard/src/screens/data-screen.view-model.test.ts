@@ -2103,6 +2103,22 @@ describe("data-screen view model", () => {
     expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
   });
 
+  it("uses last-good time for the server's unreported-latency sentinel without relabelling it as latency", () => {
+    const section = buildProviderSection([
+      { ...providers[0], latency: "Latency not reported" }
+    ], null, { providerConnections: [polygonConnection] });
+    const row = section.rows[0];
+
+    expect(row.providerId).toBe("polygon");
+    expect(row.latencyText).toBe("Latency not reported");
+    expect(row.lastSuccessfulText).not.toBe("Never");
+    expect(row.latencyOrLastGoodText).toBe(row.lastSuccessfulText);
+    expect(row.trustFields).toContainEqual({ id: "latency", label: "Latency", value: "Latency not reported" });
+    expect(row.ariaLabel).toContain("Latency not reported");
+    expect(row.ariaLabel).not.toContain(`Latency ${row.lastSuccessfulText}`);
+    expect(row.ariaLabel).not.toContain("Latency Latency");
+  });
+
   it("keeps response timestamps out of the Latency field when no latency is reported", () => {
     const alpacaConnection: ProviderConnectionRow = {
       ...polygonConnection,
