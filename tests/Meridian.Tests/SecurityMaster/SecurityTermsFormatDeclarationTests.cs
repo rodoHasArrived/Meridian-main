@@ -315,7 +315,8 @@ public sealed class SecurityTermsFormatDeclarationTests
         var securityId = Guid.NewGuid();
         const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(Projection(securityId, untaggedTerms))
-            with { LegacyAssetSpecificTerms = Parse(untaggedTerms) };
+            with
+        { LegacyAssetSpecificTerms = Parse(untaggedTerms) };
         var payload = JsonSerializer.SerializeToElement(economic, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityEconomicDefinitionRecord);
 
         var decoded = SecurityMasterMapping.FromEconomicPayload(payload);

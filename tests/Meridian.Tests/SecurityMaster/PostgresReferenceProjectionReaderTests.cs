@@ -291,20 +291,34 @@ public sealed class PostgresReferenceProjectionReaderTests
     /// <summary>Every query every converted store declares, with the SQL it sends.</summary>
     private static IEnumerable<(string AssetClass, string? ChildTable, string Query, string Sql)> RegistryStoreQueries()
     {
-        foreach (var entry in Describe(PostgresCryptoReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresDepositReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresMoneyMarketFundReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresCertificateOfDepositReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresEquityReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresFxSpotReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresSwapReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresCommodityReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresFutureReferenceProjectionStore.CreateStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreateLoanStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreateCovenantStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreatePrincipalScheduleStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresStructuredCreditReferenceProjectionStore.CreateTrancheStore(Options))) yield return entry;
-        foreach (var entry in Describe(PostgresStructuredCreditReferenceProjectionStore.CreateFactorScheduleStore(Options))) yield return entry;
+        foreach (var entry in Describe(PostgresCryptoReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDepositReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresMoneyMarketFundReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresCertificateOfDepositReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresEquityReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresFxSpotReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresSwapReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresCommodityReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresFutureReferenceProjectionStore.CreateStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreateLoanStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreateCovenantStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresDirectLoanReferenceProjectionStore.CreatePrincipalScheduleStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresStructuredCreditReferenceProjectionStore.CreateTrancheStore(Options)))
+            yield return entry;
+        foreach (var entry in Describe(PostgresStructuredCreditReferenceProjectionStore.CreateFactorScheduleStore(Options)))
+            yield return entry;
     }
 
     private static IEnumerable<(string AssetClass, string? ChildTable, string Query, string Sql)> Describe<TRow>(
