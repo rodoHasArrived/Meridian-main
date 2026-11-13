@@ -169,7 +169,7 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
             _configStore.LoadRequired(), providerId));
         if (scope is null && _ownershipPolicy.ProhibitsLegacy(providerId))
-            throw new ProviderCredentialOwnershipRequiredException();
+            return (null, null); // Authoritative missing credentials; never consult the unassigned vault or fallback.
         var stored = scope is null
             ? await _credentialStore.ReadForProviderAsync(providerId, ct).ConfigureAwait(false)
             : await (_credentialStore as IScopedProviderCredentialStore

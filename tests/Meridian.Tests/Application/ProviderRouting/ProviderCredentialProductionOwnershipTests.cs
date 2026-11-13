@@ -78,9 +78,11 @@ public sealed class ProviderCredentialProductionOwnershipTests : IDisposable
         await read.Should().ThrowAsync<ProviderCredentialOwnershipRequiredException>();
         var fallback = new Mock<IProviderCredentialResolver>(MockBehavior.Strict);
         var resolver = new StoredProviderCredentialResolver(vault.Object, fallback.Object, Config, Required);
-        Action resolve = () => resolver.CreateContext(typeof(AlpacaHistoricalDataProvider),
+        var unavailable = resolver.CreateContext(typeof(AlpacaHistoricalDataProvider),
             new Dictionary<string, string?> { ["ALPACA_KEY_ID"] = "unassigned-config-key" });
-        resolve.Should().Throw<ProviderCredentialOwnershipRequiredException>();
+        unavailable.IsAuthoritative.Should().BeTrue();
+        unavailable.IsConfigured("ALPACA_KEY_ID").Should().BeFalse();
+        unavailable.IsConfigured("ALPACA_SECRET_KEY").Should().BeFalse();
         vault.VerifyNoOtherCalls();
         fallback.VerifyNoOtherCalls();
     }
