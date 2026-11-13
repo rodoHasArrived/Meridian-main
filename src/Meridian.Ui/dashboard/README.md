@@ -43,6 +43,8 @@ identity; FRED intake derives series units from an independently accepted provid
 keeps missing observations and live verification status explicit.
 Focused coverage is in the `bond-workflow`, `account-bond-planning` and `bond-income` tests.
 
+The Strategy Run Ledger Explorer supports an inclusive UTC as-of date, retained in its URL and applied to both trial balance and journal. Clearing the date restores the complete run. Historical mode omits the final-run generic proof explorer so final balances and links cannot appear under a historical scope. Accounting package downloads preserve run, date and selected CSV/Excel/Parquet/Arrow format; packages declare missing lot snapshot evidence explicitly.
+
 Accounting's entity and intercompany view uses shared host contracts for authorized entity history,
 accounting profiles, source-linked proposals, breaks and versioned consolidation. Each accounting
 profile pins a canonical approved legal agreement ID, integer version and payload hash; operators
@@ -69,6 +71,12 @@ load results and presentation live in `strategy-screen.equity-paths.view-model.t
 `strategy-screen.equity-paths.tsx`. The existing Strategy
 view-model entrypoint retains its public exports while both screen entrypoints stay within their
 file-size limits. Curve sampling, reported returns and promotion selection behavior are unchanged.
+
+Trading promotion form normalization, keyed evidence parsing and request validation live in
+`trading-screen.promotion-evidence.ts`; the existing trading view-model entrypoint re-exports its
+public contracts. Gate criteria, retained evidence requirements and command transport are unchanged.
+Reference Data probe payload classification lives in `lib/reference-data-probe.ts`, while the API
+entrypoint keeps transport/probe orchestration and the established public type exports.
 
 Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts`; `lib/api.ts`
 retains their public type exports and the setup request functions. Pure order-ticket form,

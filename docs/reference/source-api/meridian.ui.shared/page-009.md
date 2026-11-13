@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokeragePortfolioSyncService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BrokeragePortfolioSyncService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:40](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L40).
+
+Pulls read-only broker account, portfolio, order, fill, and cash activity snapshots into a durable workstation projection. This service is operator-triggered and intentionally avoids live-trading readiness decisions.
+
+```csharp
+public sealed class BrokeragePortfolioSyncService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BrokeragePortfolioSyncService(BrokeragePortfolioSyncOptions options, IEnumerable&lt;IBrokerageAccountCatalog&gt; catalogs, IEnumerable&lt;IBrokeragePortfolioSync&gt; portfolioAdapters, IEnumerable&lt;IBrokerageActivitySync&gt; activityAdapters, IServiceProvider services, ILogger&lt;BrokeragePortfolioSyncService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:63](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L63) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;WorkstationBrokerageAccountDto&gt;&gt; DiscoverAccountsAsync(Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, bool includeUnlinkedAccounts = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:86](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L86) |  |
+| <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; GetStatusAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:140](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L140) |  |
+| <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; RunSyncAsync(Guid fundAccountId, WorkstationBrokerageSyncRunRequestDto? request = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:179](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L179) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokeragePositionDto&gt;&gt; GetPositionsAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:394](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L394) |  |
+| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:402](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L402) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageCashTransactionDto&gt;&gt; GetCashTransactionHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:411](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L411) | Every cash transaction a sync has observed for the account, deduplicated by provider transaction id and ordered by posting time. Unlike the current projection, which holds only the latest activity snapshot, this history keeps rows that later syncs no longer return. Empty when no activity has been retained or the history file cannot be read. |
+| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityForActiveLinkAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:422](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L422) | The current projection only when it was synced from the external account the fund account is linked to now. A relink updates the link at once but leaves the previous account&#x27;s projection in place until the next sync, and that projection is not evidence about the newly linked account. |
+| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageFillDto&gt;&gt; GetFillHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:441](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L441) | Every fill a sync has observed for the account, deduplicated by provider fill id. |
+| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetViewAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:472](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L472) |  |
+| <code>public async Task&lt;WorkstationBrokerageAccountLinkDto?&gt; LinkAccountAsync(Guid fundAccountId, BrokerageAccountLinkRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:475](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L475) |  |
+| <code>public async Task&lt;BrokeragePortfolioPerformanceDto&gt; GetPerformanceAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:516](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L516) |  |
+| <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:580](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L580) |  |
+| <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:616](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L616) |  |
+
 ## BrokerageSyncActualCashActivitySource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageSyncActualCashActivitySource</code>. Kind: `class`.
@@ -892,21 +923,3 @@ Declared public members:
 | <code>public DailyValuationScheduledWorker(IDailyValuationPortfolioSource portfolioSource, AutomatedJournalIntakeRunner intakeRunner, ILogger&lt;DailyValuationScheduledWorker&gt; logger, DailyValuationPositionService? positionService = null);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:280](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L280) |  |
 | <code>public async Task&lt;DailyValuationScheduledBatchResult&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:292](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L292) |  |
 | <code>public async Task&lt;DailyValuationScheduledBatchResult&gt; RunDueForScopeAsync(DateTimeOffset nowUtc, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:301](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L301) | Executes due schedules owned by exactly one tenant/company scope. This is the operator-route seam; the host loop intentionally uses RunDueAsync to process every scope. |
-
-## DailyValuationSchedulerHostedService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationSchedulerHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:715](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L715).
-
-Minute-cadence host loop for configured EOD valuation schedules.
-
-```csharp
-public sealed class DailyValuationSchedulerHostedService(IServiceProvider services, ILogger<DailyValuationSchedulerHostedService> logger) : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;DailyValuationScheduledBatchResult&gt; RunOnceAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:721](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L721) |  |

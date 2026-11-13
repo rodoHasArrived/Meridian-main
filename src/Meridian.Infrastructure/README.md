@@ -667,3 +667,8 @@ Do not add an Infrastructure to Application dependency. Provider abstractions sh
 - `docs/providers/`
 - `docs/architecture/module-map.md`
 - `docs/status/provider-validation-matrix.md`
+
+Alpaca statement activity snapshots retain a completeness cursor after successful pagination,
+including newest activity ID, timestamp watermark, page count and retained record count. Failed or
+repeated pagination tokens cannot produce a complete cursor. Broker statement imports continue
+through the governed durable statement intake and recovery pipeline using external activity IDs.

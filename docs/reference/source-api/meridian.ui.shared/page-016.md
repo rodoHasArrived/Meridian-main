@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRunCertificationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCertificationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L24).
+
+Freezes the exact durable source rows, normalized parameters, readiness evidence, and authority scope before orchestration. Caller/workflow rows are never accepted as certification input.
+
+```csharp
+public sealed class ReportingRunCertificationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingRunCertificationService(IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceSource? reconciliationEvidenceSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L29) |  |
+| <code>public async ValueTask&lt;CertifiedReportingRunContext&gt; CertifyAsync(ReportingTemplateMetadata template, ReportingRunReadinessDto readiness, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L37) |  |
+| <code>public async ValueTask RevalidateForReleaseAsync(ReportingRunParametersDto parameters, string templateId, ReportingAuthoritativeSourceCheckpoint certifiedSource, ReportingCertifiedSnapshotScope certifiedSnapshot, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:278](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L278) | Rechecks the exact authoritative source and canonical reconciliation queue immediately before final release. Approval of a frozen snapshot must not allow a later queue mutation or ledger change to pass on stale certification. |
+| <code>[Obsolete(&quot;Caller/workflow rows are not certifiable. Use CertifyAsync with a durable authoritative source.&quot;)] public CertifiedReportingRunContext Certify(ReportingTemplateMetadata template, ReportingRunReadinessDto readiness, IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt;? datasetRows, string? datasetSourceId, ReportAccessQueryContext accessContext) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:425](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L425) | Compatibility signature retained so old callers fail closed instead of silently certifying caller-owned or mutable workflow rows. Governed code must use CertifyAsync. |
+| <code>public ReportingReadinessReceipt BuildGovernanceReadiness(string runId, CertifiedReportingRunContext certified, ReportingRunReadinessDto readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:434](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L434) |  |
+
+## ReportingRunCommandService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L11).
+
+Runs reporting requests after readiness checks and retains their output and audit evidence.
+
+```csharp
+public sealed partial class ReportingRunCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingRunCommandService(IReportingOrchestrationService orchestrationService, IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, ReportWriterDatasetSourceService? datasetSourceService = null, ReportingRunReadinessService? readinessService = null, ReportingRunCertificationService? certificationService = null, IReportingGovernanceEndpointCoordinator? governanceCoordinator = null, IReportingDeploymentReadinessService? deploymentReadinessService = null, IReportingRunStore? runStore = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L23) |  |
+| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L47) |  |
+| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, ReportAccessQueryContext? accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:53](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L53) |  |
+| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, ReportAccessQueryContext? accessContext, ReportingGovernanceCallerContext? governanceCaller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L70) | Executes and immediately reconciles a tenant-bound run into the canonical governed Draft. The method does not return a successful strict-mode result until exact artifacts have been retained and the governance aggregate is Succeeded/Draft. |
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs#L18).
+
+```csharp
+public sealed partial class ReportingRunCommandService
+```
+
 ## ReportingRunDeploymentNotReadyException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunDeploymentNotReadyException</code>. Kind: `class`.
@@ -914,28 +963,4 @@ Request to plan a fund-level capital call over the supplied commitment register 
 
 ```csharp
 public sealed record RunCapitalCallIssuanceDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, IReadOnlyList<CapitalCallCommitmentInput> Commitments, CapitalCallAllocationBasis AllocationBasis = CapitalCallAllocationBasis.ProRataByUncalled, string? Purpose = null, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunDailyMarkToMarketDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunDailyMarkToMarketDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L74).
-
-Explicitly governed end-of-day valuation request. Prices are resolved server-side from the registered historical provider chain; callers provide positions and policy, never the closing prices that enter the books.
-
-```csharp
-public sealed record RunDailyMarkToMarketDraftIntakeRequest(string FundProfileId, string Currency, string Actor, Guid LedgerBookId, Guid PeriodId, DateTimeOffset AsOf, IReadOnlyList<MarkToMarketPosition> Positions, string PolicyId, string PolicyName, string ValuationMethod, string PolicyApprovedBy, DateTimeOffset PolicyApprovedAtUtc, string Reason, int MaximumMarkAgeDays = 3, DailyPortfolioPriceConfidence MinimumConfidence = DailyPortfolioPriceConfidence.Medium, bool RequireCompleteCoverage = true, string? EntityId = null, string? TenantId = null, string? CompanyId = null, string? BatchCorrelationId = null, string? ScheduleId = null);
-```
-
-## RunDistributionDeclarationDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunDistributionDeclarationDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:55](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L55).
-
-Declare a distribution and split it through the European waterfall for each investor.
-
-```csharp
-public sealed record RunDistributionDeclarationDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string DistributionId, DateOnly EffectiveDate, decimal CarryRate, decimal CatchUpRate, IReadOnlyList<DistributionInvestorInput> Investors, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
 ```

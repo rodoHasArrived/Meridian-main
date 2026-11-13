@@ -5,6 +5,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -242,6 +243,7 @@ public sealed class BrokeragePortfolioSyncService
         var warnings = new List<string>();
         BrokeragePortfolioSnapshotDto? portfolio = null;
         BrokerageActivitySnapshotDto? activity = null;
+        BrokerageActivitySnapshotDto? retainedActivity = null;
 
         if (portfolioAdapter is not null)
         {
@@ -272,7 +274,10 @@ public sealed class BrokeragePortfolioSyncService
         {
             try
             {
-                activity = await activityAdapter.GetActivitySnapshotAsync(link.ExternalAccountId, request.Since, ct).ConfigureAwait(false);
+                var imported = await new BrokerActivityImportService(Path.Combine(_options.RootDirectory, "activity-inbox"))
+                    .ImportWithHistoryAsync(activityAdapter, link.ExternalAccountId, request.Since, ct).ConfigureAwait(false);
+                activity = imported.Current;
+                retainedActivity = imported.Retained;
             }
             catch (OperationCanceledException)
             {
@@ -324,7 +329,12 @@ public sealed class BrokeragePortfolioSyncService
             await historyGate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                await AppendActivityHistoryAsync(projection, ct).ConfigureAwait(false);
+                var history = retainedActivity ?? activity;
+                await AppendActivityHistoryAsync(projection with
+                {
+                    Fills = MapFills(history.Fills),
+                    CashTransactions = MapCashTransactions(history.CashTransactions)
+                }, ct).ConfigureAwait(false);
             }
             finally
             {
@@ -924,29 +934,8 @@ public sealed class BrokeragePortfolioSyncService
                     CreatedAt: order.CreatedAt,
                     UpdatedAt: order.UpdatedAt))
                 .ToArray() ?? [],
-            Fills: activity?.Fills
-                .Select(static fill => new FundAccountBrokerageFillDto(
-                    FillId: fill.FillId,
-                    OrderId: fill.OrderId,
-                    Symbol: fill.Symbol,
-                    Side: fill.Side.ToString(),
-                    Quantity: fill.Quantity,
-                    Price: fill.Price,
-                    FilledAt: fill.FilledAt,
-                    Venue: fill.Venue,
-                    Commission: fill.Commission,
-                    RealizedPnl: fill.RealizedPnl))
-                .ToArray() ?? [],
-            CashTransactions: activity?.CashTransactions
-                .Select(static cash => new FundAccountBrokerageCashTransactionDto(
-                    TransactionId: cash.TransactionId,
-                    TransactionType: cash.TransactionType,
-                    Amount: cash.Amount,
-                    Currency: cash.Currency,
-                    PostedAt: cash.PostedAt,
-                    Symbol: cash.Symbol,
-                    Description: cash.Description))
-                .ToArray() ?? [],
+            Fills: MapFills(activity?.Fills ?? []),
+            CashTransactions: MapCashTransactions(activity?.CashTransactions ?? []),
             SyncedAt: attemptedAt,
             RawSnapshotPath: rawPath,
             ProjectionPath: projectionPath,
@@ -964,6 +953,29 @@ public sealed class BrokeragePortfolioSyncService
                     Description: action.Description))
                 .ToArray() ?? []);
     }
+
+    private static FundAccountBrokerageFillDto[] MapFills(IEnumerable<BrokerageFillSnapshotDto> fills) =>
+        fills.Select(static fill => new FundAccountBrokerageFillDto(
+            FillId: fill.FillId,
+            OrderId: fill.OrderId,
+            Symbol: fill.Symbol,
+            Side: fill.Side.ToString(),
+            Quantity: fill.Quantity,
+            Price: fill.Price,
+            FilledAt: fill.FilledAt,
+            Venue: fill.Venue,
+            Commission: fill.Commission,
+            RealizedPnl: fill.RealizedPnl)).ToArray();
+
+    private static FundAccountBrokerageCashTransactionDto[] MapCashTransactions(IEnumerable<BrokerageCashTransactionDto> cashTransactions) =>
+        cashTransactions.Select(static cash => new FundAccountBrokerageCashTransactionDto(
+            TransactionId: cash.TransactionId,
+            TransactionType: cash.TransactionType,
+            Amount: cash.Amount,
+            Currency: cash.Currency,
+            PostedAt: cash.PostedAt,
+            Symbol: cash.Symbol,
+            Description: cash.Description)).ToArray();
 
     private async Task PersistFailureProjectionAsync(
         Guid fundAccountId,

@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperFuturesSettlementServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:199](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L199).
+
+Registers the paper futures end-of-day settlement job.
+
+```csharp
+public static class PaperFuturesSettlementServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddPaperFuturesSettlement(this IServiceCollection services, IConfiguration configuration);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:206](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L206) | Binds PaperFuturesSettlementOptions from PaperFuturesSettlementOptions.SectionKey and registers the job as a singleton and hosted service. It stays idle unless enabled and a mark price source is registered. |
+
+## PaymentInstruction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
+
+```csharp
+public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
+```
+
 ## PerformanceFeeAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
@@ -862,45 +890,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ReportingAccessQueryContext ToReportingContext() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L15) | Converts the compatibility context to the Reporting-owned query contract. |
-
-## ReportAmountBindingBuilder
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAmountBindingBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L9).
-
-Projects account amounts and exact line identities from the retained canonical ledger population.
-
-```csharp
-public static class ReportAmountBindingBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L11) |  |
-| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L39) |  |
-
-## ReportingAccessGrantService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAccessGrantService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L68).
-
-Issues, validates, and revokes reporting access grants and builds recipient access links.
-
-```csharp
-public sealed class ReportingAccessGrantService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingAccessGrantService(IReportingAccessGrantStore store, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L76) |  |
-| <code>public async Task&lt;ReportingAccessGrantSecret&gt; IssueAsync(ReportingAccessGrantIssueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:84](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L84) |  |
-| <code>public async Task&lt;ReportingAccessGrantSecret&gt; IssueIdempotentAsync(ReportingAccessGrantIssueRequest request, ReportingDerivedAccessGrantCredential credential, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:148](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L148) | Creates or reopens the exact same active credential for one durable delivery attempt. A restart can therefore reconstruct a provider-accepted bearer from stable key material while the store continues to retain only its SHA-256 hash. |
-| <code>public async Task&lt;ReportingAccessGrantValidationResult&gt; ValidateAsync(ReportingAccessGrantValidationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:219](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L219) |  |
-| <code>public async Task&lt;bool&gt; RevokeAsync(string grantId, string tenantId, string revokedBy, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:336](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L336) |  |
-| <code>public static string BuildRecipientAccessUri(string accessBaseUri, ReportingAccessGrantSecret secret, string? artifactId = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:378](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L378) |  |

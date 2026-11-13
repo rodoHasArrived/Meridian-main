@@ -307,7 +307,7 @@ modules:
     layer: Storage Adapter
     status: active
     owner_lane: Accounting and Ledger
-    purpose: PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
+    purpose: Accounting export projections, portable ledger-payload validation and PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
     readme: src/Meridian.Storage.Accounting/README.md
     roadmap_items:
       - W4-RECON-001

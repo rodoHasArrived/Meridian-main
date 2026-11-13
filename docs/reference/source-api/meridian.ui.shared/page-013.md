@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingRecipientDestinationResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRecipientDestinationResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L145).
+
+Resolves transport destinations from a governed principal. Deployments must replace the rejecting implementation with their tenant-bound identity or recipient directory adapter.
+
+```csharp
+public interface IReportingRecipientDestinationResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsConfigured { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L147) |  |
+| <code>IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:154](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L154) | Transport ids referenced by the deployment-owned recipient directory. A resolver that cannot enumerate its configured transports leaves this empty so deployment readiness fails closed instead of assuming an adapter exists. |
+| <code>ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L156) |  |
+
 ## IReportingReconciliationEvidenceSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingReconciliationEvidenceSource</code>. Kind: `interface`.
@@ -386,6 +406,18 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;LedgerJournalTaxResultsDto&gt; ReadAsync(Guid ledgerBookId, Guid periodId, JournalEntry entry, string functionalCurrency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L17) |  |
 | <code>public static LedgerDisposalTaxResultDto Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency, DateOnly asOfDate);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:48](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L48) |  |
+
+## LedgerExportEvidenceUnavailableException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerExportEvidenceUnavailableException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:9](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L9).
+
+The journal remains exportable but the requested lot evidence was not retained.
+
+```csharp
+public sealed class LedgerExportEvidenceUnavailableException(string message) : InvalidOperationException(message);
+```
 
 ## LedgerMarkToMarketCarryingValueSource
 
@@ -999,31 +1031,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;int&gt; RunOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:98](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L98) | Runs one settlement pass at the current time and returns how many settlements it applied. Does nothing when the job is disabled or paper sessions or a mark price source are not registered. |
-
-## PaperFuturesSettlementServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:199](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L199).
-
-Registers the paper futures end-of-day settlement job.
-
-```csharp
-public static class PaperFuturesSettlementServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPaperFuturesSettlement(this IServiceCollection services, IConfiguration configuration);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:206](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L206) | Binds PaperFuturesSettlementOptions from PaperFuturesSettlementOptions.SectionKey and registers the job as a singleton and hosted service. It stays idle unless enabled and a mark price source is registered. |
-
-## PaymentInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
-
-```csharp
-public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
-```

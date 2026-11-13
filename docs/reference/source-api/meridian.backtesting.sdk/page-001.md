@@ -41,10 +41,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal FractionalUnits { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:77](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L77) | Exact non-whole successor quantity settled as cash in lieu. |
-| <code>public decimal BasisDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:80](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L80) | Tax-lot basis relieved for the cash-in-lieu disposal. |
-| <code>public decimal RealizedPnl { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:83](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L83) | Realized gain (positive) or loss (negative) on the cash-in-lieu disposal. |
-| <code>public decimal EntryCommissionDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:86](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L86) | Acquisition commission allocated to the cash-in-lieu disposal. |
+| <code>public decimal BasisReturned { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:77](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L77) | Basis returned as capital, excluded from income. |
+| <code>public decimal FractionalUnits { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:80](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L80) | Exact non-whole successor quantity settled as cash in lieu. |
+| <code>public decimal BasisDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:83](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L83) | Tax-lot basis relieved for the cash-in-lieu disposal. |
+| <code>public decimal RealizedPnl { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:86](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L86) | Realized gain (positive) or loss (negative) on the cash-in-lieu disposal. |
+| <code>public decimal EntryCommissionDisposed { get; init; }</code> | [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:89](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L89) | Acquisition commission allocated to the cash-in-lieu disposal. |
 
 ## AssetEventType
 
@@ -145,6 +146,24 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Managed = 0</code> | [src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs:8](../../../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs#L8) |  |
 
+## BacktestLedgerIntegrityValidator
+
+Qualified name: <code>Meridian.Backtesting.Sdk.BacktestLedgerIntegrityValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:30](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L30).
+
+Compares as-of ledger cash, long basis, short proceeds and clearing balances with the retained account snapshots. All comparisons use the ledger&#x27;s shared absolute balance tolerance.
+
+```csharp
+public static class BacktestLedgerIntegrityValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;LedgerIntegrityBreak&gt; Validate(IReadOnlyLedger ledger, PortfolioSnapshot snapshot);</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:32](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L32) |  |
+
 ## BacktestMetrics
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestMetrics</code>. Kind: `record`.
@@ -185,8 +204,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ExecutionRealismDescriptor ToRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestRequest.cs:155](../../../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs#L155) | Captures every setting on this request that changes what numbers the run produces, so run identity can account for execution realism rather than strategy inputs alone. |
-| <code>public IReadOnlyList&lt;FinancialAccount&gt; ResolveAccounts();</code> | [src/Meridian.Backtesting.Sdk/BacktestRequest.cs:229](../../../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs#L229) | Returns the normalized account list, falling back to a single default brokerage account for backward compatibility with older callers. |
+| <code>public bool FailOnLedgerIntegrityBreak { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestRequest.cs:152](../../../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs#L152) | Abort at day-end when ledger cash, lot basis, or clearing balances fail reconciliation. |
+| <code>public bool ApplyStoredCorporateActions { get; init; } = true;</code> | [src/Meridian.Backtesting.Sdk/BacktestRequest.cs:158](../../../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs#L158) | Apply confirmed Security Master actions to positions and cash using raw historical prices when a source is configured. Disable for reviewed manual AssetEvents or legacy adjusted-price research. |
+| <code>public ExecutionRealismDescriptor ToRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestRequest.cs:164](../../../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs#L164) | Captures every setting on this request that changes what numbers the run produces, so run identity can account for execution realism rather than strategy inputs alone. |
+| <code>public IReadOnlyList&lt;FinancialAccount&gt; ResolveAccounts();</code> | [src/Meridian.Backtesting.Sdk/BacktestRequest.cs:241](../../../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs#L241) | Returns the normalized account list, falling back to a single default brokerage account for backward compatibility with older callers. |
 
 ## BacktestResult
 
@@ -197,8 +218,14 @@ Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:85](../../../../src/Meri
 Complete result of a finished backtest run.
 
 ```csharp
-public sealed record BacktestResult(BacktestRequest Request, IReadOnlySet<string> Universe, IReadOnlyList<PortfolioSnapshot> Snapshots, IReadOnlyList<CashFlowEntry> CashFlows, IReadOnlyList<FillEvent> Fills, BacktestMetrics Metrics, IReadOnlyLedger Ledger, TimeSpan ElapsedTime, long TotalEventsProcessed, IReadOnlyList<TradeTicket>? TradeTickets = null, TcaReport? TcaReport = null, BacktestEngineMetadata? EngineMetadata = null, BiasDisclosureReport? BiasDisclosure = null);
+public sealed record BacktestResult(BacktestRequest Request, IReadOnlySet<string> Universe, IReadOnlyList<PortfolioSnapshot> Snapshots, IReadOnlyList<CashFlowEntry> CashFlows, IReadOnlyList<FillEvent> Fills, BacktestMetrics Metrics, IReadOnlyLedger Ledger, TimeSpan ElapsedTime, long TotalEventsProcessed, IReadOnlyList<TradeTicket>? TradeTickets = null, TcaReport? TcaReport = null, BacktestEngineMetadata? EngineMetadata = null, BiasDisclosureReport? BiasDisclosure = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:101](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L101) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
 
 ## BacktestResultKinds
 
@@ -526,7 +553,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ToCanonicalString();</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:53](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L53) | Field-order-stable canonical form used for hashing and for human-readable disclosure. Each field is emitted with its name so that adding a field in a future revision cannot silently alias an existing one. |
+| <code>public bool? ApplyStoredCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:49](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L49) | Null preserves the canonical fingerprint of descriptors retained before this option existed. |
+| <code>public string ToCanonicalString();</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:56](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L56) | Field-order-stable canonical form used for hashing and for human-readable disclosure. Each field is emitted with its name so that adding a field in a future revision cannot silently alias an existing one. |
 
 ## FillConservatism
 
@@ -734,6 +762,42 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:50](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L50) | Records a completed backtest and returns the assigned run id, or null when the run could not be recorded. |
 
+## LedgerIntegrityBreak
+
+Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityBreak</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:7](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L7).
+
+An accounting difference observed against a simulation&#x27;s day-end books.
+
+```csharp
+public sealed record LedgerIntegrityBreak(DateTimeOffset AsOf, string Check, string? FinancialAccountId, string? Symbol, decimal Expected, decimal Actual, string Message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:16](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L16) |  |
+
+## LedgerIntegrityException
+
+Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityException</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:20](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L20).
+
+Stops a strict backtest while retaining the differences that caused the failure.
+
+```csharp
+public sealed class LedgerIntegrityException(IReadOnlyList<LedgerIntegrityBreak> breaks) : InvalidOperationException($"Ledger integrity failed with {breaks.Count} difference(s).")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; Breaks { get; } = Array.AsReadOnly(breaks.ToArray());</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:23](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L23) |  |
+
 ## LotSelectionMethod
 
 Qualified name: <code>Meridian.Backtesting.Sdk.LotSelectionMethod</code>. Kind: `enum`.
@@ -844,60 +908,4 @@ Provider-independent order request accepted by the backtest context. The simulat
 
 ```csharp
 public sealed record OrderRequest(string Symbol, long Quantity, OrderType Type, decimal? LimitPrice = null, decimal? StopPrice = null, decimal? TakeProfitPrice = null, decimal? StopLossPrice = null, TimeInForce TimeInForce = TimeInForce.Day, ExecutionModel ExecutionModel = ExecutionModel.Auto, bool AllowPartialFills = true, IReadOnlyDictionary<string, string>? ProviderParameters = null, string? AccountId = null);
-```
-
-## OrderStatus
-
-Qualified name: <code>Meridian.Backtesting.Sdk.OrderStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Backtesting.Sdk/Order.cs:39](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L39).
-
-Lifecycle state of a simulated order.
-
-```csharp
-public enum OrderStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Backtesting.Sdk/Order.cs:41](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L41) |  |
-| <code>PartiallyFilled</code> | [src/Meridian.Backtesting.Sdk/Order.cs:42](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L42) |  |
-| <code>Filled</code> | [src/Meridian.Backtesting.Sdk/Order.cs:43](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L43) |  |
-| <code>Cancelled</code> | [src/Meridian.Backtesting.Sdk/Order.cs:44](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L44) |  |
-| <code>Rejected</code> | [src/Meridian.Backtesting.Sdk/Order.cs:45](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L45) |  |
-| <code>Expired</code> | [src/Meridian.Backtesting.Sdk/Order.cs:46](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L46) |  |
-
-## OrderType
-
-Qualified name: <code>Meridian.Backtesting.Sdk.OrderType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Backtesting.Sdk/Order.cs:4](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L4).
-
-Order type classification.
-
-```csharp
-public enum OrderType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Market</code> | [src/Meridian.Backtesting.Sdk/Order.cs:6](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L6) |  |
-| <code>Limit</code> | [src/Meridian.Backtesting.Sdk/Order.cs:7](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L7) |  |
-| <code>StopMarket</code> | [src/Meridian.Backtesting.Sdk/Order.cs:8](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L8) |  |
-| <code>StopLimit</code> | [src/Meridian.Backtesting.Sdk/Order.cs:9](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L9) |  |
-
-## PortfolioSnapshot
-
-Qualified name: <code>Meridian.Backtesting.Sdk.PortfolioSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:4](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L4).
-
-Point-in-time snapshot of the simulated portfolio, recorded at each simulated day-end.
-
-```csharp
-public sealed record PortfolioSnapshot(DateTimeOffset Timestamp, DateOnly Date, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal TotalEquity, decimal DailyReturn, IReadOnlyDictionary<string, Position> Positions, IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts, IReadOnlyList<CashFlowEntry> DayCashFlows);
 ```

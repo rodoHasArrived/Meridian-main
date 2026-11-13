@@ -752,7 +752,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1813](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1813).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1462](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1462).
 
 ```csharp
 public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
@@ -788,7 +788,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1833](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1833).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1482](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1482).
 
 Request to update the global execution circuit breaker.
 

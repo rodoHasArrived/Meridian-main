@@ -569,7 +569,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Packaging.ImportScriptTarget</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:227](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L227).
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:232](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L232).
 
 Target platforms for import script generation.
 
@@ -581,18 +581,36 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Python</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:230](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L230) | Python with pandas. |
-| <code>R</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:233](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L233) | R with tidyverse. |
-| <code>PostgreSql</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:236](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L236) | PostgreSQL/TimescaleDB. |
-| <code>ClickHouse</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:239](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L239) | ClickHouse. |
-| <code>Spark</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:242](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L242) | Apache Spark. |
-| <code>DuckDb</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:245](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L245) | DuckDB. |
+| <code>Python</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:235](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L235) | Python with pandas. |
+| <code>R</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:238](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L238) | R with tidyverse. |
+| <code>PostgreSql</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:241](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L241) | PostgreSQL/TimescaleDB. |
+| <code>ClickHouse</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:244](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L244) | ClickHouse. |
+| <code>Spark</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:247](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L247) | Apache Spark. |
+| <code>DuckDb</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:250](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L250) | DuckDB. |
+
+## IPortableLedgerValidator
+
+Qualified name: <code>Meridian.Storage.Packaging.IPortableLedgerValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:13](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L13).
+
+Accounting-owned validation boundary for an opaque portable journal. Implementations verify its schema, double-entry invariants and declared account-balance checksum, or throw.
+
+```csharp
+public interface IPortableLedgerValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ValidateAsync(PortableLedgerPayload payload, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:15](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L15) |  |
 
 ## PackageCompressionLevel
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageCompressionLevel</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:173](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L173).
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:178](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L178).
 
 Compression level for package archives.
 
@@ -604,16 +622,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>None</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:176](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L176) | No compression - fastest, largest files. |
-| <code>Fast</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:179](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L179) | Fast compression - good speed, moderate size. |
-| <code>Balanced</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:182](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L182) | Balanced compression - good balance of speed and size. |
-| <code>Maximum</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:185](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L185) | Maximum compression - slowest, smallest files. |
+| <code>None</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:181](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L181) | No compression - fastest, largest files. |
+| <code>Fast</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:184](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L184) | Fast compression - good speed, moderate size. |
+| <code>Balanced</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:187](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L187) | Balanced compression - good balance of speed and size. |
+| <code>Maximum</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:190](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L190) | Maximum compression - slowest, smallest files. |
 
 ## PackageContents
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageContents</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:425](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L425).
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:453](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L453).
 
 Summary of package contents.
 
@@ -625,25 +643,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string PackageId { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:427](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L427) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:428](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L428) |  |
-| <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:429](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L429) |  |
-| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:430](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L430) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:431](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L431) |  |
-| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:432](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L432) |  |
-| <code>public long PackageSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:433](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L433) |  |
-| <code>public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:434](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L434) |  |
-| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:435](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L435) |  |
-| <code>public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:436](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L436) |  |
-| <code>public PackageDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:437](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L437) |  |
-| <code>public PackageFileEntry[] Files { get; set; } = Array.Empty&lt;PackageFileEntry&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:438](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L438) |  |
-| <code>public PackageQualityMetrics? Quality { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:439](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L439) |  |
+| <code>public string PackageId { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:455](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L455) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:456](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L456) |  |
+| <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:457](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L457) |  |
+| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:458](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L458) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:459](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L459) |  |
+| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:460](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L460) |  |
+| <code>public long PackageSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:461](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L461) |  |
+| <code>public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:462](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L462) |  |
+| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:463](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L463) |  |
+| <code>public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:464](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L464) |  |
+| <code>public PackageDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:465](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L465) |  |
+| <code>public PackageFileEntry[] Files { get; set; } = Array.Empty&lt;PackageFileEntry&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:466](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L466) |  |
+| <code>public PackageQualityMetrics? Quality { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:467](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L467) |  |
 
 ## PackageDataFormat
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageDataFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:191](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L191).
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:196](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L196).
 
 Data format conversion options.
 
@@ -655,16 +673,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Original</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:194](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L194) | Keep original format (JSONL, Parquet, etc.). |
-| <code>Jsonl</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:197](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L197) | Convert to JSONL for universal compatibility. |
-| <code>Csv</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:200](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L200) | Convert to CSV for spreadsheet compatibility. |
-| <code>Parquet</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:203](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L203) | Convert to Parquet for analytics. |
+| <code>Original</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:199](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L199) | Keep original format (JSONL, Parquet, etc.). |
+| <code>Jsonl</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:202](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L202) | Convert to JSONL for universal compatibility. |
+| <code>Csv</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:205](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L205) | Convert to CSV for spreadsheet compatibility. |
+| <code>Parquet</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:208](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L208) | Convert to Parquet for analytics. |
 
 ## PackageDateRange
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageDateRange</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:201](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L201).
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:210](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L210).
 
 Date range information for the package.
 
@@ -676,16 +694,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;start&quot;)] public DateTime Start { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:204](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L204) |  |
-| <code>[JsonPropertyName(&quot;end&quot;)] public DateTime End { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:207](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L207) |  |
-| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:210](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L210) |  |
-| <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:213](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L213) |  |
+| <code>[JsonPropertyName(&quot;start&quot;)] public DateTime Start { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:213](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L213) |  |
+| <code>[JsonPropertyName(&quot;end&quot;)] public DateTime End { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:216](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L216) |  |
+| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:219](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L219) |  |
+| <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:222](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L222) |  |
 
 ## PackageFileEntry
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageFileEntry</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:219](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L219).
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:228](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L228).
 
 Entry for a data file in the package.
 
@@ -697,27 +715,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:225](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L225) | Relative path within the package. |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:231](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L231) | Symbol this file contains data for. |
-| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:237](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L237) | Event type stored in this file. |
-| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:243](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L243) | Date of data in this file. |
-| <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:249](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L249) | Data source/provider. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;jsonl&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:255](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L255) | File format (jsonl, csv, parquet). |
-| <code>[JsonPropertyName(&quot;compressed&quot;)] public bool Compressed { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:261](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L261) | Whether the file is compressed within the package. |
-| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:267](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L267) | Compression type if compressed. |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:273](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L273) | File size within the package (compressed if applicable). |
-| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:279](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L279) | Original uncompressed size. |
-| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:285](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L285) | Number of events/records in the file. |
-| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:291](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L291) | SHA256 checksum of the file. |
-| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:297](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L297) | Timestamp of first event. |
-| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:303](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L303) | Timestamp of last event. |
-| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:309](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L309) | Schema version used for this file. |
+| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:234](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L234) | Relative path within the package. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:240](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L240) | Symbol this file contains data for. |
+| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:246](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L246) | Event type stored in this file. |
+| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:252](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L252) | Date of data in this file. |
+| <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:258](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L258) | Data source/provider. |
+| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;jsonl&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:264](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L264) | File format (jsonl, csv, parquet). |
+| <code>[JsonPropertyName(&quot;compressed&quot;)] public bool Compressed { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:270](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L270) | Whether the file is compressed within the package. |
+| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:276](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L276) | Compression type if compressed. |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:282](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L282) | File size within the package (compressed if applicable). |
+| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:288](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L288) | Original uncompressed size. |
+| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:294](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L294) | Number of events/records in the file. |
+| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:300](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L300) | SHA256 checksum of the file. |
+| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:306](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L306) | Timestamp of first event. |
+| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:312](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L312) | Timestamp of last event. |
+| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:318](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L318) | Schema version used for this file. |
 
 ## PackageFormat
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:158](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L158).
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:163](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L163).
 
 Package archive format.
 
@@ -729,15 +747,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Zip</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:161](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L161) | ZIP archive - widely compatible. |
-| <code>TarGz</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:164](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L164) | Gzipped TAR archive - better for Unix/Linux. |
-| <code>SevenZip</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:167](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L167) | 7-Zip archive - higher compression ratio. |
+| <code>Zip</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:166](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L166) | ZIP archive - widely compatible. |
+| <code>TarGz</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:169](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L169) | Gzipped TAR archive - better for Unix/Linux. |
+| <code>SevenZip</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:172](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L172) | 7-Zip archive - higher compression ratio. |
 
 ## PackageLayout
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageLayout</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:209](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L209).
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:214](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L214).
 
 Internal file layout within the package.
 
@@ -749,10 +767,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ByDate</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:212](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L212) | Organize by date: data/{date}/{symbol}/{type}.jsonl |
-| <code>BySymbol</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:215](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L215) | Organize by symbol: data/{symbol}/{type}/{date}.jsonl |
-| <code>ByType</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:218](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L218) | Organize by event type: data/{type}/{symbol}/{date}.jsonl |
-| <code>Flat</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:221](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L221) | Flat structure: data/{symbol}_{type}_{date}.jsonl |
+| <code>ByDate</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:217](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L217) | Organize by date: data/{date}/{symbol}/{type}.jsonl |
+| <code>BySymbol</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:220](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L220) | Organize by symbol: data/{symbol}/{type}/{date}.jsonl |
+| <code>ByType</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:223](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L223) | Organize by event type: data/{type}/{symbol}/{date}.jsonl |
+| <code>Flat</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:226](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L226) | Flat structure: data/{symbol}_{type}_{date}.jsonl |
 
 ## PackageManifest
 
@@ -770,36 +788,39 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;packageVersion&quot;)] public string PackageVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:16](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L16) | Package manifest version. |
-| <code>[JsonPropertyName(&quot;packageId&quot;)] public string PackageId { get; set; } = Guid.NewGuid().ToString(&quot;N&quot;);</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:22](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L22) | Unique identifier for this package. |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:28](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L28) | Human-readable package name. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:34](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L34) | Description of the package contents. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:40](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L40) | When the package was created. |
-| <code>[JsonPropertyName(&quot;creatorVersion&quot;)] public string CreatorVersion { get; set; } = &quot;1.6.1&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:46](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L46) | Version of Meridian that created the package. |
-| <code>[JsonPropertyName(&quot;createdBy&quot;)] public string? CreatedBy { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:52](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L52) | Machine/hostname that created the package. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;Zip&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:58](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L58) | Package format (Zip, TarGz, etc.). |
-| <code>[JsonPropertyName(&quot;encrypted&quot;)] public bool Encrypted { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:64](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L64) | Whether the package is encrypted. |
-| <code>[JsonPropertyName(&quot;compression&quot;)] public string Compression { get; set; } = &quot;Deflate&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:70](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L70) | Compression algorithm used. |
-| <code>[JsonPropertyName(&quot;packageChecksum&quot;)] public string? PackageChecksum { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:80](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L80) | SHA256 checksum of the entire package file. |
-| <code>[JsonPropertyName(&quot;packageSizeBytes&quot;)] public long PackageSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:87](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L87) | Total size of the package file in bytes. |
-| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:93](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L93) | Total uncompressed size of all data files. |
-| <code>[JsonPropertyName(&quot;dateRange&quot;)] public PackageDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:99](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L99) | Data date range information. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:105](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L105) | Symbols included in the package. |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:111](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L111) | Event types included in the package. |
-| <code>[JsonPropertyName(&quot;sources&quot;)] public string[] Sources { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:117](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L117) | Data sources included in the package. |
-| <code>[JsonPropertyName(&quot;totalFiles&quot;)] public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:123](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L123) | Total number of data files in the package. |
-| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:129](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L129) | Total number of events/records in the package. |
-| <code>[JsonPropertyName(&quot;files&quot;)] public PackageFileEntry[] Files { get; set; } = Array.Empty&lt;PackageFileEntry&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:135](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L135) | Detailed file entries. |
-| <code>[JsonPropertyName(&quot;quality&quot;)] public PackageQualityMetrics? Quality { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:141](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L141) | Data quality metrics summary. |
-| <code>[JsonPropertyName(&quot;schemas&quot;)] public Dictionary&lt;string, PackageSchema&gt;? Schemas { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:147](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L147) | Schema definitions for each event type. |
-| <code>[JsonPropertyName(&quot;layout&quot;)] public string Layout { get; set; } = &quot;ByDate&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:153](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L153) | Internal file layout used in the package. |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:159](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L159) | Tags for categorization. |
-| <code>[JsonPropertyName(&quot;customMetadata&quot;)] public Dictionary&lt;string, string&gt;? CustomMetadata { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:165](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L165) | Custom metadata provided by the creator. |
-| <code>[JsonPropertyName(&quot;signature&quot;)] public string? Signature { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:171](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L171) | Package signature for authenticity verification. |
-| <code>[JsonPropertyName(&quot;supplementaryFiles&quot;)] public SupplementaryFileInfo[]? SupplementaryFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:177](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L177) | Included supplementary files. |
-| <code>[JsonPropertyName(&quot;partNumber&quot;)] public int? PartNumber { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:183](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L183) | Part number if this is a multi-part package. |
-| <code>[JsonPropertyName(&quot;totalParts&quot;)] public int? TotalParts { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:189](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L189) | Total parts if this is a multi-part package. |
-| <code>[JsonPropertyName(&quot;minRequiredVersion&quot;)] public string MinRequiredVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:195](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L195) | Minimum required version of Meridian to import this package. |
+| <code>[JsonPropertyName(&quot;ledgerSnapshotPath&quot;)] public string? LedgerSnapshotPath { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:13](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L13) |  |
+| <code>[JsonPropertyName(&quot;ledgerSnapshotSha256&quot;)] public string? LedgerSnapshotSha256 { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:16](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L16) |  |
+| <code>[JsonPropertyName(&quot;ledgerBalanceChecksumSha256&quot;)] public string? LedgerBalanceChecksumSha256 { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:19](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L19) |  |
+| <code>[JsonPropertyName(&quot;packageVersion&quot;)] public string PackageVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:25](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L25) | Package manifest version. |
+| <code>[JsonPropertyName(&quot;packageId&quot;)] public string PackageId { get; set; } = Guid.NewGuid().ToString(&quot;N&quot;);</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:31](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L31) | Unique identifier for this package. |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:37](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L37) | Human-readable package name. |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:43](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L43) | Description of the package contents. |
+| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:49](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L49) | When the package was created. |
+| <code>[JsonPropertyName(&quot;creatorVersion&quot;)] public string CreatorVersion { get; set; } = &quot;1.6.1&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:55](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L55) | Version of Meridian that created the package. |
+| <code>[JsonPropertyName(&quot;createdBy&quot;)] public string? CreatedBy { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:61](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L61) | Machine/hostname that created the package. |
+| <code>[JsonPropertyName(&quot;format&quot;)] public string Format { get; set; } = &quot;Zip&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:67](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L67) | Package format (Zip, TarGz, etc.). |
+| <code>[JsonPropertyName(&quot;encrypted&quot;)] public bool Encrypted { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:73](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L73) | Whether the package is encrypted. |
+| <code>[JsonPropertyName(&quot;compression&quot;)] public string Compression { get; set; } = &quot;Deflate&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:79](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L79) | Compression algorithm used. |
+| <code>[JsonPropertyName(&quot;packageChecksum&quot;)] public string? PackageChecksum { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:89](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L89) | SHA256 checksum of the entire package file. |
+| <code>[JsonPropertyName(&quot;packageSizeBytes&quot;)] public long PackageSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:96](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L96) | Total size of the package file in bytes. |
+| <code>[JsonPropertyName(&quot;uncompressedSizeBytes&quot;)] public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:102](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L102) | Total uncompressed size of all data files. |
+| <code>[JsonPropertyName(&quot;dateRange&quot;)] public PackageDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:108](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L108) | Data date range information. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:114](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L114) | Symbols included in the package. |
+| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:120](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L120) | Event types included in the package. |
+| <code>[JsonPropertyName(&quot;sources&quot;)] public string[] Sources { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:126](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L126) | Data sources included in the package. |
+| <code>[JsonPropertyName(&quot;totalFiles&quot;)] public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:132](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L132) | Total number of data files in the package. |
+| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:138](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L138) | Total number of events/records in the package. |
+| <code>[JsonPropertyName(&quot;files&quot;)] public PackageFileEntry[] Files { get; set; } = Array.Empty&lt;PackageFileEntry&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:144](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L144) | Detailed file entries. |
+| <code>[JsonPropertyName(&quot;quality&quot;)] public PackageQualityMetrics? Quality { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:150](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L150) | Data quality metrics summary. |
+| <code>[JsonPropertyName(&quot;schemas&quot;)] public Dictionary&lt;string, PackageSchema&gt;? Schemas { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:156](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L156) | Schema definitions for each event type. |
+| <code>[JsonPropertyName(&quot;layout&quot;)] public string Layout { get; set; } = &quot;ByDate&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:162](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L162) | Internal file layout used in the package. |
+| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:168](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L168) | Tags for categorization. |
+| <code>[JsonPropertyName(&quot;customMetadata&quot;)] public Dictionary&lt;string, string&gt;? CustomMetadata { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:174](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L174) | Custom metadata provided by the creator. |
+| <code>[JsonPropertyName(&quot;signature&quot;)] public string? Signature { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:180](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L180) | Package signature for authenticity verification. |
+| <code>[JsonPropertyName(&quot;supplementaryFiles&quot;)] public SupplementaryFileInfo[]? SupplementaryFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:186](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L186) | Included supplementary files. |
+| <code>[JsonPropertyName(&quot;partNumber&quot;)] public int? PartNumber { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:192](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L192) | Part number if this is a multi-part package. |
+| <code>[JsonPropertyName(&quot;totalParts&quot;)] public int? TotalParts { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:198](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L198) | Total parts if this is a multi-part package. |
+| <code>[JsonPropertyName(&quot;minRequiredVersion&quot;)] public string MinRequiredVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:204](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L204) | Minimum required version of Meridian to import this package. |
 
 ## PackageOptions
 
@@ -817,30 +838,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = $&quot;market-data-{DateTime.UtcNow:yyyyMMdd}&quot;;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:14](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L14) | Name for the package (used in file name and manifest). |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:20](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L20) | Description of the package contents. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public PackageFormat Format { get; set; } = PackageFormat.Zip;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:26](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L26) | Package archive format (Zip, TarGz, or SevenZip). |
-| <code>[JsonPropertyName(&quot;compressionLevel&quot;)] public PackageCompressionLevel CompressionLevel { get; set; } = PackageCompressionLevel.Balanced;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:32](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L32) | Compression level for the package archive. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[]? Symbols { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:38](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L38) | Symbols to include (null = all symbols). |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[]? EventTypes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:44](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L44) | Event types to include (Trade, BboQuote, L2Snapshot, etc.). |
-| <code>[JsonPropertyName(&quot;startDate&quot;)] public DateTime? StartDate { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:50](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L50) | Start date for data selection. |
-| <code>[JsonPropertyName(&quot;endDate&quot;)] public DateTime? EndDate { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:56](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L56) | End date for data selection. |
-| <code>[JsonPropertyName(&quot;sources&quot;)] public string[]? Sources { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:62](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L62) | Data sources to include (null = all sources). |
-| <code>[JsonPropertyName(&quot;outputDirectory&quot;)] public string OutputDirectory { get; set; } = &quot;packages&quot;;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:68](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L68) | Output directory for the package file. |
-| <code>[JsonPropertyName(&quot;includeQualityReport&quot;)] public bool IncludeQualityReport { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:74](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L74) | Whether to include data quality report in the package. |
-| <code>[JsonPropertyName(&quot;includeDataDictionary&quot;)] public bool IncludeDataDictionary { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:80](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L80) | Whether to include data dictionary documentation. |
-| <code>[JsonPropertyName(&quot;includeLoaderScripts&quot;)] public bool IncludeLoaderScripts { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:86](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L86) | Whether to include sample loader scripts. |
-| <code>[JsonPropertyName(&quot;verifyChecksums&quot;)] public bool VerifyChecksums { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:92](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L92) | Whether to verify checksums during packaging. |
-| <code>[JsonPropertyName(&quot;decompressFiles&quot;)] public bool DecompressFiles { get; set; } = false;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:98](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L98) | Whether to decompress files before packaging (for universal compatibility). |
-| <code>[JsonPropertyName(&quot;convertToFormat&quot;)] public PackageDataFormat ConvertToFormat { get; set; } = PackageDataFormat.Original;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:104](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L104) | Convert files to a specific format before packaging. |
-| <code>[JsonPropertyName(&quot;maxPackageBytes&quot;)] public long? MaxPackageBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:110](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L110) | Maximum package size in bytes (split into multiple parts if exceeded). |
-| <code>[JsonPropertyName(&quot;password&quot;)] public string? Password { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:116](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L116) | Password for encrypted packages (null = no encryption). |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:122](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L122) | Tags for categorizing the package. |
-| <code>[JsonPropertyName(&quot;customMetadata&quot;)] public Dictionary&lt;string, string&gt;? CustomMetadata { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:128](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L128) | Custom metadata to include in the manifest. |
-| <code>[JsonPropertyName(&quot;internalLayout&quot;)] public PackageLayout InternalLayout { get; set; } = PackageLayout.ByDate;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:134](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L134) | Internal file organization within the package. |
-| <code>[JsonPropertyName(&quot;includeSchemas&quot;)] public bool IncludeSchemas { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:140](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L140) | Whether to include schema definitions for data validation. |
-| <code>[JsonPropertyName(&quot;generateImportScripts&quot;)] public bool GenerateImportScripts { get; set; } = false;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:146](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L146) | Whether to generate import scripts for various databases. |
-| <code>[JsonPropertyName(&quot;importScriptTargets&quot;)] public ImportScriptTarget[]? ImportScriptTargets { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:152](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L152) | Target platforms for import scripts. |
+| <code>[JsonIgnore] public PortableLedgerPayload? Ledger { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:13](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L13) | Optional source-backed journal to include with its balance checksum. Supplied by the authorized host, never deserialized from an untrusted package request. |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = $&quot;market-data-{DateTime.UtcNow:yyyyMMdd}&quot;;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:19](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L19) | Name for the package (used in file name and manifest). |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:25](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L25) | Description of the package contents. |
+| <code>[JsonPropertyName(&quot;format&quot;)] public PackageFormat Format { get; set; } = PackageFormat.Zip;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:31](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L31) | Package archive format (Zip, TarGz, or SevenZip). |
+| <code>[JsonPropertyName(&quot;compressionLevel&quot;)] public PackageCompressionLevel CompressionLevel { get; set; } = PackageCompressionLevel.Balanced;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:37](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L37) | Compression level for the package archive. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[]? Symbols { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:43](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L43) | Symbols to include (null = all symbols). |
+| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[]? EventTypes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:49](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L49) | Event types to include (Trade, BboQuote, L2Snapshot, etc.). |
+| <code>[JsonPropertyName(&quot;startDate&quot;)] public DateTime? StartDate { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:55](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L55) | Start date for data selection. |
+| <code>[JsonPropertyName(&quot;endDate&quot;)] public DateTime? EndDate { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:61](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L61) | End date for data selection. |
+| <code>[JsonPropertyName(&quot;sources&quot;)] public string[]? Sources { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:67](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L67) | Data sources to include (null = all sources). |
+| <code>[JsonPropertyName(&quot;outputDirectory&quot;)] public string OutputDirectory { get; set; } = &quot;packages&quot;;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:73](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L73) | Output directory for the package file. |
+| <code>[JsonPropertyName(&quot;includeQualityReport&quot;)] public bool IncludeQualityReport { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:79](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L79) | Whether to include data quality report in the package. |
+| <code>[JsonPropertyName(&quot;includeDataDictionary&quot;)] public bool IncludeDataDictionary { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:85](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L85) | Whether to include data dictionary documentation. |
+| <code>[JsonPropertyName(&quot;includeLoaderScripts&quot;)] public bool IncludeLoaderScripts { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:91](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L91) | Whether to include sample loader scripts. |
+| <code>[JsonPropertyName(&quot;verifyChecksums&quot;)] public bool VerifyChecksums { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:97](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L97) | Whether to verify checksums during packaging. |
+| <code>[JsonPropertyName(&quot;decompressFiles&quot;)] public bool DecompressFiles { get; set; } = false;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:103](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L103) | Whether to decompress files before packaging (for universal compatibility). |
+| <code>[JsonPropertyName(&quot;convertToFormat&quot;)] public PackageDataFormat ConvertToFormat { get; set; } = PackageDataFormat.Original;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:109](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L109) | Convert files to a specific format before packaging. |
+| <code>[JsonPropertyName(&quot;maxPackageBytes&quot;)] public long? MaxPackageBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:115](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L115) | Maximum package size in bytes (split into multiple parts if exceeded). |
+| <code>[JsonPropertyName(&quot;password&quot;)] public string? Password { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:121](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L121) | Password for encrypted packages (null = no encryption). |
+| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:127](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L127) | Tags for categorizing the package. |
+| <code>[JsonPropertyName(&quot;customMetadata&quot;)] public Dictionary&lt;string, string&gt;? CustomMetadata { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:133](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L133) | Custom metadata to include in the manifest. |
+| <code>[JsonPropertyName(&quot;internalLayout&quot;)] public PackageLayout InternalLayout { get; set; } = PackageLayout.ByDate;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:139](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L139) | Internal file organization within the package. |
+| <code>[JsonPropertyName(&quot;includeSchemas&quot;)] public bool IncludeSchemas { get; set; } = true;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:145](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L145) | Whether to include schema definitions for data validation. |
+| <code>[JsonPropertyName(&quot;generateImportScripts&quot;)] public bool GenerateImportScripts { get; set; } = false;</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:151](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L151) | Whether to generate import scripts for various databases. |
+| <code>[JsonPropertyName(&quot;importScriptTargets&quot;)] public ImportScriptTarget[]? ImportScriptTargets { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:157](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L157) | Target platforms for import scripts. |
 
 ## PackageProgress
 
@@ -873,7 +895,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageQualityMetrics</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:315](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L315).
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:324](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L324).
 
 Quality metrics for the package data.
 
@@ -885,17 +907,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;overallScore&quot;)] public double OverallScore { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:318](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L318) |  |
-| <code>[JsonPropertyName(&quot;completenessScore&quot;)] public double CompletenessScore { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:321](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L321) |  |
-| <code>[JsonPropertyName(&quot;integrityScore&quot;)] public double IntegrityScore { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:324](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L324) |  |
-| <code>[JsonPropertyName(&quot;totalExpectedEvents&quot;)] public long TotalExpectedEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:327](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L327) |  |
-| <code>[JsonPropertyName(&quot;totalActualEvents&quot;)] public long TotalActualEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:330](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L330) |  |
-| <code>[JsonPropertyName(&quot;gapsDetected&quot;)] public int GapsDetected { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:333](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L333) |  |
-| <code>[JsonPropertyName(&quot;sequenceErrors&quot;)] public int SequenceErrors { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:336](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L336) |  |
-| <code>[JsonPropertyName(&quot;duplicatesFound&quot;)] public int DuplicatesFound { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:339](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L339) |  |
-| <code>[JsonPropertyName(&quot;outliersDetected&quot;)] public int OutliersDetected { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:342](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L342) |  |
-| <code>[JsonPropertyName(&quot;grade&quot;)] public string Grade { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:345](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L345) |  |
-| <code>[JsonPropertyName(&quot;issues&quot;)] public string[]? Issues { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:348](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L348) |  |
+| <code>[JsonPropertyName(&quot;overallScore&quot;)] public double OverallScore { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:327](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L327) |  |
+| <code>[JsonPropertyName(&quot;completenessScore&quot;)] public double CompletenessScore { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:330](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L330) |  |
+| <code>[JsonPropertyName(&quot;integrityScore&quot;)] public double IntegrityScore { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:333](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L333) |  |
+| <code>[JsonPropertyName(&quot;totalExpectedEvents&quot;)] public long TotalExpectedEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:336](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L336) |  |
+| <code>[JsonPropertyName(&quot;totalActualEvents&quot;)] public long TotalActualEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:339](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L339) |  |
+| <code>[JsonPropertyName(&quot;gapsDetected&quot;)] public int GapsDetected { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:342](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L342) |  |
+| <code>[JsonPropertyName(&quot;sequenceErrors&quot;)] public int SequenceErrors { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:345](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L345) |  |
+| <code>[JsonPropertyName(&quot;duplicatesFound&quot;)] public int DuplicatesFound { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:348](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L348) |  |
+| <code>[JsonPropertyName(&quot;outliersDetected&quot;)] public int OutliersDetected { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:351](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L351) |  |
+| <code>[JsonPropertyName(&quot;grade&quot;)] public string Grade { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:354](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L354) |  |
+| <code>[JsonPropertyName(&quot;issues&quot;)] public string[]? Issues { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:357](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L357) |  |
 
 ## PackageResult
 
@@ -941,7 +963,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageSchema</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:354](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L354).
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:363](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L363).
 
 Schema definition for an event type.
 
@@ -953,16 +975,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;eventType&quot;)] public string EventType { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:357](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L357) |  |
-| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:360](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L360) |  |
-| <code>[JsonPropertyName(&quot;fields&quot;)] public PackageSchemaField[] Fields { get; set; } = Array.Empty&lt;PackageSchemaField&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:363](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L363) |  |
-| <code>[JsonPropertyName(&quot;jsonSchema&quot;)] public string? JsonSchema { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:366](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L366) |  |
+| <code>[JsonPropertyName(&quot;eventType&quot;)] public string EventType { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:366](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L366) |  |
+| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:369](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L369) |  |
+| <code>[JsonPropertyName(&quot;fields&quot;)] public PackageSchemaField[] Fields { get; set; } = Array.Empty&lt;PackageSchemaField&gt;();</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:372](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L372) |  |
+| <code>[JsonPropertyName(&quot;jsonSchema&quot;)] public string? JsonSchema { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:375](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L375) |  |
 
 ## PackageSchemaField
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageSchemaField</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:372](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L372).
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:381](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L381).
 
 Field definition within a schema.
 
@@ -974,11 +996,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:375](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L375) |  |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:378](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L378) |  |
-| <code>[JsonPropertyName(&quot;nullable&quot;)] public bool Nullable { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:381](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L381) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:384](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L384) |  |
-| <code>[JsonPropertyName(&quot;example&quot;)] public string? Example { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:387](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L387) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:384](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L384) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:387](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L387) |  |
+| <code>[JsonPropertyName(&quot;nullable&quot;)] public bool Nullable { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:390](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L390) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:393](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L393) |  |
+| <code>[JsonPropertyName(&quot;example&quot;)] public string? Example { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:396](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L396) |  |
 
 ## PackageStage
 
@@ -1011,7 +1033,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageValidationResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:413](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L413).
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:441](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L441).
 
 Result of package validation.
 
@@ -1023,11 +1045,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:415](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L415) |  |
-| <code>public PackageManifest? Manifest { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:416](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L416) |  |
-| <code>public string[]? Issues { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:417](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L417) |  |
-| <code>public string[]? MissingFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:418](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L418) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:419](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L419) |  |
+| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:443](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L443) |  |
+| <code>public PackageManifest? Manifest { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:444](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L444) |  |
+| <code>public string[]? Issues { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:445](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L445) |  |
+| <code>public string[]? MissingFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:446](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L446) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:447](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L447) |  |
 
 ## PortableDataPackager
 
@@ -1041,7 +1063,7 @@ Package creation, file scanning, manifest building, and archive writing methods.
 public sealed partial class PortableDataPackager
 ```
 
-Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:20](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L20).
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:21](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L21).
 
 Service for creating and importing portable data packages. Packages include all data, metadata, quality reports, and scripts needed for data portability and sharing. Split into partial classes: Creation, Validation, Scripts.
 
@@ -1053,12 +1075,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event EventHandler&lt;PackageProgress&gt;? ProgressChanged;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:37](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L37) | Event raised to report packaging progress. |
-| <code>public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager = null);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:39](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L39) |  |
-| <code>public async Task&lt;PackageResult&gt; CreatePackageAsync(PackageOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:48](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L48) | Create a portable data package. |
-| <code>public async Task&lt;ImportResult&gt; ImportPackageAsync(string packagePath, string destinationDirectory, bool validateChecksums = true, bool mergeWithExisting = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:144](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L144) | Import/extract a portable data package. |
-| <code>public async Task&lt;PackageValidationResult&gt; ValidatePackageAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:252](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L252) | Validate a package without extracting. |
-| <code>public async Task&lt;PackageContents&gt; ListPackageContentsAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:340](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L340) | List contents of a package without extracting. |
+| <code>public event EventHandler&lt;PackageProgress&gt;? ProgressChanged;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:39](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L39) | Event raised to report packaging progress. |
+| <code>public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager = null) : this(dataRoot, compressionManager, ledgerValidator : null);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:41](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L41) |  |
+| <code>public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager, IPortableLedgerValidator? ledgerValidator);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:48](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L48) | Configures an accounting-owned validator without introducing accounting model dependencies into the storage transport. The original constructor remains market-data only. |
+| <code>public async Task&lt;PackageResult&gt; CreatePackageAsync(PackageOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:59](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L59) | Create a portable data package. |
+| <code>public async Task&lt;ImportResult&gt; ImportPackageAsync(string packagePath, string destinationDirectory, bool validateChecksums = true, bool mergeWithExisting = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:167](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L167) | Import/extract a portable data package. |
+| <code>public async Task&lt;PackageValidationResult&gt; ValidatePackageAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:279](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L279) | Validate a package without extracting. |
+| <code>public async Task&lt;PackageContents&gt; ListPackageContentsAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:368](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L368) | List contents of a package without extracting. |
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs:7](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs#L7).
+
+```csharp
+public sealed partial class PortableDataPackager
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PortableLedgerPayload?&gt; ReadLedgerPayloadAsync(string packagePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs:11](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Ledger.cs#L11) | Reads opaque accounting evidence only after the configured adapter verifies it. This operation grants no posting authority. |
 
 Source: [src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.cs:9](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.Scripts.cs#L9).
 
@@ -1092,11 +1127,23 @@ Package validation, manifest reading, import/extraction, and utility methods.
 public sealed partial class PortableDataPackager
 ```
 
+## PortableLedgerPayload
+
+Qualified name: <code>Meridian.Storage.Packaging.PortableLedgerPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:7](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L7).
+
+Serialized accounting evidence carried by the package transport. Storage treats its journal schema as opaque; a configured accounting adapter must validate it before publication or import.
+
+```csharp
+public sealed record PortableLedgerPayload(string Json, string BalanceChecksumSha256);
+```
+
 ## SupplementaryFileInfo
 
 Qualified name: <code>Meridian.Storage.Packaging.SupplementaryFileInfo</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:393](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L393).
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:402](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L402).
 
 Information about supplementary files in the package.
 
@@ -1108,10 +1155,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:396](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L396) |  |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:399](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L399) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:402](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L402) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:405](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L405) |  |
+| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:405](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L405) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:408](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L408) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:411](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L411) |  |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:414](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L414) |  |
 
 ## ValidationError
 
@@ -1201,43 +1248,4 @@ Metadata extracted from a storage file path.
 
 ```csharp
 public sealed record ParsedPathMetadata(string Symbol, string EventType, string Source, DateTimeOffset? Date);
-```
-
-## DataQueryOptions
-
-Qualified name: <code>Meridian.Storage.Query.DataQueryOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:302](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L302).
-
-Limits for the data query workbench, bound from the DataQuery configuration section.
-
-```csharp
-public sealed class DataQueryOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;DataQuery&quot;;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:304](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L304) |  |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:306](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L306) |  |
-| <code>public int MaxRows { get; set; } = 10_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:309](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L309) | Maximum rows returned to the client; additional rows set Truncated. |
-| <code>public int TimeoutSeconds { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:312](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L312) | Wall-clock limit for a single query. |
-| <code>public int MemoryLimitMb { get; set; } = 512;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:315](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L315) | DuckDB session memory limit. |
-| <code>public int MaxThreads { get; set; } = 2;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:318](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L318) | DuckDB session thread cap, keeping analytics off the ingestion cores. |
-| <code>public int MaxSqlLength { get; set; } = 20_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:320](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L320) |  |
-| <code>public string? RetainedResultsRoot { get; set; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:323](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L323) | Private retention must remain outside RootPath, which SQL readers may access. |
-| <code>public long MaxRetainedResultBytes { get; set; } = 32L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:324](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L324) |  |
-| <code>public long MaxRetainedTotalBytes { get; set; } = 128L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:325](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L325) |  |
-| <code>public int MaxRetainedRows { get; set; } = 250_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:326](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L326) |  |
-| <code>public int RetainedResultMinutes { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:327](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L327) |  |
-
-## DataQueryOwner
-
-Qualified name: <code>Meridian.Storage.Query.DataQueryOwner</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:11](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L11).
-
-```csharp
-public sealed record DataQueryOwner(string TenantId, string CompanyId, string OperatorId);
 ```

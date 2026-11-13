@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1839](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1839).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1488](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1488).
 
 Request to update the default execution position limit.
 
@@ -22,7 +22,7 @@ public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPosi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1844](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1844).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1493](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1493).
 
 Request to update or clear a symbol-specific execution position limit.
 
@@ -211,6 +211,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs#L11).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs#L14).
 
 ```csharp
 public static partial class WorkstationEndpoints

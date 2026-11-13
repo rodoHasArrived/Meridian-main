@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorOverrideCanonicalVersionConflictException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideCanonicalVersionConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L101).
+
+Thrown when an overlay patch was submitted for a canonical Security Master version that no longer matches the stream version observed while the patch transaction held the stream lock.
+
+```csharp
+public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L103) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L111) |  |
+| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:112](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L112) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:113](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L113) |  |
+
+## OperatorOverrideDecision
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L38).
+
+Internal store command for an operator-override approval decision. Unlike the public OperatorOverrideDecisionRequest, it carries the Reviewer identity that the API layer derives from the authenticated principal before calling the store.
+
+```csharp
+public sealed record OperatorOverrideDecision(SecurityOverrideApprovalStatusDto Decision, string Reviewer, string? Comment = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RestoresPriorDecision { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L49) | True only when the decision re-records a decision an independent reviewer already made (a compensating revert or a discard restored the overlay to values that reviewer decided). Restorations are exempt from the self-approval rule because they assert no new review; the governance log records the flag. API callers never set it. |
+
 ## OperatorOverrideReviewRules
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideReviewRules</code>. Kind: `class`.
@@ -1150,34 +1189,3 @@ ProjectionRebuild / ProjectionBatchRebuilt: one persisted rebuild batch.
 ```csharp
 public sealed record ProjectionBatchRebuiltPayload(string ProjectionName, long LastGlobalSequence, IReadOnlyList<ProjectionBatchRebuiltRecord> Records) : ISecurityGovernancePayload;
 ```
-
-## ProjectionBatchRebuiltRecord
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
-
-A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
-
-```csharp
-public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
-```
-
-## SecurityGovernanceEvent
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:30](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L30).
-
-One recorded governance event. Payload is the stored JSON as written; ReadPayload{TPayload} reads it through the declared contract for Stream/EventType, dispatching on PayloadVersion.
-
-```csharp
-public sealed record SecurityGovernanceEvent(long GlobalSequence, Guid? SecurityId, string Stream, string EventType, string Actor, DateTimeOffset OccurredAt, JsonElement Payload, int PayloadVersion)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TPayload ReadPayload&lt;TPayload&gt;() where TPayload : class, ISecurityGovernancePayload =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L46) | The payload as its declared type. Throws SecurityGovernancePayloadContractException when the event type has no contract on this node, SecurityGovernancePayloadVersionException when PayloadVersion has no reader, and InvalidOperationException when TPayload is not the declared type. |
-| <code>public bool TryReadPayload&lt;TPayload&gt;([NotNullWhen(true)] out TPayload? payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L55) | Reads the payload when this node declares a contract and a reader for its version and TPayload is the declared type; otherwise returns false and leaves the raw Payload as the only reading. Malformed JSON for a declared version still throws. |

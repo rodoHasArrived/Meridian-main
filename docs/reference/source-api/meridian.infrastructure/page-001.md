@@ -67,7 +67,7 @@ Declared public members:
 | <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:519](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L519) |  |
 | <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:541](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L541) |  |
 | <code>public Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:548](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L548) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:650](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L650) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:654](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs#L654) |  |
 
 Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L10).
 

@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonlPositionSnapshotStore
+
+Qualified name: <code>Meridian.Storage.Services.JsonlPositionSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:32](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L32).
+
+JSONL-backed implementation of IPositionSnapshotStore. Owned path convention: {StorageRoot}/portfolios/owned/{tenant}/{company}/{fund}/{book}/{entity}/{runId}/{accountId}/snapshots.jsonl. Legacy unowned snapshots retain {StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl and are never returned by an owned lookup. This path falls under StorageOptions.RootPath so the LifecyclePolicyEngine automatically picks it up for tiered-storage lifecycle enforcement (ADR-002). Each snapshot is a single JSON line appended atomically (ADR-007). A per-partition file lock serializes the conditional same-timestamp check and append across store instances and cooperating processes. Recovery streams the file and selects the greatest recorded AsOf timestamp rather than trusting append order, so a delayed writer cannot make an older observation authoritative.
+
+```csharp
+public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlPositionSnapshotStore(StorageOptions options, ILogger&lt;JsonlPositionSnapshotStore&gt; logger);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:41](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L41) |  |
+| <code>public async Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:51](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L51) |  |
+| <code>public async Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:59](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L59) |  |
+| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:106](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L106) |  |
+| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:126](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L126) |  |
+| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:149](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L149) |  |
+| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:180](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L180) |  |
+
+## LifecycleAction
+
+Qualified name: <code>Meridian.Storage.Services.LifecycleAction</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:423](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L423).
+
+```csharp
+public sealed record LifecycleAction(string FilePath, LifecycleActionType ActionType, StorageTier? CurrentTier, StorageTier? TargetTier, string Reason, long EstimatedSizeBytes, StoragePolicyConfig? Policy = null);
+```
+
 ## LifecycleActionType
 
 Qualified name: <code>Meridian.Storage.Services.LifecycleActionType</code>. Kind: `enum`.
@@ -720,34 +754,3 @@ Enum declarations:
 | <code>DateRange</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
 | <code>EventType</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
 | <code>All</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:916](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L916) |  |
-
-## RepairStrategy
-
-Qualified name: <code>Meridian.Storage.Services.RepairStrategy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:906](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L906).
-
-```csharp
-public enum RepairStrategy : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RestoreFromBackup</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:908](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L908) |  |
-| <code>BackfillFromSource</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:909](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L909) |  |
-| <code>TruncateCorrupted</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:910](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L910) |  |
-| <code>RebuildIndex</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:911](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L911) |  |
-| <code>MergeFragments</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:912](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L912) |  |
-| <code>RecompressOptimal</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:913](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L913) |  |
-
-## ResourceLimits
-
-Qualified name: <code>Meridian.Storage.Services.ResourceLimits</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1583](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1583).
-
-```csharp
-public sealed record ResourceLimits(int MaxCpuPct = 80, int MaxMemoryPct = 70, int MaxDiskIoMbps = 500);
-```

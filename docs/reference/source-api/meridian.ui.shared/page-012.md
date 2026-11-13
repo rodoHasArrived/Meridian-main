@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBResultQueryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IBResultQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:6](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L6).
+
+Shared, tenant-scoped query service for typed, durable IB callback results.
+
+```csharp
+public sealed class IBResultQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IBResultQueryService(IBDurableResultStore store) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:9](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L9) |  |
+| <code>public IReadOnlyList&lt;IBDurableResult&gt; Get(string tenantId, string companyId, string? family, string? accountId, string? modelAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:10](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L10) |  |
+
 ## ICashSyncOrchestrationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ICashSyncOrchestrationService</code>. Kind: `interface`.
@@ -885,7 +904,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1544](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1544).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1548](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1548).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -897,7 +916,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1546](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1546) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1550](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1550) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -953,23 +972,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L22) |  |
-
-## IReportingRecipientDestinationResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRecipientDestinationResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L145).
-
-Resolves transport destinations from a governed principal. Deployments must replace the rejecting implementation with their tenant-bound identity or recipient directory adapter.
-
-```csharp
-public interface IReportingRecipientDestinationResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsConfigured { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L147) |  |
-| <code>IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:154](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L154) | Transport ids referenced by the deployment-owned recipient directory. A resolver that cannot enumerate its configured transports leaves this empty so deployment readiness fails closed instead of assuming an adapter exists. |
-| <code>ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L156) |  |

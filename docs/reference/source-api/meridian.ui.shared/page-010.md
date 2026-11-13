@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyValuationSchedulerHostedService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationSchedulerHostedService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:715](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L715).
+
+Minute-cadence host loop for configured EOD valuation schedules.
+
+```csharp
+public sealed class DailyValuationSchedulerHostedService(IServiceProvider services, ILogger<DailyValuationSchedulerHostedService> logger) : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;DailyValuationScheduledBatchResult&gt; RunOnceAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:721](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L721) |  |
+
 ## DailyValuationScheduleWorkItem
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduleWorkItem</code>. Kind: `record`.
@@ -906,27 +924,3 @@ Declared public members:
 | <code>public async Task&lt;FundReportPackSnapshotDto?&gt; GetAsync(Guid reportId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:192](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L192) |  |
 | <code>public async Task&lt;FundReportPackSnapshotDto?&gt; FindLatestByRunIdAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:222](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L222) |  |
 | <code>public async Task&lt;FundReportPackEvidenceBundleDto&gt; SaveEvidenceBundleAsync(FundReportPackSnapshotDto snapshot, FundReportPackEvidenceBundleDto bundle, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:256](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L256) |  |
-
-## FileManualJournalEntryDraftStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileManualJournalEntryDraftStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:133](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L133).
-
-Persists manual journal drafts and exposes the directory used for mutation recovery.
-
-```csharp
-public sealed class FileManualJournalEntryDraftStore : JsonFileSnapshotStore<FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot>, IManualJournalEntryDraftStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string MutationRecoveryDirectory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:138](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L138) | All manual command writers for this snapshot share this durable lease directory. |
-| <code>public FileManualJournalEntryDraftStore(string snapshotPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Manual journal entry draft snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:144](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L144) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:155](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L155) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:166](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L166) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:188](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L188) |  |
-| <code>public async Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:207](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L207) |  |
-| <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:210](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L210) |  |

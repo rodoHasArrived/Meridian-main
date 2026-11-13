@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportAmountBindingBuilder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportAmountBindingBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L9).
+
+Projects account amounts and exact line identities from the retained canonical ledger population.
+
+```csharp
+public static class ReportAmountBindingBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L11) |  |
+| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L39) |  |
+
+## ReportingAccessGrantService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAccessGrantService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L68).
+
+Issues, validates, and revokes reporting access grants and builds recipient access links.
+
+```csharp
+public sealed class ReportingAccessGrantService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingAccessGrantService(IReportingAccessGrantStore store, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L76) |  |
+| <code>public async Task&lt;ReportingAccessGrantSecret&gt; IssueAsync(ReportingAccessGrantIssueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:84](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L84) |  |
+| <code>public async Task&lt;ReportingAccessGrantSecret&gt; IssueIdempotentAsync(ReportingAccessGrantIssueRequest request, ReportingDerivedAccessGrantCredential credential, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:148](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L148) | Creates or reopens the exact same active credential for one durable delivery attempt. A restart can therefore reconstruct a provider-accepted bearer from stable key material while the store continues to retain only its SHA-256 hash. |
+| <code>public async Task&lt;ReportingAccessGrantValidationResult&gt; ValidateAsync(ReportingAccessGrantValidationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:219](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L219) |  |
+| <code>public async Task&lt;bool&gt; RevokeAsync(string grantId, string tenantId, string revokedBy, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:336](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L336) |  |
+| <code>public static string BuildRecipientAccessUri(string accessBaseUri, ReportingAccessGrantSecret secret, string? artifactId = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:378](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L378) |  |
+
 ## ReportingArtifactAccessContext
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactAccessContext</code>. Kind: `record`.
@@ -769,53 +811,4 @@ Canonical manifest bytes retained alongside every governed reporting package. Th
 
 ```csharp
 public sealed record ReportingRetainedManifestDocument(string SchemaVersion, string RunId, string SeriesId, string TemplateId, VersionedReportTemplateIdDto ResolvedTemplate, DateOnly AsOfDate, string ParametersCanonicalJson, string ParametersHash, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, ReportingAuthoritativeSourceCheckpoint AuthoritativeSource, ReportingRunReadinessDto Readiness, ImmutableArray<ReportingSectionManifest> Sections, int CertifiedDatasetRowCount, string CertifiedDatasetHashSha256, ImmutableArray<ReportingRetainedManifestArtifactDescriptor> Artifacts);
-```
-
-## ReportingRunCertificationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCertificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L24).
-
-Freezes the exact durable source rows, normalized parameters, readiness evidence, and authority scope before orchestration. Caller/workflow rows are never accepted as certification input.
-
-```csharp
-public sealed class ReportingRunCertificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunCertificationService(IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceSource? reconciliationEvidenceSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L29) |  |
-| <code>public async ValueTask&lt;CertifiedReportingRunContext&gt; CertifyAsync(ReportingTemplateMetadata template, ReportingRunReadinessDto readiness, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L37) |  |
-| <code>public async ValueTask RevalidateForReleaseAsync(ReportingRunParametersDto parameters, string templateId, ReportingAuthoritativeSourceCheckpoint certifiedSource, ReportingCertifiedSnapshotScope certifiedSnapshot, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:278](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L278) | Rechecks the exact authoritative source and canonical reconciliation queue immediately before final release. Approval of a frozen snapshot must not allow a later queue mutation or ledger change to pass on stale certification. |
-| <code>[Obsolete(&quot;Caller/workflow rows are not certifiable. Use CertifyAsync with a durable authoritative source.&quot;)] public CertifiedReportingRunContext Certify(ReportingTemplateMetadata template, ReportingRunReadinessDto readiness, IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt;? datasetRows, string? datasetSourceId, ReportAccessQueryContext accessContext) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:425](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L425) | Compatibility signature retained so old callers fail closed instead of silently certifying caller-owned or mutable workflow rows. Governed code must use CertifyAsync. |
-| <code>public ReportingReadinessReceipt BuildGovernanceReadiness(string runId, CertifiedReportingRunContext certified, ReportingRunReadinessDto readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:434](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L434) |  |
-
-## ReportingRunCommandService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCommandService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L11).
-
-Runs reporting requests after readiness checks and retains their output and audit evidence.
-
-```csharp
-public sealed partial class ReportingRunCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunCommandService(IReportingOrchestrationService orchestrationService, IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, ReportWriterDatasetSourceService? datasetSourceService = null, ReportingRunReadinessService? readinessService = null, ReportingRunCertificationService? certificationService = null, IReportingGovernanceEndpointCoordinator? governanceCoordinator = null, IReportingDeploymentReadinessService? deploymentReadinessService = null, IReportingRunStore? runStore = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L23) |  |
-| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L47) |  |
-| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, ReportAccessQueryContext? accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:53](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L53) |  |
-| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, ReportAccessQueryContext? accessContext, ReportingGovernanceCallerContext? governanceCaller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L70) | Executes and immediately reconciles a tenant-bound run into the canonical governed Draft. The method does not return a successful strict-mode result until exact artifacts have been retained and the governance aggregate is Succeeded/Draft. |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs#L18).
-
-```csharp
-public sealed partial class ReportingRunCommandService
 ```

@@ -35,6 +35,10 @@ Workflow v3 replaces the natural balloon once in final-payment exercise scenario
 coupons and explicit installments. Retained workflow v1/v2 keep their original replay arithmetic;
 adopted accrual-v2 accounting remains explicitly pinned to workflow v2.
 
+Run ledger accounting-package downloads use the shared `RunsLedgerExport` route, mirrored by the
+maintained TypeScript route generator. The existing summary, trial-balance and journal routes
+accept an optional inclusive `asOf` economic timestamp.
+
 Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved
