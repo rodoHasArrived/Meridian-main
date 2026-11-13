@@ -8,6 +8,7 @@ import { captureLayoutState, upsertUserLayout } from "@/lib/saved-layouts";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { apiGetJson } from "@/lib/api";
 import { getOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { OPERATOR_TRIAGE_ENDPOINT, type OperatorTriageInbox } from "@/lib/operator-inbox-triage";
 import { OPERATING_CONTEXT_STORAGE_KEY } from "@/lib/operating-scope/persistence";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { renderWithRouter } from "@/test/render";
@@ -275,6 +276,31 @@ function mockDailyControlTowerData() {
     workspaceErrors: {}
   });
 }
+
+const loadedOperatorInbox: OperatorTriageInbox = {
+  asOf: "2026-05-14T21:30:00Z",
+  actorId: "operator-1",
+  persistenceAvailable: true,
+  unavailableReason: null,
+  items: [{
+    workItemId: "promotion-review",
+    label: "Promotion checklist incomplete",
+    detail: "Portfolio and ledger continuity review must be finished before paper-operation readiness is accepted.",
+    workspace: "Trading",
+    targetRoute: "/trading/readiness",
+    kind: "PromotionReview",
+    tone: "Warning",
+    createdAt: "2026-05-14T20:30:00Z",
+    ownerId: null,
+    dueAt: null,
+    version: 1,
+    sourceVersion: null,
+    acknowledgedAt: null,
+    snoozedUntil: null,
+    capabilities: { canAssign: true, canAcknowledge: true, canSnooze: true, canUnsnooze: false, disabledReason: null },
+    activity: []
+  }]
+};
 
 async function openShellContext(user: ReturnType<typeof userEvent.setup>) {
   const summary = screen.getByText("Context", { exact: true }).closest("summary")!;
@@ -578,6 +604,11 @@ describe("App", () => {
   it("renders the daily control tower on the root route", async () => {
     const user = userEvent.setup();
     mockDailyControlTowerData();
+    // Load the shared operator inbox too, so both of Today's tables render together.
+    const defaultApiGetJson = vi.mocked(apiGetJson).getMockImplementation()!;
+    vi.mocked(apiGetJson).mockImplementation((path, ...rest) => path === OPERATOR_TRIAGE_ENDPOINT
+      ? Promise.resolve(loadedOperatorInbox) as ReturnType<typeof apiGetJson>
+      : defaultApiGetJson(path, ...rest));
 
     const { container } = renderWithRouter(<App />, { initialEntries: ["/"] });
 
@@ -593,7 +624,7 @@ describe("App", () => {
     expect(within(confidence).getByText("Scope")).toBeInTheDocument();
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
-    expect(confidence).toHaveTextContent("4 loaded workspace items");
+    expect(confidence).toHaveTextContent("4 items in the finance queue");
     const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
     await user.click(trust.querySelector("summary") as HTMLElement);
     expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
@@ -606,13 +637,32 @@ describe("App", () => {
     ["Decisions", "Providers", "Provenance", "Workspace data"].forEach((label) => {
       expect(within(status.querySelector("dl") as HTMLElement).getByText(label)).toBeInTheDocument();
     });
-    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more$/))
+    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more issues?$/))
       .toBeInTheDocument();
 
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(confidence).toHaveTextContent("All authorized scopes");
-    expect(await screen.findByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    const financeQueue = await screen.findByRole("treegrid", { name: "Daily control tower finance queue" });
+    expect(financeQueue).toBeInTheDocument();
+    // The sidebar Today badge counts exactly the rows listed on Today, and the loaded shared inbox
+    // sits in its own section after the queue.
+    expect(within(screen.getByRole("region", { name: "Finance queue" })).getByRole("treegrid", { name: "Daily control tower finance queue" }))
+      .toBe(financeQueue);
+    expect(financeQueue.querySelectorAll("tbody tr[data-dense-row-id]")).toHaveLength(4);
+    const todayLinks = screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route, 4 items need attention/ });
+    expect(todayLinks.length).toBeGreaterThan(0);
+    for (const link of todayLinks) {
+      expect(link.parentElement?.querySelector(".operator-nav-count")).toHaveTextContent("4");
+      // The badge lets the pointer through to the link, so the link's tooltip names the unit.
+      expect(link).toHaveAttribute("title", "Today: Daily Control Tower · 4 items in Today's finance queue");
+    }
+    const operatorInbox = screen.getByRole("region", { name: "Operator inbox" });
+    expect(await within(operatorInbox).findByText("1 of 1 inbox item · All authorized accounts")).toBeInTheDocument();
+    expect(within(operatorInbox).getByRole("treegrid", { name: "Authorized ranked operator queue" })).toBeInTheDocument();
+    expect(within(operatorInbox).getByRole("row", { name: "Promotion checklist incomplete" })).toBeInTheDocument();
+    // With both tables rendered, the finance-queue row names stay unique on the page.
+    expect(screen.getAllByRole("row", { name: "Brokerage sync failed" })).toHaveLength(1);
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
