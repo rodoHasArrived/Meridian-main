@@ -82,7 +82,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await cancellation.CancelAsync();
             if (!released)
                 await producer.RollbackAsync(CancellationToken.None);
-            try { await operation; }
+            try
+            { await operation; }
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
     }

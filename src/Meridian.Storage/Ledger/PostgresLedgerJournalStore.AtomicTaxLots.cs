@@ -277,7 +277,8 @@ public sealed partial class PostgresLedgerJournalStore
         finally
         {
             // The transaction is disposed/rolled back before releasing its session authority.
-            if (entitlement is not null) await entitlement.DisposeAsync().ConfigureAwait(false);
+            if (entitlement is not null)
+                await entitlement.DisposeAsync().ConfigureAwait(false);
         }
     }
 

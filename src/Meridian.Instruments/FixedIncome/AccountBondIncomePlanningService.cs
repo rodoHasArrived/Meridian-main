@@ -216,11 +216,13 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
             throw new InvalidOperationException("Retained obligation identity requires the exact account/book scope.");
         FormattableString legacy = $"{scope.AccountId}|{scope.BookId}|{security:D}|{kind}|{payment:yyyy-MM-dd}|{accrual:yyyy-MM-dd}";
         var hashes = new HashSet<string>(StringComparer.Ordinal) { canonical };
-        try { hashes.Add(Sha256Digest.ComputeUtf8(legacy.ToString(CultureInfo.CurrentCulture))); }
+        try
+        { hashes.Add(Sha256Digest.ComputeUtf8(legacy.ToString(CultureInfo.CurrentCulture))); }
         catch (ArgumentOutOfRangeException) { /* This current calendar cannot represent the contractual date. */ }
         foreach (var name in LegacyIdentityCultures)
         {
-            try { hashes.Add(Sha256Digest.ComputeUtf8(legacy.ToString(CultureInfo.GetCultureInfo(name)))); }
+            try
+            { hashes.Add(Sha256Digest.ComputeUtf8(legacy.ToString(CultureInfo.GetCultureInfo(name)))); }
             catch (ArgumentOutOfRangeException) { /* This calendar cannot represent this contractual date. */ }
             catch (CultureNotFoundException) { /* An unavailable renderer proves no retained identity. */ }
         }

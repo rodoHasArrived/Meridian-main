@@ -108,10 +108,12 @@ public sealed class AccountBondIncomePlanningEntitlementTests
         // Reproduce a receipt captured by the earlier producer that marked detached rights inactive.
         var inputs = earlier.Inputs with
         {
-            RunId = "earlier-inactive-refresh", RecordedAtUtc = Fixture.InWindow,
+            RunId = "earlier-inactive-refresh",
+            RecordedAtUtc = Fixture.InWindow,
             Obligations = earlier.Inputs.Obligations.Select(row => row == coupon ? row with { IsCurrentHolding = false } : row).ToArray(),
             ReceiptRevisions = revisedReceipt ? [new(coupon.ObligationId, new(2027, 1, 8), Fixture.Evidence("receipt-revision"))] : [],
-            PreviousSnapshotId = earlier.SnapshotId, CorrectionRationale = "Retained earlier ex-coupon refresh."
+            PreviousSnapshotId = earlier.SnapshotId,
+            CorrectionRationale = "Retained earlier ex-coupon refresh."
         };
         var retained = await fixture.Store.AppendAsync(BondMonitoringEngine.Build(inputs));
         fixture.Clock.Now = revisedReceipt ? new(2027, 1, 4, 12, 0, 0, TimeSpan.Zero) : Fixture.InWindow.AddDays(1);
@@ -319,13 +321,23 @@ public sealed class AccountBondIncomePlanningEntitlementTests
             var bond = new SecurityDetailDto(Security, "Bond", SecurityStatusDto.Active, "Synthetic ex-coupon bond", "USD",
                 JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new
                 {
-                    assetClassTermsVersion = 5, issueDate = "2026-01-01", maturity = "2028-01-01", couponType = "Fixed",
-                    couponRate = coupon, dayCount = "30/360", par = 100m, paymentFrequency = "Annual", isCallable = false,
+                    assetClassTermsVersion = 5,
+                    issueDate = "2026-01-01",
+                    maturity = "2028-01-01",
+                    couponType = "Fixed",
+                    couponRate = coupon,
+                    dayCount = "30/360",
+                    par = 100m,
+                    paymentFrequency = "Annual",
+                    isCallable = false,
                     bondWorkflow = new { exCouponBusinessDays = 10 },
                     scheduleConventions = new
                     {
-                        accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level",
-                        paymentCalendars = new[] { "WEEKENDS" }, businessDayConvention = "Following"
+                        accrualAdjusted = false,
+                        couponRateUnit = "Percent",
+                        couponCashBasis = "Level",
+                        paymentCalendars = new[] { "WEEKENDS" },
+                        businessDayConvention = "Following"
                     }
                 }), [], [], 1, new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), null);
             var query = Substitute.For<ISecurityMasterQueryService>();
@@ -391,15 +403,19 @@ public sealed class AccountBondIncomePlanningEntitlementTests
                 var flow = plan.Calculations.Single().CashFlows.Single(flow => flow.PaymentDate == row.DueDate
                     && (row.FlowType == "Coupon" ? flow.Interest != 0m : flow.Principal != 0m));
                 FormattableString source = $"{Scope.AccountId}|{Scope.BookId}|{Security:D}|{row.FlowType}|{flow.PaymentDate:yyyy-MM-dd}|{flow.AccrualStart:yyyy-MM-dd}";
-                return row with { ObligationId = wrongPeriod && row.FlowType == "Coupon" && row.DueDate == PaymentDate
-                    ? WrongPeriodThaiCouponId() : Sha256Digest.ComputeUtf8(source.ToString(CultureInfo.GetCultureInfo("th-TH"))) };
+                return row with
+                {
+                    ObligationId = wrongPeriod && row.FlowType == "Coupon" && row.DueDate == PaymentDate
+                    ? WrongPeriodThaiCouponId() : Sha256Digest.ComputeUtf8(source.ToString(CultureInfo.GetCultureInfo("th-TH")))
+                };
             }).ToArray();
             var coupon = obligations.Single(row => row.FlowType == "Coupon" && row.DueDate == PaymentDate);
             var payment = new AccountCashFlowDto("observed-coupon", "observed-coupon-v1", Scope.AccountId, Scope.BookId,
                 AccountCashFlowStatus.Actual, "Coupon", 2m, "USD", Start, Start, Start, Evidence("observed-coupon"), Security);
             return await Store.AppendAsync(BondMonitoringEngine.Build(plan.MonitoringInputs with
             {
-                Obligations = obligations, Payments = [payment],
+                Obligations = obligations,
+                Payments = [payment],
                 Allocations = [new("observed-allocation", coupon.ObligationId, payment.VersionId, 2m, 2m)]
             }, BondMonitoringEngine.PreviousEngineVersion));
         }

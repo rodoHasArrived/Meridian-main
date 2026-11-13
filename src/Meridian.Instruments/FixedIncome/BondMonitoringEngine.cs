@@ -294,7 +294,8 @@ public static class BondMonitoringEngine
         foreach (var name in LegacyRenderingCultures)
         {
             CultureInfo candidate;
-            try { candidate = CultureInfo.GetCultureInfo(name); }
+            try
+            { candidate = CultureInfo.GetCultureInfo(name); }
             catch (CultureNotFoundException) { continue; }
             if (Matches(candidate))
                 return true;

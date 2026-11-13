@@ -81,8 +81,10 @@ public sealed class BondMonitoringCultureTests
             (await File.ReadAllBytesAsync(directory.HistoryPath)).Should().Equal(retainedBytes);
             var refreshed = await restarted.CaptureAsync(request with
             {
-                RunId = "invariant-refresh", RecordedAtUtc = Now.AddDays(1),
-                PreviousSnapshotId = original.SnapshotId, CorrectionRationale = "Explicit synthetic locale-independent refresh."
+                RunId = "invariant-refresh",
+                RecordedAtUtc = Now.AddDays(1),
+                PreviousSnapshotId = original.SnapshotId,
+                CorrectionRationale = "Explicit synthetic locale-independent refresh."
             });
             refreshed.EngineVersion.Should().Be("bond-monitoring-v3");
             var history = await new BondMonitoringService(new BondMonitoringFileStore(directory.Path)).GetHistoryAsync(Scope);

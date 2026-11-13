@@ -103,7 +103,7 @@ public sealed class FredTypedHttpRetryTests
 
         Func<Task> fetch = path == "economic"
             ? async () => { await provider.GetEconomicObservationsAsync(Definition(), new(2026, 11, 10), new(2026, 11, 10), new(2026, 11, 12), cancellation.Token); }
-            : async () => { await provider.GetRateObservationsAsync("SOFR", new(2026, 11, 10), new(2026, 11, 10), cancellation.Token); };
+        : async () => { await provider.GetRateObservationsAsync("SOFR", new(2026, 11, 10), new(2026, 11, 10), cancellation.Token); };
         var failure = await fetch.Should().ThrowAsync<RateLimitException>();
 
         failure.Which.RetryAfter.Should().NotBeNull();

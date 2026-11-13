@@ -87,7 +87,7 @@
       "path": "src/Meridian.Instruments",
       "readme": "src/Meridian.Instruments/README.md",
       "readme_hash": "b6bc4b21a2ea04c757a79aedf992f7d782005592802deb99a407eada07b39e21",
-      "source_hash": "504bcc9b9d52739dda5f93c67ca43d4a66165cc0ad9e9904b0048c9e1fdc5866"
+      "source_hash": "16161d4b6f8822d4797292ce3406ebe41cee1b9f636f97c44f42cbf9656c1516"
     },
     {
       "id": "SRC-DESIGN-PLATFORM",
@@ -255,7 +255,7 @@
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
       "readme_hash": "aa9939cf75e2b2819045169e9b6527c2a5c72bff9fd22433fb27af7f652d496c",
-      "source_hash": "45f7c7c66ac7225f7942e8618e1539c7e3da3a4f29516797ca3cffd74b82c9d2"
+      "source_hash": "9569468885b1e910d7422d7648fe0481f05ea5d3781e7c27bdb7ba5524fd7afd"
     },
     {
       "id": "SRC-STORAGE-ACCOUNTING",
