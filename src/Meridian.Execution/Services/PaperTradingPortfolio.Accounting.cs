@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
@@ -66,37 +67,6 @@ public sealed partial class PaperTradingPortfolio
         }
     }
 
-    private void PostSellLongEntry(AccountState account, string symbol, decimal closeQty, decimal price, decimal proceeds,
-        decimal costBasisRemoved, decimal realised, decimal loanRepaid, DateTimeOffset ts)
-    {
-        var description = $"Sell {closeQty} {symbol} @ {price:F4}";
-        var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
-        AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Cash), proceeds, 0m);
-
-        if (realised > 0)
-        {
-            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Securities(symbol)), 0m, costBasisRemoved);
-            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.RealizedGain), 0m, realised);
-        }
-        else if (realised < 0)
-        {
-            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.RealizedLoss), Math.Abs(realised), 0m);
-            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Securities(symbol)), 0m, costBasisRemoved);
-        }
-        else
-        {
-            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Securities(symbol)), 0m, costBasisRemoved);
-        }
-
-        PostInvestingLedgerLines(ts, description, lines);
-        if (loanRepaid > 0m)
-            _ledger!.PostLines(ts, $"Margin repayment — {symbol}",
-            [
-                (Scoped(account, LedgerAccounts.MarginLoanPayable), loanRepaid, 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, loanRepaid),
-            ]);
-    }
-
     private void PostInvestingLedgerLines(DateTimeOffset timestamp, string description,
         IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines)
     {
@@ -108,51 +78,43 @@ public sealed partial class PaperTradingPortfolio
         _ledger.Post(LedgerCashFlowAttribution.WithClassifiedActivity(draft, LedgerCashFlowCategory.Investing, description));
     }
 
-    private static void AddNonZeroLine(
-        List<(LedgerAccount Account, decimal Debit, decimal Credit)> lines,
-        LedgerAccount account,
-        decimal debit,
-        decimal credit)
-    {
-        var netDebit = debit - credit;
-        if (netDebit > 0m)
-            lines.Add((account, netDebit, 0m));
-        else if (netDebit < 0m)
-            lines.Add((account, 0m, -netDebit));
-    }
-
-    private void PostCoverShortEntry(AccountState account, string symbol, decimal coverQty, decimal price, decimal coverCost,
-        decimal proceedsRemoved, decimal realised, DateTimeOffset ts)
-    {
-        var description = $"Cover {coverQty} {symbol} @ {price:F4}";
-        if (realised > 0m)
-            PostInvestingLedgerLines(ts, description,
-            [
-                (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), proceedsRemoved, 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, coverCost),
-                (Scoped(account, LedgerAccounts.RealizedGain), 0m, realised),
-            ]);
-        else if (realised < 0m)
-            PostInvestingLedgerLines(ts, description,
-            [
-                (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), proceedsRemoved, 0m),
-                (Scoped(account, LedgerAccounts.RealizedLoss), Math.Abs(realised), 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, coverCost),
-            ]);
-        else
-            PostInvestingLedgerLines(ts, description,
-            [
-                (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), proceedsRemoved, 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, coverCost),
-            ]);
-    }
-
     private void PostCommissionEntry(AccountState account, string symbol, decimal commission, DateTimeOffset ts)
+        => _ledger?.PostLines(ts, $"Commission — {symbol}",
+            SecurityTradePostingProjector.Commission(commission, LedgerScope(account), _chartOfAccounts));
+
+    private string? LedgerScope(AccountState account) => _scopeLedgerAccounts ? account.AccountId : null;
+
+    private bool CanCertifyAccountingOwner(AccountState account, PaperPosition? position, string? ownerAccountId)
     {
-        _ledger?.PostLines(ts, $"Commission — {symbol}",
-        [
-            (Scoped(account, LedgerAccounts.CommissionExpense), commission, 0m),
-            (Scoped(account, LedgerAccounts.Cash), 0m, commission),
-        ]);
+        var owner = NormalizeOptional(ownerAccountId);
+        if (_scopeLedgerAccounts && owner is not null
+            && !string.Equals(owner, account.AccountId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (position is null)
+            return true;
+
+        var accountingOwner = _scopeLedgerAccounts ? account.AccountId : owner;
+        if (position.OwnerQuantities.Any(entry => entry.Value != 0m
+                && !string.Equals(entry.Key, accountingOwner, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        // An owner cannot certify basis acquired anonymously in the pooled default account.
+        return _scopeLedgerAccounts || accountingOwner is null || position.Quantity == 0m
+            || position.OwnerQuantities.GetValueOrDefault(accountingOwner) == position.Quantity;
     }
+
+    private sealed class FillAccountingCapture
+    {
+        public SecurityTradePosting? Closing { get; set; }
+        public SecurityTradePosting? Opening { get; set; }
+        public decimal ShortCollateralHeld { get; set; }
+        public decimal ShortCollateralReleased { get; set; }
+        public decimal VariationMarginPnl { get; set; }
+    }
+
 }

@@ -60,9 +60,14 @@ public static partial class LedgerCashFlowAttribution
                     .Select(line => line.Account.AccountType).Distinct().ToArray();
                 // The retained investing activity's carrying leg identifies the counterparty.
                 // A fully relieved asset may leave only the actual realized-result account.
+                var shortPayableDefinition = StandardChartOfAccounts.Instance.GetDefinition(LedgerAccountRole.ShortSecuritiesPayable);
+                var hasKnownShortPayable = actualTypes.Contains(LedgerAccountType.Liability)
+                    && actualTypes.All(type => type is LedgerAccountType.Liability or LedgerAccountType.Revenue or LedgerAccountType.Expense)
+                    && scoped.Where(line => line.Account.AccountType == LedgerAccountType.Liability)
+                        .All(line => line.Account.Name == shortPayableDefinition.Name);
                 var counterpartyType = actualTypes.Contains(LedgerAccountType.Asset)
-                    ? LedgerAccountType.Asset : actualTypes.Contains(LedgerAccountType.Liability)
-                    ? LedgerAccountType.Liability : actualTypes.Length == 1 ? actualTypes[0]
+                    ? LedgerAccountType.Asset : hasKnownShortPayable ? LedgerAccountType.Liability
+                    : actualTypes.Length == 1 ? actualTypes[0]
                     : throw InvalidAttribution(entry);
                 yield return new CashContribution(category, group.Name, counterpartyType,
                     scoped.Where(line => IsCashAccount(line.Account)).Sum(line => line.Debit - line.Credit));

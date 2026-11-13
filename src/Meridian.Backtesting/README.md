@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Backtesting
@@ -75,6 +75,12 @@ replay. An unavailable Security Master remains visible in the run's bias disclos
 
 ## Important workflows
 
+`SecurityTradePostingProjector` supplies the shared long/short trade and commission line
+projection from the simulator's exact lot facts. The simulator attaches investing attribution
+before posting each projected trade; commissions retain their separate operating cash flow.
+Lot selection, corporate-action basis relief and day-end integrity comparisons remain simulation
+responsibilities, without reconstructing carrying value from rounded quotes or realized P&L.
+
 The native engine resolves lot denomination from each available Security Master definition
 before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
 1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
@@ -87,6 +93,14 @@ consumption walk. Composite lots supply their exact retained component basis; fu
 reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and the simulation's
 SpecificId-to-FIFO fallback are preserved. This calculation convergence does not manufacture
 canonical SecurityIds or acquisition FX, authorize short posting, or replace retained Ledger lots.
+
+`SimulatedPortfolio` resolves posting accounts through the shared `IChartOfAccounts` and
+`StandardChartOfAccounts` role registry, retaining existing account identities and brokerage/symbol
+scopes for capital, fills, financing, income, and corporate actions. Fill and commission journal
+lines consume the shared `SecurityTradePostingProjector` with each leg's exact relieved basis or
+short proceeds; simulation keeps its descriptions, activity types, and fill/order references.
+The simulator retains short-payable accounting; it does not migrate historical execution journals
+that record short positions as credits to Securities.
 
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical

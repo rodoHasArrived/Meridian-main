@@ -7,6 +7,7 @@ using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
@@ -21,6 +22,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     public const string DefaultAccountId = "default";
 
     private readonly Meridian.Ledger.Ledger? _ledger;
+    private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
     private readonly bool _scopeLedgerAccounts;
     private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
     private readonly PositionLotSelectionMethod _lotSelectionMethod;
@@ -93,8 +95,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                 openingTimestamp,
                 "Initial capital — paper trading session",
                 [
-                    (LedgerAccounts.Cash, initialCash, 0m),
-                    (LedgerAccounts.CapitalAccount, 0m, initialCash),
+                    (_chartOfAccounts.Resolve(LedgerAccountRole.Cash), initialCash, 0m),
+                    (_chartOfAccounts.Resolve(LedgerAccountRole.Capital), 0m, initialCash),
                 ]);
         }
     }
@@ -159,8 +161,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                     DateTimeOffset.UtcNow,
                     $"Initial capital — {def.DisplayName}",
                     [
-                        (LedgerAccounts.CashAccount(def.AccountId), def.InitialCash, 0m),
-                        (LedgerAccounts.CapitalAccountFor(def.AccountId), 0m, def.InitialCash),
+                        (_chartOfAccounts.Resolve(LedgerAccountRole.Cash, def.AccountId), def.InitialCash, 0m),
+                        (_chartOfAccounts.Resolve(LedgerAccountRole.Capital, def.AccountId), 0m, def.InitialCash),
                     ]);
             }
         }
@@ -498,8 +500,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 
                 _ledger?.PostLines(ts, $"Margin interest — {account.AccountId}",
                 [
-                    (Scoped(account, LedgerAccounts.MarginInterestExpense), accountInterest, 0m),
-                    (Scoped(account, LedgerAccounts.Cash), 0m, accountInterest),
+                    (_chartOfAccounts.Resolve(LedgerAccountRole.MarginInterestExpense, LedgerScope(account)), accountInterest, 0m),
+                    (_chartOfAccounts.Resolve(LedgerAccountRole.Cash, LedgerScope(account)), 0m, accountInterest),
                 ]);
             }
         }
@@ -550,14 +552,37 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         string? ownerAccountId,
         decimal contractMultiplier = 1m,
         bool usesFaceValuePercentageOfPar = false)
+        => ApplyFillCore(accountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
+
+    /// <summary>Captures exact fill economics under the same lock as the portfolio mutation.</summary>
+    internal PaperFillAccountingResult ApplyFillWithAccountingEvidence(
+        ExecutionReport report,
+        string? ownerAccountId,
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
+        => ApplyFillCore(DefaultAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
+
+    private PaperFillAccountingResult ApplyFillCore(
+        string accountId,
+        ExecutionReport report,
+        string? ownerAccountId,
+        decimal contractMultiplier,
+        bool usesFaceValuePercentageOfPar,
+        int accountingEvidenceVersion = 1)
     {
         ArgumentNullException.ThrowIfNull(report);
 
         if (report.ReportType is not (ExecutionReportType.Fill or ExecutionReportType.PartialFill))
-            return;
+            return new PaperFillAccountingResult(null, 0m, Cash);
 
         if (report.FillPrice is null || report.FilledQuantity <= 0)
-            return;
+            return new PaperFillAccountingResult(null, 0m, Cash);
+        if (report.FillPrice <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(report), "Fill price must be positive.");
+        if (report.Side is not (OrderSide.Buy or OrderSide.Sell))
+            throw new ArgumentOutOfRangeException(nameof(report), "Fill side must be buy or sell.");
+        if (report.Commission is < 0m || report.Fees is < 0m || report.SlippageCost is < 0m)
+            throw new ArgumentOutOfRangeException(nameof(report), "Fill costs must be non-negative.");
 
         var signedQty = report.Side == OrderSide.Buy
             ? report.FilledQuantity
@@ -601,11 +626,43 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         lock (_lock)
         {
             if (!_accounts.TryGetValue(accountId, out var account))
-                return;
+                return new PaperFillAccountingResult(null, 0m, _accounts.Values.Sum(static entry => entry.Cash));
 
+            account.Positions.TryGetValue(report.Symbol, out var previousPosition);
+            var requiresAccountingReclassification = previousPosition?.RequiresAccountingReclassification == true;
+            var canCertifyOwnership = !requiresAccountingReclassification
+                && CanCertifyAccountingOwner(account, previousPosition, ownerAccountId);
+            var capture = new FillAccountingCapture();
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
-                ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin);
+                ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin, capture);
+
+            if (account.Positions.TryGetValue(report.Symbol, out var remainingPosition))
+            {
+                // Version-zero fills carry no verified authoritative accounting receipt.
+                // Historical durable shorts also credited Securities instead of a liability.
+                // If a blocked fill flips into a residual, that opening was withheld too,
+                // so the restriction persists until the position is genuinely flat.
+                remainingPosition.RequiresAccountingReclassification = remainingPosition.Quantity != 0m
+                    && (requiresAccountingReclassification
+                        || !canCertifyOwnership
+                        || (accountingEvidenceVersion == 0 && !variationMargin));
+            }
+
+            var evidence = new TradeFillAccountingEvidence(
+                Closing: capture.Closing,
+                Opening: capture.Opening,
+                Fees: report.Fees ?? 0m,
+                SlippageCost: report.SlippageCost ?? 0m,
+                ShortCollateralHeld: capture.ShortCollateralHeld,
+                ShortCollateralReleased: capture.ShortCollateralReleased,
+                SettlesVariationMargin: variationMargin,
+                VariationMarginPnl: capture.VariationMarginPnl,
+                FinancialAccountId: _scopeLedgerAccounts ? account.AccountId : NormalizeOptional(ownerAccountId));
+            return new PaperFillAccountingResult(
+                canCertifyOwnership ? evidence : null,
+                evidence.RealizedPnl,
+                _accounts.Values.Sum(static entry => entry.Cash));
         }
     }
 
@@ -618,13 +675,27 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// and replays on it, even when it is a futures fill.
     /// </summary>
     internal void ApplyRecordedFill(ExecutionReport report)
+        => ApplyRecordedFill(report, accountingEvidenceVersion: 0);
+
+    /// <summary>
+    /// Restores the retained accounting treatment without changing the broker execution report.
+    /// Version-zero positions require reviewed accounting evidence before typed posting.
+    /// </summary>
+    internal void ApplyRecordedFill(
+        ExecutionReport report,
+        int accountingEvidenceVersion,
+        string? ownerAccountId = null)
     {
         ArgumentNullException.ThrowIfNull(report);
-        ApplyFill(report with
+        if (accountingEvidenceVersion is not (0 or 1))
+            throw new ArgumentOutOfRangeException(nameof(accountingEvidenceVersion), "Unsupported retained accounting evidence version.");
+
+        ApplyFillCore(DefaultAccountId, report with
         {
             BookedMoneyMultiplier = report.BookedMoneyMultiplier ?? 1m,
             BookedVariationMargin = report.BookedVariationMargin ?? false
-        });
+        }, ownerAccountId, contractMultiplier: 1m, usesFaceValuePercentageOfPar: false,
+            accountingEvidenceVersion: accountingEvidenceVersion);
     }
 
     /// <summary>
@@ -901,12 +972,13 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal commission,
         DateTimeOffset ts,
         string orderId,
-        string? ownerAccountId = null,
-        decimal contractMultiplier = 1m,
-        bool usesFaceValuePricing = false,
-        SecurityLotUnitKind lotUnit = SecurityLotUnitKind.Shares,
-        decimal economicMultiplier = 1m,
-        bool variationMargin = false)
+        string? ownerAccountId,
+        decimal contractMultiplier,
+        bool usesFaceValuePricing,
+        SecurityLotUnitKind lotUnit,
+        decimal economicMultiplier,
+        bool variationMargin,
+        FillAccountingCapture capture)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
@@ -972,33 +1044,33 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         // Commission is charged once, on the closing leg.
         if (pos.UsesVariationMargin)
         {
-            ApplyVariationMarginFill(account, pos, symbol, signedQty, price, commission, ts);
+            ApplyVariationMarginFill(account, pos, symbol, signedQty, price, commission, ts, capture);
         }
         else if (signedQty > 0 && pos.Quantity < 0)
         {
             var coverQty = Math.Min(signedQty, -pos.Quantity);
-            ApplyCoverShort(account, pos, symbol, coverQty, price, commission, ts);
+            ApplyCoverShort(account, pos, symbol, coverQty, price, commission, ts, capture);
 
             var residualQty = signedQty - coverQty;
             if (residualQty > 0m)
-                ApplyBuy(account, pos, symbol, residualQty, price, 0m, ts);
+                ApplyBuy(account, pos, symbol, residualQty, price, 0m, ts, capture);
         }
         else if (signedQty > 0)
         {
-            ApplyBuy(account, pos, symbol, signedQty, price, commission, ts);
+            ApplyBuy(account, pos, symbol, signedQty, price, commission, ts, capture);
         }
         else if (signedQty < 0 && pos.Quantity > 0)
         {
             var closeQty = Math.Min(-signedQty, pos.Quantity);
-            ApplySellLong(account, pos, symbol, closeQty, price, commission, ts);
+            ApplySellLong(account, pos, symbol, closeQty, price, commission, ts, capture);
 
             var residualQty = -signedQty - closeQty;
             if (residualQty > 0m)
-                ApplyShortSell(account, pos, symbol, residualQty, price, 0m, ts);
+                ApplyShortSell(account, pos, symbol, residualQty, price, 0m, ts, capture);
         }
         else if (signedQty < 0)
         {
-            ApplyShortSell(account, pos, symbol, -signedQty, price, commission, ts);
+            ApplyShortSell(account, pos, symbol, -signedQty, price, commission, ts, capture);
         }
 
         if (commission > 0)
@@ -1027,7 +1099,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal signedQty,
         decimal price,
         decimal commission,
-        DateTimeOffset ts)
+        DateTimeOffset ts,
+        FillAccountingCapture capture)
     {
         var remaining = signedQty;
 
@@ -1041,6 +1114,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             pos.Quantity -= signedClose;
             account.Cash += cashFlow;
             account.RealisedPnl += cashFlow;
+            capture.VariationMarginPnl = cashFlow;
             PostVariationMarginEntry(account, symbol, cashFlow, ts, $"Close {closeQty} {symbol} @ {price:F4} (variation margin)");
 
             if (pos.Quantity == 0m)
@@ -1130,22 +1204,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (_ledger is null || cashFlow == 0m)
             return;
 
-        if (cashFlow > 0m)
-        {
-            _ledger.PostLines(ts, description,
-            [
-                (Scoped(account, LedgerAccounts.Cash), cashFlow, 0m),
-                (Scoped(account, LedgerAccounts.FuturesMtmSettlement(symbol)), 0m, cashFlow),
-            ]);
-        }
-        else
-        {
-            _ledger.PostLines(ts, description,
-            [
-                (Scoped(account, LedgerAccounts.FuturesMtmSettlement(symbol)), -cashFlow, 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, -cashFlow),
-            ]);
-        }
+        _ledger.PostLines(ts, description,
+            SecurityTradePostingProjector.VariationMargin(symbol, cashFlow, LedgerScope(account), _chartOfAccounts));
     }
 
     private void ApplyBuy(
@@ -1155,7 +1215,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal qty,
         decimal price,
         decimal commission,
-        DateTimeOffset ts)
+        DateTimeOffset ts,
+        FillAccountingCapture capture)
     {
         var notional = pos.Money(qty, price);
         pos.AddLot(qty, price, ts);
@@ -1163,11 +1224,12 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         pos.CostBasis = newQty == 0m ? 0m : pos.OpenCostBasis / (newQty * pos.EconomicMultiplier);
         pos.Quantity = newQty;
 
+        var borrowed = 0m;
         if (account.MarginModel is RegTMarginModel regt)
         {
             // Reg T: the trader funds only the initial margin (50 %); the broker loans the rest.
             var cashRequired = notional * regt.LongInitialRate;
-            var borrowed = notional - cashRequired;
+            borrowed = notional - cashRequired;
             account.Cash -= cashRequired + commission;
             pos.MarginBorrowed += borrowed;
         }
@@ -1183,25 +1245,17 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash -= notional + commission;
         }
 
-        if (_ledger is not null)
-        {
-            if (account.MarginModel is RegTMarginModel regtForLedger)
-            {
-                var borrowed = notional * (1m - regtForLedger.LongInitialRate);
-                if (borrowed > 0m)
-                    _ledger.PostLines(ts, $"Margin borrowing — {symbol}",
-                    [
-                        (Scoped(account, LedgerAccounts.Cash), borrowed, 0m),
-                        (Scoped(account, LedgerAccounts.MarginLoanPayable), 0m, borrowed),
-                    ]);
-            }
-            // Keep gross acquisition and financing economics independently balanced.
-            PostInvestingLedgerLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-            [
-                (Scoped(account, LedgerAccounts.Securities(symbol)), notional, 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, notional),
-            ]);
-        }
+        capture.Opening = new SecurityTradePosting(
+            SecurityTradePostingKind.OpenLong, qty, notional, BorrowedAmount: borrowed);
+        if (_ledger is null)
+            return;
+        if (borrowed > 0m)
+            _ledger.PostLines(ts, $"Margin borrowing — {symbol}",
+                SecurityTradePostingProjector.MarginFinancing(borrowed, 0m, LedgerScope(account), _chartOfAccounts));
+        // Preserve the exact financing in captured evidence, while classifying gross trade
+        // cash and financing cash independently in the journal.
+        PostInvestingLedgerLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+            SecurityTradePostingProjector.Project(capture.Opening with { BorrowedAmount = 0m }, symbol, LedgerScope(account), _chartOfAccounts));
     }
 
     private void ApplyCoverShort(
@@ -1211,7 +1265,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal qty,
         decimal price,
         decimal commission,
-        DateTimeOffset ts)
+        DateTimeOffset ts,
+        FillAccountingCapture capture)
     {
         var coverQty = Math.Min(qty, Math.Abs(pos.Quantity));
         var proceedsRemoved = pos.ConsumeLots(coverQty, _lotSelectionMethod, isCoveringShort: true);
@@ -1235,19 +1290,16 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.Cash += marginReleased;
         account.RealisedPnl += realised;
 
+        capture.Closing = new SecurityTradePosting(
+            SecurityTradePostingKind.CoverShort, coverQty, coverCost, proceedsRemoved);
+        capture.ShortCollateralReleased = marginReleased;
         if (_ledger is not null)
         {
-            PostCoverShortEntry(account, symbol, coverQty, price, coverCost, proceedsRemoved, realised, ts);
-
-            // Mirror the account: the covered share of the Reg T collateral returns to cash.
+            PostInvestingLedgerLines(ts, $"Cover {coverQty} {symbol} @ {price:F4}",
+                SecurityTradePostingProjector.Project(capture.Closing, symbol, LedgerScope(account), _chartOfAccounts));
             if (marginReleased > 0m)
-            {
                 _ledger.PostLines(ts, $"Reg T short collateral released {coverQty} {symbol}",
-                [
-                    (Scoped(account, LedgerAccounts.Cash), marginReleased, 0m),
-                    (Scoped(account, LedgerAccounts.ShortSaleCollateralReceivable), 0m, marginReleased),
-                ]);
-            }
+                    SecurityTradePostingProjector.ShortCollateral(marginReleased, true, LedgerScope(account), _chartOfAccounts));
         }
     }
 
@@ -1258,7 +1310,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal qty,
         decimal price,
         decimal commission,
-        DateTimeOffset ts)
+        DateTimeOffset ts,
+        FillAccountingCapture capture)
     {
         var closeQty = Math.Min(qty, pos.Quantity);
         var costBasisRemoved = pos.ConsumeLots(closeQty, _lotSelectionMethod, isCoveringShort: false);
@@ -1281,8 +1334,15 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.Cash += proceeds - loanRepaid - commission;
         account.RealisedPnl += realised;
 
-        if (_ledger is not null)
-            PostSellLongEntry(account, symbol, closeQty, price, proceeds, costBasisRemoved, realised, loanRepaid, ts);
+        capture.Closing = new SecurityTradePosting(
+            SecurityTradePostingKind.CloseLong, closeQty, proceeds, costBasisRemoved, LoanRepaid: loanRepaid);
+        if (_ledger is null)
+            return;
+        PostInvestingLedgerLines(ts, $"Sell {closeQty} {symbol} @ {price:F4}",
+            SecurityTradePostingProjector.Project(capture.Closing with { LoanRepaid = 0m }, symbol, LedgerScope(account), _chartOfAccounts));
+        if (loanRepaid > 0m)
+            _ledger.PostLines(ts, $"Margin repayment — {symbol}",
+                SecurityTradePostingProjector.MarginFinancing(0m, loanRepaid, LedgerScope(account), _chartOfAccounts));
     }
 
     private void ApplyShortSell(
@@ -1292,7 +1352,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal qty,
         decimal price,
         decimal commission,
-        DateTimeOffset ts)
+        DateTimeOffset ts,
+        FillAccountingCapture capture)
     {
         var proceeds = pos.Money(qty, price);
         pos.AddLot(-qty, price, ts);
@@ -1321,27 +1382,26 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash += proceeds - commission;
         }
 
+        capture.Opening = new SecurityTradePosting(SecurityTradePostingKind.OpenShort, qty, proceeds);
+        capture.ShortCollateralHeld = collateralHeld;
+        if (_ledger is null)
+            return;
         PostInvestingLedgerLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
-        [
-            (Scoped(account, LedgerAccounts.Cash), proceeds, 0m),
-            (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), 0m, proceeds),
-        ]);
+            SecurityTradePostingProjector.Project(capture.Opening, symbol, LedgerScope(account), _chartOfAccounts));
 
-        // The broker holds the proceeds plus the posted margin, so that collateral is not free
-        // cash. Without this entry ledger cash read proceeds higher than the account's cash
-        // (by the full collateral) for as long as the short stayed open.
+        // Collateral held by the broker is an asset, but is not available cash.
         if (collateralHeld > 0m)
-        {
             _ledger?.PostLines(ts, $"Reg T short collateral {qty} {symbol}",
-            [
-                (Scoped(account, LedgerAccounts.ShortSaleCollateralReceivable), collateralHeld, 0m),
-                (Scoped(account, LedgerAccounts.Cash), 0m, collateralHeld),
-            ]);
-        }
+                SecurityTradePostingProjector.ShortCollateral(collateralHeld, false, LedgerScope(account), _chartOfAccounts));
     }
 
 
 }
+
+internal sealed record PaperFillAccountingResult(
+    TradeFillAccountingEvidence? Evidence,
+    decimal RealizedPnl,
+    decimal NewCash);
 
 // ─── Supporting types ───────────────────────────────────────────────────────
 
@@ -1535,6 +1595,12 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal MarketPrice { get; set; } = marketPrice;
     public decimal OpenCostBasis { get; private set; }
     public long LotVersion { get; private set; }
+
+    /// <summary>
+    /// The position includes an unverified historical basis or a residual whose typed opening was withheld.
+    /// Reconstruction from retained session provenance carries this restriction until truly flat.
+    /// </summary>
+    public bool RequiresAccountingReclassification { get; set; }
 
     /// <summary>
     /// Amount borrowed from the broker to fund this position.

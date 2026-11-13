@@ -148,11 +148,10 @@ public sealed class PaperLedgerIntegrityTests
     }
 
     [Fact]
-    public async Task SessionClose_CorruptRetainedFillEconomics_RemainsActiveAndReplayReportsBreak()
+    public async Task Initialise_CorruptRetainedFillEconomics_RefusesToPublishSession()
     {
-        // A corrupt historical fill charges a negative commission. Portfolio cash includes
-        // the invalid credit, while no expense journal can substantiate it. Load it through
-        // the durable store seam to exercise authoritative state rather than a defensive clone.
+        // A corrupt historical fill charges a negative commission. Replay validates every
+        // execution before mutation, so startup must not publish even a partial session.
         const string sessionId = "PAPER-CORRUPT-CASH";
         var fill = Fill(OrderSide.Buy, 1m, 10m, -5m);
         var store = Substitute.For<IPaperSessionStore>();
@@ -166,14 +165,9 @@ public sealed class PaperLedgerIntegrityTests
         store.LoadOrderHistoryAsync(sessionId, Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<OrderState>>([]));
         store.LoadLedgerJournalAsync(sessionId, Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]));
         await using var service = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance, store);
-        await service.InitialiseAsync();
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.InitialiseAsync());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CloseSessionAsync(sessionId));
-
-        service.GetSessions().Single().IsActive.Should().BeTrue();
-        var verification = await service.VerifyReplayAsync(sessionId);
-        verification!.IsConsistent.Should().BeFalse();
-        verification.MismatchReasons.Should().Contain(reason => reason.Contains("Ledger integrity"));
+        service.GetSessions().Should().BeEmpty();
         await store.DidNotReceive().SaveSessionMetadataAsync(Arg.Any<PersistedSessionRecord>(), Arg.Any<CancellationToken>());
     }
 

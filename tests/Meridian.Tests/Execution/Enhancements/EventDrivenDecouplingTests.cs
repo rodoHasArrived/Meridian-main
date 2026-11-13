@@ -746,6 +746,7 @@ public sealed partial class EventDrivenDecouplingTests
                 using var oms = new OrderManagementSystem(
                     new ImmediateFillGateway(),
                     NullLogger<OrderManagementSystem>.Instance,
+                    portfolioState: new Meridian.Execution.Services.PaperTradingPortfolio(100_000m),
                     tradeEventPublisher: consumer);
                 await oms.StartAsync();
 
@@ -760,6 +761,9 @@ public sealed partial class EventDrivenDecouplingTests
                 await gate.ValidationStarted.WaitAsync(TimeSpan.FromSeconds(2));
                 var pending = await firstStore.LoadPendingAsync();
                 pending.Should().ContainSingle();
+                pending[0].TradeEvent.AccountingEvidenceVersion.Should().Be(1);
+                pending[0].TradeEvent.AccountingEvidence.Should().NotBeNull(
+                    "the paper book applied this opening before its accounting handoff was retained");
                 retainedFillId = pending[0].TradeEvent.FillId;
 
                 await consumer.DisposeAsync();
@@ -822,6 +826,7 @@ public sealed partial class EventDrivenDecouplingTests
                 using var oms = new OrderManagementSystem(
                     new ImmediateFillGateway(),
                     NullLogger<OrderManagementSystem>.Instance,
+                    portfolioState: new Meridian.Execution.Services.PaperTradingPortfolio(100_000m),
                     tradeEventPublisher: consumer,
                     tradeFillHandoffFailureStore: failureStore);
                 await oms.StartAsync();
@@ -840,6 +845,9 @@ public sealed partial class EventDrivenDecouplingTests
                 result.ErrorMessage.Should().Contain("durably retained for restart replay");
                 var failures = await oms.GetAccountingHandoffFailuresAsync();
                 failures.Should().ContainSingle();
+                failures[0].TradeEvent.AccountingEvidenceVersion.Should().Be(1);
+                failures[0].TradeEvent.AccountingEvidence.Should().NotBeNull(
+                    "the failed publisher must retain the paper book's exact opening economics");
                 fillId = failures[0].TradeEvent.FillId;
                 await consumer.DisposeAsync();
             }

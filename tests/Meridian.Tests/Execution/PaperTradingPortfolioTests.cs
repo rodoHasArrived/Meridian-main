@@ -572,6 +572,9 @@ public sealed class PaperTradingPortfolioRegTMarginTests
 
     // ---- Helpers ----
 
+    private static LedgerAccount ScopedLedgerAccount(LedgerAccountRole role, string? symbol = null)
+        => StandardChartOfAccounts.Instance.Resolve(role, "margin-1", symbol);
+
     private static PaperTradingPortfolio BuildRegTPortfolio(decimal cash) =>
         new(
         [
@@ -653,20 +656,20 @@ public sealed class PaperTradingPortfolioMarginRulesTests
             new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 100_000m,
                 MarginType: MarginAccountType.RegT),
         ], ledger);
-        var openingLedgerCash = ledger.GetBalance(LedgerAccounts.CashAccount("margin-1"));
+        var openingLedgerCash = ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash));
 
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
-        (ledger.GetBalance(LedgerAccounts.CashAccount("margin-1")) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m,
+        (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m,
             "ledger cash must fall by the posted margin exactly as account cash does");
-        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable with { FinancialAccountId = "margin-1" }).Should().Be(30_000m);
+        ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(30_000m);
 
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 200m));
-        (ledger.GetBalance(LedgerAccounts.CashAccount("margin-1")) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
-        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable with { FinancialAccountId = "margin-1" }).Should().Be(15_000m);
+        (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(15_000m);
 
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 180m));
-        (ledger.GetBalance(LedgerAccounts.CashAccount("margin-1")) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
-        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable with { FinancialAccountId = "margin-1" }).Should().Be(0m,
+        (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(0m,
             "all collateral returns to cash once the short is fully covered");
         portfolio.CheckLedgerIntegrity().Should().BeEmpty();
     }
@@ -1036,8 +1039,8 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         var entry = ledger.Journal.Single(e => e.Description.Contains("Margin interest"));
         entry.Timestamp.Should().Be(asOf);
         entry.Lines.Should().HaveCount(2);
-        entry.Lines.Single(l => l.Account == LedgerAccounts.MarginInterestExpense).Debit.Should().Be(expectedInterest);
-        entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(expectedInterest);
+        entry.Lines.Single(l => l.Account == ScopedLedgerAccount(LedgerAccountRole.MarginInterestExpense)).Debit.Should().Be(expectedInterest);
+        entry.Lines.Single(l => l.Account == ScopedLedgerAccount(LedgerAccountRole.Cash)).Credit.Should().Be(expectedInterest);
     }
 
     [Theory]
@@ -1090,7 +1093,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
             AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 8);
             ledger.Journal.Should().ContainSingle(entry => entry.Description.Contains("Margin interest"));
             ledger.Journal.SelectMany(entry => entry.Lines)
-                .Where(line => line.Account == LedgerAccounts.MarginLoanPayableFor("margin-1"))
+                .Where(line => line.Account == ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable))
                 .Sum(line => line.Debit).Should().Be(10_000m, "repayment must retire only the original principal");
 
             // Generated posting IDs and the constructor's wall-clock timestamp are not
@@ -1104,10 +1107,10 @@ public sealed class PaperTradingPortfolioMarginRulesTests
                 portfolio.Cash.Should().Be(cash);
                 portfolio.MarginBalance.Should().Be(principal);
                 portfolio.PortfolioValue.Should().Be(100_000m - expense);
-                ledger.GetBalance(LedgerAccounts.CashAccount("margin-1")).Should().Be(cash);
-                ledger.GetBalance(LedgerAccounts.MarginLoanPayableFor("margin-1")).Should().Be(principal);
-                ledger.GetBalance(LedgerAccounts.Securities("AAPL", "margin-1")).Should().Be(securities);
-                ledger.GetBalance(LedgerAccounts.MarginInterestExpenseFor("margin-1")).Should().Be(expense);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)).Should().Be(cash);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable)).Should().Be(principal);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Securities, "AAPL")).Should().Be(securities);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginInterestExpense)).Should().Be(expense);
                 ledger.Journal.Should().HaveCount(entries).And.OnlyContain(entry => entry.IsBalanced);
                 portfolio.CheckLedgerIntegrity().Should().BeEmpty();
             }
@@ -1166,6 +1169,9 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     // ---- Helpers ----
+
+    private static LedgerAccount ScopedLedgerAccount(LedgerAccountRole role, string? symbol = null)
+        => StandardChartOfAccounts.Instance.Resolve(role, "margin-1", symbol);
 
     private static PaperTradingPortfolio BuildRegTPortfolio(decimal cash) =>
         new(

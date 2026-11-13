@@ -958,13 +958,75 @@ public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = 
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1422](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1422).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1441](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1441).
 
 Defines one account within a multi-account paper trading session.
 
 ```csharp
 public sealed record AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash, MarginAccountType MarginType = MarginAccountType.Cash, IMarginModel? MarginModel = null);
 ```
+
+## BrokerAccountingBreak
+
+Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreak</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:12](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L12).
+
+Reconciliation evidence only; never authorizes a corrective or broker transaction.
+
+```csharp
+public sealed record BrokerAccountingBreak(BrokerAccountingBreakCategory Category, string Reference, decimal? LocalAmount, decimal? BrokerAmount, string? Detail = null);
+```
+
+## BrokerAccountingBreakCategory
+
+Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreakCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:3](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L3).
+
+```csharp
+public enum BrokerAccountingBreakCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TimingDifference</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:5](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L5) |  |
+| <code>MissingEntry</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:6](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L6) |  |
+| <code>AmountMismatch</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:7](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L7) |  |
+| <code>UnknownActivity</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:8](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L8) |  |
+
+## BrokerActivityImportResult
+
+Qualified name: <code>Meridian.Execution.Services.BrokerActivityImportResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/BrokerActivityImportService.cs:203](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L203).
+
+The current provider observation and the checksum-verified accepted activity history.
+
+```csharp
+public sealed record BrokerActivityImportResult(BrokerageActivitySnapshotDto Current, BrokerageActivitySnapshotDto Retained);
+```
+
+## BrokerActivityImportService
+
+Qualified name: <code>Meridian.Execution.Services.BrokerActivityImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/BrokerActivityImportService.cs:14](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L14).
+
+Durable read-side activity inbox. Immutable provider activity IDs are accepted before the checkpoint advances; a crash between those writes rereads and verifies the same records. It retains source evidence and grants no ledger-posting or corrective-trade authority.
+
+```csharp
+public sealed class BrokerActivityImportService(string rootDirectory)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BrokerageActivitySnapshotDto&gt; ImportAsync(IBrokerageActivitySync provider, string accountId, DateTimeOffset? since = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/BrokerActivityImportService.cs:23](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L23) | Resumes from a complete retained watermark, rereading its timestamp inclusively so IDs sharing a timestamp cannot be skipped. An explicit lower bound requests a deliberate rescan. Providers without completeness evidence always rescan; earlier late arrivals require a rescan. |
+| <code>public async Task&lt;BrokerActivityImportResult&gt; ImportWithHistoryAsync(IBrokerageActivitySync provider, string accountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/BrokerActivityImportService.cs:35](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L35) | Returns the current provider observation separately from accepted historical activity. Consumers can publish the provider&#x27;s current window without relabeling historical rows, while recovering a downstream history projection from the complete durable inbox. |
 
 ## BrokerageExecutionOrderMatch
 
@@ -1072,76 +1134,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? BrokerOrderAliases { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:179](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L179) |  |
-
-## CreatePaperSessionDto
-
-Qualified name: <code>Meridian.Execution.Services.CreatePaperSessionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1800](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1800).
-
-Request to create a new paper session.
-
-```csharp
-public sealed record CreatePaperSessionDto(string StrategyId, string? StrategyName, decimal InitialCash = 100_000m, IReadOnlyList<string>? Symbols = null);
-```
-
-## ExecutionAuditEntry
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:34](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L34).
-
-Durable audit record for live-execution operations, approvals, and control changes.
-
-```csharp
-public sealed record ExecutionAuditEntry(string AuditId, string Category, string Action, string Outcome, DateTimeOffset OccurredAt, string? Actor = null, string? BrokerName = null, string? OrderId = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Message = null, string? Reason = null, string? Scope = null, IReadOnlyDictionary<string, string>? Metadata = null);
-```
-
-## ExecutionAuditTrailOptions
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditTrailOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:12](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L12).
-
-Configuration for the durable execution audit trail.
-
-```csharp
-public sealed record ExecutionAuditTrailOptions(string RootDirectory, int InMemoryRetention = 1_000, WalSyncMode SyncMode = WalSyncMode.EveryWrite, TimeSpan? InMemoryRetentionWindow = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ExecutionAuditTrailOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;audit&quot;));</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:25](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L25) |  |
-| <code>public string WalDirectory =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:28](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L28) |  |
-
-## ExecutionAuditTrailService
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditTrailService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:58](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L58).
-
-Durable execution audit trail backed by the platform WAL. The payload volume is low compared with market-data paths, so we bias toward explicit durability and traceability over raw throughput.
-
-```csharp
-public sealed class ExecutionAuditTrailService : IRiskControlAuditWriter, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RetentionWindowComplete =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:89](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L89) | Whether every entry inside the retention window is actually retained. False once a burst exceeds the hard ceiling below. A consumer that reasons over a time window — &quot;no breach in the last hour&quot; — cannot make that claim from an incomplete window, and logging the shortfall does not make the claim true. Reading this lets such a consumer decline to assert safety instead, which is the only fail-closed answer available. Incompleteness is sticky until the gap itself ages out. It is judged from the newest entry ever discarded from inside the window, not from whether the currently retained set fits the cap — those differ exactly when it matters, because once entries have been dropped the retained set can fit again while the dropped ones are still inside the window. This answers for this trail&#x27;s window. A consumer reasoning over a shorter span should ask RetentionWindowCompleteFor instead, or it will keep failing closed after the gap has already left its own horizon. |
-| <code>public bool RetentionWindowCompleteFor(TimeSpan horizon);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:110](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L110) | Whether every entry inside the caller&#x27;s horizon is retained — the same question RetentionWindowComplete answers, asked at the span the caller actually reasons over rather than at this trail&#x27;s retention window. The distinction is not cosmetic, because incompleteness blocks callers. A discard is only capable of hiding something from a caller if it fell inside that caller&#x27;s horizon, so a trail retaining two hours and a consumer claiming one must stop reporting a gap once the discarded entry is an hour old, not two. Measuring against the longer window instead keeps every non-breached rule Constrained — and order readiness blocked — for an extra hour in which no breach the consumer could assert about was ever missing. This is orthogonal to whether the horizon fits at all: a caller whose horizon exceeds InMemoryRetentionWindow loses entries to age-based trimming that never register as discards, so it must compare the two windows as well. Neither check subsumes the other. |
-| <code>public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:125](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L125) | Default window kept regardless of the count cap. See the option&#x27;s remarks. |
-| <code>public static readonly TimeSpan WriterClockSkewAllowance = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:139](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L139) | How far ahead of now a caller-stamped timestamp is still treated as real when deciding whether discarding it left a coverage gap. Writers do not share a clock, so a little drift is ordinary; a record stamped well beyond it is not evidence any consumer would have reasoned with, and counting its loss as a gap would let a caller hold completeness false — and order readiness closed — until wall-clock time caught up with the date it chose. Consumers apply their own plausibility bound when reading (RiskRuleRuntimeService uses a five-minute violation clock-skew allowance). This is the trail&#x27;s own, deliberately not shared: a consumer tightening its reading must not silently change what this records as lost. |
-| <code>public TimeSpan InMemoryRetentionWindow =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:147](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L147) | The window this instance actually keeps. A consumer whose own claim spans longer than this cannot establish that claim from this trail, however complete the window is — completeness is measured against this window, so an entry older than it is trimmed without ever registering as a gap. Consumers are expected to compare their horizon against this value. |
-| <code>public ExecutionAuditTrailService(ExecutionAuditTrailOptions? options, ILogger&lt;ExecutionAuditTrailService&gt; logger);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:161](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L161) |  |
-| <code>public ExecutionAuditTrailService(string rootDirectory, ILogger&lt;ExecutionAuditTrailService&gt; logger) : this(new ExecutionAuditTrailOptions(rootDirectory), logger);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:187](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L187) | Convenience constructor that accepts a root directory string directly. Useful for tests and simple host scenarios that do not need the full options object. |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetRecentAsync(int take = 100, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:197](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L197) | Returns the most recent audit entries, newest first. |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetRecentOrSinceAsync(int take, DateTimeOffset since, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:224](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L224) | The newest take entries plus every retained entry at or after since, newest first. A count-bounded query and a time-bounded claim do not mix. A caller that says &quot;a breach in the last hour holds this rule constrained&quot; and then reads a fixed number of newest entries silently drops that breach as soon as enough unrelated activity follows it — which on an active desk happens well inside the hour, turning a live breach into a healthy rule and reopening whatever gate reads it. The count still bounds ordinary history; the window is what the caller actually reasons about, so both are honoured. |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:247](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L247) | Returns all retained audit entries in chronological order. |
-| <code>public async Task&lt;ExecutionAuditEntry&gt; RecordAsync(string category, string action, string outcome, string? actor = null, string? brokerName = null, string? orderId = null, string? runId = null, string? symbol = null, string? correlationId = null, string? message = null, string? reason = null, string? scope = null, IReadOnlyDictionary&lt;string, string&gt;? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:266](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L266) |  |
-| <code>public async Task RecordAsync(ExecutionAuditEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:306](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L306) | Appends a pre-built audit entry. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:328](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L328) |  |

@@ -4511,13 +4511,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:975",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:973",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1116",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1114",
       "documented": true
     }
   ],
