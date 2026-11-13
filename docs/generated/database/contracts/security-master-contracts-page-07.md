@@ -2,11 +2,27 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 574. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 577. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence["SecurityPriceQuotationEvidence"] {
+        +SecurityPriceBasis Basis
+        +SecurityQuotationConvention Convention
+        +string SettlementBasis
+        +DateOnly SettlementDate
+        +SecurityQuoteStatus Status
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
+        +string? AccountId
+        +DateTimeOffset AsOf
+        +IReadOnlyList~PricingHierarchyEntryDto~ Entries
+        +Guid SecurityId
+        +string UpdatedBy
+    }
     class Meridian_Contracts_SecurityMaster_SecurityProjectionRecord["SecurityProjectionRecord"] {
         +IReadOnlyList~SecurityAliasDto~ Aliases
         +string AssetClass
@@ -430,23 +446,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition["StructuredCreditReclassificationDisposition"] {
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto["StructuredCreditReclassificationReportDto"] {
-        +int BlockedCount
-        +int CandidateCount
-        +IReadOnlyList~StructuredCreditReclassificationCandidateDto~ Candidates
-        +DateTimeOffset GeneratedAt
-        +int ReadyCount
-        +int SecuritiesScanned
-        +int UnreadableCount
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
-        +DateOnly AsOfDate
-        +decimal Factor
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
-        +decimal Amount
-        +DateOnly PaymentDate
-    }
+    Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityQuotationConvention
+    Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityQuoteStatus
     Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityRateFieldUnits --> Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration
     Meridian_Contracts_SecurityMaster_SecurityRateIngestionPointDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
@@ -454,6 +455,8 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityRateObservationDto --> Meridian_Contracts_SecurityMaster_SecurityRateUnit
     Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateConstructionMethod
     Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
+    Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence
+    Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
     Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
@@ -472,6 +475,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput
     Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
+    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationInputDto
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
@@ -486,14 +490,10 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry --> Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCoverageGap
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
-    Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
 ```

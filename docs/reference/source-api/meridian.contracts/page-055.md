@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerageHouseholdAccountDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L156).
+
+```csharp
+public sealed record BrokerageHouseholdAccountDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, BrokerageAccountKindDto AccountKind, WorkstationBrokerageSyncHealth Health, decimal Cash, decimal Equity, decimal BuyingPower, string Currency, DateTimeOffset SyncedAt, int PositionCount, int CashTransactionCount, IReadOnlyList<string> Warnings);
+```
+
+## BrokerageHouseholdPortfolioDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPortfolioDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L197).
+
+```csharp
+public sealed record BrokerageHouseholdPortfolioDto(string ProviderId, DateTimeOffset AsOf, decimal TotalCash, decimal TotalEquity, decimal TotalBuyingPower, string Currency, IReadOnlyList<BrokerageHouseholdAccountDto> Accounts, IReadOnlyList<BrokerageHouseholdPositionDto> Positions, IReadOnlyList<string> Warnings);
+```
+
+## BrokerageHouseholdPositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:172](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L172).
+
+```csharp
+public sealed record BrokerageHouseholdPositionDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, BrokerageAccountKindDto AccountKind, string Symbol, decimal Quantity, decimal AverageEntryPrice, decimal MarketPrice, decimal MarketValue, decimal UnrealizedPnl, string AssetClass, WorkstationSecurityReference? Security, string? Description = null, string? PositionId = null, string? Currency = null, MarkFreshnessAssessmentDto? MarkFreshness = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L191) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ValuationBasis { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:194](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L194) | ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark. |
+
 ## BrokeragePortfolioPerformanceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BrokeragePortfolioPerformanceDto</code>. Kind: `record`.
@@ -570,38 +607,4 @@ Discards a staged (Draft or Submitted) revision, transitioning it to Rejected an
 
 ```csharp
 public sealed record DiscardSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string? Reason = null);
-```
-
-## EquityCurvePoint
-
-Qualified name: <code>Meridian.Contracts.Workstation.EquityCurvePoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
-
-A single point on the portfolio equity curve.
-
-```csharp
-public sealed record EquityCurvePoint(DateOnly Date, decimal TotalEquity, decimal Cash, decimal DailyReturn, decimal DrawdownFromPeak, decimal DrawdownFromPeakPercent);
-```
-
-## EquityCurveSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.EquityCurveSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:886](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L886).
-
-Full equity curve with summary drawdown statistics for one run. Downside-free Sortino retains positive infinity as the named JSON string.
-
-```csharp
-public sealed record EquityCurveSummary(string RunId, decimal InitialEquity, decimal FinalEquity, decimal MaxDrawdown, decimal MaxDrawdownPercent, int MaxDrawdownRecoveryDays, double SharpeRatio, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double SortinoRatio, IReadOnlyList<EquityCurvePoint> Points);
-```
-
-## EvidenceArtifactCaptureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceArtifactCaptureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L41).
-
-```csharp
-public sealed record EvidenceArtifactCaptureDto(string CaptureChannel, string? SourceSystem, DateTimeOffset? ReceivedAt, string? ReceivedBy, string? SourceReference, string? ReceiptHash, EvidenceDocumentIntakeChannelDto? ChannelKind = null);
 ```

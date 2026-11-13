@@ -10051,3 +10051,71 @@ record did.
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
   proof, as S3-E1 to S3-E4 did. The module homes for the residual complement are part of that
   work.
+
+## D9 leftovers — cash-flow term roles and the resolver's spellings — 2026-11-13
+
+The close-out pass left three D9 items unchanged: the resolver's alias arrays, profile-to-class
+routing and cash-flow term roles. This pass closes all three.
+
+**Profile-to-class routing was already closed.** The close-out pass replaced the
+`KnownProfileAssetClasses` literal map: each class declares its `ReclassifyingProfileIds` on its
+catalog descriptor, and `SecurityAssetPackRegistry.ProfileAssetClasses` is the lookup over them.
+An id two classes claim fails at type initialization. Nothing changed here.
+
+**Cash-flow term roles are declared by each class.** The resolver kept one private alias table for
+every class, and nothing tied it to the schema. That is how DirectLoan's coupon key
+(`currentCouponRate`) went unread and its loans projected zero interest without a refusal. A
+class-name switch was later added to patch individual classes. Now:
+
+- Each calculated class declares on its catalog descriptor which of its schema keys play which
+  role (`CashFlowTermRoles`): maturity, issue, principal face, current factor, coupon rate,
+  payment frequency, day count and the three inflation terms. A class whose rate is a discount
+  yield declares that it pays no contractual coupon (`PaysNoContractualCoupon`: TreasuryBill and
+  CommercialPaper).
+- `SecurityCashFlowTermRoles.Spellings` merges a class's declared keys with the shared vendor
+  spellings. Those spellings are kept, unchanged, because governed profile fields, common terms and
+  documents written before a class's schema existed carry them. A declared key the shared list
+  already names keeps its shared priority; any other declared key is read first, or last when its
+  binding says so (StructuredCredit's `couponOrIndex`, which is a rate only when it is a number).
+- The resolver reads every top-level term through `Spellings`. The class-name switch
+  (`ResolveCouponRate`) and the repo start/end special case are gone, and the resolver leaves the
+  class-literal ratchet's dispatch-site list.
+
+**The lock.** `SecurityCashFlowTermRoleTests` holds the declarations to the schema:
+
+- Every declared key is a schema key of its class, and only calculated classes declare roles.
+- Every calculated class declares its maturity, and a coupon-bearing class declares exactly one
+  of its coupon key or that it pays none.
+- Every schema key of a calculated class that a shared spelling reads for a role is declared with
+  that role, so a class's declarations are its complete reading list.
+- Every declared key and its schema aliases are read.
+
+Removing DirectLoan's coupon declaration fails two of these tests.
+
+**Swap legs.** The leg arrays are now keyed by the schema path each reads (`legs.legType`,
+`legs.resetSchedule.resetDate`, ...). The tests require each to contain every spelling the schema
+declares for its path, and every declared leg field to be read or listed as unread with a reason
+(`legs.currency`, `legs.scheduleConventions`). This found real drift: the schema declares
+`effectiveDate` and `indexRate` as aliases of a reset entry's `resetDate` and `fixingRate`, and the
+resolver read neither.
+
+**Behaviour.** The read order of every existing spelling is unchanged. A theory pins each class's
+order to the one the resolver used before, including the repo, deposit, direct-loan and
+structured-credit coupon keys. One behaviour changes, and it is a fix: a reset entry spelled only
+with the schema's aliases (`effectiveDate`, `indexRate`) is now read, after every spelling that was
+read before, where it used to be skipped and its fixing lost. A write canonicalizes those aliases,
+so only rows written before alias canonicalization can carry them.
+
+Validation (local, .NET SDK 10.0.403):
+
+- `Meridian.Tests`, filtered to Security Master, cash flow, fixed income, bond, swap, ledger,
+  accrual, amortization, obligation, cash ladder and Architecture, against PostgreSQL: 12,010
+  passed, 0 failed, 129 skipped.
+- `Meridian.Contracts.UnitTests`: 496 passed, including the 21 new role and leg tests.
+- `Meridian.Ui.Tests`: 1,558 passed.
+- `Meridian.FSharp.Tests`: 643 passed.
+- `Meridian.FundStructure.Tests`: 300 passed.
+- `Meridian.DirectLending.Tests`: 19 passed, 19 skipped.
+
+The full local `bash scripts/ci.sh` was not run; the hosted `Meridian CI / quality-gate` is
+authoritative.
