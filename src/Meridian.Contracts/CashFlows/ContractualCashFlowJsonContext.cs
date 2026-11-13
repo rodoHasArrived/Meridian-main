@@ -22,20 +22,25 @@ public sealed record ContractualCashFlowOutputDigest(
 
 /// <summary>
 /// The retained Security Master terms a preview was calculated from. The asset-specific terms are
-/// hashed without their top-level envelope keys (<see cref="SecurityTermsEnvelope.ReservedKeys"/>):
-/// those describe the payload, not the security, so declaring a format on a stored row (ADR-024
-/// amendment 2026-11-13) leaves the hash of the same economic terms unchanged. Every other member
-/// keeps its stored order and bytes.
+/// hashed without their top-level <see cref="SecurityTermsEnvelope.FormatKey"/> member: the declared
+/// payload family is the only envelope key a write or the current-state backfill adds to the same
+/// economic terms (ADR-024 amendment 2026-11-13), and it only states the family the shape rule
+/// already infers, so declaring it never changes what a preview decodes. Every other member,
+/// including <c>schemaVersion</c> and <see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>
+/// (which selects the versioned terms the preview decodes), keeps its stored order and bytes and
+/// stays in the hash.
 /// </summary>
 public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms)
 {
-    /// <summary>The asset-specific terms as hashed: the supplied terms without top-level envelope keys.</summary>
-    public JsonElement AssetSpecificTerms { get; init; } = WithoutEnvelopeKeys(AssetSpecificTerms);
+    /// <summary>The asset-specific terms as hashed: the supplied terms without a top-level <c>termsFormat</c>.</summary>
+    public JsonElement AssetSpecificTerms { get; init; } = WithoutFormatKey(AssetSpecificTerms);
 
-    private static JsonElement WithoutEnvelopeKeys(JsonElement terms)
+    private static bool IsFormatKey(JsonProperty property)
+        => property.NameEquals(SecurityTermsEnvelope.FormatKey);
+
+    private static JsonElement WithoutFormatKey(JsonElement terms)
     {
-        if (terms.ValueKind != JsonValueKind.Object
-            || !terms.EnumerateObject().Any(property => SecurityTermsEnvelope.IsReservedKey(property.Name)))
+        if (terms.ValueKind != JsonValueKind.Object || !terms.EnumerateObject().Any(IsFormatKey))
         {
             return terms;
         }
@@ -46,7 +51,7 @@ public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement As
             writer.WriteStartObject();
             foreach (var property in terms.EnumerateObject())
             {
-                if (!SecurityTermsEnvelope.IsReservedKey(property.Name))
+                if (!IsFormatKey(property))
                 {
                     property.WriteTo(writer);
                 }

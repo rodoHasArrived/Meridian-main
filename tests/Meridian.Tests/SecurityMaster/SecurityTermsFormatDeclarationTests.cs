@@ -15,7 +15,8 @@ namespace Meridian.Tests.SecurityMaster;
 /// ADR-024 amendment 2026-11-13, slice D steps 1 and 2: every writer and every replay decoder
 /// declares the payload family on the asset-specific terms it hands on, the declaration adds only
 /// <c>termsFormat</c> (the family the shape rule already infers), and the cash-flow terms digest
-/// ignores envelope keys so declaring a family on a stored row never moves its hash.
+/// ignores only that declared family, so declaring it on a stored row never moves its hash while
+/// every calculation input, including the asset-class terms version, stays hashed.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityTermsFormatDeclarationTests
@@ -55,6 +56,23 @@ public sealed class SecurityTermsFormatDeclarationTests
         SecurityTermsEnvelope.StampDeclaredFormat(Parse(json)).GetRawText().Should().Be(json);
     }
 
+    [Theory]
+    [InlineData("""{"schemaVersion":1,"termsFormat":null,"shareClass":"Common"}""",
+        """{"schemaVersion":1,"termsFormat":"flat","shareClass":"Common"}""")]
+    [InlineData("""{"termsFormat":7,"schemaVersion":1,"shareClass":"Common"}""",
+        """{"schemaVersion":1,"termsFormat":"flat","shareClass":"Common"}""")]
+    [InlineData("""{"customProfileId":"co-invest-spv","profileFields":{},"termsFormat":null}""",
+        """{"customProfileId":"co-invest-spv","profileFields":{},"termsFormat":"customProfile"}""")]
+    public void StampDeclaredFormat_NonStringFormatMember_IsReplaced_NeverDuplicated(string json, string expected)
+    {
+        var stamped = SecurityTermsEnvelope.StampDeclaredFormat(json);
+
+        stamped.Should().Be(expected, "a non-string termsFormat declares nothing and is replaced by the inferred family");
+        SecurityTermsEnvelope.StampDeclaredFormat(Parse(json)).GetRawText().Should().Be(expected);
+        Parse(stamped).EnumerateObject().Count(static property => property.NameEquals(SecurityTermsEnvelope.FormatKey))
+            .Should().Be(1);
+    }
+
     [Fact]
     public void StampDeclaredFormat_IsIdempotent_AndMatchesTheShapeRule()
     {
@@ -75,21 +93,39 @@ public sealed class SecurityTermsFormatDeclarationTests
     // ── Terms digest ──────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public void SecurityTermsDigest_IgnoresTopLevelEnvelopeKeys()
+    public void SecurityTermsDigest_IgnoresOnlyTheDeclaredFormat()
     {
         var common = Parse("""{"displayName":"Bond","currency":"USD"}""");
         var untagged = Parse("""{"schemaVersion":1,"couponRate":4.25,"maturity":"2030-01-01"}""");
-        var tagged = Parse("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":1,"couponRate":4.25,"maturity":"2030-01-01"}""");
-        var bare = Parse("""{"couponRate":4.25,"maturity":"2030-01-01"}""");
+        var tagged = Parse("""{"schemaVersion":1,"termsFormat":"flat","couponRate":4.25,"maturity":"2030-01-01"}""");
 
         var untaggedHash = ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, untagged));
         ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, tagged)).Should().Be(untaggedHash,
             "declaring the family on a stored row leaves the hash of the same terms unchanged");
-        ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, bare)).Should().Be(untaggedHash);
+        ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, Parse(SecurityTermsEnvelope.StampDeclaredFormat(untagged.GetRawText()))))
+            .Should().Be(untaggedHash, "the backfill's stamp is hash-neutral");
         ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, Parse("""{"schemaVersion":1,"couponRate":4.5,"maturity":"2030-01-01"}""")))
             .Should().NotBe(untaggedHash, "a term change still changes the hash");
-        new SecurityTermsDigest(common, bare).AssetSpecificTerms.GetRawText().Should().Be(bare.GetRawText(),
-            "terms without envelope keys are hashed as stored");
+        new SecurityTermsDigest(common, untagged).AssetSpecificTerms.GetRawText().Should().Be(untagged.GetRawText(),
+            "terms without termsFormat are hashed as stored");
+    }
+
+    [Fact]
+    public void SecurityTermsDigest_KeepsTheAssetClassTermsVersion_AndTheOtherEnvelopeKeys()
+    {
+        var common = Parse("""{"displayName":"Bond","currency":"USD"}""");
+        var v1 = Parse("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":1,"couponRate":4.25}""");
+        var v2 = Parse("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"couponRate":4.25}""");
+        var hashV1 = ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, v1));
+
+        ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, v2)).Should().NotBe(hashV1,
+            "the terms version selects which versioned terms the preview decodes, so it is a calculation input");
+        ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, Parse("""{"schemaVersion":1,"termsFormat":"flat","couponRate":4.25}""")))
+            .Should().NotBe(hashV1, "an explicit terms version is hashed as stored, not normalized to its default");
+        ContractualCashFlowEngine.Hash(new SecurityTermsDigest(common, Parse("""{"termsFormat":"flat","assetClassTermsVersion":1,"couponRate":4.25}""")))
+            .Should().NotBe(hashV1, "schemaVersion stays in the hash");
+        new SecurityTermsDigest(common, v1).AssetSpecificTerms.GetRawText()
+            .Should().Be("""{"schemaVersion":1,"assetClassTermsVersion":1,"couponRate":4.25}""");
     }
 
     // ── Family-explicit normalization ─────────────────────────────────────────────────────────
@@ -180,10 +216,74 @@ public sealed class SecurityTermsFormatDeclarationTests
         };
         var eventPayloadBefore = @event.Payload.GetRawText();
 
+        var row = await RebuildEquityAsync(stored, @event);
+
+        AssertTaggedFlatRow(row);
+        @event.Payload.GetRawText().Should().Be(eventPayloadBefore, "the stored event is never rewritten");
+    }
+
+    [Fact]
+    public async Task ScopedRebuild_OfAnUntaggedLegacyProjectionV1Event_UpsertsATaggedRow_AndLeavesTheEventUntouched()
+    {
+        var securityId = Guid.NewGuid();
+        const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
+        var stored = Projection(securityId, untaggedTerms);
+        // A pre-economic-definition event: the flat projection record itself, untagged terms and all.
+        var payload = JsonSerializer.SerializeToElement(stored, Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord);
+        SecurityMasterEventPayloads.IsEconomicDefinitionShape(payload).Should().BeFalse("the case exercises the projection-shaped decode");
+        var @event = new SecurityMasterEventEnvelope(
+            GlobalSequence: 1,
+            SecurityId: securityId,
+            StreamVersion: 1,
+            EventType: "SecurityCreated",
+            EventTimestamp: DateTimeOffset.UtcNow.AddDays(-1),
+            Actor: "codex",
+            CorrelationId: null,
+            CausationId: null,
+            Payload: payload,
+            Metadata: Parse($$"""{"payloadType":"{{SecurityMasterEventPayloads.LegacyProjection}}","schemaVersion":1}"""),
+            PayloadType: SecurityMasterEventPayloads.LegacyProjection,
+            PayloadVersion: SecurityMasterEventPayloads.LegacyProjectionVersion);
+        var eventPayloadBefore = @event.Payload.GetRawText();
+
+        var row = await RebuildEquityAsync(stored, @event);
+
+        AssertTaggedFlatRow(row);
+        @event.Payload.GetRawText().Should().Be(eventPayloadBefore, "the stored event is never rewritten");
+    }
+
+    [Fact]
+    public async Task ScopedRebuild_OfAProjectionOnlySecurityWithAnUntaggedRow_IsTaggedByTheRebuilder()
+    {
+        var securityId = Guid.NewGuid();
+        const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
+        var stored = Projection(securityId, untaggedTerms);
+        // Without events the row is folded back from the store without passing through
+        // FromEconomicPayload, so the adapter alone hands the untagged bytes back: only
+        // SecurityMasterAggregateRebuilder.RebuildAsync can declare the family.
+        SecurityTermsEnvelope.GetDeclaredFormat(
+                SecurityEconomicDefinitionAdapter.ToProjection(SecurityEconomicDefinitionAdapter.ToEconomicRecord(stored)).AssetSpecificTerms)
+            .Should().BeNull();
+
+        var row = await RebuildEquityAsync(stored);
+
+        AssertTaggedFlatRow(row);
+    }
+
+    private static void AssertTaggedFlatRow(SecurityProjectionRecord row)
+    {
+        SecurityTermsEnvelope.GetDeclaredFormat(row.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
+        row.AssetSpecificTerms.TryGetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey, out _).Should().BeFalse(
+            "the replay declares the family only; the absent version keeps reading as 1");
+        row.AssetSpecificTerms.GetProperty("shareClass").GetString().Should().Be("Common");
+    }
+
+    private static async Task<SecurityProjectionRecord> RebuildEquityAsync(SecurityProjectionRecord stored, params SecurityMasterEventEnvelope[] events)
+    {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
-        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[] { @event });
+        eventStore.LoadAsync(stored.SecurityId, Arg.Any<CancellationToken>()).Returns(events);
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns((SecuritySnapshotRecord?)null);
+        snapshotStore.LoadAsync(stored.SecurityId, Arg.Any<CancellationToken>()).Returns((SecuritySnapshotRecord?)null);
         var store = Substitute.For<ISecurityMasterStore>();
         store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { stored });
         var upserted = new List<SecurityProjectionRecord>();
@@ -206,12 +306,7 @@ public sealed class SecurityTermsFormatDeclarationTests
 
         (await orchestrator.RebuildAssetClassAsync("Equity")).Should().Be(1);
 
-        var row = upserted.Should().ContainSingle().Subject;
-        SecurityTermsEnvelope.GetDeclaredFormat(row.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
-        row.AssetSpecificTerms.TryGetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey, out _).Should().BeFalse(
-            "the replay declares the family only; the absent version keeps reading as 1");
-        row.AssetSpecificTerms.GetProperty("shareClass").GetString().Should().Be("Common");
-        @event.Payload.GetRawText().Should().Be(eventPayloadBefore, "the stored event is never rewritten");
+        return upserted.Should().ContainSingle().Subject;
     }
 
     [Fact]

@@ -120,7 +120,7 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Store | `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Writes `terms_format`; refuses unknown formats |
 | Writers | `src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs`, `src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`, `src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs` | Flat writers that stamp the envelope |
 | Declared-family stamp | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs`, `src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs` | `StampDeclaredFormat` choke point before every service upsert; the WPF profile-backed create (amendment 2026-11-13) |
-| Terms digest | `src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs` | `SecurityTermsDigest` hashes asset-specific terms without envelope keys (amendment 2026-11-13) |
+| Terms digest | `src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs` | `SecurityTermsDigest` hashes asset-specific terms without the declared `termsFormat` (amendment 2026-11-13) |
 | Validation | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs` | Format rules; the informational terms-version notice |
 | Upgrade hook | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs` | Runs a class's declared steps on read; identity steps return the stored payload itself |
 | Upgrade steps | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrade.cs` | Identity and transform steps declared on `SecurityAssetClassDescriptor.TermsUpgrades` |
@@ -659,14 +659,19 @@ draining through writes.
 6. **The economic adapter names the family it holds (implemented).** Its two flattening calls pass
    `SecurityTermsFormats.Economic` to `SecurityAssetSpecificTermsUpcasterChain.Normalize`, so they do
    not depend on the shape rule.
-7. **The cash-flow terms digest ignores envelope keys (implemented).** `SecurityTermsDigest` hashes
-   the asset-specific terms without their top-level `SecurityTermsEnvelope.ReservedKeys`, so
-   declaring a family on a stored row (by a write or by the backfill) does not change the source
-   terms hash of the same economics. This changes the hash of terms that carry envelope keys.
-   A contractual cash-flow run retained before this change, whose recorded `SourceTermsHash`
-   included those keys, no longer matches a recomputed hash, so its draft-attestation subject does
-   not resolve. Re-running the preview produces a matching run. Reviewers should confirm that
-   this one-time break is acceptable.
+7. **The cash-flow terms digest ignores the declared family (implemented).** `SecurityTermsDigest`
+   hashes the asset-specific terms without their top-level `termsFormat` member, so declaring a
+   family on a stored row (by a write or by the backfill) does not change the source terms hash of
+   the same economics. Only `termsFormat` is excluded: it is the only key a write or the backfill
+   adds, and it only states the family the shape rule already infers. Every other envelope key stays
+   in the hash. `assetClassTermsVersion` in particular selects which versioned terms the preview
+   decodes (`SecurityVersionedTerms.Decoding`), so a change to it changes the hash; `schemaVersion`,
+   `retainedEconomicTerms` and the flattening marker are hashed as stored. This changes the hash of
+   terms that already carried `termsFormat`, such as flat rows stamped under decision 1. A
+   contractual cash-flow run retained before this change, whose recorded `SourceTermsHash` included
+   that key, no longer matches a recomputed hash, so its draft-attestation subject does not
+   resolve. Re-running the preview produces a matching run. Reviewers should confirm that this
+   one-time break is acceptable.
 
 **Consequences.** The `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` warning and the TX003 count now
 drain as records are written or rebuilt. The goldens change only for custom-asset profile

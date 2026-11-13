@@ -150,7 +150,8 @@ public static class SecurityTermsEnvelope
     /// states what readers and the <c>terms_format</c> column already took it to be (ADR-024
     /// decision 1, amendment 2026-11-13). Only <see cref="FormatKey"/> is added: an absent
     /// <see cref="AssetClassTermsVersionKey"/> keeps meaning version 1, and every other member is
-    /// copied byte for byte. The key goes immediately after <c>schemaVersion</c>, or last when the
+    /// copied byte for byte, except that a non-string <see cref="FormatKey"/> member (which declares
+    /// nothing) is replaced. The key goes immediately after <c>schemaVersion</c>, or last when the
     /// document carries none. A payload that already declares a family, a non-object and an
     /// untagged economic-shaped document are returned unchanged, so stamping is idempotent.
     /// </summary>
@@ -206,6 +207,13 @@ public static class SecurityTermsEnvelope
         builder.Append('{');
         foreach (var property in payload.EnumerateObject())
         {
+            // A non-string termsFormat member (for example null) declares nothing; it is replaced,
+            // never copied, so the stamped document carries exactly one termsFormat key.
+            if (property.NameEquals(FormatKey))
+            {
+                continue;
+            }
+
             var rawName = System.Text.Encoding.UTF8.GetString(
                 System.Runtime.InteropServices.JsonMarshal.GetRawUtf8PropertyName(property));
             Append(rawName, property.Value.GetRawText());
