@@ -21,6 +21,9 @@ Provider failures propagate to the discovery surface as unavailable, separately 
 empty search. It never consumes best-effort autocomplete cache entries; swallowed autocomplete
 failures cannot become authoritative candidate evidence. The browser discovery journey currently
 uses Alpaca's fixed-income filter and stages identity evidence for review without approving terms.
+The authoritative request establishes availability directly, without an unrelated tolerant symbol
+health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
+incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
 
 Runtime credential selection pins the retained tenant, connection, external account and environment.
 Reusing a removed connection ID cannot retarget a host binding; historical selections without those

@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Text.Json;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Application.ProviderRouting;
 using Meridian.DataIntegration.Credentials;
@@ -191,7 +193,7 @@ public sealed class SymbolSearchService : IDisposable
             .OrderBy(p => p.Priority)
             .ToList();
         if (failOnProviderError && providers.Count == 0)
-            throw new InvalidOperationException("The requested search provider is not configured.");
+            throw new ProviderSearchException(ProviderSearchFailure.Unavailable, "The requested search provider is not configured.");
         var providerPriorities = providers
             .GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.Min(p => p.Priority), StringComparer.OrdinalIgnoreCase);
@@ -201,11 +203,19 @@ public sealed class SymbolSearchService : IDisposable
         {
             try
             {
-                var available = await p.IsAvailableAsync(ct).ConfigureAwait(false);
+                if (failOnProviderError && p is not BaseSymbolSearchProvider)
+                    throw new ProviderSearchException(ProviderSearchFailure.Unavailable,
+                        "The requested provider does not support authoritative response decoding.");
+
+                // The authoritative request itself checks credentials and establishes availability.
+                // A best-effort AAPL probe cannot prove an explicit lookup completed (or that an
+                // otherwise valid, empty provider population is unavailable).
+                var available = failOnProviderError && p is BaseSymbolSearchProvider
+                    || await p.IsAvailableAsync(ct).ConfigureAwait(false);
                 if (!available)
                 {
                     if (failOnProviderError)
-                        throw new InvalidOperationException("The requested provider is unavailable.");
+                        throw new ProviderSearchException(ProviderSearchFailure.Unavailable, "The requested provider is unavailable.");
                     return (Provider: p.Name, Results: Array.Empty<SymbolSearchResult>());
                 }
 
@@ -237,7 +247,24 @@ public sealed class SymbolSearchService : IDisposable
             {
                 _log.Warning(ex, "Symbol search failed for provider {Provider}", p.Name);
                 if (failOnProviderError)
-                    throw new InvalidOperationException("The requested provider search could not be completed.", ex);
+                {
+                    if (ex is ProviderSearchException)
+                        throw;
+                    throw new ProviderSearchException(ex switch
+                    {
+                        JsonException => ProviderSearchFailure.MalformedPayload,
+                        HttpRequestException { StatusCode: System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden }
+                            => ProviderSearchFailure.CredentialsUnavailable,
+                        HttpRequestException { HttpRequestError: HttpRequestError.ResponseEnded } => ProviderSearchFailure.IncompleteResponse,
+                        HttpRequestException { InnerException: HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded } }
+                            => ProviderSearchFailure.IncompleteResponse,
+                        HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded } => ProviderSearchFailure.IncompleteResponse,
+                        HttpRequestException => ProviderSearchFailure.TransportError,
+                        OperationCanceledException => ProviderSearchFailure.TransportError,
+                        RateLimitException => ProviderSearchFailure.Throttled,
+                        _ => ProviderSearchFailure.Unavailable
+                    }, "The requested provider search could not be completed.", ex);
+                }
                 return (Provider: p.Name, Results: Array.Empty<SymbolSearchResult>());
             }
         }).ToList();

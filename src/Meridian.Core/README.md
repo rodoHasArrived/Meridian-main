@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
+incomplete responses and throttling for explicit provider lookups. A successful empty search is
+represented by its result rather than a failure category.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by

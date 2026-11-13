@@ -260,7 +260,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-004.md` | 50 |
-| `docs/reference/source-api/meridian.core/page-005.md` | 32 |
+| `docs/reference/source-api/meridian.core/page-005.md` | 34 |
 | `docs/reference/source-api/meridian.dataintegration/page-001.md` | 53 |
 | `docs/reference/source-api/meridian.dataintegration/page-002.md` | 51 |
 | `docs/reference/source-api/meridian.dataintegration/page-003.md` | 50 |

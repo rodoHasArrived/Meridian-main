@@ -46,6 +46,15 @@ the default host returns an actionable maintenance conflict before changing cred
 Provider-owned conditional refresh remains scope/generation checked and can finish during drain.
 See [credential operations](../../docs/operators/provider-credentials.md).
 
+Completed empty bond lookups return `available: true`; failed lookups return HTTP 503 with
+`available: false`, no candidates and a stable `failureReason` describing unavailable credentials,
+transport, malformed payload, incomplete response or throttling.
+Discovery holds the retained configuration lease through dispatch and requires an applied Alpaca
+runtime binding owned by the authenticated tenant. Missing, deleted, inconsistent or pending
+bindings refuse before HTTP; a different tenant cannot use the host's selected provider credentials.
+The complete lookup has a 20-second deadline and preserves caller cancellation. Expiry reports
+`lookupTimedOut` and releases the configuration lease; blank queries refuse before provider probes.
+
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
