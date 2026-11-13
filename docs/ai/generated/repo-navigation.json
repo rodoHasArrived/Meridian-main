@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T08:02:09Z",
+  "generatedAt": "2026-11-13T08:06:30Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2425,12 +2425,156 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T02:44:01Z",
+      "lastCommit": "cf2f0e0735",
+      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
+      "touches": 80
+    },
+    {
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T02:44:01Z",
+      "lastCommit": "cf2f0e0735",
+      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T02:44:01Z",
+      "lastCommit": "cf2f0e0735",
+      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Strategies/Storage/StrategyRunStore.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T02:44:01Z",
+      "lastCommit": "cf2f0e0735",
+      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 87
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 59
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/design-system-contract.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-13T01:51:21Z",
+      "lastCommit": "ad80338ec2",
+      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-13T01:11:48Z",
+      "lastCommit": "e658268173",
+      "lastSummary": "Format pool accrual codec and refresh reviewed source fingerprint",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-13T00:53:23Z",
+      "lastCommit": "47054e6b41",
+      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
+      "touches": 35
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T00:53:23Z",
+      "lastCommit": "47054e6b41",
+      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T00:53:23Z",
+      "lastCommit": "47054e6b41",
+      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Services/TierMigrationService.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-13T00:53:23Z",
+      "lastCommit": "47054e6b41",
+      "lastSummary": "Resolve storage path authority and financial lifecycle trust boundaries",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-13T00:11:14Z",
+      "lastCommit": "7798dc2b18",
+      "lastSummary": "Persist backup access descriptor before Windows publication",
+      "touches": 4
+    },
+    {
       "path": "src/Meridian.FinancialOperations/README.md",
       "subsystem": "Unmapped",
       "lastModified": "2026-11-12T23:09:28Z",
       "lastCommit": "e2ce37f3cc",
       "lastSummary": "refactor(operations): extract workflow read-model composition",
-      "touches": 21
+      "touches": 22
     },
     {
       "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs",
@@ -2481,6 +2625,22 @@
       "touches": 1
     },
     {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T23:05:56Z",
+      "lastCommit": "acc807325b",
+      "lastSummary": "perf: speed up web screenshot capture",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T23:05:56Z",
+      "lastCommit": "acc807325b",
+      "lastSummary": "perf: speed up web screenshot capture",
+      "touches": 2
+    },
+    {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-12T22:58:20Z",
@@ -2489,20 +2649,20 @@
       "touches": 9
     },
     {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 75
+      "path": "src/Meridian.Application/GlobalUsings.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:56:27Z",
+      "lastCommit": "a8f11418cd",
+      "lastSummary": "Isolate demo smoke tests and reuse CLI build outputs",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Application/README.md",
+      "path": "src/Meridian/GlobalUsings.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 56
+      "lastModified": "2026-11-12T22:56:27Z",
+      "lastCommit": "a8f11418cd",
+      "lastSummary": "Isolate demo smoke tests and reuse CLI build outputs",
+      "touches": 2
     },
     {
       "path": "src/Meridian.Contracts/README.md",
@@ -2511,14 +2671,6 @@
       "lastCommit": "2184a593ab",
       "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
       "touches": 48
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 31
     },
     {
       "path": "src/Meridian.Ledger/README.md",
@@ -2590,158 +2742,6 @@
       "lastModified": "2026-11-12T22:31:30Z",
       "lastCommit": "2184a593ab",
       "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.FactorAccrual.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLot.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/HistoricalTaxLotAccrual.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AccrualHistory.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T22:23:37Z",
-      "lastCommit": "9881ececdc",
-      "lastSummary": "Export merged intercompany types through dashboard barrel",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/PostgresIntercompanyAgreementStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T21:51:21Z",
-      "lastCommit": "7ec39cd1f6",
-      "lastSummary": "style: format intercompany agreement sources",
       "touches": 2
     }
   ],

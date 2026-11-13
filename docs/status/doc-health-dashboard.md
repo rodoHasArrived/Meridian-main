@@ -23,7 +23,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Orphaned files | 398 |
 | Files without headings | 233 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 332 |
+| TODO/FIXME markers | 333 |
 | **Health score** | **84/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
