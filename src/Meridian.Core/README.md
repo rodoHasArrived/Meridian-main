@@ -11,6 +11,12 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`AppConfig.ProviderQuotas` contains restart-required account quota declarations, without secrets.
+Twelve Data separates per-minute/daily credits, explicit fundamentals entitlement and explicit
+`NoDailyLimit`; Alpha Vantage declares per-minute/daily request capacity and `NoDailyLimit`.
+The explicit boolean survives configuration and desktop DTO round trips; an omitted nullable cap
+would otherwise be indistinguishable from its default. Infrastructure owns vendor charging and resets.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by

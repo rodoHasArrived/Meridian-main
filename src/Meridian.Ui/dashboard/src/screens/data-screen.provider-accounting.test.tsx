@@ -9,6 +9,23 @@ import {
 } from "@/screens/data-screen.provider-accounting.test-fixtures";
 
 describe("ProviderAccountingRegion", () => {
+  it("renders credits and daily limits with their units in the current quota table", async () => {
+    const rates = buildProviderRateLimitsFixture();
+    rates.providers[0] = { ...rates.providers[0], quotaUnit: "credits", requestsInWindow: 40,
+      maxRequestsPerWindow: 55, remainingRequests: 15, dailyMaximum: 800,
+      dailyUnitsUsed: 800, dailyResetPolicy: "utc-midnight" };
+    const services: ProviderAccountingServices = {
+      getCatalog: vi.fn(async () => buildProviderAccountingCatalogFixture()),
+      getRateLimits: vi.fn(async () => rates),
+      getConnectionHealth: vi.fn(async () => buildProviderConnectionHealthFixture(null))
+    };
+    render(<ProviderAccountingRegion services={services} />);
+    await waitFor(() => expect(screen.getByText("40 / 55 credits")).toBeInTheDocument());
+    expect(screen.getByText("800 / 800 credits · midnight UTC")).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Quota usage/ })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Daily quota/ })).toBeInTheDocument();
+  });
+
   it("renders server-owned failures, current request state, and unavailable history", async () => {
     const rateLimits = buildProviderRateLimitsFixture();
     rateLimits.providers[0].resetAt = null;
@@ -22,7 +39,7 @@ describe("ProviderAccountingRegion", () => {
 
     await waitFor(() => expect(screen.getAllByText("1 provider registration failure")).toHaveLength(2));
     expect(screen.getByRole("table", { name: "Current provider rate-limit state" })).toBeInTheDocument();
-    expect(screen.getByText("8 / 10")).toBeInTheDocument();
+    expect(screen.getByText("8 / 10 requests")).toBeInTheDocument();
     expect(screen.getByText("Current rate-limit reason: provider response.")).toBeInTheDocument();
     expect(screen.getByText("Unknown — reachability unavailable; no runtime diagnostics.")).toBeInTheDocument();
     expect(screen.getByLabelText("Provider rate-limit history posture")).toHaveTextContent("not retained");

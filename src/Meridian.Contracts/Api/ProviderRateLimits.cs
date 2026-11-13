@@ -49,6 +49,22 @@ public sealed record ProviderRateLimitSnapshotDto(
     [property: JsonPropertyName("resetAt")] DateTimeOffset? ResetAt,
     [property: JsonPropertyName("reason")] string? Reason)
 {
+    /// <summary>Unit of the compatibility request-named counters.</summary>
+    [JsonPropertyName("quotaUnit")]
+    public string QuotaUnit { get; init; } = "requests";
+
+    [JsonPropertyName("dailyUnitsUsed")]
+    public int? DailyUnitsUsed { get; init; }
+
+    [JsonPropertyName("dailyMaximum")]
+    public int? DailyMaximum { get; init; }
+
+    [JsonPropertyName("dailyResetsAt")]
+    public DateTimeOffset? DailyResetsAt { get; init; }
+
+    [JsonPropertyName("dailyResetPolicy")]
+    public string? DailyResetPolicy { get; init; }
+
     [JsonPropertyName("isThrottled")]
     public bool IsThrottled => IsRateLimited;
 

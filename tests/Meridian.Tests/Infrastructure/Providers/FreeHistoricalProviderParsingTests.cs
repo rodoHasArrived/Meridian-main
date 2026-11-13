@@ -628,7 +628,7 @@ public sealed class AlphaVantageParsingTests
                 Content = new StringContent(AlphaVantageValidResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "stub-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "stub-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
@@ -654,7 +654,7 @@ public sealed class AlphaVantageParsingTests
                 Content = new StringContent(AlphaVantageErrorResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "stub-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "stub-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("INVALID", null, null, CancellationToken.None);
 
@@ -670,7 +670,7 @@ public sealed class AlphaVantageParsingTests
                 Content = new StringContent(AlphaVantageRateLimitResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "stub-key", httpClient: httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "stub-key", httpClient: httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         Func<Task> act = () => provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 

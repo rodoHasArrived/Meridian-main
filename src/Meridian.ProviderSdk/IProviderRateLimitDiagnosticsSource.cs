@@ -26,6 +26,13 @@ public sealed record ProviderRateLimitDiagnosticSnapshot(
     string? Reason = null,
     bool StateAvailable = true)
 {
+    /// <summary>Legacy request-named counters contain this unit (requests or weighted credits).</summary>
+    public string QuotaUnit { get; init; } = "requests";
+    public int? DailyUnitsUsed { get; init; }
+    public int? DailyMaximum { get; init; }
+    public DateTimeOffset? DailyResetsAt { get; init; }
+    public string? DailyResetPolicy { get; init; }
+
     public int RemainingRequests => Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);
 }
 
