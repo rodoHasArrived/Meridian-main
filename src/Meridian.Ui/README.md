@@ -186,6 +186,10 @@ Use `dashboard/` for source changes and generated `wwwroot/workstation/` assets 
 Browser workflow target routing keeps desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
 The browser Data workspace exposes provider catalog/onboarding discovery through `/data/providers`
 while keeping generated host assets in `wwwroot/workstation/` as build output.
+Fixed-income task aliases in command search open the existing Security Master, Asset detail,
+cash-ladder, account-oversight, factor-paydown and cutover routes. Reference probes wait for the
+authoritative selected instrument's currency and identifiers, including ladder selections outside
+search results. The rebuilt host-served bundle carries the same routing and selection behavior.
 The browser app shell projects the design-document primary operator workflow
 (`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) from dashboard view-model
 state so host-served workstation assets retain the same financial-operations flow after rebuilds.
