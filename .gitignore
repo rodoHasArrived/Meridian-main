@@ -295,8 +295,6 @@ __pycache__/
 /src/Meridian.Adapters.SQLite/**/*.db
 /src/Meridian.Adapters.SQLite/**/*.db-*
 /.nuget
-/.nuget
 
 # Provider credential sidecar — contains plaintext credentials; never commit
 provider-credentials.json
-tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs
