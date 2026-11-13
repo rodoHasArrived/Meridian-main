@@ -23,6 +23,9 @@ current history entry, so Back leaves Security Master in one step. Subsequent ex
 create history entries; Back and Forward restore their exact instruments. Instrument reads disable
 development fallback.
 
+`accounting-screen.security-master-navigation.ts` owns Security Master tab and explorer-ID URL
+parsing; the accounting screen composes these helpers without changing history or selection rules.
+
 Issuer and maturity ladders are browsable before selecting a security. Keyboard-accessible row
 actions open authoritative instrument detail. Command search includes analytics, convention
 migration, ladders, account forecasts and reviewed close prices. Account oversight is visible in
