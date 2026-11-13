@@ -41,6 +41,47 @@ pending host restart; relaxed rule thresholds require an audited reason. Focused
 `data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
 Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
 
+## Fixed-income workflow access
+
+Asset detail and selected bond holdings link to the existing Security Master analytics and
+convention-migration workflows. Symbol-only holdings resolve an exact Security Master identity;
+ambiguous matches require selection. `securityId`, `tab=evidence` and `bondAction=analytics|migration`
+retain the requested action on reload. Explicitly linked instruments control the explorer selection;
+an absent row never substitutes the default instrument. Initial action focus is applied once, and
+manual record selection updates the link. The explorer's initial automatic selection replaces the
+current history entry, so Back leaves Security Master in one step. Subsequent explicit selections
+create history entries; Back and Forward restore their exact instruments. Instrument reads disable
+development fallback.
+
+Issuer and maturity ladders are browsable before selecting a security. Keyboard-accessible row
+actions open authoritative instrument detail. Command search includes analytics, convention
+migration, ladders, account forecasts and reviewed close prices. Account oversight is visible in
+Reconciliation with account-owned book selection and explicit access/configuration blockers.
+
+Cash-ladder contributions link instruments and Security Master evidence. Their inline inspector
+reads the exact Asset Operations projection identity, engine and retained terms version/hash;
+unavailable original evidence remains a blocker. Asset Operations and contractual scenario run
+identities are distinct. Contractual scenarios expose multiple prepayment intervals, contract-derived
+stream selection and separate explicit hypothetical notice dates. Account forecasts already support
+dated FX: preparation can reuse a selected retained snapshot's observations, flows and dated FX with
+unchanged amounts/evidence, then capture a reviewed linked correction. First-capture preparation
+in this account-oversight workflow still requires reviewed source inputs; the separate account/bond
+planning workflows below do not assemble that forecast command automatically.
+
+`lib/workstation-features.ts` exports `WORKSTATION_CAPABILITY_TRACES`, mapping the ten fixed-income
+capabilities through service, API, client, screen/action, permission and browser acceptance evidence.
+Missing seams and input-preparation limits stay explicit; catalog metadata never grants access.
+The current journeys below include curve/version management and selection, pricing-source controls,
+settlement previews, canonical amortization draft handoff and provider discovery. Remaining work
+includes browsable contractual run history, account-oversight first-capture preparation, contextual
+factor-paydown launch, account/evidence selectors and supported amortization reversal/FX coverage.
+These limits and pending complete-workflow browser acceptance remain in the
+[access plan](../../../docs/engineering/plans/bond-capability-expansion.md#existing-capability-access-next-delivery-priority).
+
+Focused validation includes the changed screen/component tests, `fixed-income-capabilities.test.ts`,
+and `node scripts/dev/verify-fixed-income-access.mjs` from the repository root against a running Vite
+server. Browser evidence uses deterministic synthetic API responses, not live provider certification.
+
 ## Fixed-income and accounting journeys
 
 Security Master exposes **Curves: definitions, pillars and historical versions** before security
@@ -293,8 +334,9 @@ no probes with invented selection context. Injected callers without a detail loa
 search row. Coverage is in `accounting-screen.view-model.test.ts`.
 
 Command search finds these existing fixed-income workflows by task: `bond analytics`, `bond ladder`,
-`floating coupons`, `observed fixings` and `rates ingestion` open Security Master, where the operator
-selects a bond and its Evidence or Reference data tab. `cash-flow scenarios` opens Asset detail;
+`floating coupons`, `observed fixings` and `rates ingestion` open Security Master. Ladders can be
+browsed before selecting a security; selected-bond analytics uses its Evidence tab and reference
+probes retain its authoritative identity. `cash-flow scenarios` opens Asset detail;
 `coupon income` and `bond maturities` open the portfolio cash ladder. `account oversight`,
 `account cash forecast` and `close prices` open Reconciliation casework. `MBS paydown` opens Factor
 paydown, and `bond calculation cutover` opens Accounting Configure. These aliases use existing
@@ -316,6 +358,17 @@ in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
 Pure ticket control and invalid-field projections live beside their wording in
 `trading-screen.order-ticket-text.ts`. Definitive order-refusal classification lives in
 `api-errors.ts`; the existing `api.ts` facade retains its named export.
+
+The supported USD-equity order flow also requires a current shared-server preview and operator
+acknowledgement before submission; edits invalidate that preview, and submission rechecks admission.
+An unconfirmed outcome holds the submitted account/client identity until Refresh checks finds a
+terminal retained journal outcome. Orders exposes that journal, notifications link to its evidence,
+Settings Preferences holds account-scoped execution alerts, and Strategy shows retained run
+comparison. These surfaces consume shared services: unknown costs and incomplete comparison remain
+explicit, and agreement grants no promotion authority. See
+[execution workflows](../../../docs/engineering/execution-workflows.md). Focused browser coverage
+lives in `trading-screen.server-preview.test.tsx`, `trading-screen.journal.test.tsx`, and
+`lib/notification-center/execution.test.ts`.
 
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
@@ -2331,6 +2384,8 @@ instead of the deterministic fixture; without that config it remains on `quickbo
 Route-provided `fundAccountId`, `ledgerBookId`, `periodId`, and `workflowStatus` now scope the close command center's
 operations-continuity lookup before workflow detail is loaded, preventing a newer unrelated close
 workflow from driving the accounting cockpit when operators open a scoped Accounting route.
+Close-source loading and current daily valuation schedule selection live in
+`accounting-screen.close-sources.ts`; the screen retains rendering and command handling.
 During workstation bootstrap, the shell lets the Accounting route render its own actionable loading
 workspace. That loading view shows the route/workstream being prepared, the Accounting payload groups
 still loading, and links to continuity, entity setup, provider posture, and retained report evidence

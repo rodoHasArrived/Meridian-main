@@ -126,7 +126,7 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
             .ThenBy(static c => c.ConnectionId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var selected = rankedCandidates.FirstOrDefault(IsSelectable);
+        var selected = rankedCandidates.FirstOrDefault(static candidate => ProviderRouteEligibility.IsSelectable(candidate));
         var gate = selected is null
             ? rankedCandidates.Select(static c => c.PolicyGate).FirstOrDefault(static g => !string.IsNullOrWhiteSpace(g)) ?? routeResult.PolicyGate
             : null;
@@ -135,19 +135,9 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
         {
             SelectedDecision = selected,
             Candidates = rankedCandidates,
-            PolicyGate = gate
+            PolicyGate = gate,
+            RequiresManualApproval = selected is null && routeResult.RequiresManualApproval
         };
-    }
-
-    private static bool IsSelectable(ProviderRouteDecision decision)
-    {
-        if (IsPolicyGated(decision))
-            return false;
-
-        if (decision.SafetyMode is ProviderSafetyMode.NoAutomaticFailover or ProviderSafetyMode.SameInstitutionOnly && !decision.IsHealthy)
-            return false;
-
-        return decision.SafetyMode != ProviderSafetyMode.ManualApprovalRequired;
     }
 
     private static bool IsPolicyGated(ProviderRouteDecision decision)

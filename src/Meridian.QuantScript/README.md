@@ -19,6 +19,9 @@ QuantScript provides scripting and strategy analytics tooling for strategy devel
 
 This layer should support strategy research workflows without bypassing strategy lineage, validation, or promotion evidence.
 
+Security Master reads use Contracts-owned query interfaces. QuantScript does not reference
+`Meridian.Application`; the host supplies the implementation through dependency injection.
+
 ## Key folders and files
 
 - `Meridian.QuantScript.csproj` - QuantScript project boundary.

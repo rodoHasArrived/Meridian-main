@@ -8,9 +8,10 @@ namespace Meridian.Tests.TestHelpers;
 /// </summary>
 internal static class TwelveDataTestBudget
 {
-    public static RateLimiterRegistry Create() => new(timeProvider: new AdvancingTimeProvider());
+    public static RateLimiterRegistry Create(TimeSpan? automaticDelayLimit = null)
+        => new(timeProvider: new AdvancingTimeProvider(automaticDelayLimit ?? TimeSpan.FromSeconds(10)));
 
-    private sealed class AdvancingTimeProvider : TimeProvider
+    private sealed class AdvancingTimeProvider(TimeSpan automaticDelayLimit) : TimeProvider
     {
         private readonly object _sync = new();
         private readonly HashSet<ScheduledTimer> _timers = [];
@@ -46,7 +47,7 @@ internal static class TwelveDataTestBudget
 
             // Polly installs per-attempt and total deadline timers before sending. Keep
             // those scheduled rather than firing them merely because they were created.
-            if (dueTime >= TimeSpan.Zero && dueTime < TimeSpan.FromSeconds(10))
+            if (dueTime >= TimeSpan.Zero && dueTime < automaticDelayLimit)
                 Advance(dueTime);
             return true;
         }

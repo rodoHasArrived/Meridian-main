@@ -296,6 +296,33 @@ public sealed class AlpacaCorporateActionProviderTests
         outcome.Reason.Should().NotContain("synthetic refusal body");
     }
 
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"corporate_actions\":{\"cash_dividends\":{}}}")]
+    [InlineData("{\"corporate_actions\":{\"cash_dividends\":[{}]}}")]
+    [InlineData("{\"corporate_actions\":{},\"next_page_token\":42}")]
+    public async Task FetchWithOutcomeAsync_InvalidSchema_RefusesCompleteEmpty(string body)
+    {
+        var provider = CreateSut(new RecordingHandler(_ => Json(body)));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.IsComplete.Should().BeFalse();
+        outcome.Observations.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_PartialHttpResponse_RefusesCompleteEmpty()
+    {
+        var provider = CreateSut(new RecordingHandler(_ => new(HttpStatusCode.PartialContent)
+        { Content = new StringContent("{\"corporate_actions\":{}}") }));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.IsComplete.Should().BeFalse();
+        outcome.Observations.Should().BeEmpty();
+    }
+
     private static HttpResponseMessage Json(string body) =>
         new(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 
