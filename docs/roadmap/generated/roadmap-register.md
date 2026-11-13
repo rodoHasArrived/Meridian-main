@@ -1290,11 +1290,11 @@ Rank 10 of the 2026-07 W10 depth slate and one of its four new-capability rows, 
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-28 |
+| Last reviewed | 2026-11-12 |
 
 ### Current Summary
 
-Rank 11 of the 2026-07 W10 depth slate. The first slice, merged in PR 3107 on 2026-10-07, implements the existing ConsolidationElimination policy treatment for two directly wholly owned entities in one currency, authoritative effective-dated perimeter checks, reciprocal receivable/payable matching, reviewed drafts, freshness guards, idempotent reruns and linked adjustments. The shared Accounting view distinguishes gross, proposed, posted, consolidated and unmatched balances with source drill-through. Scope and evidence paths are recorded in docs/domain/intercompany-consolidation.md. Full status remains planned because governed FX translation and desktop presentation are outside the first slice; partial consolidation and minority interest remain excluded.
+Rank 11 of the W10 depth slate. The merged first slice retains exact w10-v1 evidence and two-entity same-currency behavior. The 2026-11-12 staged implementation adds w10-v2 stable account-role identity and all direct 100%-owned entities, w10-v3 approved immutable FX rate sets and whole-trial-balance translation with historical/opening facts and a reserve, and w10-v4 explicitly enabled income elimination. Shared entity/consolidation presentation is added for browser and WPF. Legacy agreement attribution retains exact source digests; adoption of pair-only overlays creates reviewed reclassification rather than duplicate net elimination. Current targeted, PostgreSQL, endpoint, browser and Windows evidence must still be collected and assessed; status remains planned. Indirect/partial ownership, minority interest and investment/equity elimination remain unsupported. Member changes use a retained independently approved cutover to a new empty dedicated book, with old history preserved and no old overlay deductions from the rebuilt target. Unapproved in-place changes remain blocked. Source presence does not establish acceptance.
 
 ### Exit Criteria
 
@@ -1307,6 +1307,7 @@ Rank 11 of the 2026-07 W10 depth slate. The first slice, merged in PR 3107 on 20
 
 ### Source Modules
 
+- `SRC-STORAGE-ACCOUNTING`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-LEDGER`
 - `SRC-CONTRACTS`
@@ -1659,6 +1660,42 @@ Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-D
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
+## W12-ENTITY-001 - Effective entity lifecycle and audited book-control migration
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-12 |
+
+### Current Summary
+
+User-directed P4 implementation retains immutable effective lifecycle timelines and applies book controls immediately to new books. Existing books remain LegacyWarning until current audited migration preflight activates enforcement. Winding-down supports evidenced controlled close while refusing new commitments; dissolved/merged entities remain readable with residual balances and exact approved correction exceptions. Browser and WPF consume the shared entity timeline. Focused financial, authority/concurrency and Windows validation remains to be recorded.
+
+### Exit Criteria
+
+- Effective-dated lifecycle evidence gates posting and agreements at the commit authority boundary; missing historic periods are unknown rather than inferred from today's status.
+- Winding-down permits evidenced settlement, closing expense, tax, revaluation and correction without permitting new commitments; dissolved/merged corrections require approved exact exceptions.
+- New books enforce controls immediately and existing books transition only after current source-population and authority evidence passes audited preflight.
+- Read models retain lifecycle revisions, ownership, agreements, successor links and books, and consolidation never silently omits residual balances because of lifecycle status.
+- Tenant, replay, concurrent transition, migration and shared browser/WPF tests are evidenced before acceptance; Windows execution is reported separately.
+
+### Source Modules
+
+- `SRC-STORAGE-ACCOUNTING`
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-ENTITIES`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
 ## W12-FINRPT-001 - Ledger-backed financial statement control pack
 | Field | Value |
 | --- | --- |
@@ -1697,6 +1734,101 @@ Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-D
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
+
+## W12-ICAGREE-001 - Intercompany accounting profiles and legacy attribution
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-12 |
+
+### Current Summary
+
+User-directed P1 implementation reuses the native legal registry and links immutable tenant-owned accounting profiles to exact approved legal IDs, integer versions and payload hashes. Profiles own templates, party books, stable account mappings and bounded validity; their owner approval does not replace independent legal approval or create a novation. Separate facilities may coexist; one profile's approved validity windows cannot conflict. Guarantees have no posting treatment. Approved legacy-attribution sidecars pin exact source line digests without rewriting posted journals. A posted-balance schedule enriches actual journals with agreement/account/party evidence for close and NetSuite mapping controls. Current consumer and migration verification must be evidenced before acceptance; source and added tests alone do not prove a passed check.
+
+### Exit Criteria
+
+- Native approved agreement versions retain legal parties, terms and evidence; accounting profiles pin their exact version/hash and own only authorized books, stable account roles, templates and bounded validity.
+- Tenant isolation, independent legal approval, separately audited configuration approval, stale-version refusal, immutable history and idempotent retries preserve financial lineage; profile changes cannot perform legal novation.
+- Existing journal attribution is explicit reviewed sidecar evidence over exact source digests, with missing or ambiguous historic identity remaining unresolved.
+- Close and provider intercompany controls consume a structured due-to/from schedule and expose incomplete coverage rather than accepting keyword-only management records as proof.
+- Added unit, PostgreSQL, API and shared workstation evidence is recorded before acceptance; no external posting or live-provider certification is implied.
+
+### Source Modules
+
+- `SRC-STORAGE-ACCOUNTING`
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-ENTITIES`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+
+## W12-ICINCOME-001 - Policy-governed intercompany revenue and expense elimination
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-12 |
+
+### Current Summary
+
+Explicit added scope beyond the original W10 receivable/payable slice. Version w10-v4 requires both receivable/payable and revenue/expense rules on the existing accounting policy seam, with exact participating versions in reviewed evidence. Directed income pairs use stable account roles, agreement currency and shared transaction identity over governed reporting translation. Investment/equity elimination remains excluded. Current verification and end-to-end review/post evidence remain necessary before acceptance.
+
+### Exit Criteria
+
+- Income elimination requires the explicit approved revenue/expense policy rule with evidence and independent approval; account-role configuration alone cannot enable it.
+- Exact participating policy rules, source/transaction identities, role bindings, translation policy and rates remain in retained review evidence and freshness guards.
+- Principal/intercompany, translation and rounding differences remain separate and repeat runs or corrections preserve cumulative overlay semantics.
+- Focused accounting, PostgreSQL append-boundary, authorization and workstation evidence is recorded before acceptance; investment/equity elimination remains unsupported.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+
+## W12-ICPAIR-001 - Durable reviewed counterpart proposals and aged intercompany breaks
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-12 |
+
+### Current Summary
+
+User-directed P3 implementation retains counterpart proposal facts atomically with source journal commit and delivers a balanced destination draft through the existing journal workbench. Source journal/line, agreement revision, transaction, direction and rule identity distinguish retries from independent equal-amount events. Explicit linking, retry/restart, source-linked corrections, destination permissions and aging remain visible. No proposal posts automatically. Current targeted and service-backed verification remains to be recorded.
+
+### Exit Criteria
+
+- Source commit retains durable proposal intent atomically; retry and restart cannot lose or duplicate counterpart economic work.
+- Destination drafts are balanced, use exact approved agreement/account/currency evidence, and preserve the destination review and authorization boundary.
+- Duplicate candidates are resolved by exact source/transaction identity or explicit evidenced linking rather than agreement, period and amount alone.
+- Aging declares its due-date or effective-date basis and reports intercompany breaks separately from translation and rounding differences.
+- Synthetic persistence, concurrency, delivery, authorization and shared workstation tests are recorded before acceptance.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
 
 ## W12-YEND-001 - Fiscal year-end close and opening-balance roll-forward
 | Field | Value |

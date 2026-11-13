@@ -80,7 +80,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             return JsonResponse(TimeSeriesResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
         var from = new DateOnly(2024, 1, 2);
         var to = new DateOnly(2024, 1, 3);
 
@@ -129,7 +129,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Missing Twelve Data credentials should not call HTTP."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(string.Empty, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(string.Empty, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var available = await provider.IsAvailableAsync(cts.Token);
         var bars = await provider.GetDailyBarsAsync("MSFT", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3), cts.Token);
@@ -145,7 +145,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(StatusErrorResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("UNKNOWN", null, null, cts.Token);
 
@@ -167,7 +167,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             return response;
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         Func<Task> act = () => provider.GetDailyBarsAsync("MSFT", null, null, cts.Token);
 

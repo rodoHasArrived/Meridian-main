@@ -1,18 +1,39 @@
 import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
-  buildOrderRequirementText,
-  buildOrderTicketAcknowledgementState,
-  buildOrderTicketStatusAnnouncement,
-  buildOrderTicketSubmitDisabledReason
-} from "./trading-screen.order-ticket-text";
+  buildOrderSubmitRequest,
+  buildOrderTicketState,
+  emptyOrderTicketForm,
+  normalizeOrderSymbol,
+  updateOrderTicketForm,
+  validateOrderTicketForm,
+  type OrderTicketField,
+  type OrderTicketPhase
+} from "./trading-screen.order-ticket-state";
+export {
+  buildOrderSubmitRequest,
+  buildOrderTicketState,
+  emptyOrderTicketForm,
+  updateOrderTicketForm,
+  validateOrderTicketForm
+} from "./trading-screen.order-ticket-state";
+export type {
+  OrderTicketField,
+  OrderTicketPhase,
+  OrderTicketFieldControl,
+  OrderTicketSelectControl,
+  OrderTicketControls,
+  OrderTicketAcknowledgementState,
+  OrderTicketState,
+  BuildOrderTicketStateOptions
+} from "./trading-screen.order-ticket-state";
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
+import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
-import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -3150,101 +3171,15 @@ function capitalizeWord(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
-export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | "error";
-
 export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  previewOrder?: (request: OrderSubmitRequest, signal?: AbortSignal) => Promise<ServerOrderPreview>;
 }
 
-export interface OrderTicketFieldControl {
-  field: OrderTicketField;
-  id: string;
-  label: string;
-  value: string;
-  describedBy: string;
-  ariaLabel: string;
-  invalid: boolean;
-  required: boolean;
-}
-
-export interface OrderTicketSelectControl extends OrderTicketFieldControl {
-  options: Array<{ value: string; label: string }>;
-}
-
-export interface OrderTicketControls {
-  symbol: OrderTicketFieldControl;
-  side: OrderTicketSelectControl;
-  type: OrderTicketSelectControl;
-  quantity: OrderTicketFieldControl;
-  limitPrice: OrderTicketFieldControl | null;
-}
-
-export interface OrderTicketAcknowledgementState {
-  id: string;
-  label: string;
-  description: string;
-  checked: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface OrderTicketState {
-  form: OrderSubmitRequest;
-  open: boolean;
-  phase: OrderTicketPhase;
-  orderId: string | null;
-  /** Governed-approval queue entry holding a parked order, when phase is "parked". */
-  escalationId: string | null;
-  /** Non-blocking risk warnings the rails raised for the last submitted order. */
-  riskWarnings: string[];
-  /** Operator-facing text for a parked order; null in every other phase. */
-  parkedText: string | null;
-  errorText: string | null;
-  validationError: string | null;
-  invalidField: OrderTicketField | null;
-  canSubmit: boolean;
-  canClose: boolean;
-  requiresLimitPrice: boolean;
-  priceLabel: string;
-  formId: string;
-  requirementId: string;
-  controls: OrderTicketControls;
-  openButtonLabel: string;
-  submitButtonLabel: string;
-  submitAriaLabel: string;
-  submitDisabledReason: string | null;
-  submitBusy: boolean;
-  submitBusyLabel: string | null;
-  closeButtonLabel: string;
-  closeAriaLabel: string;
-  closeDisabledReason: string | null;
-  acknowledgement: OrderTicketAcknowledgementState;
-  requirementText: string;
-  successText: string | null;
-  statusAnnouncement: string;
-}
-
-export interface BuildOrderTicketStateOptions {
-  form: OrderSubmitRequest;
-  open: boolean;
-  phase: OrderTicketPhase;
-  orderId: string | null;
-  errorText: string | null;
-  escalationId?: string | null;
-  riskWarnings?: string[];
-  acknowledged?: boolean;
-}
-
-export const emptyOrderTicketForm: OrderSubmitRequest = {
-  symbol: "",
-  side: "Buy",
-  type: "Market",
-  quantity: 0,
-  limitPrice: null
-};
+type OrderSubmissionIdentity = { account: string; id: string };
 
 const defaultOrderTicketServices: OrderTicketServices = {
+  previewOrder: previewExecutionOrder,
   submitOrder: (request) => workstationApi.submitOrder(request)
 };
 
@@ -3283,6 +3218,41 @@ export function useOrderTicketViewModel({
     setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
   }
   const submittingRef = useRef(false);
+  const unconfirmedSubmissionRef = useRef<OrderSubmissionIdentity | null>(null);
+  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<OrderSubmissionIdentity | null>(null);
+  const [serverPreview, setServerPreview] = useState<ServerOrderPreview | null>(null);
+  const [serverPreviewError, setServerPreviewError] = useState<string | null>(null);
+  const [serverPreviewLoading, setServerPreviewLoading] = useState(false);
+  const [sessionIntent, setSessionIntent] = useState<SessionIntent>("RegularOnly");
+  const [previewRevision, setPreviewRevision] = useState(0);
+  const [previewNow, setPreviewNow] = useState(Date.now());
+  const draftClientId = useRef<string | null>(null);
+  const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
+  const serverPreviewBlocked = unconfirmedSubmission !== null
+    || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
+  useEffect(() => {
+    setServerPreview(null); setServerPreviewError(null);
+    if (services.previewOrder) setAcknowledged(false);
+    draftClientId.current = null;
+  }, [form, fundAccountId, sessionIntent, services.previewOrder]);
+  useEffect(() => {
+    if (!open || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
+    const controller = new AbortController();
+    setServerPreviewLoading(true); setServerPreviewError(null);
+    const timer = window.setTimeout(() => {
+      draftClientId.current ??= `meridian-${crypto.randomUUID()}`;
+      void services.previewOrder!({ ...buildOrderSubmitRequest(form, fundAccountId), sessionIntent, clientOrderId: draftClientId.current }, controller.signal)
+        .then((result) => { if (!controller.signal.aborted) { setServerPreview(result); setAcknowledged(false); setPreviewNow(Date.now()); } })
+        .catch((error: unknown) => { if (!controller.signal.aborted) { setServerPreview(null); setServerPreviewError(toErrorMessage(error, "Authoritative preview is unavailable.")); } })
+        .finally(() => { if (!controller.signal.aborted) setServerPreviewLoading(false); });
+    }, 250);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [form, fundAccountId, open, services, sessionIntent, previewRevision]);
+  useEffect(() => {
+    if (!open || !services.previewOrder) return;
+    const timer = window.setInterval(() => setPreviewNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [open, services.previewOrder]);
 
   const resetEditor = useCallback(() => {
     setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
@@ -3383,7 +3353,7 @@ export function useOrderTicketViewModel({
   }, [onOrderAccepted]);
 
   const submitOrderTicket = useCallback(async () => {
-    if (phase === "submitting" || submittingRef.current) {
+    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current) {
       return;
     }
 
@@ -3402,6 +3372,14 @@ export function useOrderTicketViewModel({
       return;
     }
 
+    const request = buildOrderSubmitRequest(form, fundAccountId);
+    const clientOrderId = services.previewOrder ? draftClientId.current : null;
+    const submission = clientOrderId && request.fundAccountId ? { account: request.fundAccountId, id: clientOrderId } : null;
+    if (services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
+      setErrorText("Refresh and review the authoritative order checks before submitting.");
+      setAcknowledged(false);
+      return;
+    }
     submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
@@ -3409,8 +3387,15 @@ export function useOrderTicketViewModel({
     setRiskWarnings([]);
     setErrorText(null);
 
+    let refusal: string;
     try {
-      const result = await services.submitOrder(buildOrderSubmitRequest(form, fundAccountId));
+      const result = await services.submitOrder(submission ? { ...request, sessionIntent, clientOrderId: submission.id } : request);
+      if (typeof result?.success !== "boolean") {
+        throw new Error("Meridian did not confirm the order submission outcome.");
+      }
+      if (result.requiresOrderReconciliation) {
+        throw new Error(result.errorMessage ?? "Order submission requires reconciliation.");
+      }
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3442,15 +3427,31 @@ export function useOrderTicketViewModel({
         return;
       }
 
-      setPhase("error");
-      setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
+      refusal = result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
-      setPhase("error");
-      setErrorText(toErrorMessage(err, "Order submission failed."));
+      const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
+      if (submission && confirmedRefusal === null) {
+        unconfirmedSubmissionRef.current = submission;
+        setUnconfirmedSubmission(submission);
+        setPhase("error");
+        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Refresh checks before another submission.`);
+        return;
+      }
+      refusal = confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services]);
+
+    if (submission && draftClientId.current === submission.id) {
+      // Retire the refused identity so its journal evidence cannot settle a later attempt.
+      draftClientId.current = null;
+      setServerPreview(null);
+      setAcknowledged(false);
+      setPreviewRevision((value) => value + 1);
+    }
+    setPhase("error");
+    setErrorText(refusal);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
@@ -3462,6 +3463,24 @@ export function useOrderTicketViewModel({
         : null
     },
     preview,
+    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Refresh checks to inspect its retained outcome; do not resubmit.` : serverPreviewError,
+    serverPreviewLoading, serverPreviewExpired, sessionIntent,
+    setSessionIntent,
+    refreshServerPreview: () => {
+      const submission = unconfirmedSubmissionRef.current;
+      if (!submission) { setPreviewRevision((value) => value + 1); return; }
+      void getJournalOrder(submission.account, submission.id).then((order) => {
+        if (unconfirmedSubmissionRef.current !== submission || order.orderId !== submission.id
+          || !["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+        unconfirmedSubmissionRef.current = null;
+        setUnconfirmedSubmission(null); setForm(emptyOrderTicketForm); setAcknowledged(false);
+        setOrderId(order.orderId); setPhase(order.status === "Filled" ? "submitted" : "error");
+        setErrorText(`Retained outcome for ${order.orderId}: ${order.status}. Review its journal before creating a new order.`);
+        void refreshAfterSettledOutcome();
+      }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
+    },
+    canSubmit: state.canSubmit && !serverPreviewBlocked,
+    submitDisabledReason: serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason,
     openTicket,
     closeTicket,
     toggleTicket,
@@ -3470,224 +3489,6 @@ export function useOrderTicketViewModel({
     setAcknowledged,
     submitOrder: submitOrderTicket
   };
-}
-
-export function buildOrderTicketState({
-  form,
-  open,
-  phase,
-  orderId,
-  errorText,
-  escalationId = null,
-  riskWarnings = [],
-  acknowledged = false
-}: BuildOrderTicketStateOptions): OrderTicketState {
-  const validationError = validateOrderTicketForm(form);
-  const requiresLimitPrice = orderTypeRequiresPrice(form.type);
-  const successText = phase === "submitted"
-    ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
-    : null;
-  const parkedText = phase === "parked"
-    ? `Order parked for governed risk approval${escalationId ? ` - escalation ${escalationId}` : ""}. `
-      + "It routes only once the risk desk approves it."
-    : null;
-  const invalidField = getOrderTicketInvalidField(form);
-  const requirementId = "order-ticket-requirements";
-  const acknowledgement = buildOrderTicketAcknowledgementState(acknowledged, phase, validationError);
-  const submitDisabledReason = buildOrderTicketSubmitDisabledReason(phase, validationError, acknowledgement);
-  const closeDisabledReason = phase === "submitting" ? "Order submission is in progress." : null;
-
-  return {
-    form,
-    open,
-    phase,
-    orderId,
-    escalationId,
-    riskWarnings,
-    parkedText,
-    errorText,
-    validationError,
-    invalidField,
-    canSubmit: submitDisabledReason === null,
-    canClose: phase !== "submitting",
-    requiresLimitPrice,
-    priceLabel: `${form.type} price`,
-    formId: "trading-order-ticket",
-    requirementId,
-    controls: buildOrderTicketControls(form, invalidField, requirementId),
-    openButtonLabel: open ? "Close order ticket" : "New order",
-    submitButtonLabel: phase === "submitting" ? "Submitting…" : "Submit order",
-    submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
-    submitDisabledReason,
-    submitBusy: phase === "submitting",
-    submitBusyLabel: phase === "submitting" ? "Submitting…" : null,
-    closeButtonLabel: "Cancel",
-    closeAriaLabel: closeDisabledReason ?? "Close order ticket without submitting",
-    closeDisabledReason,
-    acknowledgement,
-    requirementText: buildOrderRequirementText(form, phase, validationError),
-    successText,
-    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId, escalationId, riskWarnings })
-  };
-}
-
-function buildOrderTicketControls(
-  form: OrderSubmitRequest,
-  invalidField: OrderTicketField | null,
-  requirementId: string
-): OrderTicketControls {
-  return {
-    symbol: {
-      field: "symbol",
-      id: "order-ticket-symbol",
-      label: "Symbol",
-      value: form.symbol,
-      describedBy: requirementId,
-      ariaLabel: "Order symbol",
-      invalid: invalidField === "symbol",
-      required: true
-    },
-    side: {
-      field: "side",
-      id: "order-ticket-side",
-      label: "Side",
-      value: form.side,
-      describedBy: requirementId,
-      ariaLabel: "Order side",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Buy", label: "Buy" },
-        { value: "Sell", label: "Sell" }
-      ]
-    },
-    type: {
-      field: "type",
-      id: "order-ticket-type",
-      label: "Type",
-      value: form.type,
-      describedBy: requirementId,
-      ariaLabel: "Order type",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Market", label: "Market" },
-        { value: "Limit", label: "Limit" },
-        { value: "Stop", label: "Stop" }
-      ]
-    },
-    quantity: {
-      field: "quantity",
-      id: "order-ticket-quantity",
-      label: "Quantity",
-      value: form.quantity ? String(form.quantity) : "",
-      describedBy: requirementId,
-      ariaLabel: "Order quantity",
-      invalid: invalidField === "quantity",
-      required: true
-    },
-    limitPrice: orderTypeRequiresPrice(form.type)
-      ? {
-          field: "limitPrice",
-          id: "order-ticket-limit-price",
-          label: `${form.type} price`,
-          value: form.limitPrice ? String(form.limitPrice) : "",
-          describedBy: requirementId,
-          ariaLabel: `${form.type} order price`,
-          invalid: invalidField === "limitPrice",
-          required: true
-        }
-      : null
-  };
-}
-
-export function updateOrderTicketForm(
-  current: OrderSubmitRequest,
-  field: OrderTicketField,
-  value: string
-): OrderSubmitRequest {
-  if (field === "symbol") {
-    return { ...current, symbol: value };
-  }
-
-  if (field === "side") {
-    return { ...current, side: value === "Sell" ? "Sell" : "Buy" };
-  }
-
-  if (field === "type") {
-    const type = value === "Limit" || value === "Stop" ? value : "Market";
-    return {
-      ...current,
-      type,
-      limitPrice: orderTypeRequiresPrice(type) ? current.limitPrice : null
-    };
-  }
-
-  if (field === "quantity") {
-    return { ...current, quantity: parsePositiveDecimal(value) ?? 0 };
-  }
-
-  return { ...current, limitPrice: parsePositiveDecimal(value) };
-}
-
-export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
-  const request: OrderSubmitRequest = {
-    symbol: normalizeOrderSymbol(form.symbol),
-    side: form.side,
-    type: form.type,
-    quantity: form.quantity
-  };
-  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId ?? form.fundAccountId);
-
-  if (orderTypeRequiresPrice(form.type)) {
-    request.limitPrice = form.limitPrice;
-  }
-
-  if (normalizedFundAccountId) {
-    request.fundAccountId = normalizedFundAccountId;
-  }
-
-  return request;
-}
-
-export function validateOrderTicketForm(form: OrderSubmitRequest): string | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "Enter a symbol before submitting an order.";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "Enter an order quantity greater than zero.";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return `Enter a ${form.type.toLowerCase()} price greater than zero.`;
-  }
-
-  return null;
-}
-
-function getOrderTicketInvalidField(form: OrderSubmitRequest): OrderTicketField | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "symbol";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "quantity";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return "limitPrice";
-  }
-
-  return null;
-}
-
-function normalizeOrderSymbol(symbol: string): string {
-  return symbol.trim().toUpperCase();
-}
-
-function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
-  return type === "Limit" || type === "Stop";
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";

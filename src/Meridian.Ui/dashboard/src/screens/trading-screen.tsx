@@ -1,6 +1,8 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
+import { ExecutionJournalPanel } from "./trading-screen.journal";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation } from "react-router-dom";
 import { StatusBadge } from "@/design-system/status";
@@ -869,6 +871,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
+      ) : null}
+      {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0">
@@ -932,7 +937,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           {orderTicket.open && (
             <TradingOrderTicketForm
               orderTicket={orderTicket}
-              preview={<OrderPreviewPanel preview={orderTicket.preview} />}
+              preview={<>
+                <OrderPreviewPanel preview={orderTicket.preview} />
+                <ServerOrderPreviewPanel
+                  preview={orderTicket.serverPreview} error={orderTicket.serverPreviewError}
+                  loading={orderTicket.serverPreviewLoading} expired={orderTicket.serverPreviewExpired}
+                  sessionIntent={orderTicket.sessionIntent} onSessionIntent={orderTicket.setSessionIntent}
+                  onRefresh={orderTicket.refreshServerPreview}
+                />
+              </>}
             />
           )}
           {!orderTicket.open && (

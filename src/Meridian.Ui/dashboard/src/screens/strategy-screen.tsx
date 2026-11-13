@@ -1,6 +1,7 @@
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
+import { StrategyRunParityPanel } from "./strategy-screen.parity";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -66,6 +67,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StrategyOverviewHub } from "./strategy-overview-hub";
 
 interface StrategyScreenProps {
+  fundAccountId?: string | null;
   data: StrategyWorkspaceResponse | null;
 }
 
@@ -254,7 +256,7 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
   }
 };
 
-export function StrategyScreen({ data }: StrategyScreenProps) {
+export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -1137,6 +1139,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                 </div>
               ))}
             </section>
+
+            <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
 
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
               <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceCriteriaLabel)}>{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>

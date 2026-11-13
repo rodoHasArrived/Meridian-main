@@ -184,16 +184,21 @@ public static partial class SecurityMasterEndpoints
                     var processingCase = await RequireCashDividendCaseAsync(caseId, trusted, context, request.ScopeAssertion).ConfigureAwait(false);
                     var service = context.RequestServices.GetService<ICorporateActionCashDividendAccountingService>()
                         ?? throw new CorporateActionPersistenceUnavailableException("The governed cash-dividend accounting service is unavailable.");
-                    return Results.Json(await service.PostAttestedCashDividendAsync(request with
-                    {
-                        CaseId = caseId,
-                        TenantId = trusted.TenantId,
-                        CompanyId = trusted.CompanyId,
-                        Actor = trusted.Actor,
-                        ScopeAssertion = processingCase.Scope,
-                        CorrelationId = context.TraceIdentifier,
-                        Authority = CashDividendAuthority(context, request.Authority?.Origin ?? OperationsActionOriginDto.HumanOperator)
-                    }, context.RequestAborted).ConfigureAwait(false), json);
+                    var command = new PostAttestedCorporateActionCashDividendRequestDto(
+                        CaseId: caseId,
+                        ExpectedVersion: request.ExpectedVersion,
+                        IdempotencyKey: request.IdempotencyKey,
+                        TenantId: trusted.TenantId,
+                        CompanyId: trusted.CompanyId,
+                        ProjectionId: request.ProjectionId,
+                        AttestationId: request.AttestationId,
+                        Reason: request.Reason,
+                        Actor: trusted.Actor,
+                        ScopeAssertion: processingCase.Scope,
+                        CorrelationId: context.TraceIdentifier,
+                        Authority: CashDividendAuthority(context, request.Authority?.Origin ?? OperationsActionOriginDto.HumanOperator));
+                    return Results.Json(await service.PostAttestedCashDividendAsync(command, context.RequestAborted)
+                        .ConfigureAwait(false), json);
                 })))
             .WithName("PostPreparerAttestedCorporateActionCashDividend")
             .Produces<CorporateActionCashDividendPostingResultDto>()

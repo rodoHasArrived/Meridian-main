@@ -516,7 +516,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public StrategyEngineRegistry(StrategyDesignService strategyDesignService);</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:15](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L15) |  |
 | <code>public IReadOnlyList&lt;StrategyEngineDefinition&gt; GetDefinitions();</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:20](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L20) |  |
-| <code>public StrategyEngineDefinition? GetDefinition(string strategyId, string? version = null);</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:33](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L33) |  |
+| <code>public StrategyEngineDefinition? GetDefinition(string strategyId, string? version = null);</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:52](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L52) |  |
 
 ## StrategyEngineValidationService
 

@@ -575,6 +575,7 @@ public sealed class OrderManagementSystemTests : IDisposable
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("not connected");
+        result.RequiresOrderReconciliation.Should().BeTrue();
         result.OrderState!.Status.Should().Be(OrderStatus.PendingNew,
             "an exception after invoking the gateway does not prove the broker rejected the order");
         oms.GetOpenOrders().Should().ContainSingle(order =>

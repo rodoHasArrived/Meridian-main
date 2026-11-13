@@ -400,9 +400,11 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             ContainsTag(retained, AccountingPostingCommandValidator.PostingCommandFingerprintTag) &&
             ContainsTag(candidate, AccountingPostingCommandValidator.PostingCommandFingerprintTag);
         var retainedPairs = (retained ?? new Dictionary<string, string>())
+            .Where(pair => !string.Equals(pair.Key, "controls.eligibility", StringComparison.OrdinalIgnoreCase))
             .Where(pair => !ignoreLineDimensionCompatibilityTags || !IsLineDimensionCompatibilityTag(pair.Key))
             .ToArray();
         var candidatePairs = (candidate ?? new Dictionary<string, string>())
+            .Where(pair => !string.Equals(pair.Key, "controls.eligibility", StringComparison.OrdinalIgnoreCase))
             .Where(pair => !ignoreLineDimensionCompatibilityTags || !IsLineDimensionCompatibilityTag(pair.Key))
             .ToArray();
         if (retainedPairs.Length != candidatePairs.Length)

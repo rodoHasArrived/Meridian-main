@@ -46,6 +46,16 @@ module internal GeneratedFlatWriter =
                baseCurrency = (terms.CurrencyPair.BaseCurrency |> Option.get)
                quoteCurrency = (terms.CurrencyPair.QuoteCurrency |> Option.get) |})
 
+    let writeDeposit (schemaVersion: int) (terms: DepositTerms) : string =
+        JsonSerializer.Serialize(
+            {| schemaVersion = schemaVersion
+               maturity = terms.Dates.MaturityDate
+               institutionName = terms.InstitutionName
+               depositType = terms.DepositType
+               interestRate = terms.CouponTerms.CouponRate
+               dayCount = terms.CouponTerms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
+               isCallable = terms.IsCallable |})
+
     let writeMoneyMarketFund (schemaVersion: int) (terms: MoneyMarketFundTerms) : string =
         JsonSerializer.Serialize(
             {| schemaVersion = schemaVersion
@@ -53,6 +63,35 @@ module internal GeneratedFlatWriter =
                weightedAverageMaturityDays = terms.FundTerms.WeightedAverageMaturityDays
                sweepEligible = (terms.FundTerms.SweepEligible |> Option.defaultValue false)
                liquidityFeeEligible = (terms.FundTerms.LiquidityFeeEligible |> Option.defaultValue false) |})
+
+    let writeCertificateOfDeposit (schemaVersion: int) (writesScheduleConventions: bool) (writesCallPutSchedules: bool) (terms: CertificateOfDepositTerms) : string =
+        let payload =
+            {| schemaVersion = schemaVersion
+               maturity = terms.Maturity
+               issuerName = terms.IssuerName
+               couponRate = terms.CouponTerms.CouponRate
+               dayCount = terms.CouponTerms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
+               callableDate = terms.CallableDate |}
+        if writesCallPutSchedules then
+            JsonSerializer.Serialize(
+                {| payload with
+                     scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions
+                     callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls
+                     putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})
+        elif writesScheduleConventions then
+            JsonSerializer.Serialize(
+                {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
+        else
+            JsonSerializer.Serialize(payload)
+
+    let writeCommercialPaper (schemaVersion: int) (terms: CommercialPaperTerms) : string =
+        JsonSerializer.Serialize(
+            {| schemaVersion = schemaVersion
+               maturity = terms.Maturity
+               issuerName = terms.IssuerName
+               isAssetBacked = terms.IsAssetBacked
+               discountRate = terms.DiscountTerms.DiscountRate
+               dayCount = terms.CouponTerms.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel |})
 
     let writeTreasuryBill (schemaVersion: int) (terms: TreasuryBillTerms) : string =
         JsonSerializer.Serialize(
@@ -71,6 +110,15 @@ module internal GeneratedFlatWriter =
                startDate = terms.StartDate
                endDate = terms.EndDate
                repoRate = terms.DiscountTerms.YieldRate |})
+
+    let writeCashSweep (schemaVersion: int) (terms: CashSweepTerms) : string =
+        JsonSerializer.Serialize(
+            {| schemaVersion = schemaVersion
+               programName = terms.ProgramName
+               sweepVehicleType = terms.SweepVehicleType
+               sweepFrequency = terms.SweepFrequency
+               targetAccountType = terms.SweepTerms.TargetAccountType
+               yieldRate = terms.DiscountTerms.YieldRate |})
 
     let writeOtherSecurity (schemaVersion: int) (terms: OtherSecurityTerms) : string =
         JsonSerializer.Serialize(

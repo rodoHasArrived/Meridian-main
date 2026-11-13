@@ -5,6 +5,7 @@ using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Serialization;
 
@@ -46,6 +47,8 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(ExecutionAuditEntry))]
 [JsonSerializable(typeof(List<ExecutionAuditEntry>))]
 [JsonSerializable(typeof(TradeExecutedEvent))]
+[JsonSerializable(typeof(TradeFillAccountingEvidence))]
+[JsonSerializable(typeof(SecurityTradePosting))]
 [JsonSerializable(typeof(TradeFillPendingWalPayload))]
 [JsonSerializable(typeof(TradeFillStatusWalPayload))]
 [JsonSerializable(typeof(TradeFillPostingSnapshot))]
@@ -64,6 +67,10 @@ namespace Meridian.Execution.Serialization;
 // Governed-approval queue persistence
 [JsonSerializable(typeof(RiskEscalationSnapshot))]
 [JsonSerializable(typeof(OrderRequest))]
+[JsonSerializable(typeof(ExecutionJournalEntry))]
+[JsonSerializable(typeof(OrderPreviewResult))]
+[JsonSerializable(typeof(ExecutionAlertSettings))]
+[JsonSerializable(typeof(ExecutionNotification))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }

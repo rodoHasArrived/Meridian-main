@@ -802,6 +802,10 @@ public sealed class BacktestEngine(
             pendingOrders[i] = updatedOrder;
         }
 
+        if (strategy is Meridian.Backtesting.Sdk.Strategies.IBacktestOrderTerminationObserver observer)
+            foreach (var terminal in pendingOrders.Where(o => filled.Contains(o.OrderId)
+                || o.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected))
+                observer.OnOrderTerminated(terminal.OrderId);
         pendingOrders.RemoveAll(o =>
             filled.Contains(o.OrderId) ||
             o.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected ||

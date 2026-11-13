@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ledger
 
+Optional intercompany agreement/revision, chart-node/binding and transaction identities retain
+source provenance on immutable journal legs. Null fields are omitted to preserve historic evidence
+serialization. Reviewed legacy-attribution sidecars add missing historical identity without editing
+posted legs; consolidation output remains a separate reviewed overlay. See
+[the domain dictionary](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
 economic face represented by that quantity and retains decimal unit-cost precision; share rounding
 is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
@@ -123,6 +128,24 @@ This layer should model ledger behavior and accounting evidence without owning U
 - Ledger models, accounting services, and reconciliation support files.
 
 ## Important workflows
+
+Backtesting, paper portfolios, durable execution fills and direct-lending journals resolve posting
+accounts through `IChartOfAccounts` and the immutable `StandardChartOfAccounts` role registry.
+Account types and symbol requirements are explicit; an unknown role is rejected. `GetDefinition`
+provides name/type metadata without inventing a financial account or bypassing posting-scope checks.
+Existing names and scopes remain compatible with retained journals and `LedgerAccounts` balance
+lookups. Loan roles preserve their historical classification, instrument symbol and loan-account
+scope; cash uses the same role as trading. The hierarchical `ChartOfAccounts` remains a reporting rollup.
+
+`SecurityTradePostingProjector` supplies the common opening, closing, commission, financing,
+short-collateral and variation-margin line economics. Callers retain exact opening/closing quantities,
+execution values and relieved long basis or original short proceeds; crossing zero retains both
+legs. New short openings and covers use `Short Securities Payable`, while gains and losses use the
+retained carrying value even for breakeven or partial closes. The kernel never selects lots or
+reconstructs basis from an average quote or realized result. `TradeFillAccountingEvidence` carries
+these facts, source costs, collateral and financial-account scope from the paper lot mutation into
+the durable fill event. Old retained events and journals keep their historical shapes during retry;
+this convergence does not rewrite posted history or supply missing basis authority.
 
 Use this module for books, ledger behavior, reconciliation evidence, and accounting workflow support.
 `ChartOfAccounts` supports customizable colon-delimited account hierarchies such as

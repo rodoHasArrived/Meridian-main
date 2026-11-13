@@ -622,7 +622,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:22](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L22).
+Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:23](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L23).
 
 Coordinates external general-ledger providers, mapping profiles, imports, and reconciliation evidence.
 
@@ -634,16 +634,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingSystemIntegrationService(IEnumerable&lt;IAccountingSystemProvider&gt; providers, ILedgerJournalStore? ledgerJournalStore = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:73](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L73) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AccountingSystemProviderDto&gt;&gt; ListProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:81](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L81) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingProfilesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:106](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L106) |  |
-| <code>public Task&lt;ExternalGlMappingProfileDto&gt; UpsertMappingProfileAsync(AccountingSystemMappingProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:133](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L133) |  |
-| <code>public async Task&lt;ExternalGlExportPackageDto&gt; CreateExportPackageAsync(AccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:183](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L183) |  |
-| <code>public async Task&lt;ExternalGlExportPackageDto?&gt; CertifyExportPackageAsync(CertifyAccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:268](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L268) |  |
-| <code>public async Task&lt;ExternalGlExportPackageManifestDto?&gt; GetExportPackageManifestAsync(string exportPackageId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:367](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L367) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ExternalGlExportPackageDto&gt;&gt; ListExportPackagesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, AccountingCertificationStateDto? certificationState = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:384](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L384) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:413](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L413) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; GetLatestImportAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:439](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L439) | Returns the latest persisted import for the scope. When none has been persisted, an unpersisted preview is computed and returned instead. The preview is never cached: this method backs HTTP GET routes, which must stay free of side effects, and caching it would make a read silently record (possibly fixture) evidence as the scope&#x27;s latest import. |
+| <code>public AccountingSystemIntegrationService(IEnumerable&lt;IAccountingSystemProvider&gt; providers, ILedgerJournalStore? ledgerJournalStore = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:75](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L75) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingSystemProviderDto&gt;&gt; ListProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:85](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L85) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingProfilesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:110](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L110) |  |
+| <code>public Task&lt;ExternalGlMappingProfileDto&gt; UpsertMappingProfileAsync(AccountingSystemMappingProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:137](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L137) |  |
+| <code>public async Task&lt;ExternalGlExportPackageDto&gt; CreateExportPackageAsync(AccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:187](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L187) |  |
+| <code>public async Task&lt;ExternalGlExportPackageDto?&gt; CertifyExportPackageAsync(CertifyAccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:284](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L284) |  |
+| <code>public async Task&lt;ExternalGlExportPackageManifestDto?&gt; GetExportPackageManifestAsync(string exportPackageId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:383](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L383) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ExternalGlExportPackageDto&gt;&gt; ListExportPackagesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, AccountingCertificationStateDto? certificationState = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:400](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L400) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:429](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L429) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; GetLatestImportAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:455](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L455) | Returns the latest persisted import for the scope. When none has been persisted, an unpersisted preview is computed and returned instead. The preview is never cached: this method backs HTTP GET routes, which must stay free of side effects, and caching it would make a read silently record (possibly fixture) evidence as the scope&#x27;s latest import. |
 
 Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs:24](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs#L24).
 
@@ -792,21 +792,82 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Banking/PostgresBankingService.cs:226](../../../../src/Meridian.FinancialOperations/Banking/PostgresBankingService.cs#L226) |  |
 | <code>public async Task&lt;BankTransactionSeedResultDto&gt; SeedBankTransactionsAsync(BankTransactionSeedRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Banking/PostgresBankingService.cs:236](../../../../src/Meridian.FinancialOperations/Banking/PostgresBankingService.cs#L236) |  |
 
+## ConsolidationBookPolicyValidator
+
+Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationBookPolicyValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationBookPolicyValidator.cs:6](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationBookPolicyValidator.cs#L6).
+
+```csharp
+public sealed class ConsolidationBookPolicyValidator(IAccountingPolicyService policies) : IConsolidationBookPolicyValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task ValidateAsync(string policyId, string policyVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationBookPolicyValidator.cs:8](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationBookPolicyValidator.cs#L8) |  |
+
 ## ConsolidationCalculation
 
 Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationCalculation</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:278](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L278).
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:288](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L288).
 
 ```csharp
-public sealed record ConsolidationCalculation(ConsolidationRequestDto Request, LedgerBookRecord Book, LedgerAccountingPeriod Period, ConsolidationPerimeter Perimeter, AccountingPolicyDto Policy, IReadOnlyList<ConsolidationSourceDto> Sources, IReadOnlyList<LedgerJournalEntryRecord> SourceRecords, IReadOnlyList<LedgerJournalEntryRecord> Posted, IReadOnlyList<ConsolidationMatchDto> Matches, IReadOnlyList<ManualJournalEntryLineDto> ProposedLines, ConsolidationEvidenceDto Evidence, IReadOnlyList<string> Blockers);
+public sealed record ConsolidationCalculation(ConsolidationRequestDto Request, LedgerBookRecord Book, LedgerAccountingPeriod Period, ConsolidationPerimeter Perimeter, AccountingPolicyDto Policy, IReadOnlyList<ConsolidationSourceDto> Sources, IReadOnlyList<LedgerJournalEntryRecord> SourceRecords, IReadOnlyList<LedgerJournalEntryRecord> Posted, IReadOnlyList<ConsolidationMatchDto> Matches, IReadOnlyList<ManualJournalEntryLineDto> ProposedLines, ConsolidationEvidenceDto Evidence, IReadOnlyList<string> Blockers)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ConsolidationSourceDto&gt;? GovernedSources { get; init; }</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:295](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L295) |  |
+| <code>public IReadOnlyDictionary&lt;string, decimal&gt;? TranslationReserve { get; init; }</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:296](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L296) |  |
+| <code>public IReadOnlyDictionary&lt;string, decimal&gt;? TranslationDifferences { get; init; }</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:297](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L297) |  |
+| <code>public IReadOnlyDictionary&lt;string, decimal&gt;? RoundingDifferences { get; init; }</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:298](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L298) |  |
+
+## ConsolidationFxAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationFxAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationFxAuthority.cs:6](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationFxAuthority.cs#L6).
+
+```csharp
+public sealed class ConsolidationFxAuthority(IConsolidationFxStore store) : IConsolidationFxAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ConsolidationFxContextDto&gt; ResolveAsync(Guid eliminationBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationFxAuthority.cs:8](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationFxAuthority.cs#L8) |  |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationFxAuthority.cs:23](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationFxAuthority.cs#L23) |  |
+
+## ConsolidationFxTranslator
+
+Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationFxTranslator</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationFxTranslator.cs:10](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationFxTranslator.cs#L10).
+
+Deterministic translation of an already balanced functional trial balance.
+
+```csharp
+public static class ConsolidationFxTranslator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ConsolidationFxAmountDto ConvertAmount(decimal amount, string fromCurrency, ConsolidationFxContextDto context, DateOnly date);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationFxTranslator.cs:13](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationFxTranslator.cs#L13) | Exact-date conversion for counterpart proposals under an approved destination-book configuration. |
+| <code>public static ConsolidationFxTranslationResultDto Translate(IReadOnlyList&lt;ConsolidationFxSourceLineDto&gt; source, ConsolidationFxRateSetDto rates, ConsolidationFxPolicyDto policy, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationFxTranslator.cs:46](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationFxTranslator.cs#L46) |  |
 
 ## ConsolidationPerimeter
 
 Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationPerimeter</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs:122](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs#L122).
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs:127](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs#L127).
 
 Resolved members and exact effective-dated ownership records retained with a run.
 
@@ -831,55 +892,109 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string FirstSliceLimitation = &quot;Exactly two direct, wholly owned legal entities under one fund ownership root; one shared base currency; &quot; + &quot;no indirect ownership, partial ownership, noncontrolling interests, or currency translation. &quot; + &quot;Ownership applies from EffectiveFrom inclusive to EffectiveTo exclusive. &quot; + &quot;Eliminations use a dedicated Fund book and must be posted in date order; backdating before a posted elimination is unsupported.&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs:14](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs#L14) |  |
-| <code>public async Task&lt;ConsolidationPerimeter&gt; ResolveAsync(Guid organizationId, Guid ownershipRootId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs:20](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs#L20) |  |
+| <code>public async Task&lt;ConsolidationPerimeter&gt; ResolveAsync(Guid organizationId, Guid ownershipRootId, DateTimeOffset asOf, CancellationToken ct = default, bool allowMultipleEntities = false, bool allowTranslation = false);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs:20](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs#L20) |  |
 
 ## ConsolidationService
 
 Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:12](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L12).
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:13](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L13).
 
 Builds a reviewed overlay; source entity books are never changed by eliminations.
 
 ```csharp
-public sealed class ConsolidationService(ConsolidationPerimeterResolver perimeterResolver, ILedgerJournalStore journals, IAccountingPolicyService policies, IAccountingJournalDraftService journalDrafts) : IConsolidationDraftGuard
+public sealed partial class ConsolidationService(ConsolidationPerimeterResolver perimeterResolver, ILedgerJournalStore journals, IAccountingPolicyService policies, IAccountingJournalDraftService journalDrafts, IIntercompanyAccountBindingStore? accountBindings = null, IConsolidationFxAuthority? fxAuthority = null, ILegacyIntercompanyAttributionStore? legacyAttributions = null, IConsolidationTransitionStore? transitions = null, IntercompanyAccountingArrangementService? arrangements = null) : IConsolidationDraftGuard
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string RuleId = &quot;consolidation.receivable-payable&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:18](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L18) |  |
-| <code>public const string RuleVersion = &quot;w10-v1&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:19](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L19) |  |
-| <code>public const string ReceivableAccount = &quot;Assets:Intercompany Receivable&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:20](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L20) |  |
-| <code>public const string PayableAccount = &quot;Liabilities:Intercompany Payable&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:21](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L21) |  |
-| <code>public const string EvidenceTag = &quot;consolidation.evidence&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:22](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L22) |  |
-| <code>public const string DigestTag = &quot;consolidation.digest&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:23](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L23) |  |
-| <code>public async Task&lt;ConsolidationCalculation&gt; CalculateAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:25](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L25) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; BuildDraftAsync(ConsolidationCalculation calculation, string actor, string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:180](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L180) |  |
-| <code>public async Task ValidateEvidenceCurrentAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:225](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L225) |  |
-| <code>public async Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:232](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L232) |  |
-| <code>public static bool HasCanonicalHeader(ManualJournalEntryDraftDto draft, ConsolidationEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:251](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L251) | Group-level provenance may name only the authoritative root; entity attribution remains on each source-backed line. |
-| <code>public static string Hash&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:267](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L267) |  |
-| <code>public static ConsolidationEvidenceDto? ReadEvidence(string? json);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:268](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L268) |  |
+| <code>public const string RuleId = &quot;consolidation.receivable-payable&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:24](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L24) |  |
+| <code>public const string RuleVersion = &quot;w10-v1&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:25](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L25) |  |
+| <code>public const string ReceivableAccount = &quot;Assets:Intercompany Receivable&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:26](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L26) |  |
+| <code>public const string PayableAccount = &quot;Liabilities:Intercompany Payable&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:27](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L27) |  |
+| <code>public const string EvidenceTag = &quot;consolidation.evidence&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:28](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L28) |  |
+| <code>public const string DigestTag = &quot;consolidation.digest&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:29](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L29) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; BuildDraftAsync(ConsolidationCalculation calculation, string actor, string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:189](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L189) |  |
+| <code>public async Task ValidateEvidenceCurrentAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:235](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L235) |  |
+| <code>public async Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:242](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L242) |  |
+| <code>public static bool HasCanonicalHeader(ManualJournalEntryDraftDto draft, ConsolidationEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:261](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L261) | Group-level provenance may name only the authoritative root; entity attribution remains on each source-backed line. |
+| <code>public static string Hash&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:277](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L277) |  |
+| <code>public static ConsolidationEvidenceDto? ReadEvidence(string? json);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs:278](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs#L278) |  |
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Governed.cs:10](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Governed.cs#L10).
+
+```csharp
+public sealed partial class ConsolidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RevenueExpenseRuleId = &quot;consolidation.revenue-expense&quot;;</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Governed.cs:12](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Governed.cs#L12) |  |
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Matching.cs:7](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Matching.cs#L7).
+
+```csharp
+public sealed partial class ConsolidationService
+```
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Transitions.cs:7](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Transitions.cs#L7).
+
+```csharp
+public sealed partial class ConsolidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ConsolidationCalculation&gt; CalculateAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Transitions.cs:9](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Transitions.cs#L9) |  |
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Translation.cs:7](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Translation.cs#L7).
+
+```csharp
+public sealed partial class ConsolidationService
+```
+
+## ConsolidationTransitionService
+
+Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationTransitionService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs:12](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs#L12).
+
+Reviews a reporting path change; rebuilds the new target without importing old overlays.
+
+```csharp
+public sealed class ConsolidationTransitionService(ConsolidationService consolidation, ILedgerJournalStore journals, IConsolidationTransitionStore transitions, IAccountingPolicyService policies, IIntercompanyAccountBindingStore bindings, IConsolidationFxAuthority fx, ILegacyIntercompanyAttributionStore legacy, IFundProfileTenancyRegistry owners, PostgresFundStructureStore? structure = null, TimeProvider? timeProvider = null, IIntercompanyAccountingArrangementStore? arrangements = null, IIntercompanyAccountingArrangementLegalAuthority? legalAuthority = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ConsolidationTransitionPreviewDto&gt; PreviewAsync(ConsolidationTransitionRequestDto request, string tenantId, string? companyId, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs:19](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs#L19) |  |
+| <code>public async Task&lt;ConsolidationTransitionReceiptDto&gt; ActivateAsync(ApproveConsolidationTransitionRequestDto request, string tenantId, string? companyId, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs:32](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs#L32) |  |
 
 ## PostgresConsolidationPostingAuthority
 
 Qualified name: <code>Meridian.FinancialOperations.Consolidation.PostgresConsolidationPostingAuthority</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:9](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L9).
+Source: [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:10](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L10).
 
 Closes the ownership/policy change window between workflow review and durable append.
 
 ```csharp
-public sealed class PostgresConsolidationPostingAuthority(ConsolidationService consolidation, PostgresFundStructureStore structure, IAccountingPolicyService policies) : IConsolidationPostingAuthority
+public sealed class PostgresConsolidationPostingAuthority(ConsolidationService consolidation, PostgresFundStructureStore structure, IAccountingPolicyService policies, IIntercompanyAccountBindingStore? bindings = null, IConsolidationFxAuthority? fxAuthority = null, ILegacyIntercompanyAttributionStore? legacyAttributions = null, IConsolidationTransitionStore? transitions = null, IIntercompanyAccountingArrangementStore? arrangements = null, IIntercompanyAccountingArrangementLegalAuthority? legalAuthority = null) : IConsolidationPostingAuthority
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:12](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L12) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:18](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L18) |  |
 
 ## DesignModule
 
@@ -903,64 +1018,3 @@ Declared public members:
 | <code>public const string PrimaryCurrentOwner = &quot;Accounting and Ledger&quot;;</code> | [src/Meridian.FinancialOperations/DesignModule.cs:9](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L9) |  |
 | <code>public static readonly string[] RequiredFacets = [&quot;Domain model&quot;, &quot;Application services&quot;, &quot;Contracts / APIs&quot;, &quot;Infrastructure&quot;, &quot;UI components&quot;, &quot;Tests&quot;];</code> | [src/Meridian.FinancialOperations/DesignModule.cs:10](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L10) |  |
 | <code>public static readonly string[] CurrentSourcePaths = [&quot;src/Meridian.FinancialOperations&quot;, &quot;src/Meridian.Application&quot;, &quot;src/Meridian.Contracts&quot;, &quot;src/Meridian.Ledger&quot;, &quot;src/Meridian.FSharp.Ledger&quot;, &quot;src/Meridian.Ui.Shared&quot;, &quot;src/Meridian.Wpf&quot;, &quot;src/Meridian.Ui/dashboard&quot;];</code> | [src/Meridian.FinancialOperations/DesignModule.cs:20](../../../../src/Meridian.FinancialOperations/DesignModule.cs#L20) |  |
-
-## DistributionDeclarationRecord
-
-Qualified name: <code>Meridian.FinancialOperations.FundAdministration.DistributionDeclarationRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:40](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L40).
-
-One declared distribution to one investor and the waterfall tiers it paid. Later distributions to the same investor read the earlier tiers from here, so return of capital, preferred return and GP catch-up are each paid once across the fund&#x27;s life.
-
-```csharp
-public sealed record DistributionDeclarationRecord(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string InvestorId, string DistributionId, DateOnly EffectiveDate, Guid JournalEntryId, decimal ContributedCapital, decimal PreferredReturnAccrued, decimal AmountToDistribute, decimal CarryRate, decimal CatchUpRate, decimal ReturnOfCapital, decimal PreferredReturn, decimal GpCatchUp, decimal LpCatchUp, decimal LpCarry, decimal GpCarry, string DeclaredBy, DateTimeOffset DeclaredAtUtc);
-```
-
-## FileDistributionRegister
-
-Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileDistributionRegister</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:153](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L153).
-
-File-backed IDistributionRegister; a corrupt snapshot is an error.
-
-```csharp
-public sealed class FileDistributionRegister(string directory) : JsonFileSnapshotStore<FileDistributionRegister.Snapshot>(Path.Combine(directory, "distribution-register.json"), FundAdministrationRegisterJson.Options), IDistributionRegister
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireDeclarationLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:157](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L157) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DistributionDeclarationRecord&gt;&gt; ListAsync(string tenantId, string companyId, string fundProfileId, Guid ledgerBookId, string investorId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:161](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L161) |  |
-| <code>public Task&lt;DistributionDeclarationRecord&gt; RecordAsync(DistributionDeclarationRecord record, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:168](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L168) |  |
-
-## Snapshot
-
-Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileDistributionRegister.Snapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:194](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L194).
-
-```csharp
-public sealed record Snapshot(IReadOnlyList<DistributionDeclarationRecord> Distributions);
-```
-
-## FileFixedAssetRegister
-
-Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileFixedAssetRegister</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:97](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L97).
-
-File-backed IFixedAssetRegister. A corrupt snapshot is an error, never an empty register: losing the register must block depreciation, not silently stop it.
-
-```csharp
-public sealed class FileFixedAssetRegister(string directory) : JsonFileSnapshotStore<FileFixedAssetRegister.Snapshot>(Path.Combine(directory, "fixed-asset-register.json"), FundAdministrationRegisterJson.Options), IFixedAssetRegister
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;FixedAssetRegisterEntry&gt;&gt; ListAsync(string tenantId, string companyId, string fundProfileId, Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:101](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L101) |  |
-| <code>public Task&lt;FixedAssetRegisterEntry&gt; UpsertAsync(FixedAssetRegisterEntry entry, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:108](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L108) |  |

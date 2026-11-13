@@ -18,6 +18,7 @@ export * from "./types/market-data";
 export * from "./types/canonical-symbol";
 export * from "./types/cash-dividend-attestation";
 export * from "./types/consolidation";
+export * from "./types/entity-operations";
 export * from "./types/cross-screen-counts";
 export * from "./types/corporate-action-inbox";
 export * from "./types/provider-accounting";

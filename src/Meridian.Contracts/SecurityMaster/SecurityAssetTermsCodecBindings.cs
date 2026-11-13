@@ -29,7 +29,10 @@ public enum SecurityTermRead
 /// <summary>
 /// One member of a per-class record and the flat key that carries it.
 /// </summary>
-/// <param name="Path">The member, as <c>Field.Member</c> over the class's record.</param>
+/// <param name="Path">
+/// The member, as <c>Field.Member</c> over the class's record; or a whole module, as <c>Field</c>,
+/// when <paramref name="DecodeExpression"/> builds the module through a helper.
+/// </param>
 /// <param name="Key">The flat key, or null for a member the decode sets without reading one.</param>
 /// <param name="Read">How the decode reads the key; null when <paramref name="DecodeExpression"/> says.</param>
 /// <param name="DecodeExpression">
@@ -41,22 +44,30 @@ public enum SecurityTermRead
 /// supplies the written form (a required date written as its default when the record lacks it).
 /// </param>
 /// <param name="DecodeOnly">Whether the key is written by another row and only read here.</param>
+/// <param name="WriteOnly">Whether the key is read by a whole-module row and only written here.</param>
 public sealed record SecurityTermBinding(
     string Path,
     string? Key,
     SecurityTermRead? Read,
     string? DecodeExpression = null,
     string? WriteVia = null,
-    bool DecodeOnly = false);
+    bool DecodeOnly = false,
+    bool WriteOnly = false);
 
 /// <summary>The bindings of one asset class.</summary>
 /// <param name="ReadsResolvedTerms">
 /// Whether the class reads its keys from the profile-resolved terms document rather than the root.
 /// </param>
+/// <param name="VersionedSchedules">
+/// Whether the class carries the declared-schedule containers (ADR-024: the
+/// <c>scheduleConventions</c> block and the call and put schedules), which the decode reads only at
+/// the row's terms version and the writer writes only from the version that declares them.
+/// </param>
 public sealed record SecurityClassCodecBinding(
     string AssetClass,
     bool ReadsResolvedTerms,
-    IReadOnlyList<SecurityTermBinding> Members);
+    IReadOnlyList<SecurityTermBinding> Members,
+    bool VersionedSchedules = false);
 
 /// <summary>
 /// The single statement of which flat key carries which member of a per-class record, for the
@@ -85,8 +96,23 @@ public static class SecurityAssetTermsCodecBindings
     private static SecurityTermBinding Also(string path, string key, SecurityTermRead read)
         => new(path, key, read, DecodeOnly: true);
 
+    /// <summary>A whole module built by a helper; the keys it reads are written by <see cref="WrittenFrom"/> rows.</summary>
+    private static SecurityTermBinding Module(string field, string decodeExpression)
+        => new(field, null, null, decodeExpression);
+
+    /// <summary>A key written from a record property and read by a <see cref="Module"/> row of the same field.</summary>
+    private static SecurityTermBinding WrittenFrom(string path, string key, string property)
+        => new(path, key, null, WriteVia: property, DecodeOnly: false, WriteOnly: true);
+
+    /// <summary>A member read through its own conversion and written from a record property.</summary>
+    private static SecurityTermBinding Converted(string path, string key, string decodeExpression, string property)
+        => new(path, key, null, decodeExpression, property);
+
     private static SecurityClassCodecBinding Class(string assetClass, params SecurityTermBinding[] members)
         => new(assetClass, false, members);
+
+    private static SecurityClassCodecBinding ScheduledClass(string assetClass, params SecurityTermBinding[] members)
+        => new(assetClass, false, members, VersionedSchedules: true);
 
     private static SecurityClassCodecBinding ResolvedClass(string assetClass, params SecurityTermBinding[] members)
         => new(assetClass, true, members);
@@ -121,11 +147,39 @@ public static class SecurityAssetTermsCodecBindings
         Class("FxSpot",
             B("CurrencyPair.BaseCurrency", "baseCurrency", SecurityTermRead.RequiredString),
             B("CurrencyPair.QuoteCurrency", "quoteCurrency", SecurityTermRead.RequiredString)),
+        Class("Deposit",
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.OptionalDate),
+            B("IssuerTerms.InstitutionName", "institutionName", SecurityTermRead.RequiredString, via: "InstitutionName"),
+            B("IssuerTerms.IssuerProgram", "depositType", SecurityTermRead.RequiredString, via: "DepositType"),
+            Fixed("CouponTerms.CouponType", "FSharpOption<CouponKind>.Some(CouponKind.NewOtherCoupon(\"SimpleInterest\"))"),
+            B("CouponTerms.CouponRate", "interestRate", SecurityTermRead.OptionalDecimal),
+            B("CouponTerms.DayCount", "dayCount", SecurityTermRead.DayCount),
+            Module("Callability", "EconomicCallTermsModule.Scalar(bound.OptionalBoolean(\"isCallable\") ?? false, null)"),
+            WrittenFrom("Callability.IsCallable", "isCallable", "IsCallable")),
         Class("MoneyMarketFund",
             B("FundTerms.FundFamily", "fundFamily", SecurityTermRead.OptionalString),
             B("FundTerms.WeightedAverageMaturityDays", "weightedAverageMaturityDays", SecurityTermRead.OptionalInt),
             B("FundTerms.SweepEligible", "sweepEligible", SecurityTermRead.BooleanDefaultFalse),
             B("FundTerms.LiquidityFeeEligible", "liquidityFeeEligible", SecurityTermRead.BooleanDefaultFalse)),
+        ScheduledClass("CertificateOfDeposit",
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.RequiredDate, via: "Maturity"),
+            B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.RequiredString, via: "IssuerName"),
+            Fixed("CouponTerms.CouponType", "FSharpOption<CouponKind>.Some(CouponKind.Fixed)"),
+            B("CouponTerms.CouponRate", "couponRate", SecurityTermRead.OptionalDecimal),
+            B("CouponTerms.DayCount", "dayCount", SecurityTermRead.DayCount),
+            Module("Callability",
+                "EconomicCallTermsModule.Scalar(bound.OptionalDateOnly(\"callableDate\").HasValue, ToOption(bound.OptionalDateOnly(\"callableDate\")))"),
+            WrittenFrom("Callability.FirstCallDate", "callableDate", "CallableDate"),
+            Module("DeclaredSchedule",
+                "new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),\n                ReadCallPutSchedules(json, assetClass, versionedTerms))")),
+        Class("CommercialPaper",
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.RequiredDate, via: "Maturity"),
+            B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.RequiredString, via: "IssuerName"),
+            Converted("IssuerTerms.IssuerProgram", "isAssetBacked",
+                "ToOption((bound.OptionalBoolean(\"isAssetBacked\") ?? false) ? \"AssetBacked\" : null)", "IsAssetBacked"),
+            B("DiscountTerms.DiscountRate", "discountRate", SecurityTermRead.OptionalDecimal),
+            Fixed("CouponTerms.CouponType", "FSharpOption<CouponKind>.Some(CouponKind.DiscountNote)"),
+            B("CouponTerms.DayCount", "dayCount", SecurityTermRead.DayCount)),
         Class("TreasuryBill",
             B("Dates.MaturityDate", "maturity", SecurityTermRead.RequiredDate, via: "Maturity"),
             B("Auction.AuctionDate", "auctionDate", SecurityTermRead.OptionalDate),
@@ -140,6 +194,14 @@ public static class SecurityAssetTermsCodecBindings
             B("FinancingTerms.OpenDate", "startDate", SecurityTermRead.RequiredDate, via: "StartDate"),
             B("FinancingTerms.CloseDate", "endDate", SecurityTermRead.RequiredDate, via: "EndDate"),
             B("DiscountTerms.YieldRate", "repoRate", SecurityTermRead.OptionalDecimal)),
+        Class("CashSweep",
+            B("SweepTerms.ProgramName", "programName", SecurityTermRead.RequiredString, via: "ProgramName"),
+            Converted("SweepTerms.SweepVehicleType", "sweepVehicleType",
+                "FSharpOption<SweepVehicle>.Some(ToCodecSweepVehicle(bound.RequiredString(\"sweepVehicleType\")))", "SweepVehicleType"),
+            Converted("SweepTerms.SweepFrequency", "sweepFrequency",
+                "ToCodecSweepFrequency(ToOption(bound.OptionalString(\"sweepFrequency\")))", "SweepFrequency"),
+            B("SweepTerms.TargetAccountType", "targetAccountType", SecurityTermRead.OptionalString),
+            B("DiscountTerms.YieldRate", "yieldRate", SecurityTermRead.OptionalDecimal)),
         Class("OtherSecurity",
             B("Dates.MaturityDate", "maturity", SecurityTermRead.OptionalDate),
             B("ClassificationDetail.Category", "category", SecurityTermRead.RequiredString),

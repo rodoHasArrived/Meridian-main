@@ -94,7 +94,7 @@ public sealed class TwelveDataSymbolSearchProviderTests
             return JsonResponse(SearchResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var results = await provider.SearchAsync("aapl", 10, CancellationToken.None);
 
@@ -122,7 +122,7 @@ public sealed class TwelveDataSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RegionalSearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var results = await provider.SearchAsync(
             "shop",
@@ -144,7 +144,7 @@ public sealed class TwelveDataSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Credential-gated search should not call Twelve Data."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataSymbolSearchProvider(string.Empty, httpClient);
+        using var provider = new TwelveDataSymbolSearchProvider(string.Empty, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
@@ -157,7 +157,7 @@ public sealed class TwelveDataSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(ErrorResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
@@ -169,7 +169,7 @@ public sealed class TwelveDataSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var details = await provider.GetDetailsAsync(new SymbolId("AAPL"), CancellationToken.None);
 
@@ -190,7 +190,7 @@ public sealed class TwelveDataSymbolSearchProviderTests
         await cts.CancelAsync();
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataSymbolSearchProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         Func<Task> act = () => provider.SearchAsync("AAPL", 10, cts.Token);
 

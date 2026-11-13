@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpdateExecutionSymbolPositionLimitRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1921](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1921).
+
+Request to update or clear a symbol-specific execution position limit.
+
+```csharp
+public sealed record UpdateExecutionSymbolPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
+```
+
+## UpdateMaintenanceScheduleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateMaintenanceScheduleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:518](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L518).
+
+```csharp
+public record UpdateMaintenanceScheduleRequest(string? Name = null, string? Description = null, string? CronExpression = null, string? TimeZoneId = null, string? TaskType = null, string? Priority = null, bool? Enabled = null, int? MaxDurationMinutes = null, int? MaxRetries = null, string[]? TargetPaths = null, string[]? Tags = null, MaintenanceOptionsDto? Options = null);
+```
+
 ## ValidateMaintenanceCronRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateMaintenanceCronRequest</code>. Kind: `record`.
@@ -656,7 +678,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceManifestFile</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:117](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L117).
+Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:121](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L121).
 
 ```csharp
 public sealed record EvidenceManifestFile(Stream Content, string ContentType, string FileName, DateTimeOffset LastModified);
@@ -822,7 +844,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;EvidenceManifestFile?&gt; TryOpenDocumentContentAsync(string vaultId, string documentId, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs#L7) |  |
 
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L123).
+Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:127](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L127).
 
 Retains evidence content, manifests, document reviews, and exports in file-backed storage.
 
@@ -834,9 +856,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:174](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L174) |  |
-| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger, EvidenceStorageQuotaOptions quotaOptions) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest, quotaOptions : quotaOptions);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:179](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L179) |  |
-| <code>public async Task&lt;EvidenceVaultIntakeResponseDto&gt; WriteIntakeArtifactAsync(EvidenceVaultIntakeRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:216](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L216) |  |
+| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:178](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L178) |  |
+| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger, EvidenceStorageQuotaOptions quotaOptions) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest, quotaOptions : quotaOptions);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L183) |  |
+| <code>public async Task&lt;EvidenceVaultIntakeResponseDto&gt; WriteIntakeArtifactAsync(EvidenceVaultIntakeRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:220](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L220) |  |
 
 Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.DocumentReview.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.DocumentReview.cs#L9).
 
@@ -861,6 +883,18 @@ Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Models.cs:5](
 ```csharp
 public sealed partial class FileEvidenceArtifactStore
 ```
+
+Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs#L5).
+
+```csharp
+public sealed partial class FileEvidenceArtifactStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;bool&gt; VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs#L7) |  |
 
 Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs#L10).
 
@@ -945,11 +979,12 @@ Declared public members:
 | <code>Task&lt;EvidenceVaultIdentityDto?&gt; TryGetVaultIdentityAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:65](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L65) |  |
 | <code>Task&lt;bool&gt; VerifyRetainedContentAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:73](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L73) | Verifies the retained source bytes, not just the manifest or index identity. |
 | <code>Task&lt;EvidenceManifestFile?&gt; TryOpenDocumentContentAsync(string vaultId, string documentId, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:77](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L77) | Opens the exact scoped document bytes after manifest, document and content verification. |
-| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultIdentityDto&gt;&gt; FindByLinkageAsync(EvidenceVaultLookupRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:80](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L80) |  |
-| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt;&gt; ListRequestListsAsync(EvidenceVaultRequestListQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:84](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L84) |  |
-| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:88](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L88) |  |
-| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:94](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L94) | Legacy unscoped review mutation retained as a fail-closed compatibility shim. |
-| <code>Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:101](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L101) |  |
+| <code>Task&lt;bool&gt; VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:81](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L81) | Streams and verifies one exact pinned artifact within the vault&#x27;s configured document limits. |
+| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultIdentityDto&gt;&gt; FindByLinkageAsync(EvidenceVaultLookupRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:84](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L84) |  |
+| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt;&gt; ListRequestListsAsync(EvidenceVaultRequestListQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:88](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L88) |  |
+| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:92](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L92) |  |
+| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:98](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L98) | Legacy unscoped review mutation retained as a fail-closed compatibility shim. |
+| <code>Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:105](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L105) |  |
 
 ## IEvidenceContributor
 
@@ -1284,31 +1319,3 @@ Declared public members:
 | <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1068](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1068) |  |
 | <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1070](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1070) |  |
 | <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1073](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1073) |  |
-
-## SinglePrincipalAttestationAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationAuthority</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L9).
-
-Server-derived authority; this type is never bound from an HTTP request body.
-
-```csharp
-public sealed record SinglePrincipalAttestationAuthority(string Actor, OperationsActionOriginDto Origin, bool CanRead, bool CanAdministerDeclaration = false, bool CanAttest = false, bool CanRevoke = false, bool CanModifyTarget = false, bool CanModifyDraftTarget = false);
-```
-
-## SinglePrincipalAttestationException
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L19).
-
-```csharp
-public sealed class SinglePrincipalAttestationException(string code, string message) : InvalidOperationException(message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L22) |  |

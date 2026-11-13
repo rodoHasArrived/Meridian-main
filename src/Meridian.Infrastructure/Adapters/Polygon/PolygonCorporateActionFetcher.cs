@@ -4,6 +4,7 @@ using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
     private readonly IConfiguration _configuration;
     private readonly ILogger<PolygonCorporateActionFetcher> _logger;
 
-    private string? _apiKey;
+    private readonly IProviderCredentialResolver? _credentialResolver;
     private CancellationTokenSource? _backgroundCts;
     private Task? _backgroundTask;
 
@@ -57,7 +58,8 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         ISecurityMasterCorporateActionCommandService corporateActionCommandService,
         RateLimiter rateLimiter,
         IConfiguration configuration,
-        ILogger<PolygonCorporateActionFetcher> logger)
+        ILogger<PolygonCorporateActionFetcher> logger,
+        IProviderCredentialResolver? credentialResolver = null)
     {
         _httpClientFactory = httpClientFactory;
         _queryService = queryService;
@@ -65,16 +67,17 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         _rateLimiter = rateLimiter;
         _configuration = configuration;
         _logger = logger;
+        _credentialResolver = credentialResolver;
     }
 
-    public Task StartAsync(CancellationToken ct)
+    public async Task StartAsync(CancellationToken ct)
     {
-        _apiKey = ResolvePolygonApiKey(_configuration);
+        var apiKey = await ResolvePolygonApiKeyAsync(ct).ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(_apiKey))
+        if (string.IsNullOrEmpty(apiKey))
         {
             _logger.LogInformation("Polygon API key not configured; corporate action fetcher will not start");
-            return Task.CompletedTask;
+            return;
         }
 
         _logger.LogInformation("Starting PolygonCorporateActionFetcher with API key configured");
@@ -98,7 +101,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
                 }
             },
             _backgroundCts.Token);
-        return Task.CompletedTask;
+        return;
     }
 
     public async Task StopAsync(CancellationToken ct)
@@ -129,10 +132,6 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         try
         {
             ct.ThrowIfCancellationRequested();
-            _apiKey ??= ResolvePolygonApiKey(_configuration);
-            if (string.IsNullOrWhiteSpace(_apiKey))
-                throw new PolygonCorporateActionFetchException(PolygonCorporateActionFailureKind.NotConfigured, progress.Snapshot());
-
             await FetchEndpointAsync("dividends", progress, ct).ConfigureAwait(false);
             await FetchEndpointAsync("splits", progress, ct).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
@@ -205,14 +204,23 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
             {
                 ct.ThrowIfCancellationRequested();
                 failureKind = PolygonCorporateActionFailureKind.InvalidResponse;
-                var pageUri = PolygonPagination.GetAuthenticatedPageUri(nextUrl, _apiKey!);
-                if (!visitedPages.Add(PolygonPagination.GetPageIdentity(pageUri)))
+                // Validate and identify the cursor before spending quota or resolving a secret.
+                var cursorUri = PolygonPagination.GetAuthenticatedPageUri(nextUrl, string.Empty);
+                if (!visitedPages.Add(PolygonPagination.GetPageIdentity(cursorUri)))
                     throw new InvalidDataException("Polygon repeated a corporate-action pagination cursor.");
 
                 failureKind = PolygonCorporateActionFailureKind.Http;
                 // Pacing applies to each HTTP request, including empty pages and subsequent cursors.
                 await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-                using var response = await client.GetAsync(pageUri, ct).ConfigureAwait(false);
+                failureKind = PolygonCorporateActionFailureKind.NotConfigured;
+                var apiKey = await ResolvePolygonApiKeyAsync(ct).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(apiKey))
+                    throw new InvalidOperationException("The selected Polygon credential is unavailable.");
+                var pageUri = PolygonPagination.GetAuthenticatedPageUri(nextUrl, apiKey);
+                failureKind = PolygonCorporateActionFailureKind.Http;
+                using var request = new HttpRequestMessage(HttpMethod.Get, pageUri);
+                request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+                using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
                     statusCode = response.StatusCode;
@@ -436,8 +444,22 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
                 element.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out value);
     }
 
-    private static string? ResolvePolygonApiKey(IConfiguration configuration)
+    private async ValueTask<string?> ResolvePolygonApiKeyAsync(CancellationToken ct)
     {
+        if (_credentialResolver is not null)
+        {
+            var prepared = await _credentialResolver.PrepareAsync([typeof(PolygonMarketDataClient)], ct).ConfigureAwait(false);
+            using var scope = prepared.Activate();
+            return _credentialResolver.CreateContext(typeof(PolygonMarketDataClient),
+                new Dictionary<string, string?>
+                {
+                    ["POLYGON_API_KEY"] = _configuration["Polygon:ApiKey"] ?? _configuration["Backfill:Providers:Polygon:ApiKey"]
+                }).Get("POLYGON_API_KEY");
+        }
+
+        // Compatibility for directly constructed legacy fetchers. Hosted composition supplies
+        // the selected credential resolver, which owns missing/deleted fields as well.
+        var configuration = _configuration;
         var meridianKey = Environment.GetEnvironmentVariable("MERIDIAN_POLYGON_API_KEY");
         if (!string.IsNullOrWhiteSpace(meridianKey))
             return meridianKey;

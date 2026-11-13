@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApprovalDecision
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:71](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L71).
+
+```csharp
+public sealed record ApprovalDecision(bool RequiresDualControl, IReadOnlyList<ApprovalStep> Steps);
+```
+
+## ApprovalPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L65).
+
+```csharp
+public sealed record ApprovalPolicy(decimal DualControlThreshold, IReadOnlyDictionary<string, decimal> CurrencyThresholds, IReadOnlyDictionary<string, decimal> AccountThresholds, IReadOnlySet<string> HighRiskCounterparties);
+```
+
+## ApprovalStep
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalStep</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:57](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L57).
+
+```csharp
+public sealed record ApprovalStep(string StepId, string Role, string Approver, bool IsRequired, bool IsApproved, DateTimeOffset? DecidedAt);
+```
+
 ## AuditTrailExplorerService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExplorerService</code>. Kind: `class`.
@@ -887,62 +917,4 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:73](../
 
 ```csharp
 public sealed record CashForecastPoint(DateOnly Date, string AccountId, string Currency, decimal ExpectedInflow, decimal ExpectedOutflow, decimal Net);
-```
-
-## CashOperationsOrchestratorService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CashOperationsOrchestratorService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:22](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L22).
-
-Builds cash synchronization windows, validation decisions, approval requirements, forecasts, and settlement trails.
-
-```csharp
-public sealed class CashOperationsOrchestratorService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CashSyncWindow&gt; BuildDailySyncWindows(DateTimeOffset nowUtc, IReadOnlyList&lt;CashSyncWindow&gt; configuredWindows);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:24](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L24) |  |
-| <code>public WorkstationSyncValidationResult ValidateSync(IReadOnlyList&lt;SyncCompletenessResult&gt; completeness, IReadOnlyList&lt;DeltaOutlierResult&gt; outliers);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:36](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L36) |  |
-| <code>public WorkstationApprovalDecision EvaluateApproval(decimal amount, string currency, Guid accountId, string riskBucket, WorkstationApprovalPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:52](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L52) |  |
-| <code>public DateOnly ResolveSettlementDateWithCutoff(DateTimeOffset bookingTimeLocal, TimeOnly cutoffLocal, int normalSettlementLagDays);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:102](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L102) |  |
-| <code>public CashForecastResult BuildCashForecast(DateOnly asOf, IReadOnlyDictionary&lt;(Guid AccountId, string Currency), decimal&gt; openingBalances, IReadOnlyList&lt;WorkstationPaymentInstruction&gt; payments, IReadOnlyList&lt;WorkstationSettlementInstruction&gt; settlements, IReadOnlyList&lt;WorkstationCouponEvent&gt; coupons, IReadOnlyList&lt;WorkstationFxConversionReference&gt; fx, decimal liquidityWarningThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:110](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L110) |  |
-| <code>public IReadOnlyList&lt;WorkstationStpStateTransition&gt; BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L150) |  |
-
-## CashSyncOrchestrationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CashSyncOrchestrationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:97](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L97).
-
-Evaluates regional cash sync windows and produces completeness, approval, settlement, and liquidity results.
-
-```csharp
-public sealed class CashSyncOrchestrationService : ICashSyncOrchestrationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsSyncWindowOpen(DateTimeOffset utcNow, RegionalSyncWindow window);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L99) |  |
-| <code>public SyncValidationResult ValidateCompleteness(IEnumerable&lt;SyncAccountSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:107](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L107) |  |
-| <code>public SyncValidationResult ValidateOutliers(IEnumerable&lt;SyncAccountSnapshot&gt; currentDay, IEnumerable&lt;SyncAccountSnapshot&gt; priorDay, decimal outlierThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:117](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L117) |  |
-| <code>public ApprovalDecision BuildApprovalChain(PaymentInstruction paymentInstruction, ApprovalPolicy policy, string primaryApprover, string secondaryApprover);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:140](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L140) |  |
-| <code>public DateOnly ResolveSettlementDate(DateOnly tradeDate, TimeOnly localCutoff, TimeOnly submittedAtLocal, int standardSettlementDays);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:162](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L162) |  |
-| <code>public IReadOnlyList&lt;CashForecastPoint&gt; BuildCashLadder(DateOnly startDate, int horizonDays, IEnumerable&lt;PaymentInstruction&gt; payments, IEnumerable&lt;SettlementInstruction&gt; settlements, IEnumerable&lt;CouponEvent&gt; coupons);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L168) |  |
-| <code>public IReadOnlyList&lt;LiquidityWarning&gt; BuildLiquidityWarnings(IEnumerable&lt;CashForecastPoint&gt; ladder, decimal minimumNetThreshold) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:218](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L218) |  |
-| <code>public StpTransitionResult AdvanceStpState(string entityId, bool validated, bool approved, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:224](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L224) |  |
-
-## CertifiedReportingRunContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CertifiedReportingRunContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L12).
-
-```csharp
-public sealed record CertifiedReportingRunContext(ReportingOperationalScope OperationalScope, ReportingAccessScope AccessScope, ReportingCertifiedSnapshotScope Snapshot, ReportingAuthoritativeSourceCheckpoint AuthoritativeSource, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingRunReadinessDto Readiness);
 ```

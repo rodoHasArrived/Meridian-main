@@ -22,8 +22,11 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static partial class ExecutionEndpoints
 {
+    private const string ExecutionPreDispatchUnavailableProblemType = "https://meridian.io/errors/execution-pre-dispatch-unavailable";
+
     public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapExecutionWorkflowEndpoints(app, jsonOptions);
         var group = app.MapGroup("/api/execution").WithTags("Execution");
         group.AddEndpointFilter(async (invocation, next) =>
         {
@@ -156,7 +159,7 @@ public static partial class ExecutionEndpoints
 
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
-                return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+                return ExecutionPreDispatchUnavailable("Order management system is not active.");
 
             var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
             var gateDecision = BrokerageOrderPlacementGate.Evaluate(
@@ -198,18 +201,33 @@ public static partial class ExecutionEndpoints
                     ("correlationId", string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId))
             };
 
-            var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
-
-            // A parked order is not a rejection: nothing routed, but a live queue entry can
-            // still execute it once an operator approves. 202 keeps that distinguishable
-            // from the 400 a refusal returns, so a client cannot show "submission failed"
-            // for an order that is on its way to the desk.
-            return (result.Success, result.RequiresApproval) switch
+            OrderResult result;
+            try
             {
-                (true, _) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created),
-                (false, true) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status202Accepted),
-                _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+                result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex) when (OrderSubmissionRefusal.IsBeforeDispatch(ex))
+            {
+                return ExecutionPreDispatchUnavailable("The order management system is not accepting order submissions.");
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !context.RequestAborted.IsCancellationRequested)
+            {
+                // The general exception handler can map exceptions to a request refusal. After
+                // entering the OMS, an exception alone cannot establish whether the broker acted.
+                GetLogger(context.RequestServices).LogError(ex, "Order submission returned without a confirmed outcome.");
+                return Results.Problem("The order manager could not confirm the submission outcome.",
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
+
+            // Keep a definitive refusal distinct from orders that may still execute.
+            var statusCode = (result.Success, result.RequiresApproval, result.RequiresOrderReconciliation) switch
+            {
+                (_, _, true) => StatusCodes.Status502BadGateway,
+                (true, _, _) => StatusCodes.Status201Created,
+                (_, true, _) => StatusCodes.Status202Accepted,
+                _ => StatusCodes.Status400BadRequest
             };
+            return Results.Json(result, jsonOptions, statusCode: statusCode);
         })
         .WithName("SubmitOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<OrderResult>(201)
@@ -218,6 +236,8 @@ public static partial class ExecutionEndpoints
         .Produces<OrderResult>(403)
         .Produces(429)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces<OrderResult>(502)
+        .ProducesProblem(502)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
@@ -1592,9 +1612,7 @@ public static partial class ExecutionEndpoints
         var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
         if (scopedAuthorization is null)
         {
-            return Results.Problem(
-                "Fund account scope authorization is not active.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
+            return ExecutionPreDispatchUnavailable("Fund account scope authorization is not active.");
         }
 
         if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
@@ -1611,14 +1629,16 @@ public static partial class ExecutionEndpoints
         var queryService = ResolveAccountQueryService(context);
         if (queryService is null)
         {
-            return Results.Problem(
-                "Fund account scope validation is not active.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
+            return ExecutionPreDispatchUnavailable("Fund account scope validation is not active.");
         }
 
         var account = await queryService.GetAccountAsync(fundAccountId, context.RequestAborted).ConfigureAwait(false);
         return account is null ? ExecutionFundAccountForbidden(jsonOptions) : null;
     }
+
+    private static IResult ExecutionPreDispatchUnavailable(string detail)
+        => Results.Problem(detail, statusCode: StatusCodes.Status503ServiceUnavailable,
+            type: ExecutionPreDispatchUnavailableProblemType);
 
     private static IResult ExecutionFundAccountForbidden(JsonSerializerOptions jsonOptions)
     {

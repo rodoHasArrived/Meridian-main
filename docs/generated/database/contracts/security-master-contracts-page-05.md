@@ -337,6 +337,7 @@ classDiagram
         +string AssetClass
         +IReadOnlyList~SecurityTermBinding~ Members
         +bool ReadsResolvedTerms
+        +bool VersionedSchedules
     }
     class Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto["SecurityClosePriceApprovalDto"] {
         +DateTimeOffset ApprovedAt

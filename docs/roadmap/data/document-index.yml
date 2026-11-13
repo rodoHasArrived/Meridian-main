@@ -103,3 +103,15 @@ documents:
     owner_lane: Accounting and Ledger
     roadmap_items:
       - W10-LOT-002
+
+  - id: DOC-INTERCOMPANY-ENTITY-CONTROLS
+    path: docs/engineering/plans/intercompany-entity-controls.md
+    title: Intercompany contracts and entity controls staged implementation
+    role: planning_interpretation
+    owner_lane: Accounting and Ledger
+    roadmap_items:
+      - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001

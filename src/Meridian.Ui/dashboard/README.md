@@ -11,6 +11,15 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+Accounting's entity and intercompany view uses shared host contracts for authorized entity history,
+accounting profiles, source-linked proposals, breaks and versioned consolidation. Each accounting
+profile pins a canonical approved legal agreement ID, integer version and payload hash; operators
+configure book/account mappings without copying or editing legal terms. Legal authoring and
+independent approval remain in Accounting Configure's canonical agreement registry. Financial amounts and
+capabilities come from the host. Current draft scope must match the preview before mutation;
+loading, stale, blocked and unavailable states remain visible. See
+[intercompany operations](../../../docs/operators/intercompany-entity-controls.md).
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Accounting Security Master selection/search state belongs to
@@ -28,6 +37,13 @@ load results and presentation live in `strategy-screen.equity-paths.view-model.t
 `strategy-screen.equity-paths.tsx`. The existing Strategy
 view-model entrypoint retains its public exports while both screen entrypoints stay within their
 file-size limits. Curve sampling, reported returns and promotion selection behavior are unchanged.
+
+Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts`; `lib/api.ts`
+retains their public type exports and the setup request functions. Pure order-ticket form,
+validation and control-state helpers live in `trading-screen.order-ticket-state.ts`.
+`trading-screen.view-model.ts` retains service and hook orchestration and re-exports the public
+helpers and types. The extracted declarations and function bodies preserve the existing request
+shapes, validation, acknowledgement and status behavior.
 
 The Evidence Workbench's retained-document panel reads shared single-principal declaration,
 source-snapshot and receipt endpoints without development fallback. Evidence acknowledgment is
@@ -2491,6 +2507,8 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

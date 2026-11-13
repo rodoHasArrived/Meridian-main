@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalRegistryCoverageSource
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CanonicalRegistryCoverageSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:12](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L12).
+
+Coverage source exposing every canonical symbol the canonicalization spine knows about. These symbols entered the registry through real usage (streaming enrichment, resolver learning, seeding), so any of them without a validated security-master record is a live coverage gap. Returns an empty set when no registry is available.
+
+```csharp
+public sealed class CanonicalRegistryCoverageSource : ISecurityCoverageSymbolSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CanonicalRegistryCoverageSource(ICanonicalSymbolRegistry? registry = null);</code> | [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:16](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L16) |  |
+| <code>public string SourceName =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:21](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L21) |  |
+| <code>public Task&lt;IReadOnlyCollection&lt;string&gt;&gt; GetActiveSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:23](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L23) |  |
+
+## CanonicalSymbolRegistryMigrationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CanonicalSymbolRegistryMigrationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:17](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L17).
+
+Idempotently imports both legacy symbol-mapping stores into the canonical registry. Legacy inputs are intentionally retained as comparison and rollback sources.
+
+```csharp
+public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CanonicalSymbolRegistryMigrationService(ConfigStore configStore, ICanonicalSymbolRegistry registry, ISymbolRegistryService registryStore, ILogger&lt;CanonicalSymbolRegistryMigrationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:30](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L30) |  |
+| <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:44](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L44) |  |
+| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:97](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L97) |  |
+
+## ContractualCashFlowPreviewService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.ContractualCashFlowPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:12](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L12).
+
+Adapts retained product facts to the shared calculation contract without mutating them.
+
+```csharp
+public sealed class ContractualCashFlowPreviewService(ISecurityMasterQueryService securities, ISecurityMasterCashFlowService sources, ISecurityCurveStore? curveStore = null, IBusinessDayCalendarSource? calendars = null, IDirectLendingService? loans = null, IExerciseNoticeVerifier? noticeVerifier = null) : IContractualCashFlowPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L20) |  |
+| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:42](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L42) |  |
+| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:121](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L121) |  |
+| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:244](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L244) |  |
+
+## FileBondExerciseNoticeStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.FileBondExerciseNoticeStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L14).
+
+Governed exercise-notice evidence: one write-once JSON record per notice under the security, a single decision by a different actor, and verification that a selected scenario exercise restates exactly what an approved notice says. Nothing here posts a redemption. Writers hold an in-process gate and a per-notice lock file, so two hosts sharing the storage root cannot both record under one identity or decide the same notice twice.
+
+```csharp
+public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProvider? timeProvider = null) : IBondExerciseNoticeStore, IExerciseNoticeVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondExerciseNoticeDto&gt; RecordAsync(BondExerciseNoticeDto notice, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L20) |  |
+| <code>public async Task&lt;BondExerciseNoticeDto?&gt; GetAsync(Guid securityId, Guid noticeId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:47](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L47) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BondExerciseNoticeDto&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:56](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L56) |  |
+| <code>public async Task&lt;BondExerciseNoticeDto&gt; DecideAsync(Guid securityId, Guid noticeId, bool approve, string actor, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:69](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L69) |  |
+| <code>public async Task&lt;ExerciseNoticeVerification&gt; VerifyAsync(Guid securityId, SelectedCashFlowExercise selection, DateTimeOffset knowledgeCutoff, ContractualExerciseEntry? entry, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:98](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L98) |  |
+
 ## FileBondObservedFixingStore
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.FileBondObservedFixingStore</code>. Kind: `class`.
@@ -871,80 +954,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:23](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L23) |  |
-
-## IRestatementCandidateResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IRestatementCandidateResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:61](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L61).
-
-Resolves the report packs that consumed a changed line in a locked period covering an upstream edit, as restatement candidates. fundProfileId scopes the search to the impacted fund&#x27;s published packs. An empty result for a hard-closed book is treated by the caller as a manual locate-affected-packs task rather than &quot;no restatement needed&quot;, so a precise resolver that cannot tie a published pack to the security never silently completes a closed period.
-
-```csharp
-public interface IRestatementCandidateResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:63](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L63) |  |
-
-## ISecurityAssetProfileGovernanceService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityAssetProfileGovernanceService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L14).
-
-Defines asset-profile lineage, drafting, approval, and promotion operations.
-
-```csharp
-public interface ISecurityAssetProfileGovernanceService : ISecurityAssetProfileCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:16](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L16) |  |
-| <code>SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:17](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L17) |  |
-| <code>IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L18) |  |
-| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L20) |  |
-| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L25) |  |
-| <code>Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L30) |  |
-
-## ISecurityMasterAmortizationLedgerBridge
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L19).
-
-Posts structured cash flow / accrual / amortization projections from ISecurityMasterCashFlowService into a Ledger using LedgerViewKind.SecurityMaster, so projected coupon accrual, premium amortization / discount accretion, and principal paydowns become balanced journal entries instead of remaining display-only. Idempotent: entries whose deterministic journal id already appears in the ledger are skipped.
-
-```csharp
-public interface ISecurityMasterAmortizationLedgerBridge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;int&gt; PostProjectedCashFlowsAsync(Guid securityId, string ticker, DomainLedger ledger, AmortizationLedgerPostingContext? context = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L27) | Projects securityId&#x27;s cash flow schedule and posts one balanced accrual/amortization entry per schedule period (coupon accrual plus premium/discount amortization derived from the supplied open lots), and a separate principal-paydown entry per period with a principal amount. Returns the number of journal entries posted. |
-
-## ISecurityMasterCanonicalMergeOutcomeReporter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ISecurityMasterCanonicalMergeOutcomeReporter</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs:9](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs#L9).
-
-A published-revision handler that can say what it did to the canonical record, so publish can tell the operator whether the approved edit changed the golden record or stayed overlay-only.
-
-```csharp
-public interface ISecurityMasterCanonicalMergeOutcomeReporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs:12](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterCanonicalMergeOutcomeReporter.cs#L12) | Returns and forgets the outcome recorded for revisionId, or null. |
