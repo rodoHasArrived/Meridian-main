@@ -7461,12 +7461,15 @@ Meridian-main
 │   │   ├── LedgerCsvCell.cs
 │   │   ├── LedgerCurrencyExposure.cs
 │   │   ├── LedgerCurrencyTranslation.cs
+│   │   ├── LedgerDimensionScope.cs
 │   │   ├── LedgerEntry.cs
 │   │   ├── LedgerEntryCurrency.cs
 │   │   ├── LedgerFinancialReportPack.cs
 │   │   ├── LedgerFinancialStatementBuilder.cs
+│   │   ├── LedgerFinancialStatementBuilder.IncomeStatement.cs
 │   │   ├── LedgerFinancialStatements.cs
 │   │   ├── LedgerGovernedLifecycle.cs
+│   │   ├── LedgerIncomeStatement.cs
 │   │   ├── LedgerJournalReversal.cs
 │   │   ├── LedgerLineDimensionSet.cs
 │   │   ├── LedgerLineDimensionSetFields.cs
@@ -8104,7 +8107,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_063__consolidation_fx_rate_sets.sql
 │   │   │   │   ├── V_ledger_064__legacy_intercompany_attribution.sql
 │   │   │   │   ├── V_ledger_065__consolidation_transitions.sql
-│   │   │   │   └── V_ledger_066__dedicated_consolidation_book_slots.sql
+│   │   │   │   ├── V_ledger_066__dedicated_consolidation_book_slots.sql
+│   │   │   │   └── V_ledger_067__period_balance_checkpoints.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -8131,6 +8135,7 @@ Meridian-main
 │   │   │   ├── IControlledCloseAuthorizationStore.cs
 │   │   │   ├── IIntercompanyAgreementPostingAuthority.cs
 │   │   │   ├── IIntercompanyProposalStore.cs
+│   │   │   ├── ILedgerBalanceSnapshotSource.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── ILedgerPostingAuthority.cs
 │   │   │   ├── ILedgerReportingSnapshotSource.cs
@@ -8138,6 +8143,8 @@ Meridian-main
 │   │   │   ├── IntercompanyAccountBindingRules.cs
 │   │   │   ├── IntercompanyAgreementPostingGuard.cs
 │   │   │   ├── IntercompanyJournalCorrectionEvidence.cs
+│   │   │   ├── LedgerBalanceCheckpointContent.cs
+│   │   │   ├── LedgerBalanceSnapshotExtensions.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
 │   │   │   ├── LedgerJournalStoreHydrationExtensions.cs
@@ -8162,6 +8169,9 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
+│   │   │   ├── PostgresLedgerJournalStore.BalanceSnapshotAudit.cs
+│   │   │   ├── PostgresLedgerJournalStore.BalanceSnapshotRead.cs
+│   │   │   ├── PostgresLedgerJournalStore.BalanceSnapshots.cs
 │   │   │   ├── PostgresLedgerJournalStore.BondCouponRecognition.cs
 │   │   │   ├── PostgresLedgerJournalStore.CapitalReturn.cs
 │   │   │   ├── PostgresLedgerJournalStore.CashDividendAttestation.cs
@@ -13376,6 +13386,8 @@ Meridian-main
 │   │   │   ├── LedgerCashFlowTestData.cs
 │   │   │   ├── LedgerEntryCurrencyTests.cs
 │   │   │   ├── LedgerImmutabilityTests.cs
+│   │   │   ├── LedgerIncomeStatementTests.ClosingTransfers.cs
+│   │   │   ├── LedgerIncomeStatementTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
 │   │   │   ├── LedgerJournalReversalTests.cs
 │   │   │   ├── LedgerPartnersCapitalReconciliationTests.cs
@@ -14023,6 +14035,12 @@ Meridian-main
 │   │   │   ├── JsonlMarketDataStoreSymbolPathTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LedgerAnalysisExportTests.cs
+│   │   │   ├── LedgerAnalysisExportTests.Statements.cs
+│   │   │   ├── LedgerBalanceCheckpointPostgresTests.cs
+│   │   │   ├── LedgerBalanceCheckpointPostgresTests.Integrity.cs
+│   │   │   ├── LedgerBalanceCheckpointPostgresTests.PrefixTailGuard.cs
+│   │   │   ├── LedgerBalanceCheckpointPostgresTests.ScopeAndGuards.cs
+│   │   │   ├── LedgerBalanceSnapshotExtensionsTests.cs
 │   │   │   ├── LedgerBookControlsPostgresTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerCurrencyBackfillTests.cs

@@ -372,6 +372,34 @@ erDiagram
         numeric_38_10_ transaction_credit
         numeric_38_10_ fx_rate_to_functional
     }
+    ledger_ledger_balance_checkpoint_rows {
+        uuid checkpoint_id PK,FK
+        integer row_no PK
+        text account_name
+        text account_type
+        text symbol
+        text financial_account_id
+        jsonb dimensions
+        numeric debit
+        numeric credit
+        bigint entry_count
+    }
+    ledger_ledger_balance_checkpoints {
+        uuid checkpoint_id PK
+        uuid close_event_id FK
+        uuid ledger_book_id FK
+        uuid period_id FK
+        bigint period_version
+        text tenant_id
+        integer schema_version
+        timestamp_with_time_zone as_of_utc
+        bigint source_sequence
+        bigint future_audit_sequence
+        bigint journal_count
+        bigint line_count
+        text content_hash
+        timestamp_with_time_zone created_at_utc
+    }
     ledger_ledger_book_control_activation {
         uuid receipt_id PK
         uuid ledger_book_id FK
@@ -540,6 +568,8 @@ erDiagram
         text notes
         timestamp_with_time_zone recorded_at
         bigint period_version
+        uuid balance_checkpoint_id
+        text balance_checkpoint_hash
     }
     ledger_private_capital_calls {
         text tenant_id PK
@@ -676,6 +706,7 @@ erDiagram
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_rule_test_cases : "accounting_configuration_rule_test_cases_workspace_fkey"
     ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_corrects_mutation_batch_id_fkey"
@@ -701,6 +732,7 @@ erDiagram
     ledger_journal_entries ||--o{ ledger_private_capital_postings : "private_capital_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
+    ledger_ledger_balance_checkpoints ||--o{ ledger_ledger_balance_checkpoint_rows : "ledger_balance_checkpoint_rows_checkpoint_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_ledger_book_id_fkey"
@@ -711,6 +743,7 @@ erDiagram
     ledger_ledger_books ||--o{ ledger_intercompany_account_binding_revisions : "intercompany_account_binding_revisions_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_intercompany_proposals : "intercompany_proposals_source_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_journal_leg_currency_affirmations : "journal_leg_currency_affirmations_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_ledger_book_control_activation : "ledger_book_control_activation_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_ledger_book_controls : "ledger_book_controls_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_legacy_intercompany_attributions : "legacy_intercompany_attributions_ledger_book_id_fkey"
@@ -727,6 +760,7 @@ erDiagram
     ledger_open_lot_backfill_receipts ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_resolution_receipt_id_fkey"
     ledger_open_lot_backfill_reviews ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_evidence_record_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_period_close_events ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_close_event_id_fkey"
     ledger_private_capital_calls ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profile_fkey"
     ledger_private_capital_commitments ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profil_fkey1"
     ledger_tax_lots ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_tax_lot_record_id_fkey"

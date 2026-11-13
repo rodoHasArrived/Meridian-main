@@ -613,6 +613,24 @@ Declared public members:
 | <code>Task LinkRejectedDraftAsync(string tenantId, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, RejectedIntercompanyDraftEvidenceDto rejectedDraft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:16](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L16) |  |
 | <code>Task RetryAsync(string tenantId, Guid proposalId, RetryIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs:19](../../../../src/Meridian.Storage/Ledger/IIntercompanyProposalStore.cs#L19) |  |
 
+## ILedgerBalanceSnapshotSource
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerBalanceSnapshotSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs:9](../../../../src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs#L9).
+
+Reads account balances from an authenticated immutable close checkpoint and the remaining journal population without materializing every historical journal.
+
+```csharp
+public interface ILedgerBalanceSnapshotSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyDictionary&lt;LedgerAccount, decimal&gt;&gt; ReadTrialBalanceAsOfAsync(Guid ledgerBookId, DateTimeOffset asOfUtc, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerBalanceSnapshotSource.cs#L11) |  |
+
 ## ILedgerBookControlPreflight
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerBookControlPreflight</code>. Kind: `interface`.
@@ -959,19 +977,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task SaveWashSaleDeferralsAsync(IReadOnlyList&lt;WashSaleDeferralRecord&gt; deferrals, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs:51](../../../../src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs#L51) | Retains the deferrals produced by one disposal. Idempotent per (WashSaleDeferralRecord.DisposalMutationBatchId, WashSaleDeferralRecord.ReplacementTaxLotRecordId) so a replayed batch cannot capitalize the same loss twice. |
 | <code>Task&lt;IReadOnlyList&lt;WashSaleDeferralRecord&gt;&gt; ListWashSaleDeferralsAsync(Guid ledgerBookId, DateOnly fromSaleDate, DateOnly toSaleDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs:56](../../../../src/Meridian.Storage/Ledger/WashSaleDeferralRecord.cs#L56) | Lists deferrals recorded against disposals in a book, ordered by sale date. |
-
-## LedgerAccountingPeriod
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountingPeriod</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:348](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L348).
-
-```csharp
-public sealed record LedgerAccountingPeriod(Guid PeriodId, Guid? LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, string Status, DateTimeOffset OpenedAt, DateTimeOffset? ClosedAt, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:362](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L362) | Actual command actor for this mutation; absent legacy attribution remains explicit. |

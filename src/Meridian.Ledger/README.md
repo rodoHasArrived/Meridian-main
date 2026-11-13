@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ledger
@@ -160,6 +160,13 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
 income-statement and balance-sheet rows with net-income and accounting-equation checks;
+`BuildIncomeStatementForPeriod` separately returns a `LedgerIncomeStatement` over
+`(PeriodStart, AsOf]`, scoped to the requested financial account and line dimensions. It excludes
+opening balances and pure retained-earnings closing transfers while retaining ordinary reversals
+and corrections. Its period revenue, expenses and result remain available after closing the books.
+Zero-result closes without a retained-earnings leg require retained period-close provenance and a
+balanced temporary-account scope; an ordinary P&L reclassification does not become a closing transfer.
+Existing point-in-time statements and `BuildForPeriod` keep their accumulated unclosed P&L contract.
 `BuildForPeriod` additionally derives a direct-method `LedgerCashFlowStatement` (operating /
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,

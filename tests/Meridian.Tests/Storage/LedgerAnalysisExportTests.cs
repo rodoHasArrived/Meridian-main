@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class LedgerAnalysisExportTests : IDisposable
+public sealed partial class LedgerAnalysisExportTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-ledger-export-" + Guid.NewGuid().ToString("N"));
     private static readonly DateTimeOffset Start = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);

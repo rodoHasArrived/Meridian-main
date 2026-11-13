@@ -6,6 +6,84 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ArchiveMaintenanceExecutionClaim
+
+Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceExecutionClaim</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:177](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L177).
+
+Durable outbox/lease state for a claimed schedule occurrence. The execution input snapshot is retained with the claim so later schedule edits cannot change work that was already accepted.
+
+```csharp
+public sealed class ArchiveMaintenanceExecutionClaim
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ExecutionId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:179](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L179) |  |
+| <code>public DateTimeOffset OccurrenceAt { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:180](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L180) |  |
+| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:181](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L181) |  |
+| <code>public bool ManualTrigger { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:182](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L182) |  |
+| <code>public string ScheduleName { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:183](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L183) |  |
+| <code>public MaintenanceTaskType TaskType { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:184](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L184) |  |
+| <code>public MaintenanceTaskOptions Options { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:185](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L185) |  |
+| <code>public List&lt;string&gt; TargetPaths { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:186](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L186) |  |
+| <code>public TimeSpan MaxDuration { get; init; } = TimeSpan.FromHours(2);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:187](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L187) |  |
+| <code>public ArchiveMaintenanceClaimState State { get; set; } = ArchiveMaintenanceClaimState.Pending;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:188](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L188) |  |
+| <code>public string? LeaseOwner { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:189](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L189) |  |
+| <code>public DateTimeOffset? LeaseExpiresAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:190](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L190) |  |
+| <code>public DateTimeOffset? RunningAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:191](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L191) |  |
+| <code>public string? LastError { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:192](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L192) |  |
+
+## ArchiveMaintenanceSchedule
+
+Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:10](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L10).
+
+Represents a scheduled archive maintenance configuration with cron-like scheduling. Supports health checks, cleanup, compression, tier migration, and repair operations.
+
+```csharp
+public sealed class ArchiveMaintenanceSchedule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long Revision { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:16](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L16) | Monotonic persisted revision used to reject stale full-schedule replacements. A zero value is retained as the legacy, revision-unaware compatibility sentinel. |
+| <code>public string ScheduleId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:21](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L21) | Unique identifier for this schedule. |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:26](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L26) | Human-readable name for the schedule. |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:31](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L31) | Description of what this schedule does. |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:36](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L36) | Whether this schedule is active. |
+| <code>public string CronExpression { get; set; } = &quot;0 3 * * *&quot;;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:44](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L44) | Cron expression for scheduling (five-field cron plus Meridian&#x27;s explicit d#n ordinal-day extension). Examples: &quot;0 3 * * *&quot; (daily at 3am), &quot;0 4 * * 0&quot; (weekly on Sunday at 4am), and &quot;0 1 * * 0#1&quot; (first Sunday of the month at 1am). |
+| <code>public string TimeZoneId { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:49](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L49) | Timezone for cron expression evaluation. |
+| <code>public MaintenanceTaskType TaskType { get; set; } = MaintenanceTaskType.HealthCheck;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:54](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L54) | Type of maintenance operation to perform. |
+| <code>public MaintenanceTaskOptions Options { get; set; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:59](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L59) | Configuration options for this maintenance task. |
+| <code>public List&lt;string&gt; TargetPaths { get; set; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:64](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L64) | Paths to include in maintenance. Empty = use configured storage root. |
+| <code>public MaintenancePriority Priority { get; set; } = MaintenancePriority.Normal;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:69](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L69) | Priority level for this maintenance task. |
+| <code>public TimeSpan MaxDuration { get; set; } = TimeSpan.FromHours(2);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:74](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L74) | Maximum duration for the maintenance operation before timeout. |
+| <code>public int MaxRetries { get; set; } = 2;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:79](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L79) | Number of retries if maintenance fails. |
+| <code>public bool NotifyOnCompletion { get; set; } = false;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:84](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L84) | Whether to send notifications on completion/failure. |
+| <code>public bool NotifyOnFailureOnly { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:89](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L89) | Whether to send notifications on failure only. |
+| <code>public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:94](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L94) | When the schedule was created. |
+| <code>public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:99](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L99) | When the schedule was last modified. |
+| <code>public DateTimeOffset? LastExecutedAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:104](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L104) | When the schedule last executed. |
+| <code>public DateTimeOffset? NextExecutionAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:109](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L109) | When the schedule is next scheduled to execute. |
+| <code>public string? LastExecutionId { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:114](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L114) | ID of the last execution for this schedule. |
+| <code>public MaintenanceExecutionStatus? LastExecutionStatus { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:119](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L119) | Status of the last execution. |
+| <code>public int ExecutionCount { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:124](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L124) | Total number of times this schedule has executed. |
+| <code>public int SuccessfulExecutions { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:129](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L129) | Number of successful executions. |
+| <code>public int FailedExecutions { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:134](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L134) | Number of failed executions. |
+| <code>public ArchiveMaintenanceExecutionClaim? PendingExecution { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:140](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L140) | Durable execution outbox entry for the one schedule occurrence that is currently awaiting publication, queued, running, or awaiting conservative recovery after an interrupted run. |
+| <code>public string? LastRepairReason { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:145](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L145) | Describes the last durable repair applied while loading this retained schedule. |
+| <code>public DateTimeOffset? LastRepairedAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:150](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L150) | When the last durable load-time repair was applied. |
+| <code>public List&lt;string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:155](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L155) | Tags for categorization and filtering. |
+| <code>[JsonIgnore] public TimeZoneInfo TimeZone =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:161](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L161) | Gets the timezone info for cron evaluation. |
+| <code>public DateTimeOffset? CalculateNextExecution(DateTimeOffset? from = null);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:166](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L166) | Calculate the next execution time based on the cron expression. |
+
 ## ArchiveMaintenanceScheduleConcurrencyException
 
 Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleConcurrencyException</code>. Kind: `class`.
@@ -1262,36 +1340,3 @@ Package validation, manifest reading, import/extraction, and utility methods.
 ```csharp
 public sealed partial class PortableDataPackager
 ```
-
-## PortableLedgerPayload
-
-Qualified name: <code>Meridian.Storage.Packaging.PortableLedgerPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:7](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L7).
-
-Serialized accounting evidence carried by the package transport. Storage treats its journal schema as opaque; a configured accounting adapter must validate it before publication or import.
-
-```csharp
-public sealed record PortableLedgerPayload(string Json, string BalanceChecksumSha256);
-```
-
-## SupplementaryFileInfo
-
-Qualified name: <code>Meridian.Storage.Packaging.SupplementaryFileInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:402](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L402).
-
-Information about supplementary files in the package.
-
-```csharp
-public sealed class SupplementaryFileInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:405](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L405) |  |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:408](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L408) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:411](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L411) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:414](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L414) |  |
