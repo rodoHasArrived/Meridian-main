@@ -1373,7 +1373,7 @@ function buildChainPreviewRow(
 ): CoveredCallChainPreviewRowViewModel {
   const strikeLabel = formatPrice(row.strike);
   const bidLabel = formatPrice(row.bid);
-  const deltaLabel = formatDecimal(row.delta, 2);
+  const deltaLabel = row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2);
   const statusLabel = row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Reject";
   const statusBadgeVariant: CoveredCallBadgeVariant = row.meetsAllFilters ? "success" : "outline";
   const rowBase = `${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`;
@@ -1386,7 +1386,7 @@ function buildChainPreviewRow(
     daysToExpirationLabel: formatCount(row.daysToExpiration),
     bidLabel,
     deltaLabel,
-    openInterestLabel: formatCount(row.openInterest),
+    openInterestLabel: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest),
     statusLabel,
     statusBadgeVariant,
     statusAriaLabel: row.meetsAllFilters
@@ -1423,10 +1423,13 @@ function buildChainPreviewDetail(
       { label: "Expiration", value: row.expiration },
       { label: "DTE", value: formatCount(row.daysToExpiration) },
       { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
-      { label: "Delta", value: formatDecimal(row.delta, 2) },
+      { label: "Delta", value: row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2) },
       { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatRatioAsPercent(row.impliedVolatility) },
-      { label: "Open interest", value: formatCount(row.openInterest) },
-      { label: "Volume", value: formatCount(row.volume) }
+      { label: "Open interest", value: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest) },
+      { label: "Volume", value: row.volumeAvailable === false ? "Unavailable" : formatCount(row.volume) },
+      { label: "Spread / midpoint", value: row.spreadFraction == null ? "Unavailable" : formatRatioAsPercent(row.spreadFraction) },
+      { label: "Quoted bid premium / unit", value: formatPrice(row.bid) },
+      { label: "Contract multiplier", value: row.multiplier == null ? "Unavailable" : formatCount(row.multiplier) }
     ],
     ariaLabel: `Selected covered-call candidate: ${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`
   };
@@ -1522,7 +1525,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   selectChainRow: (index: number) => void;
   startRun: () => Promise<void>;
   cancelRun: () => Promise<void>;
-  loadHistory: () => Promise<void>;
+  loadHistory: (signal?: AbortSignal) => Promise<void>;
   openRun: (runId: string) => Promise<void>;
   selectTradeRow: (index: number) => void;
   selectOpenPosition: (index: number) => void;
@@ -1586,6 +1589,10 @@ export function useCoveredCallScreenViewModel(
   const [pendingCancelRunId, setPendingCancelRunId] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
+    if (["underlyingSymbol", "from", "minStrike", "maxDelta", "minDte", "maxDte", "minOpenInterest", "minVolume", "maxSpreadPct"].includes(key)) {
+      chainAbortRef.current?.abort();
+      setChainPreview({ status: "idle", data: null, error: null, selectedIndex: 0 });
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
     setFormErrors((prev) => {
       if (!(key in prev)) return prev;
@@ -1596,6 +1603,8 @@ export function useCoveredCallScreenViewModel(
   }, []);
 
   const resetForm = useCallback(() => {
+    chainAbortRef.current?.abort();
+    setChainPreview({ status: "idle", data: null, error: null, selectedIndex: 0 });
     setForm(DEFAULT_COVERED_CALL_FORM);
     setFormErrors({});
     setPendingCancelRunId(null);
@@ -1644,9 +1653,9 @@ export function useCoveredCallScreenViewModel(
         maxSpreadPct: Number(form.maxSpreadPct)
       }, controller.signal);
 
-      setChainPreview({ status: "ready", data, error: null, selectedIndex: 0 });
+      if (!controller.signal.aborted) setChainPreview({ status: "ready", data, error: null, selectedIndex: 0 });
     } catch (error) {
-      if ((error as Error).name === "AbortError") return;
+      if (controller.signal.aborted || (error as Error).name === "AbortError") return;
       setChainPreview({
         status: "error",
         data: null,
@@ -1677,6 +1686,7 @@ export function useCoveredCallScreenViewModel(
       void refreshChainPreview();
     }, chainDebounceMs);
     return () => {
+      chainAbortRef.current?.abort();
       if (chainDebounceRef.current !== null) {
         clearTimeout(chainDebounceRef.current);
         chainDebounceRef.current = null;
@@ -1810,17 +1820,19 @@ export function useCoveredCallScreenViewModel(
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services, stopPolling]);
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async (signal?: AbortSignal) => {
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const items = await services.listRuns(50);
-      setHistory(items);
+      const items = await services.listRuns(50, signal);
+      if (!signal?.aborted) setHistory(items);
     } catch (error) {
-      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
+      if (!signal?.aborted) setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
-      setHistoryLoaded(true);
-      setHistoryLoading(false);
+      if (!signal?.aborted) {
+        setHistoryLoaded(true);
+        setHistoryLoading(false);
+      }
     }
   }, [services]);
 

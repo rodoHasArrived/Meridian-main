@@ -171,12 +171,25 @@ public static class BondSettlementConsideration
             issues.Add("Bond settlement must match the acquisition's retained face, factor, per-100 quote basis and settlement date.");
         try
         {
-            if (acquisition.Quantity * acquisition.UnitCost != receipt.CleanConsideration)
+            if (acquisition.BondIncome is { } income)
+            {
+                Meridian.Contracts.Accounting.Lots.BondIncomeCalculator.ValidateAcquisition(income,
+                    acquisition.Quantity * acquisition.UnitCost);
+                if (income.CleanConsideration != receipt.CleanConsideration
+                    || income.PurchasedAccruedInterest != receipt.PurchasedAccruedInterest
+                    || income.Fees.Sum(fee => fee.Amount) != receipt.Fees)
+                    issues.Add("Adopted bond-income acquisition cost, purchased interest and typed fees must match the verified settlement receipt.");
+            }
+            else if (acquisition.Quantity * acquisition.UnitCost != receipt.CleanConsideration)
                 issues.Add("Purchased accrued interest and fees must remain separate from clean acquisition lot cost.");
         }
         catch (OverflowException)
         {
             issues.Add("Bond acquisition consideration exceeds supported decimal bounds.");
+        }
+        catch (ArgumentException exception)
+        {
+            issues.Add(exception.Message);
         }
         if (evidence is not null && !evidence.Any(item => item.EvidenceId == receipt.SourceEvidenceId
                 && item.EffectiveDate == acquisition.AcquiredDate && RetainedEvidenceIdentityValidator.IsComplete(item)))

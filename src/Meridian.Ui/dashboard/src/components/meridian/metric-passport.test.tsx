@@ -28,6 +28,15 @@ describe("headline figure passports", () => {
     expect(validateMetricPassport(reference, packet()).proof?.status).toBe("ReviewRequired");
     expect(validateMetricPassport({ ...reference, amount: "100.000000000000000001" }, packet()).error).toContain("differs");
   });
+  it("states an undeclared basis in the opened passport", () => {
+    vi.mocked(apiGetJson).mockClear();
+    render(<MetricPassport metric={{ id: "orders", label: "Orders", value: "2", delta: "", tone: "default" }} />);
+    fireEvent.focus(screen.getByRole("button", { name: "Inspect Orders basis and evidence" }));
+    const dialog = screen.getByRole("dialog", { name: "Orders figure context" });
+    expect(dialog).toHaveTextContent("Basis not declared by source");
+    expect(dialog).not.toHaveTextContent("Basis unavailable");
+    expect(apiGetJson).not.toHaveBeenCalled();
+  });
   it("dismisses hover-only context with Escape without moving focus", () => {
     render(<MetricPassport metric={{ id: "cash", label: "Cash", value: "$100", delta: "", tone: "default" }} />);
     fireEvent.mouseEnter(screen.getByRole("button", { name: "Inspect Cash basis and evidence" }).parentElement!);

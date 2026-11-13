@@ -66,27 +66,13 @@ Run the relevant documentation script locally and review the diff before committ
 `documentation.yml` workflow verifies the same tracked refresh path in CI, but local runs are still
 the best place to inspect generated changes before they reach a pull request.
 
-## README Tree Sync
+## Repository Tree
 
-The repository uses the GitHub Marketplace action [`RavelloH/readme-tree`](https://github.com/RavelloH/readme-tree) to keep embedded repository trees current in contributor-facing and AI-facing markdown files.
-
-### Managed Markdown Files
-
-- `README.md`
-- `docs/ai/README.md`
-- `docs/ai/claude/CLAUDE.structure.md`
-
-### Marker Format
-
-Add the following markers anywhere a generated tree should appear:
-
-```md
-<!-- readme-tree start -->
-<!-- readme-tree end -->
-```
-
-When the tree sync tool is run, it refreshes the content between those markers. Review generated
-changes before committing them.
+The full repository tree is generated into
+[`docs/generated/repository-structure.md`](../generated/repository-structure.md) by the maintained
+documentation generation (`make gen-structure` or `run-maintained-generation.py --docs-only`). No
+workflow runs the retired `RavelloH/readme-tree` action; the `<!-- readme-tree -->` markers left in
+`README.md` only wrap a pointer to the generated tree and must not be used to embed a second copy.
 
 ## Manual Dispatch Options
 

@@ -18,7 +18,7 @@ public interface ITradingOperatorReadinessProvider
 /// <summary>
 /// Adapts the shared W7 operator-readiness projection into the execution-layer live order gate.
 /// </summary>
-public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessGate
+public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessGate, ILiveOrderReadinessPreview
 {
     private readonly ITradingOperatorReadinessProvider _readinessProvider;
     private readonly ILogger<TradingOperatorLiveOrderReadinessGate> _logger;
@@ -46,6 +46,16 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
         }
 
         var readiness = await _readinessProvider.GetAsync(request.FundAccountId.Value, ct).ConfigureAwait(false);
+        return EvaluateSnapshot(request, readiness);
+    }
+
+    public LiveOrderReadinessDecision? Observe(LiveOrderReadinessRequest request) =>
+        request.FundAccountId is { } account && _readinessProvider is TradingOperatorReadinessService source
+            && source.Observe(account) is { } snapshot ? EvaluateSnapshot(request, snapshot) : null;
+
+    private static LiveOrderReadinessDecision EvaluateSnapshot(LiveOrderReadinessRequest request, TradingOperatorReadinessDto readiness)
+    {
+        var requestedRunId = TextPrimitives.NormalizeOptional(request.RunId);
         var promotion = readiness.Promotion;
         var targetRunId = TextPrimitives.NormalizeOptional(promotion?.TargetRunId);
 
@@ -75,11 +85,6 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
         }
 
         var evidenceReference = $"live-readiness:{promotion.AuditReference};snapshot:{readiness.SnapshotVersion}";
-        _logger.LogInformation(
-            "Approved live order readiness for run {RunId} using evidence {EvidenceReference}.",
-            request.RunId,
-            evidenceReference);
-
         return LiveOrderReadinessDecision.Approved(evidenceReference);
     }
 

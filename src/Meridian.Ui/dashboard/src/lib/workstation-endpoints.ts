@@ -1,3 +1,5 @@
+import type { LedgerDimensionQueryOptions, LedgerJournalQueryOptions, LedgerTrialBalanceQueryOptions } from "./ledger-query-options";
+export type { LedgerDimensionQueryOptions, LedgerJournalQueryOptions, LedgerTrialBalanceQueryOptions } from "./ledger-query-options";
 import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 export const WORKSTATION_API_ENDPOINTS = {
@@ -1119,31 +1121,6 @@ export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options:
   return `${WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit}${queryString(options)}`;
 }
 
-export interface LedgerDimensionQueryOptions {
-  fundId?: string;
-  entityId?: string;
-  sleeveId?: string;
-  strategyId?: string;
-  portfolioId?: string;
-  accountId?: string;
-  investorId?: string;
-  capitalAccountId?: string;
-  instrumentId?: string;
-  taxLotId?: string;
-  costCenterId?: string;
-  counterpartyId?: string;
-  externalGlDimensions?: Record<string, string | null | undefined>;
-}
-
-export interface LedgerJournalQueryOptions extends LedgerDimensionQueryOptions {
-  from?: string;
-  to?: string;
-}
-
-export interface LedgerTrialBalanceQueryOptions extends LedgerDimensionQueryOptions {
-  accountType?: string;
-}
-
 function ledgerDimensionQueryParams(options: LedgerDimensionQueryOptions): Record<string, string | undefined> {
   const params: Record<string, string | undefined> = {
     fundId: options.fundId,
@@ -1175,10 +1152,15 @@ export function workstationRunLedgerEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.RunsLedger, "runId", runId);
 }
 
+export function workstationRunLedgerExportEndpoint(runId: string, format: string = "Csv", asOf?: string): string {
+  return `${routeWithParam(UI_API_ROUTES.RunsLedgerExport, "runId", runId)}${queryString({ format, asOf })}`;
+}
+
 export function workstationRunLedgerJournalEndpoint(runId: string, options: LedgerJournalQueryOptions = {}): string {
   return `${workstationRunLedgerEndpoint(runId)}/journal${queryString({
     from: options.from,
     to: options.to,
+    asOf: options.asOf,
     ...ledgerDimensionQueryParams(options)
   })}`;
 }
@@ -1427,6 +1409,7 @@ export function workstationRunLedgerTrialBalanceEndpoint(
     typeof accountTypeOrOptions === "string" ? { accountType: accountTypeOrOptions } : accountTypeOrOptions ?? {};
   return `${routeWithParam(UI_API_ROUTES.RunsLedgerTrialBalance, "runId", runId)}${queryString({
     accountType: options.accountType,
+    asOf: options.asOf,
     ...ledgerDimensionQueryParams(options)
   })}`;
 }

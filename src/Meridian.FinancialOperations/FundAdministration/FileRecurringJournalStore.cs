@@ -426,6 +426,26 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
             return Copy(record, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
         }
 
+        public async Task<RecurringOccurrenceRecord> PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default)
+        {
+            RequireUsable();
+            if (!Sha256Digest.IsCanonical(digest))
+                throw new InvalidOperationException("Calculated recurring evidence requires an exact canonical digest.");
+            var existing = _document.Occurrences.SingleOrDefault(item => item.OccurrenceKey == key)
+                ?? throw new InvalidOperationException("The recurring occurrence has not been claimed.");
+            if (existing.DraftEvidenceDigest is { } pinned)
+            {
+                if (!Sha256Digest.FixedEquals(pinned, digest))
+                    throw new InvalidOperationException("Calculated recurring evidence differs from its independently retained claim pin.");
+                return Copy(existing, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
+            }
+            if (existing.State == RecurringOccurrenceState.DefinitionChanged || existing.History.Any(item => item.State == RecurringOccurrenceState.Drafted))
+                throw new InvalidOperationException("An existing recurring draft cannot acquire a new calculated evidence pin; restore its trusted intake provenance.");
+            var next = existing with { DraftEvidenceDigest = digest };
+            await CommitAsync(_document with { Occurrences = _document.Occurrences.Select(item => item.OccurrenceKey == key ? next : item).ToArray() }, ct).ConfigureAwait(false);
+            return Copy(next, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
+        }
+
         public async Task<RecurringOccurrenceRecord> SetOutcomeAsync(string key, RecurringOccurrenceState state,
             string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default)
         {

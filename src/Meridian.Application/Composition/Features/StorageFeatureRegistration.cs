@@ -46,7 +46,7 @@ using Meridian.Entities.FundStructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Instruments.Commodities;
@@ -255,9 +255,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 () => sp.GetService<IInstrumentPositionProjectionStore>());
             services.AddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
                 () => sp.GetService<IConsolidationPostingAuthority>());
+            services.AddSingleton<Func<Meridian.Contracts.Accounting.Lots.IBondIncomeService?>>(sp =>
+                () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>());
+            services.AddSingleton<Func<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?>>(sp =>
+                () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>());
+            services.AddSingleton<Func<IIntercompanyAgreementPostingAuthority?>>(sp =>
+                () => sp.GetService<IIntercompanyAgreementPostingAuthority>());
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.TryAddSingleton<ILedgerSecurityEntitlementInventory>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
             services.AddSingleton(sp => new DurableAutomatedJournalPoster(
@@ -279,7 +287,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ILedgerBookService>(sp =>
                 new PostgresLedgerBookService(
                     sp.GetRequiredService<ILedgerJournalStore>(),
-                    sp.GetService<IOperatorInboxService>()));
+                    sp.GetService<IOperatorInboxService>(),
+                    sp.GetService<IConsolidationBookPolicyValidator>()));
         }
 
         // Analysis export service for data export operations
@@ -683,10 +692,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
                 return new TenantGuardedLocalFundStructureService(new InMemoryFundStructureService(
-                    fundAccountService, sharedDataAccessService, securityMasterQueryService, persistencePath),
+                    fundAccountService, sharedDataAccessService, securityMasterQueryService, persistencePath,
+                    sp.GetRequiredService<IEntityLifecycleStore>(), sp.GetRequiredService<IFundScopeTenantAccessor>()),
                     sp.GetRequiredService<LocalTenantMigrationGate>());
             });
         }
+        services.AddIntercompanyEntityServices(configuration);
         // ── Banking ──────────────────────────────────────────────────────────
         if (configuration.IsConfigured(BankingStartup.ConnectionStringVariable))
         {

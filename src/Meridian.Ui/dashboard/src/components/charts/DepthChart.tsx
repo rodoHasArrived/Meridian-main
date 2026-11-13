@@ -23,6 +23,8 @@ export interface DepthChartProps extends ChartA11yProps {
   sizeTicks?: number;
   /** @default 7 */
   priceTicks?: number;
+  /** Read-only displayed-depth coverage illustration; never an execution estimate. */
+  illustration?: { side: "Buy" | "Sell"; quantity: number; terminalPrice: number | null } | null;
 }
 
 const PLOT = "var(--chart-plot, #F8F7F3)";
@@ -41,6 +43,7 @@ export function DepthChart({
   sizeFmt = (s) => (s >= 1000 ? `${(s / 1000).toFixed(1)}k` : String(s)),
   sizeTicks = 4,
   priceTicks = 7,
+  illustration = null,
   ariaLabel = "Order-book depth chart",
   ariaDescription,
   accessibleData
@@ -128,6 +131,12 @@ export function DepthChart({
       {bidPath && <path d={bidPath} fill="none" stroke={UP} strokeWidth="1.6" />}
       {askPath && <path d={askPath} fill={DOWN} opacity="0.18" />}
       {askPath && <path d={askPath} fill="none" stroke={DOWN} strokeWidth="1.6" />}
+
+      {illustration && illustration.terminalPrice !== null ? <g role="group" aria-label={`${illustration.side} snapshot illustration boundary`}>
+        <rect x={Math.min(x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice), x(illustration.terminalPrice))} y={plotT} width={Math.max(2, Math.abs(x(illustration.terminalPrice) - x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice)))} height={plotB - plotT} fill="var(--interaction-selected, #496C8F)" opacity="0.12" />
+        <line x1={x(illustration.terminalPrice)} x2={x(illustration.terminalPrice)} y1={plotT} y2={plotB} stroke="var(--interaction-selected, #496C8F)" strokeWidth="2" strokeDasharray="3 3" />
+        <line x1={plotL} x2={plotR} y1={y(Math.min(illustration.quantity, maxDepth))} y2={y(Math.min(illustration.quantity, maxDepth))} stroke="var(--interaction-selected, #496C8F)" strokeDasharray="6 4" />
+      </g> : null}
 
       {/* mid / spread */}
       <line x1={x(midPrice)} x2={x(midPrice)} y1={plotT} y2={plotB} stroke={CROSSHAIR} strokeWidth="1.2" strokeDasharray="4 3" />

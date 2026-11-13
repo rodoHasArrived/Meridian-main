@@ -6,6 +6,8 @@ import { AccountClosePricesPanel } from "./accounting-screen.account-close-price
 import type { ClosePriceSet, CreateClosePriceSetRequest, OversightContext, OversightScope } from "@/types/account-oversight";
 
 const api = vi.hoisted(() => ({ list: vi.fn(), get: vi.fn(), create: vi.fn(), approve: vi.fn() }));
+const pricing = vi.hoisted(() => ({ get: vi.fn(), save: vi.fn() }));
+vi.mock("@/lib/api/pricing-hierarchy.api", () => ({ getPricingHierarchy: pricing.get, savePricingHierarchy: pricing.save }));
 vi.mock("@/lib/api/account-oversight.api", () => ({
   listClosePriceSets: api.list, getClosePriceSet: api.get,
   createClosePriceSet: api.create, approveClosePriceSet: api.approve
@@ -72,6 +74,20 @@ beforeEach(() => {
 });
 
 describe("AccountClosePricesPanel", () => {
+  it("exposes source maintenance beside the retained picker without changing its selected evidence", async () => {
+    api.list.mockResolvedValue([retained()]);
+    pricing.get.mockResolvedValue({ securityId, accountId: scope.accountId, asOf: `${date}T00:00:00Z`, updatedBy: "maintainer", entries: [{ priority: 1, sourceId: "custodian-price", sourceDisplayName: "Custodian", maxDaysStale: 1 }] });
+    render(<AccountClosePricesPanel scope={scope} context={context} />);
+    await screen.findByText("Retained version 1 · " + date);
+    fireEvent.click(screen.getByRole("button", { name: "Maintain pricing sources" }));
+    expect(screen.getByLabelText("Hierarchy security ID")).toHaveValue(securityId);
+    fireEvent.click(screen.getByRole("button", { name: "Load source hierarchy" }));
+    expect(await screen.findByLabelText("Source ID 1")).toHaveValue("custodian-price");
+    expect(pricing.get).toHaveBeenCalledWith(securityId, scope.accountId, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(screen.getByLabelText("Retained selected close prices")).toHaveTextContent("99.12345678901234567890123456");
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
   it("retains exact decimal observations and prevents the creator from approving their own set", async () => {
     api.list.mockResolvedValue([retained({ createdBy: "INDEPENDENT-REVIEWER" })]);
     render(<AccountClosePricesPanel scope={scope} context={context} />);

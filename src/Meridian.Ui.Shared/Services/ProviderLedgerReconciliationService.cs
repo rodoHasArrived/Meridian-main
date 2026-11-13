@@ -204,10 +204,9 @@ public sealed partial class ProviderLedgerReconciliationService
             catch (Exception ex)
             {
                 _logger.LogError(
-                    ex,
-                    "Provider-ledger reconciliation {OperationId} for account {AccountId} failed before terminal persistence",
-                    operationId,
-                    accountId);
+                    "Provider-ledger reconciliation {OperationHash} failed before terminal persistence ({FailureType})",
+                    Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(operationId),
+                    ex.GetType().Name);
                 var failed = BuildUnexpectedFailureDetail(
                     accountId,
                     activeIntent,
@@ -1522,9 +1521,8 @@ public sealed partial class ProviderLedgerReconciliationService
         catch (Exception ex)
         {
             _logger.LogWarning(
-                ex,
-                "Provider-ledger reconciliation authority verification failed for account {AccountId}",
-                accountId);
+                "Provider-ledger reconciliation authority verification failed ({FailureType})",
+                ex.GetType().Name);
             return ProviderLedgerAuthorityVerification.Failed(
                 "PROVIDER_RECONCILIATION_AUTHORITY_UNAVAILABLE",
                 "Provider-ledger reconciliation authority could not be verified.");

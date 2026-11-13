@@ -194,6 +194,8 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                 var retainedNextPeriod = (await database.JournalStore.GetPeriodAsync(nextPeriod))!;
                 var unverified = () => LedgerPeriodPostingGuard.Validate(inverseWrite, retainedNextPeriod);
                 unverified.Should().Throw<LedgerValidationException>().WithMessage("*retained opening*");
+                var journalsBeforeTampering = await database.JournalStore.GetByPeriodAsync(nextPeriod);
+                var auditBeforeTampering = await database.JournalStore.VerifyLedgerEventAuditAsync();
                 var wrongRootTags = new Dictionary<string, string>(inverseWrite.Entry.Metadata.Tags!)
                 { ["prior-period.sourceJournalEntryId"] = Guid.NewGuid().ToString("D") };
                 var wrongRoot = inverseWrite with
@@ -203,7 +205,9 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                     inverseWrite.Entry.Metadata with { Tags = wrongRootTags })
                 };
                 var appendWrongRoot = () => database.JournalStore.AppendAsync(wrongRoot);
-                await appendWrongRoot.Should().ThrowAsync<LedgerValidationException>().WithMessage("*root does not match*");
+                await appendWrongRoot.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Posting identity collision*");
+                var freshWrongRoot = () => database.JournalStore.AppendAsync(FreshPostingAttempt(wrongRoot));
+                await freshWrongRoot.Should().ThrowAsync<LedgerValidationException>().WithMessage("*root does not match*");
                 var changedEconomics = inverseWrite with
                 {
                     Entry = new JournalEntry(inverseWrite.Entry.JournalEntryId,
@@ -214,7 +218,9 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                     inverseWrite.Entry.Metadata)
                 };
                 var appendChangedEconomics = () => database.JournalStore.AppendAsync(changedEconomics);
-                await appendChangedEconomics.Should().ThrowAsync<LedgerValidationException>()
+                await appendChangedEconomics.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Posting identity collision*");
+                var freshChangedEconomics = () => database.JournalStore.AppendAsync(FreshPostingAttempt(changedEconomics));
+                await freshChangedEconomics.Should().ThrowAsync<LedgerValidationException>()
                     .WithMessage("*every immutable predecessor inverse leg*");
                 var wrongBasisWrite = inverseWrite with
                 {
@@ -227,7 +233,9 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                     }
                 };
                 var wrongBasis = () => database.JournalStore.AppendAsync(wrongBasisWrite);
-                await wrongBasis.Should().ThrowAsync<LedgerValidationException>().WithMessage("*root does not match*");
+                await wrongBasis.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Posting identity collision*");
+                var freshWrongBasis = () => database.JournalStore.AppendAsync(FreshPostingAttempt(wrongBasisWrite));
+                await freshWrongBasis.Should().ThrowAsync<LedgerValidationException>().WithMessage("*root does not match*");
                 var missingLineTags = new Dictionary<string, string>(inverseWrite.Entry.Metadata.Tags!);
                 var instrumentLine = inverseWrite.Entry.Lines.First(line => line.Account.Symbol is not null);
                 missingLineTags.Remove($"securityMaster.line.{instrumentLine.EntryId:D}.provenance");
@@ -238,7 +246,11 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                     inverseWrite.Entry.Metadata with { Tags = missingLineTags })
                 };
                 var appendMissingLine = () => database.JournalStore.AppendAsync(missingLine);
-                await appendMissingLine.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Each opening instrument line*");
+                await appendMissingLine.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Posting identity collision*");
+                var freshMissingLine = () => database.JournalStore.AppendAsync(FreshPostingAttempt(missingLine));
+                await freshMissingLine.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Each opening instrument line*");
+                (await database.JournalStore.GetByPeriodAsync(nextPeriod)).Should().BeEquivalentTo(journalsBeforeTampering);
+                (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBeforeTampering.ChainedEvents);
 
                 if (closeInitialPriorPeriod)
                     await CloseTargetAndLockAsync(postedInverse);

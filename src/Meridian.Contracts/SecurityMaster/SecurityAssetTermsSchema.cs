@@ -372,7 +372,8 @@ public static class SecurityAssetTermsSchema
                 // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
                 Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
                 Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3),
-                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4).ReadOnly()
+                Opt("cashFlowContract", SecurityAssetTermFieldType.Object).Since(4).ReadOnly(),
+                Opt("bondWorkflow", SecurityAssetTermFieldType.Object).Since(5)
             ],
             ["FxSpot"] =
             [
@@ -830,6 +831,20 @@ public static class SecurityAssetTermsSchema
             ],
             ["Swap.legs.scheduleConventions"] = ScheduleConventionFields,
             ["Bond.scheduleConventions"] = ScheduleConventionFields,
+            ["Bond.bondWorkflow"] =
+            [
+                OptOneOf("floatingMethod", "Simple", "CompoundedOvernight"),
+                Opt("fixingCalendarId", SecurityAssetTermFieldType.String),
+                Opt("lookbackBusinessDays", SecurityAssetTermFieldType.Integer),
+                OptOneOf("observationMethod", "LookbackWithoutShift", "ObservationShift"),
+                OptOneOf("observationWeighting", "ObservationPeriod", "InterestPeriod"),
+                Opt("lockoutBusinessDays", SecurityAssetTermFieldType.Integer),
+                Opt("lagMonths", SecurityAssetTermFieldType.Integer),
+                Opt("interpolateMonthly", SecurityAssetTermFieldType.Boolean),
+                Opt("couponFloorRatio", SecurityAssetTermFieldType.Decimal),
+                Opt("redemptionFloorRatio", SecurityAssetTermFieldType.Decimal),
+                Opt("exCouponBusinessDays", SecurityAssetTermFieldType.Integer)
+            ],
             ["CertificateOfDeposit.scheduleConventions"] = ScheduleConventionFields,
             ["StructuredCredit.scheduleConventions"] = ScheduleConventionFields,
             ["Bond.callSchedule"] = CallScheduleEntryFields,
@@ -847,6 +862,31 @@ public static class SecurityAssetTermsSchema
                 Opt("conversionPrice", SecurityAssetTermFieldType.Decimal),
                 Opt("conversionStartDate", SecurityAssetTermFieldType.Date),
                 Opt("conversionEndDate", SecurityAssetTermFieldType.Date)
+            ],
+            // The preferred terms a preferred or convertible-preferred equity carries (the F#
+            // PreferredTerms record). Requiredness is the decode's: a dividend type and a
+            // liquidation preference are required, participation is optional and a missing
+            // participation flag reads as false; the two vocabularies are the ones the decode accepts.
+            ["Equity.preferredTerms"] =
+            [
+                Opt("dividendRate", SecurityAssetTermFieldType.Decimal),
+                ReqOneOf("dividendType", "Fixed", "Floating", "Cumulative"),
+                Opt("redemptionPrice", SecurityAssetTermFieldType.Decimal),
+                Opt("redemptionDate", SecurityAssetTermFieldType.Date),
+                Opt("callableDate", SecurityAssetTermFieldType.Date),
+                Opt("participationTerms", SecurityAssetTermFieldType.Object),
+                Req("liquidationPreference", SecurityAssetTermFieldType.Object)
+            ],
+            ["Equity.preferredTerms.participationTerms"] =
+            [
+                Opt("participatesInCommonDividends", SecurityAssetTermFieldType.Boolean),
+                Opt("additionalDividendThreshold", SecurityAssetTermFieldType.Decimal)
+            ],
+            // A multiple is read only for a Senior preference.
+            ["Equity.preferredTerms.liquidationPreference"] =
+            [
+                ReqOneOf("kind", "Pari", "Senior", "Subordinated"),
+                Opt("multiple", SecurityAssetTermFieldType.Decimal)
             ]
         };
 

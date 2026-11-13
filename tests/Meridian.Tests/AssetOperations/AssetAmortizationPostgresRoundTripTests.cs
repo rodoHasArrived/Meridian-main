@@ -9,6 +9,7 @@ using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
@@ -78,6 +79,7 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
         const string rule = "canonical-amortization";
         const string assetPath = "assets/investments";
         const string incomePath = "income/amortization";
+        using var tenantAuthority = FundScopeTenantAuthority.Enter(tenant, "amortization-pipeline-financial-fixture");
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         // Posting timestamps use the live clock. Anchor coupon dates on the first of the
         // current month to keep a real open posting period and avoid day-31 schedule drift.
@@ -124,6 +126,7 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
         var ownerId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
         var lotId = Guid.NewGuid();
+        await provider.GetRequiredService<IFundProfileTenancyRegistry>().BindAsync(fund, tenant, company, ct);
         await journal.SaveLedgerBookAsync(new LedgerBookRecord(bookId, fund, ownerId, FundStructureNodeKindDto.Fund,
             "Canonical amortization GAAP book", "USD", now, now, AccountingBasis: AccountingBasisKindDto.Gaap,
             AccountingPolicyId: policy, AccountingPolicyVersion: "v1"), ct);
@@ -163,7 +166,7 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
             SchemaName = ledgerOptions.SchemaName,
             RequireGovernedPostingCommand = false,
             RequireExpectedVersion = true
-        });
+        }, tenantAccessor: new FixtureTenantAccessor());
         var lot = await historicalSeed.SaveTaxLotAsync(new LedgerTaxLotRecord(lotId, bookId, account, "amortization-owned-lot", acquired,
             100m, 100m, price, "USD", now, now, EvidenceRef: acquisitionEvidence.EvidenceId, Version: 1,
             SecurityId: securityId, BookPositionId: positionId, OriginalFace: 10_000m, BookedFactor: 1m, ParBasis: 100m,
@@ -510,7 +513,17 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
         new ConfigurationFeatureRegistration().Register(services, options);
         new StorageFeatureRegistration().Register(services, options);
         new LedgerFeatureRegistration().Register(services, options);
+        // This production-composed financial fixture retains tenant ownership and real
+        // Security Master/position/atomic guards. Onboarding controls are tested separately.
+        services.AddSingleton<IFundScopeTenantAccessor, FixtureTenantAccessor>();
+        services.AddSingleton<Func<IEnumerable<ILedgerPostingAuthority>>>(_ =>
+            () => LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities());
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+    }
+
+    private sealed class FixtureTenantAccessor : IFundScopeTenantAccessor
+    {
+        public string? ResolveCallerTenant() => FundScopeTenantAuthority.CurrentTenantId;
     }
 
     public void Dispose()

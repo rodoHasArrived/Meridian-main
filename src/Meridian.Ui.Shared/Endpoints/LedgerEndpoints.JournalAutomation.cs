@@ -408,17 +408,19 @@ public static partial class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await service.ApproveAndPostAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
+                var result = await service.ApproveAndPostAsync(new DailyValuationBatchLifecycleRequestDto(
+                    ScheduleId: request.ScheduleId,
+                    FundProfileId: request.FundProfileId,
+                    Actor: ResolveMutationActor(context, request.Actor),
+                    Notes: request.Notes,
+                    EvidenceLinks: request.EvidenceLinks,
                     // Derived alongside Actor and tenant scope. This batch approves and posts
                     // journal entries through a service that gates them on RequireHumanOperator, so
                     // an origin taken from the body would let a service credential satisfy the very
                     // control that exists to require a human (#2673).
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
+                    ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                    TenantId: tenantContext.TenantId,
+                    CompanyId: tenantContext.CompanyId), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (UnauthorizedAccessException)

@@ -19,7 +19,7 @@ public sealed partial class OrderManagementSystem
     /// <inheritdoc />
     public async Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default)
     {
-        using var operation = EnterOperation();
+        using var operation = _lifecycle.EnterOperation(allowCancellationAfterFailure: true);
 
         // The sweep deliberately ignores the caller's token from here on, and the parameter is kept
         // only so the interface reads the same as every other async member. A kill switch is owed

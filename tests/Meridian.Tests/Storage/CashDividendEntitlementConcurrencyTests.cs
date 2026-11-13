@@ -55,11 +55,14 @@ public sealed class CashDividendEntitlementConcurrencyTests
             { ApplicationName = application, Pooling = false }.ConnectionString,
             SchemaName = database.Options.SchemaName
         };
-        var ordinaryStore = new PostgresLedgerJournalStore(ordinaryOptions);
+        var ordinaryStore = new PostgresLedgerJournalStore(ordinaryOptions,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         await using var nativeConnection = new NpgsqlConnection(database.Options.ConnectionString);
         await nativeConnection.OpenAsync(ct);
         await using var nativeTransaction = await nativeConnection.BeginTransactionAsync(ct);
-        await database.JournalStore.LockCashDividendBookAsync(nativeConnection, nativeTransaction, book.LedgerBookId, ct);
+        // Isolate the actual-book entitlement barrier from the independent coupon-history
+        // relation gate, so this regression still proves advisory-before-period lock order.
+        await CashDividendEntitlementLock.AcquireAsync(nativeConnection, nativeTransaction, book.LedgerBookId, true, ct);
         var append = AppendOrdinaryAsync();
         var committedNative = false;
         try
@@ -129,6 +132,7 @@ public sealed class CashDividendEntitlementConcurrencyTests
             await using var connection = new NpgsqlConnection(ordinaryOptions.ConnectionString);
             await connection.OpenAsync(ct);
             await using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct);
+            await using var authority = await ordinaryStore.AcquirePostingAuthorityAsync(connection, transaction, [write], ct);
             await ordinaryStore.AppendAsync(connection, transaction, write, ct);
             await transaction.CommitAsync(ct);
         }

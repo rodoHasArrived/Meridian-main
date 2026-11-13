@@ -164,8 +164,11 @@ public sealed partial class LiveTradingEngineTests
         recorded!.EndedAt.Should().NotBeNull("stopping a run must record its terminal state");
         recorded.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
         recorded.Metrics.Should().NotBeNull("completed live runs must retain summary metrics for promotion evaluation");
-        recorded.Metrics!.Metrics.TotalTrades.Should().Be(1, "the buy-and-hold entry fill must be recorded");
+        recorded.Metrics!.Metrics.TotalTrades.Should().Be(0, "entry fills do not establish completed trade outcomes");
         recorded.Metrics.Fills.Should().ContainSingle(fill => fill.Symbol == "AAPL" && fill.FilledQuantity == 5);
+        double.IsNaN(recorded.Metrics.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(recorded.Metrics.Metrics.ProfitFactor).Should().BeTrue();
+        recorded.Metrics.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
     }
 
     [Fact]
@@ -400,7 +403,13 @@ public sealed partial class LiveTradingEngineTests
             "synchronous fills are processed inline on the sole event loop rather than written to its own full inbox");
         (await engine.StopRunAsync(run.RunId)).Should().BeTrue();
         var recorded = await ((IStrategyRepository)repository).GetRunByIdAsync(run.RunId);
-        recorded!.Metrics!.Metrics.TotalTrades.Should().Be(orderCount);
+        recorded!.Metrics!.Fills.Should().HaveCount(orderCount,
+            "every admitted synchronous fill must be retained before the run stops");
+        recorded.Metrics.Fills.Select(fill => fill.OrderId).Should().OnlyHaveUniqueItems();
+        recorded.Metrics.Metrics.TotalTrades.Should().Be(0, "entry fills do not establish completed trade outcomes");
+        double.IsNaN(recorded.Metrics.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(recorded.Metrics.Metrics.ProfitFactor).Should().BeTrue();
+        recorded.Metrics.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
     }
 
     [Fact]

@@ -8,6 +8,7 @@ namespace Meridian.Mcp.Services;
 public sealed class LedgerApiClient
 {
     private const string SessionCookieName = "mdc-session";
+    private const int MaximumResponseCharacters = 1_048_576;
     private readonly HttpClient client;
     private readonly LedgerApiCredentials? _credentials;
     private readonly CookieContainer _cookies = new();
@@ -20,10 +21,13 @@ public sealed class LedgerApiClient
         _credentials = credentials;
     }
 
-    public async Task<string> ReadAsync(string runId, string view, IReadOnlyDictionary<string, string?>? query, CancellationToken ct)
+    public async Task<string> ReadAsync(string runId, string view, IReadOnlyDictionary<string, string?>? query,
+        CancellationToken ct, int? maxResponseCharacters = null)
     {
         ValidateSegment(runId, nameof(runId));
-        if (view is not ("entries" or "accounts" or "trial-balance/as-of" or "running-balance") && !view.StartsWith("symbols/", StringComparison.Ordinal))
+        if (maxResponseCharacters is <= 0 or > MaximumResponseCharacters)
+            throw new ArgumentOutOfRangeException(nameof(maxResponseCharacters), "The response limit must be positive and cannot exceed the trial-balance tool's limit.");
+        if (view is not ("entries" or "accounts" or "trial-balance" or "trial-balance/as-of" or "running-balance") && !view.StartsWith("symbols/", StringComparison.Ordinal))
             throw new ArgumentException("Unsupported ledger view.", nameof(view));
         var path = $"api/workstation/runs/{Uri.EscapeDataString(runId)}/ledger/{view}";
         if (query is not null)
@@ -32,7 +36,7 @@ public sealed class LedgerApiClient
                 .Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value!)}");
             path += "?" + string.Join('&', pairs);
         }
-        return await SendReadAsync(path, ct).ConfigureAwait(false);
+        return await SendReadAsync(path, ct, maxResponseCharacters).ConfigureAwait(false);
     }
 
     public Task<string> ReadPeriodAsync(Guid periodId, string view, string? account, CancellationToken ct)
@@ -57,29 +61,54 @@ public sealed class LedgerApiClient
         return SendReadAsync(path, ct);
     }
 
-    private async Task<string> SendReadAsync(string path, CancellationToken ct)
+    private async Task<string> SendReadAsync(string path, CancellationToken ct, int? maxResponseCharacters = null)
     {
         var session = await EnsureSessionAsync(rejectedSession: null, ct).ConfigureAwait(false);
-        using var first = await SendSessionReadAsync(path, ct).ConfigureAwait(false);
-        if (first.StatusCode != HttpStatusCode.Unauthorized)
+        using (var first = await SendSessionReadAsync(path, maxResponseCharacters.HasValue, ct).ConfigureAwait(false))
         {
-            first.EnsureSuccessStatusCode();
-            return await first.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            if (first.StatusCode != HttpStatusCode.Unauthorized)
+            {
+                first.EnsureSuccessStatusCode();
+                return await ReadResponseAsync(first, maxResponseCharacters, ct).ConfigureAwait(false);
+            }
         }
 
         // A revoked/expired server session may be replaced once. Permission/scope refusals never
         // trigger another sign-in or a fallback identity, and concurrent reads reuse a renewed cookie.
         await EnsureSessionAsync(session, ct).ConfigureAwait(false);
-        using var renewed = await SendSessionReadAsync(path, ct).ConfigureAwait(false);
+        using var renewed = await SendSessionReadAsync(path, maxResponseCharacters.HasValue, ct).ConfigureAwait(false);
         renewed.EnsureSuccessStatusCode();
-        return await renewed.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        return await ReadResponseAsync(renewed, maxResponseCharacters, ct).ConfigureAwait(false);
     }
 
-    private async Task<HttpResponseMessage> SendSessionReadAsync(string path, CancellationToken ct)
+    private static async Task<string> ReadResponseAsync(HttpResponseMessage response, int? maxResponseCharacters, CancellationToken ct)
+    {
+        if (maxResponseCharacters is not { } limit)
+            return await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        if (response.Content.Headers.ContentLength > limit)
+            throw new InvalidDataException("The ledger response exceeds the MCP response size limit.");
+        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+        var buffer = new char[limit + 1];
+        var count = 0;
+        while (count < buffer.Length)
+        {
+            var read = await reader.ReadAsync(buffer.AsMemory(count), ct).ConfigureAwait(false);
+            if (read == 0)
+                break;
+            count += read;
+        }
+        if (count > limit)
+            throw new InvalidDataException("The ledger response exceeds the MCP response size limit.");
+        return new string(buffer, 0, count);
+    }
+
+    private async Task<HttpResponseMessage> SendSessionReadAsync(string path, bool boundedResponse, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
         request.Headers.Add("Cookie", _cookies.GetCookieHeader(client.BaseAddress!));
-        return await client.SendAsync(request, ct).ConfigureAwait(false);
+        return await client.SendAsync(request, boundedResponse ? HttpCompletionOption.ResponseHeadersRead
+            : HttpCompletionOption.ResponseContentRead, ct).ConfigureAwait(false);
     }
 
     private async Task<string> EnsureSessionAsync(string? rejectedSession, CancellationToken ct)

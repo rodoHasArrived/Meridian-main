@@ -136,7 +136,7 @@ incomplete; an empty journal never proves an empty source population.
 
 ## Close snapshots and subsequent corrections
 
-Migration `V_ledger_055__period_close_snapshots.sql` adds immutable close snapshots. Hard close
+Migration `V_ledger_068__period_close_snapshots.sql` adds immutable close snapshots. Hard close
 captures the ordered posted journal population and content hash in the same transaction as the
 period transition. History fences, the accounting audit chain and temporary-account balance
 checks remain in force. Retrieval verifies the stored hash and declared scope; reopened periods

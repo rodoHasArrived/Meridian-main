@@ -264,6 +264,9 @@ public static class SecurityAssetTermsFieldEditValidator
             if (!ContainerMembersMatchSchema(assetClass, field.Key, field, replacement.RootElement,
                     SecurityVersionedTerms.IsVersionedContainer(field), out error))
                 return false;
+            if (SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure && field.Key == "bondWorkflow"
+                && !Meridian.Contracts.FixedIncome.BondWorkflowTermsRules.TryValidate(replacement.RootElement, out error))
+                return false;
         }
 
         canonicalFieldPath = BuildCanonicalPath(field.Key, nestedPath);

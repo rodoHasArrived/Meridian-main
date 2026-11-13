@@ -465,6 +465,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AutomatedJournalApproval&gt; PostAsync(AutomatedJournalApproval approval, AutomatedJournalPostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ledger/AutomatedJournalPostingTarget.cs:8](../../../../src/Meridian.Ledger/AutomatedJournalPostingTarget.cs#L8) |  |
 
+## IChartOfAccounts
+
+Qualified name: <code>Meridian.Ledger.IChartOfAccounts</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ledger/IChartOfAccounts.cs:4](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L4).
+
+Resolves registered posting roles without inferring an account&#x27;s type from its name or number.
+
+```csharp
+public interface IChartOfAccounts
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:7](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L7) | Returns registered name and type metadata without authorizing a scoped posting. |
+| <code>LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:9](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L9) |  |
+
 ## IDepreciationScheduleCalculator
 
 Qualified name: <code>Meridian.Ledger.IDepreciationScheduleCalculator</code>. Kind: `interface`.
@@ -998,22 +1017,3 @@ One retained source event and the exact originating journal purposes required by
 ```csharp
 public sealed record LedgerAccountingExpectation(LedgerAccountingScope Scope, LedgerAccountingSourceKind SourceKind, string SourceId, IReadOnlyList<string> RequiredPostingKeys);
 ```
-
-## LedgerAccountingJournalObservation
-
-Qualified name: <code>Meridian.Ledger.LedgerAccountingJournalObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:34](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L34).
-
-An authoritative retained journal and its source attribution. The adapter must supply the exact store scope and policy purpose; it must not infer either from a matching amount. A missing source identity is retained as a completeness break rather than silently dropping the journal.
-
-```csharp
-public sealed record LedgerAccountingJournalObservation(JournalEntry Entry, LedgerAccountingScope Scope, LedgerAccountingSourceKind SourceKind, string? SourceId, string PostingKey)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerAccountingJournalObservation FromFill(JournalEntry entry, LedgerAccountingScope scope, string postingKey) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:42](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L42) | Reads existing fill provenance without manufacturing a fill identity. |
-| <code>public static LedgerAccountingJournalObservation FromSourceEvent(JournalEntry entry, LedgerAccountingScope scope, LedgerAccountingSourceKind kind, string postingKey);</code> | [src/Meridian.Ledger/LedgerAccountingCompleteness.cs:50](../../../../src/Meridian.Ledger/LedgerAccountingCompleteness.cs#L50) | Reads the retained source-event tag used by loan and asset adapters. |

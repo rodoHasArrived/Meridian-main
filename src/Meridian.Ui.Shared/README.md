@@ -6,10 +6,142 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui.Shared
+
+
+The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
+entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
+and returns exact decimal strings. Curve definition/history/publication and curve valuation retain
+their existing Security Master permission boundaries and also serialize financial decimals exactly.
+Yield analysis accepts an exact retained terms version; curve inputs belong to DCF valuation.
+
+Accrual-schedule adapters expose the recurring store/planner/runner through scoped definition,
+preview, configuration and due-occurrence actions. Reviewed fund-account scope is carried into
+period/subject authority and journal dimensions for account-owned and sleeve-owned books.
+Canonical amortization adapters resolve the lot,
+acquisition policy, retained reference evidence, current book/period and versions before calculating
+an occurrence and its schedule. Reviewed fingerprint checks precede immutable asset journal draft
+intake. Draft creation retains the exact reviewed occurrence lineage on the authoritative position
+without changing acquisition history or posting economics, and preserves its full dimensions;
+journal validation, independent approval and atomic posting retain their authority. No
+preview alone grants journal or lot mutation authority.
+This browser amortization handoff supports matching acquisition/functional currencies at unit
+acquisition FX. Other lots are refused before calculation or source retention because the current
+governed journal handoff cannot preserve their transaction-currency posting evidence.
+
+Provider-backed bond discovery requires tenant scope and Security Master read permission, uses
+Alpaca's fixed-income filter and authoritative error propagation, and exposes modification permission
+separately for candidate staging. The browser stages the reviewed identity through the existing
+retained asset-information upload; discovery never supplies approved economic terms. Tests use
+synthetic fixtures; live provider behavior remains untested.
+Visualization services are registered through the existing workstation composition and endpoint
+map. Private-capital observation and broker-assessment imports use dedicated permissions and
+authenticated tenant/company plus entity/account checks. The former verifies retained source
+document bytes and stores immutable register/snapshot/import records; the latter retains the
+original report and its exact basket/account identity. Neither enters issuer-side call capacity,
+reserves trading collateral or submits an order. Corporate-action calendar reads use a date-range
+query before paging, while deadline capture reuses the case evidence/version/idempotency path.
+Operator source-entry and recovery procedures are in `docs/operators/financial-visualizations.md`.
+
+`BondWorkflowConnectionReadinessService` joins exact tenant-owned connections, credential status
+and applicable input-specific entitlements. It reports identifier, terms, holdings, quote, fixing,
+inflation, factor, rating, curve and execution coverage separately. Connection verification never
+promotes a workflow to `LiveVerified`; deterministic imports and live provider evidence remain
+distinct. Brokerage position projections preserve accrued interest and cost-derived mark labels.
+New balance snapshots use `brokerage-sync:<provider>:disjoint-components-v2` and separate known
+signed accruals in the balance currency from securities, preserving the provider equity total.
+Unknown accrual allocation stays in the full remainder. The explicit source version preserves
+legacy snapshot performance arithmetic without rewriting retained snapshots or raw positions.
+
+The shared bond account endpoints bind account-owned book/tenant/company scope, retain plans and
+comparisons, project collection exceptions into governed casework, and keep preview/preparation apart
+from posting. Performance imports read exact accepted vault documents; current cash/FX authority is
+reverified before consumption. See [routes, typed source JSON and book policy](../../docs/operators/bond-workflows.md).
+Lifecycle close-lock replay derives its action from the matched retained transition and rechecks
+the authoritative hard-closed period. Evidence-index warnings retain operation and failure type,
+without raw scoped paths or parser exceptions. Explorer dimension filters include the retained
+intercompany agreement GUID.
+
+`BondProviderIntakeService` connects operator-triggered bond ISIN/CUSIP discovery to OpenFIGI without
+resolving ambiguous candidates, and typed FRED intake to the retained market-input service. Exact
+independently reviewed provider-trust binding bytes supply the series/index/unit mapping; source
+review is rechecked after fetching. The service archives and reopens exact provider-response JSON
+through a tenant/company-scoped content-addressed store. API responses keep the separate
+`LiveUntested` evidence status.
+
+Run ledger summary, journal and trial-balance endpoints accept an inclusive `asOf` economic
+timestamp after the existing tenant/company run-access guard. The accounting-package download
+endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow; lot reports
+require an exact retained valuation cut. Its availability table distinguishes absent lot evidence
+from measured empty schedules. Temporary export files are removed after ZIP construction. The
+paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+Daily valuation carrying-value reads use the durable store's as-of trial-balance capability,
+which can combine an immutable period-close checkpoint with subsequent journal activity.
+Compatibility stores retain journal hydration. Both paths preserve entity scope and distinguish
+an absent securities account from a retained account whose balance is zero; integrity failures
+are propagated before a valuation draft is prepared.
+
+Fund workspace research-ledger reads hydrate archived journal details only after the fund and
+selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.
+A configured durable journal store remains authoritative, including when its book is empty.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Consolidation transition routes retain a server preview for independent reopening/review and an
+exact-fingerprint activation receipt. They check both books' current tenant/company ownership;
+workstation clients cannot supply preparer identity or silently replace the reporting path.
+
+Entity timelines, intercompany agreements, role bindings, legacy attribution and counterpart
+proposal delivery share host read models and existing journal review APIs. Consolidation projects
+server-authoritative gross/proposed/posted/actual/preview values and separate FX/rounding evidence.
+Browser and WPF consume the same seams; destination permissions remain authoritative.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
+
+Entity lifecycle revisions, book-control preflight/activation, and controlled-close authorization
+use shared endpoints in `LedgerEndpoints.EntityControls.cs`. The manual journal workbench
+authorizes only an exact approved draft with retained obligation evidence and a reviewer other
+than its preparer. Posting retains the authorization identity and rechecks its economic hash at
+the ledger boundary, so browser and WPF clients consume the same policy.
+
+Financial Record Explorer agreement ID and version filters compare the bound `Agreement` and
+`Agreement version` detail fields exactly, including saved-view dimension filters. Version `1`
+does not admit version `10`, and unrelated evidence text cannot supply a missing agreement identity.
+The shared reader exposes both agreement dimensions in its filter choices.
+
+All ten storage handlers that require `StorageOptions` resolve them explicitly from the request's
+server service scope; missing registration fails before filesystem access. Request bodies cannot
+supply the storage root, and tier migration rejects a source outside that configured root.
+Financial posting adapters construct trusted
+commands with server-derived actor, scope and origin while retaining reviewed evidence. Undefined
+origin values downgrade to nonhuman authority and cannot post a reviewed human candidate.
+Manual journal lifecycle requests are constructed with all fifteen contract fields, replacing actor,
+tenant/company, report principals and origin with server-resolved authority. The action resolver
+admits eight defined actions: Validate requires ledger read permission, while Submit, Approve,
+Reject, Post, Reverse, Rebook and LockAfterClose require certification permission. Undefined actions
+are refused before service invocation; the supplied actor remains a separate audit assertion.
+The combined storage and posting-authority regression slice passed 136 of 136 cases with zero
+skips, including all 25 new lifecycle cases and all 37 storage endpoint and migration cases.
+Unavailable fund-registry diagnostics retain the failure type without fund identities or exception
+payloads; tenant lookup and downstream authorization retain their existing responsibilities.
+The legacy reporting query context exposes its conversion to the Reporting-owned contract so
+the host facade can use the leaf read-model assembly without duplicating scope mappings.
+
+Large workspace implementations have explicit responsibility seams: `FundReportArtifactRenderer`
+owns deterministic branding and JSON/CSV/XLSX/HTML/PDF rendering, while
+`FundOperationsWorkspaceReadService` retains scope, authoritative reads and governed report
+coordination. `ReportingScheduleStore.cs` owns schedule persistence and compatibility adapters;
+`ReportingScheduleService` owns execution orchestration. Workstation route registration is split
+into operations-continuity, reconciliation and Security Master read modules, retaining the same
+route order, tenant-scoped group and per-route authorization. These seams preserve public contracts
+and do not create another source of financial or workflow authority.
 
 `SecurityMasterEndpoints.CashDividendAttestation` exposes the bounded, default-off regular USD
 dividend-declaration workspace. Commands derive the case, tenant/company, actor and capabilities
@@ -27,7 +159,8 @@ tenant/company scope and access to every legal entity disclosed in the retained 
 service binds independent review to frozen terms and accepted, byte-verified Evidence Vault artifacts.
 Missing PostgreSQL registry authority returns unavailable rather than substituting a local store.
 The source-line drill-through additionally requires ledger-report authority and an owned entity book;
-it shows exact posted provenance and advisory coverage without changing consolidation matching.
+it shows exact posted legal provenance. Separate accounting-profile and role controls govern
+counterpart draft delivery and versioned consolidation matching.
 `MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED=true` exposes reference-authoring capability only
 when posting authority is registered; validators remain mandatory regardless of this rollout switch.
 
@@ -159,8 +292,10 @@ dimensions and currency JSON using source-generated contexts. Decimal amounts ar
 text in Parquet as well as CSV, retaining precision across external readers. CSV text uses the shared
 spreadsheet formula guard. These downloads do not submit entries to any external GL provider.
 
-Recurring fixed-income accrual explicitly admits Bond and StructuredCredit calculated fixed-rate
-schedules. Versioned interest segments retain the principal and factor that earned each coupon
+Recurring fixed-income accrual admission follows the catalog's `SupportsRecurringFixedIncomeAccrual`
+capability, currently Bond and StructuredCredit calculated fixed-rate schedules. A `FactorAmortizing`
+descriptor requires retained interest segments even when its current factor is one.
+Versioned interest segments retain the principal and factor that earned each coupon
 portion. The scoped ledger history read supplies daily `FaceValueLot` holdings from the coupon
 start, including closing disposals and the last interest day before a full principal paydown.
 The bridge applies each lot's open share and factor once; cumulative coupon rounding ties across
@@ -169,6 +304,8 @@ block the calculation. The result is an approval draft, with principal cash move
 The typed calculation captures a retained v5 receipt using the selected security version and
 passes that same projection to the bridge without another source read. Its receipt hash and model
 survive in the draft's structured recurring source evidence and evidence links across restart.
+Review and posting compare those exact bytes with the occurrence's independently retained digest;
+changing a receipt and recomputing only the draft digest cannot authorize it.
 External, floating and declared-schedule posting gates remain. Catalog admission does not resolve
 a missing rate unit: an undeclared non-zero Bond coupon still blocks, and a declared schedule
 remains outside posting until its existing evidence-retention and journal-identity gates are met.
@@ -1044,6 +1181,14 @@ This module owns cross-surface operator-facing projection types and shared endpo
 compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and
 `src/Meridian.Wpf`.
 
+Leaf reporting comparisons, access-policy evaluation, journal disposal-tax reads, partners-capital
+reads, retained ledger-population replay, and amount binding compile in
+[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md), whose project now
+owns their source files. Their public namespaces remain stable, and Ui.Shared forwards their public
+identities.
+That assembly depends only on Contracts, Ledger, Reporting, and Storage.Accounting; it can build
+without endpoint or workstation orchestration. The larger cross-domain workflows remain here.
+
 ## Key folders and files
 
 - `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while
@@ -1088,6 +1233,16 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
+
+### Account-scoped execution workflows
+
+The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
+`GET /api/config` requires configuration-read permission and masks every configured backfill
+provider credential in a cloned response projection. Persisted credentials remain unchanged.
+Connection services use the injected `IHttpClientFactory` for credential verification and OAuth
+exchanges; manually constructed instances can inspect local status without a factory, but cannot
+silently create an unconfigured network client.
 
 The seeded development launcher identifies its host through the `/readyz`
 `x-meridian-dev-session` response header. `StatusEndpoints` captures `MERIDIAN_DEV_SESSION`
@@ -1275,6 +1430,8 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+When source ledger dimensions carry `IntercompanyAgreementId`, the explorer exposes an `Agreement`
+filter with the same D-format UUID shown in record detail.
 Personal explorer views apply only after tenant/operator ownership is resolved; unknown or another
 operator's view ID yields no records. Their normalized search/filter values reach the shared
 read service without an unresolved personal ID, while the response retains that view's active marker.
@@ -1317,7 +1474,7 @@ case in one transaction and applying to part of the affected set is not atomic.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, position, tax-lot, cost-center,
-counterparty, and external-GL context without re-inferring accounting scope from display text. The
+counterparty, intercompany-agreement, and external-GL context without re-inferring accounting scope from display text. The
 shared ledger report endpoints also canonicalize dimension query filters, returned row dimensions,
 matching, and report signatures before browser or WPF clients render or certify scoped reports. The
 shared Financial Record Explorer route also accepts server-applied `viewId`, `searchText`, and
@@ -3483,6 +3640,114 @@ ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their pr
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
 registered and it never writes; applying a proposal is a governed amendment.
 
+## Analytical read-model evidence
+
+The browser analytical views consume additive shared contracts; WPF is not modified by this slice.
+
+- Audit search accepts exact `orderId`/reported client or broker aliases and exposes per-source
+  availability and a coverage note. Individual fill reports come from retained session FillHistory,
+  with canonical report identities and an explicit timestamp/quantity basis. Search limits and
+  recording-time audit entries cannot establish a complete order lifecycle.
+- Covered-call preview preserves delta/open-interest/volume availability through provider conversion,
+  filtering and DTO mapping. Unknown delta is rejected instead of accepted as zero. Captured filters,
+  requested/loaded expiries and snapshot times describe the bounded current snapshot; preview status
+  does not establish full strategy eligibility or historical-chain evidence.
+- Family overview accepts `asOf=YYYY-MM-DD` for legal structure only. Current financial populations
+  and their source dates remain independent; historical graph selection stays bound to the same family.
+
+### Retained private-capital lifecycle source
+
+`IPrivateCapitalLifecycleSource` is replaceable by a host integration. Its default file reader uses
+`<workstation-data>/family-office/private-capital-lifecycle.json`, with this versioned shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "snapshots": [{
+    "familyOfficeId": "configured-family-id",
+    "snapshotId": "immutable-source-snapshot-id",
+    "revision": 1,
+    "recordedAtUtc": "2026-05-29T12:00:00Z",
+    "commitment": {
+      "commitmentId": "source-vehicle-commitment-id",
+      "entityId": "configured-owning-entity-id",
+      "vehicleName": "Synthetic private vehicle",
+      "strategy": "PrivateEquity",
+      "currency": "USD",
+      "commitmentAmount": 1000000,
+      "calledAmount": 600000,
+      "unfundedAmount": 450000,
+      "distributedAmount": 100000,
+      "currentNav": 570000,
+      "vintageYear": 2024,
+      "sourceSystem": "retained-source",
+      "sourceDocumentId": "retained-source-document-id",
+      "asOfDate": "2026-05-29",
+      "valuationDate": "2026-03-31",
+      "evidenceCompleteness": "Complete",
+      "reconciliationStatus": "Reconciled",
+      "balancesAvailable": true,
+      "balanceStatus": "Settled"
+    }
+  }],
+  "activities": []
+}
+```
+
+An activity row is `{ "familyOfficeId": "...", "recordedAtUtc": "...Z", "activity": <CapitalActivityDto> }`.
+Activity IDs and source evidence must be retained, with matching entity/commitment/currency identity.
+Missing, null or blank activity commitment identities are refused as unavailable source evidence
+before any lookup; they never become an unhandled dictionary failure.
+The example above is synthetic and is not installed as financial data.
+
+Provisioners must atomically replace the document while retaining immutable prior revisions. There
+is no new ingestion, approval or financial mutation endpoint. A commitment ID cannot silently change
+entity or currency. The reader selects the latest eligible as-of/revision under the known-at read cut,
+rejects invalid/duplicate evidence, and excludes future records. Missing or invalid sources publish
+unavailable balances rather than manufacturing zero. `PrivateCapitalLifecycleRead.IsAvailable`
+explicitly carries missing, malformed and unreadable source state into household evidence and
+reconciliation assessment; empty result lists cannot imply complete evidence, and warning wording
+is not an authority signal. Genuine zero and signed NAV remain valid source
+facts. All five balances are required; exact decimal strings accompany chart positioning values for
+inspection. `sourceContentSha256` is computed through `Sha256Digest` over canonical source-context
+snapshot serialization, preserving this read contract's original 64-character uppercase hex
+encoding alongside snapshot ID, revision and recorded-at metadata. Authoritative unfunded is
+preserved independently of commitment minus called capital.
+Other currencies are not silently incorporated into base-currency household scalars.
+
+Current financial projection membership is separate from retained historical membership. For
+records belonging to an entity outside the current perimeter, the default reader obtains a
+date-specific historical entity set from the structure service through a cached read callback.
+That lookup remains bound to the same selected family identity and current caller/tenant
+authorization. Valid balances and activities for an entity that has since left the perimeter remain
+immutable in the source but are omitted from the current view. A source's family label cannot
+authorize an unknown or cross-family entity; unverifiable historical membership remains unavailable.
+
+### Actual corporate-action election cutoffs
+
+Retained provider-action JSON can carry the following companion, projected into both staged and
+durable case reads:
+
+```json
+{
+  "electionCalendar": {
+    "schemaVersion": 1,
+    "cutoffs": [{
+      "id": "custodian-instruction",
+      "label": "Custodian instruction cutoff",
+      "deadlineAt": "2026-11-10T23:30:00-05:00",
+      "source": "Custodian notice revision 2",
+      "evidenceReference": "document://notice/revision-2"
+    }]
+  }
+}
+```
+
+Cutoff identities must be unique and carry an explicit timestamp offset, source and trusted retained
+evidence reference. A malformed declared calendar is unavailable as a whole. An absent companion
+means MissingEvidence, while an explicitly empty valid calendar means no supplied cutoffs. Neither
+ex-date, offer expiry nor an operational case due date supplies election authority. No storage
+migration or inferred deadline is introduced.
 ## Security Master governance controls (2026-11)
 
 - **Stale field proposals.** The workbench publish route answers a `StaleFieldProposalException` with 409 `stale-field-proposal`, carrying the base and current versions. A successful publish carries `canonicalMerge`, which says whether the approved edit changed the golden record.
@@ -3530,6 +3795,10 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -3587,3 +3856,16 @@ readiness; mini and adjusted options retain their contractual multiplier. Each c
 its multiplier map so concurrent synchronization cannot mix observations. Raw snapshots and cash
 remain readable when a legacy position cannot safely be valued. Current implementation performs
 individual retained-history lookups; large-portfolio batching remains a performance follow-up.
+
+Brokerage activity sync accepts provider records through `ImportWithHistoryAsync` into the shared
+durable activity inbox before publication. Its `Current` snapshot supplies only the latest provider
+observation to the workstation projection, raw snapshot and status. The checksum-verified
+`Retained` union of immutable accepted records rebuilds downstream activity history after an
+interrupted projection write, including when the next current fetch is empty. Historical accepted
+rows are not relabeled as observations in that current provider window. The existing `ImportAsync`
+retained-history contract remains unchanged.
+Retained complete cursor watermarks resume with an inclusive timestamp reread; immutable activity-ID
+evidence prevents duplicates across retries and restart.
+Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
+retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
+rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.

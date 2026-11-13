@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolStorageItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L263).
+
+```csharp
+public sealed record SymbolStorageItem(string Symbol, string SizeText, string FileCountText, double PercentOfTotal, string DateRangeText);
+```
+
 ## SymbolStorageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageViewModel</code>. Kind: `class`.
@@ -265,13 +275,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ObservableCollection&lt;TickerItemViewModel&gt; Items { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L98) |  |
-| <code>public bool IsVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L100) |  |
-| <code>public TickerStripViewModel(WpfServices.MessagingService messagingService, SymbolManagementService symbolManagementService, WpfServices.ConfigService configService, IRemoteWorkstationClient remoteClient);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L106) |  |
-| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L127) | Starts polling. Call once after the strip window is shown. |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L136) | Stops polling. Call when the strip window is hidden or closed. |
-| <code>public void UpdateSymbol(string symbol, decimal bid, decimal ask, decimal last, bool uptick);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L146) | Applies a price update to the matching ticker item (or creates one if new). Must be called on the UI thread. |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L254) |  |
+| <code>public ObservableCollection&lt;TickerItemViewModel&gt; Items { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L99) |  |
+| <code>public bool IsVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L101) |  |
+| <code>public TickerStripViewModel(WpfServices.MessagingService messagingService, SymbolManagementService symbolManagementService, WpfServices.ConfigService configService, IRemoteWorkstationClient remoteClient);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L107) |  |
+| <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L128) | Starts polling. Call once after the strip window is shown. |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L137) | Stops polling. Call when the strip window is hidden or closed. |
+| <code>public void UpdateSymbol(string symbol, decimal bid, decimal ask, decimal last, bool uptick);</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L147) | Applies a price update to the matching ticker item (or creates one if new). Must be called on the UI thread. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs#L281) |  |
 
 ## TierDisplayItem
 
@@ -1303,28 +1313,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:30](../../../../src/Meridian.Wpf/Views/
 
 ```csharp
 public partial class ArchiveHealthPage : Page
-```
-
-## BackfillPage
-
-Qualified name: <code>Meridian.Wpf.Views.BackfillPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/BackfillPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/BackfillPage.xaml.cs#L17).
-
-Historical data backfill page with provider selection, date ranges, and scheduling. Wired to real BackfillApiService for live execution and progress tracking. Supports job resumability via BackfillCheckpointService. Timer management and service orchestration are delegated to BackfillViewModel.
-
-```csharp
-public partial class BackfillPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BackfillPage(WpfServices.WorkspaceService workspaceService, BackfillViewModel viewModel);</code> | [src/Meridian.Wpf/Views/BackfillPage.xaml.cs:22](../../../../src/Meridian.Wpf/Views/BackfillPage.xaml.cs#L22) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:20](../../../../src/Meridian.Wpf/Views/Pages.cs#L20).
-
-```csharp
-public partial class BackfillPage : Page
 ```

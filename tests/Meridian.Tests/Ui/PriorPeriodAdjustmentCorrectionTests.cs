@@ -48,16 +48,21 @@ public sealed class PriorPeriodAdjustmentCorrectionTests
     [Theory]
     [InlineData(JournalEntryLifecycleActionDto.Reverse)]
     [InlineData(JournalEntryLifecycleActionDto.Rebook)]
-    public async Task MappingChangeAfterValidation_IsRefusedBeforeAppendingCorrection(JournalEntryLifecycleActionDto action)
+    public async Task MappingChangeAfterApproval_IsCaughtByFreshAuthorityValidationBeforeAppendingCorrection(JournalEntryLifecycleActionDto action)
     {
         using var fixture = await Fixture.CreateAsync();
         var original = await fixture.PostPreparedAsync();
         var correction = (await fixture.CorrectAsync(original, action)).GeneratedJournalEntries.Single();
         var approved = await fixture.ApproveAsync(fixture.Workbench, correction, "reviewer");
-        fixture.ChangeMappingAtPostingMaterialization();
+        await fixture.ChangeCashMappingAsync();
+        var validated = await fixture.Workbench.ValidateDraftAsync(new(approved, "reviewer",
+            LedgerBookId: fixture.Book.LedgerBookId, TenantId: Fixture.Tenant, CompanyId: Fixture.Company));
+        validated.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.prior-period-authority-required"
+            && issue.Severity == AccountingConfigurationValidationSeverityDto.Critical
+            && issue.Message.Contains("original account mapping", StringComparison.Ordinal));
 
         var post = () => fixture.PostApprovedAsync(fixture.Workbench, approved, "reviewer");
-        await post.Should().ThrowAsync<InvalidOperationException>().WithMessage("*materialized correction inverse differs*");
+        await post.Should().ThrowAsync<InvalidOperationException>().WithMessage("*critical validation issues remain*");
         fixture.Journals.Should().HaveCount(2);
         var retained = await new FileManualJournalEntryDraftStore(fixture.DraftPath)
             .GetAsync(Fixture.Fund, correction.JournalEntryId, tenantId: Fixture.Tenant, companyId: Fixture.Company);
@@ -199,7 +204,6 @@ public sealed class PriorPeriodAdjustmentCorrectionTests
         private readonly Mock<ILedgerJournalStore> _store = new();
         private readonly IAccountingConfigurationService _configuration;
         private readonly IAccountingConfigurationService _postingConfiguration;
-        private int? _mappingReadCountdown;
         private readonly InMemoryAccountingActionAuditStore _audit = new();
         private readonly DurableLedgerPostingTarget _target;
         public LedgerBookRecord Book { get; } = new(Guid.NewGuid(), Fund, Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Synthetic USD book", "USD", At, At);
@@ -215,25 +219,7 @@ public sealed class PriorPeriodAdjustmentCorrectionTests
         {
             Directory.CreateDirectory(_directory);
             _configuration = configuration;
-            var postingConfiguration = new Mock<IAccountingConfigurationService>();
-            postingConfiguration.Setup(service => service.GetWorkspaceAsync(It.IsAny<string?>(), It.IsAny<Guid?>(),
-                It.IsAny<CancellationToken>(), It.IsAny<string?>(), It.IsAny<string?>()))
-                .Returns(async (string? fund, Guid? book, CancellationToken ct, string? tenant, string? company) =>
-                {
-                    var workspace = await configuration.GetWorkspaceAsync(fund, book, ct, tenant, company);
-                    if (_mappingReadCountdown.HasValue)
-                    {
-                        _mappingReadCountdown = _mappingReadCountdown.Value - 1;
-                        if (_mappingReadCountdown.Value <= 0)
-                            return workspace with
-                            {
-                                ChartOfAccounts = workspace.ChartOfAccounts.Select(account =>
-                                account.Path == "Assets:Cash" ? account with { AccountName = "Racing Cash" } : account).ToArray()
-                            };
-                    }
-                    return workspace;
-                });
-            _postingConfiguration = postingConfiguration.Object;
+            _postingConfiguration = configuration;
             ClosedPeriod = new(Guid.NewGuid(), Book.LedgerBookId, 2026, 5, "May", new(2026, 5, 1), new(2026, 5, 31), "HardClosed", At.AddDays(-30), At, 3);
             OpenPeriod = new(Guid.NewGuid(), Book.LedgerBookId, 2026, 6, "June", new(2026, 6, 1), new(2026, 6, 30), "Open", At, null, 1);
             var id = Guid.NewGuid();
@@ -280,9 +266,6 @@ public sealed class PriorPeriodAdjustmentCorrectionTests
             _store.Setup(store => store.GetPeriodAsync(OpenPeriod.PeriodId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => ++reads == 1 ? OpenPeriod with { Status = "HardClosed" } : OpenPeriod);
         }
-
-        // Post validates the draft, validates the inverse mapping, then loads the materialization chart.
-        public void ChangeMappingAtPostingMaterialization() => _mappingReadCountdown = 3;
 
         public Task<AccountingConfigurationWorkspaceDto> ChangeCashMappingAsync() => _configuration.UpsertChartNodeAsync(new(Fund,
             new("cash", "Assets:Cash", "Different Cash", "Asset"), "chart-controller",

@@ -76,6 +76,7 @@ public sealed partial class RecurringJournalCalculationTests
             JsonSerializer.SerializeToElement(new { }), terms, [], [], 1, Registered, null);
         var query = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
         query.Setup(value => value.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(security);
+        query.Setup(value => value.GetByIdAsOfAsync(SecurityId, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>())).ReturnsAsync(security);
         var source = new Mock<ISecurityMasterCashFlowStore>(MockBehavior.Strict);
         source.Setup(value => value.GetSourceAsync(SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(
             new SecurityCashFlowSourceDto(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
@@ -107,13 +108,17 @@ public sealed partial class RecurringJournalCalculationTests
         // Restart with an unavailable source. The existing approved-input draft remains the
         // authoritative calculation; retry must not replace its receipt or reload the terms.
         var unavailableFlows = new Mock<ISecurityMasterCashFlowService>(MockBehavior.Strict);
-        var restarted = await CreateFixtureAsync(cashFlows: unavailableFlows.Object, assetClass: "StructuredCredit");
+        var restarted = await CreateFixtureAsync(cashFlows: unavailableFlows.Object, assetClass: "StructuredCredit", securities: query.Object);
         await restarted.Runner.RunDueAsync(Due(JanuaryEnd).AddHours(1));
         var restored = (await restarted.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
         restored.RecurringJournalEvidenceJson.Should().Be(draft.RecurringJournalEvidenceJson);
         restored.RecurringJournalEvidenceDigest.Should().Be(draft.RecurringJournalEvidenceDigest);
         restored.EvidenceLinks.Should().Contain(retainedInput.Uri);
         RecurringJournalEvidenceGuard.Validate(restored).Should().BeNull();
+        await ReviewAndPostRetainedCalculationAsync(restarted, restored);
+        restarted.Posted.Should().ContainSingle();
+        var postedEvidence = restarted.Posted[0].Entry.Metadata.Tags![RecurringJournalEvidenceGuard.EvidenceTag];
+        postedEvidence.Should().Be(draft.RecurringJournalEvidenceJson);
         unavailableFlows.VerifyNoOtherCalls();
     }
 

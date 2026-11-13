@@ -13,8 +13,7 @@ namespace Meridian.Execution;
 /// <summary>
 /// Simulated execution gateway for paper trading. Orders are matched against observed
 /// market data under <see cref="PaperOrderMatchingPolicy"/>: market orders fill from the
-/// observed bid/ask/trade/bar in effect (callers may still supply a simulated mark via
-/// <see cref="OrderRequest.LimitPrice"/> on a market order, which becomes the observation),
+/// observed bid/ask/trade/bar in effect,
 /// limit orders fill only at or better than their limit price, stop orders trigger per the
 /// documented trade-preferred policy, and unmarketable limit/stop orders rest in this
 /// gateway and re-evaluate as new market data arrives — resting fills are delivered
@@ -183,14 +182,10 @@ public sealed class PaperTradingGateway :
         var orderId = request.ClientOrderId ?? $"PAPER-{fillSeq}";
         var gatewayOrderId = $"PAPER-{fillSeq}";
 
-        // Market-style orders evaluate immediately. Callers may set a simulated price via
-        // LimitPrice on a market order; it becomes the observation. Otherwise the observed
-        // live market data applies.
+        // Market orders use observed market data; a caller-supplied limit cannot set the fill price.
         if (request.Type is OrderType.Market)
         {
-            var observation = request.LimitPrice is { } callerPrice
-                ? PaperMarketObservation.FromCallerPrice(callerPrice)
-                : PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+            var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
 
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, OrderType.Market, limitPrice: null, stopPrice: null,

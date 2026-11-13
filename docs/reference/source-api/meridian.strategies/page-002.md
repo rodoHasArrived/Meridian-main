@@ -6,6 +6,141 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileReconciliationBreakQueueRepository
+
+Qualified name: <code>Meridian.Strategies.Services.FileReconciliationBreakQueueRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.ApprovalBoundary.cs:7](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.ApprovalBoundary.cs#L7).
+
+```csharp
+public sealed partial class FileReconciliationBreakQueueRepository
+```
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:162](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L162).
+
+```csharp
+public sealed partial class FileReconciliationBreakQueueRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReconciliationTaxonomySnapshot Taxonomy { get; } = new (Version : 1, RootCauses : RootCauseCodes.Select(code =&gt; new ReconciliationTaxonomyValue(code, code, 1, true)).ToArray(), ResolutionCodes : ResolutionCodes.Select(code =&gt; new ReconciliationTaxonomyValue(code, code, 1, true, ResolutionEvidencePrefixes.TryGetValue(code, out var prefixes)? prefixes : null)).ToArray());</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:1260](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L1260) |  |
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:8](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L8).
+
+```csharp
+public sealed partial class FileReconciliationBreakQueueRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReconciliationCloseScopeLease&gt; AcquireCloseScopeLeaseAsync(ReconciliationCloseScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:10](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L10) |  |
+| <code>public async Task&lt;ReconciliationCloseScopeCheckpoint&gt; RecoverHardClosedScopeCheckpointAsync(ReconciliationCloseScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:124](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L124) |  |
+| <code>public async Task&lt;ReconciliationCloseScopeReopenReceipt&gt; ReopenCloseScopeAsync(ReconciliationCloseScope scope, ReconciliationCloseScopeReopenCommand command, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:179](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L179) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCloseScopeHistoryEntry&gt;&gt; ListCloseScopeHistoryAsync(ReconciliationCloseScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:280](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L280) |  |
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:14](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L14).
+
+Persists reconciliation break casework, source lineage, and close-scope coordination in integrity-checked files.
+
+```csharp
+public sealed partial class FileReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository, IReconciliationBreakQueueAuthorityProbe
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileReconciliationBreakQueueRepository(string dataDirectory, ILogger&lt;FileReconciliationBreakQueueRepository&gt; logger, IReconciliationSlaPolicyProvider? slaPolicyProvider = null, Func&lt;string, string, CancellationToken, Task&gt;? stateWriter = null, IReconciliationSlaCalendarResolver? slaCalendarResolver = null, IPreparerAttestationReferenceClassifier? preparerAttestationReferences = null);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:43](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L43) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:103](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L103) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAllAsync(ReconciliationBreakQueueScope scope, ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:125](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L125) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingByTeamAsync(string team, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:152](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L152) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; GetByIdAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:175](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L175) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; GetByIdAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:191](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L191) |  |
+| <code>public Task&lt;bool&gt; CreateIfMissingAsync(ReconciliationBreakQueueScope scope, ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:212](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L212) |  |
+| <code>public async Task&lt;bool&gt; CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:228](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L228) |  |
+| <code>public async Task&lt;bool&gt; CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:390](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L390) |  |
+| <code>public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:545](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L545) |  |
+| <code>public async Task&lt;bool&gt; DeleteAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:616](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L616) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:671](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L671) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; StartReviewAsync(ReconciliationBreakQueueScope scope, ReviewReconciliationBreakRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:676](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L676) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:861](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L861) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ResolveAsync(ReconciliationBreakQueueScope scope, ResolveReconciliationBreakRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:866](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L866) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1081](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1081) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyCaseworkCommandAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1086](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1086) |  |
+| <code>public Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1293](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1293) |  |
+| <code>public Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkCaseworkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1298](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1298) |  |
+| <code>public async Task&lt;ReconciliationBulkCaseworkResult?&gt; GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1602](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1602) |  |
+| <code>public async Task&lt;ReconciliationBulkCaseworkResult?&gt; GetBulkCaseworkResultAsync(ReconciliationBreakQueueScope scope, string bulkActionIdOrIdempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1626](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1626) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueAuditEvent&gt;&gt; GetAuditHistoryAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1656](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1656) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueAuditEvent&gt;&gt; GetAuditHistoryAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1674](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1674) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; RebuildSnapshotFromAuditAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1753](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1753) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; RebuildSnapshotFromAuditAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1777](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1777) |  |
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs:13](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs#L13).
+
+```csharp
+public sealed partial class FileReconciliationBreakQueueRepository : IReconciliationBreakObservationRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task ObserveCompletedRunAsync(ReconciliationCompletedRunObservation run, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs:21](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs#L21) | Atomically retains a successful, complete source comparison with its receipt. A cleared source observation never disposes of casework or removes a close blocker. |
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Persistence.cs:13](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Persistence.cs#L13).
+
+```csharp
+public sealed partial class FileReconciliationBreakQueueRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Persistence.cs:15](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Persistence.cs#L15) |  |
+
+## FileReconciliationRunRepository
+
+Qualified name: <code>Meridian.Strategies.Services.FileReconciliationRunRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:17](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L17).
+
+File-backed IReconciliationRunRepository that persists reconciliation run details to a JSON snapshot using atomic writes, so completed runs and their history survive process restarts. Replaces InMemoryReconciliationRunRepository for production workstation hosting while preserving identical query semantics. Every operation reads the current snapshot from disk (no in-memory cache), so runs written by another process sharing the same data directory remain visible to reads.
+
+```csharp
+public sealed class FileReconciliationRunRepository : JsonFileSnapshotStore<FileReconciliationRunRepository.ReconciliationRunSnapshot>, IReconciliationRunRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileReconciliationRunRepository(string dataDirectory, ILogger&lt;FileReconciliationRunRepository&gt; logger) : base(GetSnapshotPath(dataDirectory), JsonOptions);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:31](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L31) |  |
+| <code>public async Task SaveAsync(ReconciliationRunDetail detail, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:41](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L41) |  |
+| <code>public async Task&lt;ReconciliationRunDetail&gt; SaveWithFirstObservationContinuityAsync(ReconciliationRunDetail detail, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:47](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L47) |  |
+| <code>public async Task&lt;TResult&gt; ExecuteWithLatestForRunLeaseAsync&lt;TResult&gt;(string runId, Func&lt;ReconciliationRunDetail?, CancellationToken, Task&lt;TResult&gt;&gt; callback, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:72](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L72) |  |
+| <code>public async Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:101](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L101) |  |
+| <code>public async Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:114](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L114) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:125](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L125) |  |
+
+## ReconciliationRunSnapshot
+
+Qualified name: <code>Meridian.Strategies.Services.FileReconciliationRunRepository.ReconciliationRunSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs:205](../../../../src/Meridian.Strategies/Services/FileReconciliationRunRepository.cs#L205).
+
+Persisted snapshot shape. Public only because it parameterizes the base class.
+
+```csharp
+public sealed record ReconciliationRunSnapshot(IReadOnlyList<ReconciliationRunDetail> Runs);
+```
+
 ## GovernanceException
 
 Qualified name: <code>Meridian.Strategies.Services.GovernanceException</code>. Kind: `record`.
@@ -610,9 +745,12 @@ Declared public members:
 | <code>public LedgerReadService();</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:17](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L17) |  |
 | <code>public LedgerReadService(ISecurityReferenceLookup securityReferenceLookup);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:21](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L21) |  |
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:26](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L26) |  |
-| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:29](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L29) |  |
-| <code>public async Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:32](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L32) |  |
-| <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, LedgerSummary? summary);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:64](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L64) |  |
+| <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:29](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L29) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:32](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L32) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:39](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L39) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:42](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L42) |  |
+| <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, LedgerSummary? summary);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:78](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L78) |  |
 
 ## NetSymbolPosition
 
@@ -907,33 +1045,3 @@ Declared public members:
 | <code>public static ReconciliationCaseLifecycleState ParseLifecycleState(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:58](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L58) |  |
 | <code>public static ReconciliationBreakQueueStatus ParseQueueStatus(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:74](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L74) |  |
 | <code>public static ReconciliationBreakQueueTransitionErrorCode ParseErrorCode(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L84) |  |
-
-## ReconciliationCashMovementInput
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCashMovementInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:23](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L23).
-
-```csharp
-public sealed record ReconciliationCashMovementInput(string MovementId, decimal Amount, DateTimeOffset? AsOf, bool IsVoided, string Source, BankTransactionDto? BankTransaction = null);
-```
-
-## ReconciliationCloseScope
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:285](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L285).
-
-```csharp
-public sealed record ReconciliationCloseScope(string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate);
-```
-
-## ReconciliationCloseScopeCheckpoint
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeCheckpoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:291](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L291).
-
-```csharp
-public sealed record ReconciliationCloseScopeCheckpoint(ReconciliationCloseScope Scope, IReadOnlyList<ReconciliationBreakQueueItem> Items, string CheckpointHashSha256, long Generation = 1);
-```

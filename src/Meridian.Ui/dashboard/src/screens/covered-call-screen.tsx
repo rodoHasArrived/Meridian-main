@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
+import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
 import { formatPrefixedCurrency } from "@/lib/format";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
@@ -155,7 +156,9 @@ export function CoveredCallScreen() {
   const vm = useCoveredCallScreenViewModel();
 
   useEffect(() => {
-    void vm.loadHistory();
+    const controller = new AbortController();
+    void vm.loadHistory(controller.signal);
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -292,7 +295,7 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
   }, [hasAdvancedError]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+    <div className="grid gap-4 xl:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Parameters</CardTitle>
@@ -382,6 +385,11 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>{vm.chainPreviewPanel.description}</CardDescription>
         </CardHeader>
         <CardContent>
+          {vm.chainPreview.status === "ready" && vm.chainPreview.data ? <OptionScreeningMap
+            preview={vm.chainPreview.data}
+            filters={{ minDte: Number(vm.form.minDte), maxDte: vm.form.maxDte.trim() ? Number(vm.form.maxDte) : null, maxDelta: Number(vm.form.maxDelta) }}
+            selectedIndex={vm.chainPreview.selectedIndex} onSelect={vm.selectChainRow}
+          /> : null}
           <ChainPreviewTable vm={vm} />
         </CardContent>
       </Card>

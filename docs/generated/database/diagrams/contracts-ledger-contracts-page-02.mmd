@@ -167,13 +167,13 @@ classDiagram
         +Guid AggregateId
         +string? ApprovalId
         +AccountingPostingApprovalStateDto ApprovalState
+        +Meridian_Contracts_Accounting_Lots_BondCouponRecognitionInstructionDto? BondCouponRecognition
         +AccountingBookContextDto? BookContext
         +Guid? BookPositionId
         +AssetAccountingPreparerAttestationDto? CashDividendAttestation
         +Guid? CausationId
         +Guid CommandId
-        +Guid? CorrelationId
-        +EconomicEventReferenceDto? EconomicEvent
+        +Guid? ControlledCloseAuthorizationId
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }
@@ -378,6 +378,12 @@ classDiagram
         +IReadOnlyList~string~? ReportGroupPrincipalIds
         +string? TenantId
     }
+    class Meridian_Contracts_Ledger_ActivateLedgerBookControlsRequestDto["ActivateLedgerBookControlsRequestDto"] {
+        +string EvidenceReference
+        +long ExpectedVersion
+        +string PreflightDigest
+        +string Reason
+    }
     class Meridian_Contracts_Ledger_AllocationRuleBasisDto["AllocationRuleBasisDto"] {
     }
     class Meridian_Contracts_Ledger_AllocationRuleDto["AllocationRuleDto"] {
@@ -387,6 +393,26 @@ classDiagram
         +string? FormulaId
         +LedgerDimensionSetDto? TargetDimensions
         +decimal Weight
+    }
+    class Meridian_Contracts_Ledger_AppendIntercompanyAccountBindingRequest["AppendIntercompanyAccountBindingRequest"] {
+        +Guid BindingId
+        +string ChartAccountNodeId
+        +DateOnly EffectiveFrom
+        +DateOnly? EffectiveTo
+        +Guid? ExpectedPreviousRevisionId
+        +IReadOnlyList~string~ HistoricalNames
+        +bool IsArchived
+        +Guid LedgerBookId
+        +string Reason
+        +Guid RevisionId
+    }
+    class Meridian_Contracts_Ledger_AppendLegacyIntercompanyAttributionRequest["AppendLegacyIntercompanyAttributionRequest"] {
+        +LegacyIntercompanyAttributionDto Attribution
+        +Guid? ExpectedPreviousAttributionId
+    }
+    class Meridian_Contracts_Ledger_ApproveConsolidationTransitionRequestDto["ApproveConsolidationTransitionRequestDto"] {
+        +string PreviewFingerprint
+        +Guid PreviewId
     }
     class Meridian_Contracts_Ledger_ApprovePostingRulePromotionRequest["ApprovePostingRulePromotionRequest"] {
         +OperationsActionOriginDto ActionOrigin
@@ -472,6 +498,19 @@ classDiagram
         +string Summary
     }
     class Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto["AutomatedJournalEvidenceQualityDto"] {
+    }
+    class Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto["CanonicalAmortizationOccurrenceDto"] {
+        +DateOnly Date
+        +decimal FunctionalCostBasis
+        +decimal TransactionCostBasis
+    }
+    class Meridian_Contracts_Ledger_CanonicalAmortizationPreparationDto["CanonicalAmortizationPreparationDto"] {
+        +OpenLotAmortizationInstructionDto Instruction
+        +IReadOnlyList~ProjectedAccountingEffectLineDto~ Lines
+        +IReadOnlyList~CanonicalAmortizationOccurrenceDto~ Occurrences
+        +string PreparationFingerprint
+        +OpenLotAmortizationProjectionDto Projection
+        +AssetAccountingEventScopeDto Scope
     }
     class Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto["CapitalAccountWorkbenchAllocationInputDto"] {
         +decimal? Amount
@@ -580,6 +619,7 @@ classDiagram
         +string AccountName
         +string AccountType
         +string? FinancialAccountId
+        +IntercompanyAccountRoleDto? IntercompanyRole
         +bool IsArchived
         +string NodeId
         +string? ParentPath
@@ -605,52 +645,6 @@ classDiagram
     class Meridian_Contracts_Ledger_CloseDeadlineAnchorDto["CloseDeadlineAnchorDto"] {
     }
     class Meridian_Contracts_Ledger_CloseDeadlineDayCountDto["CloseDeadlineDayCountDto"] {
-    }
-    class Meridian_Contracts_Ledger_CloseDeadlineRuleDto["CloseDeadlineRuleDto"] {
-        +CloseDeadlineAdjustmentDto Adjustment
-        +CloseDeadlineAnchorDto Anchor
-        +CloseDeadlineDayCountDto DayCount
-        +int OffsetDays
-        +string TaskId
-    }
-    class Meridian_Contracts_Ledger_CloseDependencyDto["CloseDependencyDto"] {
-        +string DependencyId
-        +string DependsOnTaskId
-        +string Reason
-    }
-    class Meridian_Contracts_Ledger_CloseEvidenceReviewDto["CloseEvidenceReviewDto"] {
-        +IReadOnlyList~string~ EvidenceLinks
-        +string IssueCode
-        +string Notes
-        +DateTimeOffset ReviewedAtUtc
-        +string ReviewedBy
-        +string ReviewId
-        +string? TargetId
-    }
-    class Meridian_Contracts_Ledger_CloseLedgerPeriodRequest["CloseLedgerPeriodRequest"] {
-        +OperationsActionOriginDto ActionOrigin
-        +string ClosedBy
-        +LedgerPeriodCloseKindDto CloseKind
-        +string? Notes
-        +string RequiredSignoffRole
-        +string ToleranceProfileId
-    }
-    class Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto["CloseOperatingCoverageItemDto"] {
-        +int BlockingIssueCount
-        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ BlockingIssues
-        +string ControlId
-        +int EvidenceCount
-        +IReadOnlyList~string~ EvidenceLinks
-        +string Label
-        +string RequiredAction
-        +AccountingReadinessStateDto State
-    }
-    class Meridian_Contracts_Ledger_ClosePeriodLockResultDto["ClosePeriodLockResultDto"] {
-        +bool IsLocked
-        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ Issues
-        +VerifiedOperationOutcome Outcome
-        +ClosePeriodPlanDto? Plan
-        +OperationsTransitionResultDto? Transition
     }
     Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
@@ -700,6 +694,7 @@ classDiagram
     Meridian_Contracts_Ledger_AllocationRuleDto --> Meridian_Contracts_Ledger_AllocationRuleBasisDto
     Meridian_Contracts_Ledger_AssetAccountingDraftCapabilitiesDto --> Meridian_Contracts_Ledger_AssetAccountingApprovalReceiptDto
     Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
+    Meridian_Contracts_Ledger_CanonicalAmortizationPreparationDto --> Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto
@@ -708,10 +703,3 @@ classDiagram
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto
-    Meridian_Contracts_Ledger_CaptureClosePlanTemplateRequestDto --> Meridian_Contracts_Ledger_CloseDeadlineRuleDto
-    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
-    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto
-    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineDayCountDto
-    Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
-    Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
-    Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto

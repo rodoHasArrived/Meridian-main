@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DetailPaneControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Layout.DetailPaneControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L30).
+
+Hosts detail content with an independently bindable open state.
+
+```csharp
+public sealed class DetailPaneControl : ContentControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty IsOpenProperty = DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(DetailPaneControl), new PropertyMetadata(true));</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:32](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L32) |  |
+| <code>public bool IsOpen { get; set; }</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:35](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L35) |  |
+
+## DockablePanelHostControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Layout.DockablePanelHostControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:16](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L16).
+
+Provides a content host for dockable workstation panels.
+
+```csharp
+public sealed class DockablePanelHostControl : ContentControl
+```
+
 ## InspectorPanelControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Layout.InspectorPanelControl</code>. Kind: `class`.
@@ -707,33 +738,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string AutomationId =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:174](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L174) |  |
-
-## WorkstationEvidenceLinkModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationEvidenceLinkModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L30).
-
-```csharp
-public sealed record WorkstationEvidenceLinkModel(string Label, string Target, string Source = "", string Detail = "");
-```
-
-## WorkstationFilterModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationFilterModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:305](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L305).
-
-Carries search text, scope text, and active filter labels for workstation tables.
-
-```csharp
-public sealed class WorkstationFilterModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string SearchText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:307](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L307) |  |
-| <code>public string ScopeText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:309](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L309) |  |
-| <code>public IReadOnlyList&lt;string&gt; ActiveFilters { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:311](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L311) |  |

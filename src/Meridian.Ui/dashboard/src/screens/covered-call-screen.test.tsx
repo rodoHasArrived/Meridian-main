@@ -204,6 +204,22 @@ describe("CoveredCallScreen", () => {
     vi.useRealTimers();
   });
 
+  it("aborts the pending history request when the screen unmounts", async () => {
+    let rejectHistory!: (reason: unknown) => void;
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockReturnValueOnce(
+      new Promise((_, reject) => { rejectHistory = reject; })
+    );
+    const { unmount } = renderCoveredCallScreen();
+    const signal = vi.mocked(coveredCallApi.listCoveredCallRuns).mock.calls[0][1];
+    expect(signal).toBeInstanceOf(AbortSignal);
+    expect(signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+    await act(async () => rejectHistory(new DOMException("Navigation cancelled", "AbortError")));
+  });
+
   it("renders chain preview rows with keyboard selection and a linked detail panel", async () => {
     renderCoveredCallScreen();
 

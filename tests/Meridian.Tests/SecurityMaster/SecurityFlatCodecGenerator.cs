@@ -51,15 +51,37 @@ internal static class SecurityFlatCodecGenerator
             var shape = Shape(binding);
             source.Append('\n');
             source.Append("    private static SecurityKind DecodeGenerated").Append(binding.AssetClass)
-                .Append("(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)\n");
+                .Append("(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json");
+            if (DecodesVersionedTerms(binding))
+            {
+                source.Append(", SecurityVersionedTermDecoding versionedTerms");
+            }
+
+            if (binding.Inputs.HasFlag(SecurityCodecInputs.EconomicSchedules))
+            {
+                source.Append(", SecurityEconomicScheduleValidation economicSchedules");
+            }
+
+            if (binding.Inputs.HasFlag(SecurityCodecInputs.ResolvedTermsDocument))
+            {
+                source.Append(", JsonElement terms");
+            }
+
+            source.Append(")\n");
             source.Append("        => SecurityKind.New").Append(binding.AssetClass).Append("(new ").Append(shape.TermsType.Name).Append("(\n");
             for (var f = 0; f < shape.Fields.Length; f++)
             {
                 var field = shape.Fields[f];
                 var last = f == shape.Fields.Length - 1;
+                var moduleRow = binding.Members.SingleOrDefault(row => row.Path == field.Name);
                 if (field.IsRateConvention)
                 {
                     source.Append("            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))");
+                }
+                else if (moduleRow is not null)
+                {
+                    source.Append("            ").Append(moduleRow.DecodeExpression
+                        ?? throw new InvalidOperationException($"{binding.AssetClass} module row {field.Name} names no expression."));
                 }
                 else
                 {
@@ -98,16 +120,47 @@ internal static class SecurityFlatCodecGenerator
         {
             var shape = Shape(binding);
             source.Append('\n');
-            source.Append("    let write").Append(binding.AssetClass).Append(" (schemaVersion: int) (terms: ")
-                .Append(shape.TermsType.Name).Append(") : string =\n");
-            source.Append("        JsonSerializer.Serialize(\n");
-            source.Append("            {| schemaVersion = schemaVersion");
-            foreach (var row in binding.Members.Where(static row => row.Key is not null && !row.DecodeOnly))
+            source.Append("    let write").Append(binding.AssetClass).Append(" (schemaVersion: int) ");
+            if (binding.VersionedSchedules || binding.WritesConventionsFlag)
             {
-                source.Append("\n               ").Append(row.Key).Append(" = ").Append(WriteExpression(binding, shape, row));
+                source.Append("(writesScheduleConventions: bool) ");
             }
 
-            source.Append(" |})\n");
+            if (binding.VersionedSchedules)
+            {
+                source.Append("(writesCallPutSchedules: bool) ");
+            }
+
+            source.Append("(terms: ").Append(shape.TermsType.Name).Append(") : string =\n");
+            var indent = binding.VersionedSchedules ? "        let payload =\n            " : "        JsonSerializer.Serialize(\n            ";
+            source.Append(indent).Append("{| schemaVersion = schemaVersion");
+            const string memberIndent = "\n               ";
+            foreach (var row in binding.Members.Where(static row => row.Key is not null && !row.DecodeOnly))
+            {
+                var written = WriteExpression(binding, shape, row);
+                source.Append(memberIndent).Append(row.Key).Append(written.StartsWith('\n') ? " =" : " = ").Append(written);
+            }
+
+            if (!binding.VersionedSchedules)
+            {
+                source.Append(" |})\n");
+                continue;
+            }
+
+            // The declared-schedule containers are written from the version that declares them
+            // (ADR-024's frozen written form): all three, the block alone, or neither.
+            source.Append(" |}\n");
+            source.Append("        if writesCallPutSchedules then\n");
+            source.Append("            JsonSerializer.Serialize(\n");
+            source.Append("                {| payload with\n");
+            source.Append("                     scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions\n");
+            source.Append("                     callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls\n");
+            source.Append("                     putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})\n");
+            source.Append("        elif writesScheduleConventions then\n");
+            source.Append("            JsonSerializer.Serialize(\n");
+            source.Append("                {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})\n");
+            source.Append("        else\n");
+            source.Append("            JsonSerializer.Serialize(payload)\n");
         }
 
         return source.ToString();
@@ -116,7 +169,7 @@ internal static class SecurityFlatCodecGenerator
     private static string DecodeExpression(SecurityClassCodecBinding binding, FieldShape field, PropertyInfo member)
     {
         var path = $"{field.Name}.{member.Name}";
-        var rows = binding.Members.Where(row => row.Path == path).ToArray();
+        var rows = binding.Members.Where(row => row.Path == path && !row.WriteOnly).ToArray();
         if (rows.Length > 1)
         {
             throw new InvalidOperationException($"{binding.AssetClass} binds {path} more than once.");
@@ -170,6 +223,26 @@ internal static class SecurityFlatCodecGenerator
 
     private static string WriteExpression(SecurityClassCodecBinding binding, ClassShape shape, SecurityTermBinding row)
     {
+        if (row.WriteExpression is not null)
+        {
+            return row.WriteExpression;
+        }
+
+        if (row.Items is { } items)
+        {
+            var source = row.WriteVia ?? throw new InvalidOperationException($"{binding.AssetClass} list {row.Key} names no property.");
+            var entry = new StringBuilder();
+            entry.Append("\n                    terms.").Append(source);
+            entry.Append("\n                    |> List.map (fun entry ->\n                        {| ");
+            for (var i = 0; i < items.Count; i++)
+            {
+                entry.Append(i == 0 ? "" : "\n                           ")
+                    .Append(items[i].Key).Append(" = entry.").Append(items[i].Member);
+            }
+
+            return entry.Append(" |})").ToString();
+        }
+
         if (row.WriteVia is not null)
         {
             return $"terms.{row.WriteVia}";
@@ -210,6 +283,10 @@ internal static class SecurityFlatCodecGenerator
 
     private sealed record ClassShape(Type TermsType, FieldShape[] Fields);
 
+    /// <summary>Whether the decode takes the row's versioned-term decoding.</summary>
+    private static bool DecodesVersionedTerms(SecurityClassCodecBinding binding)
+        => binding.VersionedSchedules || binding.Inputs.HasFlag(SecurityCodecInputs.VersionedTerms);
+
     private static ClassShape Shape(SecurityClassCodecBinding binding)
     {
         var unionCase = FSharpType.GetUnionCases(typeof(SecurityKind), null)
@@ -217,19 +294,40 @@ internal static class SecurityFlatCodecGenerator
                         ?? throw new InvalidOperationException($"SecurityKind has no case {binding.AssetClass}.");
         var termsType = unionCase.GetFields().Single().PropertyType;
         var fields = FSharpType.GetRecordFields(termsType, null)
-            .Select(static field =>
+            .Select(field =>
             {
                 var optional = IsOption(field.PropertyType);
                 var moduleType = optional ? field.PropertyType.GetGenericArguments()[0] : field.PropertyType;
                 var rateConvention = optional && moduleType == typeof(RateConventionTerms);
-                return optional && !rateConvention
+                // An optional module other than the rate convention is built whole by a module row.
+                var builtWhole = binding.Members.Any(row => row.Path == field.Name);
+                return optional && !rateConvention && !builtWhole
                     ? throw new InvalidOperationException($"{field.Name} is an optional module the generator has no rule for.")
-                    : new FieldShape(field.Name, moduleType, FSharpType.GetRecordFields(moduleType, null), rateConvention);
+                    : new FieldShape(field.Name, moduleType,
+                        FSharpType.IsRecord(moduleType, null) ? FSharpType.GetRecordFields(moduleType, null) : [],
+                        rateConvention);
             })
             .ToArray();
         foreach (var row in binding.Members)
         {
             var parts = row.Path.Split('.');
+            if (parts.Length == 1)
+            {
+                if (fields.All(field => field.Name != parts[0]) || row.DecodeExpression is null || row.Key is not null)
+                {
+                    throw new InvalidOperationException($"{binding.AssetClass} module row {row.Path} must name a record field and an expression.");
+                }
+
+                continue;
+            }
+
+            if (row.WriteOnly && binding.Members.All(reader =>
+                    reader.WriteOnly || (reader.Path != parts[0] && reader.Path != row.Path)))
+            {
+                throw new InvalidOperationException(
+                    $"{binding.AssetClass} writes {row.Key} from {row.Path}, but no module row of {parts[0]} and no decode row of {row.Path} reads it.");
+            }
+
             if (parts.Length != 2
                 || fields.SingleOrDefault(field => field.Name == parts[0]) is not { } owner
                 || owner.Members.All(member => member.Name != parts[1]))

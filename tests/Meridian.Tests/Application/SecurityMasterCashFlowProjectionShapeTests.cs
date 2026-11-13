@@ -17,11 +17,10 @@ namespace Meridian.Tests.Application;
 /// case goes through the public <see cref="SecurityMasterCashFlowService.GetProjectionAsync"/> seam and
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
-/// explicitly declare row version 2 and retain measured interest intervals and principal segments
-/// when the calculated coupon walk supplies them. Both contracts pin every nested member independently.
-/// Top-level and resolved terms members remain unchanged; only a declared projection adds
-/// <c>scheduleEvidence</c>. A stray
-/// or malformed convention block still projects exactly as its clean twin.
+/// explicitly declare row version 2 and retain measured interest intervals and principal-basis
+/// segments when the v5 fixed-rate walk supplies them. Current and frozen contracts pin every nested member
+/// independently. Top-level and resolved terms members remain unchanged; only a declared projection
+/// adds <c>scheduleEvidence</c>. A stray or malformed convention block still projects exactly as its clean twin.
 /// </summary>
 /// <remarks>
 /// The service reads the wall clock for its as-of date and drops periods paid before it, so every case
@@ -148,19 +147,32 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
         };
 
-    // Exact additions in row contract 2. Fixed-rate bullets and contractual-principal schedules
-    // retain measured intervals and principal segments; netted multi-leg rows retain neither.
+    private static readonly string[] MeasuredInterestRowPaths =
+    [
+        "schedule[].rowVersion",
+        "schedule[].interestMeasuredFrom",
+        "schedule[].interestMeasuredTo",
+    ];
+
+    private static readonly string[] InterestSegmentRowPaths =
+    [
+        "schedule[].interestSegments",
+        "schedule[].interestSegments[].start",
+        "schedule[].interestSegments[].end",
+        "schedule[].interestSegments[].referencePrincipal",
+        "schedule[].interestSegments[].unroundedInterestAmount",
+        "schedule[].interestSegments[].factor",
+        "schedule[].interestSegments[].periodStart",
+        "schedule[].interestSegments[].periodEnd",
+        "schedule[].interestSegments[].factorAfter",
+    ];
+
+    // Exact additions in current row contract 2. Both fixed-rate bond walks retain their measured
+    // intervals and interest-principal segments. Netted multi-leg rows cannot claim that evidence.
     private static string[] CurrentRowAdditions(string caseName) => caseName switch
     {
         "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule" =>
-        [
-            "schedule[].rowVersion", "schedule[].interestMeasuredFrom", "schedule[].interestMeasuredTo",
-            "schedule[].interestSegments",
-            "schedule[].interestSegments[].start", "schedule[].interestSegments[].end",
-            "schedule[].interestSegments[].referencePrincipal", "schedule[].interestSegments[].unroundedInterestAmount",
-            "schedule[].interestSegments[].factor", "schedule[].interestSegments[].periodStart",
-            "schedule[].interestSegments[].periodEnd", "schedule[].interestSegments[].factorAfter"
-        ],
+            [.. MeasuredInterestRowPaths, .. InterestSegmentRowPaths],
         "Swap.zeroRateTwoLeg" => ["schedule[].rowVersion", "legSchedules[].schedule[].rowVersion"],
         _ => []
     };
@@ -279,7 +291,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         foreach (var leg in projection["legSchedules"]?.AsArray() ?? [])
             foreach (var row in leg!["schedule"]!.AsArray())
                 row!["rowVersion"]!.GetValue<int>().Should().Be(2);
-        if (caseName == "Bond.zeroRateBullet")
+        if (caseName is "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule")
         {
             projection["schedule"]!.AsArray().Should().NotBeEmpty();
             foreach (var row in projection["schedule"]!.AsArray())
@@ -288,6 +300,29 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                 var end = DateOnly.Parse(row["interestMeasuredTo"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
                 start.Should().BeBefore(end);
                 end.Should().Be(DateOnly.FromDateTime(row["periodDate"]!.GetValue<DateTimeOffset>().UtcDateTime));
+                var segments = row["interestSegments"]!.AsArray();
+                segments.Should().NotBeEmpty("version-2 bond rows retain their measured interest basis");
+                segments[0]!["start"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                segments[^1]!["end"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                var cursor = start;
+                var interest = 0m;
+                foreach (var segment in segments)
+                {
+                    var segmentStart = DateOnly.Parse(segment!["start"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    var segmentEnd = DateOnly.Parse(segment["end"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    segmentStart.Should().Be(cursor);
+                    segmentEnd.Should().BeAfter(segmentStart).And.BeOnOrBefore(end);
+                    segment["periodStart"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                    segment["periodEnd"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                    var factor = segment["factor"]!.GetValue<decimal>();
+                    segment["referencePrincipal"]!.GetValue<decimal>().Should().Be(1000m * factor);
+                    segment["factorAfter"]!.GetValue<decimal>().Should().BeInRange(0m, factor);
+                    segment["unroundedInterestAmount"]!.GetValue<decimal>().Should().Be(0m);
+                    interest += segment["unroundedInterestAmount"]!.GetValue<decimal>();
+                    cursor = segmentEnd;
+                }
+                cursor.Should().Be(end);
+                interest.Should().Be(row["interestAmount"]!.GetValue<decimal>());
             }
         }
         if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
@@ -301,7 +336,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
     [MemberData(nameof(UndeclaredCases))]
     public async Task UndeclaredProjection_FrozenLegacyRowsRetainExactlyTheOriginalNestedMembers(string caseName)
     {
-        var legacy = await ProjectAsync(caseName, legacyRows: true);
+        var legacy = await ProjectAsync(caseName, frozenRowVersion: 0);
         var expected = TopLevelMembers
             .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
             .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows));
@@ -313,6 +348,29 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             .Select(JsonNamingPolicy.CamelCase.ConvertName))).Should().BeEquivalentTo(expected);
         if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
             legacy["BlockedReason"]!.GetValue<string>().Should().Be(reason);
+    }
+
+    [Theory]
+    [InlineData("Bond.zeroRateBullet")]
+    [InlineData("Bond.zeroRateContractualSchedule")]
+    public async Task VersionOneRows_RetainMeasuredIntervalsWithoutVersionTwoSegments(string caseName)
+    {
+        var versionOne = await ProjectAsync(caseName, frozenRowVersion: 1);
+        var expected = TopLevelMembers
+            .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
+            .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows))
+            .Concat(MeasuredInterestRowPaths);
+
+        MemberPaths(versionOne).Select(static path => string.Join('.', path.Split('.')
+            .Select(JsonNamingPolicy.CamelCase.ConvertName))).Should().BeEquivalentTo(expected);
+        versionOne["Schedule"]!.AsArray().Should().NotBeEmpty();
+        foreach (var row in versionOne["Schedule"]!.AsArray())
+        {
+            row!["RowVersion"]!.GetValue<int>().Should().Be(1);
+            row["InterestMeasuredFrom"].Should().NotBeNull();
+            row["InterestMeasuredTo"].Should().NotBeNull();
+            row.AsObject().ContainsKey("InterestSegments").Should().BeFalse();
+        }
     }
 
     [Fact]
@@ -378,10 +436,10 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         }
     }
 
-    private static Task<JsonObject> ProjectAsync(string caseName, bool legacyRows = false)
+    private static Task<JsonObject> ProjectAsync(string caseName, int? frozenRowVersion = null)
     {
         var (assetClass, sourceKind, buildTerms) = Cases[caseName];
-        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate), legacyRows);
+        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate), frozenRowVersion);
     }
 
     private static async Task<JsonObject> ProjectAsync(
@@ -389,7 +447,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         string assetClass,
         StructuredCashFlowSourceKind sourceKind,
         JsonObject terms,
-        bool legacyRows = false)
+        int? frozenRowVersion = null)
     {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(SecurityId, Arg.Any<CancellationToken>())
@@ -406,8 +464,8 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         var projection = await service.GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base);
 
         projection.Should().NotBeNull($"the '{caseName}' security has a calculated source");
-        return legacyRows
-            ? JsonSerializer.SerializeToNode(SecurityCashFlowScheduleRowCodec.Legacy(projection!),
+        return frozenRowVersion is { } rowVersion
+            ? JsonSerializer.SerializeToNode(SecurityCashFlowScheduleRowCodec.ForVersion(projection!, rowVersion),
                 SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto)!.AsObject()
             : JsonSerializer.SerializeToNode(projection, EndpointOptions)!.AsObject();
     }

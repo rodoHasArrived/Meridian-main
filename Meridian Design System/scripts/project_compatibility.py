@@ -415,7 +415,7 @@ def validate_browser(browser, manifest, eligibility, root):
                         ("components", "tokens", "templates", "docs", "guidelines", "assets")
                         for p in (root / directory).rglob("*")
                         if p.is_file() and (p.suffix.lower() in suffixes or p.name == ".thumbnail")}
-    expected_runtime |= {path for path in ("styles.css", "_preview_runtime.js", "_preview_jsx.js") if (root / path).is_file()}
+    expected_runtime |= {path for path in ("styles.css", "_preview_runtime.js", "_preview_jsx.js", "tests/browser-audit-helpers.mjs") if (root / path).is_file()}
     runtime = source.get("runtimeSourceHashes", {})
     if set(runtime) != expected_runtime:
         errors.append("Browser runtime dependency coverage differs")

@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Strategies
@@ -14,6 +14,13 @@ last_reviewed: 2026-11-12
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
 and book independently; terminal metrics are not required. Backtests retain their recorded books.
+
+Run ledger read models support inclusive economic-time cuts without mutating retained journals.
+Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
+exports. Historical journal rows, account balances and posting counts are rebuilt from the same
+validated posting population.
+
+Retained sweep reads expose each point's parameters and separate comparison groups by experiment fingerprint, strategy, mode, engine, dataset, feed and objective. Rankings honor supported named objectives and leave unsupported objectives unranked. Legacy comparability and bounded-history/expected-grid gaps remain explicit; sensitivity thresholds do not grant promotion authority.
 
 Reconciliation casework rejects reserved preparer-attestation references as ordinary approval.
 The optional scoped receipt classifier also recognizes retained legacy receipt IDs; client command
@@ -107,6 +114,10 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 
 ## Important workflows
 
+### Shared SMA reference and retained comparison
+
+The existing `moving-average-crossover` catalog factory wraps the SDK's shared SMA decision implementation. Explicit `inputMode=bars` and `strategyVersion=sma-crossover-v1` support controlled replay/paper comparisons; omitted mode retains legacy trade input and existing 10/30/10 defaults. Partial and terminal order outcomes maintain one pending intent per symbol. The strategy registry advertises the reference parameters. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
 Live-engine shutdown calls `IOrderManagementLifecycle.StopAsync` while its fill subscriptions
 remain active, so admitted orders and accounting handoffs drain before strategy consumers stop.
@@ -146,6 +157,18 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
+`DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal
+count; an exact run-detail read verifies the archive and replays the ledger invariants before
+hydrating it. The final portfolio/account snapshot, including open and disposed lot evidence,
+travels with the journal. Research summaries retain counts rather than unbounded journal/lot
+collections; full retained histories keep their existing snapshot coverage. Invalid lifecycle
+candidates can leave unreferenced immutable files but cannot reserve a run identity or replace
+its selected content. Missing or altered selected evidence fails the detail read. The archive
+grants no governed-book posting authority and does not replace PostgreSQL journals, period locks,
+or reversal/rebook. Focused proof: `StrategyRunLedgerArchiveTests` (restart, retry, tamper,
+concurrent writers, rejected candidates and research lot retention).
 
 `LiveStrategyBase` applies the shared F# lifecycle policy and serializes complete asynchronous
 operations. Queued commands are evaluated after the prior operation finishes. Warmup must complete
@@ -212,7 +235,10 @@ on read. The exact legacy XIRR string `"NaN"` remains readable; infinite XIRR va
 Profit factor and Sortino preserve their defined positive-infinity outcomes through their scoped
 SDK attributes, while unrelated nonfinite metrics remain invalid. General SDK and comparison API
 JSON serialization retain the named XIRR marker contract; the null override applies only to durable
-strategy snapshots.
+strategy snapshots. Durable append APIs report a caller snapshot rejected by a JSON converter as
+an invalid `entry` argument before retaining history; the original converter exception is preserved.
+Live summary fills remain in `BacktestResult.Fills`; they do not establish completed outcomes for
+`TotalTrades`, win rate, or profit factor.
 
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation

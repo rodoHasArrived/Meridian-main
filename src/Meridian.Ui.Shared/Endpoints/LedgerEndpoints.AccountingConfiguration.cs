@@ -506,12 +506,19 @@ public static partial class LedgerEndpoints
                 }
 
                 var result = await service
-                    .PostCandidateAsync(request with
+                    .PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+                        Candidate: request.Candidate,
+                        Actor: actor,
+                        ApprovalId: request.ApprovalId,
+                        ApprovalNotes: request.ApprovalNotes,
+                        EvidenceLinks: request.EvidenceLinks,
+                        CorrelationId: request.CorrelationId,
+                        ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                        TenantId: tenantContext.TenantId,
+                        CompanyId: tenantContext.CompanyId)
                     {
-                        Actor = actor,
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId,
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+                        ApprovalEvidence = request.ApprovalEvidence,
+                        AcquisitionTermsCompletion = request.AcquisitionTermsCompletion
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -683,6 +690,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented);
 
         MapFactorPaydownEndpoints(app, jsonOptions);
+        MapCanonicalAmortizationEndpoints(app, jsonOptions);
         MapAuditIntegrityEndpoint(app, jsonOptions);
     }
 

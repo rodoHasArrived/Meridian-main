@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTaxLotBasisAdjuster
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjuster</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs:11](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs#L11).
+
+Applies reference-data-derived LedgerTaxLotBasisAdjustments to open tax lots, producing the effective lots the relief engine relieves against. This is the seam that lets day-count (amortized cost), factor (pool paydown), and corporate-action (split, return of capital) economics from the Security Master flow into cost-basis accounting.
+
+```csharp
+public static class LedgerTaxLotBasisAdjuster
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;LedgerTaxLot&gt; Apply(IReadOnlyList&lt;LedgerTaxLot&gt; openLots, IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt; adjustments);</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs:20](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs#L20) | Returns openLots restated by adjustments. Adjustments are applied per lot in LedgerTaxLotBasisAdjustment.EffectiveDate order; a lot whose quantity is reduced to zero or below (a full factor paydown or reverse split) is dropped from the effective set. When adjustments is empty the original lots are returned unchanged. |
+
+## LedgerTaxLotBasisAdjustment
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjustment</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs:35](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs#L35).
+
+A single reference-data-derived cost-basis adjustment applied to open tax lots before realized-gain relief. The adjustment is intentionally numeric and Security-Master-agnostic: the application layer reads day-count, factor, and corporate-action data from the master and projects it into these primitives, keeping the ledger relief engine free of reference-data dependencies.
+
+```csharp
+public sealed record LedgerTaxLotBasisAdjustment(LedgerTaxLotBasisAdjustmentKind Kind, decimal Value, DateOnly EffectiveDate, Guid? SecurityId = null, string? LotId = null, string? Reference = null, DateOnly? HoldingPeriodCarryDate = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerTaxLotBasisAdjustment EnsureValid();</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs:45](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs#L45) | Validates the Value magnitude against the Kind. |
+| <code>public bool AppliesTo(LedgerTaxLot lot);</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs:67](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs#L67) | Returns true when this adjustment applies to lot. |
+
+## LedgerTaxLotBasisAdjustmentKind
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotBasisAdjustmentKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:9](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L9).
+
+The kind of cost-basis adjustment applied to an open LedgerTaxLot before realized-gain relief. Each kind fixes the meaning of LedgerTaxLotBasisAdjustment.Value so the relief engine can consume reference-data-derived adjustments without depending on Security Master contracts.
+
+```csharp
+public enum LedgerTaxLotBasisAdjustmentKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Split</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:17](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L17) | Share-count restatement from a forward or reverse split. LedgerTaxLotBasisAdjustment.Value is the split ratio R (new shares per old share; forward split R&gt;1, reverse split 0&lt;R&lt;1). Quantity is multiplied by R and unit cost is divided by R, preserving total basis. |
+| <code>ReturnOfCapital</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:24](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L24) | Return-of-capital distribution that reduces cost basis rather than recognizing income. LedgerTaxLotBasisAdjustment.Value is the per-unit capital returned; unit cost is reduced by that amount (floored at zero). |
+| <code>Factor</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:33](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L33) | Pool-factor restatement for amortizing debt (MBS/ABS/loans). LedgerTaxLotBasisAdjustment.Value is the factor ratio applied to the lot&#x27;s outstanding face (current factor ÷ prior factor, 0&lt;ratio≤1). Quantity (face) is scaled by the ratio while unit cost is unchanged, so basis is relieved in proportion to the principal paid down. Lots are assumed to be recorded at their prior-factor face. |
+| <code>Amortization</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:41](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L41) | Premium amortization / discount accretion of a fixed-income lot toward par. LedgerTaxLotBasisAdjustment.Value is the signed per-unit change applied to unit cost: negative amortizes a premium down toward par, positive accretes a discount up toward par (floored at zero). |
+| <code>WashSale</code> | [src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs:52](../../../../src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs#L52) | A wash-sale loss deferred from an earlier disposal and capitalized into this replacement lot under IRC §1091(d). LedgerTaxLotBasisAdjustment.Value is the total (not per-unit) disallowed amount added to the lot&#x27;s basis, spread across the lot&#x27;s quantity, and LedgerTaxLotBasisAdjustment.HoldingPeriodCarryDate carries the disallowed sale&#x27;s holding-period start onto the replacement under §1223(3). Unlike the reference-data kinds this adjustment targets one named lot and applies whether the replacement was acquired before or after the sale, because the §1091 window is symmetric. |
+
+## LedgerTaxLotDisposalHistory
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotDisposalHistory</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:30](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L30).
+
+A disposal as retained in durable tax-lot history, with enough of the original economics to rebuild the relief projection that produced it.
+
+```csharp
+public sealed record LedgerTaxLotDisposalHistory(Guid MutationBatchId, Guid JournalEntryId, LedgerAccount Account, DateOnly SaleDate, LedgerTaxLotReliefMethod ReliefMethod, IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots, decimal RecognizedGainOrLoss, IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases, decimal MatchedReplacementQuantity, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? ProceedsAllocationVersion = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SalePrice = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal DisallowedWashSaleLoss =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs:46](../../../../src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs#L46) | Total wash-sale loss deferred out of this disposal. |
+
 ## LedgerTaxLotDisposalHistoryLot
 
 Qualified name: <code>Meridian.Ledger.LedgerTaxLotDisposalHistoryLot</code>. Kind: `record`.
@@ -882,100 +959,3 @@ One temporary (revenue or expense) account being closed to retained earnings, re
 ```csharp
 public sealed record PeriodCloseLine(LedgerAccount Account, decimal PeriodBalance, decimal ClosingDebit, decimal ClosingCredit, LedgerLineDimensionSet? Dimensions = null);
 ```
-
-## PeriodCloseProjection
-
-Qualified name: <code>Meridian.Ledger.PeriodCloseProjection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PeriodCloseProjection.cs:7](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L7).
-
-Balanced period-close closing entries: every temporary account zeroed and the net income rolled into retained earnings, scoped per financial account.
-
-```csharp
-public sealed record PeriodCloseProjection(PeriodCloseInput Input, IReadOnlyList<PeriodCloseLine> Lines, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)> JournalLines, IReadOnlyDictionary<string, decimal> NetIncomeByScope)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DefaultScope = &quot;&quot;;</code> | [src/Meridian.Ledger/PeriodCloseProjection.cs:14](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L14) | Scope key used for accounts without a financial-account identifier. |
-| <code>public decimal NetIncome =&gt; …;</code> | [src/Meridian.Ledger/PeriodCloseProjection.cs:17](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L17) | Total net income rolled to retained earnings across all scopes. |
-| <code>public bool HasClosingEntries =&gt; …;</code> | [src/Meridian.Ledger/PeriodCloseProjection.cs:20](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L20) | True when there were temporary-account balances to close. |
-| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/PeriodCloseProjection.cs:22](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L22) |  |
-| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/PeriodCloseProjection.cs:24](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L24) |  |
-| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/PeriodCloseProjection.cs:26](../../../../src/Meridian.Ledger/PeriodCloseProjection.cs#L26) |  |
-
-## PeriodCloseProjector
-
-Qualified name: <code>Meridian.Ledger.PeriodCloseProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/PeriodCloseProjector.cs:9](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L9).
-
-Projects period-close closing entries: zeroes every revenue and expense balance and rolls the resulting net income into retained earnings, scoped per financial account and per dimensional accounting scope (entity, sleeve, ...). A close without these entries is status-only; this projector makes the roll real without collapsing dimension-split balances.
-
-```csharp
-public static class PeriodCloseProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PeriodCloseProjection Project(PeriodCloseInput input);</code> | [src/Meridian.Ledger/PeriodCloseProjector.cs:11](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L11) |  |
-| <code>public static PeriodCloseProjection ProjectFrom(Ledger ledger, string periodId, DateTimeOffset closedAtUtc, string closedBy);</code> | [src/Meridian.Ledger/PeriodCloseProjector.cs:89](../../../../src/Meridian.Ledger/PeriodCloseProjector.cs#L89) | Convenience overload that snapshots the ledger&#x27;s trial balance as of the close time. The in-memory trial balance is dimension-flat, so the projected closing entries carry no dimensional scope. |
-
-## PeriodReopenEvidence
-
-Qualified name: <code>Meridian.Ledger.PeriodReopenEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PeriodReopenEvidence.cs:8](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L8).
-
-Evidence required to reopen a locked accounting period. Reopening a closed period is a privileged, exceptional action, so it must carry a reason, an approver, and at least one evidence reference (the approval ticket, the restated working paper, the regulator instruction, ...).
-
-```csharp
-public sealed record PeriodReopenEvidence
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PeriodReopenEvidence(string reopenId, string reason, string approvedBy, DateTimeOffset approvedAtUtc, IReadOnlyList&lt;JournalEvidenceReference&gt; evidenceReferences, string? ticketReference = null);</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:10](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L10) |  |
-| <code>public string ReopenId { get; }</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:36](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L36) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:38](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L38) |  |
-| <code>public string ApprovedBy { get; }</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:40](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L40) |  |
-| <code>public DateTimeOffset ApprovedAtUtc { get; }</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:42](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L42) |  |
-| <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; EvidenceReferences { get; }</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:44](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L44) |  |
-| <code>public string? TicketReference { get; }</code> | [src/Meridian.Ledger/PeriodReopenEvidence.cs:46](../../../../src/Meridian.Ledger/PeriodReopenEvidence.cs#L46) |  |
-
-## PortfolioPricingRule
-
-Qualified name: <code>Meridian.Ledger.PortfolioPricingRule</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PortfolioPricingRule.cs:10](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L10).
-
-A portfolio-scoped pricing rule that selects the price source, valuation method, and ASC 820 fair-value level to apply to a class of instruments in one portfolio, effective over a date window. This is the per-portfolio complement to the fund-scoped DailyPortfolioPricingPolicy: the policy states the fund&#x27;s default valuation posture, while an ordered set of these rules lets administrators override the source/method for specific instrument types within a portfolio.
-
-```csharp
-public sealed record PortfolioPricingRule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PortfolioPricingRule(string ruleId, string portfolioId, string priceSource, string valuationMethod, string approvedBy, DateTimeOffset approvedAtUtc, int priority = 100, string? instrumentType = null, FairValueLevel fairValueLevel = FairValueLevel.Unclassified, DateOnly? effectiveFrom = null, DateOnly? effectiveTo = null, string? description = null);</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:12](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L12) |  |
-| <code>public string RuleId { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:53](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L53) |  |
-| <code>public string PortfolioId { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:55](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L55) |  |
-| <code>public string PriceSource { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:57](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L57) |  |
-| <code>public string ValuationMethod { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:59](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L59) |  |
-| <code>public string ApprovedBy { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:61](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L61) |  |
-| <code>public DateTimeOffset ApprovedAtUtc { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:63](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L63) |  |
-| <code>public int Priority { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:66](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L66) | Evaluation precedence; lower values are resolved before higher ones. |
-| <code>public string? InstrumentType { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:69](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L69) | Instrument type this rule applies to, or null to match any instrument. |
-| <code>public FairValueLevel FairValueLevel { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:71](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L71) |  |
-| <code>public DateOnly? EffectiveFrom { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:73](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L73) |  |
-| <code>public DateOnly? EffectiveTo { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:75](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L75) |  |
-| <code>public string? Description { get; }</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:77](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L77) |  |
-| <code>public bool Matches(string? instrumentType, DateOnly asOf);</code> | [src/Meridian.Ledger/PortfolioPricingRule.cs:86](../../../../src/Meridian.Ledger/PortfolioPricingRule.cs#L86) | Returns true when this rule applies to the given instrument type on the given valuation date. A null InstrumentType matches any instrument; a null instrumentType matches only instrument-agnostic rules. The caller is expected to pass an already-normalized value (see PortfolioPricingRuleBook.Resolve); comparison is case-insensitive. |

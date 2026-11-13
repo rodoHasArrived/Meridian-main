@@ -11,7 +11,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Ledger;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Reporting;
@@ -21,6 +21,7 @@ using Meridian.Storage.Reporting;
 using Meridian.Strategies.Services;
 using Meridian.TestSupport;
 using Meridian.Tests.Reconciliation.Connectors;
+using Meridian.Tests.Storage;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -142,7 +143,8 @@ public sealed partial class StatementLedgerReconciliationPostgresTests
 
         public Services CreateServices()
         {
-            var journals = new PostgresLedgerJournalStore(LedgerOptions);
+            var journals = new PostgresLedgerJournalStore(LedgerOptions,
+                postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
             var accounts = new PostgresFundAccountService(new PostgresFundAccountStore(AccountOptions));
             var tenancy = new PostgresFundProfileTenancyRegistry(LedgerOptions);
             var canonical = new JsonCanonicalStatementStore(Root, new AtomicFileWriterAdapter());

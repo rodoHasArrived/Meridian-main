@@ -26,6 +26,10 @@ do_not_edit: true
 | `SRC-APP` | Meridian application layer | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-APP` | Meridian application layer | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-APP` | Meridian application layer | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `SRC-APP` | Meridian application layer | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-APP` | Meridian application layer | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-APP` | Meridian application layer | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `SRC-APP` | Meridian application layer | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 | `SRC-BACKTESTING` | Meridian backtesting | `W3-CONT-001` | Research to paper continuity |
 | `SRC-BACKTESTING` | Meridian backtesting | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-BACKTESTING` | Meridian backtesting | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
@@ -54,6 +58,10 @@ do_not_edit: true
 | `SRC-CONTRACTS` | Meridian contracts | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `SRC-CONTRACTS` | Meridian contracts | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-CONTRACTS` | Meridian contracts | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `SRC-CONTRACTS` | Meridian contracts | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-CONTRACTS` | Meridian contracts | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-CONTRACTS` | Meridian contracts | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `SRC-CONTRACTS` | Meridian contracts | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 | `SRC-CORE` | Meridian core | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-CORE` | Meridian core | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-CORE` | Meridian core | `W2-TRD-001` | Paper trading cockpit reliability |
@@ -66,6 +74,8 @@ do_not_edit: true
 | `SRC-DESIGN-DOCUMENTS` | Meridian Documents design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
@@ -82,6 +92,10 @@ do_not_edit: true
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 | `SRC-DESIGN-IDENTITY` | Meridian Identity design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W10-LOT-002` | Security-identified open-lot convergence |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
@@ -140,18 +154,28 @@ do_not_edit: true
 | `SRC-PROVIDER-SDK` | Provider SDK | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-QUANTSCRIPT` | QuantScript | `W3-CONT-001` | Research to paper continuity |
 | `SRC-QUANTSCRIPT` | QuantScript | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-RISK` | Meridian risk | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-RISK` | Meridian risk | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-RISK` | Meridian risk | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
-| `SRC-STORAGE` | Meridian storage | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
-| `SRC-STORAGE` | Meridian storage | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
-| `SRC-STORAGE` | Meridian storage | `W1-DATA-001` | Provider trust gate and data confidence baseline |
-| `SRC-STORAGE` | Meridian storage | `W2-TRD-001` | Paper trading cockpit reliability |
-| `SRC-STORAGE` | Meridian storage | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
-| `SRC-STORAGE` | Meridian storage | `W4-RPT-001` | Governed report pack readiness |
-| `SRC-STORAGE` | Meridian storage | `W5-ACCT-001` | Accounting records and operational evidence |
-| `SRC-STORAGE` | Meridian storage | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
-| `SRC-STORAGE` | Meridian storage | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `SRC-STORAGE` | Meridian storage primitives | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
+| `SRC-STORAGE` | Meridian storage primitives | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
+| `SRC-STORAGE` | Meridian storage primitives | `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `SRC-STORAGE` | Meridian storage primitives | `W2-TRD-001` | Paper trading cockpit reliability |
+| `SRC-STORAGE` | Meridian storage primitives | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-STORAGE` | Meridian storage primitives | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-STORAGE` | Meridian storage primitives | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-STORAGE` | Meridian storage primitives | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `SRC-STORAGE` | Meridian storage primitives | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `SRC-STORAGE` | Meridian storage primitives | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `SRC-STRATEGIES` | Meridian strategies | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-STRATEGIES` | Meridian strategies | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-STRATEGIES` | Meridian strategies | `W3-CONT-001` | Research to paper continuity |
@@ -174,12 +198,15 @@ do_not_edit: true
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 | `SRC-UI-SERVICES` | UI services | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-SERVICES` | UI services | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-UI-SERVICES` | UI services | `W3-CONT-001` | Research to paper continuity |
 | `SRC-UI-SERVICES` | UI services | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-UI-SERVICES` | UI services | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-UI-SERVICES` | UI services | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-UI-SERVICES` | UI services | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 | `SRC-UI-SHARED` | UI shared contracts | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-UI-SHARED` | UI shared contracts | `W10-LOT-002` | Security-identified open-lot convergence |
 | `SRC-UI-SHARED` | UI shared contracts | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
@@ -204,6 +231,10 @@ do_not_edit: true
 | `SRC-UI-SHARED` | UI shared contracts | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-UI-SHARED` | UI shared contracts | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 | `SRC-UI-SHARED` | UI shared contracts | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `SRC-UI-SHARED` | UI shared contracts | `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `SRC-UI-SHARED` | UI shared contracts | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `SRC-UI-SHARED` | UI shared contracts | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `SRC-UI-SHARED` | UI shared contracts | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 | `SRC-WPF` | WPF workstation | `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `SRC-WPF` | WPF workstation | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-WPF` | WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
@@ -222,3 +253,4 @@ do_not_edit: true
 | `SRC-WPF` | WPF workstation | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `SRC-WPF` | WPF workstation | `W10-PERF-001` | Portfolio and investor return measurement |
 | `SRC-WPF` | WPF workstation | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `SRC-WPF` | WPF workstation | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |

@@ -5,4 +5,6 @@ global using Meridian.Contracts.Domain.Models;
 // Expose internal classes to test assembly and Application layer for testing
 using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Meridian.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Storage.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Execution.Tests")]
 [assembly: InternalsVisibleTo("Meridian.Application")]

@@ -61,10 +61,11 @@ public sealed partial class ManualJournalEntryWorkbenchService
             var dimensions = line.Dimensions;
             if (dimensions?.IntercompanyAgreementId.HasValue != true && dimensions?.IntercompanyAgreementVersion.HasValue != true &&
                 !IsConsolidationDraft(draft) && chart.TryGetValue(line.AccountPath, out var account) &&
-                ((line.AccountPath == "Assets:Intercompany Receivable" && account.AccountType == "Asset") ||
+                (account.IntercompanyRole is not null ||
+                 (line.AccountPath == "Assets:Intercompany Receivable" && account.AccountType == "Asset") ||
                  (line.AccountPath == "Liabilities:Intercompany Payable" && account.AccountType == "Liability")))
                 issues.Add(Issue("manual-je.agreement-missing", AccountingConfigurationValidationSeverityDto.Warning,
-                    "This intercompany line has no approved agreement reference; posting remains permitted.",
+                    "This intercompany line has no approved agreement reference. The book's retained control mode determines posting eligibility.",
                     line.LineId, "Select the approved agreement/version when available."));
         }
         if (!referenced || draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.Reversed or
@@ -77,9 +78,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 throw new LedgerValidationException("Authoritative agreement review requires a supported ledger writer and retained book/period.");
             var book = await _journalStore.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The agreement review ledger book is unavailable.");
-            // The editor supports native book currency, without constructing transaction FX.
+            // Functional amounts belong to the destination book; explicit retained transaction
+            // amounts preserve legal agreement FX, while native drafts retain identity translation.
             if (!string.Equals(draft.Currency?.Trim(), book.BaseCurrency.Trim(), StringComparison.OrdinalIgnoreCase))
-                throw new LedgerValidationException("Agreement references on manual journals require the book currency; this editor does not retain transaction FX detail.");
+                throw new LedgerValidationException("The journal functional currency must match the destination book.");
             var timestamp = ToAccountingTimestamp(draft.AccountingDate);
             var ledgerLines = lines.Select(line =>
             {
@@ -93,12 +95,17 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
                     line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m,
                     "Agreement review", ToLedgerLineDimensions(line.Dimensions),
-                    string.Equals(line.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(draft.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)
-                        ? new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency,
-                            line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
-                            line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m, 1m)
-                        : null);
+                    line.TransactionCurrency is { } original
+                        ? new LedgerEntryCurrency(original.Currency, draft.Currency,
+                            line.Side == AccountingTemplateLineSideDto.Debit ? original.Amount : 0m,
+                            line.Side == AccountingTemplateLineSideDto.Credit ? original.Amount : 0m,
+                            original.FxRateToFunctional)
+                        : string.Equals(line.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(draft.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                            ? new LedgerEntryCurrency(book.BaseCurrency, book.BaseCurrency,
+                                line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
+                                line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m, 1m)
+                            : null);
             }).ToArray();
             var reviewLines = await MaterializeAgreementReversalCurrenciesAsync(draft, book, ledgerLines, ct).ConfigureAwait(false);
             var sourceId = draft.ReversalOfJournalEntryId ?? draft.RebookedFromJournalEntryId;
@@ -147,14 +154,19 @@ public sealed partial class ManualJournalEntryWorkbenchService
             LedgerEntryCurrency? inverseCurrency = null;
             if (source.Currency is { } currency)
             {
-                if (!currency.IsFunctionalCurrency || currency.FxRateToFunctional != 1m
-                    || !string.Equals(currency.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
-                    throw new LedgerValidationException("This agreement reversal editor preserves native currency or retained legacy null evidence only; transaction FX requires a supported currency-preserving workflow.");
+                if (!string.Equals(currency.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+                    throw new LedgerValidationException("Agreement reversal currency must retain the immutable source's functional book currency.");
                 inverseCurrency = new(currency.TransactionCurrency, currency.FunctionalCurrency,
                     currency.TransactionCredit, currency.TransactionDebit, currency.FxRateToFunctional);
+                if (!currency.IsFunctionalCurrency && candidate.Currency != inverseCurrency)
+                    throw new LedgerValidationException("Agreement reversal requires the exact retained transaction currency, inverse amounts and original FX rate.");
             }
-            // Null historical evidence stays null. Native source evidence is inverted exactly;
-            // no currency is inferred from today's book for an unlabeled historical source.
+            var hasExplicitCurrency = draft.Lines.Any(line => line.TransactionCurrency is not null &&
+                CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString()) == candidate.EntryId);
+            if (hasExplicitCurrency && candidate.Currency != inverseCurrency)
+                throw new LedgerValidationException("Agreement reversal transaction evidence differs from its immutable source inverse.");
+            // Null historical evidence stays null. Native and explicit transaction evidence are
+            // inverted exactly; neither a new currency nor a new rate is inferred from today's book.
             materialized.Add(new(candidate.EntryId, candidate.JournalEntryId, candidate.Timestamp, candidate.Account,
                 candidate.Debit, candidate.Credit, candidate.Description, candidate.Dimensions, inverseCurrency));
             remaining.RemoveAt(matches[0].Index);

@@ -239,7 +239,10 @@ public sealed class SecurityAssetTermsSchemaTests
         // Appended after the block, so every earlier refusal text and the order of populated terms hold.
         SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= since)
             .TakeLast(3).Select(static field => field.Key).Should().Equal(ScheduleTermKeys);
-        SecurityAssetTermsSchema.Fields(assetClass).TakeLast(4).Select(static field => field.Key)
+        // Later versions may append fields; this historical order ends at the calculation companion.
+        var companionVersion = SecurityAssetTermsSchema.Field(assetClass, "cashFlowContract")!.SinceTermsVersion;
+        SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= companionVersion)
+            .TakeLast(4).Select(static field => field.Key)
             .Should().Equal(ScheduleTermKeys.Append("cashFlowContract"));
     }
 

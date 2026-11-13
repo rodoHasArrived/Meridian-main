@@ -77,11 +77,13 @@ public sealed class IntercompanyAgreementAuthorityTests
         var store = EvidenceStore(Identity());
         var authority = EvidenceAuthority(store.Object);
 
-        var resolved = await authority.ResolveAsync(Call, Guid.NewGuid(), Guid.NewGuid(),
+        var resolved = await authority.ResolveAsync(Call, LegalAgreementId, Guid.NewGuid(),
             [new(EvidenceVaultReference.CanonicalPrefix + VaultId, "artifact-a")]);
 
         resolved.Should().ContainSingle().Which.Should().Be(new IntercompanyAgreementEvidenceDto(
             EvidenceVaultReference.CanonicalPrefix + VaultId, "artifact-a", ContentHash));
+        store.Verify(s => s.VerifyDocumentContentAsync(VaultId, "document-a", "artifact-a", ContentHash,
+            Call.TenantId, "company-a", It.IsAny<CancellationToken>()), Times.Once);
         store.Verify(s => s.VerifyRetainedContentAsync(VaultId, Call.TenantId, "company-a", It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -89,12 +91,12 @@ public sealed class IntercompanyAgreementAuthorityTests
     public async Task Evidence_ChangedHashAndUnacceptedDocumentAreRefused()
     {
         var accepted = EvidenceAuthority(EvidenceStore(Identity()).Object);
-        var changedHash = () => accepted.ResolveAsync(Call, Guid.NewGuid(), Guid.NewGuid(),
+        var changedHash = () => accepted.ResolveAsync(Call, LegalAgreementId, Guid.NewGuid(),
             [new(EvidenceVaultReference.CanonicalPrefix + VaultId, "artifact-a", new string('b', 64))]);
         await changedHash.Should().ThrowAsync<IntercompanyAgreementValidationException>();
 
         var unreviewed = EvidenceAuthority(EvidenceStore(Identity(EvidenceDocumentReviewStatusDto.NeedsReview)).Object);
-        var changedReview = () => unreviewed.ResolveAsync(Call, Guid.NewGuid(), Guid.NewGuid(),
+        var changedReview = () => unreviewed.ResolveAsync(Call, LegalAgreementId, Guid.NewGuid(),
             [new(EvidenceVaultReference.CanonicalPrefix + VaultId, "artifact-a")]);
         await changedReview.Should().ThrowAsync<IntercompanyAgreementValidationException>();
     }
@@ -104,18 +106,22 @@ public sealed class IntercompanyAgreementAuthorityTests
     {
         var store = EvidenceStore(null);
         var authority = EvidenceAuthority(store.Object);
-        var foreign = () => authority.ResolveAsync(Call, Guid.NewGuid(), Guid.NewGuid(),
+        var foreign = () => authority.ResolveAsync(Call, LegalAgreementId, Guid.NewGuid(),
             [new(EvidenceVaultReference.CanonicalPrefix + VaultId, "artifact-a")]);
         await foreign.Should().ThrowAsync<IntercompanyAgreementValidationException>();
-        var arbitrary = () => authority.ResolveAsync(Call, Guid.NewGuid(), Guid.NewGuid(), [new("https://example.test/agreement.pdf")]);
+        var arbitrary = () => authority.ResolveAsync(Call, LegalAgreementId, Guid.NewGuid(), [new("https://example.test/agreement.pdf")]);
         await arbitrary.Should().ThrowAsync<IntercompanyAgreementValidationException>();
         store.Verify(s => s.VerifyRetainedContentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    private static readonly Guid LegalAgreementId = Guid.Parse("c7111111-1111-1111-1111-111111111111");
 
     private static Mock<IEvidenceArtifactStore> EvidenceStore(EvidenceVaultIdentityDto? identity)
     {
         var store = new Mock<IEvidenceArtifactStore>(MockBehavior.Strict);
         store.Setup(s => s.TryGetVaultIdentityAsync(VaultId, Call.TenantId, "company-a", It.IsAny<CancellationToken>())).ReturnsAsync(identity);
+        store.Setup(s => s.VerifyDocumentContentAsync(VaultId, "document-a", "artifact-a", ContentHash,
+            Call.TenantId, "company-a", It.IsAny<CancellationToken>())).ReturnsAsync(true);
         store.Setup(s => s.VerifyRetainedContentAsync(VaultId, Call.TenantId, "company-a", It.IsAny<CancellationToken>())).ReturnsAsync(true);
         return store;
     }
@@ -125,7 +131,8 @@ public sealed class IntercompanyAgreementAuthorityTests
         var date = DateTimeOffset.UtcNow;
         var document = new EvidenceDocumentDto("document-a", "synthetic-agreement.pdf", EvidenceDocumentClassificationDto.Agreement,
             ContentHash, date, "Upload", "operator-a", Call.TenantId, "company-a", EvidenceExtractionStatusDto.Accepted,
-            [], new(review, "reviewer-a", date), []);
+            [], new(review, "reviewer-a", date), [])
+        { ArtifactId = "artifact-a", ObjectLinks = [new(EvidenceDocumentLinkKindDto.IntercompanyAgreement, LegalAgreementId.ToString("D"))] };
         return new EvidenceVaultIdentityDto(VaultId, "agreement", "source-a", "manifest.json", "/manifest", date,
             ContentHash, 1, "file-manifest")
         {

@@ -25,6 +25,9 @@ public sealed partial class PostgresLedgerJournalStore
             instruction.PrincipalPaydown, command.Journal.Entry.Metadata.EffectiveDate ?? default, command.RetainedEvidence);
         if (issues.Count > 0)
             throw new LedgerValidationException(string.Join(" ", issues));
+        if (instruction.ScheduledPrincipal is not null && instruction.EconomicEvent.RetainedEvidence
+            .Where(e => e.SubjectType == "BondPrincipalCashReceipt").Any(e => !command.RetainedEvidence.Contains(e)))
+            throw new LedgerValidationException("Scheduled principal must retain every exact principal-receipt component for locked single-use allocation.");
         if (command.AcquisitionLot is not null || command.DisposalSelections is { Count: > 0 }
             || command.Amortization is not null || command.CorporateAction is not null || command.CapitalReturn is not null
             || command.ReliefMethod is not null || command.PolicyRevision is not null
@@ -147,6 +150,77 @@ public sealed partial class PostgresLedgerJournalStore
                 || lot.Account.AccountType != LedgerAccountType.Asset || lot.Account != locked[lotIds[0]].Account)
                 throw new LedgerValidationException("Factor-paydown lot version, basis, factor or exact carrying account changed.");
             before[index] = lot;
+        }
+        if (instruction.ScheduledPrincipal is { } scheduled)
+        {
+            foreach (var receipt in command.RetainedEvidence.Where(e => e.SubjectType == "BondPrincipalCashReceipt")
+                .OrderBy(e => e.SourceSystem, StringComparer.Ordinal).ThenBy(e => e.SourceReference, StringComparer.Ordinal))
+            {
+                await using var receiptLock = connection.CreateCommand();
+                receiptLock.Transaction = transaction;
+                receiptLock.CommandText = "select pg_advisory_xact_lock(hashtextextended(@receipt_key, 0))";
+                receiptLock.Parameters.AddWithValue("receipt_key", $"bond-principal:{book.LedgerBookId:D}:{receipt.SourceSystem}:{receipt.SourceReference}");
+                await receiptLock.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+                await using var consumed = connection.CreateCommand();
+                consumed.Transaction = transaction;
+                consumed.CommandText = $"""
+                    select exists (
+                        select 1 from {Qualified("atomic_tax_lot_posting_batches")} b,
+                            lateral jsonb_array_elements(b.retained_evidence) e
+                        where b.ledger_book_id = @book and b.mutation_kind = 'FactorPaydown'
+                          and coalesce(e->>'SubjectType', e->>'subjectType') = 'BondPrincipalCashReceipt'
+                          and coalesce(e->>'SourceSystem', e->>'sourceSystem') = @source
+                          and coalesce(e->>'SourceReference', e->>'sourceReference') = @reference)
+                    """;
+                consumed.Parameters.AddWithValue("book", book.LedgerBookId);
+                consumed.Parameters.AddWithValue("source", receipt.SourceSystem);
+                consumed.Parameters.AddWithValue("reference", receipt.SourceReference);
+                if ((bool)(await consumed.ExecuteScalarAsync(ct).ConfigureAwait(false))!)
+                    throw new LedgerValidationException("The retained principal-receipt component was already allocated to a posted principal event.");
+            }
+            var authority = _bondIncomeAuthority?.Invoke()
+                ?? throw new LedgerValidationException("Scheduled principal posting requires authoritative bond-income recomputation.");
+            foreach (var inputs in scheduled.IncomeInstructions)
+            {
+                var income = inputs.BondIncome!;
+                if (book.AccountingBasis != AccountingBasisKindDto.Gaap || income.AccountingPolicyId != book.AccountingPolicyId
+                    || income.AccountingPolicyVersion != book.AccountingPolicyVersion)
+                    throw new LedgerValidationException("Scheduled principal must use the locked book's adopted GAAP policy.");
+                var rebuilt = await authority.PreviewAsync(new(book.LedgerBookId, inputs.ExpectedLot.TaxLotRecordId,
+                    inputs.AsOfDate, income.KnownAt, income.AccountId), ct).ConfigureAwait(false);
+                if (!OpenLotAmortization.SameInstruction(inputs, rebuilt.Instruction))
+                    throw new LedgerValidationException("Scheduled principal income, lot or retained input evidence changed after review.");
+            }
+            if (instruction.NewFactor == 0m)
+            {
+                var terminal = new List<BondIncomeTerminalCouponReceiptDto>();
+                var openings = new List<BondIncomeTerminalCouponOpeningDto>();
+                foreach (var inputs in scheduled.IncomeInstructions)
+                {
+                    if (!BondIncomeTerminalCoupon.HasCouponEconomics(inputs))
+                        continue;
+                    var couponScope = BondIncomeTerminalCoupon.Scope(instruction, inputs);
+                    var latest = await ReadCouponReceiptAsync(connection, transaction, couponScope,
+                        inputs.ExpectedLot.TaxLotRecordId, null, ct).ConfigureAwait(false);
+                    var targets = BondIncomeTerminalCoupon.EarnedTargets(inputs);
+                    if (latest is null && targets.RawReceivableEarned == 0m && targets.RawPayableEarned == 0m
+                        && BondIncomeTerminalCoupon.HasCashRights(inputs))
+                    {
+                        var lot = before.Single(l => l.TaxLotRecordId == inputs.ExpectedLot.TaxLotRecordId);
+                        var opening = BondIncomeTerminalCoupon.Opening(inputs, lot.OriginatingMutationBatchId ?? Guid.Empty,
+                            lot.SourceJournalEntryId ?? Guid.Empty);
+                        var couponAuthority = _couponRecognitionAuthority?.Invoke()
+                            ?? throw new LedgerValidationException("Terminal purchased-interest opening requires authoritative coupon reconciliation.");
+                        await couponAuthority.VerifyTerminalOpeningAsync(couponScope, inputs, opening, scope.PeriodId, ct).ConfigureAwait(false);
+                        openings.Add(opening);
+                        continue;
+                    }
+                    var reconciled = BondIncomeTerminalCoupon.Reconcile(inputs, couponScope, latest);
+                    if (reconciled is not null)
+                        terminal.Add(reconciled);
+                }
+                BondIncomeTerminalCoupon.RequireEvidence(instruction, terminal, openings);
+            }
         }
         ValidateFactorPaydownJournalAccounts(command, instruction, before[0].Account);
 

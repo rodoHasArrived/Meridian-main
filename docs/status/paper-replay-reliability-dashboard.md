@@ -2,7 +2,7 @@
 
 _Auto-generated from canonical JSON payload._
 _Generated: 1970-01-01T00:00:00+00:00_
-Data sources: `docs/plans/paper-trading-cockpit-reliability-sprint.md`, `docs/status/FEATURE_INVENTORY.md`, `src/Meridian.Execution/Services/PaperSessionPersistenceService.cs`, `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
+Data sources: `docs/plans/paper-trading-cockpit-reliability-sprint.md`, `docs/status/FEATURE_INVENTORY.md`, `src/Meridian.Execution/Services/PaperSessionPersistenceService.cs`, `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests*.cs`
 
 
 Tracks whether paper-session replay verification, stale-readiness detection, and shared trading readiness evidence remain wired through docs, services, and tests.
@@ -26,7 +26,7 @@ Tracks whether paper-session replay verification, stale-readiness detection, and
 | API Surface | Execution endpoints expose replay verification for sessions | Pass | 2/2 | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Sessions.cs` | - |
 | Durability | Paper session persistence can verify replay from durable fills, orders, and ledger state | Pass | 3/3 | `src/Meridian.Execution/Services/PaperSessionPersistenceService.cs` | - |
 | Status | Feature inventory describes paper cockpit replay and stale-coverage posture | Gap | 0/2 | `docs/status/FEATURE_INVENTORY.md` | terms: `Paper-trading cockpit`, `replay-audit metadata`, `stale-coverage detection` |
-| Validation | Workstation endpoint tests cover replay readiness and operator inbox routing | Pass | 2/2 | `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs` | - |
+| Validation | Workstation endpoint tests cover replay readiness and operator inbox routing | Pass | 2/2 | `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountOversight.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccrualSchedules.cs`, +52 more | - |
 
 ## Follow-up Queue
 

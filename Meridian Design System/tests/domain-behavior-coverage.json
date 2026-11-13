@@ -8944,14 +8944,16 @@
       "name": "CorrelationHeatmap",
       "kind": "component",
       "sourcePath": "components/charts/CorrelationHeatmap.jsx",
-      "reviewedSourceHash": "609fea70f2470bc55601f9a0ecb4e8213b44f8e9d4da7c5ac5ea8599f536fc8f",
+      "reviewedSourceHash": "c1f29f3152698f2398b15f011c8956dfa3fa8daef9ceba8984198735e94d8e8d",
       "applicableStates": [
         "populated",
         "empty",
         "missing",
         "nonfinite",
         "diagonal",
-        "hover"
+        "hover",
+        "hidden-values",
+        "read-only"
       ],
       "conditionVocabulary": [],
       "notApplicable": {},
@@ -9067,9 +9069,24 @@
               "components/charts/CorrelationHeatmap.jsx"
             ]
           }
+        },
+        {
+          "name": "Read-only correlation table owns rows/cells and retains non-hover values when visible numbers are suppressed",
+          "path": "tests/integration-data-accessibility-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "read-only",
+            "hidden-values",
+            "missing"
+          ],
+          "reference": "tests/integration-data-accessibility-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
-      "notes": [],
+      "notes": [
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
+      ],
       "testedStates": [
         "diagonal",
         "empty",
@@ -9118,14 +9135,15 @@
       "name": "CoverageMatrix",
       "kind": "component",
       "sourcePath": "components/charts/CoverageMatrix.jsx",
-      "reviewedSourceHash": "19cf7a6444da996be272d9cf5beb2d82addfad0fece43b3bdc781a5027277a3a",
+      "reviewedSourceHash": "7c5744c9fd6101d5c06c9bfb1f95601f8854ed64599cb45b7838e70c4b25f1c1",
       "applicableStates": [
         "read-only",
         "empty",
         "keyboard",
         "focus",
         "hover",
-        "recovery"
+        "recovery",
+        "exact-callback"
       ],
       "conditionVocabulary": [
         "full",
@@ -9239,9 +9257,24 @@
               "components/charts/CoverageMatrix.jsx"
             ]
           }
+        },
+        {
+          "name": "Read-only coverage is a table; interactive coverage remains a keyboard grid with exact callback identity",
+          "path": "tests/integration-data-accessibility-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "read-only",
+            "keyboard",
+            "exact-callback"
+          ],
+          "reference": "tests/integration-data-accessibility-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
-      "notes": [],
+      "notes": [
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
+      ],
       "testedStates": [
         "empty",
         "evidence",
@@ -14926,7 +14959,7 @@
       "name": "LedgerTable",
       "kind": "component",
       "sourcePath": "components/accounting/LedgerTable.jsx",
-      "reviewedSourceHash": "8b860bf77cac154bb83db7907d3718fdf57a4616eaebb1fe6f2871c0254f710d",
+      "reviewedSourceHash": "c65e481f11c78528cf57db39b2bee03f3df74352349c2b064b4e1aa434da1a99",
       "applicableStates": [
         "populated",
         "empty",
@@ -14946,7 +14979,9 @@
         "read-only",
         "keyboard",
         "focus",
-        "recovery"
+        "recovery",
+        "exact-callback",
+        "selection"
       ],
       "conditionVocabulary": [],
       "notApplicable": {
@@ -15064,9 +15099,26 @@
             "caseName": "LedgerTable financial string grammar and restricted values never create a numeric proof or leak hidden amounts"
           },
           "proofCategory": "interaction"
+        },
+        {
+          "name": "One row Tab stop, arrows/Home/End, exact source identity after sorting, and child controls do not trigger row activation",
+          "path": "tests/integration-data-accessibility-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "keyboard",
+            "focus",
+            "sorted",
+            "selection",
+            "exact-callback"
+          ],
+          "reference": "tests/integration-data-accessibility-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
-      "notes": [],
+      "notes": [
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
+      ],
       "conditionNote": "Condition vocabulary describes financial evidence and presentation. It is distinct from independently controlled interaction and transport states.",
       "transportNotApplicable": "This presentation contract does not initiate live provider/backend requests. Host DataStateSwitch templates separately exercise loading/empty/error/retry; no remote recovery is claimed for this export.",
       "applicabilityEvidence": {
@@ -15098,7 +15150,8 @@
         "source-order",
         "totals",
         "void",
-        "zero"
+        "zero",
+        "exact-callback"
       ],
       "remainingApplicableStates": [],
       "remainingInteractionStates": [],
@@ -16234,7 +16287,7 @@
       "name": "OptionChainTable",
       "kind": "component",
       "sourcePath": "components/trading/OptionChainTable.jsx",
-      "reviewedSourceHash": "74c1082d718299fe5bccfcf1fe01c8740ba80d1480f974e9f24088fea6830a56",
+      "reviewedSourceHash": "023dfad1bbfdb7e002b42b8ebc59a3f7aa3611698a320563cab95630041e0338",
       "applicableStates": [
         "controlled",
         "uncontrolled",
@@ -16246,7 +16299,8 @@
         "recovery",
         "shrink",
         "read-only",
-        "zero"
+        "zero",
+        "exact-callback"
       ],
       "conditionVocabulary": [
         "missing-quote",
@@ -16402,9 +16456,25 @@
             "caseName": "omitted callback exposes read-only data without active selection targets"
           },
           "proofCategory": "interaction"
+        },
+        {
+          "name": "Active strike is announced by the interactive grid; callback preserves original row; read-only chain is a table",
+          "path": "tests/integration-data-accessibility-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "keyboard",
+            "focus",
+            "read-only",
+            "exact-callback"
+          ],
+          "reference": "tests/integration-data-accessibility-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
-      "notes": [],
+      "notes": [
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
+      ],
       "testedStates": [
         "controlled",
         "empty",
@@ -16417,7 +16487,8 @@
         "shrink",
         "sorted",
         "uncontrolled",
-        "zero"
+        "zero",
+        "exact-callback"
       ],
       "remainingApplicableStates": [],
       "remainingInteractionStates": [],

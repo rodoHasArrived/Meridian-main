@@ -6,10 +6,21 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Execution
+
+`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
+
+Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
+The original symbol remains authoritative for probing and order validation, and a failed probe
+still refuses the order.
+
+Broker submission, cancellation/amendment, retained-rejection and paper-close logs use SHA-256
+correlation for submitted symbols, broker order IDs, rejection reasons and session identities. Corrupt JSONL reads log the operation and failure
+type. The original requests, journal/audit reasons, session metadata and JSONL bytes remain retained
+unchanged; operational logs do not carry those payloads or storage paths.
 
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
 
@@ -205,6 +216,12 @@ service.
 
 ## Important workflows
 
+### Execution preview and operational evidence
+
+The order journal's `to` boundary is exclusive, matching the summary's half-open UTC window and the browser's **Before date** filter.
+
+`OrderPreviewService` observes the shared admission/risk path without reservations or side effects. `ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state evidence in a synchronous WAL. FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as unavailable. Restarting a local paper portfolio without restoring its positions retains an economic coverage gap, preserving order history while withholding cross-book P&L. `ExecutionAlertService` supplies persistent alerts and outbox selection. See [execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and verification details.
+
 All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
 gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
 path with `ORDER_REQUEST_INVALID` and structured `validationErrors` metadata, including when no
@@ -390,15 +407,36 @@ Broker-backed readiness also includes open-order reconciliation: `BrokerageExecu
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
 Ledger posting from trade-fill events is explicit and Security Master gated. `LedgerPostingConsumer`
-retains the trade journal's Investing cash category against its immutable line IDs. Sales report
-actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
-remain separate Operating payments. Reversal preserves the retained category.
-A buy that covers a short books its realized gain or loss the same way a sale does: Securities is
-debited by the short-sale proceeds being relieved (cash paid plus the gain, or less the loss), so a
-flat position leaves no residual Securities balance. A buy-to-cover fill whose two-line trade
-journal was retained before this accounting is replayed against that retained journal, matched
-exactly, so a fill interrupted across the upgrade can post its remaining journals. The retained
-journal is kept as posted; replay never appends the earlier shape and does not correct it.
+and `PaperTradingPortfolio` use Ledger's `SecurityTradePostingProjector` and shared
+`IChartOfAccounts` / `StandardChartOfAccounts` registry for opening/closing trades, financing,
+short collateral, transaction charges and variation-margin fill settlements. The paper lot-book lock
+captures exact per-leg execution values and relieved basis or original short proceeds into immutable
+`TradeFillAccountingEvidence`; a fill crossing zero retains its closing and opening legs separately.
+Commission, fees and explicit slippage charges all reach the expense journal. Contract multipliers,
+face-value percentage pricing and the selected variation-margin model retain their booked scale.
+The consumer checks these facts against the fill, realized result and financial-account scope;
+pooled positions with ambiguous ownership cannot certify another owner's basis. Session records
+retain their accounting evidence version and owner provenance through restart. Version 1 requires
+both captured evidence and an accepted durable accounting handoff; offline paper-only records remain
+version 0. Old unverified positions cannot certify typed closing evidence, even when their execution
+reports can be replayed. These provenance fields do not change the execution report or its canonical
+session hash.
+
+New OMS events carry accounting-evidence version 1. A broker fill without authoritative lot evidence
+remains pending for reconciliation instead of inferring direction or basis from order side or a zero
+realized result. Production `AddTradeFillLedgerPosting` requires the current version on new admission.
+The assembly-internal retained-recovery port accepts historical events only from the exact retained
+accounting scope; original public consumer constructors retain explicit legacy compatibility.
+Value-record equality in the primary WAL and independent handoff store prevents an existing fill
+identity from being reused with changed basis, costs or scope.
+
+New short trades use the same short-securities liability as Backtesting; covers relieve retained
+opening proceeds and recognize the gain or loss, leaving no short liability when flat. Version-0
+retained events still use their historical Securities-based journal shapes. A buy-to-cover fill whose
+two-line trade journal predates cover accounting is compared against that exact retained record so
+an interrupted fill can finish its remaining journals. Replay never appends an obsolete alternative
+or rewrites a retained journal. Trade cash-flow categories bind to immutable line IDs; acquisition
+and disposal cash, financing, and separate Operating transaction charges preserve their source economics.
 For a crash retry whose deterministic journal was already retained before attribution existed,
 the governed target first requires exactly one authoritative identity collision with no
 `cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
@@ -574,7 +612,8 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 
@@ -589,3 +628,59 @@ Keep live actions explicitly gated and paper-first unless roadmap acceptance evi
 
 Both paper gateway implementations retain their aggregate-query constructor signatures and optional
 arguments alongside the separate identity/trading-query overloads for compiled-client compatibility.
+
+## Paper ledger and broker accounting checks
+
+Multi-account paper books post cash, lot basis, gains, expenses and financing with the canonical
+`LedgerAccounts` financial-account dimension. The legacy single-account constructor retains its
+unscoped journal format for replay compatibility. Short margin collateral is retained as an asset
+and released on cover; paid margin interest is expensed once without also increasing loan principal.
+`PaperTradingPortfolio.CheckLedgerIntegrity` compares cash, exact remaining lot basis, financing,
+collateral, orphan accounts and transfer/allocation residuals. Paper-session close refuses a
+mismatched final journal and replay verification includes the individual differences. The quote-only
+corporate-action adjuster may rescale split lots; a basis-changing result with an attached ledger is
+refused before mutation because that contract does not carry cash or event posting evidence.
+
+`AddPortfolioAccountingReconciliation` composes a read-only hosted check over `PortfolioRegistry`
+and registered `IBrokeragePortfolioSync`/`IBrokerageActivitySync` adapters. It runs at the configured
+`PositionSyncOptions.SyncInterval` (at least daily), uses a single broker portfolio snapshot, compares
+exact fractional quantities, cash, loans and carrying prices, and exposes missing, amount-mismatch
+and unknown-activity evidence. `CoverageIssues` explicitly identifies unavailable realized P&L or
+position-only provider evidence; a clean position report is not proof of complete accounting.
+No reconciliation check submits broker orders or automatic correcting entries.
+
+Alpaca activity intake continues through the existing `alpaca-activity` statement connector and
+governed durable statement import/recovery pipeline. Activity IDs remain external transaction IDs;
+the provider cursor now retains the newest activity ID, timestamp watermark, page count and
+completeness after all pages have been retrieved. Synthetic fixtures exercise paging, interrupted
+statement recovery, duplicate IDs and unsupported activities; live-provider compatibility remains
+live-untested.
+
+`BrokerActivityImportService` is the shared read-side inbox used by brokerage workstation sync.
+It atomically retains source-generated per-ID records before publishing a checksummed checkpoint.
+`ImportWithHistoryAsync` returns separate `Current` and `Retained` snapshots. `Current` is the
+latest provider observation and supplies the current projection, raw snapshot and status.
+`Retained` is the checksum-verified union of immutable accepted activity records; downstream
+history can be recovered from it even when the next current fetch is empty. Accepted historical
+rows do not become observations in that current provider window. The existing `ImportAsync`
+contract is unchanged and returns the retained history.
+Restart resumes at the last complete timestamp watermark minus one tick and deduplicates broker IDs,
+including distinct events sharing a timestamp. A failure after record acceptance but before the
+checkpoint causes a safe reread and exact-content verification. Missing completeness evidence
+forces a rescan; incomplete fetches cannot move the checkpoint. Corrections require a distinct
+provider activity ID/lineage; changed evidence under the same ID is refused. Explicit `Since`
+rescans discover late arrivals earlier than the watermark. The inbox retains evidence for the
+existing governed statement importer and does not authorize journal entries.
+
+Paper trade producers retain investing cash-flow attribution for gross acquisitions, disposals,
+short proceeds and covers; realized gain/loss and basis relief are not additional cash movements.
+Margin borrowing and repayment are independent balanced financing journals, so cash-flow exports
+preserve gross investing and financing activity rather than attributing a net margin trade by guess.
+
+Paper-session journal snapshots retain complete `JournalEntryMetadata` as an optional additive DTO
+property, including cash-flow tags and their original line IDs. Closed-session restart restores
+that evidence before statement generation; legacy snapshots retain their available scalar metadata.
+
+Session creation, fill-time rebuilds and restart replay use retained `CreatedAt` as the opening
+capital journal timestamp. Rebuilding a projection cannot move capital into a later reporting
+period or change the historical opening cash balance. Public portfolio constructors remain intact.

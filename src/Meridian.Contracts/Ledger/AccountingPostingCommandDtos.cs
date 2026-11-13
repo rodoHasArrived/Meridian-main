@@ -80,6 +80,8 @@ public sealed record AccountingPostingCommandDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     Guid? LedgerBookId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     /// <summary>
     /// The actual posting actor, supplied by the validated command boundary. Null retains an
     /// explicitly unattributed legacy command; it never means that an approver posted it.
@@ -87,6 +89,9 @@ public sealed record AccountingPostingCommandDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Actor { get; init; }
 
+    /// <summary>Exact approved transaction-date FX authority reviewed with intercompany amounts.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ConsolidationFxAmountDto? IntercompanyFx { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparerAttestationDto? CashDividendAttestation { get; init; }
 
@@ -94,6 +99,9 @@ public sealed record AccountingPostingCommandDto(
         Evidence ?? [];
 
     public AccountingBookContextDto? BookContext { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ControlledCloseAuthorizationId { get; init; }
 
     public Guid? BookPositionId { get; init; }
 

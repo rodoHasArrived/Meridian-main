@@ -390,6 +390,33 @@ public sealed class AccrualLedgerServiceTests
         inspect.Should().Throw<DirectLendingCommandException>();
     }
 
+    [Fact]
+    public async Task ProjectAsync_UsesSharedCashAndLoanAccountsWithRetainedScope()
+    {
+        var writes = await ProjectAsync("loan.drawdown-booked", """{"amount":1000.00}""");
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        var chart = StandardChartOfAccounts.Instance;
+        var accountId = entry.Metadata.FinancialAccountId;
+
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.Cash, accountId) && line.Credit == 1000m);
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.LoanPrincipal, accountId, "NWTERM26") && line.Debit == 1000m);
+        entry.Lines.Should().OnlyContain(line => line.Account.FinancialAccountId == accountId);
+    }
+
+    [Fact]
+    public async Task ProjectAsync_RejectsNegativeInterestInsteadOfPostingOnlyThePositiveFee()
+    {
+        var act = () => ProjectAsync(
+            "loan.daily-accrual-posted",
+            """{"interestAmount":-10,"commitmentFeeAmount":2.50}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*'interestAmount' cannot be negative*");
+    }
+
     [Theory]
     [InlineData("loan.drawdown-booked", """{"amount":0}""")]
     [InlineData("loan.restructured", """{"reason":"covenant reset"}""")]

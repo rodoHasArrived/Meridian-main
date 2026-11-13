@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ledger
@@ -15,6 +15,15 @@ last_reviewed: 2026-11-12
 while swapping both functional and transaction debit/credit amounts. A correction never drops the
 currency evidence from its immutable source.
 
+Explicitly classified investing activities recognize either an asset carrying leg or a
+liability carrying leg (short securities payable). A short cover with retained investing
+classification reports its actual cash cost while preserving the booked realized result.
+
+Optional intercompany agreement/revision, chart-node/binding and transaction identities retain
+source provenance on immutable journal legs. Null fields are omitted to preserve historic evidence
+serialization. Reviewed legacy-attribution sidecars add missing historical identity without editing
+posted legs; consolidation output remains a separate reviewed overlay. See
+[the domain dictionary](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
 economic face represented by that quantity and retains decimal unit-cost precision; share rounding
 is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
@@ -72,6 +81,9 @@ opening proceeds against cash execution cost and recognizes the difference as bo
 It does not infer short-sale tax character or manufacture corporate-action payments.
 
 Cash-flow reversal remaps accepted retained attribution tags case-insensitively, matching the attribution reader after serialization and line reordering. Unsupported or incomplete attribution still blocks reporting.
+`LedgerJournalReversal` also reverses each retained transaction-currency debit/credit while
+preserving both currency codes and the recorded FX rate. Corrections therefore reverse the
+functional and transaction amounts together; original entries remain immutable.
 
 
 `OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
@@ -128,12 +140,37 @@ This layer should model ledger behavior and accounting evidence without owning U
 
 ## Important workflows
 
+Backtesting, paper portfolios, durable execution fills and direct-lending journals resolve posting
+accounts through `IChartOfAccounts` and the immutable `StandardChartOfAccounts` role registry.
+Account types and symbol requirements are explicit; an unknown role is rejected. `GetDefinition`
+provides name/type metadata without inventing a financial account or bypassing posting-scope checks.
+Existing names and scopes remain compatible with retained journals and `LedgerAccounts` balance
+lookups. Loan roles preserve their historical classification, instrument symbol and loan-account
+scope; cash uses the same role as trading. The hierarchical `ChartOfAccounts` remains a reporting rollup.
+
+`SecurityTradePostingProjector` supplies the common opening, closing, commission, financing,
+short-collateral and variation-margin line economics. Callers retain exact opening/closing quantities,
+execution values and relieved long basis or original short proceeds; crossing zero retains both
+legs. New short openings and covers use `Short Securities Payable`, while gains and losses use the
+retained carrying value even for breakeven or partial closes. The kernel never selects lots or
+reconstructs basis from an average quote or realized result. `TradeFillAccountingEvidence` carries
+these facts, source costs, collateral and financial-account scope from the paper lot mutation into
+the durable fill event. Old retained events and journals keep their historical shapes during retry;
+this convergence does not rewrite posted history or supply missing basis authority.
+
 Use this module for books, ledger behavior, reconciliation evidence, and accounting workflow support.
 `ChartOfAccounts` supports customizable colon-delimited account hierarchies such as
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
 income-statement and balance-sheet rows with net-income and accounting-equation checks;
+`BuildIncomeStatementForPeriod` separately returns a `LedgerIncomeStatement` over
+`(PeriodStart, AsOf]`, scoped to the requested financial account and line dimensions. It excludes
+opening balances and pure retained-earnings closing transfers while retaining ordinary reversals
+and corrections. Its period revenue, expenses and result remain available after closing the books.
+Zero-result closes without a retained-earnings leg require retained period-close provenance and a
+balanced temporary-account scope; an ordinary P&L reclassification does not become a closing transfer.
+Existing point-in-time statements and `BuildForPeriod` keep their accumulated unclosed P&L contract.
 `BuildForPeriod` additionally derives a direct-method `LedgerCashFlowStatement` (operating /
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,

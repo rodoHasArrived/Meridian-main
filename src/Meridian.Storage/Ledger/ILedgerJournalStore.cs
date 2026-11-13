@@ -184,6 +184,14 @@ public interface ITransactionalLedgerJournalStore :
     ILedgerJournalStore,
     IAtomicLedgerPeriodCloseStore
 {
+    /// <summary>Retain this scope through commit/rollback of the caller-owned transaction.</summary>
+    Task<IAsyncDisposable> AcquirePostingAuthorityAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        IReadOnlyList<LedgerJournalEntryWrite> entries,
+        CancellationToken ct = default)
+        => Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
+
     Task AppendAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,

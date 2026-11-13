@@ -104,6 +104,8 @@ public sealed partial class PortfolioOpeningBalancePostingTests
         var firstWrite = fixture.Target.LastWrite!;
         await AssertBalancesAsync();
         AssertSecurityLineage(firstWrite.Entry);
+        var journalsBeforeTampering = await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period);
+        var auditBeforeTampering = await fixture.Database.JournalStore.VerifyLedgerEventAuditAsync();
         var ordinaryKey = "manual-je:forged-opening-rebook";
         var omittedAuthority = firstWrite with
         {
@@ -116,7 +118,9 @@ public sealed partial class PortfolioOpeningBalancePostingTests
             }
         };
         var appendWithoutAuthority = () => fixture.Database.JournalStore.AppendAsync(omittedAuthority);
-        await appendWithoutAuthority.Should().ThrowAsync<LedgerValidationException>().WithMessage("*claimed imported opening source*");
+        await appendWithoutAuthority.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Posting identity collision*");
+        var freshWithoutAuthority = () => fixture.Database.JournalStore.AppendAsync(FreshPostingAttempt(omittedAuthority));
+        await freshWithoutAuthority.Should().ThrowAsync<LedgerValidationException>().WithMessage("*claimed imported opening source*");
         var changedEconomics = firstWrite with
         {
             Entry = new JournalEntry(firstWrite.Entry.JournalEntryId, firstWrite.Entry.Timestamp, firstWrite.Entry.Description,
@@ -125,7 +129,12 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                     new LedgerEntryCurrency("USD", "USD", line.Debit * 2m, line.Credit * 2m, 1m))).ToArray(), firstWrite.Entry.Metadata)
         };
         var appendChangedEconomics = () => fixture.Database.JournalStore.AppendAsync(changedEconomics);
-        await appendChangedEconomics.Should().ThrowAsync<LedgerValidationException>().WithMessage("*every immutable predecessor inverse leg*");
+        await appendChangedEconomics.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Posting identity collision*");
+        var freshChangedEconomics = () => fixture.Database.JournalStore.AppendAsync(FreshPostingAttempt(changedEconomics));
+        await freshChangedEconomics.Should().ThrowAsync<LedgerValidationException>().WithMessage("*every immutable predecessor inverse leg*");
+        (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period)).Should().BeEquivalentTo(journalsBeforeTampering);
+        (await fixture.Database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBeforeTampering.ChainedEvents);
+        await AssertBalancesAsync();
 
         // The first changed mixed-security correction is +65. Rebooking that adjustment with
         // unchanged terms must be zero, rather than adding another 65 to the imported account.
@@ -217,5 +226,53 @@ public sealed partial class PortfolioOpeningBalancePostingTests
                 line.Currency!.IsFunctionalCurrency.Should().BeTrue();
             }
         }
+    }
+
+    private static LedgerJournalEntryWrite FreshPostingAttempt(LedgerJournalEntryWrite retained)
+    {
+        var journalId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var tags = new Dictionary<string, string>(retained.Entry.Metadata.Tags!, StringComparer.OrdinalIgnoreCase);
+        var key = retained.Entry.Metadata.IdempotencyKey!;
+        if (key.StartsWith("prior-period|", StringComparison.Ordinal))
+        {
+            var intent = $"fresh-forgery-{journalId:N}";
+            tags["prior-period.intentId"] = intent;
+            var rootId = Guid.Parse(tags["prior-period.sourceJournalEntryId"]);
+            key = $"prior-period|book={retained.LedgerBookId:N}|source={rootId:N}|intent={Uri.EscapeDataString(intent)}";
+        }
+        else if (key.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal))
+            key = $"portfolio-opening-correction:{retained.SourceJournalEntryId:D}:{journalId:D}";
+        else
+            key += ":" + journalId.ToString("N");
+        var lines = retained.Entry.Lines.Select(line =>
+        {
+            var lineId = Guid.NewGuid();
+            var prefix = $"securityMaster.line.{line.EntryId:D}.";
+            foreach (var tag in tags.Where(item => item.Key.StartsWith(prefix, StringComparison.Ordinal)).ToArray())
+            {
+                tags.Remove(tag.Key);
+                tags[$"securityMaster.line.{lineId:D}." + tag.Key[prefix.Length..]] = tag.Value;
+            }
+            return new LedgerEntry(lineId, journalId, line.Timestamp, line.Account, line.Debit, line.Credit,
+                line.Description, line.Dimensions, line.Currency);
+        }).ToArray();
+        tags["manualJournalEntryId"] = journalId.ToString("D");
+        tags["sourceEventId"] = journalId.ToString("D");
+        return retained with
+        {
+            Entry = new(journalId, retained.Entry.Timestamp, retained.Entry.Description, lines,
+                retained.Entry.Metadata with { IdempotencyKey = key, Tags = tags }),
+            CommandId = commandId,
+            SourceEventId = journalId,
+            PostingCommand = retained.PostingCommand! with
+            {
+                CommandId = commandId,
+                SourceEventId = journalId,
+                CausationId = journalId,
+                IdempotencyKey = key,
+                TreasuryContext = retained.PostingCommand.TreasuryContext! with { IdempotencyKey = key }
+            }
+        };
     }
 }

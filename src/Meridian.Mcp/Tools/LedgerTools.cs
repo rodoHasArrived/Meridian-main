@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 
 namespace Meridian.Mcp.Tools;
 
@@ -6,6 +7,45 @@ namespace Meridian.Mcp.Tools;
 [McpServerToolType]
 public sealed class LedgerTools(LedgerApiClient api)
 {
+    [McpServerTool(Name = "get_run_trial_balance")]
+    [Description("Read a strategy run's trial balance at an inclusive as-of instant. Calls the configured Meridian workstation API and honors its issued operator session, tenant scope and run visibility. Returns an explicit unavailable/refused error when no authorized retained ledger exists.")]
+    public async Task<string> GetRunTrialBalanceAsync(
+        [Description("Retained strategy run identifier")] string runId,
+        [Description("Inclusive as-of instant with UTC offset, for example 2026-10-31T23:59:59Z")] DateTimeOffset asOf,
+        CancellationToken ct = default)
+    {
+        LedgerApiClient.ValidateSegment(runId, nameof(runId));
+        if (runId.Any(char.IsControl))
+            throw new ArgumentException("Run identifier is invalid.", nameof(runId));
+        try
+        {
+            return await api.ReadAsync(runId.Trim(), "trial-balance", new Dictionary<string, string?>
+            {
+                ["asOf"] = asOf.ToString("O", CultureInfo.InvariantCulture)
+            }, ct, maxResponseCharacters: 1_048_576).ConfigureAwait(false);
+        }
+        catch (HttpRequestException error) when (error.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            return "Trial balance access refused by the workstation API. Configure an authorized Meridian operator session.";
+        }
+        catch (HttpRequestException error) when (error.StatusCode == HttpStatusCode.NotFound)
+        {
+            return "Trial balance unavailable: the run is not visible or has no retained ledger.";
+        }
+        catch (HttpRequestException error) when (error.StatusCode.HasValue)
+        {
+            return $"Trial balance unavailable: workstation API returned HTTP {(int)error.StatusCode.Value}.";
+        }
+        catch (HttpRequestException)
+        {
+            return "Trial balance unavailable: cannot reach the configured workstation API.";
+        }
+        catch (InvalidDataException)
+        {
+            return "Trial balance exceeds the MCP response size limit; use the workstation export.";
+        }
+    }
+
     [McpServerTool(Name = "get_posted_ledger_journal")]
     [Description("Read authoritative posted journal entries in an accessible accounting period, including policy, rule and source-event evidence.")]
     public Task<string> GetPostedJournalAsync(Guid periodId, CancellationToken ct = default) =>

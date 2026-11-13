@@ -1,4 +1,4 @@
-<!-- @dsCard group="Theming" viewport="1200x500" name="Light ↔ Dark comparison" subtitle="All 91 components render correctly across themes" -->
+<!-- @dsCard group="Theming" viewport="1200x500" name="Light ↔ Dark comparison" subtitle="Representative controls in independent light and dark theme scopes" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,10 +26,9 @@
   </style>
 </head>
 <body class="mds-specimen">
-  <button type="button" class="toggle-theme" onclick="toggle()">Switch to Dark</button>
-
+  <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;">Light and dark theme comparison</h1>
   <div class="container">
-    <div class="side">
+    <div class="side" data-theme-specimen="light">
       <h2>Light Mode</h2>
       <div class="example">
         <div class="example-label">Primary button</div>
@@ -64,7 +63,7 @@
       </div>
     </div>
 
-    <div class="side">
+    <div class="side" data-theme-specimen="dark">
       <h2>Dark Mode</h2>
       <div class="example">
         <div class="example-label">Primary button</div>
@@ -100,15 +99,6 @@
     </div>
   </div>
 
-  <script>
-    let isDark = false;
-    function toggle() {
-      isDark = !isDark;
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      document.querySelector('.toggle-theme').textContent = isDark ? 'Switch to Light' : 'Switch to Dark';
-    }
-    // Initialize to light
-    document.documentElement.setAttribute('data-theme', 'light');
-  </script>
+  <script src="./specimen-themes.js"></script>
 </body>
 </html>

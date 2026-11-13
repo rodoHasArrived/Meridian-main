@@ -1,0 +1,7 @@
+<Project>
+  <!-- Archived measurements retain their recorded explicit package versions.
+       Stop independent Directory.Packages.props discovery at the evidence root. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

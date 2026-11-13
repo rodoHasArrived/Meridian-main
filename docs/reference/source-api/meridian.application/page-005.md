@@ -6,6 +6,99 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationHttpResponse
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L32).
+
+```csharp
+public sealed record ProviderIntegrationHttpResponse(int StatusCode, IReadOnlyDictionary<string, string> Headers, string Body);
+```
+
+## ProviderIntegrationIdentityResolutionPreviewService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationIdentityResolutionPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:14](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L14).
+
+Previews security identity candidates for staged provider integration data.
+
+```csharp
+public sealed class ProviderIntegrationIdentityResolutionPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationIdentityResolutionPreviewService(IProviderIntegrationManifestStore store, ISecurityMasterQueryService? securityMaster = null, ILogger&lt;ProviderIntegrationIdentityResolutionPreviewService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L23) |  |
+| <code>public async Task&lt;ProviderIntegrationStagingIdentityResolutionPreviewDto&gt; PreviewAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:33](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L33) |  |
+| <code>public async Task&lt;ProviderIntegrationStagingIdentityResolutionPreviewDto&gt; PreviewAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:39](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L39) |  |
+| <code>public async Task&lt;ProviderIntegrationIdentityDecisionDto&gt; ResolveAsync(string? tenantId, string connectionId, ProviderIntegrationIdentityResolutionRequestDto request, string reviewedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:50](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L50) |  |
+
+## ProviderIntegrationMonitoringService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationMonitoringService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L10).
+
+Builds connection monitoring views and sync-run history from retained integration state.
+
+```csharp
+public sealed class ProviderIntegrationMonitoringService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationMonitoringService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationMonitoringService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L18) |  |
+| <code>public async Task&lt;ProviderIntegrationConnectionMonitorDto&gt; GetConnectionMonitorAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L26) |  |
+| <code>public async Task&lt;ProviderIntegrationConnectionMonitorDto&gt; GetConnectionMonitorAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L32) |  |
+| <code>public async Task&lt;ProviderIntegrationSyncRunHistoryDto&gt; GetConnectionSyncRunsAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:74](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L74) |  |
+| <code>public async Task&lt;ProviderIntegrationSyncRunHistoryDto&gt; GetConnectionSyncRunsAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:80](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L80) |  |
+
+## ProviderIntegrationOpenApiImportService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationOpenApiImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:13](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L13).
+
+Imports OpenAPI descriptions into provider integration setup manifests.
+
+```csharp
+public sealed class ProviderIntegrationOpenApiImportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationOpenApiImportService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationOpenApiImportService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:39](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L39) |  |
+| <code>public async Task&lt;ProviderIntegrationOpenApiImportResultDto&gt; ImportAsync(ProviderIntegrationOpenApiImportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:47](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L47) |  |
+| <code>public async Task&lt;ProviderIntegrationOpenApiImportResultDto&gt; ImportAsync(string? tenantId, ProviderIntegrationOpenApiImportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:52](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L52) |  |
+
+## ProviderIntegrationPromotionReadinessService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationPromotionReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L10).
+
+Previews whether staged provider data meets the requirements for promotion.
+
+```csharp
+public sealed class ProviderIntegrationPromotionReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationPromotionReadinessService(ProviderIntegrationIdentityResolutionPreviewService identityResolution, ILogger&lt;ProviderIntegrationPromotionReadinessService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L18) |  |
+| <code>public async Task&lt;ProviderIntegrationPromotionReadinessPreviewDto&gt; PreviewAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L26) |  |
+| <code>public async Task&lt;ProviderIntegrationPromotionReadinessPreviewDto&gt; PreviewAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L32) |  |
+
 ## ProviderIntegrationQuarantineReplayService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationQuarantineReplayService</code>. Kind: `class`.
@@ -263,15 +356,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;ProviderIntegrationManifestDto&gt; ListManifests() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:29](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L29) |  |
-| <code>public IReadOnlyList&lt;ProviderIntegrationTemplateCatalogEntryDto&gt; ListEntries() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:31](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L31) |  |
-| <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:46](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L46) |  |
+| <code>public IReadOnlyList&lt;ProviderIntegrationManifestDto&gt; ListManifests() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:30](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L30) |  |
+| <code>public IReadOnlyList&lt;ProviderIntegrationTemplateCatalogEntryDto&gt; ListEntries() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L32) |  |
+| <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:47](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L47) |  |
+| <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId, int manifestVersion);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:55](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L55) | Version-pinned lookup preserves the original template when reviewing retained imports. |
 
 ## DependencyRecoveredEvent
 
 Qualified name: <code>Meridian.Application.Monitoring.DependencyRecoveredEvent</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:528](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L528).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:539](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L539).
 
 Event raised when a dependency recovers.
 
@@ -283,7 +377,7 @@ public readonly record struct DependencyRecoveredEvent(string Name, string Type,
 
 Qualified name: <code>Meridian.Application.Monitoring.DependencyUnhealthyEvent</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:518](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L518).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:529](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L529).
 
 Event raised when a dependency becomes unhealthy.
 
@@ -295,7 +389,7 @@ public readonly record struct DependencyUnhealthyEvent(string Name, string Type,
 
 Qualified name: <code>Meridian.Application.Monitoring.DetailedHealthCheck</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:18](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L18).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:19](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L19).
 
 Provides detailed health check information including dependencies, providers, and data quality. Implements QW-32: Detailed Health Check Endpoint and QW-33: Dependency Health Checks.
 
@@ -307,20 +401,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event Action&lt;DependencyUnhealthyEvent&gt;? OnDependencyUnhealthy;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:35](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L35) | Event raised when a dependency becomes unhealthy. |
-| <code>public event Action&lt;DependencyRecoveredEvent&gt;? OnDependencyRecovered;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:40](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L40) | Event raised when a dependency recovers. |
-| <code>public DetailedHealthCheck(DetailedHealthCheckConfig? config = null);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:42](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L42) |  |
-| <code>public void RegisterProviders(Func&lt;PipelineStatistics&gt;? pipelineStats = null, Func&lt;SystemHealthSnapshot&gt;? systemHealth = null, Func&lt;ConnectionHealthSnapshot&gt;? connectionHealth = null, Func&lt;LatencyStatistics&gt;? latencyStats = null);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:57](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L57) | Registers statistics providers for health checks. |
-| <code>public void RegisterDependency(string name, string type, Func&lt;CancellationToken, Task&lt;bool&gt;&gt; healthCheck, bool isCritical = true, TimeSpan? timeout = null);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:72](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L72) | Registers an external dependency to monitor. |
-| <code>public void UnregisterDependency(string name);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:93](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L93) | Unregisters a dependency. |
-| <code>public async Task&lt;DetailedHealthReport&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:101](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L101) | Gets a comprehensive detailed health report. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:392](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L392) |  |
+| <code>public event Action&lt;DependencyUnhealthyEvent&gt;? OnDependencyUnhealthy;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:37](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L37) | Event raised when a dependency becomes unhealthy. |
+| <code>public event Action&lt;DependencyRecoveredEvent&gt;? OnDependencyRecovered;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:42](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L42) | Event raised when a dependency recovers. |
+| <code>public DetailedHealthCheck(DetailedHealthCheckConfig? config = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:44](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L44) |  |
+| <code>public void RegisterProviders(Func&lt;PipelineStatistics&gt;? pipelineStats = null, Func&lt;SystemHealthSnapshot&gt;? systemHealth = null, Func&lt;ConnectionHealthSnapshot&gt;? connectionHealth = null, Func&lt;LatencyStatistics&gt;? latencyStats = null);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:60](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L60) | Registers statistics providers for health checks. |
+| <code>public void RegisterDependency(string name, string type, Func&lt;CancellationToken, Task&lt;bool&gt;&gt; healthCheck, bool isCritical = true, TimeSpan? timeout = null);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:75](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L75) | Registers an external dependency to monitor. |
+| <code>public void UnregisterDependency(string name);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:97](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L97) | Unregisters a dependency. |
+| <code>public async Task&lt;DetailedHealthReport&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:105](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L105) | Gets a comprehensive detailed health report. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:399](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L399) |  |
 
 ## DetailedHealthCheckConfig
 
 Qualified name: <code>Meridian.Application.Monitoring.DetailedHealthCheckConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:456](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L456).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:467](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L467).
 
 Configuration for detailed health checks.
 
@@ -332,15 +426,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int CheckIntervalSeconds { get; init; } = 60;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:461](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L461) | Interval between automatic dependency checks in seconds. |
-| <code>public int DependencyTimeoutSeconds { get; init; } = 10;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:466](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L466) | Default timeout for dependency health checks in seconds. |
-| <code>public static DetailedHealthCheckConfig Default =&gt; …;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:468](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L468) |  |
+| <code>public int CheckIntervalSeconds { get; init; } = 60;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:472](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L472) | Interval between automatic dependency checks in seconds. |
+| <code>public int DependencyTimeoutSeconds { get; init; } = 10;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:477](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L477) | Default timeout for dependency health checks in seconds. |
+| <code>public static DetailedHealthCheckConfig Default =&gt; …;</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:479](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L479) |  |
 
 ## DetailedHealthReport
 
 Qualified name: <code>Meridian.Application.Monitoring.DetailedHealthReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:486](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L486).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:497](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L497).
 
 Comprehensive health report.
 
@@ -352,7 +446,7 @@ public sealed record DetailedHealthReport(DetailedHealthStatus Status, DateTimeO
 
 Qualified name: <code>Meridian.Application.Monitoring.DetailedHealthStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:475](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L475).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:486](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L486).
 
 Detailed health status enum.
 
@@ -364,16 +458,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:477](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L477) |  |
-| <code>Degraded</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:478](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L478) |  |
-| <code>Unhealthy</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:479](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L479) |  |
-| <code>Unknown</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:480](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L480) |  |
+| <code>Healthy</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:488](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L488) |  |
+| <code>Degraded</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:489](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L489) |  |
+| <code>Unhealthy</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:490](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L490) |  |
+| <code>Unknown</code> | [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:491](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L491) |  |
 
 ## HealthCheckItem
 
 Qualified name: <code>Meridian.Application.Monitoring.HealthCheckItem</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:497](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L497).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:508](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L508).
 
 Individual health check item.
 
@@ -385,7 +479,7 @@ public sealed record HealthCheckItem(string Name, DetailedHealthStatus Status, s
 
 Qualified name: <code>Meridian.Application.Monitoring.HealthSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:508](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L508).
+Source: [src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:519](../../../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs#L519).
 
 Summary of health check results.
 
@@ -504,10 +598,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StatusWriter(string path, Func&lt;AppConfig&gt; configProvider, IEventMetrics? metrics = null);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:30](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L30) |  |
-| <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:37](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L37) |  |
-| <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:54](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L54) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:79](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L79) |  |
+| <code>public StatusWriter(string path, Func&lt;AppConfig&gt; configProvider, IEventMetrics? metrics = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:31](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L31) |  |
+| <code>public void Start(TimeSpan interval);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:39](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L39) |  |
+| <code>public async Task WriteOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:73](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L73) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Monitoring/StatusWriter.cs:98](../../../../src/Meridian.Application/Monitoring/StatusWriter.cs#L98) |  |
 
 ## DeadLetterSink
 
@@ -767,36 +861,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EventPipeline(IStorageSink sink, int capacity = 100_000, BoundedChannelFullMode fullMode = BoundedChannelFullMode.DropOldest, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger&lt;EventPipeline&gt;? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, IDedupStore? dedupLedger = null, int consumerCount = 1) : this(sink, new EventPipelinePolicy(capacity, fullMode), flushInterval, batchSize, enablePeriodicFlush, logger, auditTrail, wal, metrics, finalFlushTimeout, sinkFlushTimeout, validator, deadLetterSink, dedupLedger, consumerCount);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:147](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L147) | Creates a new EventPipeline with configurable capacity and flush behavior. |
-| <code>public EventPipeline(IStorageSink sink, EventPipelinePolicy policy, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger&lt;EventPipeline&gt;? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, IDedupStore? dedupLedger = null, int consumerCount = 1);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:202](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L202) | Creates a new EventPipeline with a shared policy for capacity and backpressure. |
-| <code>public long PublishedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:302](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L302) | Gets the total number of events successfully published to the pipeline. |
-| <code>public long DroppedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:305](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L305) | Gets the total number of events dropped due to backpressure. |
-| <code>public long ConsumedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:308](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L308) | Gets the total number of events consumed and written to storage. |
-| <code>public long RecoveredCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:311](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L311) | Gets the total number of events recovered from WAL on startup. |
-| <code>public long RejectedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:314](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L314) | Gets the total number of events rejected by the validator and sent to the dead-letter sink. |
-| <code>public long DeduplicatedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:317](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L317) | Gets the total number of duplicate events filtered by the dedup ledger. |
-| <code>public bool IsDeduplicationEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:320](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L320) | Gets whether deduplication is enabled for this pipeline. |
-| <code>public long PeakQueueSize =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:323](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L323) | Gets the peak queue size observed during operation. |
-| <code>public int CurrentQueueSize =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:326](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L326) | Gets the current number of events in the queue. |
-| <code>public long PendingFlushItemCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:329](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L329) | Gets the approximate number of events pending flush during shutdown diagnostics. |
-| <code>public double QueueUtilization =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:332](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L332) | Gets the queue capacity utilization as a percentage (0-100). |
-| <code>public BoundedChannelFullMode QueueFullMode =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:335](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L335) | Gets the active bounded-channel full mode for this pipeline. |
-| <code>public double AverageProcessingTimeUs { get; }</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:338](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L338) | Gets the average processing time per event in microseconds. |
-| <code>public TimeSpan TimeSinceLastFlush { get; }</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:351](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L351) | Gets the time since the last flush operation. |
-| <code>public bool IsWalEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:362](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L362) | Gets whether a WAL is configured for this pipeline. |
-| <code>public bool IsValidationEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:365](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L365) | Gets whether event validation is enabled for this pipeline. |
-| <code>public bool IsUnderPressure =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:371](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L371) | Returns true when the queue utilization has reached or exceeded 80 %. Upstream producers should observe this signal and slow down publishing to avoid data loss. |
-| <code>public async Task RecoverAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:395](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L395) | Recovers uncommitted events from the WAL and replays them to the storage sink. Call this method once on startup, before publishing new events, to ensure data from a prior crash is not lost. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:669](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L669) | Attempts to publish an event to the pipeline without blocking. Returns false if the queue is full (event will be dropped based on FullMode). |
-| <code>public PublishResult TryPublishWithResult(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:712](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L712) | Attempts to publish an event and returns a PublishResult that describes the outcome in detail — accepted, accepted under pressure, or dropped. |
-| <code>public async ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:764](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L764) | Publishes an event to the pipeline, waiting if necessary. |
-| <code>public void Complete() =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:815](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L815) | Signals that no more events will be published. |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:827](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L827) | Waits for the consumer to process all currently-queued events, then forces an immediate flush of buffered data to storage. |
-| <code>public PipelineStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:894](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L894) | Gets a snapshot of current pipeline statistics. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1578](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1578) |  |
-| <code>public DroppedEventAuditTrail? AuditTrail =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1667](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1667) | Gets the dropped event audit trail, if configured. |
-| <code>public int QueueCapacity =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1672](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1672) | Gets the queue capacity. |
-| <code>public IEventMetrics EventMetrics =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1677](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1677) | Gets the injected event metrics instance. |
+| <code>public EventPipeline(IStorageSink sink, int capacity = 100_000, BoundedChannelFullMode fullMode = BoundedChannelFullMode.DropOldest, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger&lt;EventPipeline&gt;? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, IDedupStore? dedupLedger = null, int consumerCount = 1, TimeProvider? timeProvider = null) : this(sink, new EventPipelinePolicy(capacity, fullMode), flushInterval, batchSize, enablePeriodicFlush, logger, auditTrail, wal, metrics, finalFlushTimeout, sinkFlushTimeout, validator, deadLetterSink, dedupLedger, consumerCount, timeProvider);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:148](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L148) | Creates a new EventPipeline with configurable capacity and flush behavior. |
+| <code>public EventPipeline(IStorageSink sink, EventPipelinePolicy policy, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger&lt;EventPipeline&gt;? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, IDedupStore? dedupLedger = null, int consumerCount = 1, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:205](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L205) | Creates a new EventPipeline with a shared policy for capacity and backpressure. |
+| <code>public long PublishedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:307](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L307) | Gets the total number of events successfully published to the pipeline. |
+| <code>public long DroppedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:310](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L310) | Gets the total number of events dropped due to backpressure. |
+| <code>public long ConsumedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:313](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L313) | Gets the total number of events consumed and written to storage. |
+| <code>public long RecoveredCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:316](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L316) | Gets the total number of events recovered from WAL on startup. |
+| <code>public long RejectedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:319](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L319) | Gets the total number of events rejected by the validator and sent to the dead-letter sink. |
+| <code>public long DeduplicatedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:322](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L322) | Gets the total number of duplicate events filtered by the dedup ledger. |
+| <code>public bool IsDeduplicationEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:325](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L325) | Gets whether deduplication is enabled for this pipeline. |
+| <code>public long PeakQueueSize =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:328](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L328) | Gets the peak queue size observed during operation. |
+| <code>public int CurrentQueueSize =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:331](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L331) | Gets the current number of events in the queue. |
+| <code>public long PendingFlushItemCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:334](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L334) | Gets the approximate number of events pending flush during shutdown diagnostics. |
+| <code>public double QueueUtilization =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:337](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L337) | Gets the queue capacity utilization as a percentage (0-100). |
+| <code>public BoundedChannelFullMode QueueFullMode =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:340](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L340) | Gets the active bounded-channel full mode for this pipeline. |
+| <code>public double AverageProcessingTimeUs { get; }</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:343](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L343) | Gets the average processing time per event in microseconds. |
+| <code>public TimeSpan TimeSinceLastFlush { get; }</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:356](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L356) | Gets the time since the last flush operation. |
+| <code>public bool IsWalEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:366](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L366) | Gets whether a WAL is configured for this pipeline. |
+| <code>public bool IsValidationEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:369](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L369) | Gets whether event validation is enabled for this pipeline. |
+| <code>public bool IsUnderPressure =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:375](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L375) | Returns true when the queue utilization has reached or exceeded 80 %. Upstream producers should observe this signal and slow down publishing to avoid data loss. |
+| <code>public async Task RecoverAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:399](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L399) | Recovers uncommitted events from the WAL and replays them to the storage sink. Call this method once on startup, before publishing new events, to ensure data from a prior crash is not lost. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:673](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L673) | Attempts to publish an event to the pipeline without blocking. Returns false if the queue is full (event will be dropped based on FullMode). |
+| <code>public PublishResult TryPublishWithResult(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:716](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L716) | Attempts to publish an event and returns a PublishResult that describes the outcome in detail — accepted, accepted under pressure, or dropped. |
+| <code>public async ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:768](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L768) | Publishes an event to the pipeline, waiting if necessary. |
+| <code>public void Complete() =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:819](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L819) | Signals that no more events will be published. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:831](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L831) | Waits for the consumer to process all currently-queued events, then forces an immediate flush of buffered data to storage. |
+| <code>public PipelineStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:898](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L898) | Gets a snapshot of current pipeline statistics. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1582](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1582) |  |
+| <code>public DroppedEventAuditTrail? AuditTrail =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1671](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1671) | Gets the dropped event audit trail, if configured. |
+| <code>public int QueueCapacity =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1676](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1676) | Gets the queue capacity. |
+| <code>public IEventMetrics EventMetrics =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1681](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1681) | Gets the injected event metrics instance. |
 
 ## FSharpEventValidator
 
@@ -957,111 +1051,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long TotalChecked =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:91](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L91) | Total events checked for duplicates. |
-| <code>public long TotalDuplicates =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:97](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L97) | Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are deferrals, not detections, and are never counted here. |
-| <code>public PersistentDedupLedger(string ledgerDirectory, TimeSpan? entryTtl = null, int maxInMemoryEntries = 500_000, int compactionMinLines = DefaultCompactionMinLines);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:99](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L99) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:156](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L156) | Loads persisted dedup state from disk on startup. |
-| <code>public void Initialize();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:196](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L196) | Synchronous counterpart of InitializeAsync for composition code that cannot await, such as a dependency-injection factory. It reads the ledger with synchronous file I/O instead of blocking on the asynchronous load. Loads exactly the same state. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public async ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:303](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L303) | Checks whether an event is a duplicate and records it if new. Returns true if the event is a DUPLICATE (should be skipped). |
-| <code>public ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:422](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L422) |  |
-| <code>public async Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:480](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L480) |  |
-| <code>public bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:543](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L543) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:945](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L945) | Flushes the ledger to disk. |
-| <code>public async Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:967](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L967) | Compacts the ledger file by rewriting only non-expired entries. The ledger also does this itself as the file grows; see CompactIfDueLockedAsync. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1068](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1068) |  |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Application.Pipeline.ValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Pipeline/IEventValidator.cs:31](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L31).
-
-Immutable result of a IEventValidator.Validate call.
-
-```csharp
-public sealed record ValidationResult(bool IsValid, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult Valid =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:38](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L38) | Returns a cached valid result (no allocation on the hot path). |
-| <code>public static ValidationResult Failed(params string[] errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:44](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L44) | Creates a failed validation result with one or more error messages. |
-| <code>public static ValidationResult Failed(IReadOnlyList&lt;string&gt; errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:51](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L51) | Creates a failed validation result from a list of error messages. |
-
-## BestOfBreedProviderSelector
-
-Qualified name: <code>Meridian.Application.ProviderRouting.BestOfBreedProviderSelector</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:21](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L21).
-
-Selects provider routes using configured capability, preference, and availability evidence.
-
-```csharp
-public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:34](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L34) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:46](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L46) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
-
-## IBestOfBreedProviderSelector
-
-Qualified name: <code>Meridian.Application.ProviderRouting.IBestOfBreedProviderSelector</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:11](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L11).
-
-Selects a provider route for a request, including tenant-scoped routing.
-
-```csharp
-public interface IBestOfBreedProviderSelector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:13](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L13) |  |
-| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
-
-## IProviderFamilyCatalogService
-
-Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:504](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L504).
-
-Exposes the provider-family adapters available to routing.
-
-```csharp
-public interface IProviderFamilyCatalogService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:506](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L506) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:508](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L508) |  |
-
-## IProviderRuntimeCredentialApplier
-
-Qualified name: <code>Meridian.Application.ProviderRouting.IProviderRuntimeCredentialApplier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:19](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L19).
-
-Opt-in seam that recycles a provider&#x27;s running instances under a changed host binding. Hosts without an in-process recycle keep the default, which never activates anything hot.
-
-```csharp
-public interface IProviderRuntimeCredentialApplier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ProviderRuntimeCredentialApplyOutcome&gt; ApplyAsync(ProviderRuntimeCredentialBinding binding, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:21](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L21) |  |
+| <code>public long TotalChecked =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:92](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L92) | Total events checked for duplicates. |
+| <code>public long TotalDuplicates =&gt; …;</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:98](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L98) | Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are deferrals, not detections, and are never counted here. |
+| <code>public PersistentDedupLedger(string ledgerDirectory, TimeSpan? entryTtl = null, int maxInMemoryEntries = 500_000, int compactionMinLines = DefaultCompactionMinLines, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:100](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L100) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:159](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L159) | Loads persisted dedup state from disk on startup. |
+| <code>public void Initialize();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:199](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L199) | Synchronous counterpart of InitializeAsync for composition code that cannot await, such as a dependency-injection factory. It reads the ledger with synchronous file I/O instead of blocking on the asynchronous load. Loads exactly the same state. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public async ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:306](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L306) | Checks whether an event is a duplicate and records it if new. Returns true if the event is a DUPLICATE (should be skipped). |
+| <code>public ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:425](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L425) |  |
+| <code>public async Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:483](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L483) |  |
+| <code>public bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:546](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L546) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:948](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L948) | Flushes the ledger to disk. |
+| <code>public async Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:970](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L970) | Compacts the ledger file by rewriting only non-expired entries. The ledger also does this itself as the file grows; see CompactIfDueLockedAsync. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1071](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1071) |  |

@@ -60,7 +60,7 @@ public static class LedgerReportPackBuilder
         artifacts.Add(CreateGeneralLedgerDetailArtifact(generalLedgerLines));
         artifacts.Add(CreateProfitAndLossAttributionArtifact(
             generalLedgerLines
-                .Where(item => !LedgerFinancialStatementBuilder.IsPureRetainedEarningsClosingEntry(
+                .Where(item => !LedgerFinancialStatementBuilder.IsClosingTransfer(
                     item.Entry, financialAccountId, request.LineDimensions))
                 .ToArray()));
 

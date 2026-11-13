@@ -69,6 +69,46 @@ public sealed class PostedStrategyRunLedgerSourceTests
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AsOfSummary_CutsTheAuthorizedPostedPopulationOrRetainedFallback(bool hasPostedAttribution)
+    {
+        var accountId = AccountId.ToString("D");
+        var retained = new Meridian.Ledger.Ledger();
+        var posted = new Meridian.Ledger.Ledger();
+        void Add(Meridian.Ledger.Ledger ledger, DateTimeOffset timestamp, decimal amount, bool attributed)
+            => ledger.PostLines(timestamp, "Scoped historical posting",
+                [(LedgerAccounts.Securities("SPY", accountId), amount, 0m),
+                 (LedgerAccounts.CashFor(accountId), 0m, amount)],
+                new JournalEntryMetadata(StrategyId: "strategy-a", FinancialAccountId: accountId,
+                    Tags: attributed ? new Dictionary<string, string> { ["strategy.runId"] = Run.RunId } : null));
+        Add(retained, At, 37m, false);
+        Add(retained, At.AddHours(1), 71m, false);
+        Add(posted, At, 10m, hasPostedAttribution);
+        Add(posted, At.AddHours(1), 20m, hasPostedAttribution);
+        var records = posted.Journal.Select(entry => new LedgerJournalEntryRecord(entry, Guid.NewGuid(),
+            PeriodId, null, null, 1, entry.Timestamp)).ToArray();
+        var (store, registry) = Stores(records);
+        var run = Run with { Metrics = Result(retained), LedgerReference = "retained-run-ledger" };
+        var (reads, _) = await ReadersAsync(run, new PostedStrategyRunLedgerSource(store, registry));
+
+        var summary = (await reads.GetLedgerSummaryAsync(run.RunId, At, Scope))!;
+        var snapshot = (await reads.GetLedgerSnapshotAsync(run.RunId, Scope, At))!;
+
+        summary.AsOf.Should().Be(At);
+        summary.JournalEntryCount.Should().Be(1);
+        summary.LedgerEntryCount.Should().Be(2);
+        summary.TrialBalance.Single(line => line.AccountName == "Securities").Balance
+            .Should().Be(hasPostedAttribution ? 10m : 37m);
+        snapshot.GetBalance(LedgerAccounts.Securities("SPY", accountId))
+            .Should().Be(hasPostedAttribution ? 10m : 37m);
+        summary.Journal.Should().ContainSingle().Which.Timestamp.Should().Be(At);
+        (await reads.GetLedgerSummaryAsync(run.RunId, Scope))!.JournalEntryCount.Should().Be(2);
+        retained.Journal.Should().HaveCount(2);
+        posted.Journal.Should().HaveCount(2);
+    }
+
+    [Theory]
     [InlineData("accountScopeId", "acct-paper")]
     [InlineData("accountId", "historical-broker-account")]
     public async Task LegacyAccountLabel_PreservesAuthorizedFullRunDetailAndRetainedLedger(string key, string label)

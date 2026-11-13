@@ -48,8 +48,12 @@ public static class LedgerJournalReversal
                 description,
                 line.Dimensions,
                 line.Currency is { } currency
-                    ? new LedgerEntryCurrency(currency.TransactionCurrency, currency.FunctionalCurrency,
-                        currency.TransactionCredit, currency.TransactionDebit, currency.FxRateToFunctional)
+                    ? new LedgerEntryCurrency(
+                        currency.TransactionCurrency,
+                        currency.FunctionalCurrency,
+                        currency.TransactionCredit,
+                        currency.TransactionDebit,
+                        currency.FxRateToFunctional)
                     : null))
             .ToList();
 

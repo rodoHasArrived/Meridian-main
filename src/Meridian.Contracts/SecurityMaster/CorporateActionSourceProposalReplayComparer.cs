@@ -27,6 +27,10 @@ public static class CorporateActionSourceProposalReplayComparer
                && existing.PayloadSchemaVersion == candidate.PayloadSchemaVersion
                && Sha256Digest.FixedEquals(existing.EconomicFingerprint, candidate.EconomicFingerprint)
                && string.Equals(
+                   CanonicalizeElectionCalendar(existing.ProposedAction.Payload),
+                   CanonicalizeElectionCalendar(candidate.ProposedAction.Payload),
+                   StringComparison.Ordinal)
+               && string.Equals(
                    NormalizeLifecycle(existing.ProposedAction.LifecycleState),
                    NormalizeLifecycle(candidate.ProposedAction.LifecycleState),
                    StringComparison.Ordinal)
@@ -43,6 +47,12 @@ public static class CorporateActionSourceProposalReplayComparer
                    StringComparison.Ordinal)
                && HasSameDisplayMetadata(existing.DisplayMetadata, candidate.DisplayMetadata);
     }
+
+    private static string? CanonicalizeElectionCalendar(JsonElement? payload)
+        => payload is { ValueKind: JsonValueKind.Object } element
+           && element.TryGetProperty("electionCalendar", out var calendar)
+            ? CanonicalizeJson(calendar)
+            : null;
 
     private static string NormalizeLifecycle(string? value) =>
         string.IsNullOrWhiteSpace(value) ? CorporateActionLifecycleStates.Confirmed : value.Trim();

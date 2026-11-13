@@ -118,6 +118,27 @@ public sealed class LedgerJournalReversalTests
     }
 
     [Fact]
+    public void Reverse_PreservesAndReversesTransactionCurrencyEvidence()
+    {
+        var id = Guid.NewGuid();
+        const string description = "EUR dividend";
+        var original = new JournalEntry(id, Ts, description,
+        [
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.Cash, 110m, 0m, description,
+                currency: new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m)),
+            new LedgerEntry(Guid.NewGuid(), id, Ts, LedgerAccounts.DividendIncome, 0m, 110m, description,
+                currency: new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m))
+        ]);
+
+        var reversed = LedgerJournalReversal.Reverse(original, Guid.NewGuid(), Ts.AddDays(1));
+
+        reversed.Lines[0].Currency.Should().BeEquivalentTo(new LedgerEntryCurrency("EUR", "USD", 0m, 100m, 1.1m));
+        reversed.Lines[1].Currency.Should().BeEquivalentTo(new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.1m));
+        original.Lines[0].Currency!.TransactionDebit.Should().Be(100m);
+        reversed.IsBalanced.Should().BeTrue();
+    }
+
+    [Fact]
     public void Reverse_WithSameIdAsOriginal_Throws()
     {
         var originalId = Guid.NewGuid();

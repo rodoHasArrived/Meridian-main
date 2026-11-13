@@ -19,7 +19,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity();
         const string summary = "No scheduled daily valuation portfolio scope is configured for this close scope.";
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             null,
             new StubDailyValuationScheduleStatusSource(new DailyValuationScheduleStatusDto(
@@ -58,7 +58,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity();
         var capturedAt = new DateTimeOffset(2026, 6, 30, 16, 0, 0, TimeSpan.Zero);
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             null,
             new StubDailyValuationScheduleStatusSource(new DailyValuationScheduleStatusDto(
@@ -141,7 +141,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
             EvidenceLinks: [Evidence("corp-act-low", "Low-confidence corporate action", "evidence://corporate-actions/low")],
             Blockers: ["Corporate-action evidence needs investigation."],
             JournalEntryIds: [postedFeeId]);
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity, [postedFee]),
             null,
             null,
@@ -209,7 +209,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
             State: state,
             Summary: $"Current fee schedule is {state}.",
             JournalEntryIds: []);
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity, [oldPostedDraft]),
             null,
             null,
@@ -234,7 +234,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity();
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -426,7 +426,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
         var workflow = BuildClosedWorkflow(
             periodLockPackageReady: false,
             timeline: [GovernedReopenTimelineEntry()]);
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -455,7 +455,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity();
         var workflow = BuildClosedWorkflow(approvalState: OperationsApprovalStateDto.Submitted);
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -486,7 +486,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     [Fact]
     public async Task GetCockpitAsync_WhenNoSourcesAreRegistered_FailsClosedWithMissingLanes()
     {
-        var service = new PrivateCapitalCloseCockpitService(null, null);
+        var service = CreateSourceBackedCockpitService(null, null);
 
         var cockpit = await service.GetCockpitAsync(fundProfileId: FundProfileId, periodId: PeriodId);
 
@@ -512,7 +512,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
         var activity = BuildActivity();
         var workflow = BuildClosedWorkflow(periodLockPackageReady: false);
         var workflows = new List<OperationsContinuityWorkflowDto> { workflow };
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService(workflows));
 
@@ -559,7 +559,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
         var activity = BuildActivity();
         var workflow = BuildClosedWorkflow(includeCloseControlEvidence: false);
         var workflows = new List<OperationsContinuityWorkflowDto> { workflow };
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService(workflows));
 
@@ -606,7 +606,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
             EvidencePackages = []
         };
         var workflows = new List<OperationsContinuityWorkflowDto> { workflow };
-        var service = new PrivateCapitalCloseCockpitService(new StubManualJournalEntryWorkbenchService(activity),
+        var service = CreateSourceBackedCockpitService(new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService(workflows));
         var blocked = await service.GetCockpitAsync(FundProfileId, activity.LedgerBookId, FundAccountId, PeriodId, EntityId);
         blocked.IsReadyToClose.Should().BeFalse();
@@ -623,7 +623,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity(includeIncompleteJournal: true);
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -659,7 +659,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
             output.ReportOutputId == "report-output:fund-alpha:lp-1:statement" &&
             output.ApprovalState == ManualJournalEntryStatusDto.Submitted);
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -715,7 +715,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity(includeExpenseFeeAllocationEvidence: false);
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -756,7 +756,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity(includeAdministratorNavEvidence: false);
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -799,7 +799,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity(administratorNav: 240m);
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
@@ -836,7 +836,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     {
         var activity = BuildActivity(partnerTieOutEndingNetActivity: 236m);
         var workflow = BuildClosedWorkflow();
-        var service = new PrivateCapitalCloseCockpitService(
+        var service = CreateSourceBackedCockpitService(
             new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([workflow]));
 
