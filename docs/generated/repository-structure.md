@@ -9752,7 +9752,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
-│   │   │   │   │   ├── accounting-screen.security-master-navigation.ts
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-presenters.ts
 │   │   │   │   │   ├── accounting-screen.security-master.ts
