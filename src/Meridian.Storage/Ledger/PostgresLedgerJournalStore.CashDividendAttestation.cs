@@ -49,7 +49,10 @@ public sealed partial class PostgresLedgerJournalStore
             || entry.PeriodId != lease.Projection.PeriodId
             || entry.Entry.Lines.Sum(line => line.Debit) != lease.Attestation.GrossImpactUsd)
             throw new LedgerValidationException("A cash-dividend journal requires its active native producer lease and exact retained attestation.");
-        await lease.EnsureCurrentAsync(command.Actor, lease.Projection.LedgerBookId, entry.PeriodId,
+        var actor = command.Actor;
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new LedgerValidationException("A cash-dividend journal requires an identified posting actor.");
+        await lease.EnsureCurrentAsync(actor, lease.Projection.LedgerBookId, entry.PeriodId,
             lease.Projection.DraftedCandidateFingerprint, lease.Projection.PostingIntentHash, ct).ConfigureAwait(false);
         RejectJournalOnlySuccessorPosting(entry);
         await AppendCoreAsync(connection, transaction, entry, ct, verifiedCashDividendAttestation: true).ConfigureAwait(false);

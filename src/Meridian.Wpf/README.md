@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Wpf
 
+`SecurityMasterPresentation` and `AccountingWorkbenchPresentation` own stateless display and
+readiness projections formerly embedded in their large workspace view models. View models retain
+selection, asynchronous commands and mutable workflow state; the presentation helpers retain the
+same financial labels, evidence links and authorization-independent formatting. Existing view-model
+tests exercise these projections through the operator-facing properties and commands.
+
 The Evidence Workbench reads the shared single-principal declaration and retained preparer-assertion
 history through `EvidenceWorkbenchApiClient.GetAttestationsAsync`. Its scope panel preserves
 "Attested by preparer — not independently reviewed", source provenance, actor, exact subject revision
@@ -281,6 +287,12 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+Desktop startup asynchronously initializes `ConfigService` before constructing the host.
+Synchronous Strategy and Accounting DI factories consume its `ConfiguredDataRoot` snapshot;
+they must not reload configuration from disk or block on an async read. Embedded desktop hosts
+must also await `ConfigService.InitializeAsync()` before resolving data-backed services.
+Ticker refreshes serialize pending timer polls, and stopping the strip cancels pending requests.
 
 The desktop's independent host registers the shared tenant-enforcement setting through
 `AddDesktopTenantScopeServices`. An omitted setting selects strict enforcement, and the identity

@@ -400,6 +400,7 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     [Theory]
     [InlineData("SPY/2026-01-02/trades.jsonl", "2026-01-03T00:00:00Z")]
     [InlineData("SPY_trade_20260102.jsonl", "2026-01-03T00:00:00Z")]
+    [InlineData("SPY_trade_20260102.merged-20261112abcdefabcdefabcdefabcdef.jsonl", "2026-01-03T00:00:00Z")]
     [InlineData("SPY/2026-01-02_14/trades.jsonl", "2026-01-02T15:00:00Z")]
     [InlineData("SPY/2026-01/trades.jsonl", "2026-02-01T00:00:00Z")]
     [InlineData("2026/01/02/alpaca/SPY/Trade.jsonl", "2026-01-03T00:00:00Z")]

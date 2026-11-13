@@ -22,8 +22,41 @@ reference = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = reference
 SPEC.loader.exec_module(reference)
 
+RULES_SPEC = importlib.util.spec_from_file_location(
+    "configuration_reference_rules_under_test", SCRIPT_DIR / "rules-engine.py"
+)
+assert RULES_SPEC is not None and RULES_SPEC.loader is not None
+rules_engine = importlib.util.module_from_spec(RULES_SPEC)
+sys.modules[RULES_SPEC.name] = rules_engine
+RULES_SPEC.loader.exec_module(rules_engine)
+
 
 class ConfigurationReferenceTests(unittest.TestCase):
+    def test_generated_reference_satisfies_real_notice_rule(self) -> None:
+        notice_rule = next(
+            rule for rule in rules_engine.load_rules(reference.ROOT / "build/rules/doc-rules.yaml")
+            if rule.name == "Generated docs have auto-generated notice"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sample = root / reference.SAMPLE_PATH
+            sample.parent.mkdir(parents=True)
+            sample.write_text('{"DataRoot": "example"}\n', encoding="utf-8")
+            with redirect_stdout(StringIO()):
+                self.assertEqual(0, reference.main(["--root", str(root)]))
+
+            violations, passes = rules_engine.evaluate_rule(notice_rule, root)
+            self.assertEqual([], violations)
+            self.assertEqual([str(reference.OUTPUT_PATH)], [item.file for item in passes])
+
+            output = root / reference.OUTPUT_PATH
+            without_header = output.read_text(encoding="utf-8").split("\n", 1)[1]
+            output.write_text(without_header, encoding="utf-8")
+            violations, passes = rules_engine.evaluate_rule(notice_rule, root)
+            self.assertEqual([], passes)
+            self.assertEqual([notice_rule.name], [item.rule_name for item in violations])
+            self.assertEqual(["error"], [item.severity for item in violations])
+
     def test_jsonc_strings_comments_arrays_and_source_lines(self) -> None:
         sample = r'''{
   // HTTP destination, preserving // inside its value.

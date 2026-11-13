@@ -93,7 +93,9 @@ internal static class SecurityCashFlowScheduleRowCodec
                 return false;
             }
             try
-            { total = checked(total + segment.UnroundedInterestAmount); }
+            {
+                total = checked(total + segment.UnroundedInterestAmount);
+            }
             catch (OverflowException)
             {
                 reason = "Interest segment totals exceed the supported monetary range.";
