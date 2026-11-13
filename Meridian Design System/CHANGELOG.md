@@ -6,6 +6,12 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 
 ## [Unreleased] — increment A · semantic safety
 
+### Fixed — public API review completion (#3520)
+- **`ActionQueue` / `ActionEnvelopeProvider`** — a queue retry binds to the selected instruction, retaining its key, payload and next attempt. Action-only consumers keep their existing behavior; duplicate retries share one dispatch.
+- **`DatePicker` / `DateRangePicker`** — calendar navigation stays within day cells while Tab reaches month, preset and footer controls. Month changes preserve control focus and an enabled day at date bounds; Escape closes and restores trigger focus.
+- **`DataGrid`** — valid decimal strings, including committed edits, participate in proofs, totals and group subtotals. Missing, invalid and nonfinite evidence still withholds a proof or total.
+- Added source-based Chromium regressions for all three repairs and included them in `test:patches`.
+
 ### Fixed — signal wash token and stale identity guidance
 - **`tokens/colors.css`** — `--brand-signal-a10` was a terracotta `rgba()` literal, so it followed neither a brand nor dark mode; it now aliases `--accent-a10` like the rest of the `--brand-signal-*` names.
 - **`BRAND_GUIDELINES.md`** — no longer says `data-brand="steel"` is selectable (4.3.0 has no such preset), and its colour, type and usage guidance state the 4.3.0 values instead of the v2.0 copper palette.

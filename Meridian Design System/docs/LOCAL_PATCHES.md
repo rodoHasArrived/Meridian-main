@@ -38,6 +38,9 @@ regression that was run against the pre-patch file and failed on it.
 | LP-17 | `components/accounting/LedgerTable.jsx`, `components/trading/OptionChainTable.jsx`, `components/charts/CorrelationHeatmap.jsx`, `CoverageMatrix.jsx`, `components/data/VirtualizedList.jsx`, `WorksheetGrid.jsx` | Roving rows preserve original callback objects and exclude child-control activation. Read-only tables, active strike announcements, accessible values, list positions and worksheet editability reflect their actual interaction contracts. | PR #3542 | `tests/integration-data-accessibility-regression.mjs` |
 | LP-18 | `templates/field-formula/screen.jsx` | Retained formula suggestions use native buttons with announced selection, roving focus, arrow/Home/End navigation and native Enter/Space activation. The newer published DC workflow retains its existing implementation. | PR #3542 | `tests/retained-reference-accessibility-regression.mjs` |
 | LP-19 | `templates/books-loop/BooksLoop.dc.html` | A cold start could remain on its loading view; duplicate dependency initialization could leave the view subscribed to an obsolete instruction store. Dependency readiness refreshes the real model and maintains one active subscription to the current store, with listener and subscription cleanup on unmount. | PR #3542 | `tests/books-loop-readiness-regression.mjs` |
+| LP-20 | `components/operations/ActionQueue.jsx`, `ActionEnvelope.jsx` | Retrying an older queue row could resend a newer instruction of the same action. Retry now accepts the row identity and preserves its key, payload and attempt; concurrent retries share one dispatch. | Follow-up to PR #3520 | `tests/action-queue-retry-regression.mjs` |
+| LP-21 | `components/core/DatePicker.jsx`, `DateRangePicker.jsx` | Tab from a calendar day closed the popup before operators could reach its footer or return to its month controls. Day navigation and dialog dismissal now have separate handlers. Tab traversal and a day-grid entry remain available after month changes, including date bounds. | Follow-up to PR #3520 | `tests/calendar-keyboard-regression.mjs` |
+| LP-22 | `components/data/DataGrid.jsx` | Valid decimal strings displayed as amounts but could not establish totals or proofs, including strings emitted by inline editing. The shared aggregate helper normalizes decimal strings while withholding missing, invalid and overflowing evidence. | Follow-up to PR #3520 | `tests/grid-amount-regression.mjs` |
 
 ## Other local changes
 
@@ -54,7 +57,7 @@ checks named here, not by `test:patches`.
 
 ## To carry upstream
 
-LP-01 to LP-19 are defects in the design source and should be fixed there, so the
+LP-01 to LP-22 are defects in the design source and should be fixed there, so the
 next export arrives with them. Until then this file is the re-apply list. When a
 patch lands upstream, keep its regression and remove its row.
 

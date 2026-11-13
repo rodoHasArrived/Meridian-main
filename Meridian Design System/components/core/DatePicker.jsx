@@ -150,13 +150,18 @@ export function DatePicker({
     setPlacement(p);
   }, [open]);
 
-  React.useEffect(() => { if (open) dayRef.current?.focus(); }, [open, cursor]);
+  React.useEffect(() => {
+    // Opening and day-grid navigation move focus to the active day. Month buttons
+    // retain focus so keyboard users can advance repeatedly before entering the grid.
+    if (open && (!calRef.current?.contains(document.activeElement) || document.activeElement?.classList.contains("mds-date-day"))) dayRef.current?.focus();
+  }, [open, cursor]);
 
   const openCal = () => {
     if (disabled) return;
     setCursor(selected || clampDate(new Date(), minD, maxD));
     setOpen(true);
   };
+  const moveMonth = (delta) => setCursor(clampDate(addMonths(cursor, delta), minD, maxD));
   const close = (refocus = true) => {
     setOpen(false);
     setPlacement("");
@@ -184,8 +189,11 @@ export function DatePicker({
     else if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); close(); }
   };
 
-  const onGridKey = (e) => {
+  const onDialogKey = (e) => {
     if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+  };
+
+  const onGridKey = (e) => {
     if (!e.target.classList.contains("mds-date-day")) return;
     const k = e.key;
     let next = null;
@@ -198,8 +206,6 @@ export function DatePicker({
     else if (k === "PageUp") next = addMonths(cursor, e.shiftKey ? -12 : -1);
     else if (k === "PageDown") next = addMonths(cursor, e.shiftKey ? 12 : 1);
     else if (k === "Enter" || k === " ") return; // Native day button commits its own date.
-    else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
-    else if (k === "Tab") { close(); return; }
     if (next) { e.preventDefault(); setCursor(next); }
   };
 
@@ -256,15 +262,15 @@ export function DatePicker({
         </div>
         {open && (
           <div ref={calRef} className={`mds-date-cal${placement}`} role="dialog" aria-modal="false"
-            aria-label={label ? `${label} calendar` : "Choose date"} onKeyDown={onGridKey}>
+            aria-label={label ? `${label} calendar` : "Choose date"} onKeyDown={onDialogKey}>
             <div className="mds-date-header">
               <button type="button" className="mds-date-nav" disabled={prevBlocked} aria-label="Previous month"
-                onClick={() => setCursor(addMonths(cursor, -1))}>‹</button>
+                onClick={() => moveMonth(-1)}>‹</button>
               <span className="mds-date-title" aria-live="polite">{monthTitle(cursor)}</span>
               <button type="button" className="mds-date-nav" disabled={nextBlocked} aria-label="Next month"
-                onClick={() => setCursor(addMonths(cursor, 1))}>›</button>
+                onClick={() => moveMonth(1)}>›</button>
             </div>
-            <table className="mds-date-grid" role="grid" id={gridId} aria-label={monthTitle(cursor)}>
+            <table className="mds-date-grid" role="grid" id={gridId} aria-label={monthTitle(cursor)} onKeyDown={onGridKey}>
               <thead>
                 <tr>{dow.map((d) => <th key={d} className="mds-date-dow" scope="col" abbr={d}>{d}</th>)}</tr>
               </thead>

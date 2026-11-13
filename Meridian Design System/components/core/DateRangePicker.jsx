@@ -3,7 +3,7 @@
 // toISOString(), shifting every range back a day for users west of UTC.
 // Preset ranges (MTD/QTD/YTD…) sit beside the calendar because that is how a desk actually picks.
 import React from "react";
-import { calendarDate, toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate.js";
+import { calendarDate, toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -167,7 +167,16 @@ export function DateRangePicker({
     setPlacement(p);
   }, [open]);
 
-  React.useEffect(() => { if (open) dayRef.current?.focus(); }, [open, focusDay]);
+  React.useEffect(() => {
+    // Opening and day navigation focus the active day. Month controls retain
+    // focus while moving that day with the visible window, so Tab can enter it.
+    if (open && (!calRef.current?.contains(document.activeElement) || document.activeElement?.classList.contains("mds-dr-day"))) dayRef.current?.focus();
+  }, [open, focusDay]);
+
+  const moveMonth = (delta) => {
+    setCursor(addMonths(cursor, delta));
+    setFocusDay(clampDate(addMonths(focusDay, delta), minD, maxD));
+  };
 
   const close = (refocus = true) => {
     setOpen(false);
@@ -194,9 +203,12 @@ export function DateRangePicker({
   const applyPreset = (p) => { if (presetBlocked(p)) return; onChange?.({ start: p.start, end: p.end }); setAnchor(null); close(); };
   const activePreset = presetList.find((p) => p.start === start && p.end === end);
 
+  const onDialogKey = (e) => {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); }
+  };
+
   const onGridKey = (e) => {
     const k = e.key;
-    if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
     // Presets and month-navigation buttons keep their native Enter/Space behavior.
     if (!e.target.classList.contains("mds-dr-day")) return;
     let next = null;
@@ -209,8 +221,6 @@ export function DateRangePicker({
     else if (k === "PageUp") next = addMonths(focusDay, e.shiftKey ? -12 : -1);
     else if (k === "PageDown") next = addMonths(focusDay, e.shiftKey ? 12 : 1);
     else if (k === "Enter" || k === " ") return; // Native day button commits its own date.
-    else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
-    else if (k === "Tab") { close(false); return; }
     if (next) {
       e.preventDefault();
       setFocusDay(next);
@@ -264,7 +274,7 @@ export function DateRangePicker({
         </div>
         {open && (
           <div ref={calRef} className={`mds-dr-cal${placement}`} role="dialog" aria-modal="false"
-            aria-label={label ? `${label} range` : "Choose date range"} onKeyDown={onGridKey}>
+            aria-label={label ? `${label} range` : "Choose date range"} onKeyDown={onDialogKey}>
             {showPresets && presetList.length > 0 && (
               <div className="mds-dr-presets">
                 {presetList.map((p) => (
@@ -288,15 +298,15 @@ export function DateRangePicker({
                           className={`mds-dr-nav${mi === 0 ? "" : " mds-dr-nav--ghost"}`}
                           aria-label="Previous month" aria-hidden={mi !== 0}
                           tabIndex={mi === 0 ? 0 : -1}
-                          onClick={() => setCursor(addMonths(cursor, -1))}>‹</button>
+                          onClick={() => moveMonth(-1)}>‹</button>
                         <span className="mds-dr-title">{monthTitle(mCursor)}</span>
                         <button type="button" disabled={nextBlocked}
                           className={`mds-dr-nav${mi === months - 1 ? "" : " mds-dr-nav--ghost"}`}
                           aria-label="Next month" aria-hidden={mi !== months - 1}
                           tabIndex={mi === months - 1 ? 0 : -1}
-                          onClick={() => setCursor(addMonths(cursor, 1))}>›</button>
+                          onClick={() => moveMonth(1)}>›</button>
                       </div>
-                      <table className="mds-dr-grid" role="grid" aria-label={monthTitle(mCursor)}>
+                      <table className="mds-dr-grid" role="grid" aria-label={monthTitle(mCursor)} onKeyDown={onGridKey}>
                         <thead>
                           <tr>{dow.map((d) => <th key={d} className="mds-dr-dow" scope="col">{d}</th>)}</tr>
                         </thead>
