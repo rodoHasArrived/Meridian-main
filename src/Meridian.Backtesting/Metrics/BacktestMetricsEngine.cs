@@ -245,7 +245,7 @@ internal static class BacktestMetricsEngine
                 // disposal gain is P&L. Per-share consideration/income/fees are posted
                 // separately by the portfolio and must also remain in symbol attribution.
                 + assetEventsBySymbol[symbol].Sum(flow =>
-                    flow.RealizedPnl + flow.UnitsImpacted * flow.CashPerShare);
+                    flow.RealizedPnl + flow.UnitsImpacted * flow.CashPerShare - flow.BasisReturned);
             // Use account positions so offsetting long/short books survive aggregate netting.
             var unrealised = finalSnapshot.Accounts.Count > 0
                 ? positionsBySymbol[symbol].Sum(position => position.UnrealizedPnl)

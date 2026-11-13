@@ -461,8 +461,10 @@ public sealed class PaperTradingPortfolioRegTMarginTests
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
 
         var buyEntry = ledger.Journal.Last(e => e.Description.Contains("Buy"));
-        buyEntry.Lines.Should().Contain(l => l.Account == ScopedLedgerAccount(LedgerAccountRole.Cash) && l.Credit == 10_000m);
-        buyEntry.Lines.Should().Contain(l => l.Account == ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable) && l.Credit == 10_000m);
+        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.CashAccount("margin-1") && l.Credit == 20_000m);
+        var financingEntry = ledger.Journal.Single(e => e.Description.Contains("Margin borrowing"));
+        financingEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.CashAccount("margin-1") && l.Debit == 10_000m);
+        financingEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.MarginLoanPayableFor("margin-1") && l.Credit == 10_000m);
     }
 
     [Fact]
@@ -669,6 +671,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
         ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(0m,
             "all collateral returns to cash once the short is fully covered");
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
     }
 
     [Fact]
@@ -985,7 +988,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
 
         var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
-        portfolio.MarginBalance.Should().Be(10_000m);
+        portfolio.MarginBalance.Should().Be(10_000m, because: "paid interest must not also be charged as loan principal");
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.001m);
     }
 
@@ -1075,19 +1078,19 @@ public sealed class PaperTradingPortfolioMarginRulesTests
 
             AssertStage(cash: 100_000m, principal: 0m, securities: 0m, expense: 0m, entries: 1);
             portfolio.ApplyFill("margin-1", buy);
-            AssertStage(cash: 90_000m, principal: 10_000m, securities: 20_000m, expense: 0m, entries: 2);
+            AssertStage(cash: 90_000m, principal: 10_000m, securities: 20_000m, expense: 0m, entries: 3);
 
             portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt);
-            AssertStage(90_000m - expectedInterest, 10_000m, 20_000m, expectedInterest, entries: 3);
+            AssertStage(90_000m - expectedInterest, 10_000m, 20_000m, expectedInterest, entries: 4);
 
             portfolio.ApplyFill("margin-1", partialSale);
-            AssertStage(94_000m - expectedInterest, 6_000m, 12_000m, expectedInterest, entries: 4);
+            AssertStage(94_000m - expectedInterest, 6_000m, 12_000m, expectedInterest, entries: 6);
             portfolio.ApplyFill("margin-1", finalSale);
-            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 8);
 
             // Once flat, another period accrues nothing and cannot charge repaid principal.
             portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt.AddDays(days));
-            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 8);
             ledger.Journal.Should().ContainSingle(entry => entry.Description.Contains("Margin interest"));
             ledger.Journal.SelectMany(entry => entry.Lines)
                 .Where(line => line.Account == ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable))
@@ -1109,6 +1112,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
                 ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Securities, "AAPL")).Should().Be(securities);
                 ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginInterestExpense)).Should().Be(expense);
                 ledger.Journal.Should().HaveCount(entries).And.OnlyContain(entry => entry.IsBalanced);
+                portfolio.CheckLedgerIntegrity().Should().BeEmpty();
             }
         }
     }

@@ -253,7 +253,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         Append(request.DatasetReference);
         Append(request.FeedReference);
         Append(request.BenchmarkSymbol);
-        Append(JsonSerializer.Serialize(request.NativeRequest));
+        Append(JsonSerializer.Serialize(request.NativeRequest, BacktestSweepFingerprintJsonContext.Default.BacktestRequest));
         Append("external-options");
         Append((request.ExternalEngineOptions?.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture));
         if (request.ExternalEngineOptions is not null)

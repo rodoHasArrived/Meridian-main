@@ -965,13 +965,75 @@ public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = 
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1438](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1438).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1444](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1444).
 
 Defines one account within a multi-account paper trading session.
 
 ```csharp
 public sealed record AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash, MarginAccountType MarginType = MarginAccountType.Cash, IMarginModel? MarginModel = null);
 ```
+
+## BrokerAccountingBreak
+
+Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreak</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:12](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L12).
+
+Reconciliation evidence only; never authorizes a corrective or broker transaction.
+
+```csharp
+public sealed record BrokerAccountingBreak(BrokerAccountingBreakCategory Category, string Reference, decimal? LocalAmount, decimal? BrokerAmount, string? Detail = null);
+```
+
+## BrokerAccountingBreakCategory
+
+Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreakCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:3](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L3).
+
+```csharp
+public enum BrokerAccountingBreakCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TimingDifference</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:5](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L5) |  |
+| <code>MissingEntry</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:6](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L6) |  |
+| <code>AmountMismatch</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:7](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L7) |  |
+| <code>UnknownActivity</code> | [src/Meridian.Execution/Services/BrokerAccountingBreak.cs:8](../../../../src/Meridian.Execution/Services/BrokerAccountingBreak.cs#L8) |  |
+
+## BrokerActivityImportResult
+
+Qualified name: <code>Meridian.Execution.Services.BrokerActivityImportResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/BrokerActivityImportService.cs:203](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L203).
+
+The current provider observation and the checksum-verified accepted activity history.
+
+```csharp
+public sealed record BrokerActivityImportResult(BrokerageActivitySnapshotDto Current, BrokerageActivitySnapshotDto Retained);
+```
+
+## BrokerActivityImportService
+
+Qualified name: <code>Meridian.Execution.Services.BrokerActivityImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/BrokerActivityImportService.cs:14](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L14).
+
+Durable read-side activity inbox. Immutable provider activity IDs are accepted before the checkpoint advances; a crash between those writes rereads and verifies the same records. It retains source evidence and grants no ledger-posting or corrective-trade authority.
+
+```csharp
+public sealed class BrokerActivityImportService(string rootDirectory)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BrokerageActivitySnapshotDto&gt; ImportAsync(IBrokerageActivitySync provider, string accountId, DateTimeOffset? since = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/BrokerActivityImportService.cs:23](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L23) | Resumes from a complete retained watermark, rereading its timestamp inclusively so IDs sharing a timestamp cannot be skipped. An explicit lower bound requests a deliberate rescan. Providers without completeness evidence always rescan; earlier late arrivals require a rescan. |
+| <code>public async Task&lt;BrokerActivityImportResult&gt; ImportWithHistoryAsync(IBrokerageActivitySync provider, string accountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/BrokerActivityImportService.cs:35](../../../../src/Meridian.Execution/Services/BrokerActivityImportService.cs#L35) | Returns the current provider observation separately from accepted historical activity. Consumers can publish the provider&#x27;s current window without relabeling historical rows, while recovering a downstream history projection from the complete durable inbox. |
 
 ## BrokerageExecutionOrderMatch
 
@@ -1079,61 +1141,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? BrokerOrderAliases { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:179](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L179) |  |
-
-## CreatePaperSessionDto
-
-Qualified name: <code>Meridian.Execution.Services.CreatePaperSessionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1858](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1858).
-
-Request to create a new paper session.
-
-```csharp
-public sealed record CreatePaperSessionDto(string StrategyId, string? StrategyName, decimal InitialCash = 100_000m, IReadOnlyList<string>? Symbols = null);
-```
-
-## ExecutionAlertService
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAlertService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:42](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L42).
-
-Durable account-scoped alerts and webhook outbox.
-
-```csharp
-public sealed class ExecutionAlertService(ExecutionJournal journal, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ExecutionAlertSettings&gt; SettingsAsync(Guid accountId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:47](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L47) |  |
-| <code>public async Task SaveSettingsAsync(ExecutionAlertSettings settings, string scope, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:51](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L51) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionNotification&gt;&gt; NotificationsAsync(Guid accountId, string scope, CancellationToken ct = default, int take = 200) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:69](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L69) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PendingExecutionWebhook&gt;&gt; PendingWebhookDeliveriesAsync(Guid accountId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:74](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L74) |  |
-| <code>public async Task ObserveEquityAsync(ExecutionEquityObservation observation, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:85](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L85) |  |
-| <code>public async Task ScanAsync(Guid accountId, string scope, Func&lt;DateTimeOffset, DateTimeOffset, double&gt; regularMinutes, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:111](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L111) |  |
-| <code>public async Task PublishAsync(Guid accountId, string scope, string key, string severity, string title, string detail, DateTimeOffset timestamp, string? orderId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:148](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L148) |  |
-
-## ExecutionAlertSettings
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAlertSettings</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:9](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L9).
-
-```csharp
-public sealed record ExecutionAlertSettings(Guid AccountId, decimal? DailyLossLimitUsd = null, int StaleOrderMinutes = 15, bool WebhookEnabled = false, string? WebhookUrl = null, int Version = 1);
-```
-
-## ExecutionAuditEntry
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:34](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L34).
-
-Durable audit record for live-execution operations, approvals, and control changes.
-
-```csharp
-public sealed record ExecutionAuditEntry(string AuditId, string Category, string Action, string Outcome, DateTimeOffset OccurredAt, string? Actor = null, string? BrokerName = null, string? OrderId = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Message = null, string? Reason = null, string? Scope = null, IReadOnlyDictionary<string, string>? Metadata = null);
-```

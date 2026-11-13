@@ -47,6 +47,14 @@ This layer should hold reusable execution contracts without binding them to one 
 
 ## Important workflows
 
+`OrderPreviewResult` carries a request fingerprint, expiry, checks and nullable estimates/reference
+for an observation, not submission authority. `IRiskPreviewValidator` evaluates without reserving
+capacity or changing execution controls. Nullable `OrderRequest.SessionIntent` and retained
+`OrderState.SessionIntent` name an explicit session policy while absent values preserve legacy
+requests. `OrderResult.RequiresOrderReconciliation` identifies uncertain dispatch that must be
+reconciled before retry; `OrderState.JournalAttemptId` retains the associated submission-attempt
+identity. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 New OMS submissions follow `OrderRequest` → `ValidatedOrder` → `GatewayResolvedOrder` before
 pre-trade risk. `ValidatedOrder.TryCreate` freezes metadata and legs and returns structured
 field errors for blank symbols, undefined order enums, missing price limbs, or conflicting /

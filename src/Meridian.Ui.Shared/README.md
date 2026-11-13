@@ -11,6 +11,17 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+Run ledger summary, journal and trial-balance endpoints accept an inclusive `asOf` economic
+timestamp after the existing tenant/company run-access guard. The accounting-package download
+endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow; lot reports
+require an exact retained valuation cut. Its availability table distinguishes absent lot evidence
+from measured empty schedules. Temporary export files are removed after ZIP construction. The
+paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+Fund workspace research-ledger reads hydrate archived journal details only after the fund and
+selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.
+A configured durable journal store remains authoritative, including when its book is empty.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native
@@ -3666,3 +3677,16 @@ readiness; mini and adjusted options retain their contractual multiplier. Each c
 its multiplier map so concurrent synchronization cannot mix observations. Raw snapshots and cash
 remain readable when a legacy position cannot safely be valued. Current implementation performs
 individual retained-history lookups; large-portfolio batching remains a performance follow-up.
+
+Brokerage activity sync accepts provider records through `ImportWithHistoryAsync` into the shared
+durable activity inbox before publication. Its `Current` snapshot supplies only the latest provider
+observation to the workstation projection, raw snapshot and status. The checksum-verified
+`Retained` union of immutable accepted records rebuilds downstream activity history after an
+interrupted projection write, including when the next current fetch is empty. Historical accepted
+rows are not relabeled as observations in that current provider window. The existing `ImportAsync`
+retained-history contract remains unchanged.
+Retained complete cursor watermarks resume with an inclusive timestamp reread; immutable activity-ID
+evidence prevents duplicates across retries and restart.
+Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
+retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
+rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.

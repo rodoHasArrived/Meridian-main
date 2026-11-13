@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonFileIBDataResultStore
+
+Qualified name: <code>Meridian.Storage.Store.JsonFileIBDataResultStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L16).
+
+Crash-safe IB result store. Each upsert replaces one complete atomic snapshot, so an interrupted write leaves either the previous valid result set or the new valid result set available at restart.
+
+```csharp
+public sealed class JsonFileIBDataResultStore : IIBDataResultStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonFileIBDataResultStore(IBDataResultStoreOptions options);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:22](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L22) |  |
+| <code>public async ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:29](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L29) |  |
+| <code>public async ValueTask&lt;IReadOnlyList&lt;IBDataResult&gt;&gt; QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:57](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L57) |  |
+
+## JsonFileSnapshotStore (generic arity 1)
+
+Qualified name: <code>Meridian.Storage.Store.JsonFileSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonFileSnapshotStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileSnapshotStore.cs#L16).
+
+Base class for whole-file JSON snapshot stores: state lives in a single JSON document that is loaded on demand, mutated in memory, and persisted with AtomicFileWriter so the file is never left partially written. A SemaphoreSlim serializes read-modify-write cycles. Derived stores supply the empty snapshot, choose reflection- or source-generated serialization via the constructor, and can override the corrupt-snapshot and post-load hooks to keep their historical recovery semantics (propagate, log-and-start-fresh, or fail fast).
+
+```csharp
+public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
+```
+
 ## JsonlMarketDataStore
 
 Qualified name: <code>Meridian.Storage.Store.JsonlMarketDataStore</code>. Kind: `class`.

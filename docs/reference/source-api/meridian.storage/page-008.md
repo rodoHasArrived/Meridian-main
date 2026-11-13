@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryRetentionReceipt
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRetentionReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:12](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L12).
+
+```csharp
+public sealed record DataQueryRetentionReceipt(string ExecutionId, long RowCount, DateTimeOffset ExpiresAt);
+```
+
+## DuckDbQueryService
+
+Qualified name: <code>Meridian.Storage.Query.DuckDbQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:23](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L23).
+
+Read-only SQL analytics over the local market-data store, backed by an in-memory DuckDB session per query. The catalog is exposed as a meridian_files view (symbol, event type, date, format, absolute path, size, event count) so operators can discover files and feed paths into read_parquet/read_json_auto without leaving SQL. Statements are guarded: single SELECT-family statement, keyword blocklist, row cap, and timeout — a runaway query can never touch the ingestion hot path or mutate the store. File access is sandboxed to the storage root via DuckDB&#x27;s allowed_directories with external access otherwise disabled and the configuration locked, so reader functions cannot reach arbitrary host files.
+
+```csharp
+public sealed partial class DuckDbQueryService(IStorageCatalogService catalogService, StorageOptions storageOptions, ILogger<DuckDbQueryService>? logger = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QueryableRoot =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:28](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L28) |  |
+| <code>public async Task&lt;DataQueryResult&gt; ExecuteAsync(string? sql, DataQueryOptions options, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:34](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L34) | Executes sql and returns a bounded, string-projected result set. Guard violations and execution errors are returned as a failed result, not thrown, so the endpoint can map them to a 400 with the message intact. |
+| <code>public async Task&lt;DataQueryResult&gt; ExecuteRetainedAsync(string? sql, DataQueryOptions options, IDataQueryResultSink sink, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:41](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L41) | Executes once, retaining every result row while MaxRows remains the browser preview limit. |
+
 ## IDataQueryResultSink
 
 Qualified name: <code>Meridian.Storage.Query.IDataQueryResultSink</code>. Kind: `interface`.
@@ -907,28 +937,4 @@ Source: [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:
 
 ```csharp
 public sealed record CryptoProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifierValue, long Version);
-```
-
-## CurveDefinedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CurveDefinedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:94](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L94).
-
-Curves / CurveDefined.
-
-```csharp
-public sealed record CurveDefinedPayload(Guid CurveId, string CurveKey, string Kind, string Currency, string? IndexName, string? Tenor, string DayCount, string Interpolation, string Source, string? Description) : ISecurityGovernancePayload;
-```
-
-## CurveVersionPublishedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CurveVersionPublishedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:107](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L107).
-
-Curves / CurveVersionPublished.
-
-```csharp
-public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
 ```

@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityGovernancePayloadVersionException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadVersionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:390](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L390).
+
+A stored governance payload&#x27;s version has no reader on this node (for example, a newer writer&#x27;s version).
+
+```csharp
+public sealed class SecurityGovernancePayloadVersionException(string stream, string eventType, int payloadVersion, IReadOnlyList<int> readableVersions) : NotSupportedException($"Governance payload {stream}/{eventType} version {payloadVersion} cannot be read; readable versions: {string.Join(", ", readableVersions)}.")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Stream { get; } = stream;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:394](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L394) |  |
+| <code>public string EventType { get; } = eventType;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:395](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L395) |  |
+| <code>public int PayloadVersion { get; } = payloadVersion;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:396](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L396) |  |
+
+## SecurityGovernanceStreams
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceStreams</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:9](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L9).
+
+The governance streams recorded in security_governance_events.
+
+```csharp
+public static class SecurityGovernanceStreams
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string OperatorOverrides = &quot;OperatorOverrides&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:11](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L11) |  |
+| <code>public const string Aliases = &quot;Aliases&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:12](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L12) |  |
+| <code>public const string ProjectionRebuild = &quot;ProjectionRebuild&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:13](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L13) |  |
+| <code>public const string UnderlyingGraph = &quot;UnderlyingGraph&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L16) | Declared underlying-graph links: declaration, amendment and removal (migration 051). |
+| <code>public const string Curves = &quot;Curves&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L19) | Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload. |
+| <code>public const string OtcCollateral = &quot;OtcCollateral&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:22](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L22) | OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events carry no security id and name a netting set (snapshots, calls) or a collateral agreement (balances). |
+
 ## SecurityIdentifierRevision
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifierRevision</code>. Kind: `record`.
@@ -795,23 +838,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;T&gt; PeekAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:192](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L192) | Returns a snapshot of all buffered events without removing them. Allocates a new list on every call; intended for diagnostics/monitoring only. |
 | <code>public void Clear();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:203](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L203) | Clear all events from the buffer. |
 | <code>public void Dispose();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:212](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L212) |  |
-
-## EventSearchQuery
-
-Qualified name: <code>Meridian.Storage.Services.EventSearchQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:756](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L756).
-
-```csharp
-public sealed record EventSearchQuery(string Symbol, MarketEventType Type, DateTimeOffset From, DateTimeOffset To, decimal? MinPrice = null, decimal? MaxPrice = null, long? MinVolume = null, AggressorSide? Side = null, long? SequenceFrom = null, long? SequenceTo = null, int Limit = 1000);
-```
-
-## EventSearchResult
-
-Qualified name: <code>Meridian.Storage.Services.EventSearchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:800](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L800).
-
-```csharp
-public sealed record EventSearchResult(DateTimeOffset Timestamp, string Symbol, string EventType, long Sequence, string Source, object? Payload);
-```
