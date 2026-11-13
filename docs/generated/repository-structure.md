@@ -9944,10 +9944,15 @@ Meridian-main
 │   │   │   │   │   ├── settings-route-state.test.ts
 │   │   │   │   │   ├── settings-route-state.ts
 │   │   │   │   │   ├── settings-screen.a11y.test.tsx
+│   │   │   │   │   ├── settings-screen.brokerage-sections.tsx
+│   │   │   │   │   ├── settings-screen.capability-sections.tsx
 │   │   │   │   │   ├── settings-screen.date-format.ts
+│   │   │   │   │   ├── settings-screen.diagnostics-section.tsx
 │   │   │   │   │   ├── settings-screen.execution-alerts.tsx
 │   │   │   │   │   ├── settings-screen.operations-control.ts
 │   │   │   │   │   ├── settings-screen.operations-form-options.ts
+│   │   │   │   │   ├── settings-screen.profile-sections.tsx
+│   │   │   │   │   ├── settings-screen.section-primitives.tsx
 │   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts

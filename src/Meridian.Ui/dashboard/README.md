@@ -67,7 +67,12 @@ loading, stale, blocked and unavailable states remain visible. See
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
-or mutation authority. Accounting Security Master selection/search state belongs to
+or mutation authority. Presentational Settings sections live beside the screen:
+`settings-screen.profile-sections.tsx` (profile authentication, system posture, appearance),
+`settings-screen.brokerage-sections.tsx` (Alpaca and Robinhood), `settings-screen.diagnostics-section.tsx`,
+and `settings-screen.capability-sections.tsx` (runtime and backend capabilities), with shared chips and
+tone helpers in `settings-screen.section-primitives.tsx`. The screen keeps state, handlers, and the
+route-driven section gates. Accounting Security Master selection/search state belongs to
 `accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
 instrument-passport projections belong to `accounting-screen.security-projections.ts`.
 The Accounting screen composes its larger panels from sibling modules:
