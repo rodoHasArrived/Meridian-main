@@ -69,7 +69,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:504](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L504).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:541](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L541).
 
 Exposes the provider-family adapters available to routing.
 
@@ -81,8 +81,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:506](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L506) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:508](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L508) |  |
+| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:543](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L543) |  |
+| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:545](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L545) |  |
 
 ## IProviderRuntimeCredentialApplier
 
@@ -403,7 +403,7 @@ Declared public members:
 | <code>public ProviderRoutingService(UI.ConfigStore store, IProviderConnectionHealthSource healthSource, IProviderFamilyCatalogService catalog, KernelObservabilityService? kernelObservability = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L25) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L37) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L41) | Routes using only connections retained for the authorized tenant. |
-| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:283](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L283) |  |
+| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:292](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L292) |  |
 
 ## ProviderRuntimeCredentialApplicationTracker
 

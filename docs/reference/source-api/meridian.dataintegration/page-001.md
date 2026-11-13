@@ -118,7 +118,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.IQuickBooksOnlineClient</code>. Kind: `interface`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:241](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L241).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:276](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L276).
 
 Exchanges QuickBooks OAuth tokens and retrieves accounting evidence through the provider API.
 
@@ -130,16 +130,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task VerifyCompanyAsync(QuickBooksOnlineConnection connection, string accessToken, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:243](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L243) |  |
-| <code>Task&lt;QuickBooksOnlineTokenExchangeResult&gt; ExchangeAuthorizationCodeAsync(QuickBooksOnlineAuthorizationCodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:246](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L246) |  |
-| <code>Task&lt;QuickBooksOnlineTokenExchangeResult&gt; RefreshAccessTokenAsync(QuickBooksOnlineConnection connection, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:250](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L250) |  |
-| <code>Task&lt;QuickBooksOnlineCompanyEvidence&gt; ReadCompanyEvidenceAsync(QuickBooksOnlineConnection connection, string accessToken, AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:254](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L254) |  |
+| <code>Task VerifyCompanyAsync(QuickBooksOnlineConnection connection, string accessToken, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:278](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L278) |  |
+| <code>Task&lt;QuickBooksOnlineTokenExchangeResult&gt; ExchangeAuthorizationCodeAsync(QuickBooksOnlineAuthorizationCodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:281](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L281) |  |
+| <code>Task&lt;QuickBooksOnlineTokenExchangeResult&gt; RefreshAccessTokenAsync(QuickBooksOnlineConnection connection, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:285](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L285) |  |
+| <code>Task&lt;QuickBooksOnlineCompanyEvidence&gt; ReadCompanyEvidenceAsync(QuickBooksOnlineConnection connection, string accessToken, AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:289](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L289) |  |
 
 ## IQuickBooksOnlineConnectionStore
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.IQuickBooksOnlineConnectionStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:210](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L210).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:236](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L236).
 
 Reads QuickBooks connection credentials and metadata and persists rotated refresh tokens.
 
@@ -151,11 +151,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;QuickBooksOnlineConnection?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:212](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L212) |  |
-| <code>Task&lt;AccountingSystemConnectionMetadataDto&gt; GetMetadataAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:214](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L214) |  |
-| <code>Task SaveRefreshTokenAsync(string refreshToken, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:216](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L216) |  |
-| <code>Task&lt;string&gt; SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:218](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L218) |  |
-| <code>Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:221](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L221) |  |
+| <code>Task&lt;QuickBooksOnlineConnection?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:238](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L238) |  |
+| <code>Task&lt;AccountingSystemConnectionMetadataDto&gt; GetMetadataAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:240](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L240) |  |
+| <code>Task SaveRefreshTokenAsync(string refreshToken, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:242](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L242) |  |
+| <code>Task&lt;string&gt; SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:244](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L244) |  |
+| <code>Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:247](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L247) |  |
+| <code>Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, string? expectedCredentialGeneration, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:254](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L254) |  |
 
 ## QuickBooksFixtureAccountingProvider
 
@@ -196,20 +197,20 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string Id = &quot;quickbooks&quot;;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:18](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L18) |  |
-| <code>public QuickBooksOnlineAccountingProvider(IQuickBooksOnlineConnectionStore connectionStore, IQuickBooksOnlineClient client);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:24](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L24) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:32](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L32) |  |
-| <code>public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:34](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L34) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:37](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L37) |  |
-| <code>public AccountingSystemProviderCapabilities Capabilities { get; } = new (SupportsChartOfAccounts : true, SupportsJournalEntries : true, SupportsTrialBalance : true, SupportsPosting : false, EvidenceKinds :[&quot;QuickBooksAccount&quot;, &quot;QuickBooksJournalEntry&quot;, &quot;QuickBooksTrialBalance&quot;], RequiresCredentials : true);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:39](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L39) |  |
-| <code>public Task&lt;AccountingSystemConnectionMetadataDto&gt; GetConnectionMetadataAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:52](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L52) |  |
-| <code>public async Task&lt;AccountingSystemConnectionVerificationResult&gt; VerifyConnectionAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:55](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L55) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:99](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L99) |  |
+| <code>public QuickBooksOnlineAccountingProvider(IQuickBooksOnlineConnectionStore connectionStore, IQuickBooksOnlineClient client) : this(connectionStore, client, new SemaphoreSlim(1, 1));</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:24](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L24) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:41](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L41) |  |
+| <code>public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:43](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L43) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:46](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L46) |  |
+| <code>public AccountingSystemProviderCapabilities Capabilities { get; } = new (SupportsChartOfAccounts : true, SupportsJournalEntries : true, SupportsTrialBalance : true, SupportsPosting : false, EvidenceKinds :[&quot;QuickBooksAccount&quot;, &quot;QuickBooksJournalEntry&quot;, &quot;QuickBooksTrialBalance&quot;], RequiresCredentials : true);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:48](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L48) |  |
+| <code>public Task&lt;AccountingSystemConnectionMetadataDto&gt; GetConnectionMetadataAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:61](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L61) |  |
+| <code>public async Task&lt;AccountingSystemConnectionVerificationResult&gt; VerifyConnectionAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:64](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L64) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:108](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L108) |  |
 
 ## QuickBooksOnlineAuthorizationCodeRequest
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineAuthorizationCodeRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:261](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L261).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:296](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L296).
 
 ```csharp
 public sealed record QuickBooksOnlineAuthorizationCodeRequest(string ClientId, string ClientSecret, string Code, string RedirectUri);
@@ -219,7 +220,7 @@ public sealed record QuickBooksOnlineAuthorizationCodeRequest(string ClientId, s
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineCompanyEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:273](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L273).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:308](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L308).
 
 ```csharp
 public sealed record QuickBooksOnlineCompanyEvidence(IReadOnlyList<AccountingSystemChartAccountDto> ChartAccounts, IReadOnlyList<AccountingSystemJournalEntryDto> JournalEntries, IReadOnlyList<AccountingSystemTrialBalanceLineDto> TrialBalance, IReadOnlyList<string> EvidenceReferences, IReadOnlyList<string> Warnings);
@@ -229,7 +230,7 @@ public sealed record QuickBooksOnlineCompanyEvidence(IReadOnlyList<AccountingSys
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineConnection</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:229](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L229).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:264](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L264).
 
 ```csharp
 public sealed record QuickBooksOnlineConnection(string ClientId, string ClientSecret, string RefreshToken, string RealmId, string Environment, string? CompanyName)
@@ -239,13 +240,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderCredentialReadResult? CredentialSnapshot { get; init; }</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:237](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L237) |  |
+| <code>public ProviderCredentialReadResult? CredentialSnapshot { get; init; }</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:272](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L272) |  |
 
 ## QuickBooksOnlineHttpClient
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineHttpClient</code>. Kind: `class`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:281](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L281).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:316](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L316).
 
 Implements QuickBooks OAuth and accounting API requests for sandbox and production environments.
 
@@ -257,11 +258,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public QuickBooksOnlineHttpClient(HttpClient httpClient);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:294](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L294) |  |
-| <code>public async Task VerifyCompanyAsync(QuickBooksOnlineConnection connection, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:299](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L299) |  |
-| <code>public async Task&lt;QuickBooksOnlineTokenExchangeResult&gt; RefreshAccessTokenAsync(QuickBooksOnlineConnection connection, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:310](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L310) |  |
-| <code>public async Task&lt;QuickBooksOnlineTokenExchangeResult&gt; ExchangeAuthorizationCodeAsync(QuickBooksOnlineAuthorizationCodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:327](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L327) |  |
-| <code>public async Task&lt;QuickBooksOnlineCompanyEvidence&gt; ReadCompanyEvidenceAsync(QuickBooksOnlineConnection connection, string accessToken, AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:391](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L391) |  |
+| <code>public QuickBooksOnlineHttpClient(HttpClient httpClient);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:329](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L329) |  |
+| <code>public async Task VerifyCompanyAsync(QuickBooksOnlineConnection connection, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:334](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L334) |  |
+| <code>public async Task&lt;QuickBooksOnlineTokenExchangeResult&gt; RefreshAccessTokenAsync(QuickBooksOnlineConnection connection, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:345](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L345) |  |
+| <code>public async Task&lt;QuickBooksOnlineTokenExchangeResult&gt; ExchangeAuthorizationCodeAsync(QuickBooksOnlineAuthorizationCodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:362](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L362) |  |
+| <code>public async Task&lt;QuickBooksOnlineCompanyEvidence&gt; ReadCompanyEvidenceAsync(QuickBooksOnlineConnection connection, string accessToken, AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:426](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L426) |  |
 
 ## QuickBooksOnlineProviderCredentialConnectionStore
 
@@ -290,12 +291,13 @@ Declared public members:
 | <code>public Task SaveRefreshTokenAsync(string refreshToken, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs:80](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs#L80) |  |
 | <code>public Task&lt;string&gt; SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs:90](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs#L90) |  |
 | <code>public Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs:101](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs#L101) |  |
+| <code>public Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, string? expectedCredentialGeneration, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs:109](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs#L109) |  |
 
 ## QuickBooksOnlineTokenExchangeResult
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineTokenExchangeResult</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:267](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L267).
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:302](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L302).
 
 ```csharp
 public sealed record QuickBooksOnlineTokenExchangeResult(string AccessToken, string? RefreshToken, DateTimeOffset ExpiresAtUtc, IReadOnlyList<string> Warnings);

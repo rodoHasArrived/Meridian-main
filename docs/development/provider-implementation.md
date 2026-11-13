@@ -74,6 +74,8 @@ Implement `GetDailyBarsAsync` and only advertise extended capabilities that the 
 implements. Default quote/trade/auction methods can return empty results; this is not evidence that
 those capabilities work. Preserve `IsSimulated` and per-bar provenance through composite providers.
 
+Corporate-action adapters should implement `ICorporateActionProvider.FetchWithOutcomeAsync`, returning explicit coverage and sanitized failure metadata. `Complete` describes the adapter's supported request scope, not release certification. Preserve usable observations from a partial fetch without claiming complete coverage; propagate caller cancellation. Collection-only implementations remain compatible but default to `Unknown` coverage, including empty results. Ingestion exposes these outcomes separately from the retained-evidence and approval gates.
+
 Define interval, timestamp, adjustment, symbol, ordering, pagination, and empty-result semantics.
 Test authentication failure, throttling, malformed rows, incomplete pages, and cancellation distinctly
 from a verified empty response. Repository pacing values are not a guarantee of commercial quotas.

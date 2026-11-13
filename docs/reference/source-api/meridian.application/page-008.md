@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IndeterminateRestatementCandidateResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IndeterminateRestatementCandidateResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:96](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L96).
+
+Fail-closed bridge for hosts whose canonical reporting authority cannot yet answer the security-to-released-run candidate query. It never fabricates a legacy report-pack candidate; instead it marks the lookup indeterminate so soft-closed and hard-closed edits require explicit manual restatement review.
+
+```csharp
+public sealed class IndeterminateRestatementCandidateResolver : IRestatementCandidateResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:98](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L98) |  |
+
 ## InMemorySecurityMasterRevisionStore
 
 Qualified name: <code>Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore</code>. Kind: `class`.
@@ -1018,21 +1036,3 @@ Declared public members:
 | <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:171](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L171) |  |
 | <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:243](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L243) |  |
 | <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:313](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L313) |  |
-
-## SecurityAssetTermsFieldSnapshot
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityAssetTermsFieldSnapshot</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L25).
-
-A canonical snapshot of every stored key an approved assetSpecificTerms.* field edit would overwrite when ApprovedFieldEditCanonicalMergeHandler merges it. The snapshot is taken at staging and recorded on the revision as its base, then taken again at publish. If the two differ, the canonical field changed after the proposal was drafted, and publishing it would silently overwrite that newer value.
-
-```csharp
-public static class SecurityAssetTermsFieldSnapshot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? Capture(string assetClass, JsonElement assetSpecificTerms, string fieldPath);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:34](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L34) | Snapshots the keys fieldPath governs in assetSpecificTerms, or returns null when the path is not one the merge writes (outside the asset-terms namespace, nested deeper than the merge models, or terms that are not a JSON object). |
