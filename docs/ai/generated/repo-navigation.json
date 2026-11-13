@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T08:38:54Z",
+  "generatedAt": "2026-11-13T09:16:45Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2425,20 +2425,84 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-13T08:25:24Z",
-      "lastCommit": "2b722d17c3",
-      "lastSummary": "Align execution test validation and refresh accounting CI evidence",
-      "touches": 33
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 88
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T02:44:01Z",
-      "lastCommit": "cf2f0e0735",
-      "lastSummary": "Preserve retained-run validation and align accrual contract tests",
-      "touches": 80
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 83
+    },
+    {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 35
+    },
+    {
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Risk/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T09:12:02Z",
+      "lastCommit": "c24129bb68",
+      "lastSummary": "Review inherited documentation drift and clarify execution validation ownership",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-13T08:49:29Z",
+      "lastCommit": "e28650fd27",
+      "lastSummary": "fix(providers): exclude long quota waits from HTTP deadlines",
+      "touches": 26
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-13T08:49:29Z",
+      "lastCommit": "e28650fd27",
+      "lastSummary": "fix(providers): exclude long quota waits from HTTP deadlines",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-13T08:49:29Z",
+      "lastCommit": "e28650fd27",
+      "lastSummary": "fix(providers): exclude long quota waits from HTTP deadlines",
+      "touches": 3
     },
     {
       "path": "src/Meridian.Strategies/README.md",
@@ -2446,7 +2510,7 @@
       "lastModified": "2026-11-13T02:44:01Z",
       "lastCommit": "cf2f0e0735",
       "lastSummary": "Preserve retained-run validation and align accrual contract tests",
-      "touches": 7
+      "touches": 8
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs",
@@ -2465,20 +2529,12 @@
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-13T01:51:21Z",
-      "lastCommit": "ad80338ec2",
-      "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 87
-    },
-    {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
       "lastModified": "2026-11-13T01:51:21Z",
       "lastCommit": "ad80338ec2",
       "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 61
+      "touches": 62
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/design-system-contract.test.ts",
@@ -2494,7 +2550,7 @@
       "lastModified": "2026-11-13T01:51:21Z",
       "lastCommit": "ad80338ec2",
       "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 8
+      "touches": 9
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
@@ -2510,7 +2566,7 @@
       "lastModified": "2026-11-13T01:51:21Z",
       "lastCommit": "ad80338ec2",
       "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 3
+      "touches": 4
     },
     {
       "path": "src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs",
@@ -2687,62 +2743,6 @@
       "lastCommit": "76e53dc95a",
       "lastSummary": "Unify retained trade posting economics and lending templates",
       "touches": 15
-    },
-    {
-      "path": "src/Meridian.Backtesting/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "65558a7e58",
-      "lastSummary": "Repair type-barrel validation and refresh generated documentation",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/Events/LedgerPostingConsumer.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-12T22:42:19Z",
-      "lastCommit": "76e53dc95a",
-      "lastSummary": "Unify retained trade posting economics and lending templates",
-      "touches": 5
     }
   ],
   "recentChangesWindowDays": 14,

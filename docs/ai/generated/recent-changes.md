@@ -1,22 +1,29 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-13T08:38:54Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-13T09:16:45Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-13T08:25:24Z | `2b722d17c3` | Align execution test validation and refresh accounting CI evidence | 33 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 80 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 7 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 88 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 83 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 35 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 12 |
+| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 7 |
+| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 6 |
+| `src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 2 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 26 |
+| `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 3 |
+| `src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 3 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 8 |
 | `src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs` | Desktop and UI Workflows | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 2 |
 | `src/Meridian.Strategies/Storage/StrategyRunStore.cs` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 1 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 87 |
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 61 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 62 |
 | `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 12 |
-| `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 8 |
+| `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 9 |
 | `src/Meridian.DataIntegration/README.md` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 6 |
-| `src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 3 |
+| `src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 4 |
 | `src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 2 |
 | `src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 2 |
 | `src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs` | Host and Composition | 2026-11-13T01:11:48Z | `e658268173` | Format pool accrual codec and refresh reviewed source fingerprint | 3 |
@@ -39,11 +46,4 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian/GlobalUsings.cs` | Host and Composition | 2026-11-12T22:56:27Z | `a8f11418cd` | Isolate demo smoke tests and reuse CLI build outputs | 2 |
 | `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 20 |
 | `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 15 |
-| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 11 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | 2026-11-12T22:42:19Z | `65558a7e58` | Repair type-barrel validation and refresh generated documentation | 8 |
-| `src/Meridian.Execution/Events/LedgerPostingConsumer.cs` | Execution, Risk, and Strategies | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 8 |
-| `src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs` | Execution, Risk, and Strategies | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 8 |
-| `src/Meridian.Application/DirectLending/LoanAccountingProjector.cs` | Host and Composition | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 7 |
-| `src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs` | Host and Composition | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 6 |
-| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 5 |
 
