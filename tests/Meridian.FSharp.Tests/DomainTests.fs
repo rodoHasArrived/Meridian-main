@@ -205,6 +205,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         RedemptionFacts = BondRedemptionTerms.empty
         Principal = { Payments = [] }
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        Workflow = None
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -823,6 +824,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         RedemptionFacts = { Par = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
         Principal = { Payments = [] }
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        Workflow = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -856,6 +858,7 @@ let private stepBondTerms = {
     RedemptionFacts = { Par = Some 1000m; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
     Principal = { Payments = [] }
     DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+    Workflow = None
 }
 
 [<Fact>]
@@ -1913,6 +1916,7 @@ let private securitizedBond subclass coupon par =
         RedemptionFacts = { Par = par; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
         Principal = { Payments = [] }
         DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        Workflow = None
     }
 
 [<Theory>]

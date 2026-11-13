@@ -2,7 +2,7 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatNumber, formatCurrency } from "@/lib/format";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { RefreshCw, ShieldAlert } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
+import { MarginComparisonOverview, marginAccountAnchor, marginAccountKey } from "@/screens/margin-comparison-overview";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
@@ -17,16 +18,20 @@ export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const loadGeneration = useRef(0);
 
   const load = useCallback(async (signal?: AbortSignal) => {
+    const generation = ++loadGeneration.current;
     setLoading(true);
     setError(null);
     try {
-      setData(await getMarginControlCenter({ signal }));
+      const next = await getMarginControlCenter({ signal });
+      if (!signal?.aborted && generation === loadGeneration.current) setData(next);
     } catch (reason) {
-      if (!signal?.aborted) setError(reason instanceof Error ? reason.message : "Margin control data could not be loaded.");
+      if (!signal?.aborted && generation === loadGeneration.current) setError(reason instanceof Error ? reason.message : "Margin control data could not be loaded.");
     } finally {
-      if (!signal?.aborted) setLoading(false);
+      if (!signal?.aborted && generation === loadGeneration.current) setLoading(false);
     }
   }, []);
 
@@ -58,6 +63,7 @@ export function MarginControlCenterScreen() {
       {error ? (
         <div className="rounded-[2px] border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive" role="alert">
           {error}
+          {data ? " Last successfully loaded snapshots remain visible; the refresh failed." : ""}
         </div>
       ) : null}
 
@@ -68,10 +74,16 @@ export function MarginControlCenterScreen() {
           <div className="rounded-[2px] border border-amber-300/70 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
             {data.authorityNote} <span className="font-medium">Next:</span> {data.nextAction}
           </div>
+          <MarginComparisonOverview accounts={data.accounts} selectedId={selectedId} onSelect={(account) => {
+            setSelectedId(marginAccountKey(account));
+            const evidence = document.getElementById(marginAccountAnchor(account));
+            evidence?.focus();
+            evidence?.scrollIntoView?.({ block: "start", behavior: "auto" });
+          }} />
           <PrimeTable data={data} />
           <AlertPanel data={data} />
           <div className="flex flex-col gap-3">
-            {data.accounts.map((account) => <AccountMarginCard key={`${account.providerId}:${account.accountId}`} account={account} onCertified={() => void load()} />)}
+            {data.accounts.map((account) => <div id={marginAccountAnchor(account)} key={marginAccountKey(account)} tabIndex={-1} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Margin evidence ${account.providerId} ${account.accountId}`}><AccountMarginCard account={account} onCertified={() => void load()} /></div>)}
           </div>
         </>
       ) : null}

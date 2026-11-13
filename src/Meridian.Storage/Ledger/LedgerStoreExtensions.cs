@@ -38,6 +38,7 @@ public static class LedgerStoreExtensions
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ILedgerReportingSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<ILedgerBalanceSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
         services.AddSingleton(sp => new DurableAutomatedJournalPoster(
@@ -56,7 +57,8 @@ public static class LedgerStoreExtensions
         services.AddSingleton<ILedgerBookService>(sp =>
             new PostgresLedgerBookService(
                 sp.GetRequiredService<ILedgerJournalStore>(),
-                sp.GetService<IOperatorInboxService>()));
+                    sp.GetService<IOperatorInboxService>(),
+                    sp.GetService<IConsolidationBookPolicyValidator>()));
 
         return services;
     }

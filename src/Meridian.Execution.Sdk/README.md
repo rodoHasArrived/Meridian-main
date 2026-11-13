@@ -19,6 +19,8 @@ bind; opposite directions cannot net. Symbols remain display evidence and bindin
 posting authority or tax character.
 
 
+Brokerage position snapshots preserve supplied accrued interest and distinguish provider-reported, cost-derived, and unavailable valuation bases. Cost basis is not evidence of a current bond quote.
+
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
 epoch and verified account/environment scope, so cached execution evidence cannot survive a
@@ -46,6 +48,19 @@ This layer should hold reusable execution contracts without binding them to one 
 - Gateway and execution extension contracts used by runtime implementations.
 
 ## Important workflows
+
+`ExecutionWorkflows.cs` defines broker-neutral preview, session-policy, executable-side quote and
+USD-equity coverage ports. `IOrderPreviewService` returns `OrderPreviewResult` with checks, nullable estimates, a fingerprint
+and evaluation/expiry times; preview grants no routing authority. `IRiskPreviewValidator` is the
+optional observation-only risk port: implementations must not reserve capacity or change execution
+controls. Submission performs current admission and risk validation again.
+
+`OrderRequest.SessionIntent`, `OrderState.SessionIntent` and `OrderState.JournalAttemptId` are nullable
+additions; absent session policies preserve legacy requests. `OrderResult.RequiresOrderReconciliation` identifies an uncertain submission requiring
+reconciliation before retry; `OrderSubmissionRefusal` marks known pre-dispatch exceptions without
+replacing their type. `AccountInfo.PreviousCloseEquity` and `EquityEvidenceComplete` carry explicit
+baseline and quality evidence; absent values remain unknown. See
+[execution workflows](../../docs/engineering/execution-workflows.md).
 
 New OMS submissions follow `OrderRequest` → `ValidatedOrder` → `GatewayResolvedOrder` before
 pre-trade risk. `ValidatedOrder.TryCreate` freezes metadata and legs and returns structured

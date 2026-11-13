@@ -18,67 +18,6 @@ module private NullableHelpers =
         | Some v -> v
         | None -> Unchecked.defaultof<'T>
 
-/// One lossless typed equity serializer shared by the economic document and flat codec.
-module EquityCapitalCodec =
-    let toPayload (terms: EquityCapitalTerms) =
-        let preferredTermsToLegacy (preferred: PreferredTerms) =
-            let liquidationKind, liquidationMultiple =
-                match preferred.LiquidationPreference with
-                | LiquidationPreference.Pari -> "Pari", None
-                | LiquidationPreference.Senior multiple -> "Senior", Some multiple
-                | LiquidationPreference.Subordinated -> "Subordinated", None
-
-            {| dividendRate = preferred.DividendRate
-               dividendType = preferred.DividendType |> DividendType.asString
-               redemptionPrice = preferred.RedemptionPrice
-               redemptionDate = preferred.RedemptionDate
-               callableDate = preferred.CallableDate
-               participationTerms =
-                    preferred.ParticipationTerms
-                    |> Option.map (fun terms ->
-                        {| participatesInCommonDividends = terms.ParticipatesInCommonDividends
-                           additionalDividendThreshold = terms.AdditionalDividendThreshold |})
-               liquidationPreference =
-                    {| kind = liquidationKind
-                       multiple = liquidationMultiple |} |}
-
-        let convertibleTermsToLegacy (convertible: ConvertibleTerms) =
-            let (SecurityId underlyingSecurityId) = convertible.UnderlyingSecurityId
-            {| underlyingSecurityId = underlyingSecurityId
-               conversionRatio = convertible.ConversionRatio
-               conversionPrice = convertible.ConversionPrice
-               conversionStartDate = convertible.ConversionStartDate
-               conversionEndDate = convertible.ConversionEndDate |}
-
-        // "Other" classifications serialize as the discriminant "Other" plus the raw label in
-        // otherClassification — writing the raw label into the classification slot produced a
-        // value the deserializer did not recognize, failing every read of the row.
-        let classification, otherClassification =
-            match terms.Classification with
-            | Some (EquityClassification.Other label) -> Some "Other", Some label
-            | Some value -> Some (EquityClassification.asString value), None
-            | None -> None, None
-
-        let preferredTerms, convertibleTerms =
-            match terms.Classification with
-            | Some (EquityClassification.Preferred preferred) ->
-                Some (preferredTermsToLegacy preferred), None
-            | Some (EquityClassification.Convertible convertible) ->
-                None, Some (convertibleTermsToLegacy convertible)
-            | Some (EquityClassification.ConvertiblePreferred (preferred, convertible)) ->
-                Some (preferredTermsToLegacy preferred), Some (convertibleTermsToLegacy convertible)
-            | _ ->
-                None, None
-
-        {| shareClass = terms.ShareClass
-           votingRightsCat = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
-           classification = classification
-           otherClassification = otherClassification
-           preferredTerms = preferredTerms
-           convertibleTerms = convertibleTerms |}
-
-    let toJson (terms: EquityCapitalTerms) = JsonSerializer.Serialize(toPayload terms)
-
 /// Exact typed tranche serialization; the flat codec keeps its existing field spellings.
 module TrancheContractCodec =
     let toJson (terms: TrancheContractTerms) =
@@ -134,76 +73,10 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
 
     let unstampedAssetSpecificTermsJson =
         match record.Kind with
-        | SecurityKind.Equity terms ->
-            let payload = EquityCapitalCodec.toPayload terms.Capital
-            JsonSerializer.Serialize({| payload with schemaVersion = schemaVersion |})
+        | SecurityKind.Equity terms -> GeneratedFlatWriter.writeEquity schemaVersion terms
         | SecurityKind.Option terms -> GeneratedFlatWriter.writeOption schemaVersion terms
         | SecurityKind.Future terms -> GeneratedFlatWriter.writeFuture schemaVersion terms
-        | SecurityKind.Bond terms ->
-            let couponType, floatingIndex, spreadBps, capRate, floorRate =
-                match terms.Coupon with
-                | BondCouponStructure.Fixed _ -> "Fixed", None, None, None, None
-                | BondCouponStructure.Floating(index, spread, cap, floor, _) -> "Floating", Some index, spread, cap, floor
-                | BondCouponStructure.ZeroCoupon -> "ZeroCoupon", None, None, None, None
-                | BondCouponStructure.Step _ -> "Step", None, None, None, None
-                | BondCouponStructure.InflationLinked _ -> "InflationLinked", None, None, None, None
-            // The dated step schedule and inflation indexation are coupon-structure payload: an
-            // empty array / null asserts "not a step / not inflation-linked" so the field set
-            // stays constant across coupon variants (the round-trip guard's exact-match contract).
-            let stepSchedule =
-                match terms.Coupon with
-                | BondCouponStructure.Step(schedule, _) ->
-                    schedule
-                    |> List.map (fun entry ->
-                        {| effectiveDate = entry.EffectiveDate
-                           rate = entry.Rate |})
-                | _ -> []
-            let inflationIndex, inflationBaseIndexValue, inflationIndexRatio =
-                match terms.Coupon with
-                | BondCouponStructure.InflationLinked(_, indexName, baseIndexValue, indexRatio, _) ->
-                    Some indexName, baseIndexValue, indexRatio
-                | _ -> None, None, None
-            let payload =
-                {| schemaVersion = schemaVersion
-                   maturity = terms.Maturity
-                   issueDate = terms.IssueDate
-                   couponType = couponType
-                   couponRate = BondTerms.couponRate terms
-                   floatingIndex = floatingIndex
-                   spreadBps = spreadBps
-                   capRate = capRate
-                   floorRate = floorRate
-                   stepSchedule = stepSchedule
-                   inflationIndex = inflationIndex
-                   inflationBaseIndexValue = inflationBaseIndexValue
-                   inflationIndexRatio = inflationIndexRatio
-                   dayCount = BondTerms.dayCount terms |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
-                   isCallable = terms.IsCallable
-                   callDate = terms.CallDate
-                   issuerName = terms.IssuerName
-                   seniority = terms.Seniority
-                   subclass = BondSubclass.label terms.Subclass
-                   par = terms.Par
-                   paymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.label
-                   legalFinalMaturity = terms.LegalFinalMaturity
-                   preRefundDate = terms.PreRefundDate
-                   mandatoryPutDate = terms.MandatoryPutDate
-                   principalSchedule =
-                        terms.PrincipalSchedule
-                        |> List.map (fun entry ->
-                            {| paymentDate = entry.PaymentDate
-                               amount = entry.Amount |}) |}
-            if writesCallPutSchedules () then
-                JsonSerializer.Serialize(
-                    {| payload with
-                         scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions
-                         callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls
-                         putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})
-            elif writesScheduleConventions () then
-                JsonSerializer.Serialize(
-                    {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
-            else
-                JsonSerializer.Serialize(payload)
+        | SecurityKind.Bond terms -> GeneratedFlatWriter.writeBond schemaVersion (writesScheduleConventions ()) (writesCallPutSchedules ()) terms
         | SecurityKind.FxSpot terms -> GeneratedFlatWriter.writeFxSpot schemaVersion terms
         | SecurityKind.Deposit terms -> GeneratedFlatWriter.writeDeposit schemaVersion terms
         | SecurityKind.MoneyMarketFund terms -> GeneratedFlatWriter.writeMoneyMarketFund schemaVersion terms
@@ -213,119 +86,13 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.Repo terms -> GeneratedFlatWriter.writeRepo schemaVersion terms
         | SecurityKind.CashSweep terms -> GeneratedFlatWriter.writeCashSweep schemaVersion terms
         | SecurityKind.OtherSecurity terms -> GeneratedFlatWriter.writeOtherSecurity schemaVersion terms
-        | SecurityKind.Swap terms ->
-            let legPayload (leg: SwapLeg) =
-                {| legId = leg.LegId
-                   legType = leg.LegType
-                   currency = leg.Currency
-                   direction = leg.Direction
-                   index = leg.Index
-                   fixedRate = leg.FixedRate
-                   spreadBps = leg.SpreadBps
-                   currentIndexRate = leg.CurrentIndexRate
-                   notional = leg.Notional
-                   paymentFrequency = leg.PaymentFrequency
-                   dayCount = leg.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
-                   exchangesPrincipal = leg.ExchangesPrincipal
-                   notionalSchedule =
-                       leg.NotionalSchedule
-                       |> List.map (fun step -> {| effectiveDate = step.EffectiveDate; notional = step.Notional |})
-                   resetSchedule =
-                       leg.ResetSchedule
-                       |> List.map (fun entry -> {| resetDate = entry.ResetDate; fixingRate = entry.FixingRate |}) |}
-            if writesScheduleConventions () then
-                JsonSerializer.Serialize(
-                    {| schemaVersion = schemaVersion
-                       effectiveDate = terms.EffectiveDate
-                       maturityDate = terms.MaturityDate
-                       legs =
-                           terms.Legs
-                           |> List.map (fun leg ->
-                               {| legPayload leg with
-                                    scheduleConventions = SecurityTermsWriteVersion.conventionsPayload leg.ScheduleConventions |}) |})
-            else
-                JsonSerializer.Serialize(
-                    {| schemaVersion = schemaVersion
-                       effectiveDate = terms.EffectiveDate
-                       maturityDate = terms.MaturityDate
-                       legs = terms.Legs |> List.map legPayload |})
-        | SecurityKind.DirectLoan terms ->
-            JsonSerializer.Serialize(
-                {| schemaVersion = schemaVersion
-                   borrower = terms.Borrower
-                   maturity = terms.Maturity
-                   referenceIndex = terms.ReferenceIndex
-                   spreadBps = terms.SpreadBps
-                   currentCouponRate = terms.CurrentCouponRate
-                   resetFrequency = terms.ResetFrequency
-                   pricingSource = terms.PricingSource
-                   covenants =
-                        terms.Covenants
-                        |> List.map (fun covenant ->
-                            {| covenantType = covenant.CovenantType
-                               threshold = covenant.Threshold
-                               notes = covenant.Notes |})
-                   principalSchedule =
-                        terms.PrincipalSchedule
-                        |> List.map (fun entry ->
-                            {| paymentDate = entry.PaymentDate
-                               amount = entry.Amount |}) |})
-        | SecurityKind.StructuredCredit terms ->
-            let payload =
-                {| schemaVersion = schemaVersion
-                   tranche = terms.Tranche
-                   poolId = terms.PoolId
-                   collateralType = terms.CollateralType
-                   originalFace = terms.OriginalFace
-                   currentFactor = terms.CurrentFactor
-                   couponOrIndex = terms.CouponOrIndex
-                   factorSchedule = terms.FactorSchedule
-                   factorScheduleEntries =
-                        terms.FactorScheduleEntries
-                        |> List.map (fun entry ->
-                            {| asOfDate = entry.AsOfDate
-                               factor = entry.Factor |})
-                   maturity = terms.Maturity
-                   structuredCreditKind = terms.Kind |> Option.map StructuredCreditKind.asString
-                   seniority = terms.Seniority
-                   attachmentPoint = terms.AttachmentPoint
-                   detachmentPoint = terms.DetachmentPoint
-                   weightedAverageCoupon = terms.WeightedAverageCoupon
-                   weightedAverageMaturityMonths = terms.WeightedAverageMaturityMonths
-                   weightedAverageLoanAgeMonths = terms.WeightedAverageLoanAgeMonths
-                   reinvestmentPeriodEnd = terms.ReinvestmentPeriodEnd
-                   nonCallPeriodEnd = terms.NonCallPeriodEnd |}
-            if writesCallPutSchedules () then
-                JsonSerializer.Serialize(
-                    {| payload with
-                         scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions
-                         callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls
-                         putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})
-            elif writesScheduleConventions () then
-                JsonSerializer.Serialize(
-                    {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})
-            else
-                JsonSerializer.Serialize(payload)
+        | SecurityKind.Swap terms -> GeneratedFlatWriter.writeSwap schemaVersion (writesScheduleConventions ()) terms
+        | SecurityKind.DirectLoan terms -> GeneratedFlatWriter.writeDirectLoan schemaVersion terms
+        | SecurityKind.StructuredCredit terms -> GeneratedFlatWriter.writeStructuredCredit schemaVersion (writesScheduleConventions ()) (writesCallPutSchedules ()) terms
         | SecurityKind.PrivateFundInterest terms -> GeneratedFlatWriter.writePrivateFundInterest schemaVersion terms
         | SecurityKind.PrivateCompanyEquity terms -> GeneratedFlatWriter.writePrivateCompanyEquity schemaVersion terms
         | SecurityKind.RealEstateHolding terms -> GeneratedFlatWriter.writeRealEstateHolding schemaVersion terms
-        | SecurityKind.CommitmentGuarantee terms ->
-            JsonSerializer.Serialize(
-                {| schemaVersion = schemaVersion
-                   counterparty = terms.Counterparty
-                   beneficiary = terms.Beneficiary
-                   committedAmount = (terms.Notional.CommittedAmount |> Option.get)
-                   unfundedAmount = terms.Notional.UnfundedAmount
-                   effectiveDate = terms.EffectiveDate
-                   expiryDate = terms.ExpiryDate
-                   feeRate = terms.FeeRate
-                   collateral = terms.Collateral
-                   covenants =
-                        terms.Covenants
-                        |> List.map (fun covenant ->
-                            {| covenantType = covenant.CovenantType
-                               threshold = covenant.Threshold
-                               notes = covenant.Notes |}) |})
+        | SecurityKind.CommitmentGuarantee terms -> GeneratedFlatWriter.writeCommitmentGuarantee schemaVersion terms
         | SecurityKind.Commodity terms -> GeneratedFlatWriter.writeCommodity schemaVersion terms
         | SecurityKind.CryptoCurrency terms -> GeneratedFlatWriter.writeCryptoCurrency schemaVersion terms
         | SecurityKind.Cfd terms -> GeneratedFlatWriter.writeCfd schemaVersion terms
@@ -336,15 +103,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.Swaption terms -> GeneratedFlatWriter.writeSwaption schemaVersion terms
         | SecurityKind.CapFloor terms -> GeneratedFlatWriter.writeCapFloor schemaVersion terms
         | SecurityKind.StructuredNote terms -> GeneratedFlatWriter.writeStructuredNote schemaVersion terms
-        | SecurityKind.InvestmentFund terms ->
-            JsonSerializer.Serialize(
-                {| schemaVersion = schemaVersion
-                   fundType = terms.FundType
-                   fundFamily = terms.FundFamily
-                   navCurrency = terms.NavCurrency
-                   distributionPolicy = terms.DistributionPolicy |> Option.map DistributionPolicy.label
-                   isStableNav = terms.IsStableNav
-                   pricingSource = terms.PricingSource |})
+        | SecurityKind.InvestmentFund terms -> GeneratedFlatWriter.writeInvestmentFund schemaVersion terms
         | SecurityKind.CustomAsset terms ->
             // The custom-asset document is emitted verbatim: it already carries its own
             // schemaVersion (the CustomAssetProfile family) and its dynamic, profile-governed
@@ -375,13 +134,20 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
             | SecurityKind.CapFloor terms -> terms.RateUnit
             | SecurityKind.StructuredNote terms -> terms.RateUnit
             | _ -> None
-        match unit with
-        | None -> baseAssetSpecificTermsJson
-        | Some token ->
-            let document = System.Text.Json.Nodes.JsonNode.Parse(baseAssetSpecificTermsJson).AsObject()
-            document["rateUnit"] <- System.Text.Json.Nodes.JsonValue.Create(token)
-            let version = SecurityAssetTermsSchema.Field(assetClass, "rateUnit").SinceTermsVersion
-            SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, max version termsVersion)
+        let withRate =
+            match unit with
+            | None -> baseAssetSpecificTermsJson
+            | Some token ->
+                let document = System.Text.Json.Nodes.JsonNode.Parse(baseAssetSpecificTermsJson).AsObject()
+                document["rateUnit"] <- System.Text.Json.Nodes.JsonValue.Create(token)
+                let version = SecurityAssetTermsSchema.Field(assetClass, "rateUnit").SinceTermsVersion
+                SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, max version termsVersion)
+        match record.Kind with
+        | SecurityKind.Bond terms when terms.Workflow.IsSome ->
+            let document = System.Text.Json.Nodes.JsonNode.Parse(withRate).AsObject()
+            document["bondWorkflow"] <- System.Text.Json.Nodes.JsonNode.Parse(BondWorkflowTermsJson.write(terms.Workflow.Value).GetRawText())
+            SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, termsVersion)
+        | _ -> withRate
 
     let commonTermsJson =
         JsonSerializer.Serialize(

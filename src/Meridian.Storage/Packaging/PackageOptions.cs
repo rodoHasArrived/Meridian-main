@@ -7,6 +7,11 @@ namespace Meridian.Storage.Packaging;
 /// </summary>
 public sealed class PackageOptions
 {
+    /// <summary>Optional source-backed journal to include with its balance checksum. Supplied
+    /// by the authorized host, never deserialized from an untrusted package request.</summary>
+    [JsonIgnore]
+    public PortableLedgerPayload? Ledger { get; set; }
+
     /// <summary>
     /// Name for the package (used in file name and manifest).
     /// </summary>

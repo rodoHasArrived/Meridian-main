@@ -11,6 +11,24 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Services
 
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`Services/Accounting/WorkstationEntityConsolidationApiClient` consumes the shared entity timeline,
+period list and consolidation preview/draft routes without calculating finance locally. Responses
+must retain the requested organization/entity/as-of or consolidation scope. Its companion
+`WorkstationManualJournalApiClient` lets Accounting Configure review the same retained server
+drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
+tenant authority. Refused, stale and unavailable responses never produce local success.
+
+The shared entity/consolidation API client supplies authorized organization/entity/book/period
+choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
+scope and server-calculated capabilities; no workstation client derives financial truth locally.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
+
 `WorkstationIntercompanyAgreementApiClient` and `IntercompanyAgreementWorkspace` consume the shared
 tenant-scoped registry and advisory journal-line routes. The workspace retains unsaved/conflicting
 input, server capabilities, exact approved versions, evidence and review history without duplicating
@@ -173,6 +191,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

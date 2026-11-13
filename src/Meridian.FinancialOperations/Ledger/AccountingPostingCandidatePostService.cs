@@ -40,7 +40,6 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
     private readonly IBondCalculationPolicy? _bondCalculationPolicy;
     private readonly IBondSettlementConsiderationService? _bondSettlementConsiderationService;
     private readonly Func<CancellationToken, Task>? _termsCapabilityCheck;
-
     public AccountingPostingCandidatePostService(
         IAccountingPostingCandidateWriteBuilder candidateBuilder,
         ILedgerJournalStore? journalStore = null,
@@ -49,7 +48,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null,
         IBondCalculationPolicy? bondCalculationPolicy = null,
         IBondSettlementConsiderationService? bondSettlementConsiderationService = null,
-        Func<CancellationToken, Task>? termsCapabilityCheck = null)
+        Func<CancellationToken, Task>? termsCapabilityCheck = null, IInstrumentPositionProjectionStore? instrumentPositions = null)
     {
         _candidateBuilder = candidateBuilder ?? throw new ArgumentNullException(nameof(candidateBuilder));
         _authorityBuilder = authorityBuilder ?? candidateBuilder as IAccountingPostingCandidateAuthorityBuilder;
@@ -61,11 +60,10 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         // The Security Master terms capability floor check (the Application verifier, which this layer
         // cannot reference), asked before a new amortization batch opens its posting transaction.
         _termsCapabilityCheck = termsCapabilityCheck;
+        _instrumentPositions = instrumentPositions;
     }
-
     /// <summary>The composed terms capability floor check, or null when none was composed (pinned by composition tests).</summary>
     internal Func<CancellationToken, Task>? TermsCapabilityCheck => _termsCapabilityCheck;
-
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
         PostPostingRuleJournalCandidateRequestDto request,
         CancellationToken ct = default)
@@ -74,12 +72,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Candidate);
 
-        if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
-        {
-            throw new HumanOperatorRequiredException(
-                "post generated accounting posting candidates",
-                "Generated accounting posting candidates require a human-operator action origin before append.");
-        }
+        OperationsOriginGuard.RequireHumanOperator(request.ActionOrigin, "post generated accounting posting candidates");
 
         var journalStore = _journalStore
             ?? throw new InvalidOperationException("Generated accounting posting candidates cannot be posted because no Postgres-backed ledger journal store is configured.");
@@ -1091,6 +1084,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 "Acquisition lot date must equal the retained event effective date.");
             RequireAssetAssertion(acquisition.Quantity * acquisition.UnitCost == request.Candidate.EventAmount,
                 "Acquisition quantity times unit cost must equal the retained event amount.");
+            if (acquisition.BondIncome is not null)
+                await RequireAdoptedAcquisitionOwnerAsync(acquisition, authority.Context, ledgerBook, approvedWrite, ct).ConfigureAwait(false);
             var account = ResolveAcquisitionLotAccount(
                 approvedWrite.Entry,
                 authority.Drafted.Projection.DraftedCandidateResult!,
@@ -1163,7 +1158,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                         request.AcquisitionTermsCompletion is { } completion
                             ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
                             : request.Candidate.RetainedEvidence,
-                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request)) with
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request), acquisition.BondIncome) with
                     { Direction = instruction.Direction }
                 };
             }

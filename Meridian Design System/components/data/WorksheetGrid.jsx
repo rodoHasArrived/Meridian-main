@@ -166,7 +166,7 @@ export function WorksheetGrid({
       )}
       <div className="mds-ws__scroll">
         <div className="mds-ws__grid" ref={gridRef} tabIndex={0} role="grid" aria-label={label}
-          aria-rowcount={rows + 1} aria-colcount={cols.length + 1}
+          aria-rowcount={rows + 1} aria-colcount={cols.length + 1} aria-readonly={!editable}
           aria-activedescendant={activeValid ? `${uid}-cell-${active}` : undefined}
           onKeyDown={onKeyDown}>
           <div className="mds-ws__row mds-ws__corner" role="row" aria-rowindex={1}>

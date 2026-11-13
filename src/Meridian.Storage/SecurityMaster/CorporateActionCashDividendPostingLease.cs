@@ -19,6 +19,7 @@ public sealed class CorporateActionCashDividendPostingLease
     private bool _active = true;
     private Guid? _journalEntryId;
     private Guid? _postedSpineJournalEntryId;
+    private IAsyncDisposable? _postingAuthority;
 
     internal CorporateActionCashDividendPostingLease(
         CorporateActionCashDividendAttestationDto attestation,
@@ -27,7 +28,8 @@ public sealed class CorporateActionCashDividendPostingLease
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         Func<CancellationToken, Task> ensureCurrent,
-        Func<string?, Guid, long, DateTimeOffset, CancellationToken, Task> ensureCanonicalInstrument)
+        Func<string?, Guid, long, DateTimeOffset, CancellationToken, Task> ensureCanonicalInstrument,
+        IAsyncDisposable? structureAuthorityLease = null)
     {
         Attestation = attestation;
         Projection = projection;
@@ -36,11 +38,13 @@ public sealed class CorporateActionCashDividendPostingLease
         _transaction = transaction;
         _ensureCurrent = ensureCurrent;
         _ensureCanonicalInstrument = ensureCanonicalInstrument;
+        StructureAuthorityLease = structureAuthorityLease;
     }
 
     public CorporateActionCashDividendAttestationDto Attestation { get; }
     public CorporateActionCaseAccountingProjectionDto Projection { get; }
     public CashDividendAttestationDeclarationDto Declaration { get; }
+    internal IAsyncDisposable? StructureAuthorityLease { get; }
 
     /// <summary>Checks the exact candidate and rereads native authority within the held transaction.</summary>
     public async Task EnsureCurrentAsync(string actor, Guid ledgerBookId, Guid periodId,
@@ -56,7 +60,22 @@ public sealed class CorporateActionCashDividendPostingLease
             throw new CorporateActionValidationException("The economic attestation posting lease has expired.");
     }
 
-    internal void Deactivate() => _active = false;
+    internal void RetainPostingAuthority(IAsyncDisposable authority)
+    {
+        if (!_active || _postingAuthority is not null)
+            throw new CorporateActionValidationException("The native posting authority scope is expired or already retained.");
+        _postingAuthority = authority;
+    }
+
+    internal async ValueTask DeactivateAsync()
+    {
+        _active = false;
+        if (_postingAuthority is { } authority)
+        {
+            _postingAuthority = null;
+            await authority.DisposeAsync().ConfigureAwait(false);
+        }
+    }
 
     public Task EnsureCanonicalInstrumentAsync(string? symbol, Guid securityId, long expectedSecurityVersion,
         DateTimeOffset accountingTimestamp, CancellationToken ct = default)

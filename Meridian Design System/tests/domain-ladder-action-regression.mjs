@@ -236,19 +236,19 @@ try {
   });
 
   await test('CorrelationHeatmap','real pointer hover returns exact numeric row/col/value including negative and zero', ['hover','negative','zero','exact-payload'], async()=>{
-    await mount('CorrelationHeatmap');const cells=page.getByRole('gridcell');assert.equal(await cells.count(),9);
+    await mount('CorrelationHeatmap');const cells=page.getByRole('cell');assert.equal(await cells.count(),9);
     await cells.nth(1).hover();await cells.nth(6).hover();await cells.nth(8).hover();
     assert.deepEqual(await events(),[{type:'hover',row:0,col:1,value:-0.625},{type:'hover',row:2,col:0,value:0},{type:'hover',row:2,col:2,value:1}]);
     assert.equal(await cells.nth(1).getAttribute('title'),'First series · Second series = -0.625');assert.equal(await cells.nth(6).textContent(),'0.000');
   });
   await test('CorrelationHeatmap','hidden values retain exact hover payload and tooltips; absent handler remains inert', ['hover','hidden-values','readonly'], async()=>{
-    await mount('CorrelationHeatmap',{showValues:false});const cells=page.getByRole('gridcell');assert.deepEqual(await cells.allTextContents(),Array(9).fill(''));
+    await mount('CorrelationHeatmap',{showValues:false});const cells=page.getByRole('cell');assert.deepEqual(await cells.allTextContents(),Array(9).fill(''));
     await cells.nth(5).hover();assert.deepEqual(await events(),[{type:'hover',row:1,col:2,value:0.125}]);assert.equal(await cells.nth(5).getAttribute('title'),'Second series · Third series = 0.125');
-    await mount('CorrelationHeatmap',{readOnly:true});await page.getByRole('gridcell').first().hover();assert.deepEqual(await events(),[]);
+    await mount('CorrelationHeatmap',{readOnly:true});await page.getByRole('cell').first().hover();assert.deepEqual(await events(),[]);
   });
   await test('CorrelationHeatmap','empty/recovery clears stale matrix cells and axis headers', ['empty','recovery'], async()=>{
-    await mount('CorrelationHeatmap',{},false);await mount('CorrelationHeatmap',{empty:true},false);assert.equal(await page.getByRole('gridcell').count(),0);assert.equal(await page.getByRole('rowheader').count(),0);assert.equal(await page.getByRole('columnheader').count(),1);assert.deepEqual(await events(),[]);
-    await mount('CorrelationHeatmap',{},false);assert.equal(await page.getByRole('gridcell').count(),9);assert.deepEqual(await page.getByRole('rowheader').allTextContents(),['First series','Second series','Third series']);
+    await mount('CorrelationHeatmap',{},false);await mount('CorrelationHeatmap',{empty:true},false);assert.equal(await page.getByRole('cell').count(),0);assert.equal(await page.getByRole('rowheader').count(),0);assert.equal(await page.getByRole('columnheader').count(),1);assert.deepEqual(await events(),[]);
+    await mount('CorrelationHeatmap',{},false);assert.equal(await page.getByRole('cell').count(),9);assert.deepEqual(await page.getByRole('rowheader').allTextContents(),['First series','Second series','Third series']);
   });
 
   await test('Treemap','native Enter/Space activate sorted positive tiles with exact retained item fields and measured area', ['keyboard','exact-payload','positive-weights','resize'], async()=>{

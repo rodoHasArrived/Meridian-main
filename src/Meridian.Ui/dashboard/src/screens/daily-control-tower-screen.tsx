@@ -20,7 +20,7 @@ import { SeverityBadge } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
 import { badgeVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { formatUtcTimestamp } from "@/lib/format";
+import { formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -137,7 +137,7 @@ export function DailyControlTowerScreen({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
           <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
           <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
-          <span>{model.queueRows.length} loaded workspace items</span>
+          <span>{pluralizeCount(model.queueRows.length, "item")} in the finance queue</span>
           {onEditOperatingScope ? (
             <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
               {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
@@ -146,8 +146,15 @@ export function DailyControlTowerScreen({
         </div>
       </section>
 
-      <section aria-label="Finance queue">
-        <OperatorTriageQueue key={viewModel.operatingScope.fundAccountId ?? "all"} fundAccountId={viewModel.operatingScope.fundAccountId} refreshKey={refreshing} fallback={model.queueRows.length > 0 ? (
+      {/* Two lists, two units. The finance queue is exactly what the sidebar Today badge, the
+          status row and the footer count, so it always renders. The operator inbox is the shared
+          host's triage population; it is not a subset of the queue and is counted separately. */}
+      <section aria-label="Finance queue" className="space-y-2">
+        <div>
+          <h3 className="text-sm font-semibold">Finance queue</h3>
+          <p className="text-xs text-muted-foreground">Signals from the loaded workspaces; the sidebar badges count these.</p>
+        </div>
+        {model.queueRows.length > 0 ? (
           <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <DenseDataTable
               tableId="daily-control-tower-queue"
@@ -197,7 +204,19 @@ export function DailyControlTowerScreen({
           <PanelSurface flat role="status" className="p-4 text-sm text-muted-foreground">
             {model.emptyQueueText}
           </PanelSurface>
-        )} />
+        )}
+      </section>
+
+      <section aria-label="Operator inbox" className="space-y-2">
+        <div>
+          <h3 className="text-sm font-semibold">Operator inbox</h3>
+          <p className="text-xs text-muted-foreground">Triage items from the shared host, with assignment and snooze.</p>
+        </div>
+        <OperatorTriageQueue
+          key={viewModel.operatingScope.fundAccountId ?? "all"}
+          fundAccountId={viewModel.operatingScope.fundAccountId}
+          refreshKey={refreshing}
+        />
       </section>
 
     </div>

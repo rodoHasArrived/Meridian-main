@@ -6,6 +6,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity.Auth;
 using Meridian.Tests.Application;
+using Meridian.Tests.FinancialOperations.Intercompany;
 using Meridian.Tests.FinancialOperations.PrivateCapital;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -78,7 +79,10 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
         journalWorkbench.Setup(x => x.GetPrivateCapitalActivityAsync("fund-alpha", activity.LedgerBookId,
                 It.IsAny<CancellationToken>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(() => currentActivity);
-        var cockpitService = new PrivateCapitalCloseCockpitService(journalWorkbench.Object, workflowService);
+        var intercompanySchedule = IntercompanyBalanceScheduleTests.ReadySchedule("fund-alpha",
+            workflow.LedgerBookId!.Value, "tenant-alpha", "company-alpha");
+        var cockpitService = new PrivateCapitalCloseCockpitService(journalWorkbench.Object, workflowService,
+            intercompanyBalances: intercompanySchedule);
         var planSource = new Mock<IAccountingCloseManagementService>();
         ClosePeriodPlanDto? currentPlan = retained;
         planSource.Setup(x => x.GetPeriodPlanScopedAsync(workflow.WorkflowId,
@@ -86,7 +90,7 @@ public sealed partial class FinancialOperationsCommandCenterReadServiceTests
             .ReturnsAsync(() => currentPlan);
         var bookSource = new Mock<ILedgerBookService>();
         bookSource.Setup(x => x.GetBookAsync(workflow.LedgerBookId!.Value, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new LedgerBookDto(workflow.LedgerBookId!.Value, "fund-alpha", Guid.NewGuid(),
+            .ReturnsAsync(new LedgerBookDto(workflow.LedgerBookId!.Value, "fund-alpha", IntercompanyProposalTestData.EntityA,
                 default, "Close book", "USD", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow));
         authority = new FinancialOperationsCommandCenterReadService(workflowService,
             new OperationsCloseCalendarService(workflowService), cockpitService, bookSource.Object,

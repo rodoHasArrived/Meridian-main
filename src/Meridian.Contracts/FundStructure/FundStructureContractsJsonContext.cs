@@ -114,4 +114,8 @@ namespace Meridian.Contracts.FundStructure;
 [JsonSerializable(typeof(FundAccountsDto))]
 [JsonSerializable(typeof(AccountSummaryDto))]
 [JsonSerializable(typeof(IReadOnlyList<AccountSummaryDto>))]
+[JsonSerializable(typeof(EntityLifecycleRevisionDto))]
+[JsonSerializable(typeof(EntityLifecycleRevisionDto[]))]
+[JsonSerializable(typeof(EntityLifecycleEligibilityDto))]
+[JsonSerializable(typeof(AppendEntityLifecycleRevisionRequestDto))]
 public sealed partial class FundStructureContractsJsonContext : JsonSerializerContext;

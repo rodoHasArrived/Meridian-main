@@ -459,6 +459,11 @@ public static partial class LedgerEndpoints
         string? ProjectId,
         IReadOnlyDictionary<string, string> ExternalGlDimensions)
     {
+        public string? AccountingArrangementId { get; init; }
+        public string? AccountingArrangementRevisionId { get; init; }
+        public string? ChartAccountNodeId { get; init; }
+        public string? AccountBindingRevisionId { get; init; }
+        public string? IntercompanyTransactionId { get; init; }
         public string? IntercompanyAgreementId { get; init; }
         public string? IntercompanyAgreementVersion { get; init; }
 
@@ -471,6 +476,11 @@ public static partial class LedgerEndpoints
                || CapitalAccountId is not null
                || InstrumentId is not null
                || PositionId is not null
+               || AccountingArrangementId is not null
+               || AccountingArrangementRevisionId is not null
+               || ChartAccountNodeId is not null
+               || AccountBindingRevisionId is not null
+               || IntercompanyTransactionId is not null
                || IntercompanyAgreementId is not null
                || IntercompanyAgreementVersion is not null
                || TaxLotId is not null

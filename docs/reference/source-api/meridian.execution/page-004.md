@@ -6,6 +6,120 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PersistedSessionRecord
+
+Qualified name: <code>Meridian.Execution.Services.PersistedSessionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:18](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L18).
+
+Serialisable snapshot of a paper session&#x27;s metadata. Written atomically to session.json on every lifecycle change. MatchingModelVersion and CostModelVersion record which paper matching and cost policies produced the session&#x27;s fills; sessions persisted before those policies existed load with null (unknown).
+
+```csharp
+public sealed record PersistedSessionRecord(string SessionId, string StrategyId, string? StrategyName, decimal InitialCash, DateTimeOffset CreatedAt, DateTimeOffset? ClosedAt, bool IsActive, List<string> Symbols, string? MatchingModelVersion = null, string? CostModelVersion = null);
+```
+
+## PortfolioAccountingReconciliationRegistration
+
+Qualified name: <code>Meridian.Execution.Services.PortfolioAccountingReconciliationRegistration</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/PortfolioAccountingReconciliationRegistration.cs:10](../../../../src/Meridian.Execution/Services/PortfolioAccountingReconciliationRegistration.cs#L10).
+
+Composes read-only broker accounting checks over the shared portfolio registry.
+
+```csharp
+public static class PortfolioAccountingReconciliationRegistration
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddPortfolioAccountingReconciliation(this IServiceCollection services);</code> | [src/Meridian.Execution/Services/PortfolioAccountingReconciliationRegistration.cs:12](../../../../src/Meridian.Execution/Services/PortfolioAccountingReconciliationRegistration.cs#L12) |  |
+
+## PortfolioRegistry
+
+Qualified name: <code>Meridian.Execution.Services.PortfolioRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/PortfolioRegistry.cs:12](../../../../src/Meridian.Execution/Services/PortfolioRegistry.cs#L12).
+
+Thread-safe registry that tracks all live IMultiAccountPortfolioState instances by their strategy run ID. Strategies call Register on start and Deregister on stop so that cross-strategy aggregation and the REST API can discover all currently active portfolios.
+
+```csharp
+public sealed class PortfolioRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Register(string runId, IMultiAccountPortfolioState portfolio);</code> | [src/Meridian.Execution/Services/PortfolioRegistry.cs:21](../../../../src/Meridian.Execution/Services/PortfolioRegistry.cs#L21) | Registers portfolio under runId. If an entry already exists for the same run ID it is silently replaced. |
+| <code>public void Deregister(string runId);</code> | [src/Meridian.Execution/Services/PortfolioRegistry.cs:32](../../../../src/Meridian.Execution/Services/PortfolioRegistry.cs#L32) | Removes the portfolio registered under runId. No-op when no entry exists for that run ID. |
+| <code>public IReadOnlyDictionary&lt;string, IMultiAccountPortfolioState&gt; GetAll() =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioRegistry.cs:41](../../../../src/Meridian.Execution/Services/PortfolioRegistry.cs#L41) | Returns a snapshot of all currently registered portfolios keyed by run ID. |
+| <code>public IMultiAccountPortfolioState? TryGet(string runId) =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioRegistry.cs:48](../../../../src/Meridian.Execution/Services/PortfolioRegistry.cs#L48) | Returns the portfolio registered under runId, or null when no entry exists. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioRegistry.cs:52](../../../../src/Meridian.Execution/Services/PortfolioRegistry.cs#L52) | Count of currently registered portfolios. |
+
+## PortfolioStatePositionTracker
+
+Qualified name: <code>Meridian.Execution.Services.PortfolioStatePositionTracker</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:20](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L20).
+
+Production IPositionTracker that projects a live IPortfolioState (for example PaperTradingPortfolio, or any broker-backed portfolio implementation) into the real-time position and P&amp;L view that risk rules consume.
+
+```csharp
+public sealed class PortfolioStatePositionTracker : IPositionTracker
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioStatePositionTracker(IPortfolioState portfolio, TimeProvider? timeProvider = null);</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:33](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L33) | Creates a position tracker backed by the supplied portfolio state. |
+| <code>public PositionState GetPosition(string symbol);</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:40](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L40) |  |
+| <code>public IReadOnlyDictionary&lt;string, PositionState&gt; GetAllPositions();</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:50](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L50) |  |
+| <code>public decimal GetPortfolioValue() =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:63](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L63) |  |
+| <code>public decimal GetCash() =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:66](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L66) |  |
+| <code>public decimal GetUnrealizedPnl() =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:69](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L69) |  |
+| <code>public decimal GetRealizedPnl() =&gt; …;</code> | [src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs:72](../../../../src/Meridian.Execution/Services/PortfolioStatePositionTracker.cs#L72) |  |
+
+## PositionLotSelector
+
+Qualified name: <code>Meridian.Execution.Services.PositionLotSelector</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/PositionLotSelector.cs:8](../../../../src/Meridian.Execution/Services/PositionLotSelector.cs#L8).
+
+Selects a position lot by FIFO, LIFO, highest entry price, or an explicit lot identifier.
+
+```csharp
+public static class PositionLotSelector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PositionLotEntry? SelectLot(IReadOnlyList&lt;PositionLotEntry&gt; lots, PositionLotSelection? selection);</code> | [src/Meridian.Execution/Services/PositionLotSelector.cs:10](../../../../src/Meridian.Execution/Services/PositionLotSelector.cs#L10) |  |
+
+## PositionReconciliationService
+
+Qualified name: <code>Meridian.Execution.Services.PositionReconciliationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/PositionReconciliationService.cs:52](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L52).
+
+Periodically reconciles live paper/brokerage portfolio positions against the positions reported by a connected IBrokeragePositionSync provider. Which provider is queried first is controlled by PositionSyncOptions.ProviderPriority, allowing users to set InteractiveBrokers or Alpaca as the primary source.
+
+```csharp
+public sealed class PositionReconciliationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationReport? GetLastReconciliationReport() =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:63](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L63) | Exposes the report from the most recent reconciliation pass. |
+| <code>public PositionReconciliationService(IEnumerable&lt;(string Name, IBrokeragePositionSync Sync)&gt; providers, PortfolioRegistry registry, IOptions&lt;PositionSyncOptions&gt; options, ILogger&lt;PositionReconciliationService&gt; logger);</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:65](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L65) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationReport&gt;&gt; ReconcileAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:87](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L87) | Runs a single reconciliation pass against the highest-priority available provider. Emits a ReconciliationReport per account checked. |
+
 ## PositionSyncOptions
 
 Qualified name: <code>Meridian.Execution.Services.PositionSyncOptions</code>. Kind: `class`.
@@ -27,6 +141,8 @@ Declared public members:
 | <code>public int MaxConsecutiveFailures { get; init; } = 3;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:31](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L31) | Maximum number of consecutive failures before the sync service backs off. |
 | <code>public TimeSpan BackOffInterval { get; init; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:37](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L37) | Back-off interval applied after MaxConsecutiveFailures are reached. Default: 15 minutes. |
 | <code>public decimal DivergenceTolerance { get; init; } = 0m;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:44](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L44) | Tolerance threshold for position quantity divergence before a reconciliation alert is emitted. E.g. 0.001 means a 0.1% difference is tolerated. Default: 0 (any difference triggers an alert). |
+| <code>public decimal CashTolerance { get; init; } = 0.01m;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:47](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L47) | Absolute cash and financing tolerance in account currency. |
+| <code>public decimal CostBasisTolerance { get; init; } = 0.00000001m;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:50](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L50) | Absolute average unit-cost tolerance for carrying-basis comparisons. |
 
 ## ReconciliationReport
 
@@ -44,7 +160,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:27](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L27) | True when no divergences were found. |
+| <code>public IReadOnlyList&lt;BrokerAccountingBreak&gt; AccountingBreaks { get; init; } = [];</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:27](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L27) | Accounting differences with explicit economic categories. |
+| <code>public IReadOnlyList&lt;string&gt; CoverageIssues { get; init; } = [];</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:30](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L30) | Missing evidence prevents this report from proving full accounting coverage. |
+| <code>public bool HasCompleteAccountingCoverage =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:32](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L32) |  |
+| <code>public DateTimeOffset? BrokerAsOf { get; init; }</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:35](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L35) | Broker evidence timestamp; absent for position-only providers. |
+| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:38](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L38) | True when no divergences were found. |
 
 ## ReplayDriftAssessment
 
@@ -255,7 +375,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1414](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1414).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1420](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1420).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 

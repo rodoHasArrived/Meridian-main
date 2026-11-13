@@ -6,13 +6,20 @@ public sealed partial class AccountingConfigureViewModel
 {
     private readonly Dictionary<Guid, ManualJournalEntryDraftDto> _loadedManualDrafts = [];
     private AccountingWorkbenchRow? _selectedManualJournalDraftRow;
-    public bool CanEditManualJournalDraft => _selectedDraft?.AssetAccountingDraft is null;
-    public bool IsAssetAccountingDraft => !CanEditManualJournalDraft;
-    public string ManualJournalEntryHeadingText => IsAssetAccountingDraft ? "ASSET ACCOUNTING DRAFT — RETAINED LINES" : "MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY";
-    public string AssetAccountingDraftRestrictionText => IsAssetAccountingDraft
+    public bool IsConsolidationDraft => _selectedDraft is { } draft && (draft.RequiresConsolidationEvidence
+        || draft.ConsolidationEvidenceJson is not null || draft.ConsolidationEvidenceDigest is not null
+        || draft.TreasuryContext?.IdempotencyKey?.Trim().StartsWith("consolidation:", StringComparison.OrdinalIgnoreCase) == true);
+    public bool CanEditManualJournalDraft => _selectedDraft?.AssetAccountingDraft is null && !IsConsolidationDraft;
+    public bool IsAssetAccountingDraft => _selectedDraft?.AssetAccountingDraft is not null;
+    public bool IsReadOnlyRetainedDraft => IsAssetAccountingDraft || IsConsolidationDraft;
+    public string ManualJournalEntryHeadingText => IsConsolidationDraft ? "CONSOLIDATION DRAFT — RETAINED LINES"
+        : IsAssetAccountingDraft ? "ASSET ACCOUNTING DRAFT — RETAINED LINES" : "MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY";
+    public string AssetAccountingDraftRestrictionText => IsConsolidationDraft
+        ? "Retained consolidation lines are read-only. Validate, submit, approve and post through the governed server workflow. Rerun consolidation to propose a correction."
+        : IsAssetAccountingDraft
         ? "This asset accounting draft is read-only and may be submitted for review. Typed retained approval and atomic lot posting are unavailable; generic approval, posting and corrections are blocked."
         : string.Empty;
-    public IReadOnlyList<ManualJournalEntryLineDto> AssetAccountingDraftLines => IsAssetAccountingDraft ? _selectedDraft!.Lines : [];
+    public IReadOnlyList<ManualJournalEntryLineDto> AssetAccountingDraftLines => IsReadOnlyRetainedDraft ? _selectedDraft!.Lines : [];
 
     public AccountingWorkbenchRow? SelectedManualJournalDraftRow
     {
@@ -20,7 +27,8 @@ public sealed partial class AccountingConfigureViewModel
         set
         {
             if (!SetProperty(ref _selectedManualJournalDraftRow, value) || value is null
-                || !Guid.TryParse(value.Key, out var id) || !_loadedManualDrafts.TryGetValue(id, out var draft)) return;
+                || !Guid.TryParse(value.Key, out var id) || !_loadedManualDrafts.TryGetValue(id, out var draft))
+                return;
             _selectedDraft = draft;
             DraftMemo = draft.Memo;
             DraftCurrency = draft.Currency;
@@ -37,17 +45,24 @@ public sealed partial class AccountingConfigureViewModel
     private void RememberManualJournalDrafts(IReadOnlyList<ManualJournalEntryDraftDto> drafts)
     {
         _loadedManualDrafts.Clear();
-        foreach (var draft in drafts) _loadedManualDrafts[draft.JournalEntryId] = draft;
-        if (_selectedDraft is { } selected) _selectedDraft = _loadedManualDrafts.GetValueOrDefault(selected.JournalEntryId);
+        foreach (var draft in drafts)
+            _loadedManualDrafts[draft.JournalEntryId] = draft;
+        if (_selectedDraft is { } selected)
+            _selectedDraft = _loadedManualDrafts.GetValueOrDefault(selected.JournalEntryId);
     }
 
     private bool CanApplySelectedJournalAction(JournalEntryLifecycleActionDto action)
-        => CanEditManualJournalDraft || action is JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.Submit or JournalEntryLifecycleActionDto.Reject;
+        => IsConsolidationDraft
+            ? action is JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.Submit or JournalEntryLifecycleActionDto.Approve
+                or JournalEntryLifecycleActionDto.Reject or JournalEntryLifecycleActionDto.Post or JournalEntryLifecycleActionDto.LockAfterClose
+            : CanEditManualJournalDraft || action is JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.Submit or JournalEntryLifecycleActionDto.Reject;
 
     private void NotifyAssetAccountingDraftState()
     {
         RaisePropertyChanged(nameof(CanEditManualJournalDraft));
         RaisePropertyChanged(nameof(IsAssetAccountingDraft));
+        RaisePropertyChanged(nameof(IsConsolidationDraft));
+        RaisePropertyChanged(nameof(IsReadOnlyRetainedDraft));
         RaisePropertyChanged(nameof(AssetAccountingDraftRestrictionText));
         RaisePropertyChanged(nameof(AssetAccountingDraftLines));
         RaisePropertyChanged(nameof(ManualJournalEntryHeadingText));
@@ -61,7 +76,8 @@ public sealed partial class AccountingConfigureViewModel
 
     private ManualJournalEntryDraftDto BuildManualJournalDraft()
     {
-        if (_selectedDraft is { AssetAccountingDraft: not null } retained) return retained;
+        if (IsReadOnlyRetainedDraft && _selectedDraft is { } retained)
+            return retained;
         // Save retries must rebuild identical input. The service supplies the committed update
         // time; client-generated timestamps and a new draft ID stay fixed until a save succeeds.
         var now = _selectedDraft?.UpdatedAtUtc ?? _newManualJournalDraftTimestamp;

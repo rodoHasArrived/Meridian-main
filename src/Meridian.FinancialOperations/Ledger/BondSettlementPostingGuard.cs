@@ -50,13 +50,19 @@ internal static class BondSettlementPostingGuard
         // functional currency's minor units; the cash credit is the sum of those translated components,
         // never a separate translation of the dirty total, so the functional journal balances by
         // construction and no rounding residue needs a home. Same-currency settlements are the FX = 1 case.
-        var functionalCash = receipt.ToFunctional(receipt.CleanConsideration) + receipt.ToFunctional(receipt.PurchasedAccruedInterest)
-            + receipt.ToFunctional(receipt.Fees);
+        var capitalized = acquisition.BondIncome?.Fees
+            .Where(fee => fee.Treatment == Meridian.Contracts.Accounting.Lots.BondIncomeFeeTreatment.EligibleDirectAcquisitionCost)
+            .Sum(fee => fee.Amount) ?? 0m;
+        var expensed = receipt.Fees - capitalized;
+        var functionalCash = receipt.ToFunctional(receipt.CleanConsideration + capitalized)
+            + receipt.ToFunctional(receipt.PurchasedAccruedInterest) + receipt.ToFunctional(expensed);
         RequireLine(receipt.CashAccountId, receipt.DirtyConsideration, functionalCash, AccountingTemplateLineSideDto.Credit, LedgerAccountType.Asset);
         RequireLine(receipt.AccruedInterestAccountId, receipt.PurchasedAccruedInterest, receipt.ToFunctional(receipt.PurchasedAccruedInterest),
             AccountingTemplateLineSideDto.Debit, LedgerAccountType.Asset);
-        if (receipt.Fees != 0m)
-            RequireLine(receipt.FeesAccountId!, receipt.Fees, receipt.ToFunctional(receipt.Fees), AccountingTemplateLineSideDto.Debit, LedgerAccountType.Expense);
+        if (expensed != 0m)
+            RequireLine(receipt.FeesAccountId!, expensed, receipt.ToFunctional(expensed), AccountingTemplateLineSideDto.Debit, LedgerAccountType.Expense);
+        else if (capitalized != 0m && retainedCandidate.GeneratedPostingLines.Any(line => line.AccountPath == receipt.FeesAccountId))
+            throw new InvalidOperationException("Capitalized acquisition fees cannot also be posted as expense.");
 
         void RequireLine(string accountId, decimal amount, decimal functional, AccountingTemplateLineSideDto side, LedgerAccountType accountType)
         {

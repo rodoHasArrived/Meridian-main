@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;
@@ -1238,11 +1239,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 reasonCode == "DUPLICATE_CLIENT_ORDER_ID" ? "DuplicateSubmission" : "Rejected", DateTimeOffset.UtcNow,
                 Request: request, Detail: message, AttemptId: journalAttemptId), ct).ConfigureAwait(false);
         _logger.LogWarning(
-            "Order {OrderId} for {Symbol} rejected by {RejectionSource}: {Reason}",
+            "Order {OrderId} for {Symbol} rejected by {RejectionSource}; retained reason {ReasonHash}",
             LogSanitizer.Sanitize(orderId),
             LogSanitizer.Sanitize(request.Symbol),
-            rejectionSource,
-            message);
+            LogSanitizer.Sanitize(rejectionSource),
+            Sha256Digest.ComputeUtf8(message ?? string.Empty));
 
         if (_auditTrail is null)
         {

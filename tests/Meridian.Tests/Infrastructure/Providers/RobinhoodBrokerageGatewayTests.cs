@@ -2,10 +2,12 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -465,6 +467,30 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
 
         report.OrderStatus.Should().Be(OrderStatus.PendingCancel);
         report.ReportType.Should().Be(ExecutionReportType.CancelRejected);
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_FetchFailures_LogSafeDiagnosticsWithoutChangingOrderIdentity()
+    {
+        const string orderId = "client-order\r\nFORGED";
+        const string privateFailure = "private broker response\r\nFORGED-ERROR";
+        var handler = new RecordingHttpHandler((request, _) =>
+            request.RequestUri!.AbsolutePath == "/accounts/"
+                ? Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() })
+                : throw new HttpRequestException(privateFailure));
+        var logger = new RecordingLogger<RobinhoodBrokerageGateway>();
+        await using var sut = new RobinhoodBrokerageGateway(new StubHttpClientFactory(handler), logger, accessToken: "test-token");
+        await sut.ConnectAsync();
+
+        var report = await sut.CancelOrderAsync(orderId);
+
+        report.OrderId.Should().Be(orderId);
+        report.ReportType.Should().Be(ExecutionReportType.CancelRejected);
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(orderId), StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => entry.Exception == null
+            && !entry.Message.Contains("FORGED", StringComparison.Ordinal)
+            && !entry.Message.Contains(privateFailure, StringComparison.Ordinal)
+            && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }
 
     [Fact]

@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Execution.Adapters.BaseBrokerageGateway</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:16](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L16).
+Source: [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:17](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L17).
 
 Base class for live brokerage gateways. Provides shared infrastructure: connection lifecycle, reconnection with exponential backoff, execution report streaming via bounded channels, and rate limit scaffolding. Concrete implementations override broker-specific methods.
 
@@ -22,22 +22,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public abstract string GatewayId { get; }</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:45](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L45) |  |
-| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:48](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L48) |  |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:51](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L51) |  |
-| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:54](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L54) |  |
-| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:74](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L74) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:92](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L92) |  |
-| <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:108](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L108) |  |
-| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:122](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L122) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:138](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L138) |  |
-| <code>public abstract string BrokerDisplayName { get; }</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:150](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L150) |  |
-| <code>public abstract BrokerageCapabilities BrokerageCapabilities { get; }</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:153](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L153) |  |
-| <code>public abstract Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:156](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L156) |  |
-| <code>public abstract Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:159](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L159) |  |
-| <code>public abstract Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:162](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L162) |  |
-| <code>public virtual async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:165](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L165) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:267](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L267) |  |
+| <code>public abstract string GatewayId { get; }</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:46](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L46) |  |
+| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:49](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L49) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:52](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L52) |  |
+| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:55](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L55) |  |
+| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:75](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L75) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:93](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L93) |  |
+| <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:109](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L109) |  |
+| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:124](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L124) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:141](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L141) |  |
+| <code>public abstract string BrokerDisplayName { get; }</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:153](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L153) |  |
+| <code>public abstract BrokerageCapabilities BrokerageCapabilities { get; }</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:156](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L156) |  |
+| <code>public abstract Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:159](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L159) |  |
+| <code>public abstract Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:162](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L162) |  |
+| <code>public abstract Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:165](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L165) |  |
+| <code>public virtual async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:168](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L168) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs:270](../../../../src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs#L270) |  |
 
 ## LiveMarketDataCache
 

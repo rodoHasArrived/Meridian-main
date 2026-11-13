@@ -258,7 +258,7 @@ After the ideas, step back and write a synthesis that:
 
 ## Idea Continuity (Session History)
 
-A ledger of past sessions is maintained at `.agents/skills/meridian-brainstorm/brainstorm-history.jsonl` and tracked in the repository. Each line is a JSON object:
+A ledger of past sessions is maintained at `.claude/skills/meridian-brainstorm/brainstorm-history.jsonl` and tracked in the repository. Each line is a JSON object:
 
 ```json
 {"session_date": "2026-07-14", "mode": "Problem-Focused / UX", "themes": ["Excel onboarding workbook generator", "multi-sheet XLSX staged review"], "ideas_count": 5, "document_updated": "docs/product/excel-onboarding-workbook-brainstorm-2026-07.md", "notes": "code findings and sequencing"}

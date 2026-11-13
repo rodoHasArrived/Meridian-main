@@ -6,10 +6,30 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Infrastructure
+
+
+`BaseSymbolSearchProvider.SearchAuthoritativeAsync` preserves HTTP, transport, credential and
+throttling failures for explicit candidate review. Alpaca also rejects malformed responses and
+missing asset identity or filter facts; those failures cannot become successful empty lookups.
+Existing autocomplete keeps its best-effort behavior. Alpaca bond discovery uses the retained `fixed_income` filter; evidence is
+synthetic-verified in tests and live-untested without a configured provider run.
+Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
+longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker
+resolution keeps its existing scope. Broker snapshots retain accrued interest and valuation basis;
+IB's average-cost placeholders are `CostDerived`, while Alpaca marks are `ProviderReported`.
+
+FRED's `GetEconomicObservationsAsync` is a separate typed, vintage-bound path for explicitly
+mapped rate/index series alongside the legacy synthetic-bar compatibility API. Fixed-income
+ingestion preserves original decimal text, provider units, observation date, publication
+(unknown when unavailable), vintage interval, retrieval time and transformation metadata.
+Constant-maturity Treasury yields are labeled par-curve observations and are never silently treated
+as zero rates or discount factors. Missing observations remain missing, malformed/truncated
+populations refuse, and source evidence never includes credentials. Provider verification here is
+synthetic; live FRED access remains untested.
 
 Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
 Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
@@ -20,12 +40,6 @@ cancellable by the caller or provider disposal, without consuming an HTTP deadli
 Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
 for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
 failures. Caller cancellation is also excluded from circuit-breaker failures.
-
-FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
-Fixed-income ingestion uses original decimal text, provider units, observation date, publication
-(unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-
-maturity Treasury yields are labeled par-curve observations and are never silently treated as
-zero rates or discount factors. Provider verification here is synthetic; live FRED access remains untested.
 
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 
@@ -38,7 +52,9 @@ The backfill worker's connectivity handler is documented as logging only; offlin
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
 
 Historical HTTP requests use the base provider as their retry owner. Each send attempt acquires
-capacity, including retries; the named-client retry policy yields to these requests. The network
+capacity, including retries; the named-client retry policy yields to these requests. This includes
+FRED's `GetRateObservationsAsync` series metadata and observation requests and
+`GetEconomicObservationsAsync`, without changing their units, vintage handling or response parsing. The network
 attempt timeout starts after quota acquisition, so waiting for pacing or a cooldown does not
 consume the request's network timeout. Throttling
 responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
@@ -657,3 +673,8 @@ Do not add an Infrastructure to Application dependency. Provider abstractions sh
 - `docs/providers/`
 - `docs/architecture/module-map.md`
 - `docs/status/provider-validation-matrix.md`
+
+Alpaca statement activity snapshots retain a completeness cursor after successful pagination,
+including newest activity ID, timestamp watermark, page count and retained record count. Failed or
+repeated pagination tokens cannot produce a complete cursor. Broker statement imports continue
+through the governed durable statement intake and recovery pipeline using external activity IDs.

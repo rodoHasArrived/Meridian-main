@@ -84,7 +84,11 @@ public sealed partial class AlpacaBrokerageGateway
                     // account base currency is not a general position denomination fallback.
                     Currency: string.Equals(account.Currency, "USD", StringComparison.Ordinal)
                         && position.AssetClass is "us_equity" or "us_option" ? "USD" : null,
-                    Metadata: position.Metadata))
+                    Metadata: position.Metadata)
+                {
+                    AccruedInterest = position.AccruedInterest,
+                    ValuationBasis = position.ValuationBasis
+                })
                 .ToArray(),
             RetrievedAt: retrievedAt,
             AccountSnapshot: new BrokerageAccountSnapshotDto(

@@ -193,7 +193,7 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 3, 4)]
+    [InlineData("Bond", 5, 5)]
     [InlineData("CertificateOfDeposit", 5, 5)]
     [InlineData("Swap", 4, 4)]
     [InlineData("StructuredCredit", 6, 6)]
@@ -244,7 +244,7 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 5, 3, 4)]
+    [InlineData("Bond", 6, 5, 5)]
     [InlineData("StructuredCredit", 1, 6, 6)]
     [InlineData("StructuredCredit", 7, 6, 6)]
     [InlineData("Equity", 2, 1, 1)]
@@ -518,6 +518,8 @@ public sealed class SecurityTermsVersioningTests
         // Absent, null, [], {} and all-null objects all mean the block is unset.
         { "Bond", Terms(null, Maturity).GetRawText() },
         { "Bond", Terms(1, Maturity).GetRawText() },
+        { "Bond", Terms(4, Maturity).GetRawText() },
+        { "Bond", Terms(5, Maturity).GetRawText() },
         { "Bond", Terms(1, Maturity + """ ,"scheduleConventions":null """).GetRawText() },
         { "Bond", Terms(null, Maturity + """ ,"scheduleConventions":{} """).GetRawText() },
         { "Bond", Terms(null, Maturity + """ ,"scheduleConventions":[] """).GetRawText() },
@@ -578,17 +580,17 @@ public sealed class SecurityTermsVersioningTests
     public void EnsureWritable_RunsTheReadGuardFirst()
     {
         // A stamp above what the node reads gets the read refusal, not the write reason.
-        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(5, Maturity));
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(6, Maturity));
 
         write.Should().Throw<InvalidOperationException>().Which.Message
-            .Should().Be("Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.");
+            .Should().Be("Unsupported assetClassTermsVersion '6' for asset class 'Bond'; this node reads versions 1 through 5.");
     }
 
     public static TheoryData<string, string> StampsAboveWhatThisNodeReads() => new()
     {
-        { "Bond", Terms(5, Maturity).GetRawText() },
-        { "Bond", Terms(5, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
-        { "Bond", Terms(5, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText() },
+        { "Bond", Terms(6, Maturity).GetRawText() },
+        { "Bond", Terms(6, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
+        { "Bond", Terms(6, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText() },
         { "Swap", Terms(5, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
         { "StructuredCredit", Terms(7, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
         { "StructuredCredit", Terms(7, ProfileCallAndPutSchedules).GetRawText() },

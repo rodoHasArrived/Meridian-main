@@ -29,6 +29,27 @@ Declared public members:
 | <code>public static readonly string[] RequiredFacets = [&quot;Domain model&quot;, &quot;Application services&quot;, &quot;Contracts / APIs&quot;, &quot;Infrastructure&quot;, &quot;UI components&quot;, &quot;Tests&quot;];</code> | [src/Meridian.Entities/DesignModule.cs:10](../../../../src/Meridian.Entities/DesignModule.cs#L10) |  |
 | <code>public static readonly string[] CurrentSourcePaths = [&quot;src/Meridian.Application&quot;, &quot;src/Meridian.Contracts&quot;, &quot;src/Meridian.Storage&quot;, &quot;src/Meridian.Ui.Shared&quot;];</code> | [src/Meridian.Entities/DesignModule.cs:20](../../../../src/Meridian.Entities/DesignModule.cs#L20) |  |
 
+## EntityLifecyclePolicy
+
+Qualified name: <code>Meridian.Entities.FundStructure.EntityLifecyclePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs:6](../../../../src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs#L6).
+
+Effective-dated lifecycle policy shared by agreement, posting and timeline readers.
+
+```csharp
+public static class EntityLifecyclePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static EntityLifecycleEligibilityDto Evaluate(EntityLifecycleRevisionDto? revision, DateTimeOffset effectiveAt, EntityLifecycleOperationDto operation, bool hasRetainedEvidence, bool correctionExceptionApproved = false);</code> | [src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs:8](../../../../src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs#L8) |  |
+| <code>public static void ValidateTimeline(Guid entityId, IReadOnlyList&lt;EntityLifecycleStateDto&gt; timeline) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs:49](../../../../src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs#L49) |  |
+| <code>public static EntityLifecycleRevisionDto Seal(EntityLifecycleRevisionDto revision) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs:52](../../../../src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs#L52) |  |
+| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs:55](../../../../src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs#L55) |  |
+
 ## FundStructurePolicyService
 
 Qualified name: <code>Meridian.Entities.FundStructure.FundStructurePolicyService</code>. Kind: `class`.
@@ -80,6 +101,26 @@ Declared public members:
 | <code>void ValidateOwnershipReplacement(OwnershipLinkDto existingLink, OwnershipLinkDto replacementLink);</code> | [src/Meridian.Entities/FundStructure/IFundStructurePolicyService.cs:28](../../../../src/Meridian.Entities/FundStructure/IFundStructurePolicyService.cs#L28) |  |
 | <code>void ValidateOwnershipReplacement(OwnershipLinkDto existingLink, OwnershipLinkDto expiredExistingLink, OwnershipLinkDto replacementLink, FundStructureNodeKindDto parentKind, FundStructureNodeKindDto childKind, IReadOnlyCollection&lt;OwnershipLinkDto&gt; existingLinks, IReadOnlyDictionary&lt;Guid, FundStructureNodeKindDto&gt; nodeKinds);</code> | [src/Meridian.Entities/FundStructure/IFundStructurePolicyService.cs:29](../../../../src/Meridian.Entities/FundStructure/IFundStructurePolicyService.cs#L29) |  |
 | <code>void ValidateCashFlowQuery(GovernanceCashFlowQuery query);</code> | [src/Meridian.Entities/FundStructure/IFundStructurePolicyService.cs:38](../../../../src/Meridian.Entities/FundStructure/IFundStructurePolicyService.cs#L38) |  |
+
+## IntercompanyAccountingArrangementPolicy
+
+Qualified name: <code>Meridian.Entities.FundStructure.IntercompanyAccountingArrangementPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:7](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L7).
+
+Accounting configuration rules; canonical legal approval and consolidation scope remain separate authorities.
+
+```csharp
+public static class IntercompanyAccountingArrangementPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(IntercompanyAccountingArrangementDto arrangement, IntercompanyAgreementRevisionDto legal);</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:9](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L9) |  |
+| <code>public static IntercompanyAccountingArrangementStatusDto Transition(IntercompanyAccountingArrangementStatusDto status, IntercompanyAccountingArrangementActionDto action) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:58](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L58) |  |
+| <code>public static string RequireArrangementText(string? value, string field) =&gt; …;</code> | [src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs:67](../../../../src/Meridian.Entities/FundStructure/IntercompanyAccountingArrangementPolicy.cs#L67) |  |
 
 ## LedgerGroupingRules
 

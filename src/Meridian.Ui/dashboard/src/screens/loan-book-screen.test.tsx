@@ -15,6 +15,7 @@ const api = vi.mocked(directLendingApi);
 
 afterEach(() => {
   vi.resetAllMocks();
+  window.history.replaceState(null, "", "/");
 });
 
 // The scenario selector lists each facility by name as well, so table assertions exclude its
@@ -57,6 +58,24 @@ function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSu
 }
 
 describe("LoanBookScreen", () => {
+  it("filters the facility table by an exact server maturity bucket and preserves scope in the URL", async () => {
+    const first = summary().loans[0];
+    const second = { ...first, loanId: "33333333-3333-3333-3333-333333333333", facilityName: "Separate EUR facility", baseCurrency: "EUR" };
+    window.history.replaceState(null, "", "/portfolio/loan-book?entity=retained-scope#facilities");
+    render(<LoanBookScreen summary={summary({ loans: [first, second], maturityBuckets: [
+      { currency: "USD", year: 2030, quarter: 1, principalOutstanding: "3250000", loanIds: [first.loanId] },
+      { currency: "EUR", year: 2030, quarter: 2, principalOutstanding: "3250000", loanIds: [second.loanId] }
+    ] })} />);
+    await userEvent.click(screen.getByRole("button", { name: /2030 Q1 1 facility/ }));
+    const table = screen.getByRole("table", { name: "Direct lending facilities" });
+    expect(table).toHaveTextContent("Senior Term Facility A");
+    expect(table).not.toHaveTextContent("Separate EUR facility");
+    expect(new URLSearchParams(window.location.search).get("entity")).toBe("retained-scope");
+    expect(new URLSearchParams(window.location.search).get("loanMaturity")).toBe("USD:2030:1");
+    expect(window.location.hash).toBe("#facilities");
+    await userEvent.click(screen.getByRole("button", { name: "Clear maturity filter" }));
+    expect(table).toHaveTextContent("Separate EUR facility");
+  });
   it("renders and refreshes the host-serialized numeric enums and currency buckets", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(hostPortfolio);
     render(<LoanBookScreen />);

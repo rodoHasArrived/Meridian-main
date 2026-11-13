@@ -173,6 +173,17 @@ class CompatibilityTests(unittest.TestCase):
         value["browserEvidence"]["source"]["runtimeSourceHashesStable"] = False
         self.assertIn("Browser sources changed during execution", self.errors(value))
 
+    def test_browser_audit_helper_is_a_required_hashed_runtime_dependency(self):
+        helper = self.root / "tests/browser-audit-helpers.mjs"
+        helper.write_text("export const fixture = true;\n")
+        value = copy.deepcopy(self.inventory)
+        value["sourceEvidence"]["sourceHashes"]["tests/browser-audit-helpers.mjs"] = COMPAT.digest(helper)
+        self.assertIn("Browser runtime dependency coverage differs", self.errors(value))
+        value["browserEvidence"]["source"]["runtimeSourceHashes"]["tests/browser-audit-helpers.mjs"] = COMPAT.digest(helper)
+        self.assertEqual([], self.errors(value))
+        helper.write_text("export const fixture = false;\n")
+        self.assertIn("Stale browser runtime dependency: tests/browser-audit-helpers.mjs", self.errors(value))
+
     def test_missing_or_failed_source_contracts_cannot_be_certified(self):
         value = copy.deepcopy(self.inventory)
         value["sourceEvidence"] = None

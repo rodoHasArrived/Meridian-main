@@ -24,8 +24,8 @@ Endpoint mapping and service composition remain in Ui.Shared.
 
 ## Key folders and files
 
-The project links seven source files under `Meridian.Ui.Shared/Services` while owning their
-compilation. Ui.Shared excludes those files and forwards their public types to this assembly.
+The project owns seven reader sources at its root (moved from `Meridian.Ui.Shared/Services` on
+2026-11-13). Ui.Shared forwards their public types to this assembly.
 Existing namespaces and constructor signatures remain intact. A source edit to these readers
 can build this project without compiling the larger workstation orchestration layer.
 

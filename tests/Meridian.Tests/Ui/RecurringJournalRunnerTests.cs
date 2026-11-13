@@ -30,6 +30,20 @@ public sealed class RecurringJournalRunnerTests : IDisposable
     private string StateDirectory => Path.Combine(_root, "recurring");
 
     [Fact]
+    public async Task RunDue_ExactScheduleAndVersionFilter_DoesNotRunAnotherScheduleOrStaleDefinition()
+    {
+        await SeedAsync();
+        var fixture = await CreateFixtureAsync();
+        (await fixture.Runner.RunDueAsync(Now, Tenant, Company, true, scheduleId: "other", exactScope: Scope)).Should().BeEmpty();
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+        await Assert.ThrowsAsync<RecurringJournalDefinitionChangedException>(() => fixture.Runner.RunDueAsync(
+            Now, Tenant, Company, true, scheduleId: ScheduleId, exactScope: Scope, expectedScheduleVersion: 99));
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+        await fixture.Runner.RunDueAsync(Now, Tenant, Company, true, scheduleId: ScheduleId, exactScope: Scope, expectedScheduleVersion: 1);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task RunDue_RestartAfterClaim_RecoversOneDraftWithExactDefinitionsAndEvidence()
     {
         var store = await SeedAsync();

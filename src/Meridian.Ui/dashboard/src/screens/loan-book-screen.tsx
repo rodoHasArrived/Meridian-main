@@ -8,7 +8,7 @@
  * deliberately absent rather than stubbed.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
 import { Select } from "@/components/ui/select";
 import { Landmark, RefreshCcw } from "lucide-react";
@@ -25,6 +25,7 @@ import {
   type LoanBookTone
 } from "@/screens/loan-book-screen.view-model";
 import type { LoanPortfolioSummary } from "@/types/direct-lending.types";
+import { LoanMaturityView, maturityBucketId } from "@/screens/loan-maturity-view";
 
 const toneClassName: Record<LoanBookTone, string> = {
   default: "text-foreground",
@@ -118,19 +119,45 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
   const [loaded, setLoaded] = useState<LoanPortfolioSummary | null>(null);
   const [loading, setLoading] = useState(summary === undefined);
   const [error, setError] = useState<string | null>(null);
+  const pendingRead = useRef<AbortController | null>(null);
+  const [maturityFilter, setMaturityFilter] = useState<string | null>(() => new URLSearchParams(window.location.search).get("loanMaturity"));
+  const [selectedLoanId, setSelectedLoanId] = useState<string>(() => new URLSearchParams(window.location.search).get("loanFacility") ?? "");
+  const updateSelection = (filter: string | null, loanId = selectedLoanId) => {
+    setMaturityFilter(filter);
+    setSelectedLoanId(loanId);
+    const url = new URL(window.location.href);
+    if (filter) url.searchParams.set("loanMaturity", filter); else url.searchParams.delete("loanMaturity");
+    if (loanId) url.searchParams.set("loanFacility", loanId); else url.searchParams.delete("loanFacility");
+    window.history.pushState(window.history.state, "", url);
+  };
+  useEffect(() => {
+    const restore = () => {
+      const query = new URLSearchParams(window.location.search);
+      setMaturityFilter(query.get("loanMaturity"));
+      setSelectedLoanId(query.get("loanFacility") ?? "");
+    };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, []);
 
   const refresh = useCallback(async () => {
+    pendingRead.current?.abort();
+    const controller = new AbortController();
+    pendingRead.current = controller;
     setLoading(true);
     setError(null);
     try {
-      setLoaded(await getLoanPortfolioSummary());
+      const next = await getLoanPortfolioSummary({ signal: controller.signal });
+      if (!controller.signal.aborted) setLoaded(next);
     } catch (reason) {
       // A failed read is not an empty loan book. Keep them distinguishable: clear the
       // stale summary and say what went wrong rather than rendering a zeroed portfolio.
-      setLoaded(null);
-      setError(errorMessage(reason));
+      if (!controller.signal.aborted) {
+        setLoaded(null);
+        setError(errorMessage(reason));
+      }
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 
@@ -140,10 +167,13 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
     }
 
     void refresh();
+    return () => pendingRead.current?.abort();
   }, [refresh, summary]);
 
   const resolved = summary !== undefined ? summary : loaded;
   const view = useMemo(() => buildLoanBookViewModel(resolved), [resolved]);
+  const selectedBucket = resolved?.maturityBuckets?.find((bucket) => maturityBucketId(bucket) === maturityFilter);
+  const filteredRows = maturityFilter ? view.rows.filter((row) => selectedBucket?.loanIds.includes(row.loanId)) : view.rows;
 
   return (
     <Card className="panel-surface">
@@ -209,15 +239,21 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
 
             {view.currencyNotice ? <p className="text-sm text-muted-foreground">{view.currencyNotice}</p> : null}
 
+            {resolved ? <LoanMaturityView summary={resolved} selectedId={maturityFilter} onSelect={(id) => updateSelection(id)} /> : null}
+
             <DenseDataTable
               columns={loanColumns}
-              rows={view.rows}
+              rows={filteredRows}
               getRowId={(row) => row.loanId}
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={view.emptyText}
               ariaLabel={view.tableAriaLabel}
+              selectedRowId={selectedLoanId}
+              onRowSelect={(row) => updateSelection(maturityFilter, row.loanId)}
             />
-            <LoanScenarioSection loans={view.rows.map((row) => ({ loanId: row.loanId, facilityName: row.facilityName }))} />
+            {maturityFilter ? <p className="text-xs text-muted-foreground">Showing {filteredRows.length} of {view.rows.length} loaded facilities.</p> : null}
+            {selectedLoanId && !filteredRows.some((row) => row.loanId === selectedLoanId) ? <p className="text-xs text-warning" role="status">The selected facility is outside the maturity filter or unavailable; its selection is retained.</p> : null}
+            <LoanScenarioSection loanId={selectedLoanId} onSelect={(id) => updateSelection(maturityFilter, id)} loans={view.rows.map((row) => ({ loanId: row.loanId, facilityName: row.facilityName }))} />
           </>
         ) : null}
       </CardContent>
@@ -229,8 +265,7 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
  * Cash-flow scenarios for one facility over the shared contractual projection routes. The loan is
  * chosen explicitly; nothing is projected until the operator asks.
  */
-function LoanScenarioSection({ loans }: { loans: Array<{ loanId: string; facilityName: string }> }) {
-  const [loanId, setLoanId] = useState("");
+function LoanScenarioSection({ loans, loanId, onSelect }: { loans: Array<{ loanId: string; facilityName: string }>; loanId: string; onSelect: (id: string) => void }) {
   const selected = loans.find((loan) => loan.loanId === loanId) ?? null;
   if (loans.length === 0) return null;
   // A facility is chosen by name. The loan identifier is appended only when two facilities share
@@ -248,7 +283,7 @@ function LoanScenarioSection({ loans }: { loans: Array<{ loanId: string; facilit
   return (
     <div className="mt-4 grid gap-3" aria-label="Loan cash-flow scenarios">
       <label className="grid max-w-md gap-1 text-xs font-medium text-muted-foreground">Facility for cash-flow scenarios
-        <Select value={loanId} aria-label="Scenario facility" onChange={(event) => setLoanId(event.target.value)}>
+        <Select value={loanId} aria-label="Scenario facility" onChange={(event) => onSelect(event.target.value)}>
           <option value="">Select a facility</option>
           {loans.map((loan) => <option key={loan.loanId} value={loan.loanId} title={loan.loanId}>{optionLabel(loan)}</option>)}
         </Select>

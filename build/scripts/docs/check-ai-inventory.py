@@ -79,7 +79,7 @@ AI_WORKFLOW_REFERENCE_FILES = (
     PROMPTS_README,
     GITHUB_PROMPTS_README,
     COPILOT_GUIDE,
-    "docs/ai/copilot/ai-sync-workflow.md",
+    "archive/docs/summaries/ai-sync-workflow.md",
     "docs/prompts/automation-prompts.md",
 )
 WORKFLOW_REFERENCE_PATTERN = re.compile(
@@ -674,6 +674,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_legacy_canonical_links(root, inventory))
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_shared_project_context(root))
+    findings.extend(check_skill_mirror(root))
     findings.extend(check_ui_platform_policy(root))
     findings.extend(check_stale_operator_surface_language(root, inventory))
     findings.extend(check_missing_workflow_references(root))
@@ -870,6 +871,29 @@ _GUIDANCE = importlib.util.module_from_spec(_GUIDANCE_SPEC)
 _GUIDANCE_SPEC.loader.exec_module(_GUIDANCE)
 SHARED_CONTEXT_CANONICAL = _GUIDANCE.CANONICAL
 SHARED_CONTEXT_MIRRORS = _GUIDANCE.MIRRORS
+
+
+def check_skill_mirror(root: Path) -> list[Finding]:
+    """Report .agents/skills files that no longer mirror the canonical .claude/skills packages."""
+    try:
+        drift = _GUIDANCE.skill_mirror_drift(root)
+    except (OSError, ValueError) as exc:
+        drift = [f"{_GUIDANCE.SKILL_MIRROR} ({exc})"]
+    return [
+        Finding(
+            severity="drift",
+            surface="agent-skills-compatible-hosts",
+            kind="skill-mirror",
+            name=Path(rel_path).name,
+            path=rel_path,
+            expected_doc=_GUIDANCE.SKILL_SOURCE,
+            message=(
+                f"{rel_path} differs from the canonical {_GUIDANCE.SKILL_SOURCE} package; edit the "
+                "canonical skill, then run python build/scripts/ai/generate-guidance.py --write."
+            ),
+        )
+        for rel_path in drift
+    ]
 
 
 def check_shared_project_context(root: Path) -> list[Finding]:

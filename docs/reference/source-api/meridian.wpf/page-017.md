@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillPage
+
+Qualified name: <code>Meridian.Wpf.Views.BackfillPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/BackfillPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/BackfillPage.xaml.cs#L17).
+
+Historical data backfill page with provider selection, date ranges, and scheduling. Wired to real BackfillApiService for live execution and progress tracking. Supports job resumability via BackfillCheckpointService. Timer management and service orchestration are delegated to BackfillViewModel.
+
+```csharp
+public partial class BackfillPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillPage(WpfServices.WorkspaceService workspaceService, BackfillViewModel viewModel);</code> | [src/Meridian.Wpf/Views/BackfillPage.xaml.cs:22](../../../../src/Meridian.Wpf/Views/BackfillPage.xaml.cs#L22) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:20](../../../../src/Meridian.Wpf/Views/Pages.cs#L20).
+
+```csharp
+public partial class BackfillPage : Page
+```
+
 ## BacktestPage
 
 Qualified name: <code>Meridian.Wpf.Views.BacktestPage</code>. Kind: `class`.
@@ -457,6 +481,23 @@ Declared public members:
 | <code>public string? SelectedColor =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:19](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L19) |  |
 | <code>public bool ShouldDelete { get; private set; }</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:20](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L20) |  |
 | <code>public EditWatchlistDialog(Watchlist watchlist);</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:34](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L34) |  |
+
+## EntityConsolidationControl
+
+Qualified name: <code>Meridian.Wpf.Views.EntityConsolidationControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:6](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L6).
+
+```csharp
+public partial class EntityConsolidationControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EntityConsolidationControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L8) |  |
+| <code>public event RoutedEventHandler? ReviewDraftsRequested;</code> | [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L9) |  |
 
 ## EnvironmentDesignerPage
 
@@ -1055,39 +1096,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public OperationsContinuityPage(OperationsContinuityViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L15) |  |
-
-## OperationsRecordReleasePage
-
-Qualified name: <code>Meridian.Wpf.Views.OperationsRecordReleasePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs#L11).
-
-Provides the desktop page to follow the release path from source data through accounting record to report pack.
-
-```csharp
-public partial class OperationsRecordReleasePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsRecordReleasePage(OperationsRecordReleaseViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs#L15) |  |
-
-## OperatorReadinessConsolePage
-
-Qualified name: <code>Meridian.Wpf.Views.OperatorReadinessConsolePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs#L11).
-
-Hosts operator readiness checks and the resulting blockers and next actions.
-
-```csharp
-public partial class OperatorReadinessConsolePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperatorReadinessConsolePage(OperatorReadinessConsoleViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs#L15) |  |

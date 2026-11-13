@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+Options-overwrite candidates preserve delta, open-interest and volume availability separately from numeric values. Required missing measurements and nonfinite delta are refused by preview filters; an absent provider delta cannot become an eligible zero-delta contract. Spread and contract-multiplier facts remain inspectable.
+
 `CanonicalOpenLotAdapter` now compares explicit simulation and retained canonical direction.
 Matching positive-quantity short lots may bind after the same identity/date/basis checks;
 opposite directions cannot net. Existing governed successor-component checks remain mandatory.
@@ -45,6 +47,20 @@ This layer should expose stable backtesting integration seams without owning run
 Use this module when a backtesting contract must be shared across runtime and strategy code.
 
 ## API / contract notes
+
+- `BacktestRequest.ApplyStoredCorporateActions` defaults to true. Hosts with Security Master
+  queries capture confirmed actions as `AssetEvents` automatically and replay raw prices; set it
+  false for reviewed manual economics or legacy adjusted-price research. Its new execution-realism
+  descriptor field is nullable so descriptors retained before this option preserve their original
+  canonical hashes; newly created descriptors always include the selected setting.
+
+- `BacktestResult.LedgerIntegrityBreaks` retains native day-end accounting differences without
+  changing its positional constructor. Set `BacktestRequest.FailOnLedgerIntegrityBreak` to stop
+  on the first failing day; the exception carries its differences. External imported results have
+  no implied reconciliation coverage merely because their difference collection is empty.
+- `AssetEventCashFlow.BasisReturned` retains return-of-capital basis relief separately from income,
+  so cash receipt does not overstate realized income. Negative capital-return events are refused
+  before mutation because a reversal requires the original lot-level basis and excess-gain facts.
 
 - `BacktestRequest.OrderBookQueueAheadFraction` configures queue-aware order-book replay. The
   default `0` preserves immediate visible-depth fills; positive values infer that a fraction of

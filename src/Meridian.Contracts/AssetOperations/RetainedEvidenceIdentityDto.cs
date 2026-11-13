@@ -46,10 +46,16 @@ public static class AssetAccountingEvidenceSubjects
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
         bool allowRetainedAmortizationCorrection = false,
         Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
-        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null)
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null,
+        Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? couponRecognition = null)
     {
         if (evidence.EffectiveDate == eventDate)
             return true;
+        if (eventKind == AssetAccountingEventKindDto.Income && couponRecognition is not null)
+            return couponRecognition.IncomeInstruction.ExpectedLot.Acquisition.Evidence.Contains(evidence)
+                || couponRecognition.IncomeInstruction.SecurityEvidence == evidence
+                || couponRecognition.Cash.Any(cash => cash.ObservedPayment.Provenance.Evidence == evidence
+                    || cash.Allocation.DeductionEvidence?.Evidence == evidence);
         if (eventKind == AssetAccountingEventKindDto.CorporateAction && evidence.EffectiveDate <= eventDate)
         {
             if (evidence.SubjectType is not ("OpenLotAcquisition" or "SecurityMasterProjection")
