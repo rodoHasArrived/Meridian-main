@@ -81,8 +81,13 @@ original face or currency per current face. Fees remain separate. Reported clean
 reconcile at currency cash precision. Original provider values and mapped JSON remain evidence.
 
 IB average-cost placeholders are labelled `CostDerived` and cannot establish observed marks.
-Broker snapshots preserve supplied accrued interest. A broad provider `Bond` flag does not prove
-reference, valuation, fixing, entitlement or execution readiness.
+Broker snapshots preserve supplied accrued interest. New balance snapshots use
+`brokerage-sync:<provider>:disjoint-components-v2`. When every position supplies an accrual amount
+and an explicit balance currency, securities exclude signed accrued interest so the components
+reproduce provider equity. Missing amounts or currencies leave the full remainder unallocated.
+Original position evidence, retained snapshots and legacy performance arithmetic remain unchanged.
+A broad provider `Bond` flag does not prove reference, valuation, fixing, entitlement or execution
+readiness.
 
 ## Compare quotes and supply market inputs
 
@@ -107,6 +112,12 @@ period; `deferredCouponInterest` separately retains fully earned coupons awaitin
 payment dates. Invoice accrued interest includes the transferred entitlement and any ex-coupon
 adjustment. Retained `bond-workflow-v1` results replay their original calculation version, including
 older requests that did not contain an explicit model pin.
+
+Analytical workflows return `MandatoryRedemptionTermsUnsupported` for any non-null
+`mandatoryPutDate` or `preRefundDate` in retained asset terms, including `profileFields`.
+Past, current, future and malformed values all remain unsupported: a scalar date does not establish
+redemption consideration or entitlement, and a maturity-only valuation cannot replace that contract.
+
 An existing price-selection receipt remains the pricing authority: pair it only with matching typed
 source, observation time, value and unit. A matching number alone is insufficient. New selections carrying quotation evidence also require the exact clean/dirty convention, per-100 basis, settlement date and `quote.settlementBasis`; import matching typed metadata before replay. Expired liquidity
 is flagged. Settlement normalization needs retained curve coverage and a uniquely calibrated spread;
@@ -121,6 +132,8 @@ legacy observation sources retain their original source contract. Future index/f
 
 FRED's typed method retains declared series units, vintage dates and missing observations separately
 from synthetic OHLC compatibility. A vintage day does not prove an exact publication-time instant.
+Both typed observation paths charge each transient retry to the provider budget; named-client
+retries do not multiply requests, and HTTP 429 records its cooldown without retry.
 Benchmark yields never automatically become discount factors. OpenFIGI ISIN/CUSIP discovery removes
 the Equity default for durable identifiers and preserves competing bond FIGIs for resolution;
 equity ticker discovery retains its existing scope.
@@ -181,6 +194,17 @@ Missing or excluded inputs remain visible.
 Principal installments and residual balloons sharing one obligation identity are combined before
 native-currency cash rounding, so planning and monitoring capture retain one payable amount.
 
+Accepted face and purchaser ex-coupon flows do not establish continuous holder coupon rights.
+A detached-coupon result blocks decision-ready planning and fresh monitoring capture. A
+`bond-workflow-v1` future zero-interest coupon interval without an entitlement marker requires an
+explicit `bond-workflow-v2` refresh or reconciliation of holder rights; a refresh does not itself
+prove detached-coupon ownership.
+Previously retained unpaid coupons remain signed claims when overdue, inactive or absent from a
+later holdings snapshot. Only validated gross allocations of observed payments settle their residuals; a
+payment date or offsetting long/short quantities do not establish settlement or a right of setoff.
+New obligation identities use invariant dates. A historical calendar-based identity is reused only
+when its exact scoped payment/accrual hash exists in retained history; competing identities block.
+
 Simple floaters need exact observed resets for elapsed periods and eligible forward inputs for future
 resets. Compounded overnight coupons also require fixing calendar, lookback, observation method,
 weighting and lockout; midperiod overnight principal changes remain unsupported. Inflation requires
@@ -209,9 +233,14 @@ Expected/actual status exposes overdue, partial, short, overpaid and unexplained
 dates retain original obligations and remain valid history after their dates pass. Unpaid residuals
 age from the evidenced revised date. Overdue residuals do not become spendable simply because they were
 forecast. Positive coupons create receivables; negative coupons payables and signed outflows.
-New monitoring snapshots use `bond-monitoring-v2`; native forecast requests select
-`account-cash-forecast-v3`. Historical monitoring v1 and native forecast v2 snapshots replay their
-original rules and identities.
+New monitoring snapshots use `bond-monitoring-v3`, with invariant amounts, percentages and dates in
+watch text and identities. Historical monitoring v1/v2 keeps its original rules and stored bytes.
+Legacy replay requires an exact match of the complete serialized snapshot, including financial
+fields, source identities and watch text, under the current rendering settings or a bounded renderer:
+invariant, `en-US`, `fr-FR`, `de-DE`, `th-TH`, `ar-SA` or `fa-IR`. No fields are ignored and no original
+culture is inferred. Unsupported custom output requires the original rendering settings before
+history can reopen or a new capture can be created. Native forecast requests select
+`account-cash-forecast-v3`; historical native forecast v2 snapshots keep their original replay.
 Captured exceptions enter existing reconciliation casework. Later source-clearing evidence does not
 automatically resolve, sign off or reopen a governed case; use the existing casework commands.
 

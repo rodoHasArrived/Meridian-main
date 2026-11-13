@@ -23,6 +23,12 @@ namespace Meridian.Infrastructure.Adapters.TwelveData;
     Description = "Twelve Data API key from https://twelvedata.com/account/api-keys")]
 public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
 {
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+    protected override bool OwnsHttpRetries => true;
+
+    protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(ApiKey)
+        ? RateLimiter
+        : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", MaxRequestsPerWindow, RateLimitWindow, MinRequestDelay);
     public override string Name => "twelvedata";
     public override string DisplayName => "Twelve Data";
     public override int Priority => 22;
@@ -71,9 +77,11 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
     public TwelveDataSymbolSearchProvider(
         string? apiKey = null,
         HttpClient? httpClient = null,
-        ILogger? log = null)
-        : base(apiKey, httpClient, log)
+        ILogger? log = null,
+        RateLimiterRegistry? rateLimiterRegistry = null)
+        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider)
     {
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
     }
 
     protected override string BuildSearchUrl(string query, string? assetType, string? exchange)

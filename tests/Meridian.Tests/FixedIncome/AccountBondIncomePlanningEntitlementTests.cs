@@ -319,12 +319,13 @@ public sealed class AccountBondIncomePlanningEntitlementTests
             var bond = new SecurityDetailDto(Security, "Bond", SecurityStatusDto.Active, "Synthetic ex-coupon bond", "USD",
                 JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new
                 {
-                    assetClassTermsVersion = 2, issueDate = "2026-01-01", maturity = "2028-01-01", couponType = "Fixed",
+                    assetClassTermsVersion = 5, issueDate = "2026-01-01", maturity = "2028-01-01", couponType = "Fixed",
                     couponRate = coupon, dayCount = "30/360", par = 100m, paymentFrequency = "Annual", isCallable = false,
+                    bondWorkflow = new { exCouponBusinessDays = 10 },
                     scheduleConventions = new
                     {
                         accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level",
-                        paymentCalendars = new[] { "WEEKENDS" }, businessDayConvention = "Following", exCouponBusinessDays = 10
+                        paymentCalendars = new[] { "WEEKENDS" }, businessDayConvention = "Following"
                     }
                 }), [], [], 1, new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), null);
             var query = Substitute.For<ISecurityMasterQueryService>();
@@ -371,7 +372,20 @@ public sealed class AccountBondIncomePlanningEntitlementTests
 
         public async Task<BondMonitoringSnapshotDto> RetainThaiBeforeWindowAsync(bool wrongPeriod = false)
         {
-            var plan = await PlanAsync();
+            // Freeze successful Gregorian financial facts before reproducing the earlier Thai
+            // identity/receipt renderer. The legacy schedule anchor reader itself follows the
+            // process calendar, so its separate calendar-compatibility policy is not changed here.
+            var culture = CultureInfo.CurrentCulture;
+            AccountBondIncomePlanDto plan;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+                plan = await PlanAsync();
+            }
+            finally { CultureInfo.CurrentCulture = culture; }
+            plan.Blockers.Should().BeEmpty();
+            plan.Calculations.Should().ContainSingle().Which.IsBlocked.Should().BeFalse();
+            plan.MonitoringInputs.Obligations.Should().Contain(row => row.FlowType == "Coupon" && row.DueDate == PaymentDate);
             var obligations = plan.MonitoringInputs.Obligations.Select(row =>
             {
                 var flow = plan.Calculations.Single().CashFlows.Single(flow => flow.PaymentDate == row.DueDate

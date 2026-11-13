@@ -476,6 +476,10 @@ providers; only entirely legacy provider families retain the store's permitted e
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
 
+Symbol-management composition passes the selected credential resolver to both OpenFIGI clients.
+Hosted mapping, discovery and search resolve that authority for each request, including credential
+rotation and deletion, rather than retaining a configuration or environment key at construction.
+
 The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and
 environment, rejects unmanaged and non-catalog provider types, and never falls back to provider-wide

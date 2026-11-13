@@ -16,6 +16,10 @@ and applicable input-specific entitlements. It reports identifier, terms, holdin
 inflation, factor, rating, curve and execution coverage separately. Connection verification never
 promotes a workflow to `LiveVerified`; deterministic imports and live provider evidence remain
 distinct. Brokerage position projections preserve accrued interest and cost-derived mark labels.
+New balance snapshots use `brokerage-sync:<provider>:disjoint-components-v2` and separate known
+signed accruals in the balance currency from securities, preserving the provider equity total.
+Unknown accrual allocation stays in the full remainder. The explicit source version preserves
+legacy snapshot performance arithmetic without rewriting retained snapshots or raw positions.
 
 The shared bond account endpoints bind account-owned book/tenant/company scope, retain plans and
 comparisons, project collection exceptions into governed casework, and keep preview/preparation apart

@@ -37,6 +37,11 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
     private const string BaseUrl = "https://api.twelvedata.com/time_series";
 
     private readonly string? _apiKey;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+
+    protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(_apiKey)
+        ? RateLimiter
+        : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", MaxRequestsPerWindow, RateLimitWindow, RateLimitDelay);
 
 
     public override string Name => "twelvedata";
@@ -55,10 +60,11 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "EU", "CA", "AU");
 
 
-    public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("TWELVEDATA_API_KEY");
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
     }
 
     public override Task<bool> IsAvailableAsync(CancellationToken ct = default)

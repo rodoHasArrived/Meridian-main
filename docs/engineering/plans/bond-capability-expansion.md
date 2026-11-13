@@ -62,6 +62,20 @@ receipt/reversal arithmetic remain unchanged. Full-snapshot imports require comp
 populations, including quarantine and failed-page evidence; replay subsets cannot imply a flat or
 complete account. The browser exposes an intraday UTC cutoff without advancing it on quote selection.
 
+Monitoring v3 persists invariant numeric text and Gregorian date identities. Historical v1/v2 replay
+must reproduce the complete serialized snapshot under the current settings or a bounded invariant,
+`en-US`, `fr-FR`, `de-DE`, `th-TH`, `ar-SA` or `fa-IR` renderer. It ignores no financial or display
+fields and never rewrites retained bytes. Unsupported custom output requires its original settings
+before history can reopen or a new capture can be created. New obligation hashes are invariant;
+localized aliases require the exact scoped payment/accrual hash in durable history.
+
+Account planning and fresh monitoring capture block unproven detached-coupon holder rights and
+`bond-workflow-v1` future zero-interest intervals without an entitlement marker. An explicit
+`bond-workflow-v2` refresh resolves only supported economics. Missing unpaid claims remain visible
+across overdue, inactive and absent holdings; validated gross allocations of observed payments can settle them.
+Accepted face, payment dates and offsetting long/short quantities do not establish coupon ownership
+or setoff.
+
 ## Delivery and acceptance
 
 | Area | Required behavior | Evidence |
@@ -211,8 +225,10 @@ inputs cannot be supplied to the governed instruction.
 
 Cash-ladder v2 separates declared issuer calls from the `holder-put` analytical scenario. Whole
 fixed-price redemption uses outstanding principal, non-par redemption price, and supported coupon
-entitlement. A scalar mandatory-put/pre-refund date does not establish a supported mandatory
-redemption contract. Unsupported exercise types, elapsed notice deadlines without retained notice
+entitlement. Analytical bond workflows return `MandatoryRedemptionTermsUnsupported` for every
+non-null `mandatoryPutDate` or `preRefundDate`, including nested `profileFields`, past dates and
+malformed values; a scalar date does not establish a supported mandatory redemption contract.
+Unsupported exercise types, elapsed notice deadlines without retained notice
 proof, missing projection-bound terms and changed calendars block the affected scenario. Undeclared
 records retain their legacy compatibility behavior; explicit historical v1 dispatch remains available.
 

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Core.Exceptions;
+using Meridian.Infrastructure.Resilience;
 
 namespace Meridian.Infrastructure.Adapters.Fred;
 
@@ -39,14 +40,13 @@ public sealed partial class FredHistoricalDataProvider
             throw new ArgumentException("A typed economic request needs a declared series, index, source, date window, vintage and rate/index units.");
         if (string.IsNullOrWhiteSpace(_apiKey))
             throw new InvalidOperationException("FRED API key is required. Set FRED_API_KEY environment variable.");
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
         var series = NormalizeSymbol(definition.SeriesId);
         var vintage = vintageDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var url = BuildRequestUrl(series, from, to) + $"&realtime_start={vintage}&realtime_end={vintage}&limit=100000";
-        using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await ExecuteGetAsync(url, series, "typed economic observations", ct).ConfigureAwait(false);
         if ((int)response.StatusCode == 429)
             throw new RateLimitException("FRED economic observations rate limit exceeded.", provider: Name, symbol: series,
-                retryAfter: response.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(60));
+                retryAfter: HttpResiliencePolicy.ExtractRetryAfter(response) ?? TimeSpan.FromSeconds(60));
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"FRED economic observations returned HTTP {(int)response.StatusCode}.", null, response.StatusCode);
         var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
