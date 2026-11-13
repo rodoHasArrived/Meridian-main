@@ -248,6 +248,22 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
         var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
         await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
+        var rawRecords = new List<JsonElement>
+        {
+            Json(mappedRecordJson ?? """{"providerAccountId":"A1","security":{"cusip":"123456789"},"quantity":100,"asOf":"2026-06-16"}""")
+        };
+        if (includeMissingRecord)
+            rawRecords.Add(Json("""{"quantity":50,"asOf":"2026-06-16"}"""));
+        await store.SaveRawPayloadAsync(new RawIngestionPayloadDto(
+            "payload-1", manifest.ProviderId, "connection-alpha", ProviderCapabilityKindDto.Positions,
+            "positions", "sync-run-identity-1", DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            new Dictionary<string, string> { ["statusCode"] = "200" },
+            JsonSerializer.SerializeToElement(new { positions = rawRecords }),
+            $"{manifest.ManifestId}:v{manifest.ManifestVersion}", ProviderIntegrationProcessingStatusDto.Received)
+        {
+            ManifestReference = manifestReference,
+            OriginalManifestReference = manifestReference
+        }).ConfigureAwait(false);
         await store.SaveSyncRunAsync(new ProviderIntegrationSyncRunDto(
             "sync-run-identity-1",
             "manifest-custodian-abc-v1",

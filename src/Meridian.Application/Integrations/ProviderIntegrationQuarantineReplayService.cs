@@ -308,6 +308,12 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         ProviderIntegrationSyncRunDto sourceSyncRun,
         CancellationToken ct)
     {
+        if (sourceSyncRun.CompletedAt is null || sourceSyncRun.CompletedAt < sourceSyncRun.StartedAt ||
+            sourceSyncRun.Status is ProviderIntegrationProcessingStatusDto.Received or ProviderIntegrationProcessingStatusDto.Parsed or
+                ProviderIntegrationProcessingStatusDto.Mapped or ProviderIntegrationProcessingStatusDto.Blocked)
+        {
+            throw new InvalidOperationException("The retained provider response is incomplete; fetch complete source evidence before replay.");
+        }
         if (sourceSyncRun.ManifestReference is not { } applied ||
             sourceSyncRun.OriginalManifestReference is not { } original ||
             string.IsNullOrWhiteSpace(sourceSyncRun.RawPayloadId))
@@ -360,6 +366,9 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         var originalManifest = appliedOriginal
             ? appliedManifest
             : await ResolveManifestAsync(scopedStore, original, ct).ConfigureAwait(false);
+        if (!await ProviderIntegrationRunCompleteness.HasCompletePageChainAsync(scopedStore, sourceSyncRun,
+                appliedManifest, payload, [payload.PayloadId], ct).ConfigureAwait(false))
+            throw new InvalidOperationException("The retained provider response is incomplete; fetch complete source evidence before replay.");
         if (!StringComparer.Ordinal.Equals(appliedManifest.ProviderId, sourceSyncRun.ProviderId) ||
             !StringComparer.Ordinal.Equals(originalManifest.ProviderId, sourceSyncRun.ProviderId))
         {

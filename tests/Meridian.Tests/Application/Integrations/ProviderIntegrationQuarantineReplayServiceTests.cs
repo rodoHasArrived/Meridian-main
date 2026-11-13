@@ -793,6 +793,47 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
         (await store.GetSyncRunAsync(request.SourceSyncRunId)).Should().BeEquivalentTo(originalRun);
     }
 
+    [Theory]
+    [InlineData(ProviderIntegrationProcessingStatusDto.Received)]
+    [InlineData(ProviderIntegrationProcessingStatusDto.Parsed)]
+    [InlineData(ProviderIntegrationProcessingStatusDto.Mapped)]
+    [InlineData(ProviderIntegrationProcessingStatusDto.Blocked)]
+    public async Task ReplayAsync_RefusesUnfinishedSourceRunsBeforeClaimingReplay(ProviderIntegrationProcessingStatusDto status)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest());
+        var request = CreateRequest();
+        var original = (await store.GetSyncRunAsync(request.SourceSyncRunId))!;
+        var interrupted = original with { Status = status, CompletedAt = null };
+        await store.SaveSyncRunAsync(interrupted);
+        var files = Directory.GetFiles(testRoot, "*.json", SearchOption.AllDirectories);
+
+        var replay = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(request);
+
+        await replay.Should().ThrowAsync<InvalidOperationException>().WithMessage("*incomplete*");
+        (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
+        (await store.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+        Directory.GetFiles(testRoot, "*.json", SearchOption.AllDirectories).Should().BeEquivalentTo(files);
+        (await store.GetSyncRunAsync(request.SourceSyncRunId)).Should().BeEquivalentTo(interrupted);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReplayAsync_RefusesMissingOrInvalidCompletionTimestamp(bool beforeStart)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest());
+        var request = CreateRequest();
+        var original = (await store.GetSyncRunAsync(request.SourceSyncRunId))!;
+        await store.SaveSyncRunAsync(original with { CompletedAt = beforeStart ? original.StartedAt.AddTicks(-1) : null });
+
+        var replay = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(request);
+
+        await replay.Should().ThrowAsync<InvalidOperationException>().WithMessage("*incomplete*");
+        (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
+    }
+
     private static ProviderIntegrationQuarantineReplayRequestDto CreateRequest()
         => new(
             "sync-run-replay-1",

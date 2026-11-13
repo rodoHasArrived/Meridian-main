@@ -319,6 +319,16 @@ public sealed class ProviderIntegrationRestDryRunService
             {
                 break;
             }
+
+            if (page == maxPages)
+            {
+                allIssues.Add(new ValidationIssueDto(
+                    "http.response.incomplete",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "Provider response pagination exceeded the dry-run page limit.",
+                    null,
+                    "Fetch complete source evidence before promoting or replaying this run."));
+            }
         }
 
         if (received == 0 && allIssues.All(issue => issue.Code is not ("http.status.failed" or "http.response.incomplete")))
@@ -597,7 +607,7 @@ public sealed class ProviderIntegrationRestDryRunService
         return null;
     }
 
-    private static string? ReadJsonString(JsonElement root, string sourcePath)
+    internal static string? ReadJsonString(JsonElement root, string sourcePath)
     {
         var current = root;
         foreach (var part in NormalizeSourcePath(sourcePath).Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -692,7 +702,7 @@ public sealed class ProviderIntegrationRestDryRunService
         return document.RootElement.Clone();
     }
 
-    private static string StableId(params string[] parts)
+    internal static string StableId(params string[] parts)
     {
         var input = string.Join("|", parts);
         return Sha256Digest.ComputeUtf8(input)[..24];
