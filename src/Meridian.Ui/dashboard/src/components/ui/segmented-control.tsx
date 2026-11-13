@@ -85,7 +85,7 @@ export function SegmentedControl({
             onClick={() => !option.disabled && onChange?.(option.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             className={cn(
-              "inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius-button)] font-medium leading-none transition-colors",
+              "inline-flex min-h-6 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius-button)] font-medium leading-none transition-colors",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active

@@ -294,10 +294,11 @@ export function StrategyRunLedgerScreen() {
               <option value="Arrow">Arrow</option>
             </Select>
           </FormRow>
-          <a className="inline-flex min-h-9 items-center rounded-md border border-border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring"
-            href={workstationRunLedgerExportEndpoint(runId, exportFormat, asOf)}>
-            Download accounting package
-          </a>
+          <Button asChild variant="outline">
+            <a href={workstationRunLedgerExportEndpoint(runId, exportFormat, asOf)}>
+              Download accounting package
+            </a>
+          </Button>
           <p className="w-full text-xs text-muted-foreground">
             Includes journal, trial balance and cash flows. Lot reports require a complete retained valuation snapshot; package availability identifies missing evidence.
           </p>

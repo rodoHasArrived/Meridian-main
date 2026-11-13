@@ -101,9 +101,9 @@ export function CoverageMatrix({
   return (
     <div className={`mds-covm${className ? " " + className : ""}`} {...rest}>
       <div className="mds-covm__scroll" role="region" aria-label="Coverage matrix scroll area" tabIndex={interactive ? undefined : 0}>
-        <div className="mds-covm__grid" style={{ gridTemplateColumns: template }} role="grid" aria-label="Coverage matrix" aria-rowcount={R.length + (colLabels ? 1 : 0)} aria-colcount={C.length + 1} onKeyDown={onKeyDown}>
+        <div className="mds-covm__grid" style={{ gridTemplateColumns: template }} role={interactive ? "grid" : "table"} aria-label="Coverage matrix" aria-rowcount={R.length + (colLabels ? 1 : 0)} aria-colcount={C.length + 1} onKeyDown={onKeyDown}>
           {colLabels && (
-            <div role="row" style={{ display: "contents" }}>
+            <div role="row" aria-rowindex={1} style={{ display: "contents" }}>
               <span role="columnheader" aria-label="Instrument" />
               {C.map((c) => (
                 <span role="columnheader" key={c.id} className="mds-covm__collab">{c.label}</span>
@@ -111,7 +111,7 @@ export function CoverageMatrix({
             </div>
           )}
           {R.map((r, ri) => (
-            <div role="row" key={r.id} style={{ display: "contents" }}>
+            <div role="row" key={r.id} aria-rowindex={ri + (colLabels ? 2 : 1)} style={{ display: "contents" }}>
               <span className="mds-covm__rowlab" role="rowheader">{r.label}</span>
               {C.map((c, ci) => {
                 const e = lookup(r, c);
@@ -119,7 +119,8 @@ export function CoverageMatrix({
                 return (
                   <CellTag
                     key={c.id}
-                    role="gridcell"
+                    role={interactive ? "gridcell" : "cell"}
+                    aria-colindex={ci + 2}
                     type={interactive ? "button" : undefined}
                     className={`mds-covm__cell mds-covm__cell--${e.status || "none"}`}
                     style={{ width: cellSize, height: cellSize }}

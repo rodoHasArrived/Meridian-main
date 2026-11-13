@@ -2341,7 +2341,8 @@ export function buildProviderRow(
   const readiness = record.readiness;
   const trust = record.trustSnapshot;
   const bindings = record.bindings;
-  const reportedLatency = formatProviderValue(providerRecord?.latency, "");
+  const providerLatency = formatProviderValue(providerRecord?.latency, "");
+  const reportedLatency = providerLatency === LATENCY_NOT_REPORTED ? "" : providerLatency;
   const latencyText = reportedLatency || LATENCY_NOT_REPORTED;
   const latencyOrLastGoodText = reportedLatency
     || (connection ? formatLastGoodProviderResponse(connection) : LATENCY_NOT_REPORTED);

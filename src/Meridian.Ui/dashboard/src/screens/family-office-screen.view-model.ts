@@ -298,7 +298,7 @@ export function buildFamilyOfficeScreenViewModel(
     panels: buildFamilyOfficePanels(entityStructure),
     ownershipGraph: {
       title: "Ownership graph",
-      description: "Current retained relationships. Solid arrows indicate legal ownership; dashed arrows show other relationships and asset associations. Percentages describe individual links, not economic exposure.",
+      description: `${entityStructure.ownershipGraph?.asOfDate ? `Ownership structure as of ${entityStructure.ownershipGraph.asOfDate}.` : "Retained relationships; the ownership structure date was not supplied."} Solid arrows indicate legal ownership; dashed arrows show other relationships and asset associations. Percentages describe individual links, not economic exposure.`,
       ariaLabel: "Family office ownership graph",
       keyboardInstructions: "Use Arrow keys, Home, and End to move between ownership nodes. Press Enter or Space to inspect the focused node. Use the table view for a dense accessible fallback.",
       tableFallbackLabel: "Family office ownership table fallback",

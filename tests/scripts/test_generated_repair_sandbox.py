@@ -6,6 +6,7 @@ import hashlib
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -132,6 +133,57 @@ class SandboxTests(unittest.TestCase):
         self.assertEqual(len(docker_calls), 1)
         self.assertTrue((self.output / "container.log").is_file())
         self.assertEqual((repo / relative).read_text(), pointer)
+
+    def test_clone_retains_unavailable_lfs_pointer_and_pinned_commits_without_hooks(self):
+        repo = self.root / "repo"
+        repo.mkdir()
+        config = self.root / "gitconfig"
+        config.write_text('[filter "lfs"]\nprocess = git-lfs filter-process\nrequired = true\n')
+        environment = {**os.environ, "GIT_CONFIG_GLOBAL": str(config),
+                       "GIT_CONFIG_NOSYSTEM": "1", "GIT_LFS_SKIP_SMUDGE": "0"}
+
+        def git(*args, directory=repo):
+            return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args],
+                                           cwd=directory, env=environment, stderr=subprocess.PIPE)
+
+        git("init", "-q")
+        git("config", "user.name", "Fixture")
+        git("config", "user.email", "fixture@example.invalid")
+        (repo / ".gitattributes").write_text("*.png filter=lfs diff=lfs merge=lfs -text\n")
+        pointer = ("version https://git-lfs.github.com/spec/v1\noid sha256:" + "1" * 64 + "\nsize 4\n").encode()
+        (repo / "diagram.png").write_bytes(pointer)
+        git("-c", "filter.lfs.process=", "-c", "filter.lfs.required=false", "add", ".")
+        git("commit", "-qm", "Track an unavailable LFS object")
+        base = git("rev-parse", "HEAD").decode().strip()
+        (repo / "note.txt").write_text("pinned head\n")
+        git("add", "note.txt")
+        git("commit", "-qm", "Advance the pinned head")
+        head = git("rev-parse", "HEAD").decode().strip()
+        hooks = self.root / "hooks"
+        hooks.mkdir()
+        hook_marker = self.root / "hook-ran"
+        (hooks / "post-checkout").write_text(f'#!/bin/sh\ntouch "{hook_marker}"\n')
+        (hooks / "post-checkout").chmod(0o755)
+        git("config", "--file", str(config), "core.hooksPath", str(hooks))
+
+        def inspect_clone(work, output, image, requested_head, requested_base):
+            clone = work / "repo"
+            self.assertEqual((requested_head, requested_base), (head, base))
+            self.assertEqual((clone / "diagram.png").read_bytes(), pointer)
+            for revision in (head, base):
+                self.assertEqual(git("rev-parse", "--verify", f"{revision}^{{commit}}", directory=clone).decode().strip(), revision)
+            self.assertFalse(hook_marker.exists())
+            original = repo / ".git" / "objects" / head[:2] / head[2:]
+            copied = clone / ".git" / "objects" / head[:2] / head[2:]
+            self.assertNotEqual((original.stat().st_dev, original.stat().st_ino),
+                                (copied.stat().st_dev, copied.stat().st_ino))
+            return [sys.executable, "-c", "pass"]
+
+        with mock.patch.dict(os.environ, environment), mock.patch.object(sandbox, "container_command", side_effect=inspect_clone):
+            self.assertEqual(sandbox.run(repo, self.output, "repair-test", head, base), 0)
+            self.assertEqual(os.environ["GIT_LFS_SKIP_SMUDGE"], "0")
+        self.assertFalse(hook_marker.exists())
+
 
     def test_only_bounded_regular_exports_are_copied(self):
         (self.raw / "repair.patch").write_text("patch")

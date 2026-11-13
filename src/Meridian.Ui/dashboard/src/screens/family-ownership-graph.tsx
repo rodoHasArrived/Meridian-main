@@ -29,7 +29,7 @@ export function FamilyOwnershipGraph({ graph, table, onSelect }: { graph: Family
     event.preventDefault(); const nextId = graph.nodes[next].id; onSelect(nextId); refs.current[nextId]?.focus();
   };
   return <>
-    <p className="text-xs text-muted-foreground">Current snapshot only. Select a node to highlight retained legal paths. Asset associations do not establish legal title; economic exposure is separate.</p>
+    <p className="text-xs text-muted-foreground">Retained structure snapshot. Select a node to highlight retained legal paths. Asset associations do not establish legal title; economic exposure is separate.</p>
     {layout.gapCount ? <p role="status">Some relationships have unavailable endpoints. Ownership paths are incomplete.</p> : null}
     {layout.cyclic.size ? <p role="status" className="text-warning">Ownership cycle — review required. Cycle links remain visible; effective ownership is not calculated.</p> : null}
     {table ? <div className="overflow-auto">

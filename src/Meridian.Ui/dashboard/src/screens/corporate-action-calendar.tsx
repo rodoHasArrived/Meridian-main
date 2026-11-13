@@ -33,16 +33,30 @@ function Calendar({ search, setSearch, ...props }: CalendarProps & { search: str
   const key = JSON.stringify([props.scopeKey, query.from, query.to, query.financialAccountId, query.custodyAccountId, revision]);
   const previousQueueCase = useRef(props.selectedCaseId);
   const previousScope = useRef(scopeKey);
+  const pendingCalendarSelection = useRef<{ scopeKey: string; caseId: string; previousSearch: string; requestedSearch: string } | null>(null);
   const updateSearch = (values: Record<string, string | null>, replace = false) => setSearch(updateCorporateActionCalendarSearch(search, values), replace);
   useEffect(() => {
     if (previousScope.current !== scopeKey) {
       previousScope.current = scopeKey; previousQueueCase.current = queueCaseId;
+      pendingCalendarSelection.current = null;
       if (query.caseId && query.caseId !== queueCaseId) onCaseSelected(query.caseId, "");
       return;
+    }
+    const pending = pendingCalendarSelection.current;
+    if (pending) {
+      const currentSearch = new URLSearchParams(search).toString();
+      if (pending.scopeKey !== scopeKey || currentSearch === pending.requestedSearch || currentSearch !== pending.previousSearch) {
+        pendingCalendarSelection.current = null;
+      } else if (queueCaseId === pending.caseId) {
+        // Queue feedback can render before Router commits this marker's URL.
+        previousQueueCase.current = queueCaseId;
+        return;
+      }
     }
     if (previousQueueCase.current !== queueCaseId) {
       const previous = previousQueueCase.current;
       previousQueueCase.current = queueCaseId;
+      pendingCalendarSelection.current = null;
       if (previous == null && query.caseId) { onCaseSelected(query.caseId, ""); return; }
       if (query.caseId === queueCaseId) return;
       setSearch(updateCorporateActionCalendarSearch(search, { caCase: queueCaseId ?? null, caEvent: null }));
@@ -63,7 +77,10 @@ function Calendar({ search, setSearch, ...props }: CalendarProps & { search: str
   const selectedCaseId = query.caseId ?? props.selectedCaseId;
   const selectedEvent = result?.items.find((event) => event.eventId === query.eventId);
   const selectCase = (caseId: string, proposalId: string, eventId?: string) => {
-    updateSearch({ caCase: caseId, ...(eventId ? { caEvent: eventId } : {}) }); props.onCaseSelected(caseId, proposalId);
+    const requestedSearch = updateCorporateActionCalendarSearch(search, { caCase: caseId, ...(eventId ? { caEvent: eventId } : {}) });
+    const previousSearch = new URLSearchParams(search).toString();
+    pendingCalendarSelection.current = requestedSearch === previousSearch ? null : { scopeKey, caseId, previousSearch, requestedSearch };
+    setSearch(requestedSearch); props.onCaseSelected(caseId, proposalId);
   };
   const selectEvent = (event: CorporateActionCalendarEvent) => {
     if (event.cases.length === 1) selectCase(event.cases[0].caseId, event.proposalId, event.eventId);

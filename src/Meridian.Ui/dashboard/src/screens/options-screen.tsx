@@ -172,7 +172,7 @@ function OptionsMap({ data, selectedId, onSelect }: { data: OptionScreenResult; 
   const maximumDte = Math.max(1, data.criteria.maxDte, ...data.candidates.map(row => row.daysToExpiration));
   const x = (value: number) => 58 + value / maximumDte * 800; const y = (value: number) => 150 - value * 120;
   return <div className="overflow-x-auto"><svg viewBox={`0 0 ${width} ${height}`} className="min-w-[600px] w-full" role="group" aria-label="Options map. Days to expiry horizontally and signed delta vertically. Use the contract table for all values.">
-    <rect x={x(data.criteria.minDte)} y={y(data.criteria.maxDelta)} width={Math.max(0, x(data.criteria.maxDte) - x(data.criteria.minDte))} height={Math.max(0, y(data.criteria.minDelta) - y(data.criteria.maxDelta))} fill="var(--color-primary, #385563)" fillOpacity="0.07" stroke="currentColor" strokeDasharray="5 4" />
+    <rect x={x(data.criteria.minDte)} y={y(data.criteria.maxDelta)} width={Math.max(0, x(data.criteria.maxDte) - x(data.criteria.minDte))} height={Math.max(0, y(data.criteria.minDelta) - y(data.criteria.maxDelta))} fill="var(--chart-primary, #29323A)" fillOpacity="0.07" stroke="currentColor" strokeDasharray="5 4" />
     {[-1, -0.5, 0, 0.5, 1].map(value => <g key={value}><line x1="58" x2="858" y1={y(value)} y2={y(value)} stroke="currentColor" opacity="0.15" /><text x="48" y={y(value) + 4} textAnchor="end" fontSize="11" fill="currentColor">{value}</text></g>)}
     <line x1="58" y1="270" x2="858" y2="270" stroke="currentColor" />
     {[0, 0.25, 0.5, 0.75, 1].map(fraction => <text key={fraction} x={x(maximumDte * fraction)} y="288" textAnchor="middle" fontSize="11" fill="currentColor">{Math.round(maximumDte * fraction)}</text>)}
