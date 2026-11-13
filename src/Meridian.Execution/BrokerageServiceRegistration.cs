@@ -220,6 +220,7 @@ public static class BrokerageServiceRegistration
                 sp.GetRequiredService<ILogger<LedgerPostingConsumer>>(),
                 sp.GetRequiredService<ITradeFillPostingStore>(),
                 postingContext,
+                requireCurrentAccountingEvidence: true,
                 projectionLedger: projectionLedgerFactory?.Invoke(sp),
                 channelCapacity: options.ChannelCapacity,
                 securityValidationGate: securityGate,

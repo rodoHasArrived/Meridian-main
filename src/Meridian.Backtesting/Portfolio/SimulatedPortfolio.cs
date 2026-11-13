@@ -12,6 +12,7 @@ namespace Meridian.Backtesting.Portfolio;
 internal sealed class SimulatedPortfolio
 {
     private readonly BacktestLedger? _ledger;
+    private readonly IChartOfAccounts _chart = StandardChartOfAccounts.Instance;
     private readonly IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> _lotConventions;
     private readonly string _defaultBrokerageAccountId;
     private readonly Dictionary<string, AccountState> _accounts;
@@ -100,8 +101,8 @@ internal sealed class SimulatedPortfolio
                 openingTimestamp,
                 $"Initial capital deposit – {account.Account.DisplayName}",
                 [
-                    (LedgerAccounts.CashAccount(account.Account.AccountId), account.Cash, 0m),
-                    (LedgerAccounts.CapitalAccountFor(account.Account.AccountId), 0m, account.Cash),
+                    (_chart.Resolve(LedgerAccountRole.Cash, account.Account.AccountId), account.Cash, 0m),
+                    (_chart.Resolve(LedgerAccountRole.Capital, account.Account.AccountId), 0m, account.Cash),
                 ],
                 BuildAccountMetadata(account, "capital"));
         }
@@ -386,8 +387,8 @@ internal sealed class SimulatedPortfolio
                     ts,
                     $"Margin interest accrual – {account.Account.DisplayName} ({account.Rules.AnnualMarginRate:P2} p.a.)",
                     [
-                        (LedgerAccounts.MarginInterestExpenseFor(account.Account.AccountId), interest < 0 ? charge : 0m, interest > 0 ? charge : 0m),
-                        (LedgerAccounts.CashAccount(account.Account.AccountId), interest > 0 ? charge : 0m, interest < 0 ? charge : 0m),
+                        (_chart.Resolve(LedgerAccountRole.MarginInterestExpense, account.Account.AccountId), interest < 0 ? charge : 0m, interest > 0 ? charge : 0m),
+                        (_chart.Resolve(LedgerAccountRole.Cash, account.Account.AccountId), interest > 0 ? charge : 0m, interest < 0 ? charge : 0m),
                     ],
                     BuildAccountMetadata(account, "margin_interest"));
             }
@@ -401,8 +402,8 @@ internal sealed class SimulatedPortfolio
                     ts,
                     $"Cash interest accrual – {account.Account.DisplayName} ({account.Rules.AnnualCashInterestRate:P2} p.a.)",
                     [
-                        (LedgerAccounts.CashAccount(account.Account.AccountId), cashInterest, 0m),
-                        (LedgerAccounts.CashInterestIncomeFor(account.Account.AccountId), 0m, cashInterest),
+                        (_chart.Resolve(LedgerAccountRole.Cash, account.Account.AccountId), cashInterest, 0m),
+                        (_chart.Resolve(LedgerAccountRole.CashInterestIncome, account.Account.AccountId), 0m, cashInterest),
                     ],
                     BuildAccountMetadata(account, "cash_interest"));
             }
@@ -425,8 +426,8 @@ internal sealed class SimulatedPortfolio
                     ts,
                     $"Short rebate – {symbol} / {account.Account.DisplayName} ({account.Rules.AnnualShortRebateRate:P2} p.a.)",
                     [
-                        (LedgerAccounts.CashAccount(account.Account.AccountId), Math.Max(rebate, 0m), Math.Max(-rebate, 0m)),
-                        (LedgerAccounts.ShortRebateIncomeFor(account.Account.AccountId), Math.Max(-rebate, 0m), Math.Max(rebate, 0m)),
+                        (_chart.Resolve(LedgerAccountRole.Cash, account.Account.AccountId), Math.Max(rebate, 0m), Math.Max(-rebate, 0m)),
+                        (_chart.Resolve(LedgerAccountRole.ShortRebateIncome, account.Account.AccountId), Math.Max(-rebate, 0m), Math.Max(rebate, 0m)),
                     ],
                     BuildAccountMetadata(account, "short_rebate", symbol));
             }
@@ -648,7 +649,7 @@ internal sealed class SimulatedPortfolio
 
         var accountId = account.Account.AccountId;
         var counterpartyAccount = SelectAssetEventAccount(assetEvent.EventType, amount, accountId);
-        var cashAccount = LedgerAccounts.CashAccount(accountId);
+        var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
         var metadata = BuildAssetEventMetadata(account, assetEvent, symbol, relatedSymbol, quantity, amount, suffix);
         var description = string.IsNullOrWhiteSpace(assetEvent.Description)
             ? $"{assetEvent.EventType} – {symbol}" + (string.IsNullOrWhiteSpace(relatedSymbol) || relatedSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
@@ -681,12 +682,12 @@ internal sealed class SimulatedPortfolio
         }
     }
 
-    private static LedgerAccount SelectAssetEventAccount(AssetEventType eventType, decimal amount, string accountId) => eventType switch
+    private LedgerAccount SelectAssetEventAccount(AssetEventType eventType, decimal amount, string accountId) => eventType switch
     {
-        AssetEventType.Dividend => amount >= 0m ? LedgerAccounts.DividendIncomeFor(accountId) : LedgerAccounts.DividendExpenseFor(accountId),
-        AssetEventType.Coupon => amount >= 0m ? LedgerAccounts.CouponIncomeFor(accountId) : LedgerAccounts.CouponExpenseFor(accountId),
-        AssetEventType.Fee => LedgerAccounts.CorporateActionExpenseFor(accountId),
-        _ => amount >= 0m ? LedgerAccounts.CorporateActionIncomeFor(accountId) : LedgerAccounts.CorporateActionExpenseFor(accountId),
+        AssetEventType.Dividend => amount >= 0m ? _chart.Resolve(LedgerAccountRole.DividendIncome, accountId) : _chart.Resolve(LedgerAccountRole.DividendExpense, accountId),
+        AssetEventType.Coupon => amount >= 0m ? _chart.Resolve(LedgerAccountRole.CouponIncome, accountId) : _chart.Resolve(LedgerAccountRole.CouponExpense, accountId),
+        AssetEventType.Fee => _chart.Resolve(LedgerAccountRole.CorporateActionExpense, accountId),
+        _ => amount >= 0m ? _chart.Resolve(LedgerAccountRole.CorporateActionIncome, accountId) : _chart.Resolve(LedgerAccountRole.CorporateActionExpense, accountId),
     };
 
     private JournalEntryMetadata BuildAssetEventMetadata(
@@ -1077,11 +1078,11 @@ internal sealed class SimulatedPortfolio
             !targetSymbol.Equals(sourceSymbol, StringComparison.OrdinalIgnoreCase))
         {
             var sourceAccount = isShort
-                ? LedgerAccounts.ShortSecuritiesPayable(sourceSymbol, accountId)
-                : LedgerAccounts.Securities(sourceSymbol, accountId);
+                ? _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, sourceSymbol)
+                : _chart.Resolve(LedgerAccountRole.Securities, accountId, sourceSymbol);
             var targetAccount = isShort
-                ? LedgerAccounts.ShortSecuritiesPayable(targetSymbol, accountId)
-                : LedgerAccounts.Securities(targetSymbol, accountId);
+                ? _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, targetSymbol)
+                : _chart.Resolve(LedgerAccountRole.Securities, accountId, targetSymbol);
             IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> transferLines =
                 isShort
                 ?
@@ -1105,11 +1106,11 @@ internal sealed class SimulatedPortfolio
             return;
 
         var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
-        var cashAccount = LedgerAccounts.CashAccount(accountId);
+        var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
         if (isShort)
         {
             if (fractionalBasis > 0m)
-                lines.Add((LedgerAccounts.ShortSecuritiesPayable(sourceSymbol, accountId), fractionalBasis, 0m));
+                lines.Add((_chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, accountId, sourceSymbol), fractionalBasis, 0m));
             if (cashInLieu < 0m)
                 lines.Add((cashAccount, 0m, Math.Abs(cashInLieu)));
             else if (cashInLieu > 0m)
@@ -1122,13 +1123,13 @@ internal sealed class SimulatedPortfolio
             else if (cashInLieu < 0m)
                 lines.Add((cashAccount, 0m, Math.Abs(cashInLieu)));
             if (fractionalBasis > 0m)
-                lines.Add((LedgerAccounts.Securities(sourceSymbol, accountId), 0m, fractionalBasis));
+                lines.Add((_chart.Resolve(LedgerAccountRole.Securities, accountId, sourceSymbol), 0m, fractionalBasis));
         }
 
         if (fractionalRealized > 0m)
-            lines.Add((LedgerAccounts.RealizedGainFor(accountId), 0m, fractionalRealized));
+            lines.Add((_chart.Resolve(LedgerAccountRole.RealizedGain, accountId), 0m, fractionalRealized));
         else if (fractionalRealized < 0m)
-            lines.Add((LedgerAccounts.RealizedLossFor(accountId), Math.Abs(fractionalRealized), 0m));
+            lines.Add((_chart.Resolve(LedgerAccountRole.RealizedLoss, accountId), Math.Abs(fractionalRealized), 0m));
 
         _ledger.PostLines(
             assetEvent.EffectiveAt,
@@ -1197,9 +1198,6 @@ internal sealed class SimulatedPortfolio
         var ts = fill.FilledAt;
         var symbol = fill.Symbol;
         var accountId = account.Account.AccountId;
-        var securitiesAccount = LedgerAccounts.Securities(symbol, accountId);
-        var shortPayableAccount = LedgerAccounts.ShortSecuritiesPayable(symbol, accountId);
-        var cashAccount = LedgerAccounts.CashAccount(accountId);
         var fillMetadata = BuildAccountMetadata(account, "fill", symbol, fill.OrderId, fill.FillId);
 
         var longBuyQty = qty > 0
@@ -1208,103 +1206,47 @@ internal sealed class SimulatedPortfolio
 
         if (longBuyQty > 0)
         {
-            var cost = longBuyQty * price;
             _ledger.PostLines(
                 ts,
                 $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
-                [
-                    (securitiesAccount, cost, 0m),
-                    (cashAccount, 0m, cost),
-                ],
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.OpenLong, longBuyQty, longBuyQty * price),
+                    symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "buy" });
         }
         else if (qty < 0 && existingQty > 0 && realised.HasValue)
         {
             var closeQty = Math.Min(-qty, existingQty);
-            var proceeds = closeQty * price;
-            var gain = realised.Value;
-
-            List<(LedgerAccount account, decimal debit, decimal credit)> lines;
-
-            if (gain > 0)
-            {
-                lines =
-                [
-                    (cashAccount, proceeds, 0m),
-                    (securitiesAccount, 0m, costBasisRemoved),
-                    (LedgerAccounts.RealizedGainFor(accountId), 0m, gain),
-                ];
-            }
-            else if (gain < 0)
-            {
-                lines =
-                [
-                    (cashAccount, proceeds, 0m),
-                    (LedgerAccounts.RealizedLossFor(accountId), Math.Abs(gain), 0m),
-                    (securitiesAccount, 0m, costBasisRemoved),
-                ];
-            }
-            else
-            {
-                lines =
-                [
-                    (cashAccount, proceeds, 0m),
-                    (securitiesAccount, 0m, costBasisRemoved),
-                ];
-            }
-
-            _ledger.PostLines(ts, $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "sell" });
+            _ledger.PostLines(
+                ts,
+                $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.CloseLong, closeQty, closeQty * price, CarryingValue: costBasisRemoved),
+                    symbol, accountId, _chart),
+                fillMetadata with { ActivityType = "sell" });
         }
 
         if (shortOpenQty > 0)
         {
-            var shortProceeds = shortOpenQty * price;
             _ledger.PostLines(
                 ts,
                 $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
-                [
-                    (cashAccount, shortProceeds, 0m),
-                    (shortPayableAccount, 0m, shortProceeds),
-                ],
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.OpenShort, shortOpenQty, shortOpenQty * price),
+                    symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "short_sell" });
         }
 
         if (qty > 0 && existingQty < 0 && shortRealised.HasValue)
         {
             var coverQty = Math.Min(qty, -existingQty);
-            var coverCost = coverQty * price;
-            var gain = shortRealised.Value;
-
-            List<(LedgerAccount account, decimal debit, decimal credit)> lines;
-
-            if (gain > 0)
-            {
-                lines =
-                [
-                    (shortPayableAccount, shortOriginalProceeds, 0m),
-                    (cashAccount, 0m, coverCost),
-                    (LedgerAccounts.RealizedGainFor(accountId), 0m, gain),
-                ];
-            }
-            else if (gain < 0)
-            {
-                lines =
-                [
-                    (shortPayableAccount, shortOriginalProceeds, 0m),
-                    (LedgerAccounts.RealizedLossFor(accountId), Math.Abs(gain), 0m),
-                    (cashAccount, 0m, coverCost),
-                ];
-            }
-            else
-            {
-                lines =
-                [
-                    (shortPayableAccount, shortOriginalProceeds, 0m),
-                    (cashAccount, 0m, coverCost),
-                ];
-            }
-
-            _ledger.PostLines(ts, $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "cover_short" });
+            _ledger.PostLines(
+                ts,
+                $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
+                SecurityTradePostingProjector.Project(
+                    new(SecurityTradePostingKind.CoverShort, coverQty, coverQty * price, CarryingValue: shortOriginalProceeds),
+                    symbol, accountId, _chart),
+                fillMetadata with { ActivityType = "cover_short" });
         }
 
         if (commission > 0)
@@ -1312,10 +1254,7 @@ internal sealed class SimulatedPortfolio
             _ledger.PostLines(
                 ts,
                 $"Commission – {symbol} order {fill.OrderId} – {account.Account.DisplayName}",
-                [
-                    (LedgerAccounts.CommissionExpenseFor(accountId), commission, 0m),
-                    (cashAccount, 0m, commission),
-                ],
+                SecurityTradePostingProjector.Commission(commission, accountId, _chart),
                 fillMetadata with { ActivityType = "commission" });
         }
     }
