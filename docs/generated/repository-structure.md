@@ -13741,6 +13741,7 @@ Meridian-main
 │   │   │   │   ├── EvidenceProofChainBuilderTests.cs
 │   │   │   │   ├── FileEvidenceArtifactStoreBufferedQuotaTests.cs
 │   │   │   │   ├── FileEvidenceArtifactStoreExportTests.cs
+│   │   │   │   ├── FileEvidenceArtifactStoreLoggingTests.cs
 │   │   │   │   ├── FileEvidenceArtifactStoreQuotaTests.cs
 │   │   │   │   ├── JournalEntryEvidenceTests.cs
 │   │   │   │   ├── ReconciliationEvidenceContributorTests.cs
