@@ -11,6 +11,13 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.FinancialOperations
 
+Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
+from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
+whole document before retaining evidence. Valid quoted delimiters and escaped quotes retain their
+exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay`
+proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
+source bytes and remains idempotent after service restart.
+
 `BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
 preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,
 coupon income, premium/discount and observed indexation remain separate. Coupon recognition prepares

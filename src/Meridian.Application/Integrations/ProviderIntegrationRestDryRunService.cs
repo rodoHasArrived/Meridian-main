@@ -178,6 +178,7 @@ public sealed class ProviderIntegrationRestDryRunService
             ct.ThrowIfCancellationRequested();
             var httpRequest = BuildHttpRequest(manifest, endpoint, request, cursor);
             var response = await transport.SendAsync(httpRequest, ct).ConfigureAwait(false);
+            var incompleteResponse = ProviderIntegrationHttpCompleteness.IsIncomplete(response.StatusCode, response.Headers);
             using var document = JsonDocument.Parse(
                 response.Body,
                 new JsonDocumentOptions { MaxDepth = 64, CommentHandling = JsonCommentHandling.Disallow });
@@ -200,6 +201,7 @@ public sealed class ProviderIntegrationRestDryRunService
                         ["path"] = httpRequest.Path,
                         ["page"] = page.ToString(CultureInfo.InvariantCulture),
                         ["statusCode"] = response.StatusCode.ToString(CultureInfo.InvariantCulture),
+                        [ProviderIntegrationHttpCompleteness.MetadataKey] = incompleteResponse ? "true" : "false",
                         ["requestedBy"] = request.RequestedBy
                     },
                     responseBody,
@@ -211,12 +213,12 @@ public sealed class ProviderIntegrationRestDryRunService
                 },
                 ct).ConfigureAwait(false);
 
-            if (response.StatusCode < 200 || response.StatusCode >= 300)
+            if (incompleteResponse || response.StatusCode < 200 || response.StatusCode >= 300)
             {
                 allIssues.Add(new ValidationIssueDto(
-                    "http.status.failed",
+                    incompleteResponse ? "http.response.incomplete" : "http.status.failed",
                     ProviderIntegrationIssueSeverityDto.Critical,
-                    $"Provider endpoint returned HTTP {response.StatusCode}.",
+                    incompleteResponse ? "Provider endpoint returned an incomplete response." : $"Provider endpoint returned HTTP {response.StatusCode}.",
                     null,
                     "Confirm credentials, endpoint path, parameters, and provider availability before activation."));
                 break;
@@ -319,7 +321,7 @@ public sealed class ProviderIntegrationRestDryRunService
             }
         }
 
-        if (received == 0 && allIssues.All(issue => issue.Code != "http.status.failed"))
+        if (received == 0 && allIssues.All(issue => issue.Code is not ("http.status.failed" or "http.response.incomplete")))
         {
             allIssues.Add(new ValidationIssueDto(
                 "response.no-records",

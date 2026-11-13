@@ -336,6 +336,12 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
             throw new InvalidOperationException("The source raw payload and sync run have inconsistent manifest provenance or replay scope.");
         }
 
+        if (ProviderIntegrationHttpCompleteness.IsRetainedIncomplete(payload.RequestMetadata) ||
+            sourceSyncRun.Issues.Any(issue => issue.Code is "http.response.incomplete" or "http.status.failed"))
+        {
+            throw new InvalidOperationException("The retained provider response is incomplete; fetch complete source evidence before replay.");
+        }
+
         var appliedOriginal = ProviderIntegrationManifestIdentity.Matches(applied, original);
         var validLineage = sourceSyncRun.ReplayMode switch
         {

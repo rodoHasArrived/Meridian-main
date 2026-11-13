@@ -33,6 +33,14 @@ host must stop new dispatches, drain in-flight work and dispose captured-key ins
 cancellation leaves application pending. Provider-owned conditional OAuth rotation retains its
 scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
 
+Provider integration HTTP transport checks streamed response length against a declared
+`Content-Length` after enforcing its byte cap. Truncated bodies fail instead of becoming successful
+partial provider evidence. Synthetic transport tests cover connection-time DNS rebinding, redirects,
+mixed public/private DNS answers, declared and unknown-length oversize bodies and truncated-body retry.
+REST dry runs retain partial HTTP response evidence but refuse mapping or staging for HTTP 206 or
+Content-Range responses. Replay checks retained HTTP completeness across the entire source history,
+so a later format marker or newer mapping cannot promote a known partial capture.
+
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
 use the scoped retained date population before pagination and bind cursors to the range revision.

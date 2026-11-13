@@ -706,6 +706,91 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
         (await store.ListQuarantinedRecordsAsync("sync-run-replay-1")).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(ProviderIntegrationReplayModeDto.Original, "statusCode", "206")]
+    [InlineData(ProviderIntegrationReplayModeDto.Remediation, "statusCode", "206")]
+    [InlineData(ProviderIntegrationReplayModeDto.Original, "Content-Range", "bytes 0-10/100")]
+    [InlineData(ProviderIntegrationReplayModeDto.Remediation, "contentRange", "bytes 0-10/100")]
+    [InlineData(ProviderIntegrationReplayModeDto.Original, "incompleteResponse", "true")]
+    public async Task ReplayAsync_RefusesRetainedPartialHttpCaptureBeforeWrites(
+        ProviderIntegrationReplayModeDto mode, string key, string value)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateReplayReadyManifest();
+        await SeedQuarantineAsync(store, manifest, metadata: new Dictionary<string, string> { [key] = value });
+        var request = CreateRequest() with { Mode = mode };
+        if (mode == ProviderIntegrationReplayModeDto.Remediation)
+        {
+            var selected = manifest with { ManifestVersion = 2 };
+            await PublishAsync(store, manifest, selected);
+            request = request with { TargetManifestVersion = 2, TargetManifestDigest = ProviderIntegrationManifestIdentity.Create(selected).ContentDigest };
+        }
+        var original = (await store.GetRawPayloadAsync(request.SourceSyncRunId, "payload-1"))!;
+
+        var replay = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(request);
+
+        await replay.Should().ThrowAsync<InvalidOperationException>().WithMessage("*incomplete*");
+        (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
+        (await store.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+        (await store.ListQuarantinedRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+        (await store.GetRawPayloadAsync(request.SourceSyncRunId, "payload-1")).Should().BeEquivalentTo(original);
+    }
+
+    [Fact]
+    public async Task ReplayAsync_MarkedLegacyReplayCannotHidePartialHttpAncestor()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest(), metadata: new Dictionary<string, string> { ["statusCode"] = "206" });
+        var originalRun = (await store.GetSyncRunAsync("sync-run-quarantine-1"))!;
+        var originalPayload = (await store.GetRawPayloadAsync(originalRun.SyncRunId, "payload-1"))!;
+        var originalRow = (await store.ListQuarantinedRecordsAsync(originalRun.SyncRunId)).Single();
+        var oldReplay = originalRun with
+        {
+            SyncRunId = "old-replay",
+            RawPayloadId = "old-replay-payload",
+            SourceSyncRunId = originalRun.SyncRunId,
+            ReplayMode = ProviderIntegrationReplayModeDto.Original
+        };
+        await store.SaveSyncRunAsync(oldReplay);
+        await store.SaveRawPayloadAsync(originalPayload with
+        {
+            PayloadId = oldReplay.RawPayloadId!,
+            SyncRunId = oldReplay.SyncRunId,
+            SourceSyncRunId = originalRun.SyncRunId,
+            ReplayMode = ProviderIntegrationReplayModeDto.Original,
+            RequestMetadata = new Dictionary<string, string> { ["sourceRecordFormat"] = "json-v1" }
+        });
+        await store.SaveQuarantinedRecordAsync(originalRow with { QuarantineRecordId = "old-row", SyncRunId = oldReplay.SyncRunId });
+        var request = CreateRequest() with { SourceSyncRunId = oldReplay.SyncRunId, QuarantineRecordIds = ["old-row"] };
+
+        var replay = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(request);
+
+        await replay.Should().ThrowAsync<InvalidOperationException>().WithMessage("*incomplete*");
+        (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
+        (await store.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+        (await store.GetSyncRunAsync(oldReplay.SyncRunId)).Should().BeEquivalentTo(oldReplay);
+    }
+
+    [Theory]
+    [InlineData("http.response.incomplete")]
+    [InlineData("http.status.failed")]
+    public async Task ReplayAsync_RefusesEarlierQuarantinedRowsWhenLaterHttpPageFailed(string issueCode)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest(),
+            metadata: new Dictionary<string, string> { ["statusCode"] = "200" },
+            runIssues: [new ValidationIssueDto(issueCode, ProviderIntegrationIssueSeverityDto.Critical, "A later provider page failed.", null, null)]);
+        var request = CreateRequest();
+        var originalRun = (await store.GetSyncRunAsync(request.SourceSyncRunId))!;
+
+        var replay = () => new ProviderIntegrationQuarantineReplayService(store).ReplayAsync(request);
+
+        await replay.Should().ThrowAsync<InvalidOperationException>().WithMessage("*incomplete*");
+        (await store.GetSyncRunAsync(request.ReplaySyncRunId)).Should().BeNull();
+        (await store.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().BeEmpty();
+        (await store.GetSyncRunAsync(request.SourceSyncRunId)).Should().BeEquivalentTo(originalRun);
+    }
+
     private static ProviderIntegrationQuarantineReplayRequestDto CreateRequest()
         => new(
             "sync-run-replay-1",
@@ -747,7 +832,9 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
     private static async Task SeedQuarantineAsync(
         IProviderIntegrationManifestStore store,
         ProviderIntegrationManifestDto manifest,
-        bool includeDuplicateRecord = false)
+        bool includeDuplicateRecord = false,
+        IReadOnlyDictionary<string, string>? metadata = null,
+        IReadOnlyList<ValidationIssueDto>? runIssues = null)
     {
         await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
@@ -760,7 +847,7 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
             "positions",
             "sync-run-quarantine-1",
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
-            new Dictionary<string, string>(),
+            metadata ?? new Dictionary<string, string>(),
             Json("""{"positions":[{"account_id":"A-100","quantity":"100","as_of_date":"2026-06-16","position_id":"POS-1"}]}"""),
             $"{manifest.ManifestId}:v{manifest.ManifestVersion}",
             ProviderIntegrationProcessingStatusDto.Received)
@@ -782,7 +869,7 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
             RecordsAccepted: 0,
             RecordsQuarantined: 1,
             RawPayloadId: "payload-1",
-            Issues:
+            Issues: runIssues ??
             [
                 new ValidationIssueDto(
                     "required.missing",
