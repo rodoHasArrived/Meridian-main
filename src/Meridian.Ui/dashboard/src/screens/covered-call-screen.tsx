@@ -18,9 +18,9 @@ import {
 } from "@/screens/covered-call-screen.view-model";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
 import { formatPrefixedCurrency } from "@/lib/format";
+import { toSeverity } from "@/design-system/status-styles";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -63,7 +63,7 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
     label: "Status",
     render: (row) => (
       <SeverityBadge
-        status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)}
+        status={toSeverity(row.statusBadgeVariant)}
         label={row.statusLabel}
         aria-label={row.statusAriaLabel}
       />
@@ -91,7 +91,7 @@ const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   },
   {
@@ -140,14 +140,14 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
     id: "reason",
     label: "Reason",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.exitReasonLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.exitReasonLabel} />
     )
   },
   {
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   }
 ];
@@ -473,7 +473,7 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
             title={panel.selectedDetail.title}
             subtitle={panel.selectedDetail.subtitle}
             description={panel.selectedDetail.description}
-            status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+            status={<SeverityBadge status={toSeverity(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
             fields={panel.selectedDetail.fields}
             ariaLabel={panel.selectedDetail.ariaLabel}
           />
@@ -733,7 +733,7 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
               title={panel.selectedDetail.title}
               subtitle={panel.selectedDetail.subtitle}
               description={panel.selectedDetail.description}
-              status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+              status={<SeverityBadge status={toSeverity(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
               fields={panel.selectedDetail.fields}
               ariaLabel={panel.selectedDetail.ariaLabel}
             />

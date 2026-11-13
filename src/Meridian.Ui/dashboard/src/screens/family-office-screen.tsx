@@ -16,7 +16,6 @@ import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge } from "@/components/operations";
 import { getFamilyOfficeOverview } from "@/lib/api/family-office.api";
 import { mapFamilyOfficeOverview } from "@/screens/family-office-screen.mapper";
-import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   buildFamilyOfficeScreenViewModel,
   type FamilyOfficeEntityStructure,
@@ -25,6 +24,7 @@ import {
 import { eyebrowClassName } from "@/design-system/label-case";
 import { pluralizeCount } from "@/lib/format";
 import { utcToday } from "@/lib/local-date";
+import { statusMetricTone, toSeverity } from "@/design-system/status-styles";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -294,7 +294,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
                   <div className="flex flex-wrap items-center gap-2">
                     <div className={eyebrowClassName(vm.ownershipGraph.selectedNode.type)}>{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
-                      <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
+                      <SeverityBadge status={toSeverity(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
                   </div>
                   <h2 className="mt-2 text-lg font-semibold text-foreground">{vm.ownershipGraph.selectedNode.label}</h2>
@@ -333,7 +333,7 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
+      <MetricCard label={panel.label} value={panel.value} tone={statusMetricTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>

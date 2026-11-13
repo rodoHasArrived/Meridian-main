@@ -9,11 +9,6 @@ import { MetricCard } from "@/components/data/concrete";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import {
-  readinessToneToSeverityPanelClass,
-  readinessToneToSeverityStatus,
-  semanticToneToMetricCardTone
-} from "@/lib/shared-tone-mappings";
-import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
   type ReadinessConsoleNextAction,
@@ -30,6 +25,7 @@ import type {
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
+import { statusMetricTone, statusPanelClass, toSeverity } from "@/design-system/status-styles";
 
 interface OperatorReadinessConsoleProps {
   strategy: StrategyWorkspaceResponse | null;
@@ -62,7 +58,7 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <SeverityBadge status={readinessToneToSeverityStatus(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
+    render: (row) => <SeverityBadge status={toSeverity(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "target",
@@ -88,7 +84,7 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <SeverityBadge status={readinessToneToSeverityStatus(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
+    render: (row) => <SeverityBadge status={toSeverity(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "detail",
@@ -133,7 +129,7 @@ export function OperatorReadinessConsole({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ConsoleChip label="As of" value={vm.asOf} />
           <ConsoleChip label="Inbox" value={vm.inboxSummary} />
-          <SeverityBadge status={readinessToneToSeverityStatus(vm.overallLevel)} label={vm.overallLabel} />
+          <SeverityBadge status={toSeverity(vm.overallLevel)} label={vm.overallLabel} />
         </div>
       </section>
 
@@ -147,7 +143,7 @@ export function OperatorReadinessConsole({
           gates={vm.checkpointGates.map((gate) => ({
             key: gate.id,
             label: gate.label,
-            status: readinessToneToSeverityStatus(gate.level),
+            status: toSeverity(gate.level),
             statusLabel: gate.value
           }))}
         />
@@ -155,7 +151,7 @@ export function OperatorReadinessConsole({
 
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
         <ReadinessPanel
-          state={readinessToneToSeverityStatus(vm.overallLevel)}
+          state={toSeverity(vm.overallLevel)}
           statusLabel={vm.overallLabel}
           title={(
             <span className="inline-flex min-w-0 items-center gap-2">
@@ -235,7 +231,7 @@ export function OperatorReadinessConsole({
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{source.label}</span>
-                  <SeverityBadge status={readinessToneToSeverityStatus(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
+                  <SeverityBadge status={toSeverity(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
                 </div>
                 <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
               </div>
@@ -269,11 +265,11 @@ export function OperatorReadinessConsole({
               label={metric.label}
               value={metric.value}
               delta={metric.delta}
-              tone={semanticToneToMetricCardTone(metric.tone)}
+              tone={statusMetricTone(metric.tone)}
             />
             <p
               id={metric.detailId}
-              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", readinessToneToSeverityPanelClass(metric.level))}
+              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", statusPanelClass(metric.level))}
             >
               {metric.detail}
             </p>
@@ -358,7 +354,7 @@ function SelectedWorkItemDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected work item</span>
-        <SeverityBadge status={readinessToneToSeverityStatus(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
+        <SeverityBadge status={toSeverity(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
@@ -415,7 +411,7 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
     <div
       role="group"
       aria-label={action.ariaLabel}
-      className={cn("rounded-lg border px-3 py-3", readinessToneToSeverityPanelClass(action.level))}
+      className={cn("rounded-lg border px-3 py-3", statusPanelClass(action.level))}
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
@@ -501,7 +497,7 @@ function SelectedEvidenceDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected evidence</span>
-        <SeverityBadge status={readinessToneToSeverityStatus(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
+        <SeverityBadge status={toSeverity(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
@@ -530,7 +526,7 @@ function SelectedEvidenceDetail({
 function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
   return (
     <ReadinessPanel
-      state={readinessToneToSeverityStatus(row.level)}
+      state={toSeverity(row.level)}
       statusLabel={row.value}
       title={row.label}
       detail={row.detail}

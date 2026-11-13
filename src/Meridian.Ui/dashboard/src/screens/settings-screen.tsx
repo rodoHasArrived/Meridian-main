@@ -53,7 +53,6 @@ import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { formatNumber as formatNumberAmount, formatUtcDate } from "@/lib/format";
 import { utcToday } from "@/lib/local-date";
-import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import { settingsProviderAdvancedRoute, settingsProviderSetupRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
@@ -160,6 +159,7 @@ import {
   providerRuntimeValue,
   SettingsFieldRow
 } from "./settings-provider-integration";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface SettingsScreenProps {
   fundAccountId?: string | null;
@@ -2366,7 +2366,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.profileAuthenticationPanel.summary}</CardDescription>
               </div>
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(vm.profileAuthenticationPanel.statusTone)}
+                status={toSeverity(vm.profileAuthenticationPanel.statusTone)}
                 label={vm.profileAuthenticationPanel.statusLabel}
               />
             </div>
@@ -2449,7 +2449,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.systemSummary}</CardDescription>
               </div>
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(vm.systemTone)}
+                status={toSeverity(vm.systemTone)}
                 label={overview?.systemStatus ?? "Unavailable"}
               />
             </div>
@@ -2856,7 +2856,7 @@ export function SettingsScreen({
               <SettingsChip label="Loaded" value={vm.operationsControlCenter.loadedCountLabel} />
               <SettingsChip label="Review" value={vm.operationsControlCenter.reviewCountLabel} />
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(vm.operationsControlCenter.statusVariant)}
+                status={toSeverity(vm.operationsControlCenter.statusVariant)}
                 label={vm.operationsControlCenter.statusLabel}
               />
             </div>
@@ -2879,7 +2879,7 @@ export function SettingsScreen({
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.description}</p>
                   </div>
                   <SeverityBadge
-                    status={badgeVariantToOperatorSeverity(card.statusVariant)}
+                    status={toSeverity(card.statusVariant)}
                     label={card.statusLabel}
                     className="shrink-0"
                   />
@@ -3399,7 +3399,7 @@ export function SettingsScreen({
               <SettingsChip label="Declared projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
               <SettingsChip label="Close IDs" value={vm.assetProfileGovernancePanel.closeIdentifierCountLabel} />
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(vm.assetProfileGovernancePanel.statusVariant)}
+                status={toSeverity(vm.assetProfileGovernancePanel.statusVariant)}
                 label={vm.assetProfileGovernancePanel.statusLabel}
               />
             </div>
@@ -3757,7 +3757,7 @@ export function SettingsScreen({
                 </Button>
               ) : null}
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(vm.providerConnectionCenter.statusVariant)}
+                status={toSeverity(vm.providerConnectionCenter.statusVariant)}
                 label={vm.providerConnectionCenter.statusLabel}
               />
             </div>
@@ -3857,12 +3857,12 @@ export function SettingsScreen({
                             <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
                             <Badge variant="outline">{row.capabilityLabel}</Badge>
                             <SeverityBadge
-                              status={badgeVariantToOperatorSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
+                              status={toSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
                               label={row.healthLabel}
                             />
                             {showProviderSetupControls && inlineProviderManagementEnabled ? (
                               <SeverityBadge
-                                status={badgeVariantToOperatorSeverity(row.readinessTone)}
+                                status={toSeverity(row.readinessTone)}
                                 label={row.readinessLabel}
                               />
                             ) : null}
@@ -3985,7 +3985,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.alpacaConnectionPanel.statusDetail}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.alpacaConnectionPanel.statusTone)}
+              status={toSeverity(vm.alpacaConnectionPanel.statusTone)}
               label={vm.alpacaConnectionPanel.stateLabel}
             />
           </div>
@@ -4212,7 +4212,7 @@ export function SettingsScreen({
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
                     </div>
                     <SeverityBadge
-                      status={badgeVariantToOperatorSeverity(step.badgeVariant)}
+                      status={toSeverity(step.badgeVariant)}
                       label={step.statusLabel}
                       className="shrink-0"
                     />
@@ -4250,7 +4250,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.robinhoodConnectionPanel.statusDetail}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.robinhoodConnectionPanel.statusTone)}
+              status={toSeverity(vm.robinhoodConnectionPanel.statusTone)}
               label={vm.robinhoodConnectionPanel.stateLabel}
             />
           </div>
@@ -4436,7 +4436,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
               </div>
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(vm.diagnosticStatusVariant)}
+                status={toSeverity(vm.diagnosticStatusVariant)}
                 label={vm.diagnosticStatusLabel}
               />
             </div>
@@ -4471,7 +4471,7 @@ export function SettingsScreen({
                       </span>
                       <span className="inline-flex items-center gap-2">
                         <SeverityBadge
-                          status={badgeVariantToOperatorSeverity(link.badgeVariant)}
+                          status={toSeverity(link.badgeVariant)}
                           label={link.statusLabel}
                           className="shrink-0"
                         />
@@ -4523,7 +4523,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.runtimeCapabilitySection.statusVariant)}
+              status={toSeverity(vm.runtimeCapabilitySection.statusVariant)}
               label={vm.runtimeCapabilitySection.statusLabel}
             />
           </div>
@@ -4546,7 +4546,7 @@ export function SettingsScreen({
                       <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
                     </div>
                     <SeverityBadge
-                      status={badgeVariantToOperatorSeverity(capability.statusVariant)}
+                      status={toSeverity(capability.statusVariant)}
                       label={capability.statusLabel}
                       className="shrink-0"
                     />
@@ -4598,7 +4598,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.backendCapabilitySummary}</CardDescription>
             </div>
             <SeverityBadge
-              status={badgeVariantToOperatorSeverity(vm.backendCapabilityStatusVariant)}
+              status={toSeverity(vm.backendCapabilityStatusVariant)}
               label={vm.backendCapabilityStatusLabel}
             />
           </div>
@@ -4618,7 +4618,7 @@ export function SettingsScreen({
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{group.description}</p>
                   </div>
                   <SeverityBadge
-                    status={badgeVariantToOperatorSeverity(group.statusVariant)}
+                    status={toSeverity(group.statusVariant)}
                     label={group.statusLabel}
                     className="shrink-0"
                   />
@@ -4708,7 +4708,7 @@ function ProfileAuthenticationStepRow({ step }: { step: SettingsProfileAuthentic
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
         </div>
         <SeverityBadge
-          status={badgeVariantToOperatorSeverity(step.badgeVariant)}
+          status={toSeverity(step.badgeVariant)}
           label={step.statusLabel}
           className="shrink-0"
         />
@@ -4759,7 +4759,7 @@ function RecentEventDetailPanel({
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
               <SeverityBadge
-                status={badgeVariantToOperatorSeverity(detail.statusVariant)}
+                status={toSeverity(detail.statusVariant)}
                 label={detail.statusLabel}
                 className="shrink-0"
               />

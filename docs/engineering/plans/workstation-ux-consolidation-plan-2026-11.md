@@ -1,6 +1,6 @@
 # Browser Workstation UX Consolidation Plan (2026-11-13)
 
-> **Status:** In progress (Phase 0 landed 2026-11-13) · **Created:** 2026-11-13 ·
+> **Status:** In progress (Phase 0 and the first Phase 1 slice landed 2026-11-13) · **Created:** 2026-11-13 ·
 > **Owner lane:** Workstation Shell and UX
 > **Builds on:** [Browser Workstation UX Review and Improvement Plan (2026-11)](web-workstation-ux-review-plan-2026-11.md).
 > That plan's findings still apply. This plan is a newer review of the same surface. It is
@@ -49,6 +49,35 @@ Each phase ships on its own, behind the existing browser smoke tests and screens
   effect on the next capture run.
 
 ### Phase 1: Clarity foundations (P1–P4, ~3–4 weeks)
+
+**First slice (landed 2026-11-13):**
+- **P2 status styles.** `design-system/status-styles.ts` is now the only status-to-look mapping.
+  - `toSeverity()` sends every badge variant, readiness tone and server status through
+    `normalizeDesignSystemSeverity` onto the five severities.
+  - `statusBadgeVariant`, `statusPanelClass`, `statusTextClass` and `statusMetricTone` give
+    each severity one style.
+  - `lib/shared-tone-mappings.ts` (15 helpers), `screens/accounting-screen.styles.ts` and
+    `screens/data-screen.tone-styles.ts` are removed. Their ~200 call sites in 19 files were
+    migrated.
+  - These colour changes are deliberate:
+    - Old helpers disagreed on "warning" (review in some, action in others). It is now always
+      action.
+    - "default" and "primary" are informational rather than primary-tinted.
+    - Panels use the severity tokens.
+    - Informational text inherits its colour instead of turning muted.
+- **P3 exact money.** `components/accounting/money.ts` parses amounts as exact decimals (BigInt
+  units plus scale).
+  - `formatMoney` formats a decimal string from its digits, rounding half away from zero.
+  - `sumAmounts` sums exactly.
+  - `parseFloat` is gone.
+  - Example: `"12345678901234.565"` now renders `12,345,678,901,234.57`, and `"1.005"` renders
+    `1.01` (previously `1.00`).
+
+**Remaining in Phase 1:**
+- Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
+- Bring the `localMoneyFormatters` (24) and `handRolledNumberFormatting` (75) ratchets to 0.
+- One date format with a time-zone preference.
+- The P1 attention de-duplication and the P4 scope bar.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

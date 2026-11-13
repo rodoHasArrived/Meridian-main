@@ -18,9 +18,9 @@ import { OperatorTriageQueue } from "@/components/meridian/operator-triage-queue
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
 import { SeverityBadge } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
-import { badgeVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatUtcTimestamp, pluralizeCount } from "@/lib/format";
+import { toSeverity } from "@/design-system/status-styles";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -66,7 +66,7 @@ export function DailyControlTowerScreen({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium text-foreground">{row.item.label}</span>
-            <SeverityBadge status={badgeVariantToSeverityStatus(row.badgeVariant)} label={row.statusLabel} />
+            <SeverityBadge status={toSeverity(row.badgeVariant)} label={row.statusLabel} />
           </div>
           <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
         </div>

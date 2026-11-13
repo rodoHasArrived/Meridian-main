@@ -75,6 +75,32 @@ describe("money.sumAmounts", () => {
   });
 });
 
+describe("money exact decimals", () => {
+  it("formats a decimal string from its digits, not through a float", () => {
+    // 12345678901234.565 has no exact binary float; parseFloat would round it to ...234.56.
+    expect(formatMoney("12345678901234.565")).toBe("12,345,678,901,234.57");
+    expect(formatMoney("-0.005", { parens: true })).toBe("(0.01)");
+    expect(formatMoney("1.005")).toBe("1.01");
+  });
+
+  it("keeps tiny and exponent values exact and shows a value rounded to zero unsigned", () => {
+    expect(formatMoney(1e-7, { decimals: 8 })).toBe("0.00000010");
+    expect(formatMoney("1.5e-3", { decimals: 4 })).toBe("0.0015");
+    expect(formatMoney(-0.001)).toBe("0.00");
+    expect(formatMoney("0.00", { signed: true })).toBe("0.00");
+  });
+
+  it("sums decimal strings exactly", () => {
+    expect(sumAmounts(["0.1", "0.2"])).toBe(0.3);
+    expect(sumAmounts(["1,000,000.01", "(1,000,000.01)"])).toBe(0);
+  });
+
+  it("rejects text that is not a number", () => {
+    expect(Number.isNaN(toNumber("n/a"))).toBe(true);
+    expect(formatMoney("Not supplied")).toBe("Not supplied");
+  });
+});
+
 describe("money.currencySymbol", () => {
   it("maps known codes and falls back to a spaced prefix", () => {
     expect(currencySymbol("USD")).toBe("$");
