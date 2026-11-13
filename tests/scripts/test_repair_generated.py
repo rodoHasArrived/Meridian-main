@@ -1,6 +1,7 @@
 """Isolated repair artifacts include deletes/binaries and preserve caller work."""
 from __future__ import annotations
 
+import base64
 import hashlib
 import importlib.util
 import json
@@ -277,6 +278,110 @@ class RepairGeneratedTests(unittest.TestCase):
                 publisher.recreate_merge(self.repo, self.head, self.base)
         self.assertEqual(self.git("rev-parse", "HEAD").decode().strip(), self.head)
         self.assertFalse(self.git("status", "--porcelain", "-z"))
+
+
+class LfsRepairGeneratedTests(unittest.TestCase):
+    IMAGE = "docs/diagrams/input.png"
+    GENERATED_IMAGE = "docs/diagrams/generated.png"
+    PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a2ioAAAAASUVORK5CYII=")
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.repo = self.root / "repo"
+        self.repo.mkdir()
+        self.output = self.root / "evidence"
+        self.git("init", "--initial-branch=main")
+        self.git("config", "user.name", "LFS repair test")
+        self.git("config", "user.email", "test@example.invalid")
+        self.git("config", "commit.gpgsign", "false")
+        self.git("config", "core.autocrlf", "false")
+        self.git("lfs", "install", "--local", "--skip-repo")
+        RepairGeneratedTests.write(self.repo, ".gitattributes", b"*.png filter=lfs diff=lfs merge=lfs -text\n")
+        RepairGeneratedTests.write(self.repo, ".gitignore", b"artifacts/\n")
+        RepairGeneratedTests.write(self.repo, self.IMAGE, self.PNG)
+        self.git("add", ".")
+        self.git("commit", "-m", "hydrated input image")
+        self.head = self.git("rev-parse", "HEAD").decode().strip()
+
+    def git(self, *args):
+        return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args],
+                                       cwd=self.repo, stderr=subprocess.PIPE)
+
+    def generator(self, root, output, passes):
+        self.assertEqual((root / self.IMAGE).read_bytes(), self.PNG)
+        # Regenerating an existing image must retain its original pointer.
+        (root / self.IMAGE).write_bytes(self.PNG)
+        RepairGeneratedTests.write(root, self.GENERATED_IMAGE, self.PNG)
+        RepairGeneratedTests.write(root, "artifacts/maintained-generation/report.json",
+                                   b'{"successful":true,"converged":true}')
+        return 0
+
+    def run_repair(self, generator=None):
+        return repair.repair(self.repo, self.head, self.head, self.output,
+                             generation_runner=generator or self.generator)
+
+    def test_hydrated_and_regenerated_pngs_stage_as_available_lfs_pointers(self):
+        report = self.run_repair()
+        self.assertTrue(report["successful"], report)
+        expected = (hashlib.sha256(self.PNG).hexdigest(), len(self.PNG))
+        for relative in (self.IMAGE, self.GENERATED_IMAGE):
+            staged = self.git("show", f"{report['final_tree_sha']}:{relative}")
+            self.assertEqual(repair.lfs_pointer(staged), expected)
+        self.assertEqual(report["changed_paths"], [self.GENERATED_IMAGE])
+        self.assertNotIn(b"GIT binary patch", (self.output / "generated.patch").read_bytes())
+
+    def test_new_lfs_payload_requires_manual_publication_without_exporting_patch(self):
+        def generate_new_payload(root, output, passes):
+            self.generator(root, output, passes)
+            (root / self.GENERATED_IMAGE).write_bytes(self.PNG + b"new generated payload")
+            return 0
+        report = self.run_repair(generate_new_payload)
+        self.assertFalse(report["successful"])
+        self.assertEqual(report["status"], "review_required")
+        self.assertEqual(report["lfs_review_required"], [self.GENERATED_IMAGE])
+        self.assertFalse((self.output / "repair.patch").exists())
+        self.assertFalse((self.output / "generated.patch").exists())
+
+    def test_missing_clean_filter_cannot_export_raw_png_blobs(self):
+        def disable_filter(root, output, passes):
+            self.generator(root, output, passes)
+            repair.git(root, "config", "filter.lfs.process", "")
+            repair.git(root, "config", "filter.lfs.clean", "cat")
+            repair.git(root, "config", "filter.lfs.required", "false")
+            return 0
+        report = self.run_repair(disable_filter)
+        self.assertEqual(report["status"], "review_required")
+        self.assertIn(self.GENERATED_IMAGE, report["lfs_review_required"])
+        self.assertFalse((self.output / "repair.patch").exists())
+        self.assertFalse((self.output / "generated.patch").exists())
+
+    def test_mutable_info_attributes_cannot_hide_a_new_lfs_image(self):
+        def override_attributes(root, output, passes):
+            self.generator(root, output, passes)
+            (root / self.GENERATED_IMAGE).write_bytes(self.PNG + b"unpublished image")
+            info = Path(repair.git(root, "rev-parse", "--git-path", "info/attributes").decode().strip())
+            if not info.is_absolute():
+                info = root / info
+            info.parent.mkdir(parents=True, exist_ok=True)
+            info.write_text(f"{self.GENERATED_IMAGE} -filter\n")
+            return 0
+        report = self.run_repair(override_attributes)
+        self.assertEqual(report["status"], "review_required")
+        self.assertEqual(report["lfs_review_required"], [self.GENERATED_IMAGE])
+        self.assertFalse((self.output / "repair.patch").exists())
+        self.assertFalse((self.output / "generated.patch").exists())
+
+    def test_pointer_only_input_fails_before_generation(self):
+        self.git("config", "filter.lfs.process", "git-lfs filter-process --skip")
+        self.git("config", "filter.lfs.smudge", "git-lfs smudge --skip -- %f")
+        with mock.patch.object(self, "generator") as generate:
+            report = self.run_repair(generate)
+        self.assertEqual(report["status"], "failed")
+        self.assertIn("not hydrated", report["error"])
+        generate.assert_not_called()
+        self.assertFalse((self.output / "repair.patch").exists())
 
 
 if __name__ == "__main__":

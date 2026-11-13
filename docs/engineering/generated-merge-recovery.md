@@ -62,6 +62,18 @@ disposable clone and raw output directory. Host runner credentials, caches, acti
 socket are excluded. Trusted host tooling exports only bounded regular files after the container
 exits. The local repair command above does not provide this container boundary.
 
+The trusted checkout hydrates its Git LFS images before creating the disposable clone. Local Git
+LFS transfers can hardlink payloads even when Git uses `--no-hardlinks`, so the sandbox verifies
+payload digests and detaches those links before running candidate code. The container installs
+repo-local LFS filters so regenerated images stage as pointers rather than raw binary blobs.
+
+Automatic repair accepts only verified, hydrated input payloads already available from that trusted
+checkout. Candidate images missing from its cache fail closed before candidate generation; the host
+does not fetch arbitrary candidate LFS payloads. New generated payloads require manual publication
+and a reviewed branch update. The repair reports `review_required` and exports no patch for those
+payloads, preventing pointers to objects that would disappear with the disposable cache. An existing
+verified payload may be reused at another generated path. No host cache is mounted in the container.
+
 PR merges into `main`, main pushes, the daily 05:23 UTC scan and manual publisher dispatch
 discover every stale same-repository open PR, including drafts and conflicted PRs. Each scan reads
 the latest base, follows API pagination and queues all eligible head/base pairs, pacing dispatches

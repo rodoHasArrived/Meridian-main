@@ -13,6 +13,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -26,11 +27,82 @@ def load_resolver():
     return module
 
 
-def git(root: Path, *args: str) -> bytes:
+def git(root: Path, *args: str, data: bytes | None = None) -> bytes:
     return subprocess.check_output(
         ["git", "--literal-pathspecs", "-c", f"core.hooksPath={os.devnull}", "-c", "core.fsmonitor=false", *args],
-        cwd=root, stderr=subprocess.PIPE,
+        cwd=root, stderr=subprocess.PIPE, input=data,
     )
+
+
+def lfs_paths(root: Path) -> set[str]:
+    paths = git(root, "ls-files", "-z")
+    if not paths:
+        return set()
+    attributes = git(root, "check-attr", "--cached", "-z", "--stdin", "filter", data=paths).split(b"\0")
+    return {attributes[index].decode() for index in range(0, len(attributes) - 1, 3)
+            if attributes[index + 2] == b"lfs"}
+
+
+def frozen_lfs_paths(policy: dict[str, bytes], paths: set[str]) -> set[str]:
+    """Evaluate frozen attributes without candidate Git configuration/metadata."""
+    if not paths or not policy:
+        return set()
+    # Only the tracked attribute bytes captured before generation enter this
+    # fresh repository. A candidate's .git/info/attributes, config, or generated
+    # .gitattributes cannot disable filtering for a newly added image here.
+    settings = {"PATH": os.environ["PATH"], "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_CONFIG_GLOBAL": os.devnull, "GIT_ATTR_NOSYSTEM": "1"}
+    with tempfile.TemporaryDirectory(prefix="meridian-lfs-attributes-") as temporary:
+        root = Path(temporary)
+        for relative, content in policy.items():
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        command = ["git", "-C", str(root), "-c", f"core.hooksPath={os.devnull}",
+                   "-c", f"core.attributesFile={os.devnull}", "-c", "init.templateDir="]
+        subprocess.run([*command, "init", "--quiet"], env=settings, check=True,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        attributes = subprocess.check_output([*command, "check-attr", "-z", "--stdin", "filter"],
+            env=settings, input=b"".join(path.encode() + b"\0" for path in sorted(paths)),
+            stderr=subprocess.PIPE).split(b"\0")
+    return {attributes[index].decode() for index in range(0, len(attributes) - 1, 3)
+            if attributes[index + 2] == b"lfs"}
+
+
+def lfs_pointer(content: bytes) -> tuple[str, int] | None:
+    match = re.fullmatch(rb"version https://git-lfs.github.com/spec/v1\noid sha256:([a-f0-9]{64})\nsize ([0-9]+)\n", content)
+    return (match[1].decode(), int(match[2])) if match else None
+
+
+def hydrated_lfs_inputs(root: Path) -> tuple[set[str], set[tuple[str, int]], dict[str, bytes]]:
+    """Remember verified input payloads before executing candidate dependencies."""
+    tracked = {name for name in git(root, "ls-files", "-z").decode().split("\0") if name}
+    policy = {name: git(root, "show", f":{name}") for name in sorted(tracked)
+              if Path(name).name == ".gitattributes"}
+    paths = frozen_lfs_paths(policy, tracked) | lfs_paths(root)
+    available = set()
+    for relative in sorted(paths):
+        pointer = lfs_pointer(git(root, "show", f":{relative}"))
+        path = root / relative
+        if pointer is None or path.is_symlink() or not path.is_file():
+            raise ValueError(f"Invalid LFS input: {relative}")
+        with path.open("rb") as stream:
+            actual = (hashlib.file_digest(stream, "sha256").hexdigest(), path.stat().st_size)
+        if actual != pointer:
+            raise ValueError(f"LFS input is not hydrated: {relative}")
+        available.add(pointer)
+    return paths, available, policy
+
+
+def lfs_export_violations(root: Path, inputs: tuple[set[str], set[tuple[str, int]], dict[str, bytes]]) -> list[str]:
+    original_paths, available, policy = inputs
+    current = {name for name in git(root, "ls-files", "-z").decode().split("\0") if name}
+    paths = frozen_lfs_paths(policy, current) | lfs_paths(root) | (original_paths & current)
+    # A new payload would disappear with the disposable cache. Until a bounded
+    # LFS publication protocol exists, require manual upload instead of emitting
+    # raw image blobs or pointers whose payload was never an available input.
+    return [relative for relative in sorted(paths)
+            if lfs_pointer(git(root, "show", f":{relative}")) not in available]
 
 
 def pin(root: Path, reference: str) -> str:
@@ -153,6 +225,7 @@ def repair(repo: Path, head_ref: str, base_ref: str, output: Path, max_passes: i
                 report["successful"] = False
                 if report["status"] != "merged":
                     return report
+                lfs_inputs = hydrated_lfs_inputs(worktree)
                 if install and not install_dependencies(worktree, output):
                     report["status"] = "dependency_failure"
                     return report
@@ -179,6 +252,11 @@ def repair(repo: Path, head_ref: str, base_ref: str, output: Path, max_passes: i
                     return report
                 git(worktree, "add", "-A")
                 git(worktree, "diff", "--cached", "--check")
+                lfs_violations = lfs_export_violations(worktree, lfs_inputs)
+                if lfs_violations:
+                    report.update(status="review_required", lfs_review_required=lfs_violations,
+                                  error="Generated LFS payloads require manual publication; no patch was exported")
+                    return report
                 final_tree = git(worktree, "write-tree").decode().strip()
                 report["final_tree_sha"] = final_tree
                 violations = mode_violations(worktree, report["merged_tree_sha"], final_tree)

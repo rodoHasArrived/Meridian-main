@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -16,12 +17,59 @@ FILES = {"repair.patch", "generated.patch", "report.json", "generation-report.js
          "generation.log", "dependencies.log", "bootstrap.log", "container.log"}
 BOOTSTRAP = """set -eu
 mkdir -p /work/tmp
+# Global and system Git config are deliberately unavailable in the container.
+# Local filters keep hydrated PNGs as LFS pointers when generated files stage.
+git -C /work/repo lfs install --local --skip-repo
 python3 -m venv /work/venv
 /work/venv/bin/python -m pip install PyYAML==6.0.2 > /output/bootstrap.log 2>&1
 exec /work/venv/bin/python -I /work/repo/build/scripts/repair-generated.py \\
   --repo /work/repo --head-ref "$REPAIR_HEAD_SHA" --base-ref "$REPAIR_BASE_SHA" \\
   --install-dependencies --max-passes 3 --output-dir /output
 """
+
+
+def clone_repository(repo: Path, clone: Path, head: str, base: str) -> None:
+    """Copy Git and LFS objects without sharing host cache inodes or metadata."""
+    if not all(re.fullmatch(r"[a-f0-9]{40}", sha) for sha in (head, base)):
+        raise ValueError("Sandbox inputs must be pinned SHA-1 commit IDs")
+    subprocess.run(["git", "-c", "core.hooksPath=/dev/null",
+                    "-c", "filter.lfs.process=git-lfs filter-process", "-c", "filter.lfs.required=true",
+                    "clone", "--no-hardlinks", "--dissociate", str(repo), str(clone)],
+                   check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for sha in (head, base):
+        subprocess.run(["git", "-C", str(clone), "cat-file", "-e", f"{sha}^{{commit}}"], check=True)
+    # Only the trusted checkout's LFS payloads are copied. Missing candidate-only
+    # images fail closed inside the container instead of downloading on the host.
+    # Git LFS's local transfer adapter can hardlink objects independently of
+    # git clone --no-hardlinks. Break those links before untrusted code runs.
+    objects = clone / ".git/lfs/objects"
+    if objects.parent.is_symlink() or objects.is_symlink():
+        raise ValueError("LFS object storage must not be a symbolic link")
+    if not objects.exists():
+        return
+    for directory, subdirs, filenames in os.walk(objects, followlinks=False):
+        root = Path(directory)
+        if any((root / name).is_symlink() for name in subdirs):
+            raise ValueError("LFS object storage must not contain symbolic links")
+        for name in filenames:
+            path = root / name
+            mode = path.lstat()
+            if not stat.S_ISREG(mode.st_mode) or not re.fullmatch(r"[a-f0-9]{64}", name):
+                raise ValueError("Unexpected LFS object storage entry")
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(fd, "rb") as reader:
+                if hashlib.file_digest(reader, "sha256").hexdigest() != name:
+                    raise ValueError("LFS object content does not match its digest")
+                if mode.st_nlink > 1:
+                    reader.seek(0)
+                    with tempfile.NamedTemporaryFile(dir=root, delete=False) as writer:
+                        temporary = Path(writer.name)
+                        try:
+                            shutil.copyfileobj(reader, writer)
+                        except BaseException:
+                            temporary.unlink(missing_ok=True)
+                            raise
+                    temporary.replace(path)
 
 
 def container_command(work: Path, output: Path, image: str, head: str, base: str) -> list[str]:
@@ -93,9 +141,7 @@ def run(repo: Path, output: Path, image: str, head: str, base: str) -> int:
         clone = work / "repo"
         # No shared object store or worktree metadata points back at the host's
         # trusted checkout. Docker sees only this disposable copy and raw output.
-        subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "clone", "--no-hardlinks", str(repo), str(clone)], check=True)
-        for sha in (head, base):
-            subprocess.run(["git", "-C", str(clone), "cat-file", "-e", f"{sha}^{{commit}}"], check=True)
+        clone_repository(repo, clone, head, base)
         command = container_command(work, raw, image, head, base)
         # Avoid interpreting any container output as Actions workflow commands.
         with (raw / "container.log").open("wb") as log:
