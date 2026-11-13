@@ -90,6 +90,9 @@ public sealed partial class JsonCanonicalStatementStore
             return; // Legacy envelopes retain their existing schema; replay does not invent missing bytes.
         if (envelope.sourceEvidenceVersion != 1)
             throw new InvalidDataException("Canonical statement import uses an unsupported source evidence version.");
+        if (envelope.rows is null || envelope.rows.Count != envelope.import.NormalizedRowCount ||
+            envelope.rows.Any(static row => row is null))
+            throw new InvalidDataException("Canonical statement import rows are missing or do not match the retained row count.");
         await ReadSourceAsync(envelope.import.SourceFileHash, ct).ConfigureAwait(false);
         if (!string.Equals(envelope.import.SourceFileHash, envelope.import.CanonicalArtifactHash, StringComparison.OrdinalIgnoreCase))
             await ReadSourceAsync(envelope.import.CanonicalArtifactHash, ct).ConfigureAwait(false);

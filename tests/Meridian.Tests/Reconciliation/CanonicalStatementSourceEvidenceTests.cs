@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Core.IO;
 using Meridian.DataIntegration.Reconciliation;
@@ -134,6 +135,82 @@ public sealed class CanonicalStatementSourceEvidenceTests : IDisposable
         await AssertEvidenceUnavailable(() => Store().GetImportAsync(imported.Import.ImportId));
         await AssertEvidenceUnavailable(() => Store().ListImportsAsync());
         await AssertEvidenceUnavailable(() => Store().ReadSourceEvidenceAsync(imported.Import.ImportId));
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("null")]
+    [InlineData("empty")]
+    [InlineData("declared-count")]
+    [InlineData("null-row")]
+    public async Task ModernEnvelope_WithInvalidRowsFailsReadsUntilValidSnapshotIsRestored(string corruption)
+    {
+        var source = Encoding.UTF8.GetBytes(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\nA1,SPY,1,10,-10,trade,2026-06-02,,USD\n");
+        var path = Path.Combine(_root, "statement.csv");
+        await File.WriteAllBytesAsync(path, source);
+        var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 6, 30)) { ExternalAccountId = "A1" };
+        var imported = await new CsvBrokerStatementService(Store()).ImportAsync(request);
+        var envelopePath = Directory.GetFiles(Path.Combine(_root, "reconciliation", "statement-imports"), "*.json")
+            .Should().ContainSingle().Which;
+        var validSnapshot = await File.ReadAllBytesAsync(envelopePath);
+        var envelope = JsonNode.Parse(validSnapshot)!.AsObject();
+        envelope["sourceEvidenceVersion"]!.GetValue<int>().Should().Be(1);
+        switch (corruption)
+        {
+            case "missing":
+                envelope.Remove("rows");
+                break;
+            case "null":
+                envelope["rows"] = null;
+                break;
+            case "empty":
+                envelope["rows"] = new JsonArray();
+                break;
+            case "declared-count":
+                envelope["import"]!["NormalizedRowCount"] = 2;
+                break;
+            case "null-row":
+                envelope["rows"]!.AsArray()[0] = null;
+                break;
+            default:
+                throw new InvalidOperationException("Unknown synthetic envelope corruption.");
+        }
+        await File.WriteAllTextAsync(envelopePath, envelope.ToJsonString());
+        File.Delete(path);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => Store().GetImportAsync(imported.Import.ImportId));
+        await Assert.ThrowsAsync<InvalidDataException>(() => Store().ListImportsAsync());
+        await Assert.ThrowsAsync<InvalidDataException>(() => Store().ReadSourceEvidenceAsync(imported.Import.ImportId));
+        var retainedPath = Path.Combine(_root, "reconciliation", "statement-imports", "source-evidence", imported.Import.SourceFileHash.ToLowerInvariant() + ".bin");
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(source, "row corruption must not be confused with missing or invalid source bytes");
+
+        await File.WriteAllBytesAsync(envelopePath, validSnapshot);
+
+        (await Store().GetImportAsync(imported.Import.ImportId))!.Rows.Should().BeEquivalentTo(imported.Rows);
+        (await Store().ListImportsAsync()).Should().ContainSingle().Which.ImportId.Should().Be(imported.Import.ImportId);
+        (await Store().ReadSourceEvidenceAsync(imported.Import.ImportId)).Source.Should().Equal(source);
+    }
+
+    [Fact]
+    public async Task LegacyEnvelope_WithoutEmbeddedRowsRetainsMetadataCompatibility()
+    {
+        var path = Path.Combine(_root, "statement.csv");
+        await File.WriteAllTextAsync(path,
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\nA1,SPY,1,10,-10,trade,2026-06-02,,USD\n");
+        var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 6, 30)) { ExternalAccountId = "A1" };
+        var imported = await new CsvBrokerStatementService(Store()).ImportAsync(request);
+        var envelopePath = Directory.GetFiles(Path.Combine(_root, "reconciliation", "statement-imports"), "*.json")
+            .Should().ContainSingle().Which;
+        var envelope = JsonNode.Parse(await File.ReadAllBytesAsync(envelopePath))!.AsObject();
+        envelope.Remove("sourceEvidenceVersion");
+        envelope.Remove("rows");
+        await File.WriteAllTextAsync(envelopePath, envelope.ToJsonString());
+
+        var retained = (await Store().GetImportAsync(imported.Import.ImportId))!;
+        retained.Import.NormalizedRowCount.Should().Be(1);
+        retained.Rows.Should().BeEmpty();
+        (await Store().ListImportsAsync()).Should().ContainSingle().Which.ImportId.Should().Be(imported.Import.ImportId);
     }
 
     private static async Task AssertEvidenceUnavailable(Func<Task> read)
