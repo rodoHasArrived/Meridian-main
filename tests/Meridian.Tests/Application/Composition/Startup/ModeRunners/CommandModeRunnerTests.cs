@@ -12,7 +12,7 @@ using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Contracts.Tenancy;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Platform.Runtime;
 using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;

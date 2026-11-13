@@ -58,9 +58,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   `"NaN"` on read, preserving unavailable IRR without substituting a measured zero return.
   `ProfitFactor` preserves positive infinity for gains with no losses, and `SortinoRatio` preserves
   positive infinity when the native return series has no downside. These valid outcomes round-trip
-  as `"Infinity"` through SDK JSON, durable history and HTTP projections. Named floating-point
-  handling is scoped to these three properties; Sharpe, Calmar and win rate retain strict numeric
-  serialization. Native formulas do not define infinite values for those other metrics.
+  as `"Infinity"` through SDK JSON, durable history and HTTP projections. Live summary results
+  without authoritative closed-trade evidence emit JSON `null` for unavailable profit factor and
+  win rate, preserving NaN internally rather than reporting measured zeros. Win rate still rejects
+  infinite outcomes; Sharpe and Calmar retain strict numeric serialization. Native formulas do not
+  define infinite values for those other metrics.
 - `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
   constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
   `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position

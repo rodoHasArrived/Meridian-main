@@ -557,7 +557,9 @@ public sealed class FileOperationsContinuityRepository :
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Operations continuity workflow snapshot is corrupt at {Path}", path);
+            _logger.LogError(
+                "Operations continuity workflow snapshot is corrupt ({ErrorType})",
+                ex.GetType().Name);
             throw new InvalidDataException(
                 $"Operations continuity workflow snapshot '{path}' is corrupt.",
                 ex);

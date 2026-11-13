@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Reporting and journal-backed read models shared by workstation hosts</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Meridian.Contracts/Meridian.Contracts.csproj" />
+    <ProjectReference Include="../Meridian.Ledger/Meridian.Ledger.csproj" />
+    <ProjectReference Include="../Meridian.Reporting/Meridian.Reporting.csproj" />
+    <ProjectReference Include="../Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Preserve source paths and public namespaces while moving actual assembly ownership.
+         No UI, endpoint, host, or provider implementation is referenced by this leaf. -->
+    <Compile Include="../Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs" Link="ReportingIncomeComparisonService.cs" />
+    <Compile Include="../Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs" Link="ReportAccessPolicyEvaluator.cs" />
+    <Compile Include="../Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs" Link="LedgerDisposalTaxReadService.cs" />
+    <Compile Include="../Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs" Link="ReportingPartnersCapitalSource.cs" />
+    <Compile Include="../Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs" Link="ReportingLedgerPopulationSnapshot.cs" />
+    <Compile Include="../Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs" Link="ReportAmountBindingBuilder.cs" />
+    <Compile Include="../Meridian.Ui.Shared/Services/ReportPeriodRange.cs" Link="ReportPeriodRange.cs" />
+  </ItemGroup>
+</Project>
