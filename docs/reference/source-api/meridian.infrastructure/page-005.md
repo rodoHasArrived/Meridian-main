@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NasdaqDataLinkSymbolSearchProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkSymbolSearchProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:25](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L25).
+
+Symbol/reference search provider for Nasdaq Data Link dataset discovery.
+
+```csharp
+public sealed class NasdaqDataLinkSymbolSearchProvider : BaseSymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L27) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L28) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L29) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L45) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L50) |  |
+| <code>public NasdaqDataLinkSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L58) |  |
+
 ## NYSEDataSource
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource</code>. Kind: `class`.
@@ -1212,13 +1235,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task IngestMarketDataAsync(IAsyncEnumerable&lt;TemplateBrokerMarketDataPayload&gt; feed, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L187) |  |
-
-## TemplateBrokerMarketDataPayload
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMarketDataPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:209](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L209).
-
-```csharp
-public sealed record TemplateBrokerMarketDataPayload(string Symbol, decimal Price, long Size, DateTimeOffset Timestamp);
-```
