@@ -10005,6 +10005,24 @@ record did.
   None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
   with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
   projection still floors a negative rate at zero.
+
+  *2026-11-13: all three are now implemented.* Verified against source on this date:
+  - *Undeclared legacy rates.* The optional governed `rateUnit` term, with no default, is
+    version-gated and written through the governed edit lifecycle.
+  - *Negative rates.* Live readers that do not model signed interest return the typed
+    `NegativeInterestUnsupported` blocker (`SecurityInterestSupport`) and no partial output. That
+    covers the cash-flow projections (scalar, declared bond leg and swap leg), accounting events,
+    the portfolio cash ladder, bond analytics, asset-obligation projection and the structured
+    cash-flow ledger gate. A zero floor survives only in two places: when a cash-flow receipt
+    captured before `bond-cash-flow-context-v3` is replayed, and when the v1 cash ladder is
+    explicitly selected. Both reproduce historical output and never compute anything new.
+  - *StructuredNote.* The catalog declares fair value through profit or loss and keeps the class
+    outside the accrual slice. `structured-note-fvtpl-v1` (`StructuredNoteAccountingTemplate`)
+    posts only the change from retained carrying value, through the daily valuation route, with
+    no coupon accrual.
+
+  The remediation plan's follow-through section and `docs/domain/security.md` describe the current
+  behaviour.
 - **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
   the two D10 decisions that need code, are done in pull requests that follow this one, not
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
