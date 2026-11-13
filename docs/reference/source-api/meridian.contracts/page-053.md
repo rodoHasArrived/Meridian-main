@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IEnvironmentPublishService
+
+Qualified name: <code>Meridian.Contracts.Services.IEnvironmentPublishService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L8).
+
+Previews, publishes, and rolls back versioned environment configurations.
+
+```csharp
+public interface IEnvironmentPublishService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EnvironmentPublishPreviewDto&gt; PreviewPublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L10) |  |
+| <code>Task&lt;PublishedEnvironmentVersionDto&gt; PublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L12) |  |
+| <code>Task&lt;PublishedEnvironmentVersionDto&gt; RollbackAsync(RollbackEnvironmentVersionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:14](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L14) |  |
+
+## IEnvironmentRuntimeProjectionService
+
+Qualified name: <code>Meridian.Contracts.Services.IEnvironmentRuntimeProjectionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L8).
+
+Retrieves the runtime projection of the current or a specified published environment version.
+
+```csharp
+public interface IEnvironmentRuntimeProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetCurrentRuntimeAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L10) |  |
+| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L12) |  |
+
+## IEnvironmentValidationService
+
+Qualified name: <code>Meridian.Contracts.Services.IEnvironmentValidationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L8).
+
+Validates an environment design and returns its validation findings.
+
+```csharp
+public interface IEnvironmentValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EnvironmentValidationResultDto&gt; ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L10) |  |
+
 ## IFundAccountTraversalQueryService
 
 Qualified name: <code>Meridian.Contracts.Services.IFundAccountTraversalQueryService</code>. Kind: `interface`.
@@ -887,46 +944,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string AuthorityId { get; }</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:152](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L152) | Stable id stamped onto every assignment this provider asserts. |
 | <code>Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:159](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L159) | Resolves the scopes this authority can attribute the fact to. Implementations must report IsAuthoritative = false with a stated blocker whenever they cannot see the whole of their own slice, and must not throw for expected unavailability. |
-
-## ScopeAssignmentProviderResult
-
-Qualified name: <code>Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:168](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L168).
-
-One authority&#x27;s contribution to a fan-out resolution.
-
-```csharp
-public sealed record ScopeAssignmentProviderResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ScopeAssignmentProviderResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:174](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L174) | A fail-closed contribution carrying a single stated reason. |
-| <code>public static ScopeAssignmentProviderResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:178](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L178) | A complete contribution over the supplied scopes (possibly none). |
-
-## ScopeFanOutIdentifier
-
-Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutIdentifier</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:66](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L66).
-
-One identifier a holdings record may carry for the security under decision.
-
-```csharp
-public sealed record ScopeFanOutIdentifier(string IdentifierType, string Value);
-```
-
-## ScopeFanOutRequest
-
-Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:78](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L78).
-
-A request to enumerate every accounting scope affected by a security-level fact.
-
-```csharp
-public sealed record ScopeFanOutRequest(Guid SecurityId, IReadOnlyList<ScopeFanOutIdentifier> Identifiers, DateOnly EffectiveDate);
-```

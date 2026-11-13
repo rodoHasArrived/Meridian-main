@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategySavedComparison
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySavedComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L48).
+
+Saved strategy comparison summary surfaced from the briefing home.
+
+```csharp
+public sealed record StrategySavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<StrategySavedComparisonMode> Modes);
+```
+
+## StrategySavedComparisonMode
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySavedComparisonMode</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L37).
+
+Single mode participating in a saved strategy comparison package.
+
+```csharp
+public sealed record StrategySavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, StrategyRunDrillInLinks DrillIn);
+```
+
+## StrategySweepObjectiveRanking
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepObjectiveRanking</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:239](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L239).
+
+```csharp
+public sealed record StrategySweepObjectiveRanking(string RunId, string StrategyName, decimal? ObjectiveValue, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, DateTimeOffset LastUpdatedAt);
+```
+
 ## StrategySweepResultGroup
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepResultGroup</code>. Kind: `record`.
@@ -566,40 +600,4 @@ Shared catalog projection for reusable workstation workflows.
 
 ```csharp
 public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
-```
-
-## WorkflowNextAction
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L33).
-
-Primary operator action recommended for a workspace.
-
-```csharp
-public sealed record WorkflowNextAction(string Label, string Detail, string TargetPageTag, string Tone);
-```
-
-## WorkflowPresetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L43).
-
-Durable operator-saved workflow preset that can be launched from web or desktop shells.
-
-```csharp
-public sealed record WorkflowPresetDto(string PresetId, string Name, string? Description, string WorkflowId, string WorkflowTitle, string? ActionId, string ActionLabel, string WorkspaceId, string WorkspaceTitle, string TargetPageTag, IReadOnlyList<string> Tags, bool IsPinned, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? LastUsedAt, string? ViewStateEnvelope = null);
-```
-
-## WorkflowPresetLibraryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetLibraryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L64).
-
-Shared preset catalog projection for the workstation workflow library.
-
-```csharp
-public sealed record WorkflowPresetLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowPresetDto> Presets);
 ```

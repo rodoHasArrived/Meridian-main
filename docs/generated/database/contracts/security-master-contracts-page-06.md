@@ -2,11 +2,23 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 574. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 577. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCodecInputs["SecurityCodecInputs"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto["SecurityComparisonPriceDto"] {
+        +decimal? PctDiffFromGoldenCopy
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +SecurityPriceQuotationEvidence? Quotation
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCouponKind["SecurityCouponKind"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCouponRateUnit["SecurityCouponRateUnit"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto["SecurityCurveDefinitionDto"] {
@@ -402,22 +414,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityPriceKind["SecurityPriceKind"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence["SecurityPriceQuotationEvidence"] {
-        +SecurityPriceBasis Basis
-        +SecurityQuotationConvention Convention
-        +string SettlementBasis
-        +DateOnly SettlementDate
-        +SecurityQuoteStatus Status
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
-        +string? AccountId
-        +DateTimeOffset AsOf
-        +IReadOnlyList~PricingHierarchyEntryDto~ Entries
-        +Guid SecurityId
-        +string UpdatedBy
-    }
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy
@@ -442,9 +438,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
-    Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityPriceBasis
 ```
