@@ -2,11 +2,16 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 552. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 554. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
+        +IReadOnlyList~string~ AssetClasses
+        +IReadOnlyList~string~ AssetOperationsCapableAssetClasses
+        +IReadOnlyList~string~ IdentifierOnlyImportableAssetClasses
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition["SecurityAssetClassDefinition"] {
         +string AssetClass
         +SecurityAssetClassDescriptor Descriptor
@@ -481,10 +486,6 @@ classDiagram
         +string EvidenceKind
         +string? Route
         +string? Summary
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict["SecurityFactorHistoryConflict"] {
-        +DateOnly AsOfDate
-        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
     }
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
