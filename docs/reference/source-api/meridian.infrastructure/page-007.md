@@ -557,7 +557,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Resilience.HttpHandleResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:327](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L327).
+Source: [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:333](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L333).
 
 HTTP response handling result for providers.
 
@@ -569,11 +569,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static HttpHandleResult Success { get; } = new (true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:336](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L336) |  |
-| <code>public static HttpHandleResult NotFound { get; } = new (false, IsNotFound : true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:337](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L337) |  |
-| <code>public static HttpHandleResult AuthFailure { get; } = new (false, IsAuthError : true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:338](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L338) |  |
-| <code>public static HttpHandleResult RateLimited(TimeSpan? retryAfter = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:340](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L340) |  |
-| <code>public static HttpHandleResult Error(string message) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:343](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L343) |  |
+| <code>public static HttpHandleResult Success { get; } = new (true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:342](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L342) |  |
+| <code>public static HttpHandleResult NotFound { get; } = new (false, IsNotFound : true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:343](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L343) |  |
+| <code>public static HttpHandleResult AuthFailure { get; } = new (false, IsAuthError : true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:344](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L344) |  |
+| <code>public static HttpHandleResult RateLimited(TimeSpan? retryAfter = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:346](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L346) |  |
+| <code>public static HttpHandleResult Error(string message) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:349](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L349) |  |
 
 ## HttpResiliencePolicy
 
@@ -593,10 +593,10 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateRetryPipeline(int maxRetries = 3, TimeSpan? baseDelay = null, TimeSpan? maxDelay = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:29](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L29) | Creates a resilience pipeline for HTTP GET requests. Uses exponential backoff with jitter to avoid thundering herd. |
 | <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateCircuitBreakerPipeline(int failureThreshold = 5, TimeSpan? breakDuration = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:72](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L72) | Creates a circuit breaker pipeline for HTTP operations. Prevents cascading failures by opening the circuit after consecutive failures. |
-| <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateTimeoutPipeline(TimeSpan? timeout = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:114](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L114) | Creates a timeout policy for HTTP operations. |
-| <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateComprehensivePipeline(int maxRetries = 3, TimeSpan? retryBaseDelay = null, int circuitBreakerFailureThreshold = 5, TimeSpan? circuitBreakerDuration = null, TimeSpan? requestTimeout = null, TimeProvider? timeProvider = null, bool includeAttemptTimeout = true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:148](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L148) | Creates a comprehensive resilience pipeline combining retry, circuit breaker, and timeout. This is the recommended pipeline for production HTTP clients. |
-| <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateRateLimitAwarePipeline(int maxRetries = 3, TimeSpan? defaultRetryAfter = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:216](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L216) | Creates a rate-limit aware pipeline that respects Retry-After headers. |
-| <code>public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:261](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L261) | Extracts the Retry-After value from an HTTP response. Supports both seconds and HTTP-date formats. |
+| <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateTimeoutPipeline(TimeSpan? timeout = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:115](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L115) | Creates a timeout policy for HTTP operations. |
+| <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateComprehensivePipeline(int maxRetries = 3, TimeSpan? retryBaseDelay = null, int circuitBreakerFailureThreshold = 5, TimeSpan? circuitBreakerDuration = null, TimeSpan? requestTimeout = null, TimeProvider? timeProvider = null, bool includeAttemptTimeout = true, bool includeTotalTimeout = true);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:151](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L151) | Creates a comprehensive resilience pipeline combining retry, circuit breaker, and timeout. This is the recommended pipeline for production HTTP clients. |
+| <code>public static ResiliencePipeline&lt;HttpResponseMessage&gt; CreateRateLimitAwarePipeline(int maxRetries = 3, TimeSpan? defaultRetryAfter = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:222](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L222) | Creates a rate-limit aware pipeline that respects Retry-After headers. |
+| <code>public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:267](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L267) | Extracts the Retry-After value from an HTTP response. Supports both seconds and HTTP-date formats. |
 
 ## ProviderConnectionSupervisor
 
@@ -662,7 +662,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Resilience.RateLimitEventArgs</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:350](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L350).
+Source: [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:356](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L356).
 
 Callback arguments for rate limit events.
 

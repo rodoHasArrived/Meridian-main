@@ -53,6 +53,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     private readonly HttpResponseHandler _responseHandler;
     private readonly ResiliencePipeline<HttpResponseMessage> _requestTimeoutPipeline;
     private readonly object _rateLimitSync = new();
+    private readonly CancellationTokenSource _lifetime = new();
     private readonly TimeProvider _timeProvider;
     private readonly ConditionalWeakTable<HttpResponseMessage, object> _responsesWithCooldown = new();
 
@@ -193,7 +194,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             Log,
             _timeProvider);
 
-        // Initialize resilience pipeline for transient fault handling
+        // Quota and provider cooldown waits can legitimately exceed five minutes. Keep
+        // those waits cancellable by the caller, with bounded retries and per-send timeouts.
         ResiliencePipeline = enableResilience
             ? HttpResiliencePolicy.CreateComprehensivePipeline(
                 maxRetries: 3,
@@ -202,7 +204,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 circuitBreakerDuration: TimeSpan.FromSeconds(30),
                 requestTimeout: TimeSpan.FromSeconds(30),
                 timeProvider: _timeProvider,
-                includeAttemptTimeout: false)
+                includeAttemptTimeout: false,
+                includeTotalTimeout: false)
             : ResiliencePipeline<HttpResponseMessage>.Empty;
         _requestTimeoutPipeline = enableResilience
             ? HttpResiliencePolicy.CreateTimeoutPipeline(TimeSpan.FromSeconds(30), _timeProvider)
@@ -327,6 +330,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected async Task<HttpResponseMessage> ExecuteGetAsync(string url, string symbol, string dataType, CancellationToken ct)
     {
         ThrowIfDisposed();
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
         Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, RedactSensitiveQueryParameters(url));
 
         // This pipeline is the sole retry owner. Reserve quota inside its callback so
@@ -337,8 +341,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             token.ThrowIfCancellationRequested();
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
-            // Quota waiting belongs to the total operation budget; the network attempt gets
-            // its own fresh timeout only after it is admitted by the shared limiter.
+            // Quota waiting observes caller cancellation; the network attempt gets its
+            // own fresh timeout only after it is admitted by the shared limiter.
             var response = await _requestTimeoutPipeline.ExecuteAsync(
                 async sendToken => await Http.SendAsync(request, sendToken).ConfigureAwait(false),
                 token).ConfigureAwait(false);
@@ -351,7 +355,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 RaiseRateLimitHit(GetRateLimitInfo());
             }
             return response;
-        }, ct).ConfigureAwait(false);
+        }, cancellation.Token).ConfigureAwait(false);
     }
 
     private static string RedactSensitiveQueryParameters(string url)
@@ -635,6 +639,9 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
         if (disposing)
         {
+            _lifetime.Cancel();
+            // Concurrent admission may still be linking this token. No wait handle is
+            // allocated, so let the source be collected after those operations complete.
             RateLimiter.Dispose();
             Http.Dispose();
         }

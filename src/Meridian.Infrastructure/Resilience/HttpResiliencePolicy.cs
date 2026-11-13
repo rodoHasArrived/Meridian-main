@@ -111,6 +111,7 @@ public static class HttpResiliencePolicy
     /// Creates a timeout policy for HTTP operations.
     /// </summary>
     /// <param name="timeout">Request timeout (default: 30 seconds)</param>
+    /// <param name="timeProvider">Clock used to enforce the timeout.</param>
     public static ResiliencePipeline<HttpResponseMessage> CreateTimeoutPipeline(
         TimeSpan? timeout = null,
         TimeProvider? timeProvider = null)
@@ -145,6 +146,8 @@ public static class HttpResiliencePolicy
     /// <param name="timeProvider">Clock used for timeouts and retry delays.</param>
     /// <param name="includeAttemptTimeout">Include the per-attempt timeout. Callers that wait for quota
     /// inside the retry callback can disable it and apply a timeout only to the network send.</param>
+    /// <param name="includeTotalTimeout">Include the five-minute operation timeout. Callers with
+    /// long quota waits can disable it while retaining per-send timeouts and caller cancellation.</param>
     public static ResiliencePipeline<HttpResponseMessage> CreateComprehensivePipeline(
         int maxRetries = 3,
         TimeSpan? retryBaseDelay = null,
@@ -152,7 +155,8 @@ public static class HttpResiliencePolicy
         TimeSpan? circuitBreakerDuration = null,
         TimeSpan? requestTimeout = null,
         TimeProvider? timeProvider = null,
-        bool includeAttemptTimeout = true)
+        bool includeAttemptTimeout = true,
+        bool includeTotalTimeout = true)
     {
         retryBaseDelay ??= TimeSpan.FromSeconds(1);
         circuitBreakerDuration ??= TimeSpan.FromSeconds(30);
@@ -161,9 +165,9 @@ public static class HttpResiliencePolicy
         var logger = LoggingSetup.ForContext("HttpResilience");
 
         var builder = new ResiliencePipelineBuilder<HttpResponseMessage> { TimeProvider = timeProvider ?? TimeProvider.System };
-        builder
-            // Outermost: Total operation timeout
-            .AddTimeout(new TimeoutStrategyOptions
+        if (includeTotalTimeout)
+        {
+            builder.AddTimeout(new TimeoutStrategyOptions
             {
                 Timeout = TimeSpan.FromMinutes(5),
                 OnTimeout = args =>
@@ -171,7 +175,9 @@ public static class HttpResiliencePolicy
                     logger.Error("HTTP operation exceeded total timeout of 5 minutes");
                     return ValueTask.CompletedTask;
                 }
-            })
+            });
+        }
+        builder
             // Middle: Circuit breaker (prevents cascading failures)
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
             {
