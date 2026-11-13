@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortableLedgerPayload
+
+Qualified name: <code>Meridian.Storage.Packaging.PortableLedgerPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:7](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L7).
+
+Serialized accounting evidence carried by the package transport. Storage treats its journal schema as opaque; a configured accounting adapter must validate it before publication or import.
+
+```csharp
+public sealed record PortableLedgerPayload(string Json, string BalanceChecksumSha256);
+```
+
+## SupplementaryFileInfo
+
+Qualified name: <code>Meridian.Storage.Packaging.SupplementaryFileInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PackageManifest.cs:402](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L402).
+
+Information about supplementary files in the package.
+
+```csharp
+public sealed class SupplementaryFileInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:405](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L405) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:408](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L408) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:411](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L411) |  |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageManifest.cs:414](../../../../src/Meridian.Storage/Packaging/PackageManifest.cs#L414) |  |
+
 ## ValidationError
 
 Qualified name: <code>Meridian.Storage.Packaging.ValidationError</code>. Kind: `class`.
@@ -958,27 +991,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public required string DataRoot { get; init; }</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:9](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L9) |  |
 | <code>public int RetainedReceiptCount { get; init; } = 50;</code> | [src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs:10](../../../../src/Meridian.Storage/Runtime/JsonLifecycleReceiptStore.cs#L10) |  |
-
-## AliasRevisionRecordedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.AliasRevisionRecordedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:25](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L25).
-
-Aliases / AliasRevisionRecorded: one explicit alias revision.
-
-```csharp
-public sealed record AliasRevisionRecordedPayload(Guid AliasId, string AliasKind, string AliasValue, string? Provider, string Scope, string? Reason, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, bool IsEnabled) : ISecurityGovernancePayload;
-```
-
-## AliasRevisionsSynchronizedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.AliasRevisionsSynchronizedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:37](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L37).
-
-Aliases / AliasRevisionsSynchronized: revisions appended by projection replacement.
-
-```csharp
-public sealed record AliasRevisionsSynchronizedPayload(int AppendedRevisions) : ISecurityGovernancePayload;
-```

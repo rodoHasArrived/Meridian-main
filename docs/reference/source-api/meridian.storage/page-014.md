@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuotaStatusEntry
+
+Qualified name: <code>Meridian.Storage.Services.QuotaStatusEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:399](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L399).
+
+```csharp
+public sealed record QuotaStatusEntry(string QuotaId, string DisplayName, long UsedBytes, long MaxBytes, long? UsedFiles, long? MaxFiles, QuotaEnforcementPolicy Policy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double UsagePercentage =&gt; …;</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:408](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L408) |  |
+
+## QuotaStatusReport
+
+Qualified name: <code>Meridian.Storage.Services.QuotaStatusReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:393](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L393).
+
+```csharp
+public sealed record QuotaStatusReport(DateTime GeneratedAtUtc, DateTime LastScanUtc, IReadOnlyList<QuotaStatusEntry> Entries, IReadOnlyList<QuotaViolation> Violations);
+```
+
 ## QuotaUsage
 
 Qualified name: <code>Meridian.Storage.Services.QuotaUsage</code>. Kind: `class`.
@@ -846,56 +872,3 @@ Enum declarations:
 | <code>Healthy</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:16](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L16) | Sink is operating normally. |
 | <code>Degraded</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:19](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L19) | Sink has experienced failures but is still receiving writes. |
 | <code>Failed</code> | [src/Meridian.Storage/Sinks/CompositeSink.cs:22](../../../../src/Meridian.Storage/Sinks/CompositeSink.cs#L22) | Sink circuit breaker is open; writes are being skipped. |
-
-## StorageConfigExtensions
-
-Qualified name: <code>Meridian.Storage.StorageConfigExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Config/StorageConfigExtensions.cs:8](../../../../src/Meridian.Storage/Config/StorageConfigExtensions.cs#L8).
-
-Extension methods for StorageConfig that map shared config into Storage types.
-
-```csharp
-public static class StorageConfigExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageOptions ToStorageOptions(this StorageConfig config, string rootPath, bool compress);</code> | [src/Meridian.Storage/Config/StorageConfigExtensions.cs:13](../../../../src/Meridian.Storage/Config/StorageConfigExtensions.cs#L13) | Converts shared storage configuration to storage runtime options. |
-
-## StorageOptions
-
-Qualified name: <code>Meridian.Storage.StorageOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:6](../../../../src/Meridian.Storage/StorageOptions.cs#L6).
-
-Storage configuration options for market data persistence.
-
-```csharp
-public sealed class StorageOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RootPath { get; init; } = &quot;data&quot;;</code> | [src/Meridian.Storage/StorageOptions.cs:12](../../../../src/Meridian.Storage/StorageOptions.cs#L12) | Root directory path for all stored data files. Can be absolute or relative to the application directory. |
-| <code>public bool Compress { get; init; } = false;</code> | [src/Meridian.Storage/StorageOptions.cs:17](../../../../src/Meridian.Storage/StorageOptions.cs#L17) | Whether to compress output files using gzip. |
-| <code>public CompressionCodec CompressionCodec { get; init; } = CompressionCodec.Gzip;</code> | [src/Meridian.Storage/StorageOptions.cs:22](../../../../src/Meridian.Storage/StorageOptions.cs#L22) | Compression codec to use when Compress is true. |
-| <code>public FileNamingConvention NamingConvention { get; init; } = FileNamingConvention.BySymbol;</code> | [src/Meridian.Storage/StorageOptions.cs:27](../../../../src/Meridian.Storage/StorageOptions.cs#L27) | File naming convention for organizing stored data. |
-| <code>public DatePartition DatePartition { get; init; } = DatePartition.Daily;</code> | [src/Meridian.Storage/StorageOptions.cs:32](../../../../src/Meridian.Storage/StorageOptions.cs#L32) | Date partitioning strategy for files. |
-| <code>public bool IncludeProvider { get; init; } = false;</code> | [src/Meridian.Storage/StorageOptions.cs:37](../../../../src/Meridian.Storage/StorageOptions.cs#L37) | Whether to include the data source/provider name in the file path. |
-| <code>public string? FilePrefix { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:43](../../../../src/Meridian.Storage/StorageOptions.cs#L43) | Custom file name prefix (optional). Only ASCII letters, digits, underscores, and hyphens are accepted so the prefix remains one safe file-name segment. |
-| <code>public int? RetentionDays { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:48](../../../../src/Meridian.Storage/StorageOptions.cs#L48) | Optional retention window (in days). Older files are deleted eagerly when new data arrives. |
-| <code>public long? MaxTotalBytes { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:53](../../../../src/Meridian.Storage/StorageOptions.cs#L53) | Optional maximum on-disk footprint in bytes. When exceeded, the oldest files are deleted first. |
-| <code>public TieringOptions? Tiering { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:58](../../../../src/Meridian.Storage/StorageOptions.cs#L58) | Storage tier configuration for tiered storage architecture. |
-| <code>public QuotaOptions? Quotas { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:63](../../../../src/Meridian.Storage/StorageOptions.cs#L63) | Quota configuration for capacity management. |
-| <code>public Dictionary&lt;string, StoragePolicyConfig&gt;? Policies { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:68](../../../../src/Meridian.Storage/StorageOptions.cs#L68) | Storage policy configuration by event type. |
-| <code>public bool GenerateManifests { get; init; } = false;</code> | [src/Meridian.Storage/StorageOptions.cs:73](../../../../src/Meridian.Storage/StorageOptions.cs#L73) | Whether to generate file manifests for catalog indexing. |
-| <code>public bool EmbedChecksum { get; init; } = false;</code> | [src/Meridian.Storage/StorageOptions.cs:78](../../../../src/Meridian.Storage/StorageOptions.cs#L78) | Whether to embed checksum in file names. |
-| <code>public bool VerifyOnRead { get; init; } = false;</code> | [src/Meridian.Storage/StorageOptions.cs:86](../../../../src/Meridian.Storage/StorageOptions.cs#L86) | Whether to verify per-record checksums when reading data files. When true, each record read from JSONL/WAL storage is validated against its stored checksum; corrupted records are skipped and logged. Incurs a small CPU overhead on read paths. Default is false. |
-| <code>public bool EnableParquetSink { get; init; } = false;</code> | [src/Meridian.Storage/StorageOptions.cs:96](../../../../src/Meridian.Storage/StorageOptions.cs#L96) | Whether to enable Parquet storage as an additional sink alongside JSONL. When enabled, events are written to both JSONL and Parquet via CompositeSink. |
-| <code>public IReadOnlyList&lt;string&gt;? ActiveSinks { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:108](../../../../src/Meridian.Storage/StorageOptions.cs#L108) | Explicit list of storage sink plugin IDs to activate at startup. When non-empty, overrides EnableParquetSink and drives dynamic composition via StorageSinkRegistry. |
-| <code>public PartitionStrategy? PartitionStrategy { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:113](../../../../src/Meridian.Storage/StorageOptions.cs#L113) | Partition strategy for multi-dimensional partitioning. |

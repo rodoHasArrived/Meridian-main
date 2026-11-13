@@ -50,7 +50,12 @@ do not introduce a reverse reference from Storage primitives.
 ## Accounting exports
 
 The `ExportLedgerAsync` extension exports an immutable journal generation, as-of trial balance and
-reconciled cash-flow statement as CSV, XLSX, Parquet or Arrow. Every amount and quantity uses
+balance sheet, period income statement, financial summary and reconciled cash-flow statement as
+CSV, XLSX, Parquet or Arrow. Period income uses activity in `(PeriodStart, AsOf]`, excludes pure
+retained-earnings closing transfers and retains ordinary reversals. The financial summary keeps
+that period result separate from accumulated unclosed income used in the as-of equity equation.
+Statement account rows retain chart paths with direct and aggregate balances; summing hierarchical
+aggregate balances would double-count child accounts. Every amount and quantity uses
 invariant decimal text to preserve booked precision; consumers parse it with a decimal type.
 Empty reports retain their accounting columns. Output lives in a unique directory and failed
 exports remove their partial artifacts.
@@ -72,6 +77,32 @@ Its `ReadLedgerAsync` extension retains typed read access without moving Ledger 
 into Storage. The workstation packaging endpoints and package CLI use this configured factory.
 An unconfigured transport refuses accounting evidence even when ordinary file checksums are
 disabled. Reserved ledger and manifest archive paths cannot be duplicated or aliased.
+
+## Durable balance checkpoints
+
+Governed book hard-close commits a cumulative native balance checkpoint, its close-event reference
+and the existing ledger audit fact in the same PostgreSQL transaction. Migration 067 leaves earlier
+close events unchanged. Checkpoints retain every account and exact line-dimension group, including
+known accounts whose net balance is zero. Populated accounting periods cannot change ledger books.
+Unscoped compatibility periods still close normally without a book checkpoint.
+
+`ILedgerBalanceSnapshotSource.ReadTrialBalanceAsOfAsync` reads an authorized book in one repeatable-read
+transaction. It combines the latest eligible checkpoint with journal entries posted after its
+sequence watermark or dated after its cutoff, bounded by the requested timestamp and captured
+current watermark. This includes later backdated entries and previously posted future entries
+exactly once, including after a governed reopen. Account and dimension filters use the same
+case-insensitive matching rules as the in-memory ledger. Missing accounts remain distinct from
+known zero balances. The journal-store extension retains full hydration for compatibility stores.
+
+Checkpoint content is bound to its retained close-event audit digest. Reads verify the audit suffix
+through the current durable head and compare selected tail journals and legs with retained audit
+snapshots before using their totals. A checkpoint also pins the earliest preposted future journal's
+audit sequence, so that suffix may extend before the close when future entries already exist.
+Legacy genesis inventory retains its existing identity-only protection boundary. Missing or altered
+checkpoint evidence fails closed. This bounded read authenticates its checkpoint and relevant journal
+tail; it does not replace `VerifyLedgerEventAuditAsync`, which verifies whole-ledger source coverage.
+Financial reports that need journal evidence still capture their
+complete reporting generation; the mark-to-market carrying-value reader uses the balance API.
 
 ## Diagrams
 

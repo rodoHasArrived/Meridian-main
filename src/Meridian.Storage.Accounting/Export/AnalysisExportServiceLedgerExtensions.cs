@@ -6,9 +6,10 @@ namespace Meridian.Storage.Export;
 /// <summary>Accounting projections composed above the lower-level format and file writers.</summary>
 public static class AnalysisExportServiceLedgerExtensions
 {
-    /// <summary>Exports a journal, as-of trial balance, cash-flow statement, and supplied lot
-    /// evidence as CSV, XLSX, Parquet or Arrow. A unique result directory prevents replacement
-    /// of another export. A failed or cancelled export removes its incomplete artifacts.</summary>
+    /// <summary>Exports a journal, as-of trial balance and balance sheet, period income and
+    /// cash-flow statements, and supplied lot evidence as CSV, XLSX, Parquet or Arrow. A unique
+    /// result directory prevents replacement of another export. A failed or cancelled export
+    /// removes its incomplete artifacts.</summary>
     public static async Task<ExportResult> ExportLedgerAsync(this AnalysisExportService exporter, LedgerExportRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(exporter);
@@ -57,7 +58,11 @@ public static class AnalysisExportServiceLedgerExtensions
                 "Meridian accounting export\nAmounts and quantities are invariant decimal text, preserving booked precision. " +
                 "Parse using a decimal type for calculations. Journal and timestamped disposal range: (PeriodStart, AsOf]; " +
                 "date-only disposals include both boundary calendar dates because their intraday timing is unknown. " +
-                "trial balance and open lots: AsOf. Open/realized lot files appear only when evidence is supplied. " +
+                "trial balance, balance sheet and open lots: AsOf. Income statement: period activity excluding " +
+                "pure retained-earnings closing transfers. Financial summary distinguishes period net income " +
+                "from as-of unclosed net income used to reconcile ending equity. Statement rows retain direct " +
+                "and aggregate chart balances; do not sum hierarchical aggregate balances. " +
+                "Open/realized lot files appear only when evidence is supplied. " +
                 "Realized gains are a supporting schedule, not a filed tax form.\n" +
                 $"PeriodStart: {request.PeriodStart:O}\nAsOf: {request.AsOf:O}\n", ct);
             ct.ThrowIfCancellationRequested();
@@ -93,8 +98,11 @@ public static class AnalysisExportServiceLedgerExtensions
             .Select(pair => Row(("AsOf", request.AsOf), ("Account", pair.Key.Name),
                 ("AccountType", pair.Key.AccountType), ("FinancialAccountId", pair.Key.FinancialAccountId),
                 ("Symbol", pair.Key.Symbol), ("NormalBalance", pair.Value))).ToList();
-        var cashFlow = LedgerFinancialStatementBuilder.BuildForPeriod(request.Ledger, request.PeriodStart,
-            request.AsOf, financialAccountId: request.FinancialAccountId).CashFlow!;
+        var statements = LedgerFinancialStatementBuilder.BuildForPeriod(request.Ledger, request.PeriodStart,
+            request.AsOf, financialAccountId: request.FinancialAccountId);
+        var incomeStatement = LedgerFinancialStatementBuilder.BuildIncomeStatementForPeriod(request.Ledger,
+            request.PeriodStart, request.AsOf, financialAccountId: request.FinancialAccountId);
+        var cashFlow = statements.CashFlow!;
         if (!cashFlow.IsReconciled)
             throw new InvalidOperationException("Cash-flow statement does not reconcile.");
         var cashRows = cashFlow.Lines.Select(line => Row(("Category", line.Category),
@@ -107,6 +115,19 @@ public static class AnalysisExportServiceLedgerExtensions
         {
             ["journal"] = journal,
             ["trial-balance"] = trialBalance,
+            ["balance-sheet"] = StatementRows(statements.BalanceSheetRows, request.AsOf),
+            ["income-statement"] = StatementRows(incomeStatement.Rows, request.AsOf,
+                request.PeriodStart, request.FinancialAccountId),
+            ["financial-summary"] =
+            [
+                Row(("PeriodStart", request.PeriodStart), ("AsOf", request.AsOf),
+                    ("FinancialAccountId", request.FinancialAccountId),
+                    ("TotalAssets", statements.TotalAssets), ("TotalLiabilities", statements.TotalLiabilities),
+                    ("TotalEquity", statements.TotalEquity), ("AsOfUnclosedNetIncome", statements.NetIncome),
+                    ("EndingEquity", statements.EndingEquity), ("AccountingEquationVariance", statements.AccountingEquationVariance),
+                    ("PeriodRevenue", incomeStatement.TotalRevenue), ("PeriodExpenses", incomeStatement.TotalExpenses),
+                    ("PeriodNetIncome", incomeStatement.NetIncome))
+            ],
             ["cash-flow"] = cashRows,
             ["availability"] =
             [
@@ -172,6 +193,24 @@ public static class AnalysisExportServiceLedgerExtensions
         return tables;
     }
 
+    private static List<Dictionary<string, object?>> StatementRows(IReadOnlyList<LedgerChartBalance> rows,
+        DateTimeOffset asOf, DateTimeOffset? periodStart = null, string? selectedFinancialAccountId = null) =>
+        rows.OrderBy(row => row.Path, StringComparer.Ordinal)
+            .ThenBy(row => row.Account.FinancialAccountId, StringComparer.Ordinal)
+            .Select(row =>
+            {
+                var values = Row(("AsOf", asOf), ("Account", row.Account.Name), ("Path", row.Path),
+                    ("ParentPath", row.ParentPath), ("AccountType", row.Account.AccountType),
+                    ("FinancialAccountId", row.Account.FinancialAccountId), ("Symbol", row.Account.Symbol),
+                    ("DirectBalance", row.DirectBalance), ("AggregateBalance", row.AggregateBalance));
+                if (periodStart.HasValue)
+                {
+                    values["PeriodStart"] = periodStart.Value.ToString("O", CultureInfo.InvariantCulture);
+                    values["SelectedFinancialAccountId"] = selectedFinancialAccountId ?? "";
+                }
+                return values;
+            }).ToList();
+
     private static Dictionary<string, object?> Row(params (string Key, object? Value)[] cells) =>
         cells.ToDictionary(cell => cell.Key, cell => (object?)(cell.Value switch
         {
@@ -190,6 +229,9 @@ public static class AnalysisExportServiceLedgerExtensions
         "availability" => ["Report", "Status", "Reason"],
         "corporate-action-realizations" => ["JournalId", "Timestamp", "FinancialAccountId", "Symbol", "ActivityType", "CashImpact", "BasisRelieved", "RealizedGainOrLoss", "ParcelEvidence"],
         "trial-balance" => ["AsOf", "Account", "AccountType", "FinancialAccountId", "Symbol", "NormalBalance"],
+        "balance-sheet" => ["AsOf", "Account", "Path", "ParentPath", "AccountType", "FinancialAccountId", "Symbol", "DirectBalance", "AggregateBalance"],
+        "income-statement" => ["PeriodStart", "AsOf", "SelectedFinancialAccountId", "Account", "Path", "ParentPath", "AccountType", "FinancialAccountId", "Symbol", "DirectBalance", "AggregateBalance"],
+        "financial-summary" => ["PeriodStart", "AsOf", "FinancialAccountId", "TotalAssets", "TotalLiabilities", "TotalEquity", "AsOfUnclosedNetIncome", "EndingEquity", "AccountingEquationVariance", "PeriodRevenue", "PeriodExpenses", "PeriodNetIncome"],
         "cash-flow" => ["Category", "Description", "Amount"],
         "open-lot-pnl" => ["LotId", "Symbol", "FinancialAccountId", "AcquiredDate", "Quantity", "CostBasis", "MarketValue", "UnrealizedGainOrLoss", "AsOf", "IsShort"],
         "realized-gains" => ["LotId", "Symbol", "FinancialAccountId", "AcquiredDate", "SoldDate", "Quantity", "Proceeds", "CostBasis", "EconomicGainOrLoss", "Adjustment", "AdjustmentCode", "RecognizedGainOrLoss", "TaxCharacter", "SoldAt", "IsShort", "DisposalId"],

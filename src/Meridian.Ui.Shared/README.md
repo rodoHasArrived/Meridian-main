@@ -53,6 +53,12 @@ require an exact retained valuation cut. Its availability table distinguishes ab
 from measured empty schedules. Temporary export files are removed after ZIP construction. The
 paper-accounting reconciliation host is registered after the shared portfolio registry.
 
+Daily valuation carrying-value reads use the durable store's as-of trial-balance capability,
+which can combine an immutable period-close checkpoint with subsequent journal activity.
+Compatibility stores retain journal hydration. Both paths preserve entity scope and distinguish
+an absent securities account from a retained account whose balance is zero; integrity failures
+are propagated before a valuation draft is prepared.
+
 Fund workspace research-ledger reads hydrate archived journal details only after the fund and
 selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.
 A configured durable journal store remains authoritative, including when its book is empty.
