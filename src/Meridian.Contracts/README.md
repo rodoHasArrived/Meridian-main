@@ -20,6 +20,10 @@ source time. Typed corporate-action deadline evidence carries precision, origina
 correction identity outside economic payload fingerprints. Additive read fields preserve older
 payload compatibility; missing observations are not reported zeros or inferred approvals.
 
+Run ledger accounting-package downloads use the shared `RunsLedgerExport` route, mirrored by the
+maintained TypeScript route generator. The existing summary, trial-balance and journal routes
+accept an optional inclusive `asOf` economic timestamp.
+
 Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
 
 The exact top-level `electionCalendar` companion is operational source evidence, excluded from

@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Strategies
 
+Run ledger read models support inclusive economic-time cuts without mutating retained journals.
+Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
+exports. Historical journal rows, account balances and posting counts are rebuilt from the same
+validated posting population.
+
 Retained sweep reads expose each point's parameters and separate comparison groups by experiment fingerprint, strategy, mode, engine, dataset, feed and objective. Rankings honor supported named objectives and leave unsupported objectives unranked. Legacy comparability and bounded-history/expected-grid gaps remain explicit; sensitivity thresholds do not grant promotion authority.
 
 Reconciliation casework rejects reserved preparer-attestation references as ordinary approval.
@@ -138,6 +143,18 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
+`DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal
+count; an exact run-detail read verifies the archive and replays the ledger invariants before
+hydrating it. The final portfolio/account snapshot, including open and disposed lot evidence,
+travels with the journal. Research summaries retain counts rather than unbounded journal/lot
+collections; full retained histories keep their existing snapshot coverage. Invalid lifecycle
+candidates can leave unreferenced immutable files but cannot reserve a run identity or replace
+its selected content. Missing or altered selected evidence fails the detail read. The archive
+grants no governed-book posting authority and does not replace PostgreSQL journals, period locks,
+or reversal/rebook. Focused proof: `StrategyRunLedgerArchiveTests` (restart, retry, tamper,
+concurrent writers, rejected candidates and research lot retention).
 
 `LiveStrategyBase` applies the shared F# lifecycle policy and serializes complete asynchronous
 operations. Queued commands are evaluated after the prior operation finishes. Warmup must complete

@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+`AnalysisExportService.WriteInvariantTextTableAsync` writes schema-preserving text tables as CSV,
+XLSX, Parquet or Arrow. It owns format IO, formula-safe spreadsheet escaping and checksums without
+interpreting accounting records. Ledger-backed `ExportLedgerAsync` projections are extension methods
+compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly independent of Ledger.
+
 The business adapters in the linked FundStructure and Ledger folders compile into
 `Meridian.Storage.Accounting`; generic storage primitives remain in `Meridian.Storage`.
 
@@ -1230,6 +1235,15 @@ lookup paths, and evidence trails those layers rely on.
   retries, malformed rows, and semantic edits instead of silently skipping them. Scores enter the
   process cache only after durable append succeeds; evaluation or retention failures return a
   validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
+
+## Accounting exports and portable evidence
+
+Ledger-aware export projections, lot schedules and typed portable-journal validation belong to
+the [accounting adapters](../Meridian.Storage.Accounting/README.md). Storage supplies generic
+text-table writers, ZIP IO and an opaque payload-validation port; it does not reconstruct journals
+or interpret accounting balances. Ledger-bearing package operations require the configured
+accounting validator before publication or extraction. Market-data-only package callers retain
+their existing behavior.
 
 ## Important workflows
 

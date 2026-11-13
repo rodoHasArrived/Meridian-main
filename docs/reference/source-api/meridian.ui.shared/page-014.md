@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidWorkstationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PlaidWorkstationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:18](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L18).
+
+Coordinates Plaid linking, institution search, item discovery, and account synchronization.
+
+```csharp
+public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTransferService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PlaidWorkstationService(IPlaidClient client, IPlaidConnectionRepository repository, IProviderCredentialStore credentialStore, PlaidOptions options, ILogger&lt;PlaidWorkstationService&gt; logger, IFundAccountService? fundAccountService = null, IBankingService? bankingService = null);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L30) |  |
+| <code>public async Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:48](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L48) |  |
+| <code>public async Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:78](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L78) |  |
+| <code>public async Task&lt;PlaidPublicTokenExchangeResult&gt; ExchangePublicTokenAsync(PlaidPublicTokenExchangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:107](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L107) |  |
+| <code>public Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:163](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L163) |  |
+| <code>public Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:166](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L166) |  |
+| <code>public async Task&lt;PlaidSyncResult&gt; SyncItemAsync(PlaidSyncRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L169) |  |
+| <code>public async Task&lt;PlaidWebhookEventDto&gt; RecordWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:234](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L234) |  |
+| <code>public async Task&lt;PlaidTransferResult&gt; CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:241](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L241) |  |
+
+## PolicyDecision
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PolicyDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:29](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L29).
+
+```csharp
+public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDualApproval, bool RequiresPrivilegedRole, bool RequiresMfa);
+```
+
 ## PortfolioCashLadderReadService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioCashLadderReadService</code>. Kind: `class`.
@@ -852,26 +888,4 @@ Server-resolved access context. API callers must never be allowed to populate th
 
 ```csharp
 public sealed record ReportingArtifactAccessContext(string ActorId, string TenantId, string OrganizationId, string? CompanyId, string? FundId, string BookId, string PeriodId, ImmutableArray<string> PrincipalIds, string CorrelationId, ReportingAccessPrincipalScope? DelegatedPrincipal = null);
-```
-
-## ReportingArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L55).
-
-```csharp
-public sealed record ReportingArtifactDownload(ReportingRetainedArtifactRecord Artifact, byte[] Content, DateTimeOffset AccessedAtUtc, string AuditEventId);
-```
-
-## ReportingArtifactPackageRetentionRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactPackageRetentionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L22).
-
-Immutable package metadata bound to the exact operational, access-policy, and certified-input snapshots used to render it.
-
-```csharp
-public sealed record ReportingArtifactPackageRetentionRequest(string PackageId, string RunId, string SeriesId, int Revision, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string ManifestId, string ManifestHash, ImmutableArray<ReportingRenderedArtifact> Artifacts);
 ```

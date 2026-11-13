@@ -745,6 +745,12 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L28) |  |
 
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs#L14).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs#L14).
 
 ```csharp

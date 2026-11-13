@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunFeeAccrualDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunFeeAccrualDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:35](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L35).
+
+Request to accrue period fees from fund fee terms and land the drafts in the manual journal workbench queue for the fund profile.
+
+```csharp
+public sealed record RunFeeAccrualDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string PeriodId, decimal BeginningNav, decimal EndingNavBeforeFees, decimal HighWaterMark, decimal ManagementFeeRate, decimal PerformanceFeeRate, Guid? LedgerBookId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null, IReadOnlyList<string>? EvidenceLinks = null, DateTimeOffset? EvidenceRetainedAtUtc = null, AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null, decimal MinimumCapitalAccountConfidence = 0.90m);
+```
+
+## RunPeriodCloseDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunPeriodCloseDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:59](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L59).
+
+Request to project period-close closing entries from a closed ledger period&#x27;s trial balance and land the governed draft in the manual journal workbench queue.
+
+```csharp
+public sealed record RunPeriodCloseDraftIntakeRequest(string FundProfileId, string Currency, string Actor, Guid PeriodId, Guid? LedgerBookId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null);
+```
+
 ## SecurePortalReportingDeliveryTransport
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurePortalReportingDeliveryTransport</code>. Kind: `class`.
@@ -829,7 +853,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1487](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1487) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1491](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1491) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -869,42 +893,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public WorkstationWorkflowSummaryService(StrategyRunReadService runReadService, StrategyRunContinuityService? continuityService = null, IReconciliationRunService? reconciliationRunService = null, Meridian.Application.UI.ConfigStore? configStore = null, IWorkflowActionCatalog? actionCatalog = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:22](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L22) |  |
 | <code>public async Task&lt;OperatorWorkflowHomeSummary&gt; GetAsync(WorkstationWorkflowReadScope readScope, bool hasOperatingContext = false, string? operatingContextDisplayName = null, string? fundProfileId = null, string? fundAccountId = null, string? fundDisplayName = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:43](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L43) |  |
-
-## IQuoteStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.IQuoteStreamBroadcaster</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:10](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L10).
-
-Fan-out hub for workstation quote streams. Implements IQuoteUpdateNotifier so the collector can wake it on quote changes, and hands SSE connections a per-topic, coalesced snapshot feed via TrySubscribe.
-
-```csharp
-public interface IQuoteStreamBroadcaster : IQuoteUpdateNotifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/IQuoteStreamBroadcaster.cs#L17) | Subscribe to a topic&#x27;s coalesced snapshot feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
-
-## QuoteStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L18).
-
-Event-driven quote fan-out. A thin quote-typed configuration of StreamBroadcaster{T}: woken by the collector via NotifyQuoteChanged, it rebuilds each active topic&#x27;s snapshot on the shared coalescing loop (latest-wins) and pushes it to every subscriber of that topic. One snapshot build is shared across all subscribers of a topic, and the market-data storage hot path is untouched: NotifyQuoteChanged only sets a wake signal.
-
-```csharp
-public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuoteStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, LiveDataEndpoints.TryBuildQuotesSnapshotResponse);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L22) |  |
-| <code>public void NotifyQuoteChanged(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L52) |  |
-| <code>public QuoteStreamSubscription? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:55](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L55) |  |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs:66](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamBroadcaster.cs#L66) |  |

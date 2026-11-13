@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingStarterKitStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingStarterKitStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:42](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L42).
+
+Loads and saves reporting starter-kit state within a tenant and company scope.
+
+```csharp
+public interface IReportingStarterKitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingStarterKitStateDto? Load(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L44) |  |
+| <code>void Save(string tenantId, string companyId, ReportingStarterKitStateDto state);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:46](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L46) |  |
+
 ## IReportingTransportInfrastructureReadiness
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingTransportInfrastructureReadiness</code>. Kind: `interface`.
@@ -264,6 +283,18 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;LedgerJournalTaxResultsDto&gt; ReadAsync(Guid ledgerBookId, Guid periodId, JournalEntry entry, string functionalCurrency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L17) |  |
 | <code>public static LedgerDisposalTaxResultDto Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency, DateOnly asOfDate);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:48](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L48) |  |
+
+## LedgerExportEvidenceUnavailableException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerExportEvidenceUnavailableException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:9](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L9).
+
+The journal remains exportable but the requested lot evidence was not retained.
+
+```csharp
+public sealed class LedgerExportEvidenceUnavailableException(string message) : InvalidOperationException(message);
+```
 
 ## LedgerMarkToMarketCarryingValueSource
 
@@ -1008,39 +1039,3 @@ Enum declarations:
 | <code>SignatureMismatch</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:40](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L40) |  |
 | <code>BodyHashMismatch</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:41](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L41) |  |
 | <code>Expired</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:42](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L42) |  |
-
-## PlaidWorkstationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PlaidWorkstationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:18](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L18).
-
-Coordinates Plaid linking, institution search, item discovery, and account synchronization.
-
-```csharp
-public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTransferService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PlaidWorkstationService(IPlaidClient client, IPlaidConnectionRepository repository, IProviderCredentialStore credentialStore, PlaidOptions options, ILogger&lt;PlaidWorkstationService&gt; logger, IFundAccountService? fundAccountService = null, IBankingService? bankingService = null);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L30) |  |
-| <code>public async Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:48](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L48) |  |
-| <code>public async Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:78](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L78) |  |
-| <code>public async Task&lt;PlaidPublicTokenExchangeResult&gt; ExchangePublicTokenAsync(PlaidPublicTokenExchangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:107](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L107) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:163](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L163) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:166](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L166) |  |
-| <code>public async Task&lt;PlaidSyncResult&gt; SyncItemAsync(PlaidSyncRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L169) |  |
-| <code>public async Task&lt;PlaidWebhookEventDto&gt; RecordWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:234](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L234) |  |
-| <code>public async Task&lt;PlaidTransferResult&gt; CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs:241](../../../../src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs#L241) |  |
-
-## PolicyDecision
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PolicyDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:29](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L29).
-
-```csharp
-public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDualApproval, bool RequiresPrivilegedRole, bool RequiresMfa);
-```

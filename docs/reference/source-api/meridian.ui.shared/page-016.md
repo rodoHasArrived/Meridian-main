@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRunReadinessBlockedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessBlockedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:615](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L615).
+
+Carries the readiness assessment that blocked a reporting run.
+
+```csharp
+public sealed class ReportingRunReadinessBlockedException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingRunReadinessBlockedException(ReportingRunReadinessDto readiness) : base($&quot;Reporting run readiness is {readiness?.Status}; the requested run cannot be generated.&quot;);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:617](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L617) |  |
+| <code>public ReportingRunReadinessDto Readiness { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:623](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L623) |  |
+
+## ReportingRunReadinessDependencyEvaluator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessDependencyEvaluator</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L34).
+
+Collects reporting dependency checks from the services available in the deployment.
+
+```csharp
+public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunReadinessDependencyEvaluator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingRunReadinessDependencyEvaluator(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:38](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L38) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingRunReadinessCheckDto&gt;&gt; EvaluateAsync(ReportingRunRequestDto request, ReportingTemplateMetadata template, ReportingRunParametersDto parameters, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L43) |  |
+
 ## ReportingRunReadinessOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessOptions</code>. Kind: `record`.
@@ -893,28 +931,4 @@ Request to produce dividend events from Security Master corporate actions and la
 
 ```csharp
 public sealed record RunDividendDraftIntakeRequest(string FundProfileId, string Currency, string Actor, IReadOnlyList<DividendAccrualPosition> Positions, DateOnly WindowStart, DateOnly WindowEnd, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, decimal WithholdingTaxRate = 0m, DateTimeOffset? AsOf = null, decimal MinimumEvidenceConfidence = 0.75m, int MaximumPositionAgeDays = 7);
-```
-
-## RunFeeAccrualDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunFeeAccrualDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:35](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L35).
-
-Request to accrue period fees from fund fee terms and land the drafts in the manual journal workbench queue for the fund profile.
-
-```csharp
-public sealed record RunFeeAccrualDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string PeriodId, decimal BeginningNav, decimal EndingNavBeforeFees, decimal HighWaterMark, decimal ManagementFeeRate, decimal PerformanceFeeRate, Guid? LedgerBookId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null, IReadOnlyList<string>? EvidenceLinks = null, DateTimeOffset? EvidenceRetainedAtUtc = null, AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null, decimal MinimumCapitalAccountConfidence = 0.90m);
-```
-
-## RunPeriodCloseDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunPeriodCloseDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:59](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L59).
-
-Request to project period-close closing entries from a closed ledger period&#x27;s trial balance and land the governed draft in the manual journal workbench queue.
-
-```csharp
-public sealed record RunPeriodCloseDraftIntakeRequest(string FundProfileId, string Currency, string Actor, Guid PeriodId, Guid? LedgerBookId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null);
 ```

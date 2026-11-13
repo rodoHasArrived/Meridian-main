@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingArtifactDownload
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactDownload</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L55).
+
+```csharp
+public sealed record ReportingArtifactDownload(ReportingRetainedArtifactRecord Artifact, byte[] Content, DateTimeOffset AccessedAtUtc, string AuditEventId);
+```
+
+## ReportingArtifactPackageRetentionRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactPackageRetentionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L22).
+
+Immutable package metadata bound to the exact operational, access-policy, and certified-input snapshots used to render it.
+
+```csharp
+public sealed record ReportingArtifactPackageRetentionRequest(string PackageId, string RunId, string SeriesId, int Revision, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string ManifestId, string ManifestHash, ImmutableArray<ReportingRenderedArtifact> Artifacts);
+```
+
 ## ReportingArtifactRetentionAuthorityProvider
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionAuthorityProvider</code>. Kind: `class`.
@@ -804,41 +826,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReportingRunDeploymentNotReadyException(string message, ReportingDeploymentCapabilityDto? capability, Exception? innerException = null) : base(message, innerException);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:631](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L631) |  |
 | <code>public ReportingDeploymentCapabilityDto? Capability { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:640](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L640) |  |
-
-## ReportingRunReadinessBlockedException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessBlockedException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:615](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L615).
-
-Carries the readiness assessment that blocked a reporting run.
-
-```csharp
-public sealed class ReportingRunReadinessBlockedException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunReadinessBlockedException(ReportingRunReadinessDto readiness) : base($&quot;Reporting run readiness is {readiness?.Status}; the requested run cannot be generated.&quot;);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:617](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L617) |  |
-| <code>public ReportingRunReadinessDto Readiness { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:623](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L623) |  |
-
-## ReportingRunReadinessDependencyEvaluator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessDependencyEvaluator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L34).
-
-Collects reporting dependency checks from the services available in the deployment.
-
-```csharp
-public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunReadinessDependencyEvaluator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunReadinessDependencyEvaluator(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:38](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L38) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingRunReadinessCheckDto&gt;&gt; EvaluateAsync(ReportingRunRequestDto request, ReportingTemplateMetadata template, ReportingRunParametersDto parameters, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L43) |  |

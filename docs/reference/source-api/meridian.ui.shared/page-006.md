@@ -254,6 +254,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs#L14).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs#L48).
 
 ```csharp

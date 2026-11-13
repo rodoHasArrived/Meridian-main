@@ -1339,7 +1339,30 @@ public sealed partial class FundOperationsWorkspaceReadService
 
         foreach (var run in runs)
         {
-            foreach (var journalEntry in run.Metrics?.Ledger?.Journal ?? [])
+            ct.ThrowIfCancellationRequested();
+            if (!string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("The retained run ledger does not match the requested fund scope.");
+
+            var ledger = run.Metrics?.Ledger;
+            if (ledger?.JournalEntryCount is not > 0 &&
+                run.OutputMetadata.TryGetValue(StrategyRunLedgerReference.HashMetadataKey, out var archiveHash))
+            {
+                // Summary reads intentionally omit archived journals. Hydrate only the runs
+                // already admitted by the fund scope and selected-run filter, and never use
+                // research archives as a fallback for a configured durable accounting book.
+                var detail = await _strategyRepository.GetRunByIdAsync(run.RunId, ct).ConfigureAwait(false);
+                var detailLedger = detail?.Metrics?.Ledger;
+                if (detail is null || !string.Equals(detail.RunId, run.RunId, StringComparison.Ordinal) ||
+                    !string.Equals(detail.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                    !detail.OutputMetadata.TryGetValue(StrategyRunLedgerReference.HashMetadataKey, out var detailHash) ||
+                    !string.Equals(detailHash, archiveHash, StringComparison.Ordinal) ||
+                    detailLedger is null || detailLedger.JournalEntryCount != run.RetainedJournalEntryCount)
+                    throw new InvalidDataException("The retained run ledger is unavailable or no longer matches its scoped archive reference.");
+
+                ledger = detailLedger;
+            }
+
+            foreach (var journalEntry in ledger?.Journal ?? [])
             {
                 fundLedgerBook.FundLedger.Post(journalEntry);
             }

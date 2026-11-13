@@ -66,6 +66,14 @@
                                MaxWidth="520"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center">
+                        <StackPanel Margin="0,0,8,8">
+                            <Label Content="As of date (UTC)" Target="{Binding ElementName=RunLedgerAsOfDate}" Padding="0" />
+                            <DatePicker x:Name="RunLedgerAsOfDate"
+                                        SelectedDate="{Binding SelectedAsOfDate, Mode=TwoWay}"
+                                        Width="150"
+                                        ToolTip="Inclusive UTC date. Clear the date to read the complete retained run."
+                                        AutomationProperties.Name="Run ledger as of date UTC" />
+                        </StackPanel>
                         <Button Content="Run Browser"
                                 Command="{Binding OpenBrowserCommand}"
                                 Style="{StaticResource GhostButtonStyle}"

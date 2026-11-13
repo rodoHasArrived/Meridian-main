@@ -104,6 +104,58 @@ public sealed class BacktestStudioRunOrchestratorTests
         first.Should().StartWith("sweep-v2:");
     }
 
+    [Theory]
+    [InlineData(false, "sweep-v2:CEB9F6368247509DD56A588E0CDFBE8756419B54D2FAF761AFFAA37437D11976")]
+    [InlineData(true, "sweep-v2:BEBE11611E85F4591374688D71BECA627D91542BB6819FAAB92FE92362A78337")]
+    public async Task SweepHash_PreservesV2RequestSerialization(bool explicitActions, string expectedHash)
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store, [engine], NullLogger<BacktestStudioRunOrchestrator>.Instance);
+        var nativeRequest = BuildRequest();
+        if (explicitActions)
+        {
+            nativeRequest = nativeRequest with
+            {
+                Symbols = ["ABC"],
+                AssetEvents =
+                [
+                    new(new DateTimeOffset(2024, 1, 2, 12, 0, 0, TimeSpan.Zero), "ABC", AssetEventType.Dividend,
+                        CashPerShare: 0.50m, ReferencePrice: 123.400m, Description: "Synthetic dividend")
+                ],
+                CommissionRate = 0.0200m,
+                AdjustForCorporateActions = false,
+                RiskFreeRateSeries = new Dictionary<DateOnly, double>
+                {
+                    [new(2024, 1, 3)] = 0.03,
+                    [new(2024, 1, 2)] = 0.02
+                },
+                PopulateAssetEventsFromSecurityMaster = true,
+                FailOnLedgerIntegrityBreak = true,
+                ApplyStoredCorporateActions = false
+            };
+        }
+
+        var request = BuildValidStudioRequest("strategy-serialization", "Serialization") with
+        {
+            NativeRequest = nativeRequest,
+            SweepId = "experiment-serialization",
+            SweepObjective = "TotalReturn",
+            DatasetReference = "dataset:retained-v1",
+            FeedReference = "feed:retained-v1",
+            BenchmarkSymbol = "ABC",
+            Parameters = new Dictionary<string, string> { ["lookback"] = "10", ["threshold"] = "1" },
+            ExternalEngineOptions = new Dictionary<string, string> { ["seed"] = "2", ["mode"] = "research" }
+        };
+
+        await orchestrator.StartAsync(request);
+
+        // Pin the existing default-JSON preimage, including numeric enums, retained nulls,
+        // scaled decimals, insertion-ordered rate dates, and the corporate-action settings.
+        (await store.GetLatestRunAsync(request.StrategyId))!.SweepDefinitionHash.Should().Be(expectedHash);
+    }
+
     [Fact]
     public async Task StartAsync_RecordsBacktestEvidenceLoopOnRunLineage()
     {
