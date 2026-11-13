@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValuationFreshnessPolicy
+
+Qualified name: <code>Meridian.Ledger.ValuationFreshnessPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:9](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L9).
+
+Single owner of valuation mark admission. Compatibility settings may tighten these controls; disabled, allow, flag and incomplete-coverage settings cannot authorize unsupported numbers.
+
+```csharp
+public sealed record ValuationFreshnessPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValuationFreshnessPolicy(int maximumAgeDays = 3, DailyPortfolioPriceConfidence minimumConfidence = DailyPortfolioPriceConfidence.Medium, string version = &quot;mark-freshness-v1&quot;);</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:11](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L11) |  |
+| <code>public static ValuationFreshnessPolicy Default { get; } = new ();</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:27](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L27) |  |
+| <code>public int MaximumAgeDays { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:28](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L28) |  |
+| <code>public DailyPortfolioPriceConfidence MinimumConfidence { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:29](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L29) |  |
+| <code>public string Version { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:30](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L30) |  |
+| <code>public bool RequireCompleteCoverage =&gt; …;</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:31](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L31) |  |
+| <code>public bool RequireObservedDate =&gt; …;</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:32](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L32) |  |
+| <code>public MarkFreshnessAssessmentDto Assess(string symbol, Guid? securityId, string? financialAccountId, DateOnly valuationDate, DateOnly? observedOn, DailyPortfolioPriceConfidence? confidence, decimal? price);</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:34](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L34) |  |
+
+## ValuationMarkEvidence
+
+Qualified name: <code>Meridian.Ledger.ValuationMarkEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ValuationMarkEvidence.cs:7](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L7).
+
+Immutable input facts retained with each security/account valuation journal.
+
+```csharp
+public sealed record ValuationMarkEvidence(string FundId, string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, decimal Price, DailyPortfolioPriceConfidence Confidence, int MaximumAgeDays, DailyPortfolioPriceConfidence MinimumConfidence, string PolicyVersion, string EvidenceReference, string? EntityId = null);
+```
+
 ## ValuationMarkEvidenceGuard
 
 Qualified name: <code>Meridian.Ledger.ValuationMarkEvidenceGuard</code>. Kind: `class`.

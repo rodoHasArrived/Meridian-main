@@ -57669,6 +57669,102 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_account_type on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.account_type"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_credit on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.credit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_debit on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.debit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_dimensions on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.dimensions"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_entry_count on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.entry_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoint_rows_row_no on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoint_rows.row_no"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_content_hash on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_future_audit_sequence on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.future_audit_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_journal_count on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.journal_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_line_count on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.line_count"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_period_version on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.period_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_schema_version on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.schema_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_ledger_balance_checkpoints_source_sequence on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_balance_checkpoints.source_sequence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_period_close_events_balance_checkpoint_hash on ledger.period_close_events",
+      "target": "database:ledger.period_close_events.balance_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events",
+      "target": "database:ledger.period_close_events.balance_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events",
+      "target": "database:ledger.period_close_events.balance_checkpoint_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_period_close_events_new_status on ledger.period_close_events",
       "target": "database:ledger.period_close_events.new_status"
     },
@@ -58732,6 +58828,82 @@
       "label": "journal_entry_id",
       "source": "database:ledger.journal_legs",
       "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "ledger_balance_checkpoint_rows_checkpoint_id_fkey",
+      "kind": "foreign-key",
+      "label": "checkpoint_id",
+      "source": "database:ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoints"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoints.checkpoint_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows",
+      "target": "database:ledger.ledger_balance_checkpoints_pkey"
+    },
+    {
+      "constraint": "ledger_balance_checkpoints_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "ledger_balance_checkpoints_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "ledger_balance_checkpoints_close_event_id_fkey",
+      "kind": "foreign-key",
+      "label": "close_event_id",
+      "source": "database:ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.period_close_events"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.period_close_events.event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.period_close_events_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints",
+      "target": "database:ledger.accounting_periods_pkey"
     },
     {
       "constraint": "ledger_book_control_activation_ledger_book_id_fkey",
@@ -64714,6 +64886,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_balance_checkpoints"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.ledger_book_control_activation"
     },
     {
@@ -65898,7 +66082,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6c85545df5a329f4fe691a104f9047ec92834996d17047f7e8c8bf2a7206ce85",
+  "fingerprint": "b6b833abcfda238a634747a7e903e4f994109ca2f9ebb51db90d8b49b56efff4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -89989,6 +90173,81 @@
       "label": "ledger.ck_journal_legs_single_sided_amount on ledger.journal_legs"
     },
     {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_account_type on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_account_type on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_credit on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_credit on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_debit on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_debit on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_dimensions on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_dimensions on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_entry_count on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_entry_count on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoint_rows_row_no on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoint_rows_row_no on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_content_hash on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_content_hash on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_future_audit_sequence on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_future_audit_sequence on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_journal_count on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_journal_count on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_line_count on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_line_count on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_period_version on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_period_version on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_schema_version on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_schema_version on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_ledger_balance_checkpoints_source_sequence on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ck_ledger_balance_checkpoints_source_sequence on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ck_period_close_events_balance_checkpoint_hash on ledger.period_close_events",
+      "kind": "database-object",
+      "label": "ledger.ck_period_close_events_balance_checkpoint_hash on ledger.period_close_events"
+    },
+    {
+      "id": "database:ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events",
+      "kind": "database-object",
+      "label": "ledger.ck_period_close_events_balance_checkpoint_pair on ledger.period_close_events"
+    },
+    {
       "id": "database:ledger.ck_period_close_events_new_status on ledger.period_close_events",
       "kind": "database-object",
       "label": "ledger.ck_period_close_events_new_status on ledger.period_close_events"
@@ -90772,6 +91031,113 @@
       "label": "ledger.journal_legs.transaction_debit"
     },
     {
+      "id": "database:ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-table",
+      "label": "ledger.ledger_balance_checkpoint_rows",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.account_type",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.account_type"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.credit",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.credit"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.debit",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.debit"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.dimensions",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.dimensions"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.entry_count",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.entry_count"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows.row_no",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows.row_no"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoint_rows_checkpoint_id_fkey on ledger.ledger_balance_checkpoint_rows"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints",
+      "kind": "database-table",
+      "label": "ledger.ledger_balance_checkpoints",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.checkpoint_id",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.checkpoint_id"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.content_hash",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.content_hash"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.future_audit_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.future_audit_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.journal_count",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.journal_count"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.line_count",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.line_count"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.period_version",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.period_version"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.schema_version",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.schema_version"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints.source_sequence",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints.source_sequence"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_close_event_id_fkey on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_ledger_book_id_fkey on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_period_id_fkey on ledger.ledger_balance_checkpoints"
+    },
+    {
+      "id": "database:ledger.ledger_balance_checkpoints_pkey",
+      "kind": "database-object",
+      "label": "ledger.ledger_balance_checkpoints_pkey"
+    },
+    {
       "id": "database:ledger.ledger_book_control_activation",
       "kind": "database-table",
       "label": "ledger.ledger_book_control_activation",
@@ -91217,6 +91583,21 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.period_close_events.balance_checkpoint_hash",
+      "kind": "database-object",
+      "label": "ledger.period_close_events.balance_checkpoint_hash"
+    },
+    {
+      "id": "database:ledger.period_close_events.balance_checkpoint_id",
+      "kind": "database-object",
+      "label": "ledger.period_close_events.balance_checkpoint_id"
+    },
+    {
+      "id": "database:ledger.period_close_events.event_id",
+      "kind": "database-object",
+      "label": "ledger.period_close_events.event_id"
+    },
+    {
       "id": "database:ledger.period_close_events.new_status",
       "kind": "database-object",
       "label": "ledger.period_close_events.new_status"
@@ -91230,6 +91611,11 @@
       "id": "database:ledger.period_close_events_period_id_fkey on ledger.period_close_events",
       "kind": "database-object",
       "label": "ledger.period_close_events_period_id_fkey on ledger.period_close_events"
+    },
+    {
+      "id": "database:ledger.period_close_events_pkey",
+      "kind": "database-object",
+      "label": "ledger.period_close_events_pkey"
     },
     {
       "id": "database:ledger.private_capital_calls",
@@ -96641,9 +97027,9 @@
   "summary": {
     "contract_references": 4110,
     "contract_set_memberships": 5256,
-    "edges": 10947,
-    "foreign_keys": 199,
+    "edges": 10977,
+    "foreign_keys": 203,
     "logical_references": 6,
-    "nodes": 5341
+    "nodes": 5381
   }
 }

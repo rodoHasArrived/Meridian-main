@@ -22,7 +22,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static async Task&lt;ExportResult&gt; ExportLedgerAsync(this AnalysisExportService exporter, LedgerExportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage.Accounting/Export/AnalysisExportServiceLedgerExtensions.cs:12](../../../../src/Meridian.Storage.Accounting/Export/AnalysisExportServiceLedgerExtensions.cs#L12) | Exports a journal, as-of trial balance, cash-flow statement, and supplied lot evidence as CSV, XLSX, Parquet or Arrow. A unique result directory prevents replacement of another export. A failed or cancelled export removes its incomplete artifacts. |
+| <code>public static async Task&lt;ExportResult&gt; ExportLedgerAsync(this AnalysisExportService exporter, LedgerExportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage.Accounting/Export/AnalysisExportServiceLedgerExtensions.cs:13](../../../../src/Meridian.Storage.Accounting/Export/AnalysisExportServiceLedgerExtensions.cs#L13) | Exports a journal, as-of trial balance and balance sheet, period income and cash-flow statements, and supplied lot evidence as CSV, XLSX, Parquet or Arrow. A unique result directory prevents replacement of another export. A failed or cancelled export removes its incomplete artifacts. |
 
 ## LedgerExportRequest
 

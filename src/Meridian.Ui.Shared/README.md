@@ -43,6 +43,8 @@ transport, malformed payload, incomplete response or throttling.
 Discovery holds the retained configuration lease through dispatch and requires an applied Alpaca
 runtime binding owned by the authenticated tenant. Missing, deleted, inconsistent or pending
 bindings refuse before HTTP; a different tenant cannot use the host's selected provider credentials.
+The complete lookup has a 20-second deadline and preserves caller cancellation. Expiry reports
+`lookupTimedOut` and releases the configuration lease; blank queries refuse before provider probes.
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
@@ -84,6 +86,12 @@ endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow
 require an exact retained valuation cut. Its availability table distinguishes absent lot evidence
 from measured empty schedules. Temporary export files are removed after ZIP construction. The
 paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+Daily valuation carrying-value reads use the durable store's as-of trial-balance capability,
+which can combine an immutable period-close checkpoint with subsequent journal activity.
+Compatibility stores retain journal hydration. Both paths preserve entity scope and distinguish
+an absent securities account from a retained account whose balance is zero; integrity failures
+are propagated before a valuation draft is prepared.
 
 Fund workspace research-ledger reads hydrate archived journal details only after the fund and
 selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.

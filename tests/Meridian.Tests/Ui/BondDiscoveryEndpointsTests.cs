@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
 namespace Meridian.Tests.Ui;
@@ -26,6 +27,67 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     private readonly List<string> _configRoots = [];
     private const string OwnerTenant = "bond-discovery-test-tenant";
 
+    [Fact]
+    public async Task Lookup_DeadlineRefusesUnavailableDataAndReleasesCredentialConfigurationLease()
+    {
+        var clock = new FakeTimeProvider();
+        using var handler = new CancelableSearchHandler();
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search, timeProvider: clock);
+        var lookup = app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        clock.Advance(TimeSpan.FromSeconds(20));
+
+        using var response = await lookup.WaitAsync(TimeSpan.FromSeconds(5));
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("available").GetBoolean().Should().BeFalse();
+        body.GetProperty("failureReason").GetString().Should().Be("lookupTimedOut");
+        body.GetProperty("candidates").GetArrayLength().Should().Be(0);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var lease = await app.Services.GetRequiredService<ConfigStore>().AcquireWriteLeaseAsync(timeout.Token);
+    }
+
+    [Fact]
+    public async Task Lookup_CallerCancellationPropagatesAndReleasesCredentialConfigurationLease()
+    {
+        using var handler = new CancelableSearchHandler();
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+        using var caller = new CancellationTokenSource();
+        var lookup = app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury", caller.Token);
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await caller.CancelAsync();
+
+        Func<Task> awaitLookup = async () => { using var response = await lookup; };
+        await awaitLookup.Should().ThrowAsync<OperationCanceledException>();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var lease = await app.Services.GetRequiredService<ConfigStore>().AcquireWriteLeaseAsync(timeout.Token);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Lookup_BlankQueryRefusesBeforeAnyProviderProbe(string query)
+    {
+        var unrelated = Substitute.For<ISymbolSearchProvider>();
+        unrelated.Name.Returns("finnhub");
+        using var search = new SymbolSearchService(new[] { unrelated }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+
+        using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=" + Uri.EscapeDataString(query));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await unrelated.DidNotReceiveWithAnyArgs().IsAvailableAsync(default);
+        await unrelated.DidNotReceiveWithAnyArgs().SearchAsync(default!, default, default);
+    }
+
     [Theory]
     [InlineData("selected", OwnerTenant, HttpStatusCode.OK, 1)]
     [InlineData("selected", "foreign-tenant", HttpStatusCode.Forbidden, 0)]
@@ -34,6 +96,7 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     [InlineData("missing", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
     [InlineData("pending", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
     [InlineData("missing-config", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("invalid-config", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
     public async Task Lookup_RequiresCurrentAppliedTenantOwnedBindingBeforeProviderAccess(
         string ownership, string tenant, HttpStatusCode expectedStatus, int expectedRequests)
     {
@@ -252,12 +315,14 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     }
 
     private async Task<WebApplication> CreateAppAsync(UserPermission permissions, SymbolSearchService? search = null,
-        bool tenantScoped = true, string tenantId = OwnerTenant, string ownership = "selected")
+        bool tenantScoped = true, string tenantId = OwnerTenant, string ownership = "selected", TimeProvider? timeProvider = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         if (search is not null)
             builder.Services.AddSingleton(search);
+        if (timeProvider is not null)
+            builder.Services.AddSingleton(timeProvider);
         if (ownership != "missing-config")
         {
             var root = Path.Combine(Path.GetTempPath(), "meridian-bond-discovery-ownership", Guid.NewGuid().ToString("N"));
@@ -285,6 +350,8 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
                         }
                     });
                 }
+                if (ownership == "invalid-config")
+                    await File.WriteAllTextAsync(config.ConfigPath, "{");
             }
             builder.Services.AddSingleton(config);
             builder.Services.AddSingleton(runtime);
@@ -314,6 +381,17 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
         protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
             => Task.FromException(new HttpIOException(HttpRequestError.ResponseEnded, "Synthetic interrupted provider body."));
         protected override bool TryComputeLength(out long length) { length = 0; return false; }
+    }
+
+    private sealed class CancelableSearchHandler : HttpMessageHandler
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Started.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            throw new InvalidOperationException("The synthetic infinite wait completed without cancellation.");
+        }
     }
 
     private sealed class AuthoritativeBondProvider(HttpClient http, string assetType) : BaseSymbolSearchProvider("synthetic-key", http)

@@ -26,6 +26,8 @@ public static class BondDiscoveryEndpoints
                 return Results.Problem("Provider-backed bond discovery is not configured on this host.", statusCode: 503);
 
             var normalized = query?.Trim() ?? string.Empty;
+            if (normalized.Length == 0)
+                return Results.BadRequest(new { error = "Enter a bond symbol or issuer before lookup." });
             if (normalized.Length > 200)
                 return Results.BadRequest(new { error = "Bond lookup accepts at most 200 characters." });
 
@@ -34,28 +36,28 @@ public static class BondDiscoveryEndpoints
             var available = false;
             string? failureReason = null;
             SymbolSearchResponse? results = null;
+            // The configuration lease protects dispatch ownership. Bound the whole operation so
+            // quota pacing or an unresponsive provider cannot indefinitely block credential maintenance.
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20),
+                context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System);
+            using var lookup = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, deadline.Token);
             try
             {
-                using var ownership = await AcquireOwnershipAsync(context).ConfigureAwait(false);
+                using var ownership = await AcquireOwnershipAsync(context, lookup.Token).ConfigureAwait(false);
                 if (!ownership.TenantAllowed)
                     return Results.Problem("Bond discovery is unavailable in this tenant.", statusCode: StatusCodes.Status403Forbidden);
 
-                if (normalized.Length > 0)
-                {
-                    results = await search.SearchAuthoritativeAsync(new SymbolSearchRequest(normalized, Limit: 25,
-                        AssetType: "fixed_income", Provider: "alpaca", IncludeFigi: false), context.RequestAborted).ConfigureAwait(false);
-                    available = true;
-                }
-                else
-                {
-                    var provider = (await search.GetProvidersAsync(context.RequestAborted).ConfigureAwait(false))
-                        .FirstOrDefault(candidate => string.Equals(candidate.Name, "alpaca", StringComparison.OrdinalIgnoreCase));
-                    available = provider?.Available == true;
-                }
+                results = await search.SearchAuthoritativeAsync(new SymbolSearchRequest(normalized, Limit: 25,
+                    AssetType: "fixed_income", Provider: "alpaca", IncludeFigi: false), lookup.Token).ConfigureAwait(false);
+                available = true;
             }
             catch (ProviderSearchException ex)
             {
                 failureReason = JsonNamingPolicy.CamelCase.ConvertName(ex.Failure.ToString());
+            }
+            catch (OperationCanceledException) when (deadline.IsCancellationRequested && !context.RequestAborted.IsCancellationRequested)
+            {
+                failureReason = "lookupTimedOut";
             }
             var candidates = (results?.Results ?? []).Where(candidate =>
                 string.Equals(candidate.AssetType, "FixedIncome", StringComparison.OrdinalIgnoreCase)
@@ -90,7 +92,7 @@ public static class BondDiscoveryEndpoints
         public void Dispose() => ConfigurationLease.Dispose();
     }
 
-    private static async Task<OwnershipLease> AcquireOwnershipAsync(HttpContext context)
+    private static async Task<OwnershipLease> AcquireOwnershipAsync(HttpContext context, CancellationToken ct)
     {
         var config = context.RequestServices.GetService<ConfigStore>()
             ?? throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
@@ -99,7 +101,7 @@ public static class BondDiscoveryEndpoints
         try
         {
             // A binding cannot be removed or reassigned between this check and provider dispatch.
-            lease = await config.AcquireWriteLeaseAsync(context.RequestAborted).ConfigureAwait(false);
+            lease = await config.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
             var scope = ProviderRuntimeCredentialService.ResolveScope(config.LoadRequired(), "alpaca")
                 ?? throw new InvalidOperationException("An owned Alpaca runtime binding is required.");
             if (!string.Equals(scope.TenantId, context.Items[LoginSessionMiddleware.CurrentTenantIdKey] as string, StringComparison.Ordinal))
@@ -111,7 +113,7 @@ public static class BondDiscoveryEndpoints
                 throw new InvalidOperationException("The owned credential binding has not reached running provider instances.");
             return new(lease, true);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
         {
             lease?.Dispose();
             throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
