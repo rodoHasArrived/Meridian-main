@@ -68,8 +68,8 @@ One canonical home per instrument family, enforced by the asset-class validators
 | Readiness catalog | `src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs` | Pack-owned readiness specifications and evidence aliases route securitized products to StructuredCredit |
 | Profile reclassification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs` | `ProfileAssetClasses` maps `structured-credit-io-po` → StructuredCredit; the application service enforces profile consistency |
 | Legacy reclassification report | `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs`, `src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs` | `proposeStructuredCreditReclassification` derives StructuredCredit terms for securitised `Bond` and `CustomAsset` rows and lists blockers instead of guessing; the service serves the report at `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance). Report only: applying a proposal is a governed amendment |
-| CustomAsset promotion report | `src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs` | For one reclassifying profile, lists every active `CustomAsset` pinned to it as Ready or Blocked after a dry run under the target class (classification check, target decode, kind invariants, profile catalog validation); served at `POST /api/security-master/profile-promotion/{profileId}/report` (AdminMaintenance). Report only; the [promotion runbook](../operators/security-master-custom-asset-promotion.md) applies it one envelope amendment at a time |
-| Promotion guard (R1) | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` (`GetProfileBackedAssetClassOverride`) | A write that carries no envelope (an amendment without a terms patch, or a deactivation) keeps a stored `CustomAsset` class, so a record pinned to a reclassifying profile is promoted only by an explicit envelope amendment |
+| CustomAsset promotion report | `src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs` | For one reclassifying profile, lists every active `CustomAsset` pinned to it as Ready or Blocked after a dry run under the target class (classification check, target decode, kind invariants, profile catalog validation, asset-pack admission; not full write-path parity); served at `POST /api/security-master/profile-promotion/{profileId}/report` (AdminMaintenance). Report only; the [promotion runbook](../operators/security-master-custom-asset-promotion.md) applies it one envelope amendment at a time |
+| Promotion guard (R1) | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` (`GetProfileBackedAssetClassOverride`) | A write that carries no terms patch (a common-terms-only amendment, or a deactivation) keeps a stored `CustomAsset` class. Any write that carries the pinned envelope resolves to the target class: an envelope amendment, and also an approved workbench field edit or a term-block patch, because both rebuild a full envelope patch from the stored terms. Repair and promotion of a record pinned to a reclassifying profile are therefore one write |
 | Asset family | `src/Meridian.FSharp/Domain/SecurityClassification.fs` | `AssetFamily.SecuritizedCredit` is the securitized family; `StructuredCash` reverts to naming cash vehicles only, so the two no longer share a label |
 | Accounting classification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | `AccountingInstrumentClass` declares StructuredCredit's accounting home, so every vendor spelling of a securitized tranche posts under one class |
 | Coverage read model | `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Structured evidence that names no security routes to StructuredCredit, not CustomAsset |
@@ -144,9 +144,11 @@ three routes to coexist.
 ### Runtime Verification
 
 - Covered by `SecurityValidationServiceTests` canonical-home cases.
-- `CustomAssetPromotionRoundTripTests` (and its PostgreSQL variant) cover promotion by envelope
-  amendment, the R1 guard, and that every class declaring a reclassifying profile accepts
-  profile-backed terms and has a registry projection descriptor.
+- `CustomAssetPromotionRoundTripTests` cover promotion by envelope amendment, the R1 guard on a
+  no-patch amendment and a deactivation, that a partial repair envelope is refused under the target
+  class, and that every class declaring a reclassifying profile accepts profile-backed terms and has a
+  registry projection descriptor. The PostgreSQL variant covers the projection move only (064 rows
+  cleared, the target registry row written); it does not exercise R1.
 
 ## References
 

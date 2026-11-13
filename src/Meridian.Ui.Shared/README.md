@@ -3502,7 +3502,7 @@ registered and it never writes; applying a proposal is a governed amendment.
 ADR-022 promotion report for one reclassifying profile: the active `CustomAsset` records pinned to it,
 each Ready or Blocked after a dry run under the target class. A profile that does not reclassify
 returns 400. It is mapped only when the Postgres-backed service is registered and it never writes;
-promotion is an envelope amendment
+promotion is any write that carries the pinned envelope
 ([runbook](../../docs/operators/security-master-custom-asset-promotion.md)).
 
 ## Analytical read-model evidence

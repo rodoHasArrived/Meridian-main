@@ -756,7 +756,7 @@ configured.
 | Method | Route | Description |
 |--------|-------|-------------|
 | POST | `/api/security-master/structured-credit-reclassification/report` | Legacy securitised `Bond` and `CustomAsset` rows with the `StructuredCredit` terms the domain can carry over and the blockers it cannot resolve (`StructuredCreditReclassificationReportDto`). |
-| POST | `/api/security-master/profile-promotion/{profileId}/report` | Active `CustomAsset` records pinned to the reclassifying profile `profileId`, each Ready or Blocked after a dry run under the profile's target class: classification-metadata check, target decode, domain invariants and profile catalog validation (`SecurityMasterProfilePromotionReportDto`). Returns 400 when `profileId` is not a reclassifying profile. See the [promotion runbook](../operators/security-master-custom-asset-promotion.md). |
+| POST | `/api/security-master/profile-promotion/{profileId}/report` | Active `CustomAsset` records pinned to the reclassifying profile `profileId`, each Ready or Blocked after a dry run under the profile's target class: classification-metadata check, target decode, domain invariants, asset-pack admission and profile catalog validation (`SecurityMasterProfilePromotionReportDto`). This is not full write-path parity, so a Ready record can still be refused when amended. Returns 400 when `profileId` is not a reclassifying profile. See the [promotion runbook](../operators/security-master-custom-asset-promotion.md). |
 
 ### Packaging (`/api/packaging/*`)
 

@@ -54,7 +54,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Security Master cross-instance edit rollout | [Governed Edit Rollout](security-master-governed-edit-rollout.md) | independent schema/Storage review, old-writer drain, migration and operator-acceptance receipts |
 | Security Master schedule-terms contract rollout | [Terms Contract Rollout](security-master-terms-contract-rollout.md) | node inventory from the startup capability line, stored-data gates, calendar parity, edit routing and rollback floors |
-| Move CustomAsset records onto a first-class class | [CustomAsset Promotion](security-master-custom-asset-promotion.md) | read-only promotion report per reclassifying profile, blocker repair, one envelope amendment per record, and the no-patch guard |
+| Move CustomAsset records onto a first-class class | [CustomAsset Promotion](security-master-custom-asset-promotion.md) | read-only promotion report per reclassifying profile, one envelope amendment per record that repairs and promotes, and the no-patch guard |
 | Business-day calendars for declared schedules | [Business-Day Calendar Files](business-day-calendar-files.md) | file format, version bumps, hash verification from the startup lines, refusal warnings and calendar governance |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
 | Inspect a connected pipeline or backfill trace | [Distributed Tracing](./distributed-tracing.md) | opt-in exporters, collector configuration, sampling, and shutdown delivery |

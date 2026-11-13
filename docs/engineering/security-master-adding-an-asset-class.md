@@ -76,7 +76,9 @@ When the class is where a governed profile's records should live:
   `CustomAssetPromotionRoundTripTests.EveryReclassifyingProfile_TargetsAProfileBackedClassWithARegistryProjection`
   fails otherwise.
 - Records already pinned to the profile stay `CustomAsset` until an operator promotes them. A write
-  without an envelope keeps the stored `CustomAsset` class. Operators use the
+  without a terms patch keeps the stored `CustomAsset` class. Any write that carries the pinned
+  envelope (including an approved field edit or a term-block patch) promotes the record, so repair
+  and promotion are one amendment. Operators use the
   [CustomAsset promotion runbook](../operators/security-master-custom-asset-promotion.md).
 
 ## 7. Tests that check the list

@@ -1795,10 +1795,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <summary>
     /// The stored projection's resolution, used when the write carries no profile envelope (a
     /// no-patch amendment or a deactivation). A stored <c>CustomAsset</c> keeps its class here even
-    /// when its pinned profile is one a class now declares in <c>ReclassifyingProfileIds</c>: promotion
-    /// is an explicit envelope amendment (ADR-022), never a side effect of an unrelated common-terms
-    /// amend or a deactivation. A record already on a first-class profile-backed class resolves as
-    /// before.
+    /// when its pinned profile is one a class now declares in <c>ReclassifyingProfileIds</c> (ADR-022
+    /// R1): a common-terms-only amend or a deactivation never promotes it. The guard covers only writes
+    /// without a terms patch. Any write that carries the pinned envelope resolves to the target class
+    /// through the patch overload below, including an approved workbench field edit and a term-block
+    /// patch, because both rebuild a full envelope patch from the stored terms. A record already on a
+    /// first-class profile-backed class resolves as before.
     /// </summary>
     private static string? GetProfileBackedAssetClassOverride(SecurityProjectionRecord projection)
     {

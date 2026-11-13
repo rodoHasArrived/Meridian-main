@@ -13,16 +13,23 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// Builds the report-first promotion inventory for one reclassifying profile (ADR-022): every active
 /// <c>CustomAsset</c> record pinned to the profile, with the result of a dry run under the profile's
-/// target class. The dry run applies the checks an envelope amendment would apply on the write path:
-/// the classification-metadata check, the target decode, the target kind's domain invariants and the
-/// profile catalog validation. Nothing is written. Promotion itself is an explicit amendment that
-/// resubmits the pinned envelope; an amendment without a terms patch keeps the stored class.
+/// target class. The dry run applies the main checks an envelope amendment applies on the write path:
+/// the classification-metadata check, the target decode, the target kind's domain invariants, the
+/// profile catalog validation and asset-pack admission (schema write validation and the schedule-terms
+/// write rules). It is not full write-path parity: it decodes with the read-tolerant mapping rather
+/// than the strict write-mode command mapping and does not run the re-serialization round-trip guards,
+/// so a Ready candidate can still be refused when it is amended. Nothing is written.
+/// <para>Promotion itself is any write that carries the pinned envelope as its terms patch: an
+/// envelope amendment, an approved workbench field edit or a term-block patch (both rebuild a full
+/// envelope patch from the stored terms). A write without a terms patch, and a deactivation, keep the
+/// stored <c>CustomAsset</c> class.</para>
 /// </summary>
 public sealed class SecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService
 {
     internal const string SourceTermsUnreadable = "profile_promotion_source_terms_unreadable";
     internal const string ClassificationConflict = "profile_promotion_classification_conflict";
     internal const string TargetDecodeFailed = "profile_promotion_target_decode_failed";
+    internal const string AdmissionRefused = "profile_promotion_admission_refused";
 
     private readonly ISecurityMasterStore _securityStore;
     private readonly ISecurityAssetProfileCatalog? _assetProfileCatalog;
@@ -160,6 +167,20 @@ public sealed class SecurityMasterProfilePromotionService : ISecurityMasterProfi
             {
                 if (issue.Severity == SecurityValidationSeverityDto.Error)
                     blockers.Add(new SecurityMasterProfilePromotionBlockerDto(issue.Code, issue.Message));
+            }
+        }
+
+        if (targetRecord is not null)
+        {
+            // The asset-pack admission an amendment runs before it persists, judged against the stored
+            // terms as retained declarations exactly as the amendment path does.
+            try
+            {
+                SecurityAssetPackAdmission.EnsureAdmitted(target, evaluatedAt, projection.AssetSpecificTerms);
+            }
+            catch (InvalidOperationException ex) // includes SecurityMasterWriteRefusedException
+            {
+                blockers.Add(new SecurityMasterProfilePromotionBlockerDto(AdmissionRefused, ex.Message));
             }
         }
 

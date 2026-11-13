@@ -68,7 +68,9 @@ public sealed class CustomAssetPromotionRoundTripPostgresTests : IClassFixture<S
         (await profileFields.GetProfileFieldsAsync(securityId)).Should().NotBeEmpty("a CustomAsset envelope projects its profile fields");
         (await CountAsync("private_fund_interest_projection", securityId)).Should().Be(0);
 
-        // A no-patch amendment keeps the CustomAsset class (R1) and its profile-field rows.
+        // A common-terms amendment of a co-invest-spv record keeps it CustomAsset. co-invest-spv does
+        // not reclassify, so this is not the R1 guard (CustomAssetPromotionRoundTripTests pins that on
+        // a record pinned to private-fund-interest); it gives the history a no-patch event to replay.
         var renamed = await service.AmendTermsAsync(new AmendSecurityTermsRequest(
             securityId,
             1,

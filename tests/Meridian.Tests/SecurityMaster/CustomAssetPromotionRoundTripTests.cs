@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -98,6 +99,30 @@ public sealed class CustomAssetPromotionRoundTripTests
     }
 
     [Fact]
+    public async Task EnvelopeRepair_OfACustomAssetPinnedToAReclassifyingProfile_IsThePromotion()
+    {
+        // Any write that carries the pinned envelope is decoded under the target class, so a partial
+        // repair is refused outright and the complete repair promotes the record in the same write.
+        // This is why the runbook makes repair and promotion one amendment.
+        var harness = new Harness();
+        var securityId = Guid.NewGuid();
+        harness.Seed(CustomAssetRecord(securityId, WithoutProfileField(PrivateFundInterestEnvelope(), "gpSponsor"), version: 2));
+
+        var partial = JsonNode.Parse(WithoutProfileField(PrivateFundInterestEnvelope(), "gpSponsor").GetRawText())!.AsObject();
+        partial["profileFields"]!["strategy"] = "Growth";
+        var partialRepair = () => harness.Service.AmendTermsAsync(EnvelopeAmend(securityId, expectedVersion: 2, JsonSerializer.SerializeToElement(partial)));
+
+        await partialRepair.Should().ThrowAsync<InvalidOperationException>("the repair envelope is read as PrivateFundInterest, which requires gpSponsor");
+        harness.Appended.Should().BeEmpty();
+        harness.LastPersisted!.AssetClass.Should().Be("CustomAsset");
+
+        var repaired = await harness.Service.AmendTermsAsync(EnvelopeAmend(securityId, expectedVersion: 2, PrivateFundInterestEnvelope()));
+
+        repaired.AssetClass.Should().Be("PrivateFundInterest", "the complete repair is itself the promotion");
+        repaired.Version.Should().Be(3);
+    }
+
+    [Fact]
     public void EveryReclassifyingProfile_TargetsAProfileBackedClassWithARegistryProjection()
     {
         // A class that declares a reclassifying profile id must accept profile-backed terms (or the
@@ -150,6 +175,13 @@ public sealed class CustomAssetPromotionRoundTripTests
             },
             profileApproval = SeedApproval()
         });
+
+    internal static JsonElement WithoutProfileField(JsonElement envelope, string fieldKey)
+    {
+        var node = JsonNode.Parse(envelope.GetRawText())!.AsObject();
+        node["profileFields"]!.AsObject().Remove(fieldKey);
+        return JsonSerializer.SerializeToElement(node);
+    }
 
     private static object SeedApproval() => new
     {

@@ -20,7 +20,7 @@ public sealed partial class SecurityMasterService
         EnsureAssetClassRoundTripsSafely(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
         // A deactivation carries no envelope, so a stored CustomAsset keeps its class even when its
-        // pinned profile now reclassifies (ADR-022 R1): promotion is an explicit envelope amendment.
+        // pinned profile now reclassifies (ADR-022 R1): only a write carrying the envelope promotes it.
         var deactivateClassOverride = GetProfileBackedAssetClassOverride(currentProjection);
         var deactivateTermsOverride = GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null);
         var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(

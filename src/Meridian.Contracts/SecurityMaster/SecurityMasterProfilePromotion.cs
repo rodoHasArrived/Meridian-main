@@ -5,8 +5,9 @@ namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
 /// Whether a <c>CustomAsset</c> record pinned to a reclassifying profile can be promoted to that
-/// profile's first-class asset class by an explicit envelope amendment (ADR-022).
-/// <see cref="Blocked"/> records list what has to be repaired first.
+/// profile's first-class asset class by a write that carries its envelope (ADR-022).
+/// <see cref="Blocked"/> records list what the promoting envelope has to correct; for a record pinned
+/// to a reclassifying profile, repair and promotion are the same write.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityMasterProfilePromotionDisposition>))]
 public enum SecurityMasterProfilePromotionDisposition

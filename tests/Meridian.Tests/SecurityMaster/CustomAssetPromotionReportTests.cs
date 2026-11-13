@@ -62,7 +62,30 @@ public sealed class CustomAssetPromotionReportTests
 
         var blockedCandidate = report.Candidates[1];
         blockedCandidate.Disposition.Should().Be(SecurityMasterProfilePromotionDisposition.Blocked);
-        blockedCandidate.Blockers.Should().NotBeEmpty("a fund interest without its GP sponsor cannot be promoted");
+        blockedCandidate.Blockers.Should().Contain(
+            static blocker => blocker.Code == SecurityMasterProfilePromotionService.TargetDecodeFailed
+                && blocker.Message.Contains("gpSponsor"),
+            "a fund interest without its GP sponsor does not decode as PrivateFundInterest");
+        blockedCandidate.Blockers.Should().NotContain(
+            static blocker => blocker.Code == SecurityMasterProfilePromotionService.SourceTermsUnreadable,
+            "the stored CustomAsset envelope itself still reads");
+    }
+
+    [Fact]
+    public async Task BuildReportAsync_BlocksStoredTermsThatDoNotReadAsCustomAsset()
+    {
+        var (sut, store) = BuildSut();
+        var node = JsonNode.Parse(CustomAssetPromotionRoundTripTests.PrivateFundInterestEnvelope().GetRawText())!.AsObject();
+        // A terms version this node does not read: the stored row is refused before it is decoded.
+        node[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 99;
+        var unreadable = CustomAssetPromotionRoundTripTests.CustomAssetRecord(Guid.NewGuid(), JsonSerializer.SerializeToElement(node), 1);
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { unreadable });
+
+        var report = await sut.BuildReportAsync("private-fund-interest");
+
+        var candidate = report.Candidates.Should().ContainSingle().Subject;
+        candidate.Disposition.Should().Be(SecurityMasterProfilePromotionDisposition.Blocked);
+        candidate.Blockers.Should().Contain(static blocker => blocker.Code == SecurityMasterProfilePromotionService.SourceTermsUnreadable);
     }
 
     [Fact]

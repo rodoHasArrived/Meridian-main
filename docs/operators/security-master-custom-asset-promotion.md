@@ -30,8 +30,14 @@ Boundaries:
 
 - The report is read-only. Promotion is a normal governed amendment that resubmits the record's
   pinned envelope. There is no bulk-apply endpoint.
-- An amendment without a terms patch, and a deactivation, keep a stored `CustomAsset` class. A
-  record is never promoted as a side effect of a rename or a retirement.
+- A write without a terms patch (a common-terms-only amendment, such as a rename) and a deactivation
+  keep a stored `CustomAsset` class. A record is never promoted as a side effect of a rename or a
+  retirement.
+- Any write that carries the pinned envelope **is** the promotion for a record pinned to a
+  reclassifying profile. That includes an envelope amendment, an approved workbench field edit and
+  a term-block patch: the last two rebuild a full envelope patch from the stored terms, so the write
+  is decoded and validated under the target class. There is no way to edit profile fields on such a
+  record and keep it `CustomAsset`. Repair and promotion are one amendment (step 3).
 - Records pinned to a profile that does not reclassify (for example `co-invest-spv`) stay
   `CustomAsset`. To move one, repin it to a reclassifying profile in the same amendment, with that
   profile's fields.
@@ -74,13 +80,26 @@ Boundaries:
    $report.candidates | Select-Object securityId, displayName, version, disposition, @{ n = 'blockers'; e = { $_.blockers.code -join ', ' } }
    ```
 
-3. Repair each `Blocked` candidate before you promote it. Each blocker has a `code` and a
-   `message`; see [Failure and Recovery](#failure-and-recovery). Repair profile fields through the
-   workbench field-edit route or an envelope amendment that keeps the record on its current
-   profile, then run step 2 again.
+3. Handle each `Blocked` candidate. Each blocker has a `code` and a `message`; see
+   [Failure and Recovery](#failure-and-recovery). Do not repair profile fields with a separate
+   field edit, term-block patch or envelope amendment first: on a record pinned to a reclassifying
+   profile each of those writes is the promotion. A partial repair (for example, one of two missing
+   fields) is refused under the target class, and a complete one promotes the record outside step 4.
+   Choose one of:
 
-4. Promote one `Ready` candidate. Read its current detail, then amend it with its own pinned
-   envelope and its current version:
+   - **Repair and promote in one amendment.** Correct the envelope (`profileFields`, `category`,
+     `subType`, `accountingClassification`) and submit the corrected envelope as the
+     `assetSpecificTermsPatch` in step 4 instead of the unchanged one. Review the corrected envelope
+     as part of that promotion.
+   - **Hold the record as `CustomAsset`.** Repin it in one amendment to a profile that does not
+     reclassify (for example `co-invest-spv`), with that profile's fields, and repair it there. It
+     becomes a promotion candidate again only when you repin it to the reclassifying profile, which
+     is itself a promotion amendment.
+   - **Escalate.** If neither fits, raise it with the Security Master owner for an out-of-band data
+     correction. Do not amend the record.
+
+4. Promote one `Ready` candidate (or a `Blocked` one with its corrected envelope, from step 3).
+   Read its current detail, then amend it with its pinned envelope and its current version:
 
    ```powershell
    $securityId = '<securityId from the report>'
@@ -89,7 +108,7 @@ Boundaries:
        securityId = $securityId
        expectedVersion = $detail.version
        commonTerms = $null
-       assetSpecificTermsPatch = $detail.assetSpecificTerms   # the pinned envelope, unchanged
+       assetSpecificTermsPatch = $detail.assetSpecificTerms   # the pinned envelope; corrected for a step 3 repair
        identifiersToAdd = @()
        identifiersToExpire = @()
        effectiveFrom = (Get-Date).ToUniversalTime().ToString('o')
@@ -126,12 +145,13 @@ Boundaries:
 | Step 2 returns `400` | The profile id is not in the table above. | Use a reclassifying profile id. A non-reclassifying profile has nothing to promote to. |
 | Step 2 returns `403` | The session lacks `AdminMaintenance`. | Use an account with that permission. |
 | Step 2 returns `404` | Security Master storage is not configured on this host. | Configure storage and restart, or use the host that owns Security Master. |
-| Blocker `profile_promotion_target_decode_failed` | The envelope is missing a field the target class requires. | Add the field to `profileFields`, then rebuild the report. |
-| Blocker `profile_promotion_classification_conflict` | The envelope's `category`, `subType` or `accountingClassification` names another class. | Correct the metadata so it agrees with the profile, then rebuild the report. |
+| Blocker `profile_promotion_target_decode_failed` | The envelope is missing a field the target class requires. | Add the field to `profileFields` in the envelope you submit at step 4 (repair and promotion are one amendment; see step 3). |
+| Blocker `profile_promotion_classification_conflict` | The envelope's `category`, `subType` or `accountingClassification` names another class. | Correct the metadata in the envelope you submit at step 4 so it agrees with the profile (see step 3). |
+| Blocker `profile_promotion_admission_refused` | Asset-pack admission for the target class refused the envelope (schema write validation or a schedule-terms write rule). | Correct the named field in the envelope you submit at step 4 (see step 3). |
 | Blocker `profile_promotion_source_terms_unreadable` | The stored row does not decode as `CustomAsset`. | Stop. Raise it with the Security Master owner; do not amend the record. |
-| Any other blocker code | A domain invariant or profile catalog issue for the target class; the message names the field. | Repair the field, then rebuild the report. |
+| Any other blocker code | A domain invariant or profile catalog issue for the target class; the message names the field. | Correct the field in the envelope you submit at step 4 (see step 3). |
 | Step 4 returns `403` with the governed-amendment title | The deployment requires governed term amendments. | Make the same envelope amendment through the governed workbench route ([Governed Edit Rollout](security-master-governed-edit-rollout.md)). |
-| Step 4 returns `400` with a refusal detail | The write path refused the promotion, for example a profile catalog or domain-invariant failure that appeared after the report was built. | Read the detail, repair the record, and rebuild the report before retrying. |
+| Step 4 returns `400` with a refusal detail | The write path refused the promotion. The report does not run every write-path guard (it decodes read-tolerantly and skips the re-serialization round-trip guards), and the record or catalog may have changed after the report was built. | Read the detail, correct the envelope you submit, and rebuild the report before retrying. Nothing was written. |
 | Step 4 fails with an expected-version conflict | Someone else amended the record after you read it. | Read the detail again and retry with the new version. |
 | Step 4 response still says `CustomAsset` | The patch did not carry the envelope, or the envelope names a non-reclassifying profile. | Check the request body; resubmit with the pinned envelope. |
 
