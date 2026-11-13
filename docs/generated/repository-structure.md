@@ -6865,6 +6865,7 @@ Meridian-main
 │   │   ├── Interop.SecurityMaster.fs
 │   │   ├── Interop.SecurityMaster.GeneratedWriter.fs
 │   │   ├── Interop.SecurityStructures.fs
+│   │   ├── Interop.SecurityTermsWriteVersion.fs
 │   │   ├── Meridian.FSharp.fsproj
 │   │   └── README.md
 │   ├── Meridian.FSharp.DirectLending.Aggregates
