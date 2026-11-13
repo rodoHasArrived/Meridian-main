@@ -26,11 +26,10 @@
     "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs": 3372,
     "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs": 2054,
     "src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs": 2377,
-    "src/Meridian.Ui/dashboard/src/lib/api.ts": 4118,
     "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts": 6723,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.ts": 2656,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance.view-model.ts": 4772,
-    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx": 6129,
+    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx": 2108,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts": 7201,
     "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx": 2184,
     "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts": 4878,
@@ -41,16 +40,14 @@
     "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.ts": 2541,
     "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx": 3013,
     "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts": 2808,
-    "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx": 7441,
     "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts": 3231,
     "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.ts": 2434,
     "src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.ts": 3434,
     "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx": 2508,
     "src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.ts": 5293,
-    "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 5406,
+    "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 2097,
     "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs": 3360,
-    "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 2366,
-    "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs": 4408
+    "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 2366
   },
   "headroom": {
     "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs": 50,
@@ -77,7 +74,6 @@
     "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs": 50,
     "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs": 50,
     "src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs": 50,
-    "src/Meridian.Ui/dashboard/src/lib/api.ts": 50,
     "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts": 50,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.ts": 50,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance.view-model.ts": 50,
@@ -92,7 +88,6 @@
     "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.ts": 50,
     "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx": 50,
     "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts": 50,
-    "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx": 50,
     "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts": 50,
     "src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.ts": 50,
     "src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.ts": 50,
@@ -100,7 +95,6 @@
     "src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.ts": 50,
     "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 50,
     "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs": 50,
-    "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 50,
-    "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs": 50
+    "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs": 50
   }
 }

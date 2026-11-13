@@ -6,132 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ReportingReconciliationEvidenceInvalidException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceInvalidException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L47).
-
-Indicates invalid reporting reconciliation evidence and retains its evidence references.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceInvalidException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceInvalidException(string message, int blockingCount = 1, IReadOnlyList&lt;string&gt;? evidenceReferences = null) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L50) |  |
-| <code>public int BlockingCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L59) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L61) |  |
-
-## ReportingReconciliationEvidenceMigrationRequiredException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:639](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L639).
-
-Raised only when a legacy reconciliation snapshot passed its v1 integrity checks but cannot satisfy the current per-break evidence requirements without an operator-led recovery.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:642](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L642) |  |
-
-## ReportingReconciliationEvidenceMissingException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMissingException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L36).
-
-Indicates that required retained reconciliation evidence is missing.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMissingException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMissingException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L39) |  |
-
-## ReportingReconciliationEvidenceRetentionService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceRetentionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L18).
-
-Governed append-only retention facade used by close/reconciliation processing. The exact source checkpoint is part of the immutable key; a non-identical retry is rejected.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceRetentionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceRetentionService(IReportingReconciliationEvidenceRetentionStore store, IReportingAuthoritativeSource? authoritativeSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L23) |  |
-| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt&gt; RetainCompletionAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingReconciliationCompletionEvidence completion, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L36) | Internal application command invoked by close/reconciliation completion. It captures the exact ledger source itself and derives the immutable reporting receipt; no public request can provide source rows, source identity, or a reporting reconciliation hash. |
-| <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L76) |  |
-
-## ReportingReconciliationEvidenceSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:67](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L67).
-
-Production fail-closed adapter over the durable reconciliation/close evidence store.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceSource : IReportingReconciliationEvidenceSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceSource(IReportingReconciliationEvidenceStore store, IReconciliationBreakQueueRepository? breakQueue = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:72](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L72) |  |
-| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt&gt; ResolveAsync(ReportingRunParametersDto parameters, ReportingAuthoritativeSourceCheckpoint source, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:82](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L82) |  |
-
-## ReportingReconciliationReadinessException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationReadinessException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L25).
-
-A healthy evidence store had no receipt for the exact certified source cut. This is a logical readiness blocker, not a dependency outage or integrity failure.
-
-```csharp
-public class ReportingReconciliationReadinessException : ReportingAuthoritativeSourceUnavailableException
-```
-
-## ReportingReleasedArtifactIntegrityGate
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReleasedArtifactIntegrityGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L239).
-
-Re-reads every immutable artifact immediately before queueing and again immediately before a claimed delivery is sent. A governance receipt alone is therefore insufficient when retained bytes or catalog metadata are missing, corrupt, or no longer match the released manifest.
-
-```csharp
-public sealed class ReportingReleasedArtifactIntegrityGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReleasedArtifactIntegrityGate(IReportingArtifactCatalog catalog, IReportingArtifactStore artifactStore);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:244](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L244) |  |
-| <code>public async Task&lt;ReportingReleaseAuthorizationResult&gt; VerifyAsync(ReportingDeliveryReleaseAuthorization authorization, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:252](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L252) |  |
-
 ## ReportingRenderedArtifact
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRenderedArtifact</code>. Kind: `record`.
@@ -880,25 +754,6 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecordsForFundProfile(string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:579](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L579) | Every retained report-pack record scoped to a fund profile, newest period first. Unlike ListRecords this is intentionally uncapped: callers that locate restatement candidates for a closed-period reference-data edit must see the full set of the fund&#x27;s published packs, since a silently dropped pack would be a missed restatement. |
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecordsForSecurityInFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:593](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L593) | The report packs in a fund profile whose retained report-line provenance references securityId. When a security→report-line index is wired this is an O(matches) lookup; otherwise it falls back to the full fund scan filtered by the shared matcher, preserving behaviour. Callers apply their own state gating (e.g. only Published/Restated packs). |
 
-## ReportPeriodRange
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPeriodRange</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs#L15).
-
-Confidently resolves a report pack&#x27;s free-form Period label into the calendar date range it covers — but only for unambiguous ISO-style labels: a bare year (2026), a year-month (2026-05), or a full date (2026-05-31). Fiscal period/quarter labels (2026-P03, 2026-Q1) and any other free text return null, because mapping them to calendar dates requires a fund-specific fiscal calendar this layer does not have. Callers MUST treat null as &quot;unknown range&quot; and fail open (keep the candidate): the restatement narrowing may only exclude a pack it is certain falls entirely before an edit&#x27;s effective date, never one whose period it cannot parse — otherwise it would risk a silent restatement miss.
-
-```csharp
-public static class ReportPeriodRange
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static (DateOnly Start, DateOnly End)? TryParse(string? period);</code> | [src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs#L21) | The inclusive &#91;Start, End&#93; calendar range a period label covers, or null when the label is not an unambiguous ISO year / year-month / year-month-day. |
-| <code>public static bool IsEntirelyBefore(string? period, DateOnly effectiveDate) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportPeriodRange.cs#L70) | True only when period parses to a confident range that ends strictly before effectiveDate — i.e. the period is entirely earlier than an edit effective on that date and so cannot be affected by it. Unparseable labels return false (fail open). |
-
 ## ReportTemplateGovernanceStoreOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportTemplateGovernanceStoreOptions</code>. Kind: `record`.
@@ -972,4 +827,133 @@ Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](
 
 ```csharp
 public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
+```
+
+## ReportWriterGridArtifactService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L18).
+
+Renders report-writer grids and produces their downloadable artifact content.
+
+```csharp
+public sealed class ReportWriterGridArtifactService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L28) |  |
+| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L36) |  |
+| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L50) |  |
+
+## RiskRuleConfigDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L78).
+
+```csharp
+public sealed record RiskRuleConfigDto(string RuleName, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal>? SymbolPositionLimits, decimal? MaxDrawdownPercent, int? MaxOrdersPerMinute, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleConfigUpdateRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigUpdateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:92](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L92).
+
+```csharp
+public sealed record RiskRuleConfigUpdateRequest(decimal? DefaultMaxPositionSize = null, IReadOnlyDictionary<string, decimal?>? SymbolPositionLimits = null, decimal? MaxDrawdownPercent = null, int? MaxOrdersPerMinute = null, string? Reason = null, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleFirstRunDefaults
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleFirstRunDefaults</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:38](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L38).
+
+Armed ceilings for the portfolio-aware rails on a host that has never persisted an operator snapshot. Without these, a fresh install starts with every portfolio-aware rule unconfigured — six of eight rules approve without measuring, so any quantity at any price routes. These are conservative starting guardrails for the composition root to opt into, not tuning advice: operators raise, lower, or clear them through the risk config endpoints, and the resulting snapshot (including an explicit clear) always wins over these on the next start.
+
+```csharp
+public sealed record RiskRuleFirstRunDefaults(decimal MaxGrossExposure, decimal MaxSymbolConcentrationPercent, decimal MaxOrderNotional, decimal EscalateOrderNotional, decimal MaxOrderQuantity, decimal MaxPriceDeviationPercent, decimal PriceCollarPercent)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleFirstRunDefaults Conservative { get; } = new (MaxGrossExposure : 1_000_000m, MaxSymbolConcentrationPercent : 25m, MaxOrderNotional : 100_000m, EscalateOrderNotional : 25_000m, MaxOrderQuantity : 10_000m, MaxPriceDeviationPercent : 10m, PriceCollarPercent : 5m);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:54](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L54) | The workstation&#x27;s first-run posture: sized against the default $100k paper book so the rails constrain without strangling a fresh install — a $100k per-order reject ceiling with governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive price band with the 5% collar parked inside it (a collar at or above the band could never fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling. |
+
+## RiskRuleRuntimeOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:18](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L18).
+
+Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling), and optionally the first-run ceilings seeded before any operator snapshot exists.
+
+```csharp
+public sealed record RiskRuleRuntimeOptions(string SnapshotPath, RiskRuleFirstRunDefaults? FirstRunDefaults = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleRuntimeOptions Default { get; } = new (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;risk-rules.json&quot;));</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:22](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L22) |  |
+
+## RiskRuleRuntimeService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:115](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L115).
+
+Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only risk dashboard (GetAllStatusesAsync, config get/update) and supplies the live thresholds and drawdown evaluation that the enforced pre-trade validator — Meridian.Risk&#x27;s CompositeRiskValidator, registered as the IRiskValidator the OMS invokes — reads on every order. Position limits are additionally enforced by the operator-controls gate (ExecutionOperatorControlService) that the OMS runs earlier in the pipeline with its manual-override/bypass semantics.
+
+```csharp
+public sealed class RiskRuleRuntimeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RiskRuleRuntimeService(IServiceProvider services, ILogger&lt;RiskRuleRuntimeService&gt; logger, RiskRuleRuntimeOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:146](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L146) |  |
+| <code>public int MaxOrdersPerMinute =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:222](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L222) | Operator-tuned order-rate ceiling, read per evaluation by the enforced order-rate throttle rule so hot updates take effect immediately. |
+| <code>public Func&lt;int&gt;? OrderRateUsageProbe { get; set; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:234](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L234) | Reads live consumed rate capacity from the throttle instance that actually enforces the ceiling. Set by the composition root; null when no reserving throttle is composed, in which case the status falls back to counting audit entries. The fallback cannot see reservations taken for orders still in flight, so it under-reports exactly when the desk is closest to the ceiling — the dashboard would show room the gate will refuse to give. The probe reports the number the gate itself compares. |
+| <code>public decimal? MaxGrossExposure { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:240](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L240) | Operator-tuned portfolio-wide gross exposure ceiling, read per evaluation by the enforced gross-exposure rule. Null when unconfigured (the rule approves). |
+| <code>public decimal? MaxSymbolConcentrationPercent { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:246](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L246) | Operator-tuned single-symbol concentration cap as a percentage of portfolio value, read per evaluation by the enforced concentration rule. Null when unconfigured. |
+| <code>public decimal? MaxOrderNotional { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:252](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L252) | Operator-tuned hard per-order notional ceiling, read per evaluation by the enforced order-notional rule. Null when unconfigured. |
+| <code>public decimal? EscalateOrderNotional { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:258](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L258) | Operator-tuned notional band at or above which an order parks for governed approval, read per evaluation by the enforced order-notional rule. Null when unconfigured. |
+| <code>public decimal? MaxOrderQuantity { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:264](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L264) | Operator-tuned absolute per-order quantity ceiling, read per evaluation by the enforced fat-finger rule. Null when unconfigured (the quantity limb approves). |
+| <code>public decimal? MaxPriceDeviationPercent { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:271](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L271) | Operator-tuned maximum aggressive price deviation from the market reference, in percent, read per evaluation by the enforced fat-finger rule. Null when unconfigured (the price limb approves, and a priced order with no reference price is no longer refused). |
+| <code>public FatFingerThresholds FatFingerThresholds { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:280](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L280) | Both fat-finger limbs read under one lock, which is what the enforced rule consumes. Reading the two properties above separately would let an evaluation straddle an update and observe a pair that was never configured — a two-field change from (null quantity, 50% band) to (100 quantity, null band) can otherwise be seen as (null, null), which the rule treats as entirely unconfigured and approves through. |
+| <code>public PriceCollarThresholds PriceCollarThresholds { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:291](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L291) | The collar band the escalating price rule consumes, read under the same lock. A single value needs no atomic pairing of its own, but it is exposed as a record so the rule takes a threshold type rather than a bare decimal and cannot be handed the fat-finger band by mistake. |
+| <code>public RiskValidationResult EvaluateDrawdownGuardrail();</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:302](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L302) | Evaluates the drawdown circuit breaker against the same live portfolio state and operator-tuned threshold this service reports on the dashboard, so the guardrail can never show &quot;Healthy&quot; while it silently fails to gate an order. Invoked by the enforced pre-trade validator on every order. |
+| <code>public async Task&lt;IReadOnlyList&lt;RiskRuleStatusDto&gt;&gt; GetAllStatusesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:345](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L345) |  |
+| <code>public async Task&lt;RiskRuleStatusDto?&gt; GetStatusAsync(string ruleName, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:421](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L421) |  |
+| <code>public RiskRuleConfigDto? GetConfig(string ruleName);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:436](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L436) |  |
+| <code>public async Task&lt;RiskRuleConfigDto?&gt; UpdateConfigAsync(string ruleName, RiskRuleConfigUpdateRequest request, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:509](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L509) |  |
+
+## RiskRuleRuntimeSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:1842](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L1842).
+
+```csharp
+public sealed record RiskRuleRuntimeSnapshot(decimal MaxDrawdownPercent, int MaxOrdersPerMinute, DateTimeOffset UpdatedAt, string UpdatedBy, string? Reason, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:64](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L64).
+
+```csharp
+public sealed record RiskRuleStatusDto(string RuleName, string State, string Summary, bool IsBreached, string Threshold, string CurrentValue, DateTimeOffset AsOf, IReadOnlyList<string> RecentViolations, decimal? UtilizationPercent = null, string? Severity = null);
 ```
