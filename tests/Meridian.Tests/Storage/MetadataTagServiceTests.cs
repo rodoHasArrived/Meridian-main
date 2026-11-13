@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class MetadataTagServiceTests : IDisposable
+public sealed partial class MetadataTagServiceTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly string _metadataPath;

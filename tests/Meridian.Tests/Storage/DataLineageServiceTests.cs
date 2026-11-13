@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class DataLineageServiceTests : IDisposable
+public sealed partial class DataLineageServiceTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly string _lineagePath;

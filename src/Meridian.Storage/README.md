@@ -153,6 +153,21 @@ caller-owned append paths refuse them. See [intercompany agreements](../../docs/
 The exception still requires unit-successor lineage, an originating atomic mutation batch and a
 retained basis adjustment; ordinary acquisitions retain exact quantity/price/basis checks.
 
+`StorageCatalogService` publishes content-addressed immutable revisions containing the complete
+manifest and directory indexes. Its current manifest remains compatible with catalog readers and
+pins the exact retained revision digest. Publication compares the retained current generation under
+a cross-process file lease; stale publishers fail explicitly. Restart verifies the referenced bytes
+and ignores loose `_index.json` compatibility exports and unpublished candidates. Legacy migration
+retains only the surviving complete catalog; corruption or missing revisions require recovery.
+Mutations commit a complete generation before one in-memory publication, and file/metadata getters
+return detached snapshots. Integrity verification is bound to the generation it inspected.
+
+`DataLineageService` and `MetadataTagService` fence read-modify-replace across instances and processes,
+reload retained state under that lease, and publish only after durable persistence. Corrupt,
+unsupported, incomplete or missing previously observed snapshots fail closed instead of erasing
+history. Contention and cancellation do not publish unfinished writes. Focused synthetic coverage
+lives in `StorageCatalogServiceTests`, `DataLineageServiceTests`, and `MetadataTagServiceTests`.
+
 `FileProviderIntegrationManifestStore` stores identity decisions under each sync run's
 `identity-decisions` directory. Entity locking protects append-only retention: identical retries
 reuse the existing decision, while a changed payload under the same decision ID is refused.

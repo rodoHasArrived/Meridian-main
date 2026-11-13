@@ -28,19 +28,28 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
     private readonly StorageOptions _options;
     private readonly SemaphoreSlim _catalogLock = new(1, 1);
 
-    private StorageCatalog _catalog;
-    private readonly ConcurrentDictionary<string, DirectoryIndex> _directoryIndexCache = new();
-    private readonly ConcurrentDictionary<string, IndexedFileEntry> _fileIndex = new();
+    private CatalogReadState _readState = new(new StorageCatalog(), new(), new());
+    private StorageCatalog _catalog => Volatile.Read(ref _readState).Catalog;
+    private ConcurrentDictionary<string, DirectoryIndex> _directoryIndexCache => Volatile.Read(ref _readState).Directories;
+    private ConcurrentDictionary<string, IndexedFileEntry> _fileIndex => Volatile.Read(ref _readState).Files;
+    private string? _retainedCatalogDigest;
+    private readonly Func<string, string, CancellationToken, Task> _writeCatalogFileAsync;
 
     public StorageCatalogService(string rootPath, StorageOptions options)
+        : this(rootPath, options, static (path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct))
     {
+    }
+
+    internal StorageCatalogService(string rootPath, StorageOptions options,
+        Func<string, string, CancellationToken, Task> writeCatalogFileAsync)
+    {
+        _writeCatalogFileAsync = writeCatalogFileAsync;
         _rootPath = Path.GetFullPath(rootPath);
         _catalogPath = Path.Combine(_rootPath, CatalogDirectoryName);
         _options = options;
-        _catalog = new StorageCatalog();
     }
 
-    public StorageCatalog GetCatalog() => _catalog;
+    public StorageCatalog GetCatalog() => CloneCatalogValue(_catalog);
 
     public async Task InitializeAsync(CancellationToken ct = default)
     {
@@ -50,30 +59,20 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
             Directory.CreateDirectory(_catalogPath);
             Directory.CreateDirectory(Path.Combine(_catalogPath, "schemas"));
 
-            var manifestPath = Path.Combine(_catalogPath, ManifestFileName);
-            if (File.Exists(manifestPath))
+            var retained = await ReadRetainedCatalogSnapshotAsync(ct).ConfigureAwait(false);
+            if (retained is not null)
             {
-                try
-                {
-                    var json = await File.ReadAllTextAsync(manifestPath, ct);
-                    var catalog = JsonSerializer.Deserialize<StorageCatalog>(json);
-                    if (catalog != null)
-                    {
-                        _catalog = catalog;
-                        _log.Information("Loaded catalog with {FileCount} files indexed", _catalog.Statistics.TotalFiles);
-
-                        // Rebuild in-memory file index
-                        await LoadFileIndexFromDirectoriesAsync(ct);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _log.Warning(ex, "Failed to load catalog manifest, will rebuild");
-                }
+                _retainedCatalogDigest = retained.Value.Digest;
+                // Freeze the surviving legacy indexes before any compatibility file can change.
+                if (retained.Value.Legacy)
+                    await SaveCatalogSnapshotAsync(retained.Value.Catalog, ct, retained.Value.Directories).ConfigureAwait(false);
+                PublishCatalogSnapshot(retained.Value.Catalog, retained.Value.Directories);
             }
             else
             {
-                _catalog = new StorageCatalog
+                if (_retainedCatalogDigest is not null || HasRetainedCatalogRevisions())
+                    throw new FileNotFoundException("The retained catalog disappeared; restore its current reference.");
+                var candidate = new StorageCatalog
                 {
                     CreatedAt = DateTime.UtcNow,
                     Configuration = new CatalogConfiguration
@@ -84,8 +83,8 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
                         RootPath = _rootPath
                     }
                 };
-                await SaveCatalogAsync(ct);
-                _log.Information("Created new catalog at {Path}", manifestPath);
+                await SaveCatalogSnapshotAsync(candidate, ct, new Dictionary<string, DirectoryIndex>()).ConfigureAwait(false);
+                PublishCatalogSnapshot(candidate, new Dictionary<string, DirectoryIndex>());
             }
         }
         finally
@@ -235,6 +234,8 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
                 return result;
             }
 
+            BuildCatalogFromFileIndex(candidateCatalog, candidateFileIndex, candidateDirectoryIndexes.Keys);
+            ValidateCatalogSnapshot(candidateCatalog, candidateDirectoryIndexes);
             // Only after every scan succeeds do candidate indexes and the candidate manifest
             // become eligible for atomic file replacement.
             foreach (var (dirPath, dirIndex) in candidateDirectoryIndexes)
@@ -244,22 +245,9 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
                 await SaveDirectoryIndexAsync(dirIndex, indexPath, ct);
             }
 
-            BuildCatalogFromFileIndex(candidateCatalog, candidateFileIndex, candidateDirectoryIndexes.Keys);
+            await SaveCatalogSnapshotAsync(candidateCatalog, ct, candidateDirectoryIndexes);
 
-            await SaveCatalogSnapshotAsync(candidateCatalog, ct);
-
-            _catalog = candidateCatalog;
-            _fileIndex.Clear();
-            foreach (var pair in candidateFileIndex)
-            {
-                _fileIndex[pair.Key] = pair.Value;
-            }
-
-            _directoryIndexCache.Clear();
-            foreach (var pair in candidateDirectoryIndexes)
-            {
-                _directoryIndexCache[pair.Key] = pair.Value;
-            }
+            PublishCatalogSnapshot(candidateCatalog, candidateDirectoryIndexes);
 
             result = new CatalogRebuildResult
             {
@@ -284,111 +272,42 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         }
     }
 
-    public async Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default)
+    public Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default)
     {
-        await _catalogLock.WaitAsync(ct);
-        try
+        var owned = CloneCatalogValue(entry);
+        return MutateCatalogAsync(directories =>
         {
-            _fileIndex[entry.RelativePath] = entry;
-
-            // Update directory index
-            var dirPath = Path.GetDirectoryName(entry.RelativePath) ?? string.Empty;
-            var dirIndex = _directoryIndexCache.GetOrAdd(dirPath, _ => new DirectoryIndex
-            {
-                RelativePath = dirPath,
-                CreatedAt = DateTime.UtcNow
-            });
-            var existingIdx = dirIndex.Files.FindIndex(f => f.RelativePath == entry.RelativePath);
-            if (existingIdx >= 0)
-                dirIndex.Files[existingIdx] = entry;
-            else
-                dirIndex.Files.Add(entry);
-
-            dirIndex.LastUpdatedAt = DateTime.UtcNow;
-            FinalizeDirectoryIndex(dirIndex);
-
-            var indexPath = Path.Combine(_rootPath, dirPath, DirectoryIndexFileName);
-            await SaveDirectoryIndexAsync(dirIndex, indexPath, ct);
-            if (!_catalog.DirectoryIndexes.Contains(dirPath))
-                _catalog.DirectoryIndexes = [.. _catalog.DirectoryIndexes, dirPath];
-
-            // Update symbol entry
-            if (!string.IsNullOrEmpty(entry.Symbol))
-            {
-                UpdateSymbolEntry(entry);
-            }
-
-            _catalog.LastUpdatedAt = DateTime.UtcNow;
-            _catalog.Statistics.TotalFiles = _fileIndex.Count;
-        }
-        finally
-        {
-            _catalogLock.Release();
-        }
+            var directory = Path.GetDirectoryName(owned.RelativePath) ?? string.Empty;
+            if (!directories.TryGetValue(directory, out var index))
+                directories[directory] = index = new DirectoryIndex { RelativePath = directory };
+            index.Files.RemoveAll(file => file.RelativePath == owned.RelativePath);
+            index.Files.Add(owned);
+            index.LastUpdatedAt = DateTime.UtcNow;
+            FinalizeDirectoryIndex(index);
+        }, ct);
     }
 
-    public async Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default)
-    {
-        await _catalogLock.WaitAsync(ct);
-        try
+    public Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default)
+        => MutateCatalogAsync(directories =>
         {
-            if (_fileIndex.TryRemove(relativePath, out var entry))
+            foreach (var index in directories.Values)
             {
-                var dirPath = Path.GetDirectoryName(relativePath) ?? string.Empty;
-                if (_directoryIndexCache.TryGetValue(dirPath, out var dirIndex))
-                {
-                    dirIndex.Files.RemoveAll(f => f.RelativePath == relativePath);
-                    dirIndex.LastUpdatedAt = DateTime.UtcNow;
-                    FinalizeDirectoryIndex(dirIndex);
-
-                    var indexPath = Path.Combine(_rootPath, dirPath, DirectoryIndexFileName);
-                    await SaveDirectoryIndexAsync(dirIndex, indexPath, ct);
-                }
-
-                _catalog.LastUpdatedAt = DateTime.UtcNow;
-                _catalog.Statistics.TotalFiles = _fileIndex.Count;
+                index.Files.RemoveAll(file => file.RelativePath == relativePath);
+                FinalizeDirectoryIndex(index);
             }
-        }
-        finally
-        {
-            _catalogLock.Release();
-        }
+        }, ct);
+
+    public Task<DirectoryIndex?> GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(_directoryIndexCache.TryGetValue(relativePath, out var index)
+            ? CloneCatalogValue(index) : null);
     }
 
-    public async Task<DirectoryIndex?> GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default)
+    public Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default)
     {
-        if (_directoryIndexCache.TryGetValue(relativePath, out var cached))
-        {
-            return cached;
-        }
-
-        var indexPath = Path.Combine(_rootPath, relativePath, DirectoryIndexFileName);
-        if (File.Exists(indexPath))
-        {
-            try
-            {
-                var json = await File.ReadAllTextAsync(indexPath, ct);
-                var index = JsonSerializer.Deserialize<DirectoryIndex>(json);
-                if (index != null)
-                {
-                    _directoryIndexCache[relativePath] = index;
-                    return index;
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.Warning(ex, "Failed to load directory index from {Path}", indexPath);
-            }
-        }
-
-        return null;
-    }
-
-    public async Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default)
-    {
-        _directoryIndexCache[index.RelativePath] = index;
-        var indexPath = Path.Combine(_rootPath, index.RelativePath, DirectoryIndexFileName);
-        await SaveDirectoryIndexAsync(index, indexPath, ct);
+        var owned = CloneCatalogValue(index);
+        return MutateCatalogAsync(directories => directories[owned.RelativePath] = owned, ct);
     }
 
     public async Task<DirectoryScanResult> ScanDirectoryAsync(
@@ -460,10 +379,9 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
             }
 
             FinalizeDirectoryIndex(index);
-            _directoryIndexCache[relativePath] = index;
-
-            var indexPath = Path.Combine(fullPath, DirectoryIndexFileName);
-            await SaveDirectoryIndexAsync(index, indexPath, ct);
+            if (result.FilesWithErrors > 0)
+                throw new InvalidDataException("The directory scan was incomplete; its previous catalog is retained.");
+            await UpdateDirectoryIndexAsync(index, ct).ConfigureAwait(false);
 
             stopwatch.Stop();
 
@@ -490,7 +408,7 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         }
     }
 
-    public CatalogStatistics GetStatistics() => _catalog.Statistics;
+    public CatalogStatistics GetStatistics() => CloneCatalogValue(_catalog.Statistics);
 
     public async Task<CatalogVerificationResult> VerifyIntegrityAsync(
         CatalogVerificationOptions? options = null,
@@ -505,7 +423,8 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         var missingFiles = 0;
         var countMismatches = 0;
 
-        var files = _fileIndex.Values.ToList();
+        var observedGeneration = Volatile.Read(ref _readState);
+        var files = observedGeneration.Files.Values.ToList();
         progress?.Report(new CatalogVerificationProgress
         {
             FilesVerified = 0,
@@ -583,8 +502,8 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
 
         stopwatch.Stop();
 
-        // Update catalog integrity info
-        _catalog.Integrity = new CatalogIntegrity
+        // Integrity metadata has the same durable commit boundary as the retained indexes.
+        var integrity = new CatalogIntegrity
         {
             Status = issues.Any(i => i.Severity == "Error") ? "Failed" : "Verified",
             LastVerifiedAt = DateTime.UtcNow,
@@ -593,6 +512,7 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
             MissingFiles = missingFiles,
             Issues = issues.ToList()
         };
+        await PersistCatalogIntegrityAsync(integrity, observedGeneration, ct).ConfigureAwait(false);
 
         return new CatalogVerificationResult
         {
@@ -609,19 +529,19 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
     public IEnumerable<IndexedFileEntry> GetFilesForSymbol(string symbol)
     {
         return _fileIndex.Values.Where(f =>
-            string.Equals(f.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+            string.Equals(f.Symbol, symbol, StringComparison.OrdinalIgnoreCase)).Select(CloneCatalogValue).ToArray();
     }
 
     public IEnumerable<IndexedFileEntry> GetFilesForDateRange(DateTime start, DateTime end)
     {
         return _fileIndex.Values.Where(f =>
-            f.Date.HasValue && f.Date.Value >= start && f.Date.Value <= end);
+            f.Date.HasValue && f.Date.Value >= start && f.Date.Value <= end).Select(CloneCatalogValue).ToArray();
     }
 
     public IEnumerable<IndexedFileEntry> GetFilesForEventType(string eventType)
     {
         return _fileIndex.Values.Where(f =>
-            string.Equals(f.EventType, eventType, StringComparison.OrdinalIgnoreCase));
+            string.Equals(f.EventType, eventType, StringComparison.OrdinalIgnoreCase)).Select(CloneCatalogValue).ToArray();
     }
 
     public IEnumerable<IndexedFileEntry> SearchFiles(CatalogSearchCriteria criteria)
@@ -671,27 +591,7 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
             query = query.Where(f => f.SchemaVersion == criteria.SchemaVersion);
         }
 
-        return query.ToList();
-    }
-
-    public async Task SaveCatalogAsync(CancellationToken ct = default)
-        => await SaveCatalogSnapshotAsync(_catalog, ct).ConfigureAwait(false);
-
-    private async Task SaveCatalogSnapshotAsync(StorageCatalog catalog, CancellationToken ct)
-    {
-        var manifestPath = Path.Combine(_catalogPath, ManifestFileName);
-        var json = JsonSerializer.Serialize(catalog, MarketDataJsonContext.PrettyPrintOptions);
-
-        // Compute checksum
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(json));
-        catalog.Integrity.CatalogChecksum = Convert.ToHexString(hash).ToLowerInvariant();
-
-        // Update the JSON with checksum
-        json = JsonSerializer.Serialize(catalog, MarketDataJsonContext.PrettyPrintOptions);
-
-        await AtomicFileWriter.WriteAsync(manifestPath, json, ct);
-        _log.Debug("Saved catalog manifest to {Path}", manifestPath);
+        return query.Select(CloneCatalogValue).ToList();
     }
 
     public async Task ExportCatalogAsync(
@@ -1052,6 +952,9 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         IEnumerable<string> directoryIndexKeys)
     {
         catalog.LastUpdatedAt = DateTime.UtcNow;
+        catalog.Symbols = new Dictionary<string, SymbolCatalogEntry>(StringComparer.OrdinalIgnoreCase);
+        catalog.DateRange = null;
+        catalog.Integrity = new CatalogIntegrity();
 
         var stats = new CatalogStatistics
         {
@@ -1081,9 +984,9 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
                 EventCount = files.Sum(f => f.EventCount),
                 TotalBytes = files.Sum(f => f.SizeBytes),
                 EventTypes = files.Where(f => !string.IsNullOrEmpty(f.EventType))
-                    .Select(f => f.EventType!).Distinct().ToArray(),
+                    .Select(f => f.EventType!).Distinct().Order(StringComparer.Ordinal).ToArray(),
                 Sources = files.Where(f => !string.IsNullOrEmpty(f.Source))
-                    .Select(f => f.Source!).Distinct().ToArray(),
+                    .Select(f => f.Source!).Distinct().Order(StringComparer.Ordinal).ToArray(),
                 LastUpdated = files.Max(f => f.LastModified)
             };
 
@@ -1133,6 +1036,7 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
             .Where(f => !string.IsNullOrEmpty(f.Source))
             .Select(f => f.Source!)
             .Distinct()
+            .Order(StringComparer.Ordinal)
             .ToArray();
         stats.UniqueSources = catalog.Sources.Length;
 
@@ -1156,41 +1060,6 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         }
 
         catalog.Statistics = stats;
-    }
-
-    private void UpdateSymbolEntry(IndexedFileEntry entry)
-    {
-        if (string.IsNullOrEmpty(entry.Symbol))
-            return;
-
-        if (!_catalog.Symbols.TryGetValue(entry.Symbol, out var symbolEntry))
-        {
-            symbolEntry = new SymbolCatalogEntry { Symbol = entry.Symbol };
-            _catalog.Symbols[entry.Symbol] = symbolEntry;
-        }
-
-        symbolEntry.FileCount = _fileIndex.Values.Count(f =>
-            string.Equals(f.Symbol, entry.Symbol, StringComparison.OrdinalIgnoreCase));
-        symbolEntry.EventCount = _fileIndex.Values
-            .Where(f => string.Equals(f.Symbol, entry.Symbol, StringComparison.OrdinalIgnoreCase))
-            .Sum(f => f.EventCount);
-        symbolEntry.LastUpdated = DateTime.UtcNow;
-    }
-
-    private async Task LoadFileIndexFromDirectoriesAsync(CancellationToken ct)
-    {
-        // Load all directory indexes and populate file index
-        foreach (var dirPath in _catalog.DirectoryIndexes)
-        {
-            var index = await GetDirectoryIndexAsync(dirPath, ct);
-            if (index != null)
-            {
-                foreach (var file in index.Files)
-                {
-                    _fileIndex[file.RelativePath] = file;
-                }
-            }
-        }
     }
 
     private async Task ExportToCsvAsync(string outputPath, CancellationToken ct)
