@@ -117,7 +117,7 @@ export function ActionQueue({
   }).filter((r) => !r.gone);
   const unresolved = rows.filter((r) => r.rung !== "confirmed" && r.rung !== "rejected").length;
   const unknown = rows.filter((r) => r.rung === "timedout").length;
-  const retry = onRetry || (ctx ? (i) => ctx.retry(i.action) : null);
+  const retry = onRetry || (ctx ? (i) => ctx.retry(i.action, i.id) : null);
   const ack = (i) => { setAcked((s) => new Set([...s, i.id])); onAcknowledge?.(i); };
 
   if (hideWhenEmpty && rows.length === 0 && docked === "corner") return null;
