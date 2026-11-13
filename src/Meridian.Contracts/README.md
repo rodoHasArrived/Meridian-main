@@ -11,6 +11,13 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+
+`Ledger/CanonicalAmortizationPreparationDtos.cs` defines browser preparation and governed draft
+handoff over the existing canonical lot engine. Requests supply retained lot/evidence identities,
+book/period/version, accounts, explicit supported policy choices and a bounded schedule horizon.
+Responses retain the canonical instruction, exact calculated occurrence bases, journal projection,
+scope and preparation fingerprint. Draft commands carry the reviewed request and opaque fingerprint;
+displayed financial amounts never become client-authored posting instructions.
 Visualization contracts retain server-calculated loan maturity buckets as exact decimal strings,
 bond contractual maturity and governing yield-scenario identities, and audit-source availability.
 `PrivateCapital` describes holder-side source observations and import receipts, separately from

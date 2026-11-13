@@ -14,6 +14,16 @@ public sealed class AlpacaSymbolSearchProviderTests
     private const string KeyId = "test-alpaca-key";
     private const string SecretKey = "test-alpaca-secret";
 
+    [Fact]
+    public async Task AuthoritativeSearch_WithProviderHttpFailure_ThrowsInsteadOfEmptyMatches()
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+        var action = () => provider.SearchAuthoritativeAsync("Treasury", assetType: "fixed_income");
+        await action.Should().ThrowAsync<HttpRequestException>();
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

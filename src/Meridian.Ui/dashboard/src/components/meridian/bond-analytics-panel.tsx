@@ -95,6 +95,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
   const [asOf, setAsOf] = useState(() => new Date().toISOString().slice(0, 10));
   const [settlementDate, setSettlementDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [knownAt, setKnownAt] = useState("");
+  const [securityVersion, setSecurityVersion] = useState("");
   const [inputKind, setInputKind] = useState<"cleanPrice" | "yield" | "retained">("cleanPrice");
   const [value, setValue] = useState("");
   const [convention, setConvention] = useState<BondYieldConvention>("NominalPeriodic");
@@ -188,6 +189,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
     setError(null);
     setPending(false);
     setValue("");
+    setSecurityVersion("");
     setObservations([]);
     setSelectedReceipt("");
     setObservationsPending(false);
@@ -215,6 +217,10 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
       setError("Enter calculation and settlement dates, then a decimal price, annual yield, or retained observation.");
       return;
     }
+    if (securityVersion && !/^[1-9]\d*$/.test(securityVersion)) {
+      setError("Choose a positive exact retained security version.");
+      return;
+    }
     const query: BondAnalyticsQuery = {
       asOf: `${asOf}T00:00:00Z`,
       settlementDate,
@@ -222,6 +228,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
       ...(calculationVersion === "bond-analytics-v3" && observedFixingReceiptIds.length ? { observedFixingReceiptIds: observedFixingReceiptIds.join(",") } : {}),
       yieldConvention: convention,
       ...(knownAt ? { knownAt: utcInstantFromLocalInput(knownAt) } : {}),
+      ...(securityVersion ? { securityVersion } : {}),
       ...(inputKind === "retained" ? { selectionReceiptId: selectedReceipt, ...(priceAccountId ? { priceAccountId } : {}) } : { [inputKind]: value.trim() })
     };
     setPending(true);
@@ -336,6 +343,9 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                   value={knownAt}
                   onChange={(e) => edit(() => { setKnownAt(e.target.value); invalidateObservations(); })}
                 />
+              </FormRow>
+              <FormRow label="Exact security version (optional)" labelFor={`${id}-security-version`} hint="Select a retained terms version; unavailable versions block calculation.">
+                <Input id={`${id}-security-version`} inputMode="numeric" value={securityVersion} onChange={(e) => edit(() => setSecurityVersion(e.target.value))} />
               </FormRow>
               <FormRow label="Input basis" labelFor={`${id}-basis`}>
                 <Select

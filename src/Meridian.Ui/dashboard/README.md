@@ -11,6 +11,57 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+
+## Fixed-income and accounting journeys
+
+Security Master exposes **Curves: definitions, pillars and historical versions** before security
+search, including an empty master. Operators create immutable definitions, publish multiple dated
+pillars, and inspect or compare retained versions with their source, timestamps and content hashes.
+Bond Evidence includes yield analysis with an explicit terms version and separate curve valuation
+with exact retained Discount and optional Forward:index versions. Curve values and settlement
+economics arrive as decimal strings; the browser does not recalculate them.
+
+Portfolio holding inspection links to Asset Detail. Its **Trading Parameters → Prepare bond
+settlement** action exposes the existing preparation service for bond acquisitions. Explicit terms,
+dates, face, booked factor, clean price, fees, observed cash, retained evidence and distinct accounts
+produce a reconciliation review or named blockers. Preparation creates no trade, journal or lot.
+
+Accounting's journal workbench exposes **Accrual schedules** with reviewed fixed amounts, cadence,
+dates, accounts, source evidence, authoritative period preview, occurrence generation and the
+retained journal queue. Ledger Explorer exposes **Canonical lot amortization** using acquisition
+policy and retained lot economics, schedule previews and an explicitly reviewed occurrence. Draft
+handoff recomputes the preparation fingerprint and enters the existing immutable journal workflow;
+independent approval and posting authority remain there. Missing scope, permissions, required
+services, closed periods, changed inputs and uncertain writes remain explicit blockers.
+
+The account oversight **Close prices → Maintain pricing sources** action maintains that exact
+account/security's ordered source hierarchy, staleness limits and effective UTC version. Unknown
+save outcomes retry the same reviewed command. Existing retained price sets keep their evidence.
+
+Asset Detail and Loan Book cash-flow scenarios support multiple nonoverlapping per-stream
+`[start, end)` prepayment assumptions, PSA seasoning and recast policies, plus immutable benchmark
+curve pins. Preview, retention, retrieval and replay preserve the exact decimal inputs and manifest.
+
+Security Master's **Discover provider bonds and stage candidate imports** action searches the
+configured Alpaca fixed-income provider, exposes missing services or provider failures, and requires
+candidate review before staging an identity-only asset-information upload. It does not infer coupon
+or maturity terms or create approved security economics. Staging uses the existing retained upload
+review path and requires Modify Security Master. Provider evidence is synthetic-verified;
+live-provider compatibility remains live-untested.
+
+Workflow tests live beside each feature: `security-curve-workbench`, `security-curve-valuation-panel`,
+`bond-settlement-panel`, `accrual-schedule-workbench`, `accounting-screen.canonical-amortization-panel`,
+`pricing-source-hierarchy-panel`, `contractual-cash-flow-workbench`, and `bond-discovery-panel`.
+
+Shared `ExactCurveInputs` rows pair a calculation role with a definition and an explicitly selected
+immutable version. Changing the curve clears its version; loading, empty and retry states stay
+visible. Use these rows only in calculations that consume curves, and validate role semantics in
+the owning workflow. Never silently select the latest version. Structured retained-evidence fields
+keep identity, source, custody, dates and digest/version separate and labeled. Recurring source
+references and reviewed canonical accounting identities have different contracts and must not be
+interchanged. Preview edits invalidate prior results; consequential handoffs require review, retain
+one command through uncertain outcomes, and expose the exact retained draft rather than a generic
+journal destination.
 Financial visualization panels extend the existing Loan Book, Bond Analytics, Margin Control,
 Trading order inspector, Market Data desk, Family Office, corporate-action inbox and disposal tax
 details. React owns SVG/HTML rendering and table/inspector selection; monetary aggregation and

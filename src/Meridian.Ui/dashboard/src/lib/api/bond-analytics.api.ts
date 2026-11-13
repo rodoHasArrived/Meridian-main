@@ -9,7 +9,7 @@ export function getBondAnalytics(
 ): Promise<BondAnalyticsResult> {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== "") params.set(key, value);
+    if (value !== undefined && value !== "") params.set(key, String(value));
   }
   const path = UI_API_ROUTES.ReferenceDataBondAnalytics.replace("{securityId:guid}", encodeURIComponent(securityId));
   return apiGetJson<BondAnalyticsResult>(`${path}?${params}`, {

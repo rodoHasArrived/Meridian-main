@@ -11,6 +11,25 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+
+The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
+entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
+and returns exact decimal strings. Curve definition/history/publication and curve valuation retain
+their existing Security Master permission boundaries and also serialize financial decimals exactly.
+Yield analysis accepts an exact retained terms version; curve inputs belong to DCF valuation.
+
+Accrual-schedule adapters expose the recurring store/planner/runner through scoped definition,
+preview, configuration and due-occurrence actions. Canonical amortization adapters resolve the lot,
+acquisition policy, retained reference evidence, current book/period and versions before calculating
+an occurrence and its schedule. Reviewed fingerprint checks precede immutable asset journal draft
+intake; journal validation, independent approval and atomic posting retain their authority. No
+preview alone grants journal or lot mutation authority.
+
+Provider-backed bond discovery requires tenant scope and Security Master read permission, uses
+Alpaca's fixed-income filter and authoritative error propagation, and exposes modification permission
+separately for candidate staging. The browser stages the reviewed identity through the existing
+retained asset-information upload; discovery never supplies approved economic terms. Tests use
+synthetic fixtures; live provider behavior remains untested.
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
