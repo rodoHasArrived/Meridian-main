@@ -1,5 +1,17 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
+        +DateOnly EffectiveDate
+        +decimal Rate
+    }
+    class Meridian_Contracts_SecurityMaster_SubscriptionCorporateActionTerms["SubscriptionCorporateActionTerms"] {
+        +string EventType
+        +decimal? PricePerUnit
+        +decimal? RightsPerHeldUnit
+        +Guid? RightsSecurityId
+        +Guid? SuccessorSecurityId
+        +decimal? UnitsPerRight
+    }
     class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
         +DateTimeOffset AsOf
         +decimal? CircuitBreakerThresholdPct
