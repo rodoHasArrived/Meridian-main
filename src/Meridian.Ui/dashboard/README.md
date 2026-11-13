@@ -93,6 +93,20 @@ scroll position. Analytics offers Use retained observation with source, time, fr
 clean/dirty quotation and settlement evidence. Calculation submits the immutable receipt identity,
 not a copied quote. Blocker actions focus convention review, source selection or rates/fixings while
 retaining calculation inputs. Decimal text stays exact through parsing and formatting.
+Reference-data probes wait for authoritative selected detail and retain its currency and identifiers
+even when the bond is absent from the current search. Loading, failed or mismatched detail issues
+no probes with invented selection context. Injected callers without a detail loader can use an exact
+search row. Coverage is in `accounting-screen.view-model.test.ts`.
+
+Command search finds these existing fixed-income workflows by task: `bond analytics`, `bond ladder`,
+`floating coupons`, `observed fixings` and `rates ingestion` open Security Master, where the operator
+selects a bond and its Evidence or Reference data tab. `cash-flow scenarios` opens Asset detail;
+`coupon income` and `bond maturities` open the portfolio cash ladder. `account oversight`,
+`account cash forecast` and `close prices` open Reconciliation casework. `MBS paydown` opens Factor
+paydown, and `bond calculation cutover` opens Accounting Configure. These aliases use existing
+routes and preserve their permissions and context; they do not assert provider availability or
+add support for an unsupported calculation model. Regression coverage is in
+`command-palette.view-model.test.ts`.
 
 Integration dry-runs show provider market value, normalized bond consideration and variance together,
 with an explicit sample-payment preview for fixed-income conventions. Retained source and derived

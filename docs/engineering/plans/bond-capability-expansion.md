@@ -178,3 +178,47 @@ Independent fixtures in `tests/fixtures/fixed-income/bond-consistency.json` stat
 formulas and expected cash amounts. `BondConsistencyTests` compares analytics, cash-flow projection,
 Asset Operations, settlement and amortization v5 and checks redemption and floating-scenario guards.
 This increment performs no customer-data migration, live cutover, exercise, or journal posting.
+
+## Candidate next increments and operator access
+
+The following proposals build on source reviewed at `01746deb6c`. They are discovery and
+implementation candidates; roadmap priority, acceptance and release status remain owned by the
+roadmap registry. Floating analytics v3, retained-price selection, observed-fixing receipts,
+rates ingestion, ladder selection and explicit exercise-notice inputs are existing foundations.
+
+Complete access to those foundations before adding more calculation engines:
+
+| Existing foundation | Remaining operator workflow |
+| --- | --- |
+| Security Master analytics, convention review, observed fixings and rates ingestion | Find the existing screens through task-oriented command search; keep the selected bond's actual identifiers and currency when opening reference probes outside search results. |
+| Curve definitions and immutable versions; reviewed rate ingestion into an existing curve | Create an eligible definition, inspect and compare complete pillar sets, browse version history and explicitly bind eligible versions to calculations that consume curves. The current ingestion panel publishes a complete one-pillar version. |
+| Retained price-selection receipts and account close-price review | Inspect and maintain the source hierarchy and explain why each source won, was stale, or was refused. Preserve clean/dirty, quote status and settlement basis. |
+| Bond settlement consideration service and shared preparation endpoint | Prepare settlement from a selected trade/holding, reconcile clean cost, purchased interest, fees, face/factor and observed cash, then hand the retained receipt to the governed acquisition workflow. |
+| Canonical lot amortization and recurring calculated fixed-income accruals | Provide supported schedule authoring, calculation preview, occurrence review and explicit journal handoff. Keep recurring generation, canonical lot instructions and posting authority distinct. |
+| Contractual scenarios, notice evidence, prepayments and retained runs | Browse run history, select eligible curve pins and multiple prepayment assumptions, then compare runs without retyping internal identities. |
+| Account cash forecasts, dated FX, correction history and factor-paydown preparation | Assemble inputs from retained observations and selected holdings; provide direct account/holding entry points in place of manual IDs and JSON handoffs. |
+| Provider-backed fixed-income lookup and governed reference imports | Connect provider discovery to identifier-aware candidate review and staged import; report entitlement and verification per data capability. |
+
+For each supported operation, trace service registration, endpoint, typed client, screen/action,
+navigation or command-search entry, permission, required source data and a browser acceptance path.
+Use the existing feature catalog and shared read models. Missing authority, source data, host
+registration or unsupported instrument economics must have an actionable unavailable state.
+Demonstrate selection outside search, refresh/deep-link recovery where offered, stale-response
+rejection, read-only access and permission refusal with synthetic fixtures. Browser access evidence
+and live-provider evidence remain separate.
+
+After the access work, evaluate these additions:
+
+| Candidate capability | Reused foundation and required addition | Acceptance example |
+| --- | --- | --- |
+| Carry and roll-down forecast | Reuse retained prices, DCF valuation and contractual schedules; add a holding horizon, an explicit unchanged-curve/yield assumption and financing/reinvestment inputs. | Opening dirty value, cash flows and closing dirty value reconcile to projected return without counting coupons and accrued interest twice. |
+| Key-rate exposure | Reuse retained curve pillars and pricing; add declared node bumps, full repricing and actual held-face scaling. | Compare bucketed sensitivity with a parallel bump under the same convention and retain every curve version. Current v3 coupon-spread sensitivity is not credit-spread duration. |
+| Amortizing-bond life and extension analytics | Reuse principal schedules and CPR/SMM/PSA scenarios; add weighted-average life, principal-return dates and contraction/extension comparisons. | Principal reconciles to balances and independently calculated WAL; missing historical balance evidence remains a blocker. |
+| Inflation-linked income and principal | Reuse inflation reference terms and curve kinds; add dated index observations, publication/revision cutoffs, contractual index lag/interpolation and floor rules. | Independently known indexed coupon/principal cases reproduce; missing lagged index evidence blocks, and inflation indexation remains distinct from principal paydowns. |
+| Issuer-family concentration | Reuse issuer/seniority and underlying relationships; add governed issuer/guarantor mapping and dated rating/credit observations. | Aliases cannot fragment exposure; issuer and guarantor totals avoid double counting and disclose unresolved coverage. |
+| Collateral availability | Reuse collateral balances, valuation dates and haircuts; add authoritative custody restrictions and encumbrance movements against held positions. | Pledged units cannot be counted twice, and released collateral becomes available only after confirmed movement. |
+
+Saved run comparison is a useful first product increment across these candidates: explain payment
+and valuation deltas by changed terms, curves, fixings, factors and assumptions, with all components
+reconciling to the aggregate difference. Reinvestment ladders, liability matching and lot-aware
+replacement previews can then consume the same retained scenarios and scoped holdings.

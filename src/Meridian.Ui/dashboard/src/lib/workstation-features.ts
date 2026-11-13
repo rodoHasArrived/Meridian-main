@@ -33,19 +33,19 @@ const ACCOUNTING_FEATURE_PURPOSES: Record<string, FeaturePurpose> = {
   "operations-continuity": { description: "Follow the close checklist, handoffs, decisions, and retained evidence.", keywords: ["close workflow", "handoff", "month end"] },
   "close-calendar": { description: "Review accounting periods, close dates, and upcoming deadlines.", keywords: ["period close", "month end", "deadlines"] },
   ledger: { description: "Explore posted ledger balances, trial balance and retained disposal tax results.", keywords: ["general ledger", "trial balance", "account balances", "disposal tax", "tax character", "recognized gain or loss", "deferred loss"] },
-  "factor-paydown": { description: "Preview factor paydown and prepare an evidence-bound review draft.", keywords: ["principal paydown", "factor", "basis relief"] },
+  "factor-paydown": { description: "Preview factor paydown and prepare an evidence-bound review draft.", keywords: ["principal paydown", "factor", "basis relief", "bond paydown", "MBS paydown"] },
   consolidation: { description: "Preview group consolidation and prepare intercompany elimination drafts for review.", keywords: ["intercompany balances", "intercompany eliminations", "elimination journals", "consolidate entities"] },
   adjustments: { description: "Review and prepare journal entries and accounting adjustments.", keywords: ["journal entries", "debits credits", "adjustment"] },
   "capital-accounts": { description: "Review investor capital balances and retained capital-account activity.", keywords: ["investor balances", "capital statements"] },
   "capital-calls": { description: "Review capital calls, contributions, and funding obligations.", keywords: ["investor funding", "contributions", "commitments"] },
-  "security-master": { description: "Review reference-data coverage, identifier conflicts, and trusted instruments.", keywords: ["instrument reference data", "security identifiers", "assets"] },
+  "security-master": { description: "Review reference-data coverage, identifier conflicts, and trusted instruments.", keywords: ["instrument reference data", "security identifiers", "assets", "fixed income", "bond analytics", "bond yield", "bond ladder", "bond conventions", "floating coupons", "observed fixings", "rates ingestion"] },
   "statement-import": { description: "Upload a statement, preview its records, and validate it before import.", keywords: ["import statement", "upload statement", "bank statement", "broker statement"] },
-  casework: { id: "accounting-reconciliation", paletteLabel: "Reconciliation breaks", description: "Match source activity, investigate differences, and review reconciliation sign-off.", keywords: ["casework", "match transactions", "account differences", "reconcile accounts"] },
+  casework: { id: "accounting-reconciliation", paletteLabel: "Reconciliation breaks", description: "Match source activity, investigate differences, and review reconciliation sign-off.", keywords: ["casework", "match transactions", "account differences", "reconcile accounts", "account oversight", "account cash forecast", "close prices"] },
   "external-gl": { id: "accounting-external-gl-reconciliation", paletteLabel: "External GL reconciliation", description: "Compare Meridian balances with connected accounting systems and review bounded onboarding evidence.", keywords: ["external general ledger", "accounting system balances", "quickbooks", "accounting onboarding", "onboard accounting"] },
   exceptions: { description: "Investigate accounting exceptions and the blockers that need attention.", keywords: ["errors", "issues", "breaks", "blockers"] },
   approvals: { description: "Review controlled decisions awaiting approval and their supporting evidence.", keywords: ["approval inbox", "pending review", "sign off"] },
   "entity-setup": { description: "Set up entities and the fund structure used by accounting workflows.", keywords: ["fund setup", "entity structure", "new entity"] },
-  configure: { description: "Configure ledger books, accounts, mappings, and posting rules.", keywords: ["accounting setup", "chart of accounts", "posting rules", "ledger books"] }
+  configure: { description: "Configure ledger books, accounts, mappings, and posting rules.", keywords: ["accounting setup", "chart of accounts", "posting rules", "ledger books", "bond calculation cutover", "bond readiness"] }
 };
 
 /** Primary destinations shared by the sidebar and local feature search. */
@@ -60,9 +60,9 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
   portfolio: [
     feature("portfolio", "Overview", "Review portfolio holdings, exposure, and performance.", [], { match: "exact" }),
     feature("portfolioAttribution", "Attribution", "Explore what contributed to portfolio performance.", ["performance attribution", "returns", "profit and loss"]),
-    feature("portfolioAssetDetail", "Asset detail", "Inspect an asset's positions, activity, and supporting records.", ["asset positions", "holding details"]),
+    feature("portfolioAssetDetail", "Asset detail", "Inspect an asset's positions, activity, and supporting records.", ["asset positions", "holding details", "cash-flow scenarios", "contractual cash flows", "prepayment scenarios", "call put scenarios", "retained cash-flow runs"]),
     feature("portfolioBrokerageSync", "Brokerage sync", "Review household brokerage account sync posture and recovery actions.", ["sync broker", "brokerage account", "account synchronization"]),
-    feature("portfolioCashLadder", "Cash ladder", "Review projected cash flows and upcoming funding needs.", ["cash forecast", "cash flow", "liquidity", "funding schedule"]),
+    feature("portfolioCashLadder", "Cash ladder", "Review projected cash flows and upcoming funding needs.", ["cash forecast", "cash flow", "liquidity", "funding schedule", "coupon income", "bond maturities", "bond cash flows"]),
     feature("portfolioFamilyOffice", "Family office", "Review family net worth, entity ownership, asset-class exposure, commitments, breaks, and stale valuations.", ["net worth", "household", "family assets"]),
     feature("portfolioLoanBook", "Loan book", "Review lending exposure, loan balances, and servicing activity.", ["loans", "loan portfolio", "lending", "debt"])
   ],
