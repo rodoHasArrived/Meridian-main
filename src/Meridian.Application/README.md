@@ -33,6 +33,12 @@ host must stop new dispatches, drain in-flight work and dispose captured-key ins
 cancellation leaves application pending. Provider-owned conditional OAuth rotation retains its
 scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
 
+The final production ownership policy also guards every supported configuration writer. Browser,
+CLI and desktop setup refuse literal provider credentials before persistence or backup; interactive
+setup refuses provider-wide validation and raw credential previews. Legacy documents remain readable
+for explicit migration and purge. A secret-free write can proceed after all retained generations are
+reviewed and purged, without deleting owned vault credentials or assigning them to another account.
+
 Provider integration HTTP transport checks streamed response length against a declared
 `Content-Length` after enforcing its byte cap. Truncated bodies fail instead of becoming successful
 partial provider evidence. Synthetic transport tests cover connection-time DNS rebinding, redirects,
