@@ -925,7 +925,7 @@ public sealed partial class InMemoryFundStructureService
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementRules</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L9).
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L8).
 
 ```csharp
 public static class IntercompanyAgreementRules
@@ -935,15 +935,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L11) |  |
-| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:30](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L30) |  |
-| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:44](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L44) |  |
-| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:76](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L76) |  |
-| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:84](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L84) |  |
-| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:129](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L129) |  |
-| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:131](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L131) |  |
-| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L133) |  |
-| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:135](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L135) |  |
+| <code>public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L10) |  |
+| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L29) |  |
+| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:43](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L43) |  |
+| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:75](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L75) |  |
+| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:83](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L83) |  |
+| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:128](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L128) |  |
+| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:130](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L130) |  |
+| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:132](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L132) |  |
+| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:134](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L134) |  |
 
 ## IntercompanyAgreementService
 

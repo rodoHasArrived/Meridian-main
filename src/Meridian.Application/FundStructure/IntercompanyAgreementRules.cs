@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.FundStructure;
@@ -134,6 +133,6 @@ public static class IntercompanyAgreementRules
         first.Count == second.Count && first.OrderBy(e => e.Reference, StringComparer.Ordinal).SequenceEqual(second.OrderBy(e => e.Reference, StringComparer.Ordinal));
     public static bool SameActor(string? first, string? second) => string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
     private static bool RoleEquals(string a, string b) => string.Equals(a.Replace(" ", string.Empty), b.Replace(" ", string.Empty), StringComparison.OrdinalIgnoreCase);
-    private static string Digest(string text) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+    private static string Digest(string text) => Sha256Digest.ComputeUtf8(text);
     private static void Fail(string message) => throw new IntercompanyAgreementValidationException(message);
 }

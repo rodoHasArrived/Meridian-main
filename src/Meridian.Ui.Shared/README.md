@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui.Shared
@@ -1166,6 +1166,8 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+When source ledger dimensions carry `IntercompanyAgreementId`, the explorer exposes an `Agreement`
+filter with the same D-format UUID shown in record detail.
 Personal explorer views apply only after tenant/operator ownership is resolved; unknown or another
 operator's view ID yields no records. Their normalized search/filter values reach the shared
 read service without an unresolved personal ID, while the response retains that view's active marker.
