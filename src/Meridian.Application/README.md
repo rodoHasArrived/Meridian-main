@@ -6,10 +6,19 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Application
+
+Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
+Provider requests and coverage checkpoints retain the original symbol identities.
+
+Intraday historical-backfill coverage and resume checkpoints follow the date of the bar's start
+in its session timezone. The current US-equity providers default to `America/New_York`; callers
+for other markets can pass `intradaySessionTimeZone` explicitly. A bar ending after UTC midnight
+does not mark the following US trading session as covered. Daily bars retain their declared
+`SessionDate`.
 
 The W14 cash-dividend lane is a separate preparer-attestation path, not an exception inside
 ordinary approval. `CorporateActionCaseAccountingService.CashDividend.cs` composes the retained
@@ -51,6 +60,11 @@ receipts and effective-date selection over the durable agreement store. Retrospe
 preserve posted versions; semantic bases follow effective chronology rather than approval order.
 `PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
 lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+Main composition supplies that authority through a deferred factory, and journal validation and
+transactional writer interfaces resolve to the same durable ledger singleton.
+`IntercompanyAgreementRules` uses the shared optional-text normalizer and SHA-256 helper while
+preserving trimmed optional terms, meaningful internal whitespace and lowercase canonical JSON
+fingerprints for retained commands and reviews.
 
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
@@ -75,10 +89,14 @@ fixings, factors and lifecycle notices. A configured connection or general certi
 establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
 IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
 
-Cash-flow context v4 persists schedule row version 1, including measured accrual dates. A frozen
-v0 serializer keeps v1–v3 receipt hashes and replay arithmetic stable; unsupported row versions
-refuse replay. Accrual posting reads held face from shared lot quantity and multiplier and converts
-acquisition prices using the declared quote convention. Blocked empty schedules report their blocker.
+Cash-flow context v5 persists schedule row version 2 with piecewise interest-principal evidence.
+Frozen row-0 and row-1 serializers preserve context v1–v3 and v4 receipt hashes and arithmetic.
+Unsupported model/row combinations refuse replay. Fixed-rate pool accrual reconciles dated source
+factors with typed daily lot history and earns interest through a paydown date before reducing face.
+Consecutive windows subtract cumulative owned coupon targets, including earlier holdings in the
+same coupon. Acquisition quotes retain their explicit par basis; cost-basis relief instead uses
+monetary cost per recorded quantity. Non-face amortization lots are refused, and face-unit deltas
+retain decimal precision until monetary relief. Blocked empty schedules report their blocker.
 The unused whole-coupon posting helper and direct corporate-action poster have been retired;
 historical corporate-action characterizations live only in test fixtures.
 
@@ -107,7 +125,7 @@ Its banking schema follows `BankingStartup.SchemaVariable`; funding requires ret
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v4`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1–v3 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+Bond cash-flow context receipts now use `bond-cash-flow-context-v5`, retaining fixed-rate interest-principal segments alongside existing declared/floating evidence. Replay dispatches v1–v4 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no
 schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject

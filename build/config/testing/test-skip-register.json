@@ -233,15 +233,6 @@
       "category": "quarantined",
       "tracking": "W9-ASSET-010",
       "review_by": "2026-12-01"
-    },
-    {
-      "path": "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
-      "test": "ProductionCertificationProfile_SaveRetainsOperatorScopedControlEvidence",
-      "reason": "Quarantined pending a product decision on the desktop evidence-capture path (a3a01eff): the WPF Configure VM supplies only string evidence URIs, but the hardened AccountingProductionCertificationProfileStore requires typed RetainedEvidenceIdentityDto bound to each certified artifact and forbids synthesizing it, so the save is rejected. Re-enable once the desktop path captures typed retained evidence (or the store accepts desktop string evidence).",
-      "owner": "WPF",
-      "category": "quarantined",
-      "tracking": "W9-ASSET-010",
-      "review_by": "2026-12-01"
     }
   ]
 }

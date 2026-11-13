@@ -64,6 +64,21 @@ describe("FirstRunScreen status loading", () => {
     expect(apiGetJson).not.toHaveBeenCalled();
   });
 
+  it("ignores the abort rejection when navigation unmounts the screen", async () => {
+    let rejectRead!: (reason: unknown) => void;
+    vi.mocked(apiGetJson).mockReturnValue(new Promise((_, reject) => { rejectRead = reject; }));
+    const { unmount } = renderWithRouter(<FirstRunScreen />);
+    expect(screen.getByText("Preparing Meridian…")).toBeVisible();
+    const options = vi.mocked(apiGetJson).mock.calls[0][1];
+    expect(options?.signal).toBeInstanceOf(AbortSignal);
+    expect(options?.signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(options?.signal?.aborted).toBe(true);
+    await act(async () => rejectRead(new DOMException("Navigation cancelled", "AbortError")));
+  });
+
   it("aborts a pending status read on unmount", async () => {
     vi.mocked(apiGetJson).mockImplementation(() => new Promise(() => {}));
     const { unmount } = renderWithRouter(<FirstRunScreen />);

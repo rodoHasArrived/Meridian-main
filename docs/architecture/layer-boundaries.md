@@ -44,7 +44,7 @@ Meridian (Host/Exe)   →  Application (+ transitive)
 | **Domain**          | Application, Infrastructure, Storage, Core | Pure business logic, no external deps |
 | **Core**            | Application, Infrastructure, Storage       | Shared utilities only                 |
 | **Infrastructure**  | Application, Storage                       | No upward deps, no peer deps         |
-| **Storage**         | Application, Infrastructure                | No upward deps, no peer deps         |
+| **Storage**         | Application, Infrastructure, Ledger, Reporting | Durable primitives; business adapters compose them in Storage.Accounting |
 | **Application**     | (none forbidden)                           | Top-level orchestrator                |
 | **Ui.Services**     | Wpf host types                             | Must stay platform-neutral            |
 | **Ui.Shared**       | WPF-only APIs, Ui.Services                 | Must stay web-host-agnostic           |
@@ -181,3 +181,12 @@ See [Desktop & UI Layer Architecture](desktop-layers.md) for a detailed diagram 
 **Version:** 1.6.2
 **Last Updated:** 2026-10-02
 **Audience:** Contributors and AI assistants working on project architecture and dependency management.
+
+## Accounting persistence and risk contracts
+
+`Meridian.Storage.Accounting` is the composition adapter for business PostgreSQL stores. It may
+reference Storage, Ledger and Reporting; Storage cannot reference it. `Meridian.Risk` consumes
+Execution.Sdk authorities rather than the concrete Execution runtime. Reconciliation adapters are
+owned by DataIntegration, allowing FinancialOperations and Strategies to avoid a provider-adapter
+dependency. [Review boundary extractions](review-boundary-extractions.md) records source/assembly
+compatibility and focused test ownership.

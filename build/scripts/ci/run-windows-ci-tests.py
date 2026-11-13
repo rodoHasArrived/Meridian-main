@@ -109,7 +109,7 @@ def main() -> int:
             code = 0 if args.dry_run else subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=False).returncode
         builds.append(runner.TestResult(verb, str(slnf), code, command, time.perf_counter() - started, str(log_path)))
         if code:
-            print(log_path.read_text(encoding="utf-8", errors="replace")[-16384:], file=sys.stderr)
+            runner.print_console_safe(log_path.read_text(encoding="utf-8", errors="replace")[-16384:], file=sys.stderr)
             break
     results = []
     if all(item.exit_code == 0 for item in builds) and not args.build_only:

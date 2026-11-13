@@ -94,6 +94,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     private readonly IRemoteWorkstationClient _remoteClient;
 
     private bool _isVisible;
+    private int _pollInProgress;
 
     public ObservableCollection<TickerItemViewModel> Items { get; } = new();
 
@@ -115,7 +116,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
 
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1500) };
-        _pollTimer.Tick += async (_, _) => await PollAllSymbolsAsync();
+        _pollTimer.Tick += OnPollTick;
 
         // Reload symbol list whenever the watchlist changes
         _watchlistSubscription = _messagingService.Subscribe(
@@ -203,14 +204,40 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         }
     }
 
-    private async Task PollAllSymbolsAsync()
+    private async void OnPollTick(object? sender, EventArgs args)
     {
-        var symbols = System.Windows.Application.Current?.Dispatcher.Invoke(() => Items.Select(i => i.Symbol).ToList())
-                      ?? new System.Collections.Generic.List<string>();
-
-        foreach (var symbol in symbols)
+        try
         {
-            await PollSymbolAsync(symbol, _cts?.Token ?? CancellationToken.None);
+            await PollAllSymbolsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Stop/navigation can cancel an in-flight timer callback.
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Quote refresh failed: {ex.Message}");
+        }
+    }
+
+    internal async Task PollAllSymbolsAsync()
+    {
+        if (Interlocked.Exchange(ref _pollInProgress, 1) != 0)
+            return;
+        try
+        {
+            var ct = _cts?.Token ?? CancellationToken.None;
+            var symbols = System.Windows.Application.Current?.Dispatcher.Invoke(() => Items.Select(i => i.Symbol).ToList())
+                          ?? new System.Collections.Generic.List<string>();
+            foreach (var symbol in symbols)
+            {
+                if (ct.IsCancellationRequested) break;
+                await PollSymbolAsync(symbol, ct);
+            }
+        }
+        finally
+        {
+            Volatile.Write(ref _pollInProgress, 0);
         }
     }
 
@@ -254,6 +281,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     public void Dispose()
     {
         Stop();
+        _pollTimer.Tick -= OnPollTick;
         _watchlistSubscription?.Dispose();
         _cts?.Dispose();
     }

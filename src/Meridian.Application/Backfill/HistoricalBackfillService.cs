@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Meridian.Core.Config;
@@ -30,6 +31,7 @@ public sealed class HistoricalBackfillService
     private static readonly TimeSpan AdaptiveConcurrencyRetryDelay = TimeSpan.FromMilliseconds(100);
     private readonly BackfillStatusStore? _checkpointStore;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
+    private readonly TimeZoneInfo _intradaySessionTimeZone;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
@@ -37,7 +39,8 @@ public sealed class HistoricalBackfillService
         IEventMetrics? metrics = null,
         BackfillJobsConfig? jobsConfig = null,
         BackfillStatusStore? checkpointStore = null,
-        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
+        TimeZoneInfo? intradaySessionTimeZone = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
@@ -45,9 +48,18 @@ public sealed class HistoricalBackfillService
         _jobsConfig = jobsConfig ?? new BackfillJobsConfig();
         _checkpointStore = checkpointStore;
         _symbolTimelineResolver = symbolTimelineResolver;
+        // The current intraday backfill providers serve US equity sessions. Keep the
+        // session zone explicit so other markets can supply their own date convention.
+        _intradaySessionTimeZone = intradaySessionTimeZone ?? TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
+
+    private static string SanitizeLogText(string? value) =>
+        (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
+
+    private static string? FormatLogDate(DateOnly? value) =>
+        value is { } date ? SanitizeLogText(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)) : null;
 
     public void ValidateRequest(BackfillRequest request)
     {
@@ -217,7 +229,8 @@ public sealed class HistoricalBackfillService
 
                     _log.Information(
                         "Resuming {Symbol} via {Provider}: {RangeCount} uncovered range(s), first from {ResumeFrom} (covered through {CoveredThrough})",
-                        symbol, provider.DisplayName, fetchRanges.Count, fetchRanges[0].From, newestCoveredDate);
+                        SanitizeLogText(symbol), SanitizeLogText(provider.DisplayName), fetchRanges.Count,
+                        FormatLogDate(fetchRanges[0].From), FormatLogDate(newestCoveredDate));
                 }
                 else
                 {
@@ -351,7 +364,8 @@ public sealed class HistoricalBackfillService
                         $"short of the expected range end {expectedThrough:yyyy-MM-dd}. The provider's dataset may be frozen or paywalled.";
                     _log.Warning(
                         "Stale backfill for {Symbol} via {Provider}: newest bar {LastBarDate} vs expected {ExpectedThrough} ({StaleDays} days)",
-                        symbol, provider.DisplayName, lastBarDate, expectedThrough, staleDays);
+                        SanitizeLogText(symbol), SanitizeLogText(provider.DisplayName),
+                        FormatLogDate(lastBarDate), FormatLogDate(expectedThrough), staleDays);
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, effectiveTo, staleReason));
                 }
                 else if (coversRequestedRange)
@@ -383,7 +397,11 @@ public sealed class HistoricalBackfillService
                         await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
                         _metrics.IncHistoricalBars();
                         Interlocked.Increment(ref barsWritten);
-                        TrackPublishedBar(DateOnly.FromDateTime(bar.EndTime.UtcDateTime), eventSource);
+                        // Coverage belongs to the session containing the start of the bar.
+                        // The exclusive end may already be in the following UTC day.
+                        var sessionDate = DateOnly.FromDateTime(
+                            TimeZoneInfo.ConvertTime(bar.StartTime, _intradaySessionTimeZone).DateTime);
+                        TrackPublishedBar(sessionDate, eventSource);
                     }
 
                     if (futureDropped > 0)

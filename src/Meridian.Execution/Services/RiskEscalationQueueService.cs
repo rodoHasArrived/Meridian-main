@@ -9,49 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution.Services;
 
-/// <summary>Lifecycle of a parked risk escalation.</summary>
-public enum RiskEscalationStatus
-{
-    PendingApproval,
-    Approved,
-    Denied,
-    Released
-}
-
-/// <summary>
-/// An order parked by the pre-trade risk gate awaiting governed operator approval.
-/// The original <see cref="OrderRequest"/> is retained so an approval can release
-/// exactly the order that was evaluated, never a caller-supplied variant.
-/// </summary>
-public sealed record RiskEscalationEntry(
-    string EscalationId,
-    OrderRequest Request,
-    string Reason,
-    string? RuleName,
-    string? Actor,
-    string? RunId,
-    string? CorrelationId,
-    DateTimeOffset ParkedAt,
-    RiskEscalationStatus Status,
-    string? ResolvedBy = null,
-    string? ResolutionReason = null,
-    DateTimeOffset? ResolvedAt = null,
-    // Release is a distinct act from approval: overwriting the approver's identity and
-    // timestamp when the order is later released would claim the approver performed the
-    // release and lose when the decision was actually made.
-    string? ReleasedBy = null,
-    DateTimeOffset? ReleasedAt = null,
-    bool ReleaseInFlight = false,
-    // Server-written marker recording that the entry's Actor binding was established by
-    // the current Park path. Clients never controlled this record field — unlike request
-    // metadata, which was unreserved before the retained-submitter migration — so a null
-    // value reliably identifies a pre-migration entry whose identity binding cannot be
-    // trusted.
-    string? SubmitterProvenance = null);
-
-/// <summary>Persisted snapshot of the governed-approval queue.</summary>
-public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
-
 /// <summary>
 /// Location of the durable governed-approval queue snapshot.
 /// </summary>
@@ -84,7 +41,7 @@ public sealed record RiskEscalationQueueOptions(
 /// executable order than the risk desk reviewed. Queue transitions persist atomically so
 /// parked decisions and armed approvals survive process restarts.
 /// </summary>
-public sealed class RiskEscalationQueueService : IAsyncDisposable
+public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDisposable
 {
     /// <summary>Order-metadata key carrying the escalation id(s) of granted governed approvals.</summary>
     public const string ApprovalMetadataKey = "riskEscalationId";
@@ -101,7 +58,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// position, while notional-based rules measure only the exposure being added (the
     /// snapshot already reserves the working order at its current size).
     /// </summary>
-    public const string IncrementalNotionalMetadataKey = "riskIncrementalNotional";
+    public const string IncrementalNotionalMetadataKey = RiskEscalationMetadata.IncrementalNotionalMetadataKey;
 
     /// <summary>
     /// Order-metadata flag marking a probe evaluation: the rules should decide, but an
@@ -109,7 +66,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// escalated amendment could never be released as a modification and would leave an
     /// unusable approval behind.
     /// </summary>
-    public const string EvaluationOnlyMetadataKey = "riskEvaluationOnly";
+    public const string EvaluationOnlyMetadataKey = RiskEscalationMetadata.EvaluationOnlyMetadataKey;
 
     /// <summary>
     /// Order-metadata key carrying the original submitting operator across a chained
@@ -407,7 +364,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
     /// <summary>Joins escalation ids into a single governed-approval token value.</summary>
     public static string JoinTokens(IEnumerable<string> escalationIds) =>
-        string.Join(TokenSeparator, escalationIds.Distinct(StringComparer.OrdinalIgnoreCase));
+        RiskEscalationMetadata.JoinTokens(escalationIds);
 
     private RiskEscalationEntry? TryConsumeSingleApproval(OrderRequest request, string escalationId)
     {
