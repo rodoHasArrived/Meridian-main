@@ -207,12 +207,21 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <summary>
     /// Search for symbols with filtering options.
     /// </summary>
-    public async Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
+    public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
         string query,
         int limit = 10,
         string? assetType = null,
         string? exchange = null,
         CancellationToken ct = default)
+        => SearchCoreAsync(query, limit, assetType, exchange, failOnProviderError: false, ct);
+
+    /// <summary>Candidate review lookup: HTTP and transport failures must not become empty matches.</summary>
+    public Task<IReadOnlyList<SymbolSearchResult>> SearchAuthoritativeAsync(
+        string query, int limit = 10, string? assetType = null, string? exchange = null, CancellationToken ct = default)
+        => SearchCoreAsync(query, limit, assetType, exchange, failOnProviderError: true, ct);
+
+    private async Task<IReadOnlyList<SymbolSearchResult>> SearchCoreAsync(
+        string query, int limit, string? assetType, string? exchange, bool failOnProviderError, CancellationToken ct)
     {
         ThrowIfDisposed();
 
@@ -223,7 +232,11 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             return Array.Empty<SymbolSearchResult>();
 
         if (!HasValidCredentials())
+        {
+            if (failOnProviderError)
+                throw new InvalidOperationException("Provider credentials are unavailable.");
             return Array.Empty<SymbolSearchResult>();
+        }
 
         await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
 
@@ -243,6 +256,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
                 Log.Warning("{Provider} search returned {Status} for query {Query}",
                     Name, response.StatusCode, query);
+                if (failOnProviderError)
+                    response.EnsureSuccessStatusCode();
                 return Array.Empty<SymbolSearchResult>();
             }
 
@@ -250,7 +265,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             if (CreateQuotaLimitException(json, query) is { } quotaLimit)
                 throw quotaLimit;
 
-            var results = DeserializeSearchResults(json, query);
+            var results = failOnProviderError
+                ? DeserializeAuthoritativeSearchResults(json, query)
+                : DeserializeSearchResults(json, query);
 
             // Apply additional filtering if provider doesn't support it natively
             results = ApplyFilters(results, assetType, exchange);
@@ -271,6 +288,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         catch (Exception ex)
         {
             Log.Error(ex, "{Provider} search failed for query {Query}", Name, query);
+            if (failOnProviderError)
+                throw;
             return Array.Empty<SymbolSearchResult>();
         }
     }
@@ -356,6 +375,13 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="query">Original search query (for match scoring).</param>
     /// <returns>List of search results.</returns>
     protected abstract IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query);
+
+    /// <summary>
+    /// Decode explicit candidate-review evidence. Providers whose ordinary decoder tolerates
+    /// invalid responses override this hook so decoding failures remain unavailable evidence.
+    /// </summary>
+    protected virtual IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
+        => DeserializeSearchResults(json, query);
 
     /// <summary>
     /// Deserialize the details response JSON into a SymbolDetails object.

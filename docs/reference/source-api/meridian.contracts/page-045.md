@@ -6,6 +6,101 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FaceValueLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L14).
+
+Canonical open lot for par-denominated (face-value) instruments. This aggregate makes explicit the facts that were previously implicit caller conventions: the quote basis the acquisition price is expressed in (ParBasis — no more silent price-per-100 assumption), the pool factor the recorded face was booked at (BookedFactor), and the Security Master identity the lot amortizes against. All derived economics (cost basis, premium/discount, factor-restated face, day-count amortized basis) are owned here so every consumer computes them identically.
+
+```csharp
+public sealed record FaceValueLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FaceValueLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal originalFace, decimal pricePercentOfPar, decimal bookedFactor = 1m, decimal parBasis = 100m, decimal? currentFactor = null);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L16) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L54) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L68) | Security Master identity the lot&#x27;s reference data (day count, factor, maturity) resolves from. |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L70) |  |
+| <code>public decimal OriginalFace { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L73) | Face amount at acquisition, in currency units of par. |
+| <code>public decimal PricePercentOfPar { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L76) | Acquisition price expressed per ParBasis of par (e.g. 102 per 100 = 2% premium). |
+| <code>public decimal BookedFactor { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L79) | Pool factor already reflected in OriginalFace when the lot was booked (1 = original face). |
+| <code>public decimal CurrentFactor { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L86) | Pool factor the lot currently carries. It starts at BookedFactor and moves with each principal paydown applied through ApplyFactor, so the paydown factor lives inside the lot rather than being re-applied by each consumer. |
+| <code>public decimal ParFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L93) | Face at a factor of one: the lot&#x27;s original face restated from the factor it was booked at. This is the face a factor paydown scales (principal = par face × factor decline), and the one the Security Master&#x27;s factor history is expressed against. |
+| <code>public decimal FaceOutstanding =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L96) | Face outstanding under CurrentFactor. |
+| <code>public decimal ParBasis { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L103) | The quote basis PricePercentOfPar is expressed against: 100 for the bond price-per-100 convention, 1 for prices quoted per unit of face. Making this explicit is what prevents a per-unit-priced lot from silently mis-amortizing through math that assumes 100. |
+| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L106) | Acquisition cost in currency units. |
+| <code>public decimal PremiumDiscount =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:112](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L112) | Signed premium (positive) or discount (negative) over par, in currency units — the amount that amortizes toward zero by maturity. |
+| <code>public decimal CurrentFace(decimal currentFactor);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L118) | Face outstanding under currentFactor, restated from the factor the lot was booked at. |
+| <code>public FaceValueLot WithFactor(decimal currentFactor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L125) | The same lot carrying currentFactor as its current pool factor. |
+| <code>public FaceValueLotFactorPaydown ApplyFactor(decimal newFactor);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L136) | Applies a factor decline to the lot: the restated lot carries newFactor and the principal paid down is the face released by the decline, ParFace × (CurrentFactor − newFactor), the same arithmetic the factor-paydown projection posts. A factor equal to the current one releases no principal; a higher factor is a restatement, not a paydown, and is refused. A factor of zero is a full paydown: every remaining par face is released and the lot holds no face. |
+| <code>public decimal AmortizedBasisAsOf(DayCountConvention convention, DateOnly maturity, DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L154) | The lot&#x27;s amortized cost basis as of asOf: straight-line premium/discount amortization toward par, weighted by the day-count year fraction of elapsed holding over the lot&#x27;s life to maturity — the same method the cost-basis relief and ledger amortization engines apply, so a basis computed here always ties to what they post. Returns CostBasis unchanged when no life has elapsed or the lot has no amortizable life. |
+| <code>public decimal AmortizedBasisAsOf(BondAmortizationMethod method, DayCountConvention convention, DateOnly maturity, DateOnly asOf, decimal annualCouponRatePercent, int paymentsPerYear = 2) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L187) | The lot&#x27;s amortized cost basis as of asOf under the requested method. BondAmortizationMethod.ConstantYield applies the effective-interest method (US GAAP ASC 310-20 for most premium amortization); BondAmortizationMethod.NoAmortization holds the book flat; BondAmortizationMethod.AuctionRate recognises the premium/discount to par immediately; the remaining methods fall back to day-count-weighted straight-line (AmortizedBasisAsOf(DayCountConvention, DateOnly, DateOnly)), the historical immaterial-difference accommodation. |
+| <code>public decimal ConstantYieldAmortizedBasisAsOf(DayCountConvention convention, DateOnly maturity, DateOnly asOf, decimal annualCouponRatePercent, int paymentsPerYear = 2, decimal? retainedAnnualEffectiveYield = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:242](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L242) | Effective-interest (constant-yield) amortized basis: the yield to maturity implied by the acquisition price is solved once, then the book value rolls forward period by period — interest income accrues as a constant proportion of carrying value (basis × (1 + i) less the period coupon), so a premium amortizes slowly at first and faster near maturity, and a discount accretes in reverse — the ASC 310-20 profile the straight-line method only approximates. The partial current period interpolates linearly between calendar coupon boundaries using the current period&#x27;s day-count fraction. Supports one to 1200 monthly, quarterly, semiannual or annual coupon dates after acquisition, including end-of-month schedules. Regular schedules (acquisition on a coupon date of the calendar schedule running from acquisition to maturity) roll whole periods exactly as before. Odd (short) first period — acquisition settling inside a coupon period, the usual secondary-market case. The schedule is generated backward from maturity at the regular frequency: maturity is assumed to be a regular coupon date, a maturity on the last day of its month implies an end-of-month schedule, and otherwise the maturity day is kept and clipped only in short months. The first period is a stub from acquisition to the next coupon date with fraction f = DCF(acquisition, nextCoupon) / DCF(previousCoupon, nextCoupon) under convention; the full regular coupon is paid at the next coupon date. Accrued-interest assumption: PricePercentOfPar is a clean price, so the purchased accrued interest AI = coupon × (1 − f) is not part of the cost basis — it is a separate receivable repaid by the first coupon. The yield therefore solves the street-convention dirty price clean + AI = Σ CFk / (1 + y)f + k (k = 0 … n − 1, par with the last coupon), and the ex-coupon basis at the first coupon date is (clean + AI)(1 + y)f − coupon, which equals the present value of the remaining flows at the solved yield. Inside the stub the basis interpolates linearly by day count between the clean cost and that value. A retained yield must reconcile to the clean price through this same pricing function. Odd last periods are not modelled: without a contractual first-coupon or issue-date anchor, maturity is treated as a regular coupon date, so no short final period can arise. |
+| <code>public decimal RegularScheduleAnnualYield(DateOnly redemptionDate, decimal annualCouponRatePercent, int paymentsPerYear);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:724](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L724) | Annual yield on the same regular coupon grid used by canonical amortization, solved per period by bisection and certified against the acquisition price. Refuses an unbracketed yield. |
+
+## FaceValueLotFactorPaydown
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:783](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L783).
+
+The outcome of applying a factor decline to a FaceValueLot.
+
+```csharp
+public sealed record FaceValueLotFactorPaydown(FaceValueLot Lot, decimal PrincipalPaydown);
+```
+
+## FundUnitLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FundUnitLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L9).
+
+Canonical open lot for unit-denominated fund holdings (investment funds, money market funds, unitized private vehicles), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Units. The lot is a count of units and the NAV per unit they were acquired at; cost basis is owned here so every consumer derives it identically.
+
+```csharp
+public sealed record FundUnitLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundUnitLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal units, decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L11) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L34) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L44) | Security Master identity the lot&#x27;s reference data (fund family, pricing cadence) resolves from. |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L46) |  |
+| <code>public decimal Units { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L49) | Units held; fractional units are ordinary for funds. |
+| <code>public decimal NavPerUnit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L52) | NAV per unit the lot was acquired at, in the fund&#x27;s currency. |
+| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L54) |  |
+| <code>public decimal ValueAt(decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L57) | Value of the lot at navPerUnit. |
+| <code>public FundUnitLot WithReducedUnits(decimal redeemedUnits);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L66) | The lot remaining after redeeming redeemedUnits; cost basis scales with the units. |
+
+## ICorporateActionCaseAccountingService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:198](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L198).
+
+Governed corporate-action accounting lane: attach an exact-version projection binding, record maker-checker approval, and execute durable posting through the Asset Accounting Event Spine. This is the dedicated downstream command path; the generic case transition command can prepare a case through ReadyForApproval but can never grant Approved or Posted.
+
+```csharp
+public interface ICorporateActionCaseAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L200) |  |
+| <code>Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L204) |  |
+| <code>Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L208) |  |
+
 ## ICorporateActionCashDividendAccountingService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService</code>. Kind: `interface`.
@@ -901,68 +996,4 @@ An offer the holder may accept (tender offer).
 
 ```csharp
 public sealed record OfferCorporateActionTerms(string EventType, decimal? OfferPricePerUnit, DateOnly? ExpiryDate, bool? IsPartial, bool? IsVoluntary) : CorporateActionTerms(EventType);
-```
-
-## OperatorOverrideDecisionRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverrideDecisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L73).
-
-Public API request for a reviewer&#x27;s decision on a pending operator-override overlay. Decision must be SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected, with an optional comment recorded on the durable audit trail. The reviewer identity is intentionally absent: the API layer derives it from the authenticated principal and maps this request onto the internal store command, so a caller cannot attribute a decision to someone else.
-
-```csharp
-public sealed record OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto Decision, string? Comment = null);
-```
-
-## OperatorOverridesDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverridesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L36).
-
-Operator-supplied per-security override values that supplement the authoritative Security Master record. Values are string key/value pairs staged by the operator workstation: paths outside the asset-terms namespace are free-form annotations (e.g. ratings, sector classification) that never amend the canonical security terms, while assetSpecificTerms.* paths are schema-validated corrections that — once approved and published through the governed revision lifecycle — are merged into the canonical terms as a complete economic-definition amendment by the publish fan-out&#x27;s canonical-merge handler. Until publish, staged values of either kind live only in this overlay.
-
-```csharp
-public sealed record OperatorOverridesDto(Guid SecurityId, IReadOnlyDictionary<string, string> Values, string UpdatedBy, DateTimeOffset UpdatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityOverrideApprovalStatusDto ApprovalStatus { get; init; } = SecurityOverrideApprovalStatusDto.NotRequested;</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L42) |  |
-| <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L44) |  |
-| <code>public string? ReviewedBy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L46) |  |
-| <code>public DateTimeOffset? ReviewedAt { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L48) |  |
-| <code>public IReadOnlyList&lt;SecurityOverrideAuditEntryDto&gt; AuditTrail { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L50) |  |
-
-## OperatorOverridesPatchRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L58).
-
-Partial update request for operator overrides. SetValues upserts the listed keys; RemoveKeys deletes the listed keys. Both collections are optional and may be empty (no-op patch).
-
-```csharp
-public sealed record OperatorOverridesPatchRequest(IReadOnlyDictionary<string, string>? SetValues, IReadOnlyList<string>? RemoveKeys)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L62) |  |
-
-## OtcAuctionSettlementData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L41).
-
-Full CDS auction settlement linked to its retained credit trigger. Amount is signed from the fund&#x27;s side.
-
-```csharp
-public sealed record OtcAuctionSettlementData([property : JsonRequired] Guid CreditEventId, [property : JsonRequired] DateOnly AuctionDate, [property : JsonRequired] decimal FinalPricePercent, [property : JsonRequired] decimal SettlementAmount, [property : JsonRequired] string Currency, [property : JsonRequired] int SettlementScale, [property : JsonRequired] string AuctionReference) : OtcContractLifecycleData;
 ```

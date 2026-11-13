@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridArtifactService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L18).
+
+Renders report-writer grids and produces their downloadable artifact content.
+
+```csharp
+public sealed class ReportWriterGridArtifactService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L28) |  |
+| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L36) |  |
+| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L50) |  |
+
+## RiskRuleConfigDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L78).
+
+```csharp
+public sealed record RiskRuleConfigDto(string RuleName, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal>? SymbolPositionLimits, decimal? MaxDrawdownPercent, int? MaxOrdersPerMinute, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleConfigUpdateRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigUpdateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:92](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L92).
+
+```csharp
+public sealed record RiskRuleConfigUpdateRequest(decimal? DefaultMaxPositionSize = null, IReadOnlyDictionary<string, decimal?>? SymbolPositionLimits = null, decimal? MaxDrawdownPercent = null, int? MaxOrdersPerMinute = null, string? Reason = null, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleFirstRunDefaults
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleFirstRunDefaults</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:38](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L38).
+
+Armed ceilings for the portfolio-aware rails on a host that has never persisted an operator snapshot. Without these, a fresh install starts with every portfolio-aware rule unconfigured — six of eight rules approve without measuring, so any quantity at any price routes. These are conservative starting guardrails for the composition root to opt into, not tuning advice: operators raise, lower, or clear them through the risk config endpoints, and the resulting snapshot (including an explicit clear) always wins over these on the next start.
+
+```csharp
+public sealed record RiskRuleFirstRunDefaults(decimal MaxGrossExposure, decimal MaxSymbolConcentrationPercent, decimal MaxOrderNotional, decimal EscalateOrderNotional, decimal MaxOrderQuantity, decimal MaxPriceDeviationPercent, decimal PriceCollarPercent)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleFirstRunDefaults Conservative { get; } = new (MaxGrossExposure : 1_000_000m, MaxSymbolConcentrationPercent : 25m, MaxOrderNotional : 100_000m, EscalateOrderNotional : 25_000m, MaxOrderQuantity : 10_000m, MaxPriceDeviationPercent : 10m, PriceCollarPercent : 5m);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:54](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L54) | The workstation&#x27;s first-run posture: sized against the default $100k paper book so the rails constrain without strangling a fresh install — a $100k per-order reject ceiling with governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive price band with the 5% collar parked inside it (a collar at or above the band could never fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling. |
+
 ## RiskRuleRuntimeOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
@@ -807,53 +865,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;StrategyRunParityReport?&gt; GetAsync(Guid account, string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L16) |  |
-
-## StrategyRunReviewPacketService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunReviewPacketService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L13).
-
-Builds a single review packet for Strategy, Trading, and Accounting to inspect the same run, portfolio, ledger, reconciliation, brokerage, and coverage evidence.
-
-```csharp
-public sealed class StrategyRunReviewPacketService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyRunReviewPacketService(StrategyRunReadService runReadService, StrategyRunContinuityService continuityService, IServiceProvider services, ILogger&lt;StrategyRunReviewPacketService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:20](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L20) |  |
-| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L32) |  |
-| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, StrategyRunReadScope scope, Guid? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:38](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L38) |  |
-
-## SyncAccountSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SyncAccountSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L12).
-
-```csharp
-public sealed record SyncAccountSnapshot(string AccountId, string Counterparty, string Currency, decimal ClosingBalance, decimal NetDelta, DateOnly BusinessDate, bool IsComplete);
-```
-
-## SyncValidationIssue
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:21](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L21).
-
-```csharp
-public sealed record SyncValidationIssue(string Code, string Message, string Severity);
-```
-
-## SyncValidationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L23).
-
-```csharp
-public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
-```

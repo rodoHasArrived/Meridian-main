@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondReferenceEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondReferenceEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs#L15).
+
+Maps bond reference lookup and issuer and maturity queries to HTTP endpoints.
+
+```csharp
+public static class BondReferenceEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBondReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs#L20) |  |
+
+## BondReferencePagingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondReferencePagingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs#L13).
+
+Bounded keyset pages alongside the retained array contracts.
+
+```csharp
+public static class BondReferencePagingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBondReferencePagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs#L15) |  |
+
 ## BondWorkflowEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondWorkflowEndpoints</code>. Kind: `class`.
@@ -229,6 +265,16 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L25) | Maps all configuration-related API endpoints. |
+
+## ConfigureAccrualScheduleInput
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ConfigureAccrualScheduleInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L22).
+
+```csharp
+public sealed record ConfigureAccrualScheduleInput(AccrualScheduleInput Input, string PreviewFingerprint);
+```
 
 ## ConfigureRecurringJournalRequest
 
@@ -822,57 +868,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapExportEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs#L24) |  |
-
-## FailoverEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.FailoverEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs#L24).
-
-Extension methods for registering failover-related API endpoints. Shared between web dashboard and desktop application hosts.
-
-```csharp
-public static class FailoverEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapFailoverEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs#L29) | Maps all failover API endpoints. |
-
-## FirstRunEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.FirstRunEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs#L13).
-
-Maps first-run experience reads and administrative activation completion commands.
-
-```csharp
-public static class FirstRunEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapFirstRunEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs#L15) |  |
-
-## FixedIncomeHttpJson
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.FixedIncomeHttpJson</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs#L11).
-
-Exact decimal text at the HTTP boundary only. Retained calculations, receipt bytes and content hashes continue to use their existing canonical serialization options.
-
-```csharp
-public static class FixedIncomeHttpJson
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static JsonSerializerOptions Options(JsonSerializerOptions source);</code> | [src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs#L13) |  |

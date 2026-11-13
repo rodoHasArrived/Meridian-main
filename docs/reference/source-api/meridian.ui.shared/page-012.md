@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAccountingPositionSnapshotCaptureService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IAccountingPositionSnapshotCaptureService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs:14](../../../../src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs#L14).
+
+Persists production brokerage positions into the exact durable accounting scopes that reference the synced fund account. A schedule cannot claim an account merely by naming it: fund, entity, book, currency, tenant, and company ownership must all agree with server-owned registries.
+
+```csharp
+public interface IAccountingPositionSnapshotCaptureService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;int&gt; CaptureBrokerageSyncAsync(FundAccountBrokerageSyncActivityDto projection, DateTimeOffset sourceAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs:16](../../../../src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs#L16) |  |
+
+## IAccountingProductionCertificationEvidenceAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IAccountingProductionCertificationEvidenceAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:58](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L58).
+
+Resolves authoritative retained evidence for accounting production certification.
+
+```csharp
+public interface IAccountingProductionCertificationEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;AccountingCertificationEvidenceSource&gt;&gt; ResolveAsync(AccountingCertificationEvidenceResolutionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:60](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L60) |  |
+
+## IAccountingProductionCertificationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IAccountingProductionCertificationProfileStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L14).
+
+Reads and updates accounting production certification profiles.
+
+```csharp
+public interface IAccountingProductionCertificationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountingProductionCertificationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L16) |  |
+| <code>Task&lt;AccountingProductionCertificationProfileDto&gt; UpsertAsync(AccountingProductionCertificationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:23](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L23) |  |
+
+## IAccountingTenantAdministrationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IAccountingTenantAdministrationProfileStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L14).
+
+Reads and updates tenant accounting administration profiles.
+
+```csharp
+public interface IAccountingTenantAdministrationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L16) |  |
+| <code>Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:21](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L21) |  |
+
 ## IAutomatedJournalDividendPositionResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IAutomatedJournalDividendPositionResolver</code>. Kind: `interface`.
@@ -887,89 +961,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:96](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L96) |  |
-
-## IReportingDeliveryGrantCredentialDeriver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L26).
-
-Derives a stable, opaque delivery credential without persisting its plaintext bearer. The binding key must be the durable delivery idempotency identity plus its committed attempt.
-
-```csharp
-public interface IReportingDeliveryGrantCredentialDeriver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingDerivedAccessGrantCredential Derive(string bindingKey);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L28) |  |
-
-## IReportingDeploymentReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeploymentReadinessService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L14).
-
-Evaluates whether the one canonical reporting authority is fully durable and operable.
-
-```csharp
-public interface IReportingDeploymentReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingDeploymentCapabilityDto Evaluate();</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L16) |  |
-| <code>IReadOnlyList&lt;string&gt; GetScheduleWorkerCycleBlockingReasons() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L25) | Returns deployment blockers for the schedule worker&#x27;s own polling cycle. Implementations may exclude the scheduling-worker liveness receipt so it can earn its first receipt. A production implementation may also exclude the delivery-worker liveness receipt only while that peer explicitly reports its one-time initial-start window. The default remains fully fail-closed. |
-
-## IReportingGovernanceEndpointCoordinator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingGovernanceEndpointCoordinator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:313](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L313).
-
-Endpoint-facing governed reporting facade. Every caller context is server derived, while readiness, artifacts, release evidence, changed lines, and replacement certification are resolved behind the service boundary.
-
-```csharp
-public interface IReportingGovernanceEndpointCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;GovernedReportingRun&gt; GetAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:315](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L315) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReportingGovernedArtifactDescriptor&gt;&gt; ListRetainedArtifactsAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:320](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L320) |  |
-| <code>Task&lt;ReportingGovernedArtifactDownload&gt; DownloadRetainedArtifactAsync(string runId, string artifactId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:327](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L327) |  |
-| <code>Task&lt;IReadOnlyList&lt;GovernedReportingRun&gt;&gt; ListAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:335](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L335) |  |
-| <code>Task&lt;ReportingGovernanceSeriesHistory&gt; GetSeriesHistoryAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:340](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L340) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReportingRestatementRequest&gt;&gt; ListRestatementRequestsAsync(string predecessorRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:347](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L347) |  |
-| <code>Task&lt;ReportingRestatementRequest&gt; GetRestatementRequestAsync(string requestId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:354](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L354) |  |
-| <code>Task&lt;GovernedReportingRun&gt; CreateFromCompletedCertifiedManifestAsync(string manifestRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:361](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L361) |  |
-| <code>Task&lt;GovernedReportingRun&gt; ValidateAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:366](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L366) |  |
-| <code>Task&lt;GovernedReportingRun&gt; SubmitAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:372](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L372) |  |
-| <code>Task&lt;GovernedReportingRun&gt; ApproveAsync(string runId, long expectedVersion, string decisionNote, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:378](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L378) |  |
-| <code>Task&lt;GovernedReportingRun&gt; ReleaseAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:385](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L385) |  |
-| <code>Task&lt;ReportingRestatementRequest&gt; RequestRestatementAsync(string predecessorRunId, long expectedPredecessorVersion, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:391](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L391) |  |
-| <code>Task&lt;ReportingRestatementApprovalResult&gt; ApproveRestatementAsync(string requestId, long expectedRequestVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:398](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L398) |  |
-
-## IReportingMigrationStartup
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1551](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1551).
-
-Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
-
-```csharp
-public interface IReportingMigrationStartup
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1553](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1553) |  |

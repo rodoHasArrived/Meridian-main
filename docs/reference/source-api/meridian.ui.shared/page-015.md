@@ -6,6 +6,75 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecurringJournalCalculationContext
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:19](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L19).
+
+Everything one calculated recurring occurrence may read. The accrual window is the inclusive date range this occurrence owns: it starts the day after the previous occurrence (or at the start of the covering accounting period for the first occurrence) and ends on the effective date, so consecutive occurrences never accrue the same day twice.
+
+```csharp
+public sealed record RecurringJournalCalculationContext(RecurringJournalScope Scope, string ScheduleId, DateOnly EffectiveDate, DateOnly? WindowStart, DateTimeOffset OccurredAtUtc, string PeriodId, IReadOnlyDictionary<string, decimal> Parameters, IReadOnlyDictionary<string, string> Inputs, IReadOnlyList<JournalEvidenceReference> Evidence)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly RequireWindowStart() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:31](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L31) | The first day of the accrual window; fails closed when the period has no start date. |
+| <code>public int WindowDays =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:36](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L36) | Inclusive number of days in the accrual window. |
+| <code>public decimal RequireParameter(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:39](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L39) | A numeric schedule term. Terms are never defaulted: a missing term blocks the draft. |
+| <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
+| <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
+| <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
+
+## RecurringJournalCalculationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
+
+The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
+
+```csharp
+public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
+
+## RecurringJournalPeriodAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
+
+The existing PostgreSQL ledger remains the sole authority for locks and reopens.
+
+```csharp
+public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
+
+## RecurringJournalPeriodState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
+
+```csharp
+public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
+```
+
 ## RecurringJournalRunner
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
@@ -24,8 +93,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
 | <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
-| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:334](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L334) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:339](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L339) |  |
 
 ## RecurringJournalSubjectAuthority
 
@@ -762,79 +831,3 @@ Complete server-side identity used to resolve an external notification destinati
 ```csharp
 public sealed record ReportingRecipientDestinationRequest(string TenantId, string? CompanyId, string PrincipalId, string TransportId, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
 ```
-
-## ReportingReconciliationEvidenceInvalidException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceInvalidException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L47).
-
-Indicates invalid reporting reconciliation evidence and retains its evidence references.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceInvalidException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceInvalidException(string message, int blockingCount = 1, IReadOnlyList&lt;string&gt;? evidenceReferences = null) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L50) |  |
-| <code>public int BlockingCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L59) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L61) |  |
-
-## ReportingReconciliationEvidenceMigrationRequiredException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:639](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L639).
-
-Raised only when a legacy reconciliation snapshot passed its v1 integrity checks but cannot satisfy the current per-break evidence requirements without an operator-led recovery.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:642](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L642) |  |
-
-## ReportingReconciliationEvidenceMissingException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMissingException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L36).
-
-Indicates that required retained reconciliation evidence is missing.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMissingException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMissingException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L39) |  |
-
-## ReportingReconciliationEvidenceRetentionService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceRetentionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L18).
-
-Governed append-only retention facade used by close/reconciliation processing. The exact source checkpoint is part of the immutable key; a non-identical retry is rejected.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceRetentionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceRetentionService(IReportingReconciliationEvidenceRetentionStore store, IReportingAuthoritativeSource? authoritativeSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L23) |  |
-| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt&gt; RetainCompletionAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingReconciliationCompletionEvidence completion, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L36) | Internal application command invoked by close/reconciliation completion. It captures the exact ledger source itself and derives the immutable reporting receipt; no public request can provide source rows, source identity, or a reporting reconciliation hash. |
-| <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L76) |  |
