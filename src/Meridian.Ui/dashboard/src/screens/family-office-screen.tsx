@@ -15,6 +15,8 @@ import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge } from "@/components/operations";
 import { getFamilyOfficeOverview } from "@/lib/api/family-office.api";
 import { mapFamilyOfficeOverview } from "@/screens/family-office-screen.mapper";
+import { FamilyOfficeOwnershipMap } from "@/screens/family-office-ownership-map";
+import { PrivateCapitalLifecycle } from "@/components/meridian/private-capital-lifecycle";
 import { cn } from "@/lib/utils";
 import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
@@ -27,6 +29,7 @@ import {
 } from "@/screens/family-office-screen.view-model";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { pluralizeCount } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -128,6 +131,8 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
     entityStructure === undefined ? "loading" : "idle"
   );
   const [reloadToken, setReloadToken] = useState(0);
+  const [structureDate, setStructureDate] = useState("");
+  const [appliedStructureDate, setAppliedStructureDate] = useState("");
 
   useEffect(() => {
     if (entityStructure !== undefined) {
@@ -135,8 +140,10 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
     }
 
     let active = true;
+    const controller = new AbortController();
     setLoadState("loading");
-    getFamilyOfficeOverview()
+    setLoadedStructure(null);
+    getFamilyOfficeOverview({ signal: controller.signal }, appliedStructureDate || undefined)
       .then((overview) => {
         if (!active) {
           return;
@@ -153,8 +160,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
 
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [entityStructure, reloadToken]);
+  }, [entityStructure, reloadToken, appliedStructureDate]);
 
   const resolvedStructure = entityStructure ?? loadedStructure;
   const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
@@ -235,7 +243,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             ? `${pluralizeCount(resolvedStructure.privateAssets.length, "private asset")} · ${pluralizeCount(resolvedStructure.commitments.length, "commitment")}`
             : "No records loaded",
           detail: "Private-asset and commitment coverage",
-          tone: resolvedStructure ? "ready" : "blocked"
+          tone: resolvedStructure ? resolvedStructure.sourceWarnings?.length ? "review" : "ready" : "blocked"
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",
@@ -243,6 +251,8 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           tone: "blocked"
         } : undefined}
       />
+
+      {resolvedStructure?.sourceWarnings?.length ? <details className="rounded-sm border border-warning/60 p-3 text-sm"><summary className="font-semibold">Review {resolvedStructure.sourceWarnings.length} source qualification(s) before relying on household totals</summary><ul className="mt-2 list-disc space-y-1 pl-5">{resolvedStructure.sourceWarnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul></details> : null}
 
       {vm.notConnected ? (
       <Card className="panel-surface border-border/80">
@@ -278,7 +288,16 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       </section>
       ) : null}
 
-      {!vm.notConnected ? (
+      {entityStructure === undefined ? <form className="flex flex-wrap items-end gap-3 rounded-sm border border-border p-3" onSubmit={event => { event.preventDefault(); setAppliedStructureDate(structureDate); }}>
+        <label className="text-sm">Ownership structure on<input type="date" max={utcToday()} className="mt-1 block min-h-9 rounded-sm border border-border bg-background px-2 text-foreground focus-visible:outline-2 focus-visible:outline-primary" value={structureDate} onChange={event => setStructureDate(event.target.value)} /></label>
+        <Button type="submit" variant="outline" size="sm" disabled={loadState === "loading"}>Apply structure date</Button>
+        <Button type="button" variant="outline" size="sm" disabled={loadState === "loading"} onClick={() => { setStructureDate(""); setAppliedStructureDate(""); }}>Current structure</Button>
+        <p className="w-full text-xs text-muted-foreground">Date selection changes ownership structure only. Financial balances and valuations retain their own source dates.</p>
+      </form> : null}
+
+      {resolvedStructure?.ownershipSource ? <FamilyOfficeOwnershipMap key={resolvedStructure.ownershipSource.graph.asOfDate} structure={resolvedStructure} /> : null}
+
+      {!vm.notConnected && !resolvedStructure?.ownershipSource ? (
       <Card className="panel-surface border-border/80">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -407,6 +426,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         </CardContent>
       </Card>
       ) : null}
+      {resolvedStructure?.capitalLifecycle ? <PrivateCapitalLifecycle {...resolvedStructure.capitalLifecycle} entities={resolvedStructure.entities} /> : null}
     </ScreenLayout>
   );
 }

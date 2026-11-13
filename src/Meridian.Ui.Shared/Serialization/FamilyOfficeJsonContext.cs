@@ -33,6 +33,8 @@ namespace Meridian.Ui.Shared.Serialization;
 [JsonSerializable(typeof(PrivateAssetSummaryDto))]
 [JsonSerializable(typeof(IReadOnlyList<PrivateAssetSummaryDto>))]
 [JsonSerializable(typeof(CapitalCommitmentDto))]
+[JsonSerializable(typeof(PrivateCapitalLifecycleDocumentDto))]
+[JsonSerializable(typeof(PrivateCapitalSnapshotDto))]
 [JsonSerializable(typeof(IReadOnlyList<CapitalCommitmentDto>))]
 [JsonSerializable(typeof(CapitalActivityDto))]
 [JsonSerializable(typeof(IReadOnlyList<CapitalActivityDto>))]

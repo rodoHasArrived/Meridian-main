@@ -19,6 +19,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import { getLoanPortfolioSummary } from "@/lib/api/direct-lending.api";
+import { LoanMaturityView } from "@/screens/loan-maturity-view";
 import {
   buildLoanBookViewModel,
   type LoanBookRowViewModel,
@@ -191,13 +192,13 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
 
         {view.loaded ? (
           <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10.5rem),1fr))] gap-3">
               {view.metrics.map((metric) => (
                 <div
                   key={metric.id}
                   role="group"
                   aria-label={metric.ariaLabel}
-                  className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center"
+                  className="min-w-0 rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center"
                 >
                   <div className="text-xs text-muted-foreground">{metric.label}</div>
                   <div className={cn("mt-1 font-mono text-lg font-semibold tabular-nums", toneClassName[metric.tone])}>
@@ -208,6 +209,8 @@ export function LoanBookScreen({ summary }: { summary?: LoanPortfolioSummary | n
             </div>
 
             {view.currencyNotice ? <p className="text-sm text-muted-foreground">{view.currencyNotice}</p> : null}
+
+            <LoanMaturityView loans={resolved?.loans ?? []} />
 
             <DenseDataTable
               columns={loanColumns}
