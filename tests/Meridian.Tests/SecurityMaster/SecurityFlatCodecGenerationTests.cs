@@ -38,15 +38,26 @@ public sealed class SecurityFlatCodecGenerationTests
     [MemberData(nameof(GeneratedClasses))]
     public void EveryDeclaredKeyOfAGeneratedClass_IsWrittenByExactlyOneRow(string assetClass)
     {
-        // rateUnit is written by the shared rate-unit step, after the class's own document.
+        // rateUnit is written by the shared rate-unit step, after the class's own document, the
+        // declared-schedule containers by the generated version branches, and a read-only field
+        // (AuthoringEnabled false, e.g. cashFlowContract) is not written by the codec at all.
+        var binding = SecurityAssetTermsCodecBindings.ByAssetClass[assetClass];
+        string[] versioned = binding.VersionedSchedules ? ["scheduleConventions", "callSchedule", "putSchedule"] : [];
         var declared = SecurityAssetTermsSchema.Fields(assetClass)
+            .Where(static field => field.AuthoringEnabled)
             .Select(static field => field.Key)
-            .Where(static key => key != "rateUnit")
+            .Where(key => key != "rateUnit" && !versioned.Contains(key))
             .ToArray();
-        var written = SecurityAssetTermsCodecBindings.ByAssetClass[assetClass].Members
+        var written = binding.Members
             .Where(static row => row.Key is not null && !row.DecodeOnly)
             .Select(static row => row.Key!)
             .ToArray();
+
+        if (binding.VersionedSchedules)
+        {
+            SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key)
+                .Should().Contain(versioned, $"{assetClass} is flagged as carrying the declared-schedule containers");
+        }
 
         written.Should().OnlyHaveUniqueItems();
         written.Should().BeEquivalentTo(declared, $"the {assetClass} rows must write exactly the keys the schema declares");

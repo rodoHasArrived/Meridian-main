@@ -24,7 +24,7 @@ const SEVERITY_LABELS: Record<NotificationSeverity, string> = {
   critical: "Critical",
   warning: "Warning",
   info: "Info",
-  success: "Resolved"
+  success: "Success"
 };
 const SEVERITY_DOT: Record<NotificationSeverity, string> = {
   critical: "bg-danger",
@@ -33,6 +33,7 @@ const SEVERITY_DOT: Record<NotificationSeverity, string> = {
   success: "bg-success"
 };
 const SOURCE_LABELS: Record<NotificationEnvelope["source"], string> = {
+  execution: "Execution",
   inbox: "Operator inbox",
   system: "System",
   "price-alert": "Price alert"

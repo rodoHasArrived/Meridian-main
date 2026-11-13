@@ -173,6 +173,10 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+### Alpaca execution workflow evidence
+
+Alpaca maps explicit equity session intent to `extended_hours`, exposes broker `last_equity` as nullable prior-close evidence, and supplies activity completeness cursors only after successful pagination. Canonical activity metadata distinguishes day precision from an exact transaction time. Existing execution envelope hashes remain unchanged. See [execution workflows](../../docs/engineering/execution-workflows.md) for reconciliation and the separately enabled paper probe.
+
 Historical Alpaca, Polygon Security Master ingest, and Robinhood option-contract pagination
 reject repeated continuation cursors. Failed Polygon ingest and Robinhood contract pages propagate
 failure rather than publishing partial data as a complete response. Continuation URLs are validated
