@@ -467,11 +467,12 @@ public sealed class ProviderRoutingServiceTests : IDisposable
         public IReadOnlyList<Meridian.ProviderSdk.ProviderCapabilityDescriptor> CapabilityDescriptors =>
         [
             new(ProviderCapabilityKind.HistoricalBars, "bars"),
+            new(ProviderCapabilityKind.FactorSchedule, "factor schedule"),
             new(ProviderCapabilityKind.OrderExecution, "execution", RequiresAccountBinding: true, SupportsFailover: false)
         ];
 
         public bool SupportsCapability(ProviderCapabilityKind capability)
-            => capability is ProviderCapabilityKind.HistoricalBars or ProviderCapabilityKind.OrderExecution;
+            => capability is ProviderCapabilityKind.HistoricalBars or ProviderCapabilityKind.OrderExecution or ProviderCapabilityKind.FactorSchedule;
 
         public Task InitializeConnectionAsync(string connectionId, ProviderConnectionScope scope, CancellationToken ct = default)
             => Task.CompletedTask;

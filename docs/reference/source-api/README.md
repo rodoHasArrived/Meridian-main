@@ -18,7 +18,7 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | Module | Types | Reference pages |
 | --- | ---: | --- |
 | `Meridian` | 13 | [1](meridian/page-001.md) |
-| `Meridian.Application` | 573 | [1](meridian.application/page-001.md) · [2](meridian.application/page-002.md) · [3](meridian.application/page-003.md) · [4](meridian.application/page-004.md) · [5](meridian.application/page-005.md) · [6](meridian.application/page-006.md) · [7](meridian.application/page-007.md) · [8](meridian.application/page-008.md) · [9](meridian.application/page-009.md) · [10](meridian.application/page-010.md) · [11](meridian.application/page-011.md) · [12](meridian.application/page-012.md) |
+| `Meridian.Application` | 574 | [1](meridian.application/page-001.md) · [2](meridian.application/page-002.md) · [3](meridian.application/page-003.md) · [4](meridian.application/page-004.md) · [5](meridian.application/page-005.md) · [6](meridian.application/page-006.md) · [7](meridian.application/page-007.md) · [8](meridian.application/page-008.md) · [9](meridian.application/page-009.md) · [10](meridian.application/page-010.md) · [11](meridian.application/page-011.md) · [12](meridian.application/page-012.md) |
 | `Meridian.Audit` | 21 | [1](meridian.audit/page-001.md) |
 | `Meridian.Backtesting` | 37 | [1](meridian.backtesting/page-001.md) |
 | `Meridian.Backtesting.Sdk` | 104 | [1](meridian.backtesting.sdk/page-001.md) · [2](meridian.backtesting.sdk/page-002.md) · [3](meridian.backtesting.sdk/page-003.md) |
@@ -34,7 +34,7 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | `Meridian.FSharp` | 2 | [1](meridian.fsharp/page-001.md) |
 | `Meridian.IbApi.SmokeStub` | 21 | [1](meridian.ibapi.smokestub/page-001.md) |
 | `Meridian.Identity` | 53 | [1](meridian.identity/page-001.md) · [2](meridian.identity/page-002.md) |
-| `Meridian.Infrastructure` | 353 | [1](meridian.infrastructure/page-001.md) · [2](meridian.infrastructure/page-002.md) · [3](meridian.infrastructure/page-003.md) · [4](meridian.infrastructure/page-004.md) · [5](meridian.infrastructure/page-005.md) · [6](meridian.infrastructure/page-006.md) · [7](meridian.infrastructure/page-007.md) · [8](meridian.infrastructure/page-008.md) |
+| `Meridian.Infrastructure` | 354 | [1](meridian.infrastructure/page-001.md) · [2](meridian.infrastructure/page-002.md) · [3](meridian.infrastructure/page-003.md) · [4](meridian.infrastructure/page-004.md) · [5](meridian.infrastructure/page-005.md) · [6](meridian.infrastructure/page-006.md) · [7](meridian.infrastructure/page-007.md) · [8](meridian.infrastructure/page-008.md) |
 | `Meridian.Instruments` | 97 | [1](meridian.instruments/page-001.md) · [2](meridian.instruments/page-002.md) |
 | `Meridian.Ledger` | 266 | [1](meridian.ledger/page-001.md) · [2](meridian.ledger/page-002.md) · [3](meridian.ledger/page-003.md) · [4](meridian.ledger/page-004.md) · [5](meridian.ledger/page-005.md) · [6](meridian.ledger/page-006.md) |
 | `Meridian.Mcp` | 21 | [1](meridian.mcp/page-001.md) |
@@ -55,4 +55,4 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | `Meridian.Workflow` | 11 | [1](meridian.workflow/page-001.md) |
 | `Meridian.Wpf` | 1046 | [1](meridian.wpf/page-001.md) · [2](meridian.wpf/page-002.md) · [3](meridian.wpf/page-003.md) · [4](meridian.wpf/page-004.md) · [5](meridian.wpf/page-005.md) · [6](meridian.wpf/page-006.md) · [7](meridian.wpf/page-007.md) · [8](meridian.wpf/page-008.md) · [9](meridian.wpf/page-009.md) · [10](meridian.wpf/page-010.md) · [11](meridian.wpf/page-011.md) · [12](meridian.wpf/page-012.md) · [13](meridian.wpf/page-013.md) · [14](meridian.wpf/page-014.md) · [15](meridian.wpf/page-015.md) · [16](meridian.wpf/page-016.md) · [17](meridian.wpf/page-017.md) · [18](meridian.wpf/page-018.md) · [19](meridian.wpf/page-019.md) · [20](meridian.wpf/page-020.md) · [21](meridian.wpf/page-021.md) |
 
-Total: **10800** distinct module/qualified-name/arity entries from **11340** source declarations.
+Total: **10802** distinct module/qualified-name/arity entries from **11342** source declarations.

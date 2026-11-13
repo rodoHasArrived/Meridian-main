@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Application
 
+Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
+and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
+Corporate-action ingest and inbox outcomes distinguish complete empty history from unknown, failed
+and partial coverage; incomplete histories are withheld from proposal staging.
 
 `SymbolSearchService.SearchAuthoritativeAsync` supplies explicit single-provider candidate lookup.
 Provider failures propagate to the discovery surface as unavailable, separately from a successful
@@ -20,6 +24,7 @@ uses Alpaca's fixed-income filter and stages identity evidence for review withou
 The authoritative request establishes availability directly, without an unrelated tolerant symbol
 health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
 incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
+
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
 use the scoped retained date population before pagination and bind cursors to the range revision.

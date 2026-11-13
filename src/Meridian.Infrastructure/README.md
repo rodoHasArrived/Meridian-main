@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+Twelve Data daily history retrieves overlapping windows of at most 5,000 calendar days and
+withholds the aggregate until all requested windows succeed. Body-level quota, entitlement and
+upstream errors remain distinct from an unknown symbol or a valid empty date window. History
+retains the shared credential request budget and the current historical HTTP retry owner.
+These behaviors are synthetic-verified and live-untested.
 
 `BaseSymbolSearchProvider.SearchAuthoritativeAsync` preserves HTTP, transport, credential and
 throttling failures for explicit candidate review. Alpaca also rejects malformed responses and
@@ -23,6 +28,7 @@ implement the strict decoder explicitly; its default refuses unsupported authori
 Unknown raw asset classes cannot establish complete search evidence. The authoritative decoder
 recognizes Alpaca's documented response classes independently of supported query filters, and maps
 `treasury` and `corporate` responses to fixed-income candidates. Ordinary decoding stays tolerant.
+
 Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
 longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker
 resolution keeps its existing scope. Broker snapshots retain accrued interest and valuation basis;
@@ -103,8 +109,9 @@ dividends and forward/reverse splits, paged, no currency); a refused or partly f
 nothing rather than a partial history. `FetchWithOutcomeAsync` reports that case as `Unavailable`
 (no credentials, or the first page failed) or `Incomplete` (a later page failed, a page token
 repeated, or the page limit was exceeded) so ingest can tell it from a provider with no actions;
-other corporate-action providers use the interface default, which reports whatever `FetchAsync`
-returns as complete. The provider is review-only: its records are staged for
+Alpha Vantage, Finnhub, Nasdaq Data Link, Tiingo and Twelve Data also report explicit HTTP,
+credential, decoding and record-level coverage outcomes. Legacy collection-only implementations
+report unknown coverage, which cannot certify that no actions exist. The provider is review-only: its records are staged for
 review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
 symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
 send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
