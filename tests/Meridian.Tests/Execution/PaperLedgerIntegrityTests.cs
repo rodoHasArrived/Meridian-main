@@ -427,7 +427,7 @@ public sealed class PaperLedgerIntegrityTests
         ledger.GetBalance(LedgerAccounts.CashAccount("futures")).Should().Be(1_001_000m);
         ledger.GetBalance(LedgerAccounts.FuturesMtmSettlement("ESZ6", "futures")).Should().Be(-1_000m);
         ledger.GetBalance(LedgerAccounts.CashAccount("other")).Should().Be(2_000m);
-        ledger.Accounts.Should().NotContain(account => account.FinancialAccountId is null);
+        ledger.Accounts.Should().NotContain(account => account.FinancialAccountId == null);
     }
 
     private static ExecutionReport Fill(OrderSide side, decimal quantity, decimal price, decimal commission = 0m) => new()

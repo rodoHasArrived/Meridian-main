@@ -18,6 +18,10 @@ require an exact retained valuation cut. Its availability table distinguishes ab
 from measured empty schedules. Temporary export files are removed after ZIP construction. The
 paper-accounting reconciliation host is registered after the shared portfolio registry.
 
+Fund workspace research-ledger reads hydrate archived journal details only after the fund and
+selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.
+A configured durable journal store remains authoritative, including when its book is empty.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native
