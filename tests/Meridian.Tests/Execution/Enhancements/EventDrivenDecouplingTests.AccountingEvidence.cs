@@ -34,7 +34,7 @@ public sealed partial class EventDrivenDecouplingTests
         target.RetainedEntries.Should().HaveCount(3);
         target.RetainedEntries.Should().OnlyContain(entry => entry.IsBalanced);
         target.RetainedEntries.Should().OnlyContain(entry =>
-            entry.Metadata.Tags.ContainsKey("tradeFill.accountingEvidence"));
+            entry.Metadata.Tags != null && entry.Metadata.Tags.ContainsKey("tradeFill.accountingEvidence"));
     }
 
     [Fact]
@@ -169,7 +169,9 @@ public sealed partial class EventDrivenDecouplingTests
         await DrainCurrentEvidenceAsync(target, store, evt);
 
         (await store.LoadPendingAsync()).Should().BeEmpty();
-        var json = target.RetainedEntries.First().Metadata.Tags["tradeFill.accountingEvidence.v1"];
+        var tags = target.RetainedEntries.First().Metadata.Tags;
+        Assert.NotNull(tags);
+        var json = tags["tradeFill.accountingEvidence.v1"];
         var retained = JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.TradeFillAccountingEvidence)!;
         retained.Closing.Should().Be(evidence.Closing);
         retained.Opening.Should().Be(evidence.Opening);

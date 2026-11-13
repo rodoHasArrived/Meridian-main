@@ -958,7 +958,7 @@ public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = 
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1437](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1437).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1435](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1435).
 
 Defines one account within a multi-account paper trading session.
 

@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1413](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1413).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1411](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1411).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 

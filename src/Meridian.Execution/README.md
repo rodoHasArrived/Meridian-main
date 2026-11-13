@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Execution
@@ -550,7 +550,8 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 
