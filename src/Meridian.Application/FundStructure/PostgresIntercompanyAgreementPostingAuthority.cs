@@ -36,6 +36,7 @@ public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyA
                     var revision = state?.Revisions.SingleOrDefault(item => item.AgreementVersion == line.AgreementVersion);
                     if (revision is null || revision.Action == IntercompanyAgreementActionDto.Terminate)
                         throw new LedgerValidationException("The referenced approved agreement revision is unavailable.");
+                    IntercompanyAgreementReviewIntegrity.Validate(revision);
                     var terms = revision.Terms;
                     if (line.PostingEntityId != request.BookEntityId || line.PostingEntityId == line.CounterpartyId
                         || !((terms.PartyOneId == line.PostingEntityId && terms.PartyTwoId == line.CounterpartyId)

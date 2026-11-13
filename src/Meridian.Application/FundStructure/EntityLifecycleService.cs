@@ -10,8 +10,11 @@ namespace Meridian.Application.FundStructure;
 public sealed class EntityLifecycleService(
     IFundStructureService structure,
     IEntityLifecycleStore store,
-    IFundScopeTenantAccessor tenantAccessor) : IEntityLifecycleService
+    IFundScopeTenantAccessor tenantAccessor,
+    IEntityLifecycleExternalReviewEvidenceAuthority? externalReviewEvidence = null,
+    TimeProvider? timeProvider = null) : IEntityLifecycleService
 {
+    private readonly TimeProvider _clock = timeProvider ?? TimeProvider.System;
     private string Tenant() => !string.IsNullOrWhiteSpace(tenantAccessor.ResolveCallerTenant())
         && !tenantAccessor.ResolveCallerTenant()!.Trim().Equals("all", StringComparison.OrdinalIgnoreCase)
         ? tenantAccessor.ResolveCallerTenant()!.Trim().ToLowerInvariant()
@@ -49,6 +52,14 @@ public sealed class EntityLifecycleService(
             throw new InvalidOperationException("An authenticated lifecycle actor is required.");
         var graph = await RequireEntityAsync(request.EntityId, ct).ConfigureAwait(false);
         EntityLifecyclePolicy.ValidateTimeline(request.EntityId, request.Timeline);
+        if (request.ExternalReview is { } retryReview && request.ExpectedRevision >= 0 && request.ExpectedRevision < long.MaxValue)
+        {
+            var retryRevision = await store.GetRevisionAsync(tenant, request.EntityId, request.ExpectedRevision + 1, ct).ConfigureAwait(false);
+            if (retryRevision?.ExternalReview is { } receipt && receipt.Operator == actor.Trim()
+                && receipt.SubmittedHash == EntityLifecycleExternalReviewIntegrity.SubmittedHash(request)
+                && SameExternalReview(retryReview, receipt))
+                return retryRevision;
+        }
         foreach (var successorId in request.Timeline.Where(state => state.SuccessorEntityId.HasValue).Select(state => state.SuccessorEntityId!.Value).Distinct())
         {
             if (!graph.Entities.Any(entity => entity.EntityId == successorId))
@@ -67,12 +78,34 @@ public sealed class EntityLifecycleService(
             }
         }
         var previous = await store.GetLatestAsync(tenant, request.EntityId, ct).ConfigureAwait(false);
+        var now = _clock.GetUtcNow();
+        IntercompanyExternalReviewAttestationDto? externalReview = null;
+        if (request.ExternalReview is { } review)
+        {
+            var subjectHash = EntityLifecycleExternalReviewIntegrity.SubmittedHash(request);
+            IntercompanyExternalReviewValidation.Validate(review, subjectHash, actor, now);
+            var authority = externalReviewEvidence ?? throw new InvalidOperationException("Retained lifecycle external-review authority is unavailable.");
+            var resolved = await authority.ResolveAsync(tenant, actor, request.EntityId, review.Evidence, ct).ConfigureAwait(false);
+            externalReview = IntercompanyExternalReviewValidation.Retain(review, resolved, subjectHash, actor.Trim(), now);
+        }
         var revision = EntityLifecyclePolicy.Seal(new EntityLifecycleRevisionDto(tenant, request.EntityId,
-            request.ExpectedRevision + 1, DateTimeOffset.UtcNow, actor.Trim(), request.Reason, request.EvidenceReference,
-            previous?.ContentHash ?? string.Empty, string.Empty, request.Timeline));
+            request.ExpectedRevision + 1, now, actor.Trim(), request.Reason, request.EvidenceReference,
+            previous?.ContentHash ?? string.Empty, string.Empty, request.Timeline)
+        { ExternalReview = externalReview });
         var retained = await store.AppendAsync(revision, request.ExpectedRevision, ct).ConfigureAwait(false);
         if (structure is IEntityLifecycleProjectionSink projection)
             await projection.ApplyLifecycleProjectionAsync(retained, ct).ConfigureAwait(false);
         return retained;
     }
+
+    private static bool SameExternalReview(IntercompanyExternalReviewDto requested,
+        IntercompanyExternalReviewAttestationDto retained)
+        => requested.ExternalReviewer?.Trim() == retained.ExternalReviewer
+            && requested.ReviewerReference?.Trim() == retained.ReviewerReference
+            && requested.ReviewedOn == retained.ReviewedOn && requested.Rationale?.Trim() == retained.Rationale
+            && requested.SubmittedHash == retained.SubmittedHash && requested.Evidence is not null
+            && requested.Evidence.Reference == retained.Evidence.Reference
+            && (string.IsNullOrWhiteSpace(requested.Evidence.ArtifactId) || requested.Evidence.ArtifactId == retained.Evidence.ArtifactId)
+            && (string.IsNullOrWhiteSpace(requested.Evidence.ContentHash) || string.Equals(requested.Evidence.ContentHash,
+                retained.Evidence.ContentHash, StringComparison.OrdinalIgnoreCase));
 }
