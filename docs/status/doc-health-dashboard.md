@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [##########################----] 87/100
+  [#########################-----] 84/100
   Rating: Good
 ```
 
@@ -19,12 +19,12 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1490 |
-| Orphaned files | 408 |
+| Total documentation files | 1216 |
+| Orphaned files | 398 |
 | Files without headings | 233 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 332 |
-| **Health score** | **87/100** |
+| **Health score** | **84/100** |
 
 Line counts (total, average and per file) change on every Markdown edit, so they are not
 tracked here; they still feed the score. Pass `--volatile-json-output` to the generator to
@@ -87,7 +87,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
 - `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 388 more
+- ... and 378 more
 
 ## Trend
 
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 87 | 1490 | 408 | 0 |
+| 1970-01-01 | 84 | 1216 | 398 | 0 |
 
 ---
 
