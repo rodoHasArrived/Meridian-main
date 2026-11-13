@@ -149,6 +149,12 @@ public sealed record BrokerageCapabilities
 /// </summary>
 public sealed record AccountInfo
 {
+    /// <summary>Provider-reported equity at the previous regular-session close; absent means unknown.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? PreviousCloseEquity { get; init; }
+    /// <summary>Whether the provider reported valid equity evidence, rather than a legacy numeric fallback.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? EquityEvidenceComplete { get; init; }
     /// <summary>Account identifier at the broker.</summary>
     public required string AccountId { get; init; }
 

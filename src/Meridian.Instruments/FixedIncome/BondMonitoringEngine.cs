@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
@@ -11,16 +12,24 @@ namespace Meridian.Instruments.FixedIncome;
 public static class BondMonitoringEngine
 {
     public const string LegacyEngineVersion = "bond-monitoring-v1";
-    public const string EngineVersion = "bond-monitoring-v2";
+    public const string PreviousEngineVersion = "bond-monitoring-v2";
+    public const string EngineVersion = "bond-monitoring-v3";
+
+    private static readonly string[] LegacyRenderingCultures = ["", "en-US", "fr-FR", "de-DE", "th-TH", "ar-SA", "fa-IR"];
 
     public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request) => Build(request, EngineVersion);
 
     public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request, string? engineVersion)
+        => Build(request, engineVersion, CultureInfo.CurrentCulture);
+
+    internal static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request, string? engineVersion,
+        CultureInfo renderingCulture)
     {
         ArgumentNullException.ThrowIfNull(request);
         var version = engineVersion ?? EngineVersion;
-        if (version is not (LegacyEngineVersion or EngineVersion))
+        if (version is not (LegacyEngineVersion or PreviousEngineVersion or EngineVersion))
             throw new ArgumentException("The requested bond monitoring engine is not retained.", nameof(engineVersion));
+        var culture = version == EngineVersion ? CultureInfo.InvariantCulture : renderingCulture;
         var legacy = version == LegacyEngineVersion;
         var inputs = JsonSerializer.Deserialize(JsonSerializer.SerializeToUtf8Bytes(request,
             BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest), BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest)!;
@@ -155,7 +164,7 @@ public static class BondMonitoringEngine
         }).ToArray();
         var watch = inputs.Obligations.Where(row => row.IsCurrentHolding && row.DueDate >= today).Select(row => new BondWatchItemDto(
             $"due:{row.ObligationId}", row.SecurityId, row.FlowType, row.DueDate,
-            $"{row.FlowType}: {row.Amount} {row.Currency}{(row.IsForecast ? " (forecast)" : "")}", null,
+            Render($"{row.FlowType}: {row.Amount} {row.Currency}{(row.IsForecast ? " (forecast)" : "")}"), null,
             row.ModelVersion, row.IsForecast, [row.ObligationId])).ToList();
         foreach (var observation in inputs.Observations.Where(row => !inputs.Observations.Any(next => next.SupersedesObservationId == row.ObservationId)))
         {
@@ -174,9 +183,9 @@ public static class BondMonitoringEngine
                 || reset.CouponPaymentDate.HasValue != reset.CouponAmount.HasValue
                 || reset.CouponPaymentDate == default(DateOnly) || reset.PreviousCouponAmount is not null && reset.CouponPaymentDate is null)
                 Add("bond-monitoring.reset-evidence-invalid", "Reset monitoring requires dated retained observed or forecast rate inputs.", reset.SecurityId.ToString("D"));
-            watch.Add(new($"reset:{reset.SecurityId:D}:{reset.AccrualDate:yyyy-MM-dd}:{reset.ObservationDate:yyyy-MM-dd}",
+            watch.Add(new(Render($"reset:{reset.SecurityId:D}:{reset.AccrualDate:yyyy-MM-dd}:{reset.ObservationDate:yyyy-MM-dd}"),
                 reset.SecurityId, reset.IsObserved ? "ObservedReset" : "ForecastReset", reset.ObservationDate,
-                $"{(reset.IsObserved ? "Observed" : "Forecast")} index {reset.Rate:P6}; accrual {reset.AccrualDate:yyyy-MM-dd}{(reset.PreviousRate is { } priorRate ? $"; prior index {priorRate:P6}" : "")}", null,
+                Render($"{(reset.IsObserved ? "Observed" : "Forecast")} index {reset.Rate:P6}; accrual {reset.AccrualDate:yyyy-MM-dd}{(reset.PreviousRate is { } priorRate ? Render($"; prior index {priorRate:P6}") : "")}"), null,
                 reset.Source, !reset.IsObserved, inputs.Obligations.Where(row => row.SecurityId == reset.SecurityId && row.DueDate >= reset.AccrualDate)
                     .Select(row => row.ObligationId).ToArray()));
         }
@@ -196,10 +205,10 @@ public static class BondMonitoringEngine
             var affected = inputs.Obligations.Where(row => row.IsCurrentHolding && row.SecurityId == coupon.Key.SecurityId
                 && row.FlowType == "Coupon" && row.DueDate == coupon.Key.Payment).ToArray();
             var currency = affected.Select(row => row.Currency).Distinct().SingleOrDefault() ?? "native currency";
-            watch.Add(new($"coupon-estimate:{coupon.Key.SecurityId:D}:{coupon.Key.Payment:yyyy-MM-dd}", coupon.Key.SecurityId,
+            watch.Add(new(Render($"coupon-estimate:{coupon.Key.SecurityId:D}:{coupon.Key.Payment:yyyy-MM-dd}"), coupon.Key.SecurityId,
                 revised ? "CouponRevision" : "NextCoupon", coupon.Key.Payment,
-                $"Whole coupon {amount} {currency} on {coupon.Key.Payment:yyyy-MM-dd}; "
-                    + (priorAmount is { } baseline ? $"prior {baseline}; total change {amount - baseline}." : "previous estimate unavailable.")
+                Render($"Whole coupon {amount} {currency} on {coupon.Key.Payment:yyyy-MM-dd}; ")
+                    + (priorAmount is { } baseline ? Render($"prior {baseline}; total change {amount - baseline}.") : "previous estimate unavailable.")
                     + " Change reflects all refreshed model and holding inputs; daily reset effects are not added repeatedly.",
                 null, string.Join(", ", coupon.Select(row => row.Source).Distinct().Order(StringComparer.Ordinal)),
                 revised || coupon.Any(row => !row.IsObserved), affected.Select(row => row.ObligationId).ToArray()));
@@ -211,9 +220,9 @@ public static class BondMonitoringEngine
                 watch.Add(new($"exercise-blocker:{exercise.SecurityId:D}:{blocker.Code}", exercise.SecurityId, "ExerciseInputMissing",
                     exercise.AsOf, blocker.Reason, null, "SecurityMaster", true, []));
             foreach (var window in exercise.Windows)
-                watch.Add(new($"exercise:{exercise.SecurityId:D}:{window.Kind}:{window.ExerciseDate:yyyy-MM-dd}", exercise.SecurityId,
+                watch.Add(new(Render($"exercise:{exercise.SecurityId:D}:{window.Kind}:{window.ExerciseDate:yyyy-MM-dd}"), exercise.SecurityId,
                     "ExerciseEligibility", window.LatestNoticeDate ?? window.ExerciseDate,
-                    $"{window.Kind} eligibility {window.ExerciseDate:yyyy-MM-dd} at {window.RedemptionPrice}; notice {window.Status}. Eligibility is not an observed exercise notice.",
+                    Render($"{window.Kind} eligibility {window.ExerciseDate:yyyy-MM-dd} at {window.RedemptionPrice}; notice {window.Status}. Eligibility is not an observed exercise notice."),
                     null, "SecurityMaster", window.Status is BondExerciseNoticeStatus.Open or BondExerciseNoticeStatus.DeadlineElapsed,
                     inputs.Obligations.Where(row => row.SecurityId == exercise.SecurityId && row.DueDate >= window.ExerciseDate).Select(row => row.ObligationId).ToArray()));
         }
@@ -222,12 +231,14 @@ public static class BondMonitoringEngine
             var allocated = inputs.Allocations.Where(row => row.ActualVersionId == payment.VersionId).Sum(row => row.NetAmount);
             if (allocated != payment.Amount)
                 watch.Add(new($"unallocated:{payment.VersionId}", payment.SecurityId ?? Guid.Empty, "UnallocatedCash",
-                    payment.CashReceiptDate ?? today, $"Unallocated observed cash {payment.Amount - allocated} {payment.Currency}",
+                    payment.CashReceiptDate ?? today, Render($"Unallocated observed cash {payment.Amount - allocated} {payment.Currency}"),
                     null, payment.Provenance.SourceDomain, true, []));
         }
         var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(inputs, BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest));
         return new(Sha256Digest.ComputeUtf8($"{version}|{hash}"), version, inputs, collection,
             watch.OrderBy(row => row.Date).ThenBy(row => row.WatchId, StringComparer.Ordinal).ToArray(), issues);
+
+        string Render(FormattableString text) => text.ToString(culture);
 
         void Add(string code, string message, string? id = null) => issues.Add(new(code, message, id));
         void Unique(IEnumerable<string> keys, string category)
@@ -268,6 +279,41 @@ public static class BondMonitoringEngine
         }
     }
 
+    internal static bool Reproduces(BondMonitoringSnapshotDto retained)
+    {
+        var serialized = JsonSerializer.Serialize(retained, BondMonitoringJsonContext.Default.BondMonitoringSnapshotDto);
+        if (retained.EngineVersion == EngineVersion)
+            return Matches(CultureInfo.InvariantCulture);
+        if (retained.EngineVersion is not (LegacyEngineVersion or PreviousEngineVersion))
+            return false;
+        if (Matches(CultureInfo.CurrentCulture))
+            return true;
+        // Old receipts did not retain their rendering culture. A bounded renderer is admissible
+        // only when it reproduces the ENTIRE retained receipt, including all financial fields,
+        // watch identities and summaries. No culture is inferred and no stored bytes are changed.
+        foreach (var name in LegacyRenderingCultures)
+        {
+            CultureInfo candidate;
+            try { candidate = CultureInfo.GetCultureInfo(name); }
+            catch (CultureNotFoundException) { continue; }
+            if (Matches(candidate))
+                return true;
+        }
+        return false;
+
+        bool Matches(CultureInfo candidate)
+        {
+            try
+            {
+                var replay = Build(retained.Inputs, retained.EngineVersion, candidate);
+                return serialized == JsonSerializer.Serialize(replay, BondMonitoringJsonContext.Default.BondMonitoringSnapshotDto);
+            }
+            // Some calendars cannot represent otherwise valid retained Gregorian dates. Such a
+            // renderer proves nothing; another bounded candidate must still match every field.
+            catch (ArgumentOutOfRangeException) { return false; }
+        }
+    }
+
     private static bool Currency(string value) => value is { Length: 3 } && value.All(ch => ch is >= 'A' and <= 'Z');
 
     public static IReadOnlyList<AccountCashFlowDto> SelectActivePayments(IReadOnlyList<AccountCashFlowDto> payments) =>
@@ -293,7 +339,7 @@ public sealed partial class BondMonitoringService(IBondMonitoringStore store,
             .SingleOrDefault(row => row.Inputs.RunId == request.RunId);
         if (retained is not null)
         {
-            var replay = BondMonitoringEngine.Build(request, retained.EngineVersion);
+            var replay = BondMonitoringEngine.Build(request, retained.EngineVersion, CultureInfo.InvariantCulture);
             if (JsonSerializer.Serialize(replay.Inputs, BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest)
                 != JsonSerializer.Serialize(retained.Inputs, BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest))
                 throw new InvalidOperationException("A monitoring run identity cannot be reused with different inputs.");
@@ -311,10 +357,8 @@ public sealed partial class BondMonitoringService(IBondMonitoringStore store,
         var history = await store.GetHistoryAsync(scope, ct).ConfigureAwait(false);
         foreach (var snapshot in history)
         {
-            var replay = BondMonitoringEngine.Build(snapshot.Inputs, snapshot.EngineVersion);
-            if (snapshot.Inputs.Scope != scope || JsonSerializer.Serialize(snapshot, BondMonitoringJsonContext.Default.BondMonitoringSnapshotDto)
-                != JsonSerializer.Serialize(replay, BondMonitoringJsonContext.Default.BondMonitoringSnapshotDto))
-                throw new InvalidDataException("Retained bond monitoring failed exact scope or deterministic replay validation.");
+            if (snapshot.Inputs.Scope != scope || !BondMonitoringEngine.Reproduces(snapshot))
+                throw new InvalidDataException("Retained bond monitoring failed exact scope or deterministic replay validation. Legacy localized output must exactly match a supported rendering culture; unsupported custom output requires the original rendering settings before history can be reopened or a new capture created.");
         }
         return history;
     }

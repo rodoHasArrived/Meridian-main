@@ -13,6 +13,55 @@ public sealed class BondWorkflowServiceTests
     private static readonly Guid Id = Guid.Parse("38cf377c-cf7d-448e-920c-14d18a48bbe1");
     private static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    [Theory]
+    [InlineData("mandatoryPutDate", "2027-01-01", false)]
+    [InlineData("preRefundDate", "2027-01-01", false)]
+    [InlineData("mandatoryPutDate", "2027-01-01", true)]
+    [InlineData("preRefundDate", "2027-01-01", true)]
+    [InlineData("mandatoryPutDate", "2028-01-01", false)]
+    [InlineData("preRefundDate", "2029-01-01", false)]
+    [InlineData("mandatoryPutDate", "", false)]
+    [InlineData("preRefundDate", "not-a-date", false)]
+    public async Task MandatoryRedemptionTermsRefuseMaturityCashValuationAndIncome(string key, string value, bool profile)
+    {
+        var bond = Bond();
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        if (profile)
+            terms["profileFields"] = new Dictionary<string, object?> { [key] = value };
+        else
+            terms[key] = value;
+        var service = Service(bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) }, Curves());
+        foreach (var version in new[] { BondWorkflowModelVersions.Current, BondWorkflowModelVersions.Legacy })
+        {
+            var request = new BondWorkflowRequest(Id, Context(), 1000m, 100m) { ModelVersion = version };
+            var result = (await service.CalculateAsync(request))!;
+            result.IsBlocked.Should().BeTrue();
+            result.Issues.Should().Contain(issue => issue.Code == "MandatoryRedemptionTermsUnsupported" && issue.BlocksCalculation);
+            result.CashFlows.Should().BeEmpty();
+            result.PresentValue.Should().BeNull();
+            result.DirtyConsideration.Should().BeNull();
+            result.Yield.Should().BeNull();
+            result.YieldToWorst.Should().BeNull();
+            var income = (await service.CalculateIncomeScheduleAsync(request, new(2026, 1, 1)))!;
+            income.IsBlocked.Should().BeTrue();
+            income.CashFlows.Should().BeEmpty();
+        }
+    }
+
+    [Fact]
+    public async Task AbsentMandatoryRedemptionDatesPreserveOrdinaryMaturityCash()
+    {
+        var bond = Bond();
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["mandatoryPutDate"] = null;
+        terms["profileFields"] = new Dictionary<string, object?> { ["preRefundDate"] = null };
+        var result = (await Service(bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) }, Curves())
+            .CalculateAsync(new(Id, Context(), 1000m, 100m)))!;
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Issues.Select(issue => issue.Reason)));
+        result.CashFlows.Sum(flow => flow.Principal).Should().Be(1000m);
+        result.PresentValue.Should().NotBeNull();
+    }
+
     [Fact]
     public async Task ExerciseWithEarnedDeferredCouponMarksOnlyExerciseUnavailableAndKeepsBaseCashFlows()
     {

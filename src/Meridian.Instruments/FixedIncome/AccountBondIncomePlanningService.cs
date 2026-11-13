@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
@@ -15,6 +16,7 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
     IBondMarketDataService? market = null) : IAccountBondIncomePlanningService
 {
     private readonly TimeProvider _clock = clock ?? TimeProvider.System;
+    private static readonly string[] LegacyIdentityCultures = ["", "en-US", "fr-FR", "de-DE", "th-TH", "ar-SA", "fa-IR"];
 
     public async Task<AccountBondIncomePlanDto> PlanAsync(AccountBondIncomePlanningRequest request, CancellationToken ct = default)
     {
@@ -31,10 +33,13 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
             throw new ArgumentException("Economic and retained-information cutoffs cannot be in the future.", nameof(request));
         var asOf = DateOnly.FromDateTime(request.Context.AsOf.UtcDateTime);
         var snapshot = await holdings.GetHoldingsAsync(accountId, asOf, knownAt, ct).ConfigureAwait(false);
+        var history = await monitoring.GetHistoryAsync(request.Scope, ct).ConfigureAwait(false);
+        var previous = history.LastOrDefault(row => row.Inputs.RecordedAtUtc <= knownAt);
         var blockers = new List<string>();
         var calculations = new List<BondWorkflowResult>();
         var obligations = new List<BondMonitoringObligationDto>();
         var directions = new Dictionary<Guid, int>();
+        var heldSecurities = new HashSet<Guid>();
         var exerciseWindows = new List<BondExerciseNoticeWatchResult>();
         if (snapshot is null)
             blockers.Add("No accepted account holdings snapshot is available at the selected economic and knowledge cutoffs.");
@@ -50,8 +55,14 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
                 if (rows.Select(row => row.Currency).Distinct().Count() != 1 || rows.Select(row => row.Bond!.PrincipalFactor).Distinct().Count() != 1)
                 { blockers.Add($"Security {group.Key} has conflicting holding currencies or factors."); continue; }
                 var face = rows.Sum(row => (row.IsShort ? -Math.Abs(row.Bond!.OriginalFace) : row.Bond!.OriginalFace));
+                if (rows.Any(row => row.Bond!.OriginalFace != 0m))
+                    heldSecurities.Add(group.Key);
                 if (face == 0m)
+                {
+                    if (heldSecurities.Contains(group.Key))
+                        blockers.Add(OffsettingHolderEntitlementBlocker(group.Key));
                     continue;
+                }
                 var result = await bonds.CalculateAsync(new(group.Key, request.Context with { KnownAt = knownAt }, Math.Abs(face)), ct).ConfigureAwait(false);
                 if (result is null)
                 { blockers.Add($"Security {group.Key} has no retained bond terms."); continue; }
@@ -67,6 +78,8 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
                 { blockers.Add($"Security {group.Key} holding currency disagrees with canonical terms."); continue; }
                 if (result.IsBlocked)
                 { blockers.AddRange(result.Issues.Where(row => row.BlocksCalculation).Select(row => $"{group.Key}: {row.Reason}")); continue; }
+                if (HolderEntitlementBlocker(result) is { } entitlementBlocker)
+                    blockers.Add(entitlementBlocker);
                 var heldCurrentFace = rows.Sum(row => row.IsShort ? -Math.Abs(row.Bond!.CurrentFace) : row.Bond!.CurrentFace);
                 if (result.CurrentFace != Math.Abs(heldCurrentFace))
                 { blockers.Add($"Security {group.Key} retained terms factor and accepted holding current face disagree; review principal evidence."); continue; }
@@ -74,11 +87,10 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
                 directions[group.Key] = direction;
                 var inputs = result.Inputs.Append(new BondCalculationInput("HoldingsSnapshot", snapshot.BatchId.ToString("D"),
                     ContentSha256: snapshot.SourceContentHash, AsOf: new DateTimeOffset(snapshot.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero))).ToArray();
-                obligations.AddRange(ProjectObligations(request.Scope, group.Key, result, direction, inputs));
+                obligations.AddRange(ProjectObligations(request.Scope, group.Key, result, direction, inputs, previous));
             }
         }
-        var history = await monitoring.GetHistoryAsync(request.Scope, ct).ConfigureAwait(false);
-        var previous = history.LastOrDefault(row => row.Inputs.RecordedAtUtc <= knownAt);
+        blockers.AddRange(MissingHeldCouponBlockers(previous, obligations, previous?.Inputs.Allocations ?? []));
         // Retain earlier obligations for payments already observed; revised current projections are explicit new evidence.
         foreach (var allocated in previous?.Inputs.Obligations.Where(row => previous.Inputs.Allocations.Any(allocation => allocation.ExpectedFlowId == row.ObligationId)) ?? [])
             if (obligations.Any(row => row.ObligationId == allocated.ObligationId && row.Amount != allocated.Amount))
@@ -167,10 +179,60 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
     }
 
     public static string ObligationIdentity(AccountCashForecastScopeDto scope, Guid security, string kind, DateOnly payment, DateOnly accrual) =>
-        Sha256Digest.ComputeUtf8($"{scope.AccountId}|{scope.BookId}|{security:D}|{kind}|{payment:yyyy-MM-dd}|{accrual:yyyy-MM-dd}");
+        Sha256Digest.ComputeUtf8(FormattableString.Invariant($"{scope.AccountId}|{scope.BookId}|{security:D}|{kind}|{payment:yyyy-MM-dd}|{accrual:yyyy-MM-dd}"));
+
+    internal static string OffsettingHolderEntitlementBlocker(Guid security) =>
+        $"Security {security}: offsetting nonzero long and short holdings do not establish retained holder coupon entitlement or a right to set off coupon cash. Reconcile gross account coupon rights before relying on this cash forecast.";
+
+    internal static string? HolderEntitlementBlocker(BondWorkflowResult result)
+    {
+        if (result.HasDetachedCoupon == true)
+            return $"Security {result.SecurityId}: purchaser ex-coupon cash flows do not establish retained holder coupon entitlement. Reconcile account coupon rights before relying on this cash forecast; accepted holding face alone does not prove continuous ownership.";
+        var settlement = result.Context.SettlementDate ?? DateOnly.FromDateTime(result.Context.AsOf.UtcDateTime);
+        return result.ModelVersion == BondWorkflowModelVersions.Legacy && result.HasDetachedCoupon is null
+            && result.CashFlows.Any(flow => flow.PaymentDate > settlement && flow.AccrualStart < flow.AccrualEnd && flow.Interest == 0m)
+            ? $"Security {result.SecurityId}: a legacy zero-interest future coupon interval has no retained holder coupon entitlement status. Explicitly refresh with {BondWorkflowModelVersions.Current} or reconcile account coupon rights before relying on this cash forecast."
+            : null;
+    }
+
+    internal static IEnumerable<string> MissingHeldCouponBlockers(BondMonitoringSnapshotDto? previous,
+        IReadOnlyCollection<BondMonitoringObligationDto> current, IReadOnlyList<AccountCashPaymentAllocationDto> allocations)
+    {
+        if (previous is null)
+            yield break;
+        foreach (var prior in previous.Inputs.Obligations.Where(row => row.FlowType == "Coupon"
+            && !current.Any(item => item.ObligationId == row.ObligationId)))
+            if (prior.Amount != allocations.Where(row => row.ExpectedFlowId == prior.ObligationId).Sum(row => row.GrossAmount))
+                yield return $"Security {prior.SecurityId}: previously retained uncollected coupon {prior.ObligationId} is absent from the purchaser projection. Reconcile retained holder coupon entitlement before relying on this cash forecast; its earlier obligation and allocations remain visible.";
+    }
+
+    private static string RetainedObligationIdentity(AccountCashForecastScopeDto scope, Guid security, string kind,
+        DateOnly payment, DateOnly accrual, BondMonitoringSnapshotDto? previous)
+    {
+        var canonical = ObligationIdentity(scope, security, kind, payment, accrual);
+        if (previous is null)
+            return canonical;
+        if (previous.Inputs.Scope != scope)
+            throw new InvalidOperationException("Retained obligation identity requires the exact account/book scope.");
+        FormattableString legacy = $"{scope.AccountId}|{scope.BookId}|{security:D}|{kind}|{payment:yyyy-MM-dd}|{accrual:yyyy-MM-dd}";
+        var hashes = new HashSet<string>(StringComparer.Ordinal) { canonical };
+        try { hashes.Add(Sha256Digest.ComputeUtf8(legacy.ToString(CultureInfo.CurrentCulture))); }
+        catch (ArgumentOutOfRangeException) { /* This current calendar cannot represent the contractual date. */ }
+        foreach (var name in LegacyIdentityCultures)
+        {
+            try { hashes.Add(Sha256Digest.ComputeUtf8(legacy.ToString(CultureInfo.GetCultureInfo(name)))); }
+            catch (ArgumentOutOfRangeException) { /* This calendar cannot represent this contractual date. */ }
+            catch (CultureNotFoundException) { /* An unavailable renderer proves no retained identity. */ }
+        }
+        var matches = previous.Inputs.Obligations.Where(row => row.SecurityId == security && row.FlowType == kind
+            && row.DueDate == payment && hashes.Contains(row.ObligationId)).Select(row => row.ObligationId).Distinct(StringComparer.Ordinal).ToArray();
+        if (matches.Length > 1)
+            throw new InvalidOperationException("Competing retained identities for one contractual obligation require explicit source reconciliation.");
+        return matches.SingleOrDefault() ?? canonical;
+    }
 
     internal static IReadOnlyList<BondMonitoringObligationDto> ProjectObligations(AccountCashForecastScopeDto scope,
-        Guid securityId, BondWorkflowResult result, int direction, IReadOnlyList<BondCalculationInput> inputs)
+        Guid securityId, BondWorkflowResult result, int direction, IReadOnlyList<BondCalculationInput> inputs, BondMonitoringSnapshotDto? previous = null)
     {
         var coupons = result.CashFlows.Where(flow => flow.Interest != 0m).Select(flow =>
             (Kind: "Coupon", flow.PaymentDate, flow.AccrualStart, Amount: flow.Interest, flow.IsForecast));
@@ -181,7 +243,7 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
             .Select(group => (Kind: "Principal", group.Key.PaymentDate, group.Key.AccrualStart,
                 Amount: group.Sum(flow => flow.Principal), IsForecast: group.Any(flow => flow.IsForecast)));
         return coupons.Concat(principal).Select(row => new BondMonitoringObligationDto(
-                ObligationIdentity(scope, securityId, row.Kind, row.PaymentDate, row.AccrualStart),
+                RetainedObligationIdentity(scope, securityId, row.Kind, row.PaymentDate, row.AccrualStart, previous),
                 securityId, row.Kind, row.PaymentDate, LedgerCurrencyRounding.RoundCurrency(direction * row.Amount, result.Currency),
                 result.Currency, result.ModelVersion, inputs, row.IsForecast))
             .Where(row => row.Amount != 0m).ToArray();

@@ -6,11 +6,256 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PositionSyncOptions
+
+Qualified name: <code>Meridian.Execution.Services.PositionSyncOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/PositionSyncOptions.cs:8](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L8).
+
+Configuration for the brokerage position sync service. Set ProviderPriority to control which brokerage connection is queried first when multiple IBrokeragePositionSync implementations are registered.
+
+```csharp
+public sealed class PositionSyncOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; ProviderPriority { get; init; } = [];</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:20](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L20) | Ordered list of brokerage provider names to attempt for position syncing. The first entry in the list that has an active connection is used. Recognised values (case-insensitive): &quot;Alpaca&quot;, &quot;InteractiveBrokers&quot;. Any name not matching a registered provider is silently skipped. Leave empty to accept the default discovery order (all registered providers are queried in registration order). |
+| <code>public TimeSpan SyncInterval { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:26](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L26) | How often position data is refreshed from the brokerage. Default: 5 minutes. |
+| <code>public int MaxConsecutiveFailures { get; init; } = 3;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:31](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L31) | Maximum number of consecutive failures before the sync service backs off. |
+| <code>public TimeSpan BackOffInterval { get; init; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:37](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L37) | Back-off interval applied after MaxConsecutiveFailures are reached. Default: 15 minutes. |
+| <code>public decimal DivergenceTolerance { get; init; } = 0m;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:44](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L44) | Tolerance threshold for position quantity divergence before a reconciliation alert is emitted. E.g. 0.001 means a 0.1% difference is tolerated. Default: 0 (any difference triggers an alert). |
+
+## ReconciliationReport
+
+Qualified name: <code>Meridian.Execution.Services.ReconciliationReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PositionReconciliationService.cs:17](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L17).
+
+Result of a single reconciliation pass for one account.
+
+```csharp
+public sealed record ReconciliationReport(string AccountId, string ProviderName, IReadOnlyList<string> MatchedSymbols, IReadOnlyList<string> DivergentSymbols, IReadOnlyList<string> MissingInPortfolio, IReadOnlyList<string> MissingInBrokerage, DateTimeOffset ReconciledAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:27](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L27) | True when no divergences were found. |
+
+## ReplayDriftAssessment
+
+Qualified name: <code>Meridian.Execution.Services.ReplayDriftAssessment</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ReplayDriftDetector.cs:10](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L10).
+
+```csharp
+public sealed record ReplayDriftAssessment(ReplayDriftStatus Status, bool IsDrifted, string RequiredNextAction, string Detail);
+```
+
+## ReplayDriftDetector
+
+Qualified name: <code>Meridian.Execution.Services.ReplayDriftDetector</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ReplayDriftDetector.cs:19](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L19).
+
+Compares active paper-session identity and event counts with retained replay-verification evidence.
+
+```csharp
+public static class ReplayDriftDetector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReplayDriftAssessment Assess(string activeSessionId, int activeFillCount, int activeOrderCount, int activeLedgerEntryCount, string? verifiedSessionId, int verifiedFillCount, int verifiedOrderCount, int verifiedLedgerEntryCount);</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:21](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L21) |  |
+
+## ReplayDriftStatus
+
+Qualified name: <code>Meridian.Execution.Services.ReplayDriftStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/Services/ReplayDriftDetector.cs:3](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L3).
+
+```csharp
+public enum ReplayDriftStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:5](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L5) |  |
+| <code>Aligned = 1</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:6](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L6) |  |
+| <code>DriftDetected = 2</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:7](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L7) |  |
+
+## RetainedBrokerageOrder
+
+Qualified name: <code>Meridian.Execution.Services.RetainedBrokerageOrder</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:165](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L165).
+
+```csharp
+public sealed record RetainedBrokerageOrder(OrderState State, string? BrokerOrderId, bool RequiresRecovery)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public PendingOrderAmendment? PendingAmendment { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:168](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L168) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool RequiresAmendmentRecovery { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:170](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L170) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? BrokerOrderAliases { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:172](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L172) |  |
+
+## RiskEscalationQueueOptions
+
+Qualified name: <code>Meridian.Execution.Services.RiskEscalationQueueOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:24](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L24).
+
+Location of the durable governed-approval queue snapshot.
+
+```csharp
+public sealed record RiskEscalationQueueOptions(string SnapshotPath, int MaxRetainedEntries = 500, int MaxUnresolvedEntries = 250)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskEscalationQueueOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;risk-escalations&quot;, &quot;escalations.json&quot;));</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:29](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L29) |  |
+
+## RiskEscalationQueueService
+
+Qualified name: <code>Meridian.Execution.Services.RiskEscalationQueueService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:44](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L44).
+
+Governed-approval queue for risk escalations: the enforced pre-trade validator parks escalated orders here instead of hard-rejecting them, operators approve or deny with an audited actor and reason, and an approval releases exactly one resubmission of the original order through the same risk gate. Metadata key ApprovalMetadataKey carries the one-shot approval token; consumption verifies the resubmitted order matches the full parked order fingerprint (every routing- and payoff-relevant field) so an approval can never release a different executable order than the risk desk reviewed. Queue transitions persist atomically so parked decisions and armed approvals survive process restarts.
+
+```csharp
+public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ApprovalMetadataKey = &quot;riskEscalationId&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:47](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L47) | Order-metadata key carrying the escalation id(s) of granted governed approvals. |
+| <code>public const string TokenSeparator = &quot;,&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:53](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L53) | Separator for the approval token set. An order breaching several escalation-capable rules carries one token per granted decision. |
+| <code>public const string IncrementalNotionalMetadataKey = RiskEscalationMetadata.IncrementalNotionalMetadataKey;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:61](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L61) | Order-metadata key carrying the incremental notional an amendment adds. Quantity stays the full amended quantity so position limits evaluate the real post-amendment position, while notional-based rules measure only the exposure being added (the snapshot already reserves the working order at its current size). |
+| <code>public const string EvaluationOnlyMetadataKey = RiskEscalationMetadata.EvaluationOnlyMetadataKey;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:69](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L69) | Order-metadata flag marking a probe evaluation: the rules should decide, but an escalation must not park a queue entry. Amendment validation uses this, since an escalated amendment could never be released as a modification and would leave an unusable approval behind. |
+| <code>public const string SubmitterMetadataKey = &quot;riskSubmitter&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:81](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L81) | Order-metadata key carrying the original submitting operator across a chained release. The actor key on a release names the operator performing the release — it feeds RiskEscalationEntry.ReleasedBy and the consumption-time segregation check — so it cannot also carry the submitter. Without this key, a re-park during a chained release would record the previous stage&#x27;s approver as the escalation&#x27;s actor: the original submitter could then approve a later stage of their own order, while the independent approver would be refused as a false self-release. |
+| <code>public RiskEscalationQueueService(ILogger&lt;RiskEscalationQueueService&gt; logger, ExecutionAuditTrailService? auditTrail = null, RiskEscalationQueueOptions? options = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:91](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L91) |  |
+| <code>public RiskEscalationEntry Park(OrderRequest request, string reason, string? ruleName = null, string? actor = null, string? runId = null, string? correlationId = null, IReadOnlyList&lt;RiskEscalationEntry&gt;? consumedApprovals = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:105](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L105) | Parks request for governed approval and returns the queue entry. |
+| <code>public bool TryBeginRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:219](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L219) | Atomically claims an approved entry for release. Two concurrent approve requests on the same entry would otherwise both submit the retained order; the first can fill and free its client order id before the second reaches the OMS, letting the second park a fresh escalation for an order that already executed. Returns false when the entry is not approved or a release is already in flight. |
+| <code>public void EndRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:238](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L238) | Clears a release claim that did not result in a released order. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetUnresolved() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:257](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L257) | Returns every entry that can still route an order — awaiting approval or approved and not yet released — oldest first. Used to rebuild the client-order-id reservations a restarted host would otherwise lose while this durable queue keeps the escalations themselves. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetPending() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:264](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L264) | Returns entries awaiting approval, oldest first. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetRecent(int take = 50);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:276](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L276) | Returns recent entries newest first. Unresolved entries (pending or armed approvals) are always included regardless of age — an old escalation that still needs a decision must never scroll out of the only queue listing — while terminal Denied/Released history fills whatever remains of the take window. |
+| <code>public RiskEscalationEntry? TryGet(string escalationId) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:295](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L295) | Returns the entry with escalationId, or null. |
+| <code>public RiskEscalationEntry? Approve(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:303](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L303) | Approves a pending escalation, arming a one-shot release of the parked order. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
+| <code>public RiskEscalationEntry? Deny(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:310](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L310) | Denies a pending escalation. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
+| <code>public RiskEscalationEntry? TryConsumeApproval(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:322](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L322) | Consumes a one-shot governed approval carried on request metadata. Returns the released entry only when the token references an approved, unreleased entry whose full order fingerprint matches the resubmitted order; the entry then transitions to RiskEscalationStatus.Released. The release commits durably before it is honored: if the snapshot cannot be persisted the in-memory transition rolls back and consumption fails closed, so a restart can never reload a stale approved token for an order that already routed. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; TryConsumeApprovals(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:336](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L336) | Consumes every governed approval carried on request metadata. An order that breaches several escalation-capable rules accumulates one token per granted decision (the token value is a delimited set), and all of them must be honored in a single evaluation — otherwise each release satisfies one rule while re-parking another and the order can never route despite every decision being granted. Each token is still one-shot and fingerprint-bound individually. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitTokens(string? tokenValue) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:360](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L360) | Splits a governed-approval token value into its individual escalation ids. |
+| <code>public static string JoinTokens(IEnumerable&lt;string&gt; escalationIds) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:366](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L366) | Joins escalation ids into a single governed-approval token value. |
+| <code>public bool TryRestoreApproval(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:439](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L439) | Re-arms a released approval whose order did not route (a later hard rule rejected it), restoring the entry to RiskEscalationStatus.Approved so the operator&#x27;s decision remains retryable once the blocking condition clears. Only a caller that observed the failed release may restore, and only from Released. |
+| <code>public RiskEscalationEntry? Withdraw(string escalationId, string actor, string? reason);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:480](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L480) | Withdraws an escalation whose order can no longer be routed — the submitter cancelled it, or the run that owned it ended. Unlike Deny this also resolves an entry an operator already RiskEscalationStatus.Approved, because an approval that has not been released is still only a permission: the order behind it is gone. A release already in flight is left alone — that order is on its way to the broker and only its own outcome may resolve the entry. Returns null when there was nothing withdrawable, so callers can fail closed rather than reporting a cancellation the queue never accepted. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:989](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L989) | Drains outstanding audit writes so shutdown cannot lose approval evidence. |
+
+## SessionSymbolTcaSummary
+
+Qualified name: <code>Meridian.Execution.Services.SessionSymbolTcaSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:409](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L409).
+
+Per-symbol cost breakdown, sorted by total commission descending.
+
+```csharp
+public sealed record SessionSymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
+```
+
+## SessionTcaCostSummary
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaCostSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:398](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L398).
+
+Aggregate session-level cost summary.
+
+```csharp
+public sealed record SessionTcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills);
+```
+
+## SessionTcaExecutionQuality
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaExecutionQuality</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:433](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L433).
+
+Execution-quality statistics derived by joining fills to their originating orders. AvgLimitPriceImprovementBps is notional-weighted; positive values mean fills executed better than their limit price.
+
+```csharp
+public sealed record SessionTcaExecutionQuality(int OrdersWithLimitPrice, double AvgLimitPriceImprovementBps, double MedianTimeToFillSeconds, int TimedFillCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SessionTcaExecutionQuality Empty { get; } = new (0, 0.0, 0.0, 0);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:439](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L439) |  |
+
+## SessionTcaFillOutlier
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaFillOutlier</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:420](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L420).
+
+A fill whose commission rate significantly exceeds the session median.
+
+```csharp
+public sealed record SessionTcaFillOutlier(string OrderId, string Symbol, decimal Notional, decimal Commission, double CommissionRateBps, DateTimeOffset FilledAt);
+```
+
+## SessionTcaReport
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:388](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L388).
+
+TCA report over a paper/live session fill tape.
+
+```csharp
+public sealed record SessionTcaReport(string SessionId, string StrategyId, DateTimeOffset GeneratedAtUtc, SessionTcaCostSummary CostSummary, IReadOnlyList<SessionSymbolTcaSummary> SymbolSummaries, IReadOnlyList<SessionTcaFillOutlier> Outliers, SessionTcaExecutionQuality ExecutionQuality);
+```
+
+## SessionTcaReporter
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReporter</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:12](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L12).
+
+Generates a Transaction Cost Analysis (TCA) report from a paper/live session fill tape. Computes commission attribution, per-symbol cost breakdowns, outlier detection, and execution-quality statistics (time-to-fill, limit-price improvement). This is a post-processing pass over the session&#x27;s persisted ExecutionReport history; it requires no market data beyond the fills and orders already recorded by the session.
+
+```csharp
+public static class SessionTcaReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SessionTcaReport Generate(string sessionId, string strategyId, IReadOnlyList&lt;ExecutionReport&gt; fills, IReadOnlyList&lt;OrderState&gt;? orders = null);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:33](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L33) | Generates a SessionTcaReport for sessionId from the session&#x27;s fill history. Only reports of type ExecutionReportType.Fill or ExecutionReportType.PartialFill with a fill price and positive filled quantity contribute. Report sequences whose per-order quantities are cumulative (as emitted by brokers that report running totals, e.g. the IB gateway) are converted to incremental quantities before aggregation. orders is optional and enriches the report with time-to-fill and limit-price-improvement statistics. Returns a zero-valued report when no usable fills exist. |
+
 ## VariationMarginPositionSnapshot
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1411](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1411).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1414](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1414).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 
@@ -122,7 +367,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.TradeFillLedgerPostingHostOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:311](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L311).
+Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:315](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L315).
 
 Configuration-owned exact ledger scope for the production execution host. A period or book rollover requires updated values and a host restart so retained fills can never cross scopes.
 
@@ -134,24 +379,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string SectionKey = &quot;Execution:TradeFillLedgerPosting&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:313](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L313) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:315](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L315) |  |
-| <code>public Guid AggregateId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:317](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L317) |  |
-| <code>public Guid PeriodId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:319](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L319) |  |
-| <code>public Guid LedgerBookId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:321](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L321) |  |
-| <code>public string AccountingPolicyId { get; set; } = &quot;execution-trade-fill&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:323](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L323) |  |
-| <code>public string AccountingPolicyVersion { get; set; } = &quot;1&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:325](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L325) |  |
-| <code>public long? ExpectedPeriodVersion { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:327](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L327) |  |
-| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:329](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L329) |  |
-| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:331](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L331) |  |
-| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:333](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L333) |  |
-| <code>public TradeFillLedgerPostingContext BuildContext();</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:335](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L335) |  |
+| <code>public const string SectionKey = &quot;Execution:TradeFillLedgerPosting&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:317](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L317) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:319](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L319) |  |
+| <code>public Guid AggregateId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:321](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L321) |  |
+| <code>public Guid PeriodId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:323](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L323) |  |
+| <code>public Guid LedgerBookId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:325](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L325) |  |
+| <code>public string AccountingPolicyId { get; set; } = &quot;execution-trade-fill&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:327](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L327) |  |
+| <code>public string AccountingPolicyVersion { get; set; } = &quot;1&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:329](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L329) |  |
+| <code>public long? ExpectedPeriodVersion { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:331](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L331) |  |
+| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:333](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L333) |  |
+| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:335](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L335) |  |
+| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:337](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L337) |  |
+| <code>public TradeFillLedgerPostingContext BuildContext();</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:339](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L339) |  |
 
 ## TradeFillLedgerPostingOptions
 
 Qualified name: <code>Meridian.Execution.TradeFillLedgerPostingOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:298](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L298).
+Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:302](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L302).
 
 Runtime controls for the explicit fill-to-ledger consumer.
 
@@ -163,6 +408,6 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:300](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L300) |  |
-| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:302](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L302) |  |
-| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:304](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L304) |  |
+| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:304](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L304) |  |
+| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:306](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L306) |  |
+| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:308](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L308) |  |

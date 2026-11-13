@@ -30,7 +30,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/Models.cs:147](../../../../src/Meridian.Execution.Sdk/Models.cs#L147).
+Source: [src/Meridian.Execution.Sdk/Models.cs:149](../../../../src/Meridian.Execution.Sdk/Models.cs#L149).
 
 Report from the execution gateway about an order event.
 
@@ -42,40 +42,40 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:149](../../../../src/Meridian.Execution.Sdk/Models.cs#L149) |  |
-| <code>public required ExecutionReportType ReportType { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:150](../../../../src/Meridian.Execution.Sdk/Models.cs#L150) |  |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:151](../../../../src/Meridian.Execution.Sdk/Models.cs#L151) |  |
-| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:152](../../../../src/Meridian.Execution.Sdk/Models.cs#L152) |  |
-| <code>public required OrderStatus OrderStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:153](../../../../src/Meridian.Execution.Sdk/Models.cs#L153) |  |
-| <code>public decimal OrderQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:154](../../../../src/Meridian.Execution.Sdk/Models.cs#L154) |  |
-| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:155](../../../../src/Meridian.Execution.Sdk/Models.cs#L155) |  |
-| <code>public decimal? FillPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:156](../../../../src/Meridian.Execution.Sdk/Models.cs#L156) |  |
-| <code>public decimal? Commission { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:157](../../../../src/Meridian.Execution.Sdk/Models.cs#L157) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? LastFillQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:171](../../../../src/Meridian.Execution.Sdk/Models.cs#L171) | Quantity executed by this specific fill event, when the gateway reports it alongside the cumulative FilledQuantity (Alpaca&#x27;s trade-update qty and FILL-activity qty). The OMS derives fill increments from tracked order state, so this is not consulted for orders it placed; it is what lets a fill for an order the process no longer tracks -- a durably admitted event replayed into a restarted host -- be booked as exactly the increment the broker executed rather than as the whole cumulative quantity. Null when the gateway does not report per-event quantities, and omitted from serialized payloads so existing durable fill records keep their canonical content hash. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? AssetClass { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:184](../../../../src/Meridian.Execution.Sdk/Models.cs#L184) | The broker&#x27;s asset class for the filled instrument, in the broker&#x27;s own vocabulary (for Alpaca: us_equity, us_option, crypto, and the fixed-income classes), when the gateway reports it. Read only when a fill arrives for an order this process does not track: an equity fill can be booked from the report alone, while an option or bond fill needs the contract multiplier or face-value sizing a submission would have carried, so an adoption that cannot establish those refuses rather than books at share semantics. Omitted from serialized payloads when null so existing durable records are unaffected. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.SecurityMaster.SecurityLotUnitKind? LotUnitKind { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:188](../../../../src/Meridian.Execution.Sdk/Models.cs#L188) | Security-definition lot denomination retained for paper fill replay; absent on legacy reports. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? LotMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:192](../../../../src/Meridian.Execution.Sdk/Models.cs#L192) | Positive security-definition multiplier retained alongside the lot denomination. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? BookedMoneyMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:202](../../../../src/Meridian.Execution.Sdk/Models.cs#L202) | The money multiplier the paper book applied to this fill: quote × quantity × this value is the cash it moved (the contract multiplier for listed premium contracts, 1 otherwise). Stamped when the fill is booked so a session replay reproduces the same economics. Absent on records written before paper books scaled contract premiums; those replay at 1×, as they were booked. Omitted from serialized payloads when null so existing records are unaffected. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? BookedVariationMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:212](../../../../src/Meridian.Execution.Sdk/Models.cs#L212) | Whether the paper book booked this fill under daily variation margin (futures): opening moves no notional and a close settles only the change since the last settlement. Stamped with BookedMoneyMultiplier so a replay books the fill the same way. Absent on records written before paper futures settled variation margin; those replay on the 1× notional model they were booked on. Omitted from serialized payloads when null. |
-| <code>public decimal? Fees { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:215](../../../../src/Meridian.Execution.Sdk/Models.cs#L215) | Regulatory/exchange fees for this fill, when the gateway models them. |
-| <code>public decimal? SlippageCost { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:218](../../../../src/Meridian.Execution.Sdk/Models.cs#L218) | Explicit slippage cash cost for this fill, when the gateway models it. |
-| <code>public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/Models.cs:220](../../../../src/Meridian.Execution.Sdk/Models.cs#L220) |  |
-| <code>public string? RejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:221](../../../../src/Meridian.Execution.Sdk/Models.cs#L221) |  |
-| <code>public string? GatewayOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:223](../../../../src/Meridian.Execution.Sdk/Models.cs#L223) | Broker-assigned order ID (may differ from the client-provided OrderId). |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? BrokerAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:226](../../../../src/Meridian.Execution.Sdk/Models.cs#L226) | Broker-reported external account that owns the order, never caller routing metadata. |
-| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:228](../../../../src/Meridian.Execution.Sdk/Models.cs#L228) | The client-provided order ID from the original OrderRequest. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ReplacesOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:231](../../../../src/Meridian.Execution.Sdk/Models.cs#L231) | Broker identity superseded by this replacement, when explicitly reported. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CandidateGatewayOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:234](../../../../src/Meridian.Execution.Sdk/Models.cs#L234) | Provisional successor identity; it is not yet the active broker order. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CandidateClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:237](../../../../src/Meridian.Execution.Sdk/Models.cs#L237) | Provisional client/ref identity, distinct from the broker order namespace. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? OrderLimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:239](../../../../src/Meridian.Execution.Sdk/Models.cs#L239) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? OrderStopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:241](../../../../src/Meridian.Execution.Sdk/Models.cs#L241) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool HasOrderTerms { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:244](../../../../src/Meridian.Execution.Sdk/Models.cs#L244) | Both order prices (including absent prices) are authoritative broker terms. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool FillPriceIsCumulativeAverage { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:247](../../../../src/Meridian.Execution.Sdk/Models.cs#L247) | FillPrice is a snapshot&#x27;s cumulative average, rather than the latest fill price. |
-| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:248](../../../../src/Meridian.Execution.Sdk/Models.cs#L248) |  |
-| <code>public IReadOnlyList&lt;OrderLeg&gt;? Legs { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:249](../../../../src/Meridian.Execution.Sdk/Models.cs#L249) |  |
-| <code>public ExecutionDiagnostics? Diagnostics { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:250](../../../../src/Meridian.Execution.Sdk/Models.cs#L250) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BrokerOrder&gt;? ChildOrders { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:263](../../../../src/Meridian.Execution.Sdk/Models.cs#L263) | Broker-created child orders accompanying this acknowledgement — the take-profit and stop-loss legs a bracket/OCO submission spawned server-side, each with its own broker order id. Populated by gateways that parse child legs out of the submit response so the OMS can register them as tracked orders; without this, their execution reports are dropped as untracked and a kill-switch sweep never sees them. Null on every other report, and omitted from serialized payloads so existing durable records keep their canonical content hash. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool UsesFaceValuePercentageOfPar { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:275](../../../../src/Meridian.Execution.Sdk/Models.cs#L275) | The active gateway routed FilledQuantity as face value with prices quoted as a percentage of par (fixed income). Stamped server-side by the OMS from the gateway-resolved order sizing, so booking, session persistence, and restart replay all read one authoritative classification instead of each re-deriving it. Omitted from serialized payloads when false so existing durable fill records keep their canonical content hash. |
+| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:151](../../../../src/Meridian.Execution.Sdk/Models.cs#L151) |  |
+| <code>public required ExecutionReportType ReportType { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:152](../../../../src/Meridian.Execution.Sdk/Models.cs#L152) |  |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:153](../../../../src/Meridian.Execution.Sdk/Models.cs#L153) |  |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:154](../../../../src/Meridian.Execution.Sdk/Models.cs#L154) |  |
+| <code>public required OrderStatus OrderStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:155](../../../../src/Meridian.Execution.Sdk/Models.cs#L155) |  |
+| <code>public decimal OrderQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:156](../../../../src/Meridian.Execution.Sdk/Models.cs#L156) |  |
+| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:157](../../../../src/Meridian.Execution.Sdk/Models.cs#L157) |  |
+| <code>public decimal? FillPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:158](../../../../src/Meridian.Execution.Sdk/Models.cs#L158) |  |
+| <code>public decimal? Commission { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:159](../../../../src/Meridian.Execution.Sdk/Models.cs#L159) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? LastFillQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:173](../../../../src/Meridian.Execution.Sdk/Models.cs#L173) | Quantity executed by this specific fill event, when the gateway reports it alongside the cumulative FilledQuantity (Alpaca&#x27;s trade-update qty and FILL-activity qty). The OMS derives fill increments from tracked order state, so this is not consulted for orders it placed; it is what lets a fill for an order the process no longer tracks -- a durably admitted event replayed into a restarted host -- be booked as exactly the increment the broker executed rather than as the whole cumulative quantity. Null when the gateway does not report per-event quantities, and omitted from serialized payloads so existing durable fill records keep their canonical content hash. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? AssetClass { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:186](../../../../src/Meridian.Execution.Sdk/Models.cs#L186) | The broker&#x27;s asset class for the filled instrument, in the broker&#x27;s own vocabulary (for Alpaca: us_equity, us_option, crypto, and the fixed-income classes), when the gateway reports it. Read only when a fill arrives for an order this process does not track: an equity fill can be booked from the report alone, while an option or bond fill needs the contract multiplier or face-value sizing a submission would have carried, so an adoption that cannot establish those refuses rather than books at share semantics. Omitted from serialized payloads when null so existing durable records are unaffected. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.SecurityMaster.SecurityLotUnitKind? LotUnitKind { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:190](../../../../src/Meridian.Execution.Sdk/Models.cs#L190) | Security-definition lot denomination retained for paper fill replay; absent on legacy reports. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? LotMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:194](../../../../src/Meridian.Execution.Sdk/Models.cs#L194) | Positive security-definition multiplier retained alongside the lot denomination. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? BookedMoneyMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:204](../../../../src/Meridian.Execution.Sdk/Models.cs#L204) | The money multiplier the paper book applied to this fill: quote × quantity × this value is the cash it moved (the contract multiplier for listed premium contracts, 1 otherwise). Stamped when the fill is booked so a session replay reproduces the same economics. Absent on records written before paper books scaled contract premiums; those replay at 1×, as they were booked. Omitted from serialized payloads when null so existing records are unaffected. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? BookedVariationMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:214](../../../../src/Meridian.Execution.Sdk/Models.cs#L214) | Whether the paper book booked this fill under daily variation margin (futures): opening moves no notional and a close settles only the change since the last settlement. Stamped with BookedMoneyMultiplier so a replay books the fill the same way. Absent on records written before paper futures settled variation margin; those replay on the 1× notional model they were booked on. Omitted from serialized payloads when null. |
+| <code>public decimal? Fees { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:217](../../../../src/Meridian.Execution.Sdk/Models.cs#L217) | Regulatory/exchange fees for this fill, when the gateway models them. |
+| <code>public decimal? SlippageCost { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:220](../../../../src/Meridian.Execution.Sdk/Models.cs#L220) | Explicit slippage cash cost for this fill, when the gateway models it. |
+| <code>public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/Models.cs:222](../../../../src/Meridian.Execution.Sdk/Models.cs#L222) |  |
+| <code>public string? RejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:223](../../../../src/Meridian.Execution.Sdk/Models.cs#L223) |  |
+| <code>public string? GatewayOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:225](../../../../src/Meridian.Execution.Sdk/Models.cs#L225) | Broker-assigned order ID (may differ from the client-provided OrderId). |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? BrokerAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:228](../../../../src/Meridian.Execution.Sdk/Models.cs#L228) | Broker-reported external account that owns the order, never caller routing metadata. |
+| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:230](../../../../src/Meridian.Execution.Sdk/Models.cs#L230) | The client-provided order ID from the original OrderRequest. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ReplacesOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:233](../../../../src/Meridian.Execution.Sdk/Models.cs#L233) | Broker identity superseded by this replacement, when explicitly reported. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CandidateGatewayOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:236](../../../../src/Meridian.Execution.Sdk/Models.cs#L236) | Provisional successor identity; it is not yet the active broker order. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CandidateClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:239](../../../../src/Meridian.Execution.Sdk/Models.cs#L239) | Provisional client/ref identity, distinct from the broker order namespace. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? OrderLimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:241](../../../../src/Meridian.Execution.Sdk/Models.cs#L241) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? OrderStopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:243](../../../../src/Meridian.Execution.Sdk/Models.cs#L243) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool HasOrderTerms { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:246](../../../../src/Meridian.Execution.Sdk/Models.cs#L246) | Both order prices (including absent prices) are authoritative broker terms. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool FillPriceIsCumulativeAverage { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:249](../../../../src/Meridian.Execution.Sdk/Models.cs#L249) | FillPrice is a snapshot&#x27;s cumulative average, rather than the latest fill price. |
+| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:250](../../../../src/Meridian.Execution.Sdk/Models.cs#L250) |  |
+| <code>public IReadOnlyList&lt;OrderLeg&gt;? Legs { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:251](../../../../src/Meridian.Execution.Sdk/Models.cs#L251) |  |
+| <code>public ExecutionDiagnostics? Diagnostics { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:252](../../../../src/Meridian.Execution.Sdk/Models.cs#L252) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BrokerOrder&gt;? ChildOrders { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:265](../../../../src/Meridian.Execution.Sdk/Models.cs#L265) | Broker-created child orders accompanying this acknowledgement — the take-profit and stop-loss legs a bracket/OCO submission spawned server-side, each with its own broker order id. Populated by gateways that parse child legs out of the submit response so the OMS can register them as tracked orders; without this, their execution reports are dropped as untracked and a kill-switch sweep never sees them. Null on every other report, and omitted from serialized payloads so existing durable records keep their canonical content hash. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool UsesFaceValuePercentageOfPar { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:277](../../../../src/Meridian.Execution.Sdk/Models.cs#L277) | The active gateway routed FilledQuantity as face value with prices quoted as a percentage of par (fixed income). Stamped server-side by the OMS from the gateway-resolved order sizing, so booking, session persistence, and restart replay all read one authoritative classification instead of each re-deriving it. Omitted from serialized payloads when false so existing durable fill records keep their canonical content hash. |
 
 ## ExecutionReportType
 
@@ -130,7 +130,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageAccountCatalog</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:29](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L29).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:27](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L27).
 
 Enumerates brokerage or custodian accounts that can be imported into Meridian&#x27;s read-side Portfolio, ledger, and Accounting workflows.
 
@@ -142,15 +142,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:31](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L31) |  |
-| <code>string ProviderDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:33](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L33) |  |
-| <code>Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:35](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L35) |  |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:29](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L29) |  |
+| <code>string ProviderDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:31](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L31) |  |
+| <code>Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:33](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L33) |  |
 
 ## IBrokerageAccountIdentity
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageAccountIdentity</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:19](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L19).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:17](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L17).
 
 Implemented by a gateway whose broker gives one account more than one identifier (for example an operator-visible account number and an internal id). The gateway reports one of them as the account&#x27;s identity and recognizes the others, so a link retained under an older identifier is neither refused nor mistaken for a second account.
 
@@ -162,13 +162,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>bool IdentifiesConnectedAccount(string externalAccountId);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:22](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L22) | True when externalAccountId names the account this gateway is connected to. |
+| <code>bool IdentifiesConnectedAccount(string externalAccountId);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:20](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L20) | True when externalAccountId names the account this gateway is connected to. |
 
 ## IBrokerageActivitySync
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageActivitySync</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:53](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L53).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:51](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L51).
 
 Reads recent orders, fills, and cash movements from a brokerage or custodian.
 
@@ -180,15 +180,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:55](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L55) |  |
-| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:57](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L57) |  |
-| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:66](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L66) | Reads activity inside an exact half-open window. Providers that cannot enforce the upper bound fail closed instead of silently widening a governed statement period. |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:53](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L53) |  |
+| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:55](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L55) |  |
+| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:64](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L64) | Reads activity inside an exact half-open window. Providers that cannot enforce the upper bound fail closed instead of silently widening a governed statement period. |
 
 ## IBrokerageConnectionState
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageConnectionState</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:6](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L6).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:4](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L4).
 
 Opaque connection epoch; changes revoke portfolio evidence without exposing credentials.
 
@@ -200,15 +200,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>long ConnectionGeneration { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:8](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L8) |  |
-| <code>bool IsExecutionStreamHealthy { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:9](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L9) |  |
-| <code>string? ScopeIdentity { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:10](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L10) |  |
+| <code>long ConnectionGeneration { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:6](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L6) |  |
+| <code>bool IsExecutionStreamHealthy { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:7](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L7) |  |
+| <code>string? ScopeIdentity { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:8](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L8) |  |
 
 ## IBrokerageGateway
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageGateway</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:11](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L11).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:9](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L9).
 
 Extended execution gateway contract for full brokerage providers. Adds account querying, position sync, and connection lifecycle on top of IExecutionGateway. Each broker (Alpaca, IB, etc.) implements this interface to expose its full trading capabilities.
 
@@ -220,12 +220,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string BrokerDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:14](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L14) | Gets the human-readable broker display name (e.g., &quot;Alpaca Markets&quot;). |
-| <code>BrokerageCapabilities BrokerageCapabilities { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:17](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L17) | Gets the declared brokerage capabilities for this gateway. |
-| <code>Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:20](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L20) | Gets the current account balance and buying power from the broker. |
-| <code>Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:23](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L23) | Queries current positions held at the broker. |
-| <code>Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:26](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L26) | Queries open orders at the broker. |
-| <code>Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:32](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L32) | Checks whether the gateway can currently accept orders (credentials valid, connection alive, market open, etc.). |
+| <code>string BrokerDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:12](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L12) | Gets the human-readable broker display name (e.g., &quot;Alpaca Markets&quot;). |
+| <code>BrokerageCapabilities BrokerageCapabilities { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:15](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L15) | Gets the declared brokerage capabilities for this gateway. |
+| <code>Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:18](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L18) | Gets the current account balance and buying power from the broker. |
+| <code>Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:21](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L21) | Queries current positions held at the broker. |
+| <code>Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:24](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L24) | Queries open orders at the broker. |
+| <code>Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:30](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L30) | Checks whether the gateway can currently accept orders (credentials valid, connection alive, market open, etc.). |
 
 ## IBrokerageOrderAmendmentRecoveryGateway
 
@@ -267,7 +267,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokeragePortfolioSync</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:41](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L41).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:39](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L39).
 
 Reads point-in-time account, balance, and position state from a brokerage or custodian.
 
@@ -279,8 +279,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:43](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L43) |  |
-| <code>Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:45](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L45) |  |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:41](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L41) |  |
+| <code>Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:43](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L43) |  |
 
 ## IBrokeragePositionSync
 
@@ -436,6 +436,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>bool RoutesNotionalMetadata(OrderRequest request);</code> | [src/Meridian.Execution.Sdk/INotionalOrderSizingGateway.cs:30](../../../../src/Meridian.Execution.Sdk/INotionalOrderSizingGateway.cs#L30) | Whether this gateway will route the broker-native notional metadata amount in place of OrderRequest.Quantity for this order. |
 
+## IOrderInstrumentCoverageSource
+
+Qualified name: <code>Meridian.Execution.Sdk.IOrderInstrumentCoverageSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:28](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L28).
+
+```csharp
+public interface IOrderInstrumentCoverageSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;bool&gt; IsUsdEquityAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:30](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L30) |  |
+
 ## IOrderManager
 
 Qualified name: <code>Meridian.Execution.Sdk.IOrderManager</code>. Kind: `interface`.
@@ -462,6 +478,56 @@ Declared public members:
 | <code>bool WasRiskApprovalDeclined(string orderId) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:50](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L50) | True when orderId was parked for governed risk approval and that approval ended without the order ever routing. A released order re-enters the report stream under the same id, but a declined one produces no further report at all, so callers holding per-order bookkeeping need this to retire it instead of waiting for a terminal report that never arrives. Implementations without a governed approval queue never park orders and report false. |
 | <code>Task&lt;KillSwitchSweepResult&gt; CancelAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:62](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L62) | Cancels all open orders and reports what the sweep achieved. The result is the point: a kill-switch sweep that returns without throwing establishes only that it ran, and a broker refusing a single cancellation leaves that order working. Callers that surface or audit the kill switch must read KillSwitchSweepResult.RequiresOperatorAction rather than treating a completed call as an emptied book. |
 | <code>IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:68](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L68) | Gets the most recently completed orders (filled, cancelled, rejected, expired) for display in the trading cockpit fills feed. Ordered by completion time, most recent first. |
+
+## IOrderMarketReferenceSource
+
+Qualified name: <code>Meridian.Execution.Sdk.IOrderMarketReferenceSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:23](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L23).
+
+Fresh executable-side prices; absence is never represented as zero.
+
+```csharp
+public interface IOrderMarketReferenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OrderMarketReference? GetReference(string symbol, OrderSide side);</code> | [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:25](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L25) |  |
+
+## IOrderPreviewService
+
+Qualified name: <code>Meridian.Execution.Sdk.IOrderPreviewService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:12](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L12).
+
+```csharp
+public interface IOrderPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OrderPreviewResult&gt; PreviewAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:14](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L14) |  |
+
+## IOrderSessionPolicy
+
+Qualified name: <code>Meridian.Execution.Sdk.IOrderSessionPolicy</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:17](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L17).
+
+```csharp
+public interface IOrderSessionPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OrderCheck&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:19](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L19) |  |
 
 ## IPosition
 
@@ -643,7 +709,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.OptionContractIdentity</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/Models.cs:118](../../../../src/Meridian.Execution.Sdk/Models.cs#L118).
+Source: [src/Meridian.Execution.Sdk/Models.cs:120](../../../../src/Meridian.Execution.Sdk/Models.cs#L120).
 
 Canonical identity for options contracts across broker adapters and execution events.
 
@@ -655,14 +721,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? UnderlyingSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:120](../../../../src/Meridian.Execution.Sdk/Models.cs#L120) |  |
-| <code>public DateOnly? ExpirationDate { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:121](../../../../src/Meridian.Execution.Sdk/Models.cs#L121) |  |
-| <code>public decimal? StrikePrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:122](../../../../src/Meridian.Execution.Sdk/Models.cs#L122) |  |
-| <code>public string? Right { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:124](../../../../src/Meridian.Execution.Sdk/Models.cs#L124) | Normalized right code (C/P) where available. |
-| <code>public string? Multiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:125](../../../../src/Meridian.Execution.Sdk/Models.cs#L125) |  |
-| <code>public string? ContractMonth { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:126](../../../../src/Meridian.Execution.Sdk/Models.cs#L126) |  |
-| <code>public string? TradingClass { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:127](../../../../src/Meridian.Execution.Sdk/Models.cs#L127) |  |
-| <code>public string? LocalSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:128](../../../../src/Meridian.Execution.Sdk/Models.cs#L128) |  |
+| <code>public string? UnderlyingSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:122](../../../../src/Meridian.Execution.Sdk/Models.cs#L122) |  |
+| <code>public DateOnly? ExpirationDate { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:123](../../../../src/Meridian.Execution.Sdk/Models.cs#L123) |  |
+| <code>public decimal? StrikePrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:124](../../../../src/Meridian.Execution.Sdk/Models.cs#L124) |  |
+| <code>public string? Right { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:126](../../../../src/Meridian.Execution.Sdk/Models.cs#L126) | Normalized right code (C/P) where available. |
+| <code>public string? Multiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:127](../../../../src/Meridian.Execution.Sdk/Models.cs#L127) |  |
+| <code>public string? ContractMonth { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:128](../../../../src/Meridian.Execution.Sdk/Models.cs#L128) |  |
+| <code>public string? TradingClass { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:129](../../../../src/Meridian.Execution.Sdk/Models.cs#L129) |  |
+| <code>public string? LocalSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:130](../../../../src/Meridian.Execution.Sdk/Models.cs#L130) |  |
 
 ## OrderCancellationIdentifier
 
@@ -695,11 +761,21 @@ Enum declarations:
 | <code>ClientOrderId</code> | [src/Meridian.Execution.Sdk/IExplicitOrderCancellationGateway.cs:7](../../../../src/Meridian.Execution.Sdk/IExplicitOrderCancellationGateway.cs#L7) | The client-assigned order identifier submitted with the order. |
 | <code>BrokerOrderId</code> | [src/Meridian.Execution.Sdk/IExplicitOrderCancellationGateway.cs:10](../../../../src/Meridian.Execution.Sdk/IExplicitOrderCancellationGateway.cs#L10) | The broker-assigned order identifier returned after submission. |
 
+## OrderCheck
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderCheck</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:5](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L5).
+
+```csharp
+public sealed record OrderCheck(string Code, string Status, string Message);
+```
+
 ## OrderLeg
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderLeg</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/Models.cs:108](../../../../src/Meridian.Execution.Sdk/Models.cs#L108).
+Source: [src/Meridian.Execution.Sdk/Models.cs:110](../../../../src/Meridian.Execution.Sdk/Models.cs#L110).
 
 One leg in a multi-leg options order.
 
@@ -711,17 +787,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:110](../../../../src/Meridian.Execution.Sdk/Models.cs#L110) |  |
-| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:111](../../../../src/Meridian.Execution.Sdk/Models.cs#L111) |  |
-| <code>public required decimal RatioQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:112](../../../../src/Meridian.Execution.Sdk/Models.cs#L112) |  |
-| <code>public PositionIntent? PositionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:113](../../../../src/Meridian.Execution.Sdk/Models.cs#L113) |  |
-| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:114](../../../../src/Meridian.Execution.Sdk/Models.cs#L114) |  |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:112](../../../../src/Meridian.Execution.Sdk/Models.cs#L112) |  |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:113](../../../../src/Meridian.Execution.Sdk/Models.cs#L113) |  |
+| <code>public required decimal RatioQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:114](../../../../src/Meridian.Execution.Sdk/Models.cs#L114) |  |
+| <code>public PositionIntent? PositionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:115](../../../../src/Meridian.Execution.Sdk/Models.cs#L115) |  |
+| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:116](../../../../src/Meridian.Execution.Sdk/Models.cs#L116) |  |
+
+## OrderMarketReference
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderMarketReference</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:6](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L6).
+
+```csharp
+public sealed record OrderMarketReference(decimal Price, DateTimeOffset ObservedAt, string Source);
+```
 
 ## OrderModification
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderModification</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/Models.cs:132](../../../../src/Meridian.Execution.Sdk/Models.cs#L132).
+Source: [src/Meridian.Execution.Sdk/Models.cs:134](../../../../src/Meridian.Execution.Sdk/Models.cs#L134).
 
 Request to modify an existing order.
 
@@ -733,11 +819,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? NewQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:134](../../../../src/Meridian.Execution.Sdk/Models.cs#L134) |  |
-| <code>public decimal? NewLimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:135](../../../../src/Meridian.Execution.Sdk/Models.cs#L135) |  |
-| <code>public decimal? NewStopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:136](../../../../src/Meridian.Execution.Sdk/Models.cs#L136) |  |
-| <code>public decimal? NewTrail { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:137](../../../../src/Meridian.Execution.Sdk/Models.cs#L137) |  |
-| <code>public string? ReplacementClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:143](../../../../src/Meridian.Execution.Sdk/Models.cs#L143) | Client reference for a replacement order, assigned and persisted by the caller before dispatch. Honored only by gateways implementing IPreassignedReplacementReferenceGateway. |
+| <code>public decimal? NewQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:136](../../../../src/Meridian.Execution.Sdk/Models.cs#L136) |  |
+| <code>public decimal? NewLimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:137](../../../../src/Meridian.Execution.Sdk/Models.cs#L137) |  |
+| <code>public decimal? NewStopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:138](../../../../src/Meridian.Execution.Sdk/Models.cs#L138) |  |
+| <code>public decimal? NewTrail { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:139](../../../../src/Meridian.Execution.Sdk/Models.cs#L139) |  |
+| <code>public string? ReplacementClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:145](../../../../src/Meridian.Execution.Sdk/Models.cs#L145) | Client reference for a replacement order, assigned and persisted by the caller before dispatch. Honored only by gateways implementing IPreassignedReplacementReferenceGateway. |
+
+## OrderPreviewResult
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderPreviewResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:7](../../../../src/Meridian.Execution.Sdk/ExecutionWorkflows.cs#L7).
+
+```csharp
+public sealed record OrderPreviewResult(OrderRequest Request, string Fingerprint, DateTimeOffset EvaluatedAt, DateTimeOffset ExpiresAt, bool CanSubmit, bool RequiresApproval, decimal? EstimatedNotional, decimal? EstimatedFees, OrderMarketReference? Reference, IReadOnlyList<OrderCheck> Checks);
+```
 
 ## OrderPricing
 
@@ -874,115 +970,4 @@ Declared public members:
 | <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:102](../../../../src/Meridian.Execution.Sdk/Models.cs#L102) |  |
 | <code>public IReadOnlyList&lt;OrderLeg&gt;? Legs { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:103](../../../../src/Meridian.Execution.Sdk/Models.cs#L103) |  |
 | <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:104](../../../../src/Meridian.Execution.Sdk/Models.cs#L104) |  |
-
-## OrderResult
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution.Sdk/Models.cs:290](../../../../src/Meridian.Execution.Sdk/Models.cs#L290).
-
-Result of an order management operation.
-
-```csharp
-public sealed record OrderResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required bool Success { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:292](../../../../src/Meridian.Execution.Sdk/Models.cs#L292) |  |
-| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:293](../../../../src/Meridian.Execution.Sdk/Models.cs#L293) |  |
-| <code>public string? ErrorMessage { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:294](../../../../src/Meridian.Execution.Sdk/Models.cs#L294) |  |
-| <code>public OrderState? OrderState { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:295](../../../../src/Meridian.Execution.Sdk/Models.cs#L295) |  |
-| <code>public IReadOnlyList&lt;string&gt;? RiskWarnings { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:302](../../../../src/Meridian.Execution.Sdk/Models.cs#L302) | Non-blocking risk flags raised while the order was approved (e.g. concentration observe-band or warning-severity rule breaches), surfaced so callers and operators see them even though the order routed. |
-| <code>public bool RequiresApproval { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:309](../../../../src/Meridian.Execution.Sdk/Models.cs#L309) | True when the order did not route because a risk escalation parked it for governed approval rather than rejecting it outright; EscalationId identifies the approval-queue entry an operator can approve or deny. |
-| <code>public string? EscalationId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:312](../../../../src/Meridian.Execution.Sdk/Models.cs#L312) | Approval-queue entry id when RequiresApproval is true. |
-| <code>public RiskDecisionSummary? RiskDecision { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:325](../../../../src/Meridian.Execution.Sdk/Models.cs#L325) | Pre-trade risk findings for this submission, when the risk gate produced any. Populated on both the admitted and the rejected path so an order ticket can render the decision without a second query — the asynchronous decision history offers no deterministic read-back for the submission that just returned. |
-
-## OrderSide
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution.Sdk/Models.cs:17](../../../../src/Meridian.Execution.Sdk/Models.cs#L17).
-
-Order side.
-
-```csharp
-public enum OrderSide
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Buy</code> | [src/Meridian.Execution.Sdk/Models.cs:19](../../../../src/Meridian.Execution.Sdk/Models.cs#L19) |  |
-| <code>Sell</code> | [src/Meridian.Execution.Sdk/Models.cs:20](../../../../src/Meridian.Execution.Sdk/Models.cs#L20) |  |
-
-## OrderSizing
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderSizing</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs:80](../../../../src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs#L80).
-
-Closed gateway-resolved sizing cases; constructed only during resolution.
-
-```csharp
-public abstract class OrderSizing
-```
-
-## BrokerNotional
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderSizing.BrokerNotional</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs:89](../../../../src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs#L89).
-
-```csharp
-public sealed class BrokerNotional : OrderSizing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Amount { get; }</code> | [src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs:92](../../../../src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs#L92) |  |
-
-## FaceValuePercentageOfPar
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderSizing.FaceValuePercentageOfPar</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs:95](../../../../src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs#L95).
-
-```csharp
-public sealed class FaceValuePercentageOfPar : OrderSizing
-```
-
-## Quantity
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderSizing.Quantity</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs:84](../../../../src/Meridian.Execution.Sdk/GatewayResolvedOrder.cs#L84).
-
-```csharp
-public sealed class Quantity : OrderSizing
-```
-
-## OrderSizingMetadata
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderSizingMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/OrderSizingMetadata.cs:7](../../../../src/Meridian.Execution.Sdk/OrderSizingMetadata.cs#L7).
-
-Internal metadata carrying gateway-resolved order-sizing semantics into pre-trade risk. The OMS removes caller-supplied values and stamps the key only after consulting the active gateway.
-
-```csharp
-public static class OrderSizingMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string FaceValuePercentageOfParKey = &quot;meridian:internal:face-value-percentage-of-par&quot;;</code> | [src/Meridian.Execution.Sdk/OrderSizingMetadata.cs:10](../../../../src/Meridian.Execution.Sdk/OrderSizingMetadata.cs#L10) | Internal marker for face-value quantity priced as a percentage of par. |
-| <code>public static bool UsesFaceValuePercentageOfPar(IReadOnlyDictionary&lt;string, string&gt;? metadata);</code> | [src/Meridian.Execution.Sdk/OrderSizingMetadata.cs:14](../../../../src/Meridian.Execution.Sdk/OrderSizingMetadata.cs#L14) | Returns true only when the server-owned sizing marker is present and true. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; WithFaceValuePercentageOfPar(IReadOnlyDictionary&lt;string, string&gt;? metadata);</code> | [src/Meridian.Execution.Sdk/OrderSizingMetadata.cs:34](../../../../src/Meridian.Execution.Sdk/OrderSizingMetadata.cs#L34) | Copies metadata and stamps the server-owned face-value sizing marker. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public OrderSessionIntent? SessionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:106](../../../../src/Meridian.Execution.Sdk/Models.cs#L106) |  |

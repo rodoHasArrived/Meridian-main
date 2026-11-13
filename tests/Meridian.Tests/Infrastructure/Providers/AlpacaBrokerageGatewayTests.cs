@@ -1664,9 +1664,24 @@ public sealed partial class AlpacaBrokerageGatewayTests
             untilExclusive);
 
         activity.CashTransactions.Should().HaveCount(101);
+        activity.Cursor.Should().NotBeNull();
+        activity.Cursor!.IsComplete.Should().BeTrue();
+        activity.Cursor.PageCount.Should().Be(2);
+        activity.Cursor.SourceRecordCount.Should().Be(101);
         activityPaths.Should().HaveCount(2);
         activityPaths[1].Should().Contain(
             $"page_token={Uri.EscapeDataString("activity-099")}");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_NullPageDoesNotCertifyCompleteEmptyHistory()
+    {
+        var handler = new CapturingStubHandler(_ => { }, request => request.RequestUri?.AbsolutePath == "/v2/account"
+            ? BuildAccountResponse() : request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                ? new StringContent("null", System.Text.Encoding.UTF8, "application/json") : BuildJson(Array.Empty<object>()));
+        await using var sut = CreateSut(handler);
+        var read = () => sut.GetActivitySnapshotAsync("TEST123", DateTimeOffset.Parse("2026-11-10T00:00:00Z"), DateTimeOffset.Parse("2026-11-11T00:00:00Z"));
+        await read.Should().ThrowAsync<InvalidDataException>();
     }
 
     [Fact]

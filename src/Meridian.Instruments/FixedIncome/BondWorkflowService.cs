@@ -96,6 +96,9 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             return Block("UnsupportedSecurity", "Bond workflows require retained bond terms.");
         if (policy is not null && await policy.GetBlockerAsync(security, ct).ConfigureAwait(false) is { } refused)
             return Block("CalculationPolicyBlocked", refused);
+        if (HasUnsupportedMandatoryRedemption(security.AssetSpecificTerms))
+            return Block("MandatoryRedemptionTermsUnsupported",
+                "Retained mandatory-put or pre-refund terms require supported redemption dates and consideration; maturity cash flows cannot substitute for those obligations.");
         try
         {
             var quoteIsDirty = false;
@@ -749,6 +752,12 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
     private static void AddObservation(BondWorkflowRateObservation row, ICollection<BondCalculationInput> inputs)
         => inputs.Add(new("Observation", row.IndexName + ":" + row.Date.ToString("yyyy-MM-dd"),
             ContentSha256: row.ContentSha256, AsOf: row.PublishedAt, RecordedAt: row.RecordedAt));
+    private static bool HasUnsupportedMandatoryRedemption(JsonElement value)
+        => value.ValueKind == JsonValueKind.Object
+            && ((value.TryGetProperty("mandatoryPutDate", out var mandatoryPut) && mandatoryPut.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+                || (value.TryGetProperty("preRefundDate", out var preRefund) && preRefund.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+                || (value.TryGetProperty("profileFields", out var profile) && HasUnsupportedMandatoryRedemption(profile)));
+
     private static string? Text(JsonElement value, string key) => value.ValueKind == JsonValueKind.Object
         && value.TryGetProperty(key, out var property) && property.ValueKind == JsonValueKind.String ? property.GetString() : null;
     private static decimal? Number(JsonElement value, string key) => value.ValueKind == JsonValueKind.Object

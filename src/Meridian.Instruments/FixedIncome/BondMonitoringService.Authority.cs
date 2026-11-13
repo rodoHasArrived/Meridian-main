@@ -33,6 +33,7 @@ public sealed partial class BondMonitoringService
         else if (request.MarketWatch is not null)
             throw new InvalidOperationException("Retained rating/factor watch requires tenant market-store authority.");
         var active = request.Obligations.Where(row => row.IsCurrentHolding).ToArray();
+        var previous = (await store.GetHistoryAsync(request.Scope, ct).ConfigureAwait(false)).LastOrDefault();
         foreach (var obligation in active)
         {
             var models = obligation.Inputs.Where(input => input.Kind == "CalculationModel").ToArray();
@@ -41,13 +42,20 @@ public sealed partial class BondMonitoringService
                 throw new InvalidOperationException("Monitoring obligations require one exact supported retained workflow model and matching CalculationModel input; refresh ambiguous or unsupported source evidence explicitly.");
         }
         var authoritative = new Dictionary<string, (Guid Security, string Kind, DateOnly Due, decimal Amount, string Currency, string Model, bool IsForecast)>();
+        var heldSecurities = new HashSet<Guid>();
         foreach (var group in snapshot.Positions.Where(row => row.Bond is not null && row.SecurityId is { } id && id != Guid.Empty)
             .GroupBy(row => row.SecurityId!.Value))
         {
             var rows = group.ToArray();
             var face = rows.Sum(row => row.IsShort ? -Math.Abs(row.Bond!.OriginalFace) : row.Bond!.OriginalFace);
+            if (rows.Any(row => row.Bond!.OriginalFace != 0m))
+                heldSecurities.Add(group.Key);
             if (face == 0m)
+            {
+                if (heldSecurities.Contains(group.Key))
+                    throw new InvalidOperationException(AccountBondIncomePlanningService.OffsettingHolderEntitlementBlocker(group.Key));
                 continue;
+            }
             var versions = active.Where(row => row.SecurityId == group.Key).Select(row => row.ModelVersion).Distinct(StringComparer.Ordinal).ToArray();
             if (versions.Length != 1)
                 throw new InvalidOperationException("Each held security requires one unambiguous retained workflow model for monitoring revalidation; missing or mixed versions require an explicit refreshed plan.");
@@ -56,8 +64,10 @@ public sealed partial class BondMonitoringService
                 || rows.Select(row => row.Currency).Distinct().Count() != 1
                 || result.Currency != rows[0].Currency || result.CurrentFace != Math.Abs(rows.Sum(row => row.IsShort ? -Math.Abs(row.Bond!.CurrentFace) : row.Bond!.CurrentFace)))
                 throw new InvalidOperationException("Retained bond economics do not reproduce accepted account holdings for monitoring capture.");
+            if (AccountBondIncomePlanningService.HolderEntitlementBlocker(result) is { } entitlementBlocker)
+                throw new InvalidOperationException(entitlementBlocker);
             foreach (var obligation in AccountBondIncomePlanningService.ProjectObligations(request.Scope, group.Key, result,
-                Math.Sign(face), result.Inputs))
+                Math.Sign(face), result.Inputs, previous))
                 authoritative.Add(obligation.ObligationId, (group.Key, obligation.FlowType, obligation.DueDate,
                     obligation.Amount, result.Currency, result.ModelVersion, obligation.IsForecast));
         }
@@ -67,7 +77,8 @@ public sealed partial class BondMonitoringService
             || !row.Inputs.Any(input => input.Kind == "HoldingsSnapshot" && input.Key == snapshot.BatchId.ToString("D")
                 && input.ContentSha256 == snapshot.SourceContentHash)))
             throw new InvalidOperationException("Captured monitoring obligations differ from canonical accepted holdings and retained calculation inputs.");
-        var previous = (await store.GetHistoryAsync(request.Scope, ct).ConfigureAwait(false)).LastOrDefault();
+        if (AccountBondIncomePlanningService.MissingHeldCouponBlockers(previous, active, request.Allocations).FirstOrDefault() is { } missingCoupon)
+            throw new InvalidOperationException(missingCoupon);
         foreach (var historical in request.Obligations.Where(row => !row.IsCurrentHolding))
         {
             var prior = previous?.Inputs.Obligations.FirstOrDefault(row => row.ObligationId == historical.ObligationId);

@@ -41,6 +41,8 @@ public sealed class BrokeragePortfolioSyncService
     // Keep the accounting-boundary tolerance aligned with ProviderDataQualityValidator:
     // small provider clock drift is accepted, but timestamps beyond five minutes fail closed.
     private static readonly TimeSpan MaximumProviderFutureSkew = TimeSpan.FromMinutes(5);
+    private const string BrokerageBalanceSourcePrefix = "brokerage-sync:";
+    private const string DisjointBalanceSourceSuffix = ":disjoint-components-v2";
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -521,7 +523,8 @@ public sealed class BrokeragePortfolioSyncService
             .OrderBy(static snapshot => snapshot.AsOfDate)
             .Select(snapshot => new BrokeragePortfolioPerformancePointDto(
                 snapshot.AsOfDate,
-                snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m),
+                snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m)
+                    + (HasDisjointBalanceComponents(snapshot.Source) ? snapshot.AccruedInterest ?? 0m : 0m),
                 snapshot.CashBalance,
                 cashByDate.GetValueOrDefault(snapshot.AsOfDate)))
             .ToArray();
@@ -1358,8 +1361,17 @@ public sealed class BrokeragePortfolioSyncService
         }
 
         var asOfDate = DateOnly.FromDateTime(attemptedAt.UtcDateTime);
-        var source = $"brokerage-sync:{projection.Link.ProviderId}";
+        var source = $"{BrokerageBalanceSourcePrefix}{projection.Link.ProviderId}{DisjointBalanceSourceSuffix}";
         var externalReference = projection.Link.ExternalAccountId;
+        // Provider equity already includes its position accruals. Separate them only when every
+        // component has an explicit value in the balance currency; retain the full remainder
+        // when the allocation is unknown, without inferring currency or an FX conversion.
+        decimal? accruedInterest = projection.Positions.All(position =>
+                position.AccruedInterest.HasValue
+                && string.Equals(position.Currency?.Trim(), projection.Balance.Currency.Trim(), StringComparison.OrdinalIgnoreCase))
+            ? projection.Positions.Sum(static position => position.AccruedInterest!.Value)
+            : null;
+        var securitiesMarketValue = projection.Balance.Equity - projection.Balance.Cash - (accruedInterest ?? 0m);
         var latestSnapshot = await GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
         var isDuplicateSnapshot = latestSnapshot is not null
             && latestSnapshot.AsOfDate == asOfDate
@@ -1367,7 +1379,8 @@ public sealed class BrokeragePortfolioSyncService
             && string.Equals(latestSnapshot.ExternalReference, externalReference, StringComparison.OrdinalIgnoreCase)
             && latestSnapshot.Currency == projection.Balance.Currency
             && latestSnapshot.CashBalance == projection.Balance.Cash
-            && latestSnapshot.SecuritiesMarketValue == projection.Balance.Equity - projection.Balance.Cash;
+            && latestSnapshot.SecuritiesMarketValue == securitiesMarketValue
+            && latestSnapshot.AccruedInterest == accruedInterest;
 
         if (isDuplicateSnapshot)
         {
@@ -1380,9 +1393,8 @@ public sealed class BrokeragePortfolioSyncService
                 AsOfDate: asOfDate,
                 Currency: projection.Balance.Currency,
                 CashBalance: projection.Balance.Cash,
-                SecuritiesMarketValue: projection.Balance.Equity - projection.Balance.Cash,
-                AccruedInterest: projection.Positions.All(static position => position.AccruedInterest.HasValue)
-                    ? projection.Positions.Sum(static position => position.AccruedInterest!.Value) : null,
+                SecuritiesMarketValue: securitiesMarketValue,
+                AccruedInterest: accruedInterest,
                 PendingSettlement: 0m,
                 Source: source,
                 RecordedBy: projection.Link.LinkedBy ?? "brokerage-sync",
@@ -1401,6 +1413,15 @@ public sealed class BrokeragePortfolioSyncService
                 projection.Link.LinkedBy ?? "brokerage-sync"),
             ct).ConfigureAwait(false);
     }
+
+    private static bool HasDisjointBalanceComponents(string? source)
+        // Historical brokerage rows embedded accrual in securities; their performance arithmetic
+        // remains unchanged. Only this explicit source version adds the separate component.
+        => source is not null
+            && source.Length > BrokerageBalanceSourcePrefix.Length + DisjointBalanceSourceSuffix.Length
+            && source.StartsWith(BrokerageBalanceSourcePrefix, StringComparison.Ordinal)
+            && source.EndsWith(DisjointBalanceSourceSuffix, StringComparison.Ordinal)
+            && !string.IsNullOrWhiteSpace(source[BrokerageBalanceSourcePrefix.Length..^DisjointBalanceSourceSuffix.Length]);
 
     private async Task<FundAccountBrokerageSyncActivityDto?> LoadProjectionAsync(Guid fundAccountId, CancellationToken ct)
     {
