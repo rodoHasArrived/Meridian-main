@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.FinancialOperations
 
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
 `ConsolidationTransitionService` reviews membership cutover into a new empty dedicated reporting
 book. Source/mapping/rate changes stale the preview; independent approval preserves old history and
 opens the new gross-derived target without carrying old overlays. Former-member exposures remain
@@ -24,12 +30,38 @@ The close cockpit consumes this structured schedule instead of intercompany keyw
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
 
-Intercompany services own approved agreement revisions and governed counterpart templates.
+Intercompany services own approved accounting-profile revisions and governed counterpart templates;
+canonical legal terms and independent review remain in Application/FundStructure.
 Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book
 reporting translation v3, and separately enabled income elimination v4. Legacy adoption may create
 reviewed overlay reclassification but never changes source journals. Missing authority blocks output.
 See [versioned consolidation](../../docs/domain/intercompany-consolidation.md); current tests and
 Windows evidence remain separate from source implementation status.
+
+`AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
+default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
+candidate through existing accounting authority, checks the declared receivable/income account
+roles and current open-period version, then retains `PreparerAttested` and `Posted` stages with the
+journal in the native transaction. It creates no ordinary `ApprovalId` or `Approved` stage and grants
+no lot, correction, short-position or FX authority. Ordinary candidate posting still requires an
+independent reviewer.
+
+New non-lot corporate-action candidates retain the unique active Security Master ticker selected
+by the server. The existing candidate engine uses that retained authority on mapped accounts and
+native lineage; caller-selected symbols remain refused. Cash-dividend posting checks the exact
+retained symbol and Security Master version again through the native lease transaction. Missing,
+ambiguous or changed symbol authority blocks posting; historical ordinary drafts with no retained
+symbol keep their existing rebuild behavior. The native lineage guard remains authoritative.
+
+Operations Continuity refuses reserved W14 preparer-assertion references when disposing a break
+or reopening a controlled workflow. These refusals preserve the current workflow state and its
+ordinary approval requirements; legacy opaque references still do not prove independent review.
+
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Legal provenance alone grants no accrual or settlement authority. Accounting profiles and
+account-role controls govern counterpart drafts and versioned consolidation, while native
+legal-only lines retain their separate advisory coverage. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their
@@ -1195,6 +1227,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
@@ -1210,7 +1243,7 @@ evidence deletion.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
-| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
 | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |

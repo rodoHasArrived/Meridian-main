@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-11-01
+Snapshot date: 2026-11-12
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -1733,7 +1733,7 @@ Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-D
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
-## W12-ICAGREE-001 - Governed intercompany agreement registry and legacy attribution
+## W12-ICAGREE-001 - Intercompany accounting profiles and legacy attribution
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
@@ -1746,12 +1746,12 @@ Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-D
 
 ### Current Summary
 
-User-directed P1 implementation adds tenant-owned immutable agreement revisions, party roles/books/account identities, signed Vault artifacts, effective terms, approval, termination and successor novation evidence. Multiple facilities of the same kind may coexist; one facility's approved revisions cannot conflict. Guarantees remain registry-only. Approved legacy-attribution sidecars pin exact source line digests without rewriting posted journals. A posted-balance schedule enriches actual journals with agreement/account/party evidence for close and NetSuite mapping controls. Current consumer and migration verification must be evidenced before acceptance; source and added tests alone do not prove a passed check.
+User-directed P1 implementation reuses the native legal registry and links immutable tenant-owned accounting profiles to exact approved legal IDs, integer versions and payload hashes. Profiles own templates, party books, stable account mappings and bounded validity; their owner approval does not replace independent legal approval or create a novation. Separate facilities may coexist; one profile's approved validity windows cannot conflict. Guarantees have no posting treatment. Approved legacy-attribution sidecars pin exact source line digests without rewriting posted journals. A posted-balance schedule enriches actual journals with agreement/account/party evidence for close and NetSuite mapping controls. Current consumer and migration verification must be evidenced before acceptance; source and added tests alone do not prove a passed check.
 
 ### Exit Criteria
 
-- Approved agreement revisions bind distinct authorized parties, books, stable account roles, effective windows, currency, settlement terms and exact signed evidence bytes.
-- Tenant isolation, independent approval, stale revisions, immutable history, idempotent retries and successor novation preserve financial lineage.
+- Native approved agreement versions retain legal parties, terms and evidence; accounting profiles pin their exact version/hash and own only authorized books, stable account roles, templates and bounded validity.
+- Tenant isolation, independent legal approval, separately audited configuration approval, stale-version refusal, immutable history and idempotent retries preserve financial lineage; profile changes cannot perform legal novation.
 - Existing journal attribution is explicit reviewed sidecar evidence over exact source digests, with missing or ambiguous historic identity remaining unresolved.
 - Close and provider intercompany controls consume a structured due-to/from schedule and expose incomplete coverage rather than accepting keyword-only management records as proof.
 - Added unit, PostgreSQL, API and shared workstation evidence is recorded before acceptance; no external posting or live-provider certification is implied.
@@ -1948,16 +1948,16 @@ Adopted as planned product direction under DEC-TRADING-STRATEGY-DIRECTION-001 an
 | Field | Value |
 | --- | --- |
 | Wave | W14 |
-| Status | planned |
-| Health | green |
+| Status | in_progress |
+| Health | yellow |
 | Priority | medium |
 | Owner lane | Platform Security and Governance |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-11-02 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-12 |
 
 ### Current Summary
 
-Adopted as unranked planned direction under DEC-SINGLE-PRINCIPAL-001 from design charter Section 25.3.12, answering the open question recorded by DEC-VALUE-PROPOSITION-001. Source enforces actor separation for corporate-action approval/posting (MakerCheckerRequired), reconciliation waiver/supersession (SelfApprovalNotAllowed), and new Security Master override approvals (OperatorOverrideSelfApprovalException); existing privileged reconciliation sign-off with a reason remains a separate path, and distinct actor IDs alone do not prove independent human control. The ADR-019 v1 envelope is a single-operator local workstation with no supported path for an independent approver. The row plans an audited, tenant-scoped single-principal declaration under which eligible approvals are recorded as preparer attestations that every passport, trace, package, and audit view labels as not independently reviewed, with Verified Coverage reporting attested items separately. It registers planning scope only: no ADR-019 envelope text, PRD-000 sign-off, source enforcement, rank, or release authority changes, and small-team maker-checker between distinct principals remains a separate future envelope decision. The 2026-11-02 draft policy proposal and synthetic acceptance matrix compare a named non-posting first slice with separately adopted economic-action eligibility and record proposed exclusions, evidence, withdrawal, labels, and coverage treatment. Owner decisions and independent Security and Accounting review remain open; no policy option is adopted.
+Active development under the owner's 2026-11-12 instruction to validate and implement recommendation 1, following the unranked direction in DEC-SINGLE-PRINCIPAL-001. The owner selected development option 2 for confirmed regular mandatory USD dividend recognition on source ex-date, with a complete-related-event gross cap of USD 10000 and selected-book, source-ex-date-calendar-month gross cap of USD 100000, both inclusive. The exact existing dividend-receivable debit, dividend-income revenue credit and promoted rule/version must be explicitly bound; no cash settlement, account creation, policy mutation, correction, FX or lot effect is authorized. Default-off B evidence acknowledgments and newly server-bound non-postable Security draft checks retain separate preparer receipts, declarations, revocations, original proof exports and source disclosures. Connected ordinary authority consumers refuse preparer receipts; opaque legacy approval text and unequal actor IDs still do not authenticate a second human. The separate native C lane implements complete-book entitlement, reconciliation support, exact current scope/preparer/operands, durable event/month reservations and lease-backed ledger/event-spine posting. Conservative entitlement requires an explicit completed coherent record date, unchanged canonical lot identities/quantities from pre-ex cutoff through record date, and no ambiguous related source peers. Posted and frozen-report amount proofs classify retained native journal decisions independently of source readiness and deny ordinary-approval credit to preparer-only or unknown dependencies, even with report-level approval. Browser and WPF source paths and focused tests are linked; native Windows runtime, full both-workstation validation, full matrix execution and operational review are not established. Status moves to in_progress because implementation and verification are active, not because an operator acceptance occurred. Yellow health records the remaining evidence and acceptance gaps. Financial Verified Coverage, its denominator/headline and independent human Security and Accounting review remain open. This changes no rank, ADR-019 deployment envelope, PRD-000 sign-off, release authority or historical acceptance. Narrow validation and exact exclusions are in Section 12 of the policy and Section 6 of the acceptance matrix.
 
 ### Exit Criteria
 
@@ -1966,15 +1966,17 @@ Adopted as unranked planned direction under DEC-SINGLE-PRINCIPAL-001 from design
 - Every Number Passport, decision trace, report package, and audit view shows "attested by preparer - not independently reviewed" on both the browser and WPF workstations, and a delivered package reproduces its original attestation label after the declaration is withdrawn.
 - Verified Coverage reports attested items separately and never merges them with independently approved items; whether attested items count toward the headline is decided under W11-COVER-001.
 - Turning the declaration on or off is an audited administrative action, and items created after it is withdrawn require independent approval.
-- Roadmap status remains planned until this item links implementation paths, the excluded-class policy, and browser and WPF evidence; the row changes no ADR-019 envelope or PRD-000 sign-off.
+- Roadmap status remains planned until this item links implementation paths, the excluded-class policy, and browser and WPF evidence; these active-development links were added on 2026-11-12 without claiming acceptance. The row changes no ADR-019 envelope or PRD-000 sign-off.
 
 ### Source Modules
 
+- `SRC-APP`
 - `SRC-DESIGN-IDENTITY`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-STORAGE`
 - `SRC-STRATEGIES`
 - `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`

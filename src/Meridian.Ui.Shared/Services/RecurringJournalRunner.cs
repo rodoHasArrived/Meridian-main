@@ -369,11 +369,19 @@ public sealed class RecurringJournalRunner(
             VendorId = line.VendorId ?? schedule.VendorId,
             ProjectId = line.ProjectId ?? schedule.ProjectId,
             PositionId = line.PositionId ?? schedule.PositionId,
-            AgreementId = line.AgreementId ?? schedule.AgreementId,
-            AgreementRevisionId = line.AgreementRevisionId ?? schedule.AgreementRevisionId,
-            ChartAccountNodeId = line.ChartAccountNodeId ?? schedule.ChartAccountNodeId,
-            AccountBindingRevisionId = line.AccountBindingRevisionId ?? schedule.AccountBindingRevisionId,
-            IntercompanyTransactionId = line.IntercompanyTransactionId ?? schedule.IntercompanyTransactionId
+            AccountingArrangementId = line.AccountingArrangementId is not null || line.AccountingArrangementRevisionId is not null
+                ? line.AccountingArrangementId : schedule.AccountingArrangementId,
+            AccountingArrangementRevisionId = line.AccountingArrangementId is not null || line.AccountingArrangementRevisionId is not null
+                ? line.AccountingArrangementRevisionId : schedule.AccountingArrangementRevisionId,
+            ChartAccountNodeId = line.ChartAccountNodeId is not null || line.AccountBindingRevisionId is not null
+                ? line.ChartAccountNodeId : schedule.ChartAccountNodeId,
+            AccountBindingRevisionId = line.ChartAccountNodeId is not null || line.AccountBindingRevisionId is not null
+                ? line.AccountBindingRevisionId : schedule.AccountBindingRevisionId,
+            IntercompanyTransactionId = line.IntercompanyTransactionId ?? schedule.IntercompanyTransactionId,
+            IntercompanyAgreementId = line.IntercompanyAgreementId.HasValue || line.IntercompanyAgreementVersion.HasValue
+                ? line.IntercompanyAgreementId : schedule.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = line.IntercompanyAgreementId.HasValue || line.IntercompanyAgreementVersion.HasValue
+                ? line.IntercompanyAgreementVersion : schedule.IntercompanyAgreementVersion
         };
     }
 

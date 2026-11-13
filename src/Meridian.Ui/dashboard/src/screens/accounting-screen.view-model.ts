@@ -5484,6 +5484,8 @@ function buildLedgerDimensionLabels(line: Pick<LedgerTrialBalanceLine, "dimensio
   appendDimensionLabel(labels, "Tax lot", dimensions?.taxLotId);
   appendDimensionLabel(labels, "Cost center", dimensions?.costCenterId);
   appendDimensionLabel(labels, "Counterparty", dimensions?.counterpartyId);
+  appendDimensionLabel(labels, "Agreement", dimensions?.intercompanyAgreementId);
+  appendDimensionLabel(labels, "Agreement version", dimensions?.intercompanyAgreementVersion == null ? null : String(dimensions.intercompanyAgreementVersion));
 
   for (const [key, value] of Object.entries(dimensions?.externalGlDimensions ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
     appendDimensionLabel(labels, `External ${key}`, value);

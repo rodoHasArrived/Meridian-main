@@ -43,7 +43,7 @@ public sealed class PostgresLegacyIntercompanyAttributionStore : ILegacyIntercom
         Guid? expectedPreviousAttributionId, CancellationToken ct = default)
     {
         var tenant = RequireTenant();
-        await using var sourceAuthority = await _validator.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false);
+        await using var sourceAuthority = await _validator.AcquireAuthorityLeaseAsync(attribution, ct).ConfigureAwait(false);
         await _validator.ValidateAsync(attribution, ct).ConfigureAwait(false);
         await using var connection = await OpenAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);

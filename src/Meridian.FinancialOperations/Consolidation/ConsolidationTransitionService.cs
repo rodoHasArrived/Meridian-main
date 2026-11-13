@@ -12,7 +12,9 @@ namespace Meridian.FinancialOperations.Consolidation;
 public sealed class ConsolidationTransitionService(ConsolidationService consolidation, ILedgerJournalStore journals,
     IConsolidationTransitionStore transitions, IAccountingPolicyService policies, IIntercompanyAccountBindingStore bindings,
     IConsolidationFxAuthority fx, ILegacyIntercompanyAttributionStore legacy, IFundProfileTenancyRegistry owners,
-    PostgresFundStructureStore? structure = null, TimeProvider? timeProvider = null)
+    PostgresFundStructureStore? structure = null, TimeProvider? timeProvider = null,
+    IIntercompanyAccountingArrangementStore? arrangements = null,
+    IIntercompanyAccountingArrangementLegalAuthority? legalAuthority = null)
 {
     public async Task<ConsolidationTransitionPreviewDto> PreviewAsync(ConsolidationTransitionRequestDto request,
         string tenantId, string? companyId, string actor, CancellationToken ct = default)
@@ -54,7 +56,7 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
             preview.PreviousPostedJournalIds, preview.PreviousLatestPostedAsOf, preview.PreviousEntityIds, preview.NewEvidence, "");
         receipt = receipt with { ContentHash = ConsolidationTransitionRules.ReceiptHash(receipt) };
         return await transitions.AppendValidatedWithAuthorityAsync(receipt,
-            token => AcquireAsync(preview.Request, token), async token =>
+            token => AcquireAsync(preview.Request, token, preview.NewEvidence, tenantId), async token =>
         {
             var current = await ComputeAsync(preview.Request, tenantId, companyId, preview.PreparedBy, preview.PreparedAt, token).ConfigureAwait(false);
             if (!current.CanApprove || !Sha256Digest.FixedEquals(current.Fingerprint, preview.Fingerprint))
@@ -139,14 +141,40 @@ public sealed class ConsolidationTransitionService(ConsolidationService consolid
         return (oldBook, newBook);
     }
 
-    private async Task<IAsyncDisposable> AcquireAsync(ConsolidationTransitionRequestDto request, CancellationToken ct)
+    private async Task<IAsyncDisposable> AcquireAsync(ConsolidationTransitionRequestDto request, CancellationToken ct,
+        ConsolidationEvidenceDto? reviewedEvidence = null, string? tenantId = null)
     {
         var held = new List<IAsyncDisposable>();
         try
         {
             held.Add(await policies.AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false));
-            if (structure is not null) held.Add(await structure.AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false));
+            IAsyncDisposable? graph = null;
+            if (structure is not null)
+            {
+                graph = await structure.AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false);
+                held.Add(graph);
+            }
+            var sources = reviewedEvidence?.Sources ?? [];
+            var legalSources = sources.Where(source => source.IntercompanyAgreementId.HasValue
+                || source.IntercompanyAgreementVersion.HasValue || source.IntercompanyAgreementPayloadHash is not null).ToArray();
+            if (legalSources.Length > 0)
+            {
+                if (string.IsNullOrWhiteSpace(tenantId) || legalSources.Any(source => !source.IntercompanyAgreementId.HasValue
+                    || source.IntercompanyAgreementId.Value == Guid.Empty || source.IntercompanyAgreementVersion is not > 0
+                    || string.IsNullOrWhiteSpace(source.IntercompanyAgreementPayloadHash)))
+                    throw new InvalidOperationException("Reviewed reporting transitions require complete exact canonical legal pins and tenant authority.");
+                var pins = legalSources.Select(source => new IntercompanyCanonicalAgreementReferenceDto(source.IntercompanyAgreementId!.Value,
+                    source.IntercompanyAgreementVersion!.Value, source.IntercompanyAgreementPayloadHash!)).Distinct().ToArray();
+                var legal = await (legalAuthority ?? throw new InvalidOperationException("Canonical reporting transition authority is unavailable."))
+                    .AcquireLeaseAsync(tenantId, pins, (graph as ILegalEntityReadAuthorityLease)?.StructureAuthorityProof, ct).ConfigureAwait(false);
+                held.Add(legal);
+                foreach (var pin in pins) _ = legal.ResolveExact(pin);
+            }
             held.Add(await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
+            if (arrangements is not null)
+                held.Add(await arrangements.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
+            else if (sources.Any(source => source.AccountingArrangementId is not null))
+                throw new InvalidOperationException("Accounting arrangement reporting transition authority is unavailable.");
             // The source calculator selects whether FX is required; this lease also fences a
             // policy-version switch between preview and its final audit-locked revalidation.
             held.Add(await fx.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));

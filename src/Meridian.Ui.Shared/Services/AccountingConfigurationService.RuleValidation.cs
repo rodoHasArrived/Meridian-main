@@ -378,6 +378,8 @@ public sealed partial class AccountingConfigurationService
                MatchesScopeValue(ruleScope.CapitalAccountId, eventScope?.CapitalAccountId) &&
                (!ruleScope.InstrumentId.HasValue || ruleScope.InstrumentId == eventScope?.InstrumentId) &&
                (!ruleScope.PositionId.HasValue || ruleScope.PositionId == eventScope?.PositionId) &&
+               (!ruleScope.IntercompanyAgreementId.HasValue || ruleScope.IntercompanyAgreementId == eventScope?.IntercompanyAgreementId) &&
+               (!ruleScope.IntercompanyAgreementVersion.HasValue || ruleScope.IntercompanyAgreementVersion == eventScope?.IntercompanyAgreementVersion) &&
                MatchesScopeValue(ruleScope.TaxLotId, eventScope?.TaxLotId) &&
                MatchesScopeValue(ruleScope.CostCenterId, eventScope?.CostCenterId) &&
                MatchesScopeValue(ruleScope.CounterpartyId, eventScope?.CounterpartyId ?? counterpartyId) &&
@@ -550,6 +552,8 @@ public sealed partial class AccountingConfigurationService
             "capitalaccount" or "capitalaccountid" or "capital_account_id" => dimensions?.CapitalAccountId,
             "instrument" or "instrumentid" or "instrument_id" => dimensions?.InstrumentId?.ToString("D"),
             "position" or "positionid" or "position_id" => dimensions?.PositionId?.ToString("D"),
+            "intercompanyagreementid" => dimensions?.IntercompanyAgreementId?.ToString("D"),
+            "intercompanyagreementversion" => dimensions?.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture),
             "taxlot" or "taxlotid" or "tax_lot_id" => dimensions?.TaxLotId,
             "costcenter" or "costcenterid" or "cost_center_id" => dimensions?.CostCenterId,
             "instrumentsymbol" or "instrument_symbol" => request.InstrumentSymbol,
@@ -936,11 +940,19 @@ public sealed partial class AccountingConfigurationService
             ProjectId: FirstText(overlay.ProjectId, baseDimensions?.ProjectId))
         {
             PositionId = overlay.PositionId ?? baseDimensions?.PositionId,
-            AgreementId = FirstText(overlay.AgreementId, baseDimensions?.AgreementId),
-            AgreementRevisionId = FirstText(overlay.AgreementRevisionId, baseDimensions?.AgreementRevisionId),
-            ChartAccountNodeId = FirstText(overlay.ChartAccountNodeId, baseDimensions?.ChartAccountNodeId),
-            AccountBindingRevisionId = FirstText(overlay.AccountBindingRevisionId, baseDimensions?.AccountBindingRevisionId),
-            IntercompanyTransactionId = FirstText(overlay.IntercompanyTransactionId, baseDimensions?.IntercompanyTransactionId)
+            AccountingArrangementId = overlay.AccountingArrangementId is not null || overlay.AccountingArrangementRevisionId is not null
+                ? overlay.AccountingArrangementId : baseDimensions?.AccountingArrangementId,
+            AccountingArrangementRevisionId = overlay.AccountingArrangementId is not null || overlay.AccountingArrangementRevisionId is not null
+                ? overlay.AccountingArrangementRevisionId : baseDimensions?.AccountingArrangementRevisionId,
+            ChartAccountNodeId = overlay.ChartAccountNodeId is not null || overlay.AccountBindingRevisionId is not null
+                ? overlay.ChartAccountNodeId : baseDimensions?.ChartAccountNodeId,
+            AccountBindingRevisionId = overlay.ChartAccountNodeId is not null || overlay.AccountBindingRevisionId is not null
+                ? overlay.AccountBindingRevisionId : baseDimensions?.AccountBindingRevisionId,
+            IntercompanyTransactionId = FirstText(overlay.IntercompanyTransactionId, baseDimensions?.IntercompanyTransactionId),
+            IntercompanyAgreementId = overlay.IntercompanyAgreementId.HasValue || overlay.IntercompanyAgreementVersion.HasValue
+                ? overlay.IntercompanyAgreementId : baseDimensions?.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = overlay.IntercompanyAgreementId.HasValue || overlay.IntercompanyAgreementVersion.HasValue
+                ? overlay.IntercompanyAgreementVersion : baseDimensions?.IntercompanyAgreementVersion
         };
     }
 
@@ -1097,6 +1109,8 @@ public sealed partial class AccountingConfigurationService
                string.Equals(NormalizeOptional(expected.CapitalAccountId), NormalizeOptional(actual.CapitalAccountId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeDimensionValue(expected.InstrumentId), NormalizeDimensionValue(actual.InstrumentId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeDimensionValue(expected.PositionId), NormalizeDimensionValue(actual.PositionId), StringComparison.OrdinalIgnoreCase) &&
+               expected.IntercompanyAgreementId == actual.IntercompanyAgreementId &&
+               expected.IntercompanyAgreementVersion == actual.IntercompanyAgreementVersion &&
                string.Equals(NormalizeOptional(expected.TaxLotId), NormalizeOptional(actual.TaxLotId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CostCenterId), NormalizeOptional(actual.CostCenterId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CounterpartyId), NormalizeOptional(actual.CounterpartyId), StringComparison.OrdinalIgnoreCase) &&

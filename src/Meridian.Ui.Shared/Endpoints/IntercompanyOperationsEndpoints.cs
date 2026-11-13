@@ -26,34 +26,6 @@ public static class IntercompanyOperationsEndpoints
                     UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance) }, options);
         }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope();
 
-        app.MapGet("/api/ledger/intercompany/agreements", async (Guid bookId, DateOnly? asOf, HttpContext context) =>
-        {
-            if (!await BookAllowedAsync(context, bookId).ConfigureAwait(false)) return EndpointHelpers.Forbidden();
-            var service = context.RequestServices.GetService<IntercompanyAgreementService>();
-            if (service is null) return Unavailable();
-            var scope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            var date = asOf ?? DateOnly.FromDateTime(DateTime.UtcNow);
-            var instant = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
-            var result = new List<IntercompanyAgreementDto>();
-            foreach (var item in await service.ListAsync(scope.TenantId!, ct: context.RequestAborted).ConfigureAwait(false))
-            {
-                var history = await service.GetHistoryAsync(scope.TenantId!, item.AgreementId, context.RequestAborted).ConfigureAwait(false);
-                if (history is null) continue;
-                foreach (var revision in history.Events.Select(x => x.Snapshot).Where(x => x.Status == IntercompanyAgreementStatusDto.Approved)
-                    .GroupBy(x => x.RevisionId).Select(x => x.Last()).Where(x => x.PartyMappings.Any(map => map.LedgerBookId == bookId)))
-                {
-                    try
-                    {
-                        result.Add(await service.ResolveApprovedRevisionAsync(scope.TenantId!, revision.AgreementId,
-                            revision.RevisionId, instant, context.RequestAborted).ConfigureAwait(false));
-                    }
-                    catch (InvalidOperationException) { /* An expired, terminated or superseded revision is not selectable. */ }
-                }
-            }
-            return Results.Json(result, options);
-        }).RequireWorkstationTenantCompanyScope().RequireAnyPermission(UserPermission.ViewLedgerReports,
-            UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
-
         app.MapGet("/api/fund-structure/entities/{entityId:guid}/timeline", async (Guid entityId,
             Guid organizationId, DateTimeOffset? asOf, HttpContext context) =>
         {
@@ -63,7 +35,7 @@ public static class IntercompanyOperationsEndpoints
             try
             {
                 return Results.Json(await service.GetAsync(scope.TenantId!, organizationId, entityId,
-                    asOf ?? DateTimeOffset.UtcNow, context.RequestAborted).ConfigureAwait(false), options);
+                    asOf ?? DateTimeOffset.UtcNow, context.RequestAborted, scope.Actor ?? throw new UnauthorizedAccessException("An authenticated actor is required.")).ConfigureAwait(false), options);
             }
             catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
             catch (InvalidOperationException error) { return Results.Conflict(new { error = error.Message }); }

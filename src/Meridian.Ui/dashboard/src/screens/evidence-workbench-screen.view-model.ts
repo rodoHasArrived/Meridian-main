@@ -415,6 +415,7 @@ export interface EvidenceVaultDocumentIndexRowViewModel {
 
 export interface EvidenceVaultDocumentDetailViewModel {
   id: string;
+  attestationTarget?: { vaultId: string; documentId: string };
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -1347,6 +1348,7 @@ function buildVaultDocumentIndexRow(
   ];
   const detail: EvidenceVaultDocumentDetailViewModel = {
     id: `${entry.vaultId}:${document.documentId}:detail`,
+    attestationTarget: { vaultId: entry.vaultId, documentId: document.documentId },
     title: document.fileName,
     subtitle: `${classificationLabel} retained for ${selectedSubjectLabel}`,
     ariaLabel: `Selected Evidence Vault document: ${document.fileName}`,

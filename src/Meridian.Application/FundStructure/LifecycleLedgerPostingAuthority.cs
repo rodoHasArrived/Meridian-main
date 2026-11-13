@@ -10,9 +10,11 @@ namespace Meridian.Application.FundStructure;
 /// <summary>Resolves entity identity and lifecycle from authoritative structure and retained revisions.</summary>
 public sealed class LifecycleLedgerPostingAuthority(IFundStructureService structure, IEntityLifecycleStore history,
     Func<IControlledCloseAuthorizationStore?> closeAuthorizations,
-    Func<CancellationToken, Task<IAsyncDisposable>>? structureAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight
+    Func<CancellationToken, Task<IAsyncDisposable>>? structureAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight, ILedgerStructurePostingAuthority
 {
     public string ControlName => "entity-lifecycle";
+    public Task<IAsyncDisposable> AcquireStructureAuthorityAsync(CancellationToken ct = default)
+        => structureAuthority is not null ? structureAuthority(ct) : Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
     public async Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)
     {
         var ordinary = new List<LedgerPostingAuthorityContext>();
@@ -28,7 +30,12 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
         var leases = new List<IAsyncDisposable>();
         try
         {
-            if (structureAuthority is not null) leases.Add(await structureAuthority(ct).ConfigureAwait(false));
+            if (structureAuthority is not null && !contexts.All(context => context.StructureAuthorityProof?.IsActive == true))
+            {
+                var graphLease = await structureAuthority(ct).ConfigureAwait(false);
+                leases.Add(graphLease);
+                foreach (var context in contexts) context.RetainStructureAuthority(graphLease);
+            }
             var graph = await structure.GetOrganizationStructureAsync(new OrganizationStructureQuery(ActiveOnly: false), ct).ConfigureAwait(false);
             foreach (var group in contexts.GroupBy(item => item.TenantId ?? string.Empty).OrderBy(item => item.Key, StringComparer.Ordinal))
             {
@@ -47,10 +54,22 @@ public sealed class LifecycleLedgerPostingAuthority(IFundStructureService struct
                     {
                         var node = graph.Nodes.SingleOrDefault(item => item.NodeId == context.Book.FundStructureNodeId);
                         var valid = context.Book.FundStructureNodeKind != FundStructureNodeKindDto.Entity && node is not null
-                            && node.Kind == context.Book.FundStructureNodeKind && node.IsActive;
+                            && node.Kind == context.Book.FundStructureNodeKind && (node.IsActive || context.IsReviewOnly);
                         context.Decisions.Add(new("entity-lifecycle", "structure-owner", valid,
-                            valid ? "The authoritative structural book owner is active; entity-specific obligations require entity books."
+                            valid ? context.IsReviewOnly ? "The authoritative structural book owner is resolved for review; posting status is enforced at append."
+                                : "The authoritative structural book owner is active; entity-specific obligations require entity books."
                                 : "The ledger book has no unambiguous authorized entity owner."));
+                        continue;
+                    }
+                    if (context.IsReviewOnly)
+                    {
+                        foreach (var entityId in owners)
+                        {
+                            var revision = await history.GetLatestAsync(group.Key, entityId, ct).ConfigureAwait(false);
+                            context.Decisions.Add(new("entity-lifecycle", "review-only-eligibility-deferred", true,
+                                "Authoritative lifecycle facts are retained for review; posting eligibility and exact controlled-close authority are enforced at append.",
+                                revision?.ContentHash));
+                        }
                         continue;
                     }
                     var authorization = context.Write.PostingCommand?.ControlledCloseAuthorizationId is { } id

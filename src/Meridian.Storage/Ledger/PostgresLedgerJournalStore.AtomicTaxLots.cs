@@ -53,6 +53,17 @@ public sealed partial class PostgresLedgerJournalStore
         command = NormalizeAndValidateAtomicTaxLotCommand(command);
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await EnsureTenantRowAsync(connection, null, "accounting_periods", "period_id", command.Journal.PeriodId, false, ct,
+            retainLock: false).ConfigureAwait(false);
+        var observedPeriod = await LoadPeriodAsync(connection, null, command.Journal.PeriodId, forUpdate: false,
+            callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false)
+            ?? throw new LedgerValidationException("The atomic posting period does not exist.");
+        if (observedPeriod.LedgerBookId != command.LedgerBookId)
+            throw new LedgerValidationException("Atomic tax-lot posting ledger book does not match the retained accounting period.");
+        // Advisory SELECTs establish a Serializable snapshot too. Hold entitlement on this
+        // session before BEGIN so the successor carry LOCK remains the transaction's first
+        // statement and sees a preceding deferral writer after waiting for its table lock.
+        await using var entitlement = await CashDividendEntitlementLock.AcquireSessionSharedAsync(connection, observedPeriod.LedgerBookId!.Value, ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);

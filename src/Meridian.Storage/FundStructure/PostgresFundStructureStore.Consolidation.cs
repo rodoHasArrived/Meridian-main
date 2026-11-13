@@ -1,4 +1,5 @@
 using System.Data;
+using Meridian.Contracts.FundStructure;
 using Npgsql;
 
 namespace Meridian.Storage.FundStructure;
@@ -26,7 +27,7 @@ public sealed partial class PostgresFundStructureStore
                     {Q("fund_structure_assignment")}, {Q("fund_structure_linked_account")} in share mode;
                 """;
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return new ConsolidationAuthorityLease(connection, transaction);
+            return new ConsolidationAuthorityLease(connection, transaction, _options.Schema);
         }
         catch
         {
@@ -40,17 +41,27 @@ public sealed partial class PostgresFundStructureStore
         }
     }
 
-    private sealed class ConsolidationAuthorityLease(NpgsqlConnection connection, NpgsqlTransaction transaction) : IAsyncDisposable
+    private sealed class ConsolidationAuthorityLease : ILegalEntityReadAuthorityLease
     {
+        private readonly NpgsqlConnection _connection;
+        private readonly NpgsqlTransaction _transaction;
         private int _disposed;
+        public ConsolidationAuthorityLease(NpgsqlConnection connection, NpgsqlTransaction transaction, string schema)
+        {
+            _connection = connection;
+            _transaction = transaction;
+            StructureAuthorityProof = new(connection.Host, connection.Port, connection.Database, schema.ToLowerInvariant(),
+                () => Volatile.Read(ref _disposed) == 0 && _transaction.Connection is not null);
+        }
+        public LegalEntityReadAuthorityProof StructureAuthorityProof { get; }
 
         public async ValueTask DisposeAsync()
         {
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
             try
-            { await transaction.DisposeAsync().ConfigureAwait(false); }
-            finally { await connection.DisposeAsync().ConfigureAwait(false); }
+            { await _transaction.DisposeAsync().ConfigureAwait(false); }
+            finally { await _connection.DisposeAsync().ConfigureAwait(false); }
         }
     }
 }

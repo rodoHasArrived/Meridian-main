@@ -15,8 +15,11 @@ preview is not a posted balance.
    windows and successor identities. Uncovered history remains unknown.
 2. Configure chart roles and append bindings for stable chart nodes. Keep old ledger names as
    historical aliases when renaming. Use one unambiguous output account per elimination role.
-3. Create and review the agreement's explicit party roles, dates, currency, cadence, account
-   mappings and signed Vault artifact/hash. Approve the exact revision before governed posting.
+3. Create and independently approve legal terms and exact retained agreement evidence in the
+   canonical agreement registry. In Accounting profiles, select that exact approved legal version
+   and hash, then configure the party books, accounting template and stable account mappings.
+   Legal terms are read-only there. Approve the exact profile revision before governed posting.
+   Configuration owner approval cannot approve or amend the legal agreement.
    Guarantees remain record-only; loan counterpart templates support principal.
 4. For existing books, inspect `LegacyWarning` decisions. Use legacy-attribution candidates to
    obtain exact source digests and retain approved attribution evidence. Do not edit old journals
@@ -52,13 +55,25 @@ expense, tax, revaluation or correction obligation. New commitments remain block
 Merged entities remain readable; exceptional correction requires separately approved evidence.
 Do not remove an owned entity merely to make a perimeter preview succeed.
 
-The shared API families are `/api/fund-structure/intercompany-agreements`, entity
+Prepare, submit and approve a closing or correction draft before obtaining its exact controlled-close
+authorization. Review checks legal, profile, account and FX authority without granting posting
+eligibility or requiring a posting approval in advance. Actual append always rechecks lifecycle
+status and the final retained approval and authorization; a successful review posts nothing.
+
+The shared API families are `/api/fund-structure/intercompany-agreements`,
+`/api/ledger/intercompany-accounting-arrangements`, entity
 `/lifecycle` and `/timeline`, `/api/ledger/intercompany/account-bindings`,
 `/api/ledger/intercompany/legacy-attributions`, `/api/ledger/intercompany/proposals`,
 `/api/ledger/intercompany/breaks`, book `/controls`, `/api/ledger/consolidation`, and its `/transitions` preview/activation/history routes.
 Use the host's authenticated capability responses; service absence is an unavailable capability.
 PostgreSQL is the governed multi-resource commit authority. File stores are durable local/demo
 counterparts and do not establish production certification or cross-process transactional fencing.
+
+Canonical legal-reference postings require the ledger-owned standalone transaction or the
+sealed native producer that retains authority through its outer commit. Generic caller-owned
+transactions and ordinary atomic-lot append APIs refuse those references; acquiring a caller
+lease does not override that capability boundary. Native legal-only journals remain valid,
+but governed role-based elimination requires reviewed accounting-profile attribution first.
 
 See the [domain dictionary](../domain/intercompany-agreements-and-entity-lifecycle.md),
 [versioned consolidation scope](../domain/intercompany-consolidation.md) and

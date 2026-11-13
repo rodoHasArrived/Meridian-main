@@ -1,3 +1,4 @@
+using Meridian.Tests.TestSupport;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
@@ -170,11 +171,11 @@ public sealed class IntercompanyProposalResolutionTests
         var proposals = new Mock<IIntercompanyProposalStore>();
         proposals.Setup(x => x.GetAsync("tenant-a", proposal.Source.ProposalId, It.IsAny<CancellationToken>())).ReturnsAsync(() => proposal);
         proposals.Setup(x => x.ListAsync("tenant-a", IntercompanyProposalTestData.BookA, It.IsAny<CancellationToken>())).ReturnsAsync(() => new[] { proposal });
-        var agreementStore = new Mock<IIntercompanyAgreementStore>();
-        agreementStore.Setup(x => x.GetAsync("tenant-a", IntercompanyProposalTestData.AgreementId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new IntercompanyAgreementHistoryDto([new(Guid.NewGuid(), "synthetic", IntercompanyAgreementActionDto.Approve,
-                "reviewer", IntercompanyProposalTestData.Now, "Approved synthetic source", IntercompanyProposalTestData.Agreement())]));
-        var agreements = new IntercompanyAgreementService(agreementStore.Object, Mock.Of<IIntercompanyAgreementScopeAuthority>(), Mock.Of<IIntercompanyAgreementEvidenceAuthority>());
+        var agreementStore = new Mock<IIntercompanyAccountingArrangementStore>();
+        agreementStore.Setup(x => x.GetAsync("tenant-a", IntercompanyProposalTestData.AccountingArrangementId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new IntercompanyAccountingArrangementHistoryDto([new(Guid.NewGuid(), "synthetic", IntercompanyAccountingArrangementActionDto.Approve,
+                "reviewer", IntercompanyProposalTestData.Now, "Approved synthetic source", IntercompanyProposalTestData.Agreement().Arrangement)]));
+        var agreements = IntercompanyArrangementTestData.Service(agreementStore.Object, IntercompanyProposalTestData.Agreement());
         var owners = new Mock<IFundProfileTenancyRegistry>();
         owners.Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns((string fund, CancellationToken _) =>
             Task.FromResult<FundProfileOwnership?>(new(fund, "tenant-a", "company-a")));
@@ -195,7 +196,9 @@ public sealed class IntercompanyProposalResolutionTests
         var dimensions = new LedgerLineDimensionSet(EntityId: (source ? IntercompanyProposalTestData.EntityA : IntercompanyProposalTestData.EntityB).ToString("D"),
             CounterpartyId: (source ? IntercompanyProposalTestData.EntityB : IntercompanyProposalTestData.EntityA).ToString("D"))
         {
-            AgreementId = IntercompanyProposalTestData.AgreementId.ToString("D"), AgreementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
+            IntercompanyAgreementId = IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
+            IntercompanyAgreementVersion = IntercompanyProposalTestData.Agreement().CanonicalAgreementVersion,
+            AccountingArrangementId = IntercompanyProposalTestData.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
             ChartAccountNodeId = source ? "a-receivable" : "b-payable", IntercompanyTransactionId = "invoice-100"
         };
         var entry = new JournalEntry(journal, timestamp, "Posted finance", [

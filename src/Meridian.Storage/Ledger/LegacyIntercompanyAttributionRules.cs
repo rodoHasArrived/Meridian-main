@@ -21,8 +21,10 @@ public static class LegacyIntercompanyAttributionRules
         IReadOnlyList<LegacyIntercompanyAttributionDto> history)
     {
         if (fact.AttributionId == Guid.Empty || fact.LedgerBookId == Guid.Empty || fact.JournalEntryId == Guid.Empty ||
-            fact.LineId == Guid.Empty || fact.AgreementId == Guid.Empty || fact.AgreementRevisionId == Guid.Empty ||
-            fact.AccountBindingRevisionId == Guid.Empty || fact.ApprovedAt == default)
+            fact.LineId == Guid.Empty || fact.AccountingArrangementId == Guid.Empty || fact.AccountingArrangementRevisionId == Guid.Empty ||
+            fact.AccountBindingRevisionId == Guid.Empty || fact.ApprovedAt == default
+            || fact.IntercompanyAgreementId == Guid.Empty || fact.IntercompanyAgreementVersion <= 0
+            || fact.IntercompanyAgreementPayloadHash.Length != 64 || fact.IntercompanyAgreementPayloadHash.Any(x => !Uri.IsHexDigit(x)))
             throw new InvalidOperationException("Legacy attribution requires exact source, agreement, account and approval identities.");
         foreach (var text in new[] { fact.ChartAccountNodeId, fact.IntercompanyTransactionId, fact.PreparedBy,
             fact.ApprovedBy, fact.EvidenceReference, fact.TenantId, fact.SourceLineDigest })
@@ -43,19 +45,34 @@ public static class LegacyIntercompanyAttributionRules
 
 /// <summary>Checks reviewer assertions against immutable journal facts and retained approved terms.</summary>
 public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore journals,
-    IIntercompanyAccountBindingStore bindings, IIntercompanyAgreementStore agreements)
+    IIntercompanyAccountBindingStore bindings, IIntercompanyAccountingArrangementStore agreements,
+    IIntercompanyAccountingArrangementLegalAuthority legalAuthority)
 {
-    public async Task<IAsyncDisposable> AcquireAuthorityLeaseAsync(CancellationToken ct = default)
+    public async Task<IAsyncDisposable> AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default)
     {
-        var bindingLease = await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false);
-        try { return new AuthorityLease(bindingLease, await agreements.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false)); }
-        catch { await bindingLease.DisposeAsync().ConfigureAwait(false); throw; }
+        var source = await journals.QueryAsync(new(LedgerBookId: fact.LedgerBookId, JournalEntryId: fact.JournalEntryId), ct).ConfigureAwait(false);
+        if (source.Count != 1) throw new InvalidOperationException("The exact immutable legacy source is unavailable.");
+        var date = source[0].Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(source[0].Entry.Timestamp.UtcDateTime);
+        var reference = new IntercompanyCanonicalAgreementReferenceDto(fact.IntercompanyAgreementId,
+            fact.IntercompanyAgreementVersion, fact.IntercompanyAgreementPayloadHash);
+        var legal = await legalAuthority.AcquireLeaseAsync(fact.TenantId, [reference], ct: ct).ConfigureAwait(false);
+        var leases = new List<IAsyncDisposable> { legal };
+        try
+        {
+            _ = legal.ResolveEffective(reference, date);
+            leases.Add(await bindings.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
+            leases.Add(await agreements.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false));
+            return new AuthorityLease(leases);
+        }
+        catch { await new AuthorityLease(leases).DisposeAsync().ConfigureAwait(false); throw; }
     }
 
-    private sealed class AuthorityLease(IAsyncDisposable binding, IAsyncDisposable agreement) : IAsyncDisposable
+    private sealed class AuthorityLease(IReadOnlyList<IAsyncDisposable> leases) : IAsyncDisposable
     {
         public async ValueTask DisposeAsync()
-        { try { await agreement.DisposeAsync().ConfigureAwait(false); } finally { await binding.DisposeAsync().ConfigureAwait(false); } }
+        {
+            for (var i = leases.Count - 1; i >= 0; i--) await leases[i].DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     public async Task ValidateAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default)
@@ -69,8 +86,12 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
             ?? throw new InvalidOperationException("The attribution source line is unavailable.");
         if (!Sha256Digest.FixedEquals(fact.SourceLineDigest, LegacyIntercompanyAttributionRules.SourceDigest(book, record, line)))
             throw new InvalidOperationException("Legacy attribution does not match the exact immutable source digest.");
-        if (line.Dimensions?.AgreementId is not null || line.Account.Symbol is not null || line.Account.FinancialAccountId is not null)
+        if (line.Dimensions?.AccountingArrangementId is not null || line.Account.Symbol is not null || line.Account.FinancialAccountId is not null)
             throw new InvalidOperationException("Only unscoped legacy lines lacking agreement attribution may receive sidecar evidence.");
+        if (line.Dimensions?.IntercompanyAgreementId is { } retainedLegalId
+            && (retainedLegalId != fact.IntercompanyAgreementId
+                || line.Dimensions.IntercompanyAgreementVersion != fact.IntercompanyAgreementVersion))
+            throw new InvalidOperationException("Legacy attribution cannot replace canonical legal provenance already retained on the source line.");
         var binding = await bindings.GetRevisionAsync(fact.AccountBindingRevisionId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The approved attribution account revision is unavailable.");
         if (binding.LedgerBookId != fact.LedgerBookId || binding.ChartAccountNodeId != fact.ChartAccountNodeId ||
@@ -78,13 +99,22 @@ public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore j
             binding.AccountType != line.Account.AccountType.ToString() ||
             !(binding.AccountName == line.Account.Name || binding.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal)))
             throw new InvalidOperationException("Legacy source identity differs from its approved account binding.");
-        var history = await agreements.GetAsync(fact.TenantId, fact.AgreementId, ct).ConfigureAwait(false)
+        var history = await agreements.GetAsync(fact.TenantId, fact.AccountingArrangementId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The attribution agreement is unavailable.");
         var date = record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime);
         var instant = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
-        var agreement = IntercompanyAgreementRevisionResolver.ResolveApprovedRevision(history, fact.AgreementRevisionId, instant);
+        var arrangement = IntercompanyAccountingArrangementRevisionResolver.ResolveApprovedRevision(history, fact.AccountingArrangementRevisionId, instant);
+        if (fact.IntercompanyAgreementId != arrangement.CanonicalAgreementId
+            || fact.IntercompanyAgreementVersion != arrangement.CanonicalAgreementVersion
+            || fact.IntercompanyAgreementPayloadHash != arrangement.CanonicalPayloadHash)
+            throw new InvalidOperationException("Legacy attribution must pin the exact canonical legal revision of its accounting arrangement.");
+        var legalRevision = await legalAuthority.GetRevisionAsync(fact.TenantId, arrangement.CanonicalReference, ct).ConfigureAwait(false);
+        var agreement = new ResolvedIntercompanyAccountingArrangementDto(arrangement, legalRevision);
+        if (legalRevision.Action == IntercompanyAgreementActionDto.Terminate
+            || date < legalRevision.Terms.EffectiveFrom || legalRevision.Terms.EffectiveTo <= date)
+            throw new InvalidOperationException("Legacy source date is outside the approved canonical legal revision.");
         if (agreement.EffectiveFrom > instant || agreement.EffectiveTo is { } end && instant >= end ||
-            agreement.Kind == IntercompanyAgreementKindDto.Guarantee ||
+            agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Guarantee ||
             (line.Currency?.TransactionCurrency ?? book.BaseCurrency) != agreement.Currency)
             throw new InvalidOperationException("Legacy source date, currency or treatment falls outside the approved agreement.");
         if (!Guid.TryParse(line.Dimensions?.EntityId, out var entity) || entity != book.FundStructureNodeId ||

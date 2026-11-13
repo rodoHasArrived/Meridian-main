@@ -100,7 +100,14 @@ public sealed class LedgerDimensionTagsTests
             (nameof(LedgerDimensionSetDto.ProjectId), new LedgerDimensionSetDto(ProjectId: "x")),
             (nameof(LedgerDimensionSetDto.ExternalGlDimensions), new LedgerDimensionSetDto(
                 ExternalGlDimensions: new Dictionary<string, string> { ["costCentre"] = "100" })),
-            (nameof(LedgerDimensionSetDto.PositionId), new LedgerDimensionSetDto { PositionId = Guid.NewGuid() })
+            (nameof(LedgerDimensionSetDto.PositionId), new LedgerDimensionSetDto { PositionId = Guid.NewGuid() }),
+            (nameof(LedgerDimensionSetDto.IntercompanyAgreementId), new LedgerDimensionSetDto { IntercompanyAgreementId = Guid.NewGuid() }),
+            (nameof(LedgerDimensionSetDto.IntercompanyAgreementVersion), new LedgerDimensionSetDto { IntercompanyAgreementVersion = 1 }),
+            (nameof(LedgerDimensionSetDto.AccountingArrangementId), new LedgerDimensionSetDto { AccountingArrangementId = "arrangement" }),
+            (nameof(LedgerDimensionSetDto.AccountingArrangementRevisionId), new LedgerDimensionSetDto { AccountingArrangementRevisionId = "revision" }),
+            (nameof(LedgerDimensionSetDto.ChartAccountNodeId), new LedgerDimensionSetDto { ChartAccountNodeId = "account-node" }),
+            (nameof(LedgerDimensionSetDto.AccountBindingRevisionId), new LedgerDimensionSetDto { AccountBindingRevisionId = "binding-revision" }),
+            (nameof(LedgerDimensionSetDto.IntercompanyTransactionId), new LedgerDimensionSetDto { IntercompanyTransactionId = "transaction" })
         ];
 
         var uncovered = singleFieldSets

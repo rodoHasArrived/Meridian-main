@@ -1,3 +1,6 @@
+using Meridian.Tests.TestSupport;
+using Meridian.Storage.FundStructure;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Consolidation;
@@ -133,8 +136,17 @@ public sealed class ConsolidationGovernedServiceTests
         var attributionStore = new Mock<ILegacyIntercompanyAttributionStore>(MockBehavior.Strict);
         attributionStore.Setup(x => x.ListAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid book, CancellationToken _) => (IReadOnlyList<LegacyIntercompanyAttributionDto>)facts.Where(x => x.LedgerBookId == book).ToArray());
-        var (_, service, bindings) = await Governed(fixture, legacyStore: attributionStore.Object);
-        var agreement = Guid.NewGuid();
+        var arrangement = IntercompanyArrangementTestData.Create(Guid.NewGuid(), Fixture.OrganizationId,
+            IntercompanyAccountingTemplateKindDto.Loan, Fixture.FirstId, Fixture.SecondId, "USD",
+            [new(Fixture.FirstId, Fixture.FirstBookId, "Receivable", "Payable"), new(Fixture.SecondId, Fixture.SecondBookId, "Receivable", "Payable")],
+            Guid.NewGuid(), Fixture.Time.AddYears(-1));
+        var arrangementStore = new Mock<IIntercompanyAccountingArrangementStore>();
+        arrangementStore.Setup(x => x.GetAsync("tenant-test", arrangement.ArrangementId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new IntercompanyAccountingArrangementHistoryDto([new(Guid.NewGuid(), "approval", IntercompanyAccountingArrangementActionDto.Approve,
+                "reviewer", Fixture.Time, "Reviewed", arrangement.Arrangement)]));
+        var (_, service, bindings) = await Governed(fixture, legacyStore: attributionStore.Object,
+            arrangements: IntercompanyArrangementTestData.Service(arrangementStore.Object, arrangement));
+        var agreement = arrangement.ArrangementId;
         foreach (var bookId in new[] { Fixture.FirstBookId, Fixture.SecondBookId })
         {
             var record = fixture.Records[bookId][0];
@@ -144,9 +156,11 @@ public sealed class ConsolidationGovernedServiceTests
                 bookId == Fixture.FirstBookId ? Fixture.FirstId : Fixture.SecondId, FundStructureNodeKindDto.Entity,
                 "Source", "USD", Fixture.Time, Fixture.Time);
             facts.Add(new(Guid.NewGuid(), 1, bookId, record.Entry.JournalEntryId, line.EntryId,
-                LegacyIntercompanyAttributionRules.SourceDigest(book, record, line), agreement, Guid.NewGuid(),
+                LegacyIntercompanyAttributionRules.SourceDigest(book, record, line), agreement, arrangement.RevisionId,
                 binding.RevisionId, binding.ChartAccountNodeId, "transaction-one", "maker", "reviewer", Fixture.Time,
-                "evidence:legacy-adoption", "tenant-test", "company-test"));
+                "evidence:legacy-adoption", "tenant-test", "company-test")
+            { IntercompanyAgreementId = arrangement.CanonicalAgreementId, IntercompanyAgreementVersion = arrangement.CanonicalAgreementVersion,
+                IntercompanyAgreementPayloadHash = arrangement.CanonicalPayloadHash });
         }
         var calculation = await service.CalculateAsync(Request());
         Assert.Equal(4, calculation.ProposedLines.Count);
@@ -154,15 +168,16 @@ public sealed class ConsolidationGovernedServiceTests
         Assert.All(calculation.ProposedLines.GroupBy(x => x.AccountPath), group =>
             Assert.Equal(0m, group.Sum(x => x.Side == AccountingTemplateLineSideDto.Debit ? x.Amount : -x.Amount)));
         Assert.Equal(2, calculation.Evidence.LegacyAttributions!.Count);
-        Assert.Contains(calculation.ProposedLines, x => x.Dimensions?.AgreementId == agreement.ToString("D"));
-        Assert.Contains(calculation.ProposedLines, x => x.Dimensions?.AgreementId is null);
+        Assert.Contains(calculation.ProposedLines, x => x.Dimensions?.AccountingArrangementId == agreement.ToString("D"));
+        Assert.Contains(calculation.ProposedLines, x => x.Dimensions?.AccountingArrangementId is null);
     }
 
     private static ConsolidationRequestDto Request() => new(Fixture.OrganizationId, Fixture.RootId, Fixture.OverlayBookId, Fixture.PeriodId, Fixture.Date);
 
     internal static async Task<(Fixture Fixture, ConsolidationService Service, List<IntercompanyAccountBindingDto> Bindings)>
         Governed(Fixture? existing = null, string version = "w10-v2", bool includeIncomeRule = true,
-            ILegacyIntercompanyAttributionStore? legacyStore = null, IConsolidationFxAuthority? fxAuthority = null)
+            ILegacyIntercompanyAttributionStore? legacyStore = null, IConsolidationFxAuthority? fxAuthority = null,
+            IntercompanyAccountingArrangementService? arrangements = null)
     {
         var fixture = existing ?? new Fixture();
         var book = (await fixture.Store.Object.GetLedgerBookAsync(Fixture.OverlayBookId))! with
@@ -192,7 +207,7 @@ public sealed class ConsolidationGovernedServiceTests
             .ReturnsAsync((Guid id, CancellationToken _) => (IReadOnlyList<IntercompanyAccountBindingDto>)bindings.Where(x => x.LedgerBookId == id).ToArray());
         var service = new ConsolidationService(new(fixture.Structure.Object), fixture.Store.Object, fixture.Policies,
             new AccountingJournalDraftService(fixture.Policies, new AccountingBasisProjectionService(fixture.Policies)), authority.Object, fxAuthority,
-            legacyAttributions: legacyStore);
+            legacyAttributions: legacyStore, arrangements: arrangements);
         return (fixture, service, bindings);
     }
 

@@ -53,8 +53,8 @@ internal static class LedgerLineDimensionSetFields
 
     internal static readonly (string Name, Func<LedgerLineDimensionSet, string?> GetValue)[] IntercompanyStringFields =
     [
-        ("agreementId", static dimensions => dimensions.AgreementId),
-        ("agreementRevisionId", static dimensions => dimensions.AgreementRevisionId),
+        ("accountingArrangementId", static dimensions => dimensions.AccountingArrangementId),
+        ("accountingArrangementRevisionId", static dimensions => dimensions.AccountingArrangementRevisionId),
         ("chartAccountNodeId", static dimensions => dimensions.ChartAccountNodeId),
         ("accountBindingRevisionId", static dimensions => dimensions.AccountBindingRevisionId),
         ("intercompanyTransactionId", static dimensions => dimensions.IntercompanyTransactionId)
@@ -85,6 +85,10 @@ internal static class LedgerLineDimensionSetFields
             yield return new LedgerDimensionField("instrumentId", dimensions.InstrumentId.Value.ToString("D"));
         if (dimensions.PositionId is not null)
             yield return new LedgerDimensionField("positionId", dimensions.PositionId.Value.ToString("D"));
+        if (dimensions.IntercompanyAgreementId is not null)
+            yield return new LedgerDimensionField("intercompanyAgreementId", dimensions.IntercompanyAgreementId.Value.ToString("D"));
+        if (dimensions.IntercompanyAgreementVersion is not null)
+            yield return new LedgerDimensionField("intercompanyAgreementVersion", dimensions.IntercompanyAgreementVersion.Value.ToString(CultureInfo.InvariantCulture));
 
         foreach (var (name, getValue) in TrailingStringFields.Concat(IntercompanyStringFields))
         {
@@ -128,10 +132,12 @@ internal static class LedgerLineDimensionSetFields
                 .Append(dimensions.PositionId.Value.ToString("D", CultureInfo.InvariantCulture));
         }
 
-        // New optional dimensions never change a legacy scope key when absent.
+        var signature = Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(
+            builder.ToString(), dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
+        // Absent operational references preserve the existing scope signature exactly.
         foreach (var (name, getValue) in IntercompanyStringFields)
             if (getValue(dimensions) is { } value)
-                builder.Append('\u001e').Append(name).Append('=').Append(value);
-        return builder.ToString();
+                signature += "\u001e" + name + "=" + Uri.EscapeDataString(value);
+        return signature;
     }
 }

@@ -21,7 +21,7 @@ public static class IntercompanyCounterpartReversalBuilder
     }
 
     public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, IntercompanyProposalDto prior,
-        IntercompanyAgreementDto agreement, LedgerJournalEntryRecord original, LedgerBookRecord target,
+        ResolvedIntercompanyAccountingArrangementDto agreement, LedgerJournalEntryRecord original, LedgerBookRecord target,
         LedgerAccountingPeriod period, IReadOnlyList<IntercompanyAccountBindingDto> bindings,
         IReadOnlyList<ChartOfAccountsNodeDto> chart, DateTimeOffset now)
     {
@@ -30,14 +30,20 @@ public static class IntercompanyCounterpartReversalBuilder
         if (source.RuleVersion != "intercompany-mirror-v1" || retained.RuleVersion != "intercompany-mirror-v1"
             || source.ReversesJournalId != retained.SourceJournalId || retained.SourceBookId != source.SourceBookId
             || retained.SourceEntityId != source.SourceEntityId || retained.CounterpartyEntityId != source.CounterpartyEntityId
-            || retained.AgreementId != source.AgreementId || retained.AgreementRevisionId != source.AgreementRevisionId
+            || retained.AccountingArrangementId != source.AccountingArrangementId || retained.AccountingArrangementRevisionId != source.AccountingArrangementRevisionId
+            || retained.IntercompanyAgreementId != source.IntercompanyAgreementId
+            || retained.IntercompanyAgreementVersion != source.IntercompanyAgreementVersion
+            || retained.IntercompanyAgreementPayloadHash != source.IntercompanyAgreementPayloadHash
+            || agreement.CanonicalAgreementId != source.IntercompanyAgreementId
+            || agreement.CanonicalAgreementVersion != source.IntercompanyAgreementVersion
+            || agreement.CanonicalPayloadHash != source.IntercompanyAgreementPayloadHash
             || retained.TransactionId != source.TransactionId || retained.TenantId != source.TenantId
-            || agreement.AgreementId != source.AgreementId || agreement.RevisionId != source.AgreementRevisionId
+            || agreement.ArrangementId != source.AccountingArrangementId || agreement.RevisionId != source.AccountingArrangementRevisionId
             || prior.ResolvedTargetBookId != target.LedgerBookId || prior.ResolvedTargetJournalId != original.Entry.JournalEntryId
             || target.FundStructureNodeId != source.CounterpartyEntityId
             || period.LedgerBookId != target.LedgerBookId || period.Status != "Open"
             || source.EffectiveDate < period.StartDate || source.EffectiveDate > period.EndDate
-            || original.Entry.Lines.Count != 2 || agreement.Kind == IntercompanyAgreementKindDto.Guarantee)
+            || original.Entry.Lines.Count != 2 || agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Guarantee)
             throw new InvalidOperationException("An exact isolated posted counterpart and its original event authority are required for an automatic reversal.");
         var sourceMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.SourceEntityId && x.LedgerBookId == source.SourceBookId)
             ?? throw new InvalidOperationException("The original source book has no approved mapping.");
@@ -61,7 +67,7 @@ public static class IntercompanyCounterpartReversalBuilder
             || monetary.Concat(contraFacts).Select(x => x.LineId).Distinct().Count() != retained.Lines.Count
             || monetary.Concat(contraFacts).Any(x => x.Currency != agreement.Currency)
             || contraFacts.Sum(x => x.TransactionDebit - x.TransactionCredit) != -signed
-            || (agreement.Kind == IntercompanyAgreementKindDto.Loan && operating))
+            || (agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan && operating))
             throw new InvalidOperationException("The original source must retain complete supported event legs before automatic reversal.");
         var mainNode = receivable ? targetMap.PayableAccountNodeId : targetMap.ReceivableAccountNodeId;
         var contraNode = operating ? (receivable ? targetMap.ExpenseAccountNodeId : targetMap.RevenueAccountNodeId) : targetMap.SettlementAccountNodeId;
@@ -82,7 +88,7 @@ public static class IntercompanyCounterpartReversalBuilder
                 ? bindings.SingleOrDefault(x => x.ChartAccountNodeId == account.NodeId && x.Role == role && !x.IsArchived) : null;
             if (line.Account.Symbol is not null || line.Account.FinancialAccountId is not null
                 || line.Account.AccountType.ToString() != account.AccountType
-                || (account.AccountName != line.Account.Name && binding?.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal) != true)
+                || account.AccountName != line.Account.Name
                 || (account.IntercompanyRole is not null && binding is null)
                 || (account.IntercompanyRole is not null && !ExactEvent(line.Dimensions, source, target)))
                 throw new InvalidOperationException("The original counterpart account or event scope cannot be proved for an automatic inverse.");
@@ -90,12 +96,13 @@ public static class IntercompanyCounterpartReversalBuilder
             var dimensions = new LedgerDimensionSetDto(FundId: retainedDimensions.FundId, EntityId: retainedDimensions.EntityId,
                 CounterpartyId: retainedDimensions.CounterpartyId, BookId: retainedDimensions.BookId)
             {
-                ChartAccountNodeId = retainedDimensions.ChartAccountNodeId, AgreementId = retainedDimensions.AgreementId,
-                AgreementRevisionId = retainedDimensions.AgreementRevisionId,
+                IntercompanyAgreementId = retainedDimensions.IntercompanyAgreementId,
+                IntercompanyAgreementVersion = retainedDimensions.IntercompanyAgreementVersion,
+                ChartAccountNodeId = retainedDimensions.ChartAccountNodeId, AccountingArrangementId = retainedDimensions.AccountingArrangementId,
+                AccountingArrangementRevisionId = retainedDimensions.AccountingArrangementRevisionId,
                 AccountBindingRevisionId = retainedDimensions.AccountBindingRevisionId,
                 IntercompanyTransactionId = retainedDimensions.IntercompanyTransactionId
             };
-            if (binding is not null) dimensions = dimensions with { AccountBindingRevisionId = binding.RevisionId.ToString("D") };
             inverse.Add(new("reverse:" + line.EntryId.ToString("D"), line.Debit > 0m ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit,
                 line.Debit + line.Credit, target.BaseCurrency, account.Path, EntityId: source.CounterpartyEntityId.ToString("D"), Dimensions: dimensions)
             {
@@ -106,7 +113,7 @@ public static class IntercompanyCounterpartReversalBuilder
         return new(source.ProposalId, ManualJournalEntryStatusDto.Draft, target.FundProfileId, target.LedgerBookId,
             target.AccountingBasis, source.EffectiveDate, period.PeriodId.ToString("D"), source.CounterpartyEntityId.ToString("D"), null,
             target.BaseCurrency, $"Exact counterpart reversal of journal {original.Entry.JournalEntryId:D}", "intercompany-proposal-service", now, now, 1,
-            inverse, [$"journal:{source.SourceJournalId:D}", $"journal:{original.Entry.JournalEntryId:D}", $"intercompany-agreement:{agreement.AgreementId:D}/revision:{agreement.RevisionId:D}"], [],
+            inverse, [$"journal:{source.SourceJournalId:D}", $"journal:{original.Entry.JournalEntryId:D}", $"intercompany-agreement:{agreement.ArrangementId:D}/revision:{agreement.RevisionId:D}"], [],
             EntryType: ManualJournalEntryTypeDto.Reversal,
             TreasuryContext: new(source.EffectiveDate, $"intercompany-proposal:{source.ProposalId:D}", FundEventType: "IntercompanyMirror"),
             ReversalOfJournalEntryId: original.Entry.JournalEntryId,
@@ -125,13 +132,17 @@ public static class IntercompanyCounterpartReversalBuilder
 
     private static bool ExactEvent(LedgerLineDimensionSet? dimensions, IntercompanyProposalSourceDto source, LedgerBookRecord target)
         => dimensions is not null && BoundedScope(dimensions, source, target)
-            && Guid.TryParse(dimensions.AgreementId, out var agreement) && agreement == source.AgreementId
-            && Guid.TryParse(dimensions.AgreementRevisionId, out var revision) && revision == source.AgreementRevisionId
-            && dimensions.IntercompanyTransactionId == source.TransactionId;
+            && Guid.TryParse(dimensions.AccountingArrangementId, out var agreement) && agreement == source.AccountingArrangementId
+            && Guid.TryParse(dimensions.AccountingArrangementRevisionId, out var revision) && revision == source.AccountingArrangementRevisionId
+            && dimensions.IntercompanyTransactionId == source.TransactionId
+            && dimensions.IntercompanyAgreementId == source.IntercompanyAgreementId
+            && dimensions.IntercompanyAgreementVersion == source.IntercompanyAgreementVersion;
 
     private static bool BoundedContra(LedgerLineDimensionSet? dimensions, IntercompanyProposalSourceDto source, LedgerBookRecord target)
         => dimensions is not null && BoundedScope(dimensions, source, target)
-            && ((dimensions.AgreementId is null && dimensions.AgreementRevisionId is null && dimensions.IntercompanyTransactionId is null)
+            && ((dimensions.AccountingArrangementId is null && dimensions.AccountingArrangementRevisionId is null && dimensions.IntercompanyTransactionId is null
+                    && (dimensions.IntercompanyAgreementId is null && dimensions.IntercompanyAgreementVersion is null
+                        || dimensions.IntercompanyAgreementId == source.IntercompanyAgreementId && dimensions.IntercompanyAgreementVersion == source.IntercompanyAgreementVersion))
                 || ExactEvent(dimensions, source, target));
 
     private static bool BoundedScope(LedgerLineDimensionSet dimensions, IntercompanyProposalSourceDto source, LedgerBookRecord target)

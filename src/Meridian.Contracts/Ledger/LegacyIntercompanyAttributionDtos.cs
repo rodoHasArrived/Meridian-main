@@ -5,10 +5,15 @@ namespace Meridian.Contracts.Ledger;
 /// <summary>Approved sidecar evidence attributes an exact immutable legacy journal leg without rewriting it.</summary>
 public sealed record LegacyIntercompanyAttributionDto(
     Guid AttributionId, long Revision, Guid LedgerBookId, Guid JournalEntryId, Guid LineId,
-    string SourceLineDigest, Guid AgreementId, Guid AgreementRevisionId,
+    string SourceLineDigest, Guid AccountingArrangementId, Guid AccountingArrangementRevisionId,
     Guid AccountBindingRevisionId, string ChartAccountNodeId, string IntercompanyTransactionId,
     string PreparedBy, string ApprovedBy, DateTimeOffset ApprovedAt, string EvidenceReference,
-    string TenantId, string? CompanyId, Guid? PreviousAttributionId = null);
+    string TenantId, string? CompanyId, Guid? PreviousAttributionId = null)
+{
+    public Guid IntercompanyAgreementId { get; init; }
+    public int IntercompanyAgreementVersion { get; init; }
+    public string IntercompanyAgreementPayloadHash { get; init; } = string.Empty;
+}
 
 public interface ILegacyIntercompanyAttributionStore
 {

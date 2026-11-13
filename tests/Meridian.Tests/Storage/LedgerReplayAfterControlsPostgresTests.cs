@@ -52,7 +52,7 @@ public sealed class LedgerReplayAfterControlsPostgresTests
         var append = () => fixture.Store.AppendAsync(altered);
         await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
         var wrongBook = () => fixture.Store.AppendAsync(write with { LedgerBookId = Guid.NewGuid() });
-        await wrongBook.Should().ThrowAsync<LedgerValidationException>().WithMessage("*replay book*");
+        await wrongBook.Should().ThrowAsync<LedgerValidationException>().WithMessage("*authoritative period book*");
         Assert.Single(await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId));
     }
 

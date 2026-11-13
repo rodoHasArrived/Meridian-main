@@ -4,6 +4,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.FundStructure;
 using Meridian.Tests.FinancialOperations.Intercompany;
 using Npgsql;
 
@@ -13,7 +14,7 @@ namespace Meridian.Tests.Storage;
 public sealed class IntercompanyProposalPostgresTests
 {
     [LedgerDatabaseFact]
-    public async Task SourceAndOutbox_CommitAndRollbackTogether_IncludingCallerOwnedTransaction()
+    public async Task NativeSourceRefusesCallerOwnedTransaction_ThenStandaloneCommitsJournalAndOutboxTogether()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var fixture = await SetupAsync(database);
@@ -23,7 +24,8 @@ public sealed class IntercompanyProposalPostgresTests
         await using (var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable))
         {
             await using var authority = await fixture.Journals.AcquirePostingAuthorityAsync(connection, transaction, [write]);
-            await fixture.Journals.AppendAsync(connection, transaction, write);
+            var refused = await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Journals.AppendAsync(connection, transaction, write));
+            Assert.Contains("standalone append transaction", refused.Message);
             Assert.Empty(await fixture.Proposals.ListAsync("tenant-a", IntercompanyProposalTestData.BookA));
             await transaction.RollbackAsync();
         }
@@ -51,8 +53,10 @@ public sealed class IntercompanyProposalPostgresTests
         var source = first.Entry.Lines[0].Dimensions!;
         var exact = new LedgerLineDimensionSet
         {
-            AgreementId = source.AgreementId,
-            AgreementRevisionId = source.AgreementRevisionId,
+            IntercompanyAgreementId = source.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = source.IntercompanyAgreementVersion,
+            AccountingArrangementId = source.AccountingArrangementId,
+            AccountingArrangementRevisionId = source.AccountingArrangementRevisionId,
             ChartAccountNodeId = source.ChartAccountNodeId,
             AccountBindingRevisionId = source.AccountBindingRevisionId,
             IntercompanyTransactionId = source.IntercompanyTransactionId
@@ -64,8 +68,10 @@ public sealed class IntercompanyProposalPostgresTests
         Assert.Equal(first.Entry.JournalEntryId, Assert.Single(selected).Entry.JournalEntryId);
         foreach (var unmatched in new[]
         {
-            exact with { AgreementId = Guid.NewGuid().ToString("D") },
-            exact with { AgreementRevisionId = Guid.NewGuid().ToString("D") },
+            exact with { IntercompanyAgreementId = Guid.NewGuid() },
+            exact with { IntercompanyAgreementVersion = 999 },
+            exact with { AccountingArrangementId = Guid.NewGuid().ToString("D") },
+            exact with { AccountingArrangementRevisionId = Guid.NewGuid().ToString("D") },
             exact with { ChartAccountNodeId = "nonexistent-chart-node" },
             exact with { AccountBindingRevisionId = Guid.NewGuid().ToString("D") },
             exact with { IntercompanyTransactionId = "nonexistent-transaction" },
@@ -366,7 +372,7 @@ public sealed class IntercompanyProposalPostgresTests
 
         var error = await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Journals.AppendAsync(prepared));
 
-        Assert.Contains("already has a posted correction", error.Message, StringComparison.Ordinal);
+        Assert.Equal("The immutable source journal already has a committed reversal.", error.Message);
         var retained = await fixture.Journals.GetByPeriodAsync(fixture.TargetPeriod.PeriodId);
         Assert.Equal(2, retained.Count);
         Assert.Contains(retained, entry => entry.Entry.JournalEntryId == manual.Entry.JournalEntryId);
@@ -412,10 +418,10 @@ public sealed class IntercompanyProposalPostgresTests
             if (changed is "transaction" or "contra-account") correction = correction with { Entry = new(correction.Entry.JournalEntryId,
                 correction.Entry.Timestamp, correction.Entry.Description, correction.Entry.Lines.Select(line => new LedgerEntry(
                     line.EntryId, line.JournalEntryId, line.Timestamp,
-                    changed == "contra-account" && line.Dimensions?.AgreementId is null
+                    changed == "contra-account" && line.Dimensions?.AccountingArrangementId is null
                         ? line.Account with { FinancialAccountId = "different-bank-account" } : line.Account,
                     line.Debit, line.Credit, line.Description,
-                    changed == "transaction" && line.Dimensions?.AgreementId is not null
+                    changed == "transaction" && line.Dimensions?.AccountingArrangementId is not null
                         ? line.Dimensions with { IntercompanyTransactionId = "another-occurrence" } : line.Dimensions, line.Currency)).ToArray(),
                 correction.Entry.Metadata) };
 
@@ -438,7 +444,9 @@ public sealed class IntercompanyProposalPostgresTests
         var dimensions = new LedgerLineDimensionSet(EntityId: IntercompanyProposalTestData.EntityB.ToString("D"),
             BookId: IntercompanyProposalTestData.BookB.ToString("D"), CounterpartyId: IntercompanyProposalTestData.EntityA.ToString("D"))
         {
-            AgreementId = proposal.Source.AgreementId.ToString("D"), AgreementRevisionId = proposal.Source.AgreementRevisionId.ToString("D"),
+            IntercompanyAgreementId = proposal.Source.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = proposal.Source.IntercompanyAgreementVersion,
+            AccountingArrangementId = proposal.Source.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = proposal.Source.AccountingArrangementRevisionId.ToString("D"),
             IntercompanyTransactionId = proposal.Source.TransactionId, ChartAccountNodeId = "b-payable",
             AccountBindingRevisionId = Guid.NewGuid().ToString("D")
         };
@@ -492,7 +500,8 @@ public sealed class IntercompanyProposalPostgresTests
         // Synthetic controls isolate durable outbox tests from lifecycle/agreement policy tests.
         // Both required control names are explicit; production never uses these participants.
         var journals = new PostgresLedgerJournalStore(database.Options, new FixtureTenant(),
-            postingAuthorities: () => [new FixtureAuthority("entity-lifecycle"), new FixtureAuthority("intercompany")]);
+            postingAuthorities: () => [new FixtureAuthority("entity-lifecycle"), new FixtureAuthority("intercompany")],
+            intercompanyAgreementAuthority: () => new FixtureNativeAuthority());
         await journals.SaveLedgerBookAsync(new(IntercompanyProposalTestData.BookA, "source-fund", IntercompanyProposalTestData.EntityA,
             FundStructureNodeKindDto.Entity, "Source", "USD", IntercompanyProposalTestData.Now, IntercompanyProposalTestData.Now));
         await journals.SaveLedgerBookAsync(IntercompanyProposalTestData.TargetBook());
@@ -510,7 +519,9 @@ public sealed class IntercompanyProposalPostgresTests
         var dimensions = new LedgerLineDimensionSet(EntityId: IntercompanyProposalTestData.EntityA.ToString("D"),
             BookId: IntercompanyProposalTestData.BookA.ToString("D"), CounterpartyId: IntercompanyProposalTestData.EntityB.ToString("D"))
         {
-            AgreementId = IntercompanyProposalTestData.AgreementId.ToString("D"), AgreementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
+            IntercompanyAgreementId = IntercompanyProposalTestData.Agreement().CanonicalAgreementId,
+            IntercompanyAgreementVersion = IntercompanyProposalTestData.Agreement().CanonicalAgreementVersion,
+            AccountingArrangementId = IntercompanyProposalTestData.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = IntercompanyProposalTestData.RevisionId.ToString("D"),
             IntercompanyTransactionId = transaction, ChartAccountNodeId = "a-receivable", AccountBindingRevisionId = Guid.NewGuid().ToString("D")
         };
         var entry = new JournalEntry(journalId, now, "Synthetic intercompany source", [
@@ -527,6 +538,34 @@ public sealed class IntercompanyProposalPostgresTests
     private sealed record Fixture(PostgresLedgerJournalStore Journals, PostgresIntercompanyProposalStore Proposals,
         LedgerAccountingPeriod Period, LedgerAccountingPeriod TargetPeriod);
     private sealed class FixtureTenant : IFundScopeTenantAccessor { public string? ResolveCallerTenant() => "tenant-a"; }
+    // This isolated persistence fixture supplies precise synthetic approved legal state.
+    // The durable ledger still executes its real shape, source-inverse and lease-scope guards.
+    private sealed class FixtureNativeAuthority : IIntercompanyAgreementPostingAuthority
+    {
+        public Task<IAsyncDisposable> AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default)
+        {
+            var revision = IntercompanyProposalTestData.Agreement().LegalRevision;
+            Assert.Equal("tenant-a", request.TenantId);
+            Assert.Contains(request.BookEntityId, new[] { IntercompanyProposalTestData.EntityA, IntercompanyProposalTestData.EntityB });
+            Assert.All(request.Lines, line =>
+            {
+                Assert.Equal(revision.AgreementId, line.AgreementId);
+                Assert.Equal(revision.AgreementVersion, line.AgreementVersion);
+                Assert.Equal(request.BookEntityId, line.PostingEntityId);
+                Assert.Equal(line.PostingEntityId == IntercompanyProposalTestData.EntityA
+                    ? IntercompanyProposalTestData.EntityB : IntercompanyProposalTestData.EntityA, line.CounterpartyId);
+                Assert.Equal(revision.Terms.Currency, line.TransactionCurrency);
+            });
+            return Task.FromResult<IAsyncDisposable>(new FixtureNativeLease(revision));
+        }
+    }
+    private sealed class FixtureNativeLease(IntercompanyAgreementRevisionDto revision) : IIntercompanyAgreementPostingLease
+    {
+        public IReadOnlyList<IntercompanyAgreementStoreState> Agreements { get; } = [new(revision.AgreementId, 1, [], [revision], [], [])];
+        public Task<LegalEntitySummaryDto?> GetLegalEntityAsync(Guid entityId, CancellationToken ct = default)
+            => Task.FromResult<LegalEntitySummaryDto?>(null);
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
     private sealed class FixtureAuthority(string name) : ILedgerPostingAuthority
     {
         public string ControlName => name;

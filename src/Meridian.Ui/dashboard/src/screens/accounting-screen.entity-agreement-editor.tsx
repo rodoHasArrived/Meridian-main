@@ -1,112 +1,112 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FormGrid, FormRow } from "@/components/ui/form";
-import type { AgreementKind, AgreementPartyMapping, EntityOperationScope, IntercompanyAgreement, SignedAgreementDocument } from "@/types/entity-operations";
-import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
-import { effectiveUtc, MutationFeedback, newIdentity, OperationField, today, useEntityMutation } from "./accounting-screen.entity-operations.shared";
-import { agreementSignedEvidencePath, SignedAgreementEvidencePicker } from "./accounting-screen.entity-signed-evidence";
-import { AgreementPartyAccounts } from "./accounting-screen.entity-party-accounts";
-import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
+import { intercompanyAgreementsEndpoint } from "@/lib/api/intercompany-agreements.api";
+import type { AgreementDetail, AgreementList, AgreementRevision } from "@/types/intercompany-agreements";
+import type { AccountingArrangementPartyMapping, AccountingArrangementRecord, AccountingArrangementTemplate, EntityOperationScope, IntercompanyAccountingArrangement } from "@/types/entity-operations";
+import { effectiveUtc, MutationFeedback, newIdentity, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
+import { AgreementPartyAccounts } from "./accounting-screen.entity-party-accounts";
 
-const kinds: AgreementKind[] = ["Loan", "CostRecharge", "ManagementFee", "ExpenseShare", "Guarantee"];
-function emptyParty(): AgreementPartyMapping {
-  return { entityId: "", ledgerBookId: "", receivableAccountNodeId: "", payableAccountNodeId: "", settlementAccountNodeId: null, revenueAccountNodeId: null, expenseAccountNodeId: null };
-}
-function emptyDocument(): SignedAgreementDocument {
-  return { vaultId: "", documentId: "", artifactId: "", contentHashSha256: "", scope: "" };
-}
+const templates: AccountingArrangementTemplate[] = ["Loan", "CostRecharge", "ManagementFee", "ExpenseShare", "CashSweep", "Guarantee", "Manual"];
+const emptyParty = (entityId = ""): AccountingArrangementPartyMapping => ({ entityId, ledgerBookId: "", receivableAccountNodeId: "", payableAccountNodeId: "", settlementAccountNodeId: null, revenueAccountNodeId: null, expenseAccountNodeId: null });
+export const canonicalAgreementPath = (agreementId?: string, bookId?: string) => `${WORKSTATION_ROUTE_CATALOG.accountingConfigure}?${new URLSearchParams({ ...(agreementId ? { agreementId } : {}), ...(bookId ? { ledgerBookId: bookId } : {}) })}#configure-section-agreements`;
 
-export function AgreementEditor({ scope, agreement, onSaved, onCancel }: {
-  scope: EntityOperationScope; agreement: IntercompanyAgreement | null;
-  onSaved: (agreement: IntercompanyAgreement) => void; onCancel: () => void;
+export function AccountingArrangementEditor({ scope, arrangement, initialOrganizationId, onSaved, onCancel }: {
+  scope: EntityOperationScope; arrangement: IntercompanyAccountingArrangement | null;
+  initialOrganizationId?: string;
+  onSaved: (arrangement: AccountingArrangementRecord) => void; onCancel: () => void;
 }) {
-  const [agreementId] = useState(() => agreement?.agreementId ?? newIdentity());
-  const [organizationId, setOrganizationId] = useState(agreement?.organizationId ?? scope.graph?.organizations[0]?.organizationId ?? "");
-  const [kind, setKind] = useState<AgreementKind>(agreement?.kind ?? "Loan");
-  const [reference, setReference] = useState(agreement?.facilityReference ?? "");
-  const [currency, setCurrency] = useState(agreement?.currency ?? scope.book.baseCurrency);
-  const [cadence, setCadence] = useState(agreement?.settlementCadence ?? "Monthly");
-  const [dueDays, setDueDays] = useState(String(agreement?.settlementDueDays ?? ""));
-  const [from, setFrom] = useState(agreement?.effectiveFrom.slice(0, 10) ?? today());
-  const [to, setTo] = useState(agreement?.effectiveTo?.slice(0, 10) ?? "");
-  const [firstRole, setFirstRole] = useState(agreement?.partyOneRole ?? "Lender");
-  const [secondRole, setSecondRole] = useState(agreement?.partyTwoRole ?? "Borrower");
-  const [parties, setParties] = useState<AgreementPartyMapping[]>(() => agreement
-    ? [agreement.partyOneEntityId, agreement.partyTwoEntityId].map((entityId) => ({ ...emptyParty(), ...agreement.partyMappings.find((mapping) => mapping.entityId === entityId), entityId }))
-    : [emptyParty(), emptyParty()]);
-  const [accountingMapping, setAccountingMapping] = useState(agreement ? agreement.partyMappings.length > 0 : true);
-  const [document, setDocument] = useState<SignedAgreementDocument>(agreement?.signedDocument ?? emptyDocument());
+  const [arrangementId] = useState(() => arrangement?.arrangementId ?? newIdentity());
+  const [organizationId, setOrganizationId] = useState(arrangement?.organizationId ?? initialOrganizationId ?? scope.graph?.organizations[0]?.organizationId ?? "");
+  const [template, setTemplate] = useState<AccountingArrangementTemplate>(arrangement?.templateKind ?? "Loan");
+  const [reference, setReference] = useState(arrangement?.arrangementReference ?? "");
+  const [canonicalId, setCanonicalId] = useState(arrangement?.canonicalAgreementId ?? "");
+  const [canonicalVersion, setCanonicalVersion] = useState(arrangement ? String(arrangement.canonicalAgreementVersion) : "");
+  const [cursor, setCursor] = useState("");
+  const [from, setFrom] = useState(arrangement?.effectiveFrom.slice(0, 10) ?? today());
+  const [to, setTo] = useState(arrangement?.effectiveTo?.slice(0, 10) ?? "");
+  const [parties, setParties] = useState<AccountingArrangementPartyMapping[]>(arrangement?.partyMappings.length ? arrangement.partyMappings : [emptyParty(), emptyParty()]);
+  const [accountingMapping, setAccountingMapping] = useState(arrangement ? arrangement.partyMappings.length > 0 : true);
   const [reason, setReason] = useState("");
   const mutation = useEntityMutation();
-  function updateParty(index: number, change: Partial<AgreementPartyMapping>) {
-    setParties((current) => current.map((party, partyIndex) => index === partyIndex ? { ...party, ...change } : party));
+  const query = new URLSearchParams({ asOf: from || today(), ...(cursor ? { cursor } : {}) });
+  const legalList = useEntityData<AgreementList>(`${intercompanyAgreementsEndpoint}?${query}`);
+  const legal = useEntityData<AgreementDetail>(canonicalId ? `${intercompanyAgreementsEndpoint}/${encodeURIComponent(canonicalId)}?${new URLSearchParams({ asOf: from || today() })}` : null);
+  const revisions = legal.data?.revisions.filter((revision) => revision.action !== "Terminate") ?? [];
+  const chosen = revisions.find((revision) => revision.agreementVersion === Number(canonicalVersion));
+  const entityName = (id: string) => scope.graph?.entities.find((entity) => entity.entityId === id)?.name ?? id;
+
+  function chooseRevision(value: string) {
+    setCanonicalVersion(value);
+    const revision = revisions.find((item) => item.agreementVersion === Number(value));
+    if (!revision) return;
+    setParties((current) => [revision.terms.partyOneId, revision.terms.partyTwoId].map((entityId) => current.find((party) => party.entityId === entityId) ?? emptyParty(entityId)));
+    if (!arrangement) { setFrom(revision.terms.effectiveFrom); setTo(revision.terms.effectiveTo ?? ""); }
+  }
+  function updateParty(entityId: string, change: Partial<AccountingArrangementPartyMapping>) {
+    setParties((current) => current.some((party) => party.entityId === entityId) ? current.map((party) => party.entityId === entityId ? { ...party, ...change } : party) : [...current.filter((party) => party.entityId), { ...emptyParty(entityId), ...change }]);
   }
   async function save(event: FormEvent) {
     event.preventDefault();
-    const signedDocument = Object.values(document).some(Boolean) ? document : null;
-    const terms = { facilityReference: reference.trim(), partyOneRole: firstRole.trim(), partyTwoRole: secondRole.trim(),
-      currency: currency.trim().toUpperCase(), settlementCadence: cadence.trim(),
-      effectiveFrom: agreement && from === agreement.effectiveFrom.slice(0, 10) ? agreement.effectiveFrom : effectiveUtc(from),
-      effectiveTo: agreement?.effectiveTo && to === agreement.effectiveTo.slice(0, 10) ? agreement.effectiveTo : to ? effectiveUtc(to) : null,
-      partyMappings: kind === "Guarantee" && !accountingMapping ? [] : parties, signedDocument, settlementDueDays: dueDays ? Number(dueDays) : null };
-    const command = agreement ? { ...terms, expectedVersion: agreement.version, reason: reason.trim() }
-      : { ...terms, agreementId, organizationId, kind, partyOneEntityId: parties[0].entityId, partyTwoEntityId: parties[1].entityId };
-    const body = { ...command, requestId: mutation.identity(command) };
-    const result = await mutation.run<IntercompanyAgreement>(agreement ? `${endpoints.agreements}/${agreement.agreementId}/revisions` : endpoints.agreements,
-      body, agreement ? "A successor terms revision was retained for review." : "Agreement draft retained. Submit it for agreement approval when its signed evidence is ready.");
+    if (!chosen || (arrangement && !reason.trim())) return;
+    const mappings = template === "Guarantee" && !accountingMapping ? [] : [chosen.terms.partyOneId, chosen.terms.partyTwoId].map((entityId) => parties.find((party) => party.entityId === entityId) ?? emptyParty(entityId));
+    const configuration = { arrangementReference: reference.trim(), templateKind: template,
+      canonicalAgreementVersion: chosen.agreementVersion, canonicalPayloadHash: chosen.payloadHash,
+      effectiveFrom: arrangement && from === arrangement.effectiveFrom.slice(0, 10) ? arrangement.effectiveFrom : effectiveUtc(from),
+      effectiveTo: arrangement?.effectiveTo && to === arrangement.effectiveTo.slice(0, 10) ? arrangement.effectiveTo : to ? effectiveUtc(to) : null,
+      partyMappings: mappings };
+    const command = arrangement ? { ...configuration, expectedVersion: arrangement.version, reason: reason.trim() }
+      : { ...configuration, arrangementId, organizationId, canonicalAgreementId: chosen.agreementId };
+    const result = await mutation.run<AccountingArrangementRecord>(arrangement ? `${endpoints.accountingArrangements}/${arrangement.arrangementId}/revisions` : endpoints.accountingArrangements,
+      { ...command, requestId: mutation.identity(command) }, arrangement ? "A successor accounting profile was retained for mapping review." : "Accounting profile draft retained against the selected approved legal version.");
     if (result) onSaved(result);
   }
-  const signing = Object.values(document).some(Boolean);
-  return <form onSubmit={(event) => void save(event)} className="space-y-4 rounded border border-border p-4">
-    <h4 className="font-semibold">{agreement ? `Revise ${agreement.facilityReference}` : "New intercompany agreement"}</h4>
-    <p className="text-sm text-muted-foreground">Terms are effective from the start date inclusive to the end date exclusive. Changes create a retained revision and require agreement approval.</p>
-    <FormRow label="Agreement record ID" labelFor="agreement-record-identity" hint="Use this stable identity when linking signed evidence. A new agreement can be saved before signed evidence is attached."><Input id="agreement-record-identity" readOnly value={agreementId} onFocus={(event) => event.target.select()} /></FormRow>
-    <fieldset disabled={mutation.busy || !scope.capabilities.canManageAgreements} className="space-y-4">
-      <FormGrid columns={3}>
-        <OperationField label="Agreement organization" value={organizationId} onChange={setOrganizationId} required disabled={Boolean(agreement)}>
-          <option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}
-        </OperationField>
-        <OperationField label="Facility reference" value={reference} onChange={setReference} required />
-        <OperationField label="Agreement kind" value={kind} onChange={(value) => { setKind(value as AgreementKind); setAccountingMapping(value !== "Guarantee"); }} required disabled={Boolean(agreement)}>
-          {kinds.map((value) => <option value={value} key={value}>{value}</option>)}
-        </OperationField>
-        <OperationField label="Agreement currency" value={currency} onChange={setCurrency} pattern="[A-Za-z]{3}" required />
-        <OperationField label="Settlement cadence" value={cadence} onChange={setCadence} required />
-        <OperationField label="Settlement due after calendar days" value={dueDays} onChange={setDueDays} type="number" hint="Optional governed aging basis measured from each source economic date." />
-        <OperationField label="Effective from" value={from} onChange={setFrom} type="date" required />
-        <OperationField label="Effective to (exclusive)" value={to} onChange={setTo} type="date" />
-        <OperationField label="First party role" value={firstRole} onChange={setFirstRole} required />
-        <OperationField label="Second party role" value={secondRole} onChange={setSecondRole} required />
-      </FormGrid>
-      {kind === "Guarantee" ? <div className="space-y-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={accountingMapping} onChange={(event) => setAccountingMapping(event.target.checked)} />Include accounting book mappings for this guarantee</label><p className="text-xs text-muted-foreground">An informational guarantee retains the two parties and signed terms without accounting book mappings.</p></div> : null}
-      {parties.map((party, index) => <fieldset key={index} className="rounded border border-border p-3">
-        <legend className="px-1 text-sm font-semibold">{index === 0 ? "First" : "Second"} party · book and stable account nodes</legend>
-        <FormGrid columns={3}>
-          <OperationField label={`Party ${index + 1} entity`} value={party.entityId} onChange={(value) => updateParty(index, { entityId: value, ledgerBookId: "" })} required disabled={Boolean(agreement)}>
-            <option value="">Select entity</option>{scope.graph?.entities.map((entity) => <option key={entity.entityId} value={entity.entityId}>{entity.name} · {entity.lifecycleStatus}</option>)}
-          </OperationField>
-          {kind !== "Guarantee" || accountingMapping ? <><OperationField label={`Party ${index + 1} book`} value={party.ledgerBookId} onChange={(value) => updateParty(index, { ledgerBookId: value })} required>
-            <option value="">Select entity book</option>{scope.books.filter((book) => book.fundStructureNodeId === party.entityId && book.accountingBasis === "Primary").map((book) => <option key={book.ledgerBookId} value={book.ledgerBookId}>{book.displayName} · {book.baseCurrency}</option>)}
-          </OperationField>
-          <AgreementPartyAccounts party={party} index={index} asOf={from} onChange={(patch) => updateParty(index, patch)} /></> : null}
-        </FormGrid>
-      </fieldset>)}
-      <fieldset className="rounded border border-border p-3">
-        <legend className="px-1 text-sm font-semibold">Signed agreement in Evidence Vault</legend>
-        <p className="mb-3 text-xs text-muted-foreground">Select retained document and artifact identities. Approval verifies the exact tenant-owned bytes and SHA-256 hash.</p>
-        <SignedAgreementEvidencePicker agreementId={agreementId} onSelect={setDocument} />
-        {agreement ? <Link className="mb-3 inline-block text-sm underline underline-offset-4" to={agreementSignedEvidencePath(agreementId)}>Open Evidence Vault for this agreement</Link>
-          : <p className="mb-3 text-xs text-muted-foreground">Save this agreement draft first. Its retained record then provides the Evidence Vault link for signed-document intake and review.</p>}
-        <FormGrid columns={3}>
-          {([ ["vaultId", "Vault ID"], ["documentId", "Signed document ID"], ["artifactId", "Signed artifact ID"], ["contentHashSha256", "Signed content SHA-256"], ["scope", "Signed evidence scope"] ] as const).map(([key, label]) => <OperationField
-            key={key} label={label} value={document[key]} onChange={(value) => setDocument((current) => ({ ...current, [key]: value.trim() }))}
-            required={signing} pattern={key === "contentHashSha256" ? "[a-fA-F0-9]{64}" : undefined} />)}
-        </FormGrid>
-      </fieldset>
-      {agreement ? <OperationField label="Terms revision reason" value={reason} onChange={setReason} required /> : null}
-      <div className="flex flex-wrap gap-2"><Button type="submit">{agreement ? "Retain successor revision" : "Save agreement draft"}</Button><Button type="button" variant="outline" onClick={onCancel}>Cancel editing</Button></div>
-    </fieldset>
-    <MutationFeedback state={mutation} />
+
+  return <form onSubmit={(event) => void save(event)} className="space-y-4 rounded border border-border p-4" aria-label="Accounting profile editor">
+    <h4 className="font-semibold">{arrangement ? `Revise ${arrangement.arrangementReference}` : "New intercompany accounting profile"}</h4>
+    <p className="text-sm text-muted-foreground">Select an approved legal agreement version, then configure its books, accounts and counterpart template. Legal parties, currency, dates and signed evidence come from that exact retained version.</p>
+    <Link className="inline-block text-sm underline underline-offset-4" to={canonicalAgreementPath(canonicalId, scope.book.ledgerBookId)}>Open canonical legal agreement registry</Link>
+    <FormRow label="Accounting profile ID" labelFor="accounting-profile-identity"><Input id="accounting-profile-identity" readOnly value={arrangementId} onFocus={(event) => event.target.select()} /></FormRow>
+    <fieldset disabled={mutation.busy || !scope.capabilities.canManageAgreements} className="space-y-4"><FormGrid columns={3}>
+      <OperationField label="Accounting profile organization" value={organizationId} onChange={setOrganizationId} required disabled={Boolean(arrangement)}><option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}</OperationField>
+      <OperationField label="Accounting profile reference" value={reference} onChange={setReference} required />
+      <OperationField label="Counterpart accounting template" value={template} onChange={(value) => { setTemplate(value as AccountingArrangementTemplate); setAccountingMapping(value !== "Guarantee"); }} required>{templates.map((value) => <option key={value}>{value}</option>)}</OperationField>
+      <OperationField label="Canonical legal agreement" value={canonicalId} onChange={(value) => { setCanonicalId(value); setCanonicalVersion(""); setParties([emptyParty(), emptyParty()]); }} required disabled={Boolean(arrangement)}><option value="">Select approved legal agreement</option>
+        {canonicalId && !legalList.data?.items.some((item) => item.agreementId === canonicalId) ? <option value={canonicalId}>{legal.data?.code ?? canonicalId} · retained selection</option> : null}
+        {legalList.data?.items.filter((item) => item.revisions.some((revision) => revision.action !== "Terminate")).map((item) => <option key={item.agreementId} value={item.agreementId}>{item.code} · {item.name} · {item.effectiveStatus}</option>)}
+      </OperationField>
+      <OperationField label="Approved legal version" value={canonicalVersion} onChange={chooseRevision} required disabled={!canonicalId || legal.loading}><option value="">Select exact approved version</option>{revisions.map((revision) => <option key={revision.agreementVersion} value={revision.agreementVersion}>Version {revision.agreementVersion} · {revision.terms.effectiveFrom} · {revision.approver}</option>)}</OperationField>
+      <OperationField label="Mapping effective from" value={from} onChange={setFrom} type="date" required />
+      <OperationField label="Mapping effective to (exclusive)" value={to} onChange={setTo} type="date" />
+    </FormGrid>
+    <OperationError error={legalList.error} /><OperationError error={legal.error} />
+    {legal.loading || legalList.loading ? <p role="status" className="text-sm">Loading approved canonical legal authority…</p> : null}
+    {legalList.data?.nextCursor ? <Button type="button" variant="outline" onClick={() => setCursor(legalList.data!.nextCursor!)}>Next legal agreement page</Button> : null}
+    {cursor ? <Button type="button" variant="outline" onClick={() => setCursor("")}>First legal agreement page</Button> : null}
+    {chosen ? <CanonicalTerms revision={chosen} entityName={entityName} /> : <p role="status" className="text-sm text-muted-foreground">An exact approved legal version is required before this accounting profile can be saved.</p>}
+    {template === "Guarantee" ? <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={accountingMapping} onChange={(event) => setAccountingMapping(event.target.checked)} />Include accounting book mappings for this guarantee</label> : null}
+    {chosen && (template !== "Guarantee" || accountingMapping) ? [chosen.terms.partyOneId, chosen.terms.partyTwoId].map((entityId, index) => {
+      const party = parties.find((item) => item.entityId === entityId) ?? emptyParty(entityId);
+      return <fieldset key={entityId} className="rounded border border-border p-3"><legend className="px-1 text-sm font-semibold">{entityName(entityId)} · {index === 0 ? chosen.terms.partyOneRole : chosen.terms.partyTwoRole}</legend>
+        <FormGrid columns={3}><OperationField label={`Party ${index + 1} book`} value={party.ledgerBookId} onChange={(value) => updateParty(entityId, { ledgerBookId: value })} required><option value="">Select entity book</option>{scope.books.filter((book) => book.fundStructureNodeKind === "Entity" && book.fundStructureNodeId === entityId).map((book) => <option key={book.ledgerBookId} value={book.ledgerBookId}>{book.displayName} · {book.accountingBasis} · {book.baseCurrency}</option>)}</OperationField>
+          <AgreementPartyAccounts party={party} index={index} asOf={from} onChange={(change) => updateParty(entityId, change)} />
+        </FormGrid></fieldset>;
+    }) : null}
+    {arrangement ? <OperationField label="Accounting profile revision reason" value={reason} onChange={setReason} required /> : null}
+    <div className="flex flex-wrap gap-2"><Button type="submit" disabled={!chosen || legal.loading || (Boolean(arrangement) && !reason.trim())}>Save accounting profile draft</Button><Button type="button" variant="outline" onClick={onCancel}>Cancel profile editing</Button></div>
+    </fieldset><MutationFeedback state={mutation} />
   </form>;
+}
+
+function CanonicalTerms({ revision, entityName }: { revision: AgreementRevision; entityName: (id: string) => string }) {
+  const terms = revision.terms;
+  return <section className="space-y-2 rounded border border-border bg-muted/20 p-3" aria-label="Pinned legal terms"><h5 className="text-sm font-semibold">Approved legal version {revision.agreementVersion} · {terms.code}</h5>
+    <p className="text-sm">{entityName(terms.partyOneId)} ({terms.partyOneRole}) ↔ {entityName(terms.partyTwoId)} ({terms.partyTwoRole}) · {terms.currency}</p>
+    <p className="text-xs">Legal window {terms.effectiveFrom} → {terms.effectiveTo ?? "Open"} (exclusive) · {terms.terms?.scheduleDescription ?? "No settlement cadence specified"} · {terms.terms?.settlementDays == null ? "No due-day policy specified" : `${terms.terms.settlementDays} calendar days`}</p>
+    <p className="break-all font-mono text-xs">Approved payload {revision.payloadHash}</p><p className="text-xs">Approved by {revision.approver} · {revision.approvedAtUtc} · {terms.evidence?.length ?? 0} canonical evidence references</p>
+  </section>;
 }

@@ -4,10 +4,15 @@ namespace Meridian.Contracts.Ledger;
 
 /// <summary>Actual posted due-to/due-from balances. Terms never supply accounting amounts.</summary>
 public sealed record IntercompanyBalanceScheduleRowDto(Guid LedgerBookId, Guid EntityId, Guid? CounterpartyEntityId,
-    Guid? AgreementId, Guid? AgreementRevisionId, string? AgreementKind, string? ChartAccountNodeId,
+    Guid? AccountingArrangementId, Guid? AccountingArrangementRevisionId, string? AccountingTemplateKind, string? ChartAccountNodeId,
     IntercompanyAccountRoleDto? Role, string TransactionCurrency, string FunctionalCurrency,
     decimal TransactionSignedBalance, decimal FunctionalSignedBalance, bool MappingVerified,
-    IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<string> BindingRevisionIds);
+    IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<string> BindingRevisionIds)
+{
+    public Guid? IntercompanyAgreementId { get; init; }
+    public int? IntercompanyAgreementVersion { get; init; }
+    public string? IntercompanyAgreementPayloadHash { get; init; }
+}
 
 public sealed record IntercompanyBalanceScheduleIssueDto(string Code, string Message, bool BlocksMapping,
     Guid? LedgerBookId = null, Guid? JournalEntryId = null);

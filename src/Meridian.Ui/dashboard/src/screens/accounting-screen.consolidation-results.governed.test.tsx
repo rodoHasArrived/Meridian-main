@@ -6,18 +6,28 @@ import { ConsolidationResults } from "./accounting-screen.consolidation-results"
 
 describe("Governed consolidation presentation", () => {
   it("keeps original-currency booking breaks, translation, rounding and posted balances distinct", () => {
+    const source = { ledgerBookId: "source-book", journalEntryId: "source-journal", lineId: "source-line", entityId: "entity-a", counterpartyId: "entity-b", accountPath: "Assets:Group receivable", debit: 130, credit: 0, effectiveDate: "2026-11-12", drillThrough: "retained-line",
+      accountingArrangementId: "profile-a", accountingArrangementRevisionId: "mapping-revision-a", intercompanyAgreementId: "canonical-legal-agreement", intercompanyAgreementVersion: 7, intercompanyAgreementPayloadHash: "approved-legal-payload" };
     const view: ConsolidationView = { request: { organizationId: "organization-a", ownershipRootId: "fund-a", eliminationBookId: "overlay-book", periodId: "period-a", asOf: "2026-11-12" }, fundProfileId: "fund-a", currency: "USD",
       scopeLimitation: "Three direct wholly owned entities; reviewed FX and income treatments.", entityIds: ["entity-a", "entity-b", "entity-c"], ownershipLinkIds: ["ownership-a"], sourceFingerprint: "sources-v4", ruleVersion: "w10-v4", translationFingerprint: "approved-rate-authority", canCreateDrafts: false,
-      balances: [{ accountPath: "Assets:Group receivable", accountType: "Asset", grossBalance: 130, proposedEliminations: -110, postedEliminations: -10, consolidatedBalance: 120, previewBalance: 10, sources: [] }],
-      matches: [{ postingEntityId: "entity-a", counterpartyId: "entity-b", receivable: 130, payable: 110, matchedAmount: 110, unmatchedReceivable: 20, unmatchedPayable: 0, sources: [], agreementId: "agreement-a", treatment: "consolidation.receivable-payable", matchingCurrency: "EUR", matchedTransactionAmount: 100, unmatchedFirstTransactionAmount: 10, unmatchedSecondTransactionAmount: 0, translationDifference: 3.25 }],
+      balances: [{ accountPath: "Assets:Group receivable", accountType: "Asset", grossBalance: 130, proposedEliminations: -110, postedEliminations: -10, consolidatedBalance: 120, previewBalance: 10, sources: [source] }],
+      matches: [{ postingEntityId: "entity-a", counterpartyId: "entity-b", receivable: 130, payable: 110, matchedAmount: 110, unmatchedReceivable: 20, unmatchedPayable: 0, sources: [], accountingArrangementId: "profile-a", treatment: "consolidation.receivable-payable", matchingCurrency: "EUR", matchedTransactionAmount: 100, unmatchedFirstTransactionAmount: 10, unmatchedSecondTransactionAmount: 0, translationDifference: 3.25 }],
       drafts: [], blockers: [], translationReserve: { "entity-a": -4.01 }, translationDifferences: { "entity-a": -4 }, roundingDifferences: { "entity-a": -0.01 } };
     renderWithRouter(<ConsolidationResults view={view} />);
     expect(screen.getByText("w10-v4")).toBeVisible();
     const balances = within(screen.getByRole("region", { name: "Group balance table" }));
     expect(balances.getAllByRole("cell").slice(0, 5).map((cell) => cell.textContent)).toEqual(["130.00", "(110.00)", "(10.00)", "120.00", "10.00"]);
     const matching = within(screen.getByRole("region", { name: "Reciprocal match table" }));
+    expect(matching.getByRole("columnheader", { name: "Accounting profile and transaction" })).toBeVisible();
     expect(matching.getByText("100.00 EUR")).toBeVisible();
     expect(matching.getByText("3.25 USD")).toBeVisible();
+    fireEvent.click(matching.getByText("Accounting arrangement identity"));
+    expect(matching.getByText("profile-a", { exact: true })).toBeVisible();
+    fireEvent.click(balances.getByText(`Sources for ${source.accountPath} (1)`));
+    expect(balances.getByText("Accounting mapping revision:").parentElement).toHaveTextContent("mapping-revision-a");
+    expect(balances.getByText("Canonical legal agreement:").parentElement).toHaveTextContent("canonical-legal-agreement");
+    expect(balances.getByText("Approved legal agreement version:").parentElement).toHaveTextContent("7");
+    expect(balances.getByText("Legal agreement payload hash:").parentElement).toHaveTextContent("approved-legal-payload");
     const differences = within(screen.getByRole("region", { name: "Translation and rounding differences" }));
     expect(differences.getByRole("columnheader", { name: "Rounding difference" })).toBeVisible();
     expect(differences.getByText("(4.01) USD")).toBeVisible();

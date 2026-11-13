@@ -29,14 +29,9 @@ public static class IntercompanyJournalCorrectionEvidence
     {
         var left = inverse.Dimensions ?? new LedgerLineDimensionSet();
         var right = original.Dimensions ?? new LedgerLineDimensionSet();
-        var stableAccount = left.ChartAccountNodeId is { Length: > 0 }
-            && left.ChartAccountNodeId == right.ChartAccountNodeId;
-        return (stableAccount || inverse.Account.Name == original.Account.Name)
-            && inverse.Account.AccountType == original.Account.AccountType
-            && inverse.Account.Symbol == original.Account.Symbol
-            && string.Equals(inverse.Account.FinancialAccountId, original.Account.FinancialAccountId, StringComparison.OrdinalIgnoreCase)
-            && (left with { AccountBindingRevisionId = null, ExternalGlDimensions = NoExternalDimensions })
-                == (right with { AccountBindingRevisionId = null, ExternalGlDimensions = NoExternalDimensions })
+        return inverse.Account == original.Account
+            && (left with { ExternalGlDimensions = NoExternalDimensions })
+                == (right with { ExternalGlDimensions = NoExternalDimensions })
             && ExternalDimensionsMatch(left.ExternalGlDimensions, right.ExternalGlDimensions);
     }
 

@@ -581,6 +581,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
             entityId: draft.EntityId,
             investorId: treasuryContext?.InvestorId,
             capitalAccountId: treasuryContext?.CapitalAccountId);
+        if (headerDimensions?.IntercompanyAgreementId.HasValue == true ||
+            headerDimensions?.IntercompanyAgreementVersion.HasValue == true ||
+            headerDimensions?.AccountingArrangementId is not null || headerDimensions?.AccountingArrangementRevisionId is not null ||
+            headerDimensions?.ChartAccountNodeId is not null || headerDimensions?.AccountBindingRevisionId is not null ||
+            headerDimensions?.IntercompanyTransactionId is not null)
+            issues.Add(Issue("manual-je.agreement-line-reference-required", AccountingConfigurationValidationSeverityDto.Critical,
+                "Agreement provenance must identify each journal line rather than the journal header.",
+                "dimensions", "Move the agreement ID and approved version onto the applicable lines."));
 
         if (!Enum.IsDefined(draft.EntryType))
         {
@@ -745,6 +753,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
 
         ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues);
+        await ValidateAgreementDraftAsync(draft, lines, chartByPath, issues, ct).ConfigureAwait(false);
 
         var totalDebits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(line => line.Amount);
         var totalCredits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(line => line.Amount);
@@ -1019,11 +1028,13 @@ public sealed partial class ManualJournalEntryWorkbenchService
             ProjectId: NormalizeOptional(dimensions?.ProjectId))
         {
             PositionId = dimensions?.PositionId,
-            AgreementId = NormalizeOptional(dimensions?.AgreementId),
-            AgreementRevisionId = NormalizeOptional(dimensions?.AgreementRevisionId),
+            AccountingArrangementId = NormalizeOptional(dimensions?.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions?.AccountingArrangementRevisionId),
             ChartAccountNodeId = NormalizeOptional(dimensions?.ChartAccountNodeId),
             AccountBindingRevisionId = NormalizeOptional(dimensions?.AccountBindingRevisionId),
-            IntercompanyTransactionId = NormalizeOptional(dimensions?.IntercompanyTransactionId)
+            IntercompanyTransactionId = NormalizeOptional(dimensions?.IntercompanyTransactionId),
+            IntercompanyAgreementId = dimensions?.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions?.IntercompanyAgreementVersion
         };
 
         return LedgerDimensionTags.HasAnyDimension(normalized) ? normalized : null;

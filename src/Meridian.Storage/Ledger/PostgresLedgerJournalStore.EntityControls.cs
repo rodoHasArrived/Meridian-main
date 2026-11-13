@@ -13,8 +13,26 @@ public sealed partial class PostgresLedgerJournalStore
     private static readonly string[] RequiredControlNames = ["entity-lifecycle", "intercompany"];
     private readonly ConditionalWeakTable<NpgsqlTransaction, PostingAuthorityScope> _postingAuthorityScopes = new();
 
-    public async Task<IAsyncDisposable> AcquirePostingAuthorityAsync(NpgsqlConnection connection,
+    public async Task ValidateEntityPostingControlsAsync(LedgerJournalEntryWrite write, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(write);
+        RequireWriteTenant();
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
+        await using var authority = await AcquirePostingAuthorityCoreAsync(connection, transaction, [write], false, ct,
+            reviewOnly: true).ConfigureAwait(false);
+        // This boundary never appends or grants preparer authority. Domain resources remain
+        // retained until the read-only transaction has explicitly completed its rollback.
+        await transaction.RollbackAsync(ct).ConfigureAwait(false);
+    }
+
+    public Task<IAsyncDisposable> AcquirePostingAuthorityAsync(NpgsqlConnection connection,
         NpgsqlTransaction transaction, IReadOnlyList<LedgerJournalEntryWrite> entries, CancellationToken ct = default)
+        => AcquirePostingAuthorityCoreAsync(connection, transaction, entries, false, ct);
+
+    private async Task<IAsyncDisposable> AcquirePostingAuthorityCoreAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, IReadOnlyList<LedgerJournalEntryWrite> entries, bool verifiedNativeAttestation, CancellationToken ct,
+        IAsyncDisposable? retainedStructureAuthority = null, bool reviewOnly = false)
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(transaction);
@@ -26,13 +44,18 @@ public sealed partial class PostgresLedgerJournalStore
         // A batch may mix existing receipts and new writes. Lock every period first and classify
         // receipts without taking the audit head; new authority leases must precede audit locks.
         var normalized = entries.Select(original => AccountingPostingCommandValidator.NormalizeAndValidate(original,
-            _options.RequireGovernedPostingCommand, _options.RequireExpectedVersion)).ToArray();
+            _options.RequireGovernedPostingCommand || verifiedNativeAttestation,
+            _options.RequireExpectedVersion || verifiedNativeAttestation,
+            allowPreparerAttestation: verifiedNativeAttestation)).ToArray();
+        var mappings = await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, normalized, ct).ConfigureAwait(false);
         foreach (var periodId in normalized.Select(write => write.PeriodId).Distinct().Order())
         {
             await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", periodId, false, ct).ConfigureAwait(false);
-            _ = await LoadPeriodAsync(connection, transaction, periodId, forUpdate: _options.EnablePeriodLocking,
+            var locked = await LoadPeriodAsync(connection, transaction, periodId, forUpdate: _options.EnablePeriodLocking,
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The posting period does not exist.");
+            if (locked.LedgerBookId != mappings[periodId])
+                throw new LedgerValidationException("The authoritative period book changed while acquiring entitlement authority; retry the transaction.");
         }
         var contexts = new List<LedgerPostingAuthorityContext>();
         var resolved = new List<(LedgerJournalEntryWrite Write, LedgerAccountingPeriod Period)>();
@@ -80,13 +103,16 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         var leases = new List<IAsyncDisposable>();
+        foreach (var context in contexts) context.IsReviewOnly = reviewOnly;
+        if (retainedStructureAuthority is not null)
+            foreach (var context in contexts) context.RetainStructureAuthority(retainedStructureAuthority);
         try
         {
             if (contexts.Count == 0)
             {
                 if (hasCommittedReplay)
                     _ = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
-                var replayScope = new PostingAuthorityScope(this, transaction, contexts, leases);
+                var replayScope = new PostingAuthorityScope(this, transaction, contexts, leases, reviewOnly);
                 _postingAuthorityScopes.Add(transaction, replayScope);
                 return replayScope;
             }
@@ -94,7 +120,13 @@ public sealed partial class PostgresLedgerJournalStore
             var missingAuthorities = RequiredControlNames.Where(name => !authorities.Any(item => item.ControlName == name)).ToArray();
             if (missingAuthorities.Length > 0 && contexts.Any(item => item.Controls.Mode == LedgerBookControlModeDto.Enforced))
                 throw new LedgerValidationException("Authoritative entity and intercompany posting controls are unavailable.");
-            foreach (var authority in authorities)
+            // Lifecycle retains the one structure fence. Canonical legal agreement validation
+            // reuses its live proof before operational mappings/FX, with no second graph SHARE.
+            foreach (var authority in authorities.Where(item => item.ControlName != "intercompany"))
+                leases.Add(await authority.AcquireAsync(contexts.Where(item => item.Book.LedgerBookId != Guid.Empty).ToArray(), ct).ConfigureAwait(false));
+            var canonical = await AcquireCanonicalBatchAuthorityAsync(connection, transaction, contexts, ct).ConfigureAwait(false);
+            if (canonical is not null) leases.Add(canonical);
+            foreach (var authority in authorities.Where(item => item.ControlName == "intercompany"))
                 leases.Add(await authority.AcquireAsync(contexts.Where(item => item.Book.LedgerBookId != Guid.Empty).ToArray(), ct).ConfigureAwait(false));
             foreach (var context in contexts)
             {
@@ -109,7 +141,7 @@ public sealed partial class PostgresLedgerJournalStore
             }
             if (hasCommittedReplay)
                 _ = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
-            var scope = new PostingAuthorityScope(this, transaction, contexts, leases);
+            var scope = new PostingAuthorityScope(this, transaction, contexts, leases, reviewOnly);
             _postingAuthorityScopes.Add(transaction, scope);
             return scope;
         }
@@ -132,6 +164,8 @@ public sealed partial class PostgresLedgerJournalStore
             return WithControlDecision(write, LedgerBookControlModeDto.LegacyWarning, 1,
                 [new("entity-lifecycle", "legacy-book-unmapped", false, "Legacy unmapped period requires migration before entity controls can be activated.")]);
         }
+        if (scope.IsReviewOnly)
+            throw new LedgerValidationException("Review-only entity authority cannot authorize a ledger append.");
         var fingerprint = PostingAuthorityFingerprint(write);
         var context = scope.Contexts.SingleOrDefault(item => item.Write.Entry.JournalEntryId == write.Entry.JournalEntryId
             && PostingAuthorityFingerprint(item.Write) == fingerprint
@@ -155,10 +189,20 @@ public sealed partial class PostgresLedgerJournalStore
     private static string PostingAuthorityFingerprint(LedgerJournalEntryWrite write)
         => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(write, JsonOptions));
 
+    // Called only after RetainPostingAuthorityDecision proved the immutable write within
+    // AppendCore. Canonical hashes come from the held server authority, never journal tags.
+    private IReadOnlyList<Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto> GetVerifiedCanonicalAgreementRevisions(
+        NpgsqlTransaction transaction, Guid journalEntryId)
+        => _postingAuthorityScopes.TryGetValue(transaction, out var scope) && !scope.Disposed
+            ? scope.Contexts.SingleOrDefault(item => item.Write.Entry.JournalEntryId == journalEntryId)
+                ?.VerifiedCanonicalAgreementRevisions ?? []
+            : [];
+
     private sealed class PostingAuthorityScope(PostgresLedgerJournalStore owner, NpgsqlTransaction transaction,
-        IReadOnlyList<LedgerPostingAuthorityContext> contexts, IReadOnlyList<IAsyncDisposable> leases) : IAsyncDisposable
+        IReadOnlyList<LedgerPostingAuthorityContext> contexts, IReadOnlyList<IAsyncDisposable> leases, bool reviewOnly) : IAsyncDisposable
     {
         public IReadOnlyList<LedgerPostingAuthorityContext> Contexts { get; } = contexts;
+        public bool IsReviewOnly { get; } = reviewOnly;
         public bool Disposed { get; private set; }
         public async ValueTask DisposeAsync()
         {

@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
 Reporting cutovers retain immutable previews/receipts in ledger migration 065 and fence activation
 against the ledger append audit head. Migration 066 preserves ordinary/source book uniqueness while
 allowing distinctly named Fund/Primary books only for exact governed consolidation policy pairs.
@@ -28,6 +34,66 @@ leases and retains an immutable receipt. Every booked append, including ambient 
 and atomic lot posting, requires a matching posting-authority scope retained through commit.
 Controlled-close authorizations bind an approved draft's economics, evidence and version;
 they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
+
+Ledger-period reopen and shared instrument-role approval validation reject reserved W14 preparer
+assertion references before governed writes. Instrument-role validation applies to both in-memory
+and PostgreSQL projection stores. A preparer assertion cannot supply ordinary write approval.
+
+`ILedgerSecurityEntitlementInventory` adds a complete, unpaged book/security inventory for bounded
+cash-dividend eligibility. The PostgreSQL reader requires exact authenticated tenant/company book
+ownership, inspects all book lots for unidentified legacy positions, verifies acquisition journals,
+and reconstructs dated quantities with the existing retained mutation-history rules in a repeatable
+read transaction. Its retained population and hash include later-disposed lots when held at the
+cutoff; missing identity, acquisition or historical quantity facts fail closed. Existing account and
+position lot-read APIs keep their behavior.
+
+The separate economic-attestation store also reads every retained processing option and evidence
+record for the exact tenant/company case version. That repeatable-read snapshot supports explicit
+case-fact exclusions without inferring tax or election terms from freeform document prose. Its
+content digest excludes workflow-only case-version increments so recovery after an attestation
+stage can reuse unchanged source facts.
+
+The bounded W14 cash-dividend path uses a native PostgreSQL book declaration, separate immutable
+capacity reservations, and a sealed invocation lease. Migration 066 preserves ordinary approval
+rows and adds distinct preparer receipts and posted proof. Source ex-date fixes the monthly bucket;
+provider aliases cannot move a retained event into another bucket. Exact reaffirmation reuses its
+reservation, while rollback or withdrawal never releases uncertain capacity. Declaration withdrawal
+serializes with the journal, both lifecycle stages and the case receipt in one database transaction.
+Posting locks run in this order: economic owner scope, complete-book entitlement advisory lock,
+ledger book row, Security Master parent row, canonical security chain, and exact case. Parent-row
+share authority freezes current security metadata; the existing chain lock prevents cancellation
+or supersession. Ordinary journal, lot, backfill, position and book-specific accounting-configuration
+writers take the matching shared lock first, keeping the exact promoted account/rule binding
+stable through posting as well as the inventory.
+The producer also rereads the retained candidate's dated ticker against the current native
+Security Master identity and version in that held transaction; missing, ambiguous or changed
+instrument authority refuses before the journal append.
+Only that lease permits the native preparer-attested journal and spine append. Host policy defaults
+off, and enabling the declaration requires a separately authorized explicit existing account/rule
+binding. All receipts retain the original declaration, reviewed projection and evidence digest.
+These new economic transactions use ReadCommitted after acquiring the exclusive tenant/company
+scope lock: a queued command sees the preceding budget commit rather than retaining a snapshot
+from before its lock wait. Exact case versions, the complete-book inventory lock, period-row
+locking and the event-stream compare-and-swap remain enforced through the final commit. Ordinary
+transaction isolation is unchanged.
+
+Maintenance windows and trading-session checks use the configured `PrimaryTimeZone`,
+including the starting weekday of overnight windows and the offset at each window boundary.
+The scheduler scans deferred queue entries without blocking other due jobs, and counts running
+admissions before case-history writes complete when enforcing scheduled-job concurrency.
+Explicit `ExecuteJobAsync` calls retain their existing manual-execution bypass of window admission.
+
+Date-only natural-language search filters use UTC midnight boundaries. Parquet timestamp-column
+conversion shares the export timestamp parser, treating date-only strings and unspecified
+`DateTime` values as UTC while preserving the instant carried by explicit timestamp offsets.
+
+`PostgresIntercompanyAgreementStore` uses fund-structure migration `006`: a tenant-qualified head
+points to immutable command snapshots, approved revisions, audit decisions and command receipts.
+One command atomically checks its expected head and retains its result; command identities are
+unique within a tenant. Database guards refuse history rewrites and tenant reassignment. Party
+reads remain stable under entity authority locks; sorted shared agreement leases survive through
+the ledger store's owned commit. Explicit references require that authority, while unsupported
+caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 `LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
 The exception still requires unit-successor lineage, an originating atomic mutation batch and a
@@ -1611,6 +1677,7 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
@@ -1619,7 +1686,7 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
-| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
 | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |

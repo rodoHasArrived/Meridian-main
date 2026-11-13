@@ -35,7 +35,7 @@ public sealed class WorkstationEntityConsolidationApiClientTests
         var entity = Guid.NewGuid();
         var asOf = new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero);
         var timeline = new EntityTimelineDto(organization, new(Guid.NewGuid(), LegalEntityTypeDto.Vehicle, "FOREIGN", "Another entity", "US", "USD", true,
-            asOf.AddYears(-1), null), asOf, [], [], [], [], []);
+            asOf.AddYears(-1), null), asOf, [], [], [], [], [], []);
         using var api = new ApiClientService(new Factory(_ => Json(timeline)));
         await Assert.ThrowsAsync<InvalidOperationException>(() => new WorkstationEntityConsolidationApiClient(api).GetTimelineAsync(organization, entity, asOf));
     }

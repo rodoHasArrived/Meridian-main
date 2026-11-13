@@ -12,10 +12,63 @@ last_reviewed: 2026-11-12
 # src/Meridian.Ui/dashboard
 
 Accounting's entity and intercompany view uses shared host contracts for authorized entity history,
-agreements, source-linked proposals, breaks and versioned consolidation. Financial amounts and
+accounting profiles, source-linked proposals, breaks and versioned consolidation. Each accounting
+profile pins a canonical approved legal agreement ID, integer version and payload hash; operators
+configure book/account mappings without copying or editing legal terms. Legal authoring and
+independent approval remain in Accounting Configure's canonical agreement registry. Financial amounts and
 capabilities come from the host. Current draft scope must match the preview before mutation;
 loading, stale, blocked and unavailable states remain visible. See
 [intercompany operations](../../../docs/operators/intercompany-entity-controls.md).
+
+The Evidence Workbench's retained-document panel reads shared single-principal declaration,
+source-snapshot and receipt endpoints without development fallback. Evidence acknowledgment is
+default-off and uses explicit grants, a current declaration, a reason and an exact confirmation.
+It leaves document Accept/Reject unchanged. Retained receipts show the preparer disclosure,
+source provenance and unassessed current support separately; unknown schemas or decision types
+display classification unavailable. Withdrawal preserves history, self-revocation appends a
+correction, and uncertain writes retain one command for retry. Focused coverage lives in
+`single-principal-attestation-panel.test.tsx`, `single-principal-attestation-api.test.ts` and
+`evidence-workbench-screen.view-model.test.tsx`.
+
+Evidence packets and scoped amount Number Passports show the server's separate preparer-evidence
+projection with task counts, exact-source/stale/revoked applicability, synthetic or unclassified
+provenance, and an explicit boundary against financial approval and Verified Coverage credit.
+Unknown projection or receipt versions remain unavailable. Original receipt downloads preserve
+the authenticated artifact bytes and check receipt identity without rewriting financial JSON;
+permission failures never fall back to fixture data. Reconfirming an offered policy requires an
+explicit reason and records a new declaration revision. Focused projection/export coverage lives
+in `preparer-attestation-evidence.test.tsx` and the existing attestation API/panel tests.
+
+Native corporate-action cases with a bound accounting book expose a separate cash-dividend
+attestation panel. It reads the server's one-USD-book policy and capabilities, keeps declarations,
+preparer attestation and posting as explicit reasoned commands, and never posts after an attestation
+automatically. Read-only monetary operands and retained eligibility hashes stay server owned.
+Enabling the book declaration separately confirms the preview's exact existing receivable/income
+accounts and promoted rule binding, requires the server's accounting-role binding capability, and
+retains those original operands for command recovery. Withdrawal preserves the retained binding.
+Uncertain commands retain one identity in session recovery bound to actor, tenant, company, book
+and case; restoration strips any locally injected authority/context fields. Amount passports show
+compact native accounting-decision disclosures separately from evidence-task receipts and ordinary
+approval, including exact contributing journal identity. Full book entitlement JSON is not exposed
+through the amount renderer. Coverage: `cash-dividend-attestation-panel.test.tsx`,
+`cash-dividend-attestation-api.test.ts` and `accounting-preparer-attestation.test.tsx`.
+
+Accounting Configure includes a tenant-scoped Intercompany Agreements registry using shared
+FundStructure contracts. Operators can save proposals, submit for independent review, inspect exact
+approved versions/evidence and retain local input across conflicts. Journal source drill-through
+keeps transaction and functional amounts separate and labels agreement coverage as advisory.
+Selected-line agreement authoring requires the server's explicit compatible-writer capability;
+historical agreement/version references remain visible when that capability is unavailable.
+Focused coverage: `accounting-screen.intercompany-agreements.test.tsx`, `intercompany-agreement-editor.test.tsx`,
+`intercompany-journal-reference.test.tsx`, `intercompany-agreement-journals.test.tsx` and
+`intercompany-agreements.api.test.ts`.
+
+Run the focused checks from the repository root:
+
+```bash
+cd src/Meridian.Ui/dashboard
+npx vitest run src/screens/accounting-screen.intercompany-agreements.test.tsx src/components/accounting/intercompany-agreement-editor.test.tsx src/components/accounting/intercompany-journal-reference.test.tsx src/components/accounting/intercompany-agreement-journals.test.tsx src/lib/api/intercompany-agreements.api.test.ts
+```
 
 Floating analytics distinguishes `Select observed fixing` for already-reset coupons from `Select
 forward curve` for future resets. The observed-fixing panel verifies and retains exact-date source
@@ -604,6 +657,9 @@ shared first-run API remains the source of truth for starter kits, sample safety
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
+The first-run concierge also exposes an accessible error and Retry when it loads status itself;
+retry shows loading progress and leaving the screen cancels the pending read. Accounting money
+helpers preserve statement trailing-minus signs when formatting and balancing amounts.
 
 After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
 every outcome the host tracks and routes to the surface that completes the next one. Completion is
@@ -2192,6 +2248,10 @@ only from data the screen already loads:
   equity-curve client when the sheet opens; a run without a curve keeps its plate and says why.
   Paths are rebased to 100 at each run's first curve point, and Total return is the run record's
   figure. The package's overlay sheet and corner-docked tray are not ported.
+  Strategy's equity-path component and state live in `strategy-screen.equity-paths.tsx` and
+  `strategy-screen.equity-paths.view-model.ts`; the run-library view model re-exports its existing
+  equity-path API for compatibility. This keeps chart selection, curve loading, and shared-scale
+  presentation cohesive without growing the main screen and command view model.
 - `RollforwardTrace` and `TieOutPanel` (`src/components/accounting/`, arithmetic in
   `proof-arithmetic.ts`) are read-only. The Capital Account workbench proves each investor row from
   its subledger entries' net capital activity and reports an account with no entries as
@@ -2378,6 +2438,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-roadmap-traceability:begin module=SRC-UI-DASHBOARD -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |

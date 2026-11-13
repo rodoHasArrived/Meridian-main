@@ -1,9 +1,9 @@
-import type { AgreementPartyMapping, IntercompanyAccountBinding } from "@/types/entity-operations";
+import type { AccountingArrangementPartyMapping, IntercompanyAccountBinding } from "@/types/entity-operations";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
 import { nullable, OperationError, OperationField, useEntityData } from "./accounting-screen.entity-operations.shared";
 
 export function AgreementPartyAccounts({ party, index, asOf, onChange }: {
-  party: AgreementPartyMapping; index: number; asOf: string; onChange: (patch: Partial<AgreementPartyMapping>) => void;
+  party: AccountingArrangementPartyMapping; index: number; asOf: string; onChange: (patch: Partial<AccountingArrangementPartyMapping>) => void;
 }) {
   const bindings = useEntityData<IntercompanyAccountBinding[]>(party.ledgerBookId && asOf ? endpoints.bindings(party.ledgerBookId, asOf) : null);
   return <>

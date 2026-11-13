@@ -98,7 +98,8 @@ public static class UiEndpoints
             WriteIndented = writeIndented,
             TypeInfoResolver = JsonTypeInfoResolver.Combine(
                 IntercompanyOperationsJsonContext.Default,
-                IntercompanyContractsJsonContext.Default,
+                IntercompanyAccountingArrangementsJsonContext.Default,
+                FundStructureContractsJsonContext.Default,
                 EntityTimelineJsonContext.Default,
                 IntercompanyAccountContractsJsonContext.Default,
                 LegacyIntercompanyAttributionJsonContext.Default,
@@ -215,7 +216,8 @@ public static class UiEndpoints
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
-        app.MapIntercompanyAgreementEndpoints();
+        app.MapIntercompanyAgreementEndpoints(jsonOptions);
+        app.MapIntercompanyAccountingArrangementEndpoints();
         app.MapIntercompanyOperationsEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);

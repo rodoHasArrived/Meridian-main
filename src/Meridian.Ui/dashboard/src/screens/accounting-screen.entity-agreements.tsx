@@ -5,87 +5,76 @@ import { Button } from "@/components/ui/button";
 import { FormGrid } from "@/components/ui/form";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
-import type { AgreementHistory, EntityOperationScope, IntercompanyAgreement } from "@/types/entity-operations";
-import { AgreementEditor } from "./accounting-screen.entity-agreement-editor";
-import { agreementSignedEvidencePath } from "./accounting-screen.entity-signed-evidence";
+import type { AccountingArrangementHistory, AccountingArrangementRecord, EntityOperationScope, IntercompanyAccountingArrangement } from "@/types/entity-operations";
+import { AccountingArrangementEditor, canonicalAgreementPath } from "./accounting-screen.entity-agreement-editor";
 import { effectiveUtc, EntityOperationTable, MutationFeedback, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 
-export function EntityAgreements({ scope }: { scope: EntityOperationScope }) {
-  const agreements = useEntityData<IntercompanyAgreement[]>(scope.capabilities.canManageAgreements ? endpoints.agreements : null);
+export function EntityAccountingArrangements({ scope }: { scope: EntityOperationScope }) {
+  const [organizationSelection, setOrganizationSelection] = useState("");
+  const organizationId = organizationSelection || scope.graph?.organizations[0]?.organizationId || "";
+  const arrangements = useEntityData<IntercompanyAccountingArrangement[]>(scope.capabilities.canManageAgreements && organizationId ? `${endpoints.accountingArrangements}?${new URLSearchParams({ organizationId })}` : null);
   const [selectedId, setSelectedId] = useState("");
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [reason, setReason] = useState("");
   const [effectiveAt, setEffectiveAt] = useState(today());
-  const [successor, setSuccessor] = useState("");
-  const [terminalRevision, setTerminalRevision] = useState("");
+  const [retiringRevision, setRetiringRevision] = useState("");
   const mutation = useEntityMutation();
-  const selected = agreements.data?.find((row) => row.agreementId === selectedId) ?? null;
-  const history = useEntityData<AgreementHistory>(selectedId ? `${endpoints.agreements}/${selectedId}/history` : null);
-  const revisionSnapshots = new Map<string, IntercompanyAgreement>();
+  const selected = arrangements.data?.find((row) => row.arrangementId === selectedId) ?? null;
+  const history = useEntityData<AccountingArrangementHistory>(selected ? `${endpoints.accountingArrangements}/${selected.arrangementId}/history` : null);
+  const revisionSnapshots = new Map<string, AccountingArrangementRecord>();
   history.data?.events.forEach((event) => { const affected = event.targetRevisionSnapshot ?? event.snapshot; revisionSnapshots.set(affected.revisionId, affected); });
   const approvedRevisions = [...revisionSnapshots.values()].filter((revision) => revision.status === "Approved");
-  const targetRevisionId = approvedRevisions.some((revision) => revision.revisionId === terminalRevision) ? terminalRevision : approvedRevisions[0]?.revisionId ?? selected?.revisionId ?? "";
-  if (!scope.capabilities.canManageAgreements) return <p className="text-sm text-muted-foreground">Agreement management requires fund-structure permission for the organization and both entities. Ledger workflows remain available according to your access.</p>;
-  async function apply(action: string) {
-    if (!selected) return;
-    const successorAgreement = agreements.data?.find((agreement) => agreement.agreementId === successor);
-    const command = { agreementId: selected.agreementId, expectedVersion: selected.version, action,
-      reason: reason.trim(), effectiveAt: effectiveUtc(effectiveAt), successorAgreementId: action === "Novate" ? successor : null,
-      revisionId: action === "Terminate" || action === "Novate" ? targetRevisionId : selected.revisionId,
-      successorRevisionId: action === "Novate" ? successorAgreement?.revisionId ?? null : null,
-      expectedSuccessorVersion: action === "Novate" ? successorAgreement?.version ?? null : null };
-    const result = await mutation.run<IntercompanyAgreement>(`${endpoints.agreements}/${selected.agreementId}/${action}`,
-      { requestId: mutation.identity(command), expectedVersion: selected.version, reason: command.reason,
-        effectiveAt: command.effectiveAt, successorAgreementId: command.successorAgreementId, revisionId: command.revisionId,
-        successorRevisionId: command.successorRevisionId, expectedSuccessorVersion: command.expectedSuccessorVersion }, `Agreement ${action.toLowerCase()} retained in its audit history.`);
-    if (result) { agreements.refresh(); history.refresh(); setEditing(false); }
+  const targetRevisionId = approvedRevisions.some((revision) => revision.revisionId === retiringRevision) ? retiringRevision : approvedRevisions[0]?.revisionId ?? selected?.revisionId ?? "";
+  if (!scope.capabilities.canManageAgreements) return <p className="text-sm text-muted-foreground">Accounting profile management requires fund-structure permission for the organization and both entities. Authorized journal workflows retain their separate book access.</p>;
+
+  async function apply(action: "submit" | "approve" | "reject" | "retire") {
+    if (!selected || editing || mutation.busy || !reason.trim()) return;
+    const command = { arrangementId: selected.arrangementId, expectedVersion: selected.version, action,
+      reason: reason.trim(), effectiveAt: action === "retire" ? effectiveUtc(effectiveAt) : null,
+      revisionId: action === "retire" ? targetRevisionId : selected.revisionId };
+    const result = await mutation.run<AccountingArrangementRecord>(`${endpoints.accountingArrangements}/${selected.arrangementId}/${action}`,
+      { requestId: mutation.identity(command), expectedVersion: command.expectedVersion, reason: command.reason, effectiveAt: command.effectiveAt, revisionId: command.revisionId },
+      `Accounting profile ${action} retained in its mapping history.`);
+    if (result) { arrangements.refresh(); history.refresh(); setEditing(false); }
   }
-  return <div className="space-y-4">
-    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Intercompany agreement registry</h3><div className="flex gap-2">
-      <Button type="button" variant="outline" onClick={agreements.refresh} disabled={agreements.loading}>Refresh agreements</Button>
-      <Button type="button" onClick={() => { setCreating(true); setEditing(true); }}>New agreement</Button>
-    </div></div>
-    <OperationError error={agreements.error} />
-    {agreements.loading ? <p role="status">Loading retained agreements…</p> : null}
-    {agreements.data?.length === 0 ? <p className="text-sm text-muted-foreground">No agreements are retained in your authorized perimeter.</p> : null}
-    <EntityOperationTable label="Agreement registry" rows={agreements.data ?? []} getRowId={(agreement) => agreement.agreementId} emptyText="No retained agreements in this perimeter."
-      columns={[
-        { id: "facility", label: "Facility", rowHeader: true, sortValue: (agreement) => agreement.facilityReference,
-          render: (agreement) => <Button type="button" variant="outline" size="sm" aria-pressed={selectedId === agreement.agreementId} onClick={() => { setSelectedId(agreement.agreementId); setEditing(false); setCreating(false); setReason(""); setSuccessor(""); setTerminalRevision(""); }}>{agreement.facilityReference}</Button> },
-        { id: "kind", label: "Kind and currency", render: (agreement) => `${agreement.kind} · ${agreement.currency}` },
-        { id: "effective", label: "Effective window", render: (agreement) => `${agreement.effectiveFrom.slice(0, 10)} → ${agreement.effectiveTo?.slice(0, 10) ?? "Open"} (exclusive)` },
-        { id: "status", label: "Approval", render: (agreement) => <><Badge variant="outline">{agreement.status}</Badge>{agreement.approvedBy ? <p className="mt-1 text-xs">{agreement.approvedBy}</p> : null}</> },
-        { id: "revision", label: "Revision", render: (agreement) => `${agreement.revisionNumber} · version ${agreement.version}` }
-      ]} />
-    {selected && !creating ? <section className="space-y-3 rounded border border-border p-4" aria-label="Selected agreement">
-      <h4 className="font-semibold">{selected.facilityReference} · {selected.partyOneRole} ↔ {selected.partyTwoRole}</h4>
-      <p className="text-sm">Settlement {selected.settlementCadence} · {selected.currency} · Signed evidence {selected.signedDocument ? "retained" : "required before approval"}</p>
-      <Link className="inline-block text-sm underline underline-offset-4" to={agreementSignedEvidencePath(selected.agreementId)}>Retain or review signed agreement evidence</Link>
-      <p className="break-all text-xs text-muted-foreground">Agreement {selected.agreementId} · Terms revision {selected.revisionId}</p>
-      <Button type="button" variant="outline" onClick={() => setEditing(true)} disabled={mutation.busy || ["Terminated", "Novated"].includes(selected.status)}>Revise agreement terms</Button>
-      <FormGrid columns={3}>
-        <OperationField label="Agreement action reason" value={reason} onChange={setReason} required />
-        <OperationField label="Agreement action effective date" value={effectiveAt} onChange={setEffectiveAt} type="date" required />
-        <OperationField label="Novation successor agreement" value={successor} onChange={setSuccessor}>
-          <option value="">Select approved successor</option>{agreements.data?.filter((agreement) => agreement.status === "Approved" && agreement.agreementId !== selected.agreementId).map((agreement) => <option key={agreement.agreementId} value={agreement.agreementId}>{agreement.facilityReference}</option>)}
-        </OperationField>
-        {approvedRevisions.length > 0 ? <OperationField label="Approved terms revision for terminal action" value={targetRevisionId} onChange={setTerminalRevision}>{approvedRevisions.map((revision) => <option key={revision.revisionId} value={revision.revisionId}>Revision {revision.revisionNumber} · effective {revision.effectiveFrom.slice(0, 10)}</option>)}</OperationField> : null}
-      </FormGrid>
-      <div className="flex flex-wrap gap-2">
-        {([...(selected.status === "Draft" || selected.status === "Rejected" ? ["Submit"] : []),
-          ...(selected.status === "Submitted" ? ["Approve", "Reject"] : []), ...(selected.status === "Approved" || approvedRevisions.length > 0 ? ["Terminate", "Novate"] : [])]).map((action) => <Button
-            type="button" variant="outline" key={action} disabled={mutation.busy || !reason.trim() || !effectiveAt || (action === "Novate" && !successor) || (action === "Approve" && !selected.signedDocument)}
-            onClick={() => void apply(action)}>{action} agreement</Button>)}
-      </div>
-      <p className="text-xs text-muted-foreground">Agreement approval can be performed by the owner. Counterpart journals continue through their independent journal review and posting controls.</p>
-      <MutationFeedback state={mutation} />
-      <TechnicalDetails label="Signed evidence and agreement history">
-        {selected.signedDocument ? <dl className="grid gap-2 break-all text-xs">{Object.entries(selected.signedDocument).map(([key, value]) => <div key={key}><dt className="font-semibold">{key}</dt><dd className="font-mono">{value}</dd></div>)}</dl> : <p>No signed evidence attached to this revision.</p>}
-        <OperationError error={history.error} /><ol className="mt-3 space-y-2 text-xs">{history.data?.events.map((event) => <li key={event.requestId}>{event.recordedAt} · {event.action} · {event.actor} · {event.reason ?? "Initial terms"} · revision {(event.targetRevisionSnapshot ?? event.snapshot).revisionNumber}</li>)}</ol>
-      </TechnicalDetails>
-    </section> : null}
-    {editing && (creating || selected) ? <AgreementEditor key={creating ? "new-agreement" : `${selected!.agreementId}:${selected!.version}`} scope={scope} agreement={creating ? null : selected}
-      onCancel={() => { setEditing(false); setCreating(false); }} onSaved={(result) => { setSelectedId(result.agreementId); setEditing(false); setCreating(false); agreements.refresh(); }} /> : null}
+  return <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Intercompany accounting profiles</h3><div className="flex flex-wrap gap-2">
+    <Button type="button" variant="outline" onClick={arrangements.refresh} disabled={arrangements.loading || !organizationId || editing || mutation.busy}>Refresh accounting profiles</Button>
+    <Button type="button" disabled={!organizationId || editing || mutation.busy} onClick={() => { setCreating(true); setEditing(true); }}>New accounting profile</Button>
+  </div></div>
+  <p className="text-sm text-muted-foreground">Profiles govern book mappings and counterpart accounting against an exact approved legal agreement version. Legal terms and their independent review remain in the canonical agreement registry.</p>
+  <Link className="inline-block text-sm underline underline-offset-4" to={canonicalAgreementPath(undefined, scope.book.ledgerBookId)}>Open canonical legal agreement registry</Link>
+  <OperationField label="Accounting profile perimeter" value={organizationId} disabled={editing || mutation.busy} onChange={(value) => { setOrganizationSelection(value); setSelectedId(""); setCreating(false); setEditing(false); }}><option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}</OperationField>
+  <OperationError error={arrangements.error} />{arrangements.loading ? <p role="status">Loading retained accounting profiles…</p> : null}
+  {!organizationId ? <p className="text-sm text-muted-foreground">Select an authorized organization to inspect its accounting profiles.</p> : null}
+  {arrangements.data ? <EntityOperationTable label="Intercompany accounting profiles" rows={arrangements.data} getRowId={(arrangement) => arrangement.arrangementId} emptyText="No retained accounting profiles in this perimeter."
+    columns={[
+      { id: "reference", label: "Accounting profile", rowHeader: true, render: (arrangement) => <Button type="button" variant="outline" size="sm" disabled={editing || mutation.busy} aria-pressed={selectedId === arrangement.arrangementId} onClick={() => { setSelectedId(arrangement.arrangementId); setEditing(false); setCreating(false); setReason(""); setRetiringRevision(""); }}>{arrangement.arrangementReference}</Button> },
+      { id: "template", label: "Template and legal currency", render: (arrangement) => `${arrangement.templateKind} · ${arrangement.currency}` },
+      { id: "effective", label: "Mapping window", render: (arrangement) => `${arrangement.effectiveFrom.slice(0, 10)} → ${arrangement.effectiveTo?.slice(0, 10) ?? "Open"} (exclusive)` },
+      { id: "status", label: "Mapping review", render: (arrangement) => <><Badge variant="outline">{arrangement.status}</Badge>{arrangement.arrangement.approvedBy ? <p className="mt-1 text-xs">{arrangement.arrangement.approvedBy}</p> : null}</> },
+      { id: "revision", label: "Accounting / legal versions", render: (arrangement) => <>Mapping revision {arrangement.revisionNumber} · version {arrangement.version}<p>Legal version {arrangement.canonicalAgreementVersion}</p></> }
+    ]} /> : null}
+  {selected && !creating ? <section className="space-y-3 rounded border border-border p-4" aria-label="Selected accounting profile"><h4 className="font-semibold">{selected.arrangementReference} · {selected.partyOneRole} ↔ {selected.partyTwoRole}</h4>
+    <p className="text-sm">Canonical {selected.legalRevision.terms.code} · legal version {selected.canonicalAgreementVersion} · {selected.currency} · {selected.settlementCadence || "No legal settlement cadence specified"}</p>
+    <Link className="inline-block text-sm underline underline-offset-4" to={canonicalAgreementPath(selected.canonicalAgreementId, scope.book.ledgerBookId)}>Inspect approved legal terms and signed evidence</Link>
+    <p className="break-all text-xs text-muted-foreground">Accounting profile {selected.arrangementId} · mapping revision {selected.revisionId}</p>
+    <Button type="button" variant="outline" onClick={() => setEditing(true)} disabled={editing || mutation.busy || selected.status === "Retired"}>Revise accounting mappings</Button>
+    <FormGrid columns={3}><OperationField label="Accounting profile action reason" value={reason} onChange={setReason} required />
+      {selected.status === "Approved" || approvedRevisions.length > 0 ? <OperationField label="Mapping retirement effective date" value={effectiveAt} onChange={setEffectiveAt} type="date" required /> : null}
+      {approvedRevisions.length > 0 ? <OperationField label="Approved mapping revision to retire" value={targetRevisionId} onChange={setRetiringRevision}>{approvedRevisions.map((revision) => <option key={revision.revisionId} value={revision.revisionId}>Mapping revision {revision.revisionNumber} · legal version {revision.canonicalAgreementVersion}</option>)}</OperationField> : null}
+    </FormGrid>
+    <div className="flex flex-wrap gap-2">{(selected.status === "Draft" || selected.status === "Rejected" ? ["submit"] as const : selected.status === "Submitted" ? ["approve", "reject"] as const : []).map((action) => <Button type="button" variant="outline" key={action} disabled={editing || mutation.busy || !reason.trim()} onClick={() => void apply(action)}>{action === "submit" ? "Submit accounting profile" : action === "approve" ? "Approve accounting mappings" : "Reject accounting mappings"}</Button>)}
+      {selected.status === "Approved" || approvedRevisions.length > 0 ? <Button type="button" variant="outline" disabled={editing || mutation.busy || !reason.trim() || !effectiveAt} onClick={() => void apply("retire")}>Retire accounting mappings</Button> : null}
+    </div>
+    <p className="text-xs text-muted-foreground">The owner may approve accounting mappings. This records no legal approval. Counterpart journals retain their independent journal review and posting controls.</p>
+    <MutationFeedback state={mutation} />
+    <TechnicalDetails label="Canonical legal authority and accounting history"><dl className="space-y-2 break-all text-xs"><div><dt>Canonical legal agreement</dt><dd>{selected.canonicalAgreementId} · version {selected.canonicalAgreementVersion}</dd></div><div><dt>Approved legal payload hash</dt><dd className="font-mono">{selected.canonicalPayloadHash}</dd></div><div><dt>Legal effective window</dt><dd>{selected.legalRevision.terms.effectiveFrom} → {selected.legalRevision.terms.effectiveTo ?? "Open"} (exclusive)</dd></div><div><dt>Canonical legal approval</dt><dd>{selected.legalRevision.approver} · {selected.legalRevision.approvedAtUtc}</dd></div></dl>
+      <ul className="mt-3 space-y-2 break-all text-xs">{selected.canonicalEvidence.map((evidence, index) => <li key={index}>{evidence.reference}<p className="font-mono">{evidence.artifactId} · {evidence.contentHash}</p></li>)}</ul>
+      <OperationError error={history.error} /><ol className="mt-3 space-y-2 text-xs">{history.data?.events.map((event) => <li key={event.requestId}>{event.recordedAt} · {event.action} · {event.actor} · {event.reason ?? "Initial mapping"} · mapping revision {(event.targetRevisionSnapshot ?? event.snapshot).revisionNumber}</li>)}</ol>
+    </TechnicalDetails>
+  </section> : null}
+  {editing && (creating || selected) ? <AccountingArrangementEditor key={creating ? `new-arrangement:${organizationId}` : `${selected!.arrangementId}:${selected!.version}`} scope={scope} arrangement={creating ? null : selected} initialOrganizationId={organizationId}
+    onCancel={() => { setEditing(false); setCreating(false); }} onSaved={(result) => { setSelectedId(result.arrangementId); setEditing(false); setCreating(false); arrangements.refresh(); }} /> : null}
   </div>;
 }

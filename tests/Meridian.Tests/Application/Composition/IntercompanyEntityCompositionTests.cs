@@ -54,7 +54,7 @@ public sealed class IntercompanyEntityCompositionTests
         Assert.Same(provider.GetRequiredService<PostgresLedgerJournalStore>(), provider.GetRequiredService<ILedgerBookControlStore>());
         Assert.Same(provider.GetRequiredService<PostgresLedgerJournalStore>(), provider.GetRequiredService<IControlledCloseAuthorizationStore>());
         Assert.IsType<ConsolidationFxPostgresStore>(provider.GetRequiredService<IConsolidationFxStore>());
-        Assert.IsType<PostgresIntercompanyAgreementStore>(provider.GetRequiredService<IIntercompanyAgreementStore>());
+        Assert.IsType<PostgresIntercompanyAccountingArrangementStore>(provider.GetRequiredService<IIntercompanyAccountingArrangementStore>());
         Assert.NotNull(provider.GetRequiredService<Func<IConsolidationPostingAuthority?>>()());
         Assert.NotNull(provider.GetRequiredService<IntercompanyBalanceScheduleService>());
     }
@@ -102,9 +102,9 @@ public sealed class IntercompanyEntityCompositionTests
         try
         {
             Assert.IsType<FileEntityLifecycleStore>(provider.GetRequiredService<IEntityLifecycleStore>());
-            Assert.IsType<FileIntercompanyAgreementStore>(provider.GetRequiredService<IIntercompanyAgreementStore>());
+            Assert.IsType<FileIntercompanyAccountingArrangementStore>(provider.GetRequiredService<IIntercompanyAccountingArrangementStore>());
             Assert.IsType<ConsolidationFxFileStore>(provider.GetRequiredService<IConsolidationFxStore>());
-            Assert.Empty(await provider.GetRequiredService<IntercompanyAgreementService>().ListAsync("synthetic-tenant"));
+            Assert.Empty(await provider.GetRequiredService<IntercompanyAccountingArrangementService>().ListAsync("synthetic-tenant"));
             Assert.Null(provider.GetService<IIntercompanyProposalStore>());
             Assert.Null(provider.GetService<ILedgerJournalStore>());
             Assert.Null(provider.GetService<IIntercompanyAccountBindingStore>());

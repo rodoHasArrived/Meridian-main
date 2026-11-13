@@ -3,19 +3,17 @@ import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
 import { getEntityOperation, postEntityOperation } from "@/lib/api/entity-operations.api";
-import type { LedgerBook, ManualJournalEntryLine } from "@/types";
-import type { EntityOperationScope, IntercompanyAgreement, IntercompanyProposal } from "@/types/entity-operations";
-import type { ManualJournalEntryWorkbenchViewModel } from "./accounting-screen.view-model";
+import type { LedgerBook } from "@/types";
+import type { EntityOperationScope, IntercompanyAccountingArrangement, IntercompanyProposal } from "@/types/entity-operations";
+import type { AgreementDetail, AgreementRevision } from "@/types/intercompany-agreements";
 import { EntityOperationsPanel } from "./accounting-screen.entity-operations";
 import { EntityBookControls } from "./accounting-screen.entity-book-controls";
-import { EntityAgreements } from "./accounting-screen.entity-agreements";
-import { AgreementEditor } from "./accounting-screen.entity-agreement-editor";
+import { EntityAccountingArrangements } from "./accounting-screen.entity-agreements";
+import { AccountingArrangementEditor } from "./accounting-screen.entity-agreement-editor";
 import { EntityCounterpartProposals } from "./accounting-screen.entity-proposals";
 import { FxRateSetEditor } from "./accounting-screen.entity-fx-rates";
-import { ManualJournalIntercompanyDimensions } from "./accounting-screen.journal-intercompany-dimensions";
 import { CounterpartRepricing } from "./accounting-screen.entity-counterpart-repricing";
-import { SignedAgreementEvidencePicker } from "./accounting-screen.entity-signed-evidence";
-import type { EvidenceVaultDocumentEntry, ManualJournalEntryDraft } from "@/types";
+import type { ManualJournalEntryDraft } from "@/types";
 import { EntityPerimeterTransition } from "./accounting-screen.entity-perimeter-transition";
 import type { ConsolidationTransitionPreview } from "@/types/entity-operations";
 
@@ -28,12 +26,10 @@ const book: LedgerBook = { ledgerBookId: "book-a", fundProfileId: "group", fundS
 const targetBook: LedgerBook = { ...book, ledgerBookId: "book-b", fundStructureNodeId: "entity-b", displayName: "Entity B primary" };
 const scope: EntityOperationScope = { book, books: [book, targetBook], capabilities: { canManageAgreements: true, canManageLedger: true, canManageLifecycle: true, canViewLedger: true },
   graph: { organizations: [{ organizationId: "org-a", name: "Organization A" }], entities: [{ entityId: "entity-a", name: "Entity A", baseCurrency: "USD", lifecycleStatus: "Active" }, { entityId: "entity-b", name: "Entity B", baseCurrency: "USD", lifecycleStatus: "Active" }], ownershipLinks: [] } };
-const agreement: IntercompanyAgreement = { agreementId: "agreement-a", organizationId: "org-a", facilityReference: "Shared services facility", kind: "CostRecharge", partyOneEntityId: "entity-a", partyTwoEntityId: "entity-b",
-  partyOneRole: "Service provider", partyTwoRole: "Recipient", currency: "USD", settlementCadence: "Monthly", settlementDueDays: 30, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null,
-  revisionId: "terms-a", revisionNumber: 1, version: 3, status: "Submitted", partyMappings: [book, targetBook].map((item) => ({ entityId: item.fundStructureNodeId, ledgerBookId: item.ledgerBookId,
-    receivableAccountNodeId: "ar", payableAccountNodeId: "ap", settlementAccountNodeId: null, revenueAccountNodeId: null, expenseAccountNodeId: null })),
-  signedDocument: { vaultId: "vault-a", documentId: "document-a", artifactId: "artifact-a", contentHashSha256: "a".repeat(64), scope: "tenant-a" },
-  createdBy: "owner", createdAt: "2026-01-01", updatedBy: "owner", updatedAt: "2026-01-01", approvedBy: null, approvedAt: null, terminatedAt: null, predecessorRevisionId: null, successorAgreementId: null };
+const legalRevision: AgreementRevision = { agreementId: "legal-a", agreementVersion: 4, action: "Amend", terms: { code: "LEGAL-01", name: "Shared services agreement", partyOneId: "entity-a", partyOneRole: "Service provider", partyTwoId: "entity-b", partyTwoRole: "Recipient", agreementType: "CostShare", currency: "USD", effectiveFrom: "2026-01-01", effectiveTo: null, action: "Amend", terms: { scheduleDescription: "Monthly", settlementDays: 30 }, evidence: [{ reference: "retained://signed-native-terms", artifactId: "artifact-native", contentHash: "signed-hash" }] }, proposalId: "native-proposal", payloadHash: "approved-native-payload", authors: ["legal-author"], submitter: "legal-author", approver: "independent-legal-reviewer", approvedAtUtc: "2026-01-01", rationale: "Legal terms approved independently" };
+const legalDetail: AgreementDetail = { agreementId: legalRevision.agreementId, aggregateVersion: 12, code: legalRevision.terms.code, name: legalRevision.terms.name, partyOneId: "entity-a", partyOneRole: "Service provider", partyTwoId: "entity-b", partyTwoRole: "Recipient", agreementType: "CostShare", currency: "USD", asOf: "2026-11-12", effectiveStatus: "Active", latestApprovedVersion: 4, applicableRevision: legalRevision, proposals: [], revisions: [legalRevision], history: [], capabilities: { canEdit: false, canSubmit: false, canApprove: false, canReject: false, canWithdraw: false, canAmend: false, canTerminate: false } };
+const arrangementRecord = { arrangementId: "arrangement-a", organizationId: "org-a", arrangementReference: "Shared services profile", templateKind: "CostRecharge" as const, canonicalAgreementId: "legal-a", canonicalAgreementVersion: 4, canonicalPayloadHash: legalRevision.payloadHash, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, revisionId: "mapping-a", revisionNumber: 1, version: 3, status: "Submitted" as const, partyMappings: [book, targetBook].map((item) => ({ entityId: item.fundStructureNodeId, ledgerBookId: item.ledgerBookId, receivableAccountNodeId: "ar", payableAccountNodeId: "ap", settlementAccountNodeId: null, revenueAccountNodeId: null, expenseAccountNodeId: null })), createdBy: "owner", createdAt: "2026-01-01", updatedBy: "owner", updatedAt: "2026-01-01", approvedBy: null, approvedAt: null, retiredAt: null, predecessorRevisionId: null };
+const arrangement: IntercompanyAccountingArrangement = { ...arrangementRecord, arrangement: arrangementRecord, legalRevision, partyOneEntityId: "entity-a", partyTwoEntityId: "entity-b", partyOneRole: "Service provider", partyTwoRole: "Recipient", currency: "USD", settlementCadence: "Monthly", settlementDueDays: 30, canonicalEvidence: legalRevision.terms.evidence! };
 const profile = { ledgerBookId: book.ledgerBookId, mode: "LegacyWarning", version: 8, policyVersion: "entity-controls-v1" };
 const preflight = { ledgerBookId: book.ledgerBookId, profileVersion: 8, policyVersion: "entity-controls-v1", digest: "reviewed-preflight", preparedAtUtc: "2026-11-12T00:00:00Z", canActivate: true,
   decisions: [{ control: "Agreement mapping", code: "mapped", allowed: true, message: "All intercompany lines map to approved agreements.", evidenceRevision: "terms-a" }] };
@@ -45,19 +41,21 @@ beforeEach(() => {
     if (path.includes("/graph")) return scope.graph;
     if (path === "/api/ledger/books") return scope.books;
     if (path.includes("/controls")) return profile;
-    if (path.includes("/history")) return { events: [{ requestId: "event-a", action: "Submit", actor: "owner", recordedAt: "2026-01-01", reason: "Reviewed terms", snapshot: agreement }] };
-    if (path.includes("intercompany-agreements")) return [agreement];
+    if (path.includes("/history")) return { events: [{ requestId: "event-a", action: "Submit", actor: "owner", recordedAt: "2026-01-01", reason: "Reviewed mappings", snapshot: arrangement.arrangement }] };
+    if (path.includes("intercompany-accounting-arrangements")) return [arrangement];
+    if (path.includes("intercompany-agreements/")) return legalDetail;
+    if (path.includes("intercompany-agreements?")) return { items: [legalDetail], nextCursor: null };
     return [];
   });
-  vi.mocked(postEntityOperation).mockResolvedValue(agreement);
+  vi.mocked(postEntityOperation).mockResolvedValue(arrangement);
 });
 
 describe("Entity operations", () => {
-  it("uses server permission capabilities and keeps agreement mutation unavailable to ledger-only readers", async () => {
+  it("uses server permission capabilities and keeps accounting profile mutation unavailable to ledger-only readers", async () => {
     vi.mocked(getEntityOperation).mockResolvedValue({ canManageAgreements: false, canManageLedger: false, canManageLifecycle: false, canViewLedger: true });
     renderWithRouter(<EntityOperationsPanel book={book} />);
-    await screen.findByText(/Agreement management requires fund-structure permission/);
-    expect(screen.queryByRole("button", { name: "New agreement" })).not.toBeInTheDocument();
+    await screen.findByText(/Accounting profile management requires fund-structure permission/);
+    expect(screen.queryByRole("button", { name: "New accounting profile" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: "Book controls" }));
     expect(await screen.findByText(/Ledger management permission is required to inspect/)).toBeVisible();
     expect(postEntityOperation).not.toHaveBeenCalled();
@@ -88,49 +86,125 @@ describe("Entity operations", () => {
     expect(postEntityOperation).toHaveBeenCalledTimes(1);
   });
 
-  it("approves an owner's submitted agreement against its exact version and revision", async () => {
-    renderWithRouter(<EntityAgreements scope={scope} />);
-    fireEvent.click(await screen.findByRole("button", { name: agreement.facilityReference }));
-    fireEvent.change(screen.getByLabelText("Agreement action reason"), { target: { value: "Signed terms verified" } });
-    fireEvent.click(screen.getByRole("button", { name: "Approve agreement" }));
-    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/fund-structure/intercompany-agreements/agreement-a/Approve", expect.objectContaining({ expectedVersion: 3, revisionId: "terms-a", reason: "Signed terms verified", requestId: expect.any(String) }), expect.any(Object)));
-    expect(vi.mocked(postEntityOperation).mock.calls.every(([path]) => !path.includes("/post"))).toBe(true);
+  it("approves an owner's accounting mappings without manufacturing legal approval", async () => {
+    renderWithRouter(<EntityAccountingArrangements scope={scope} />);
+    fireEvent.click(await screen.findByRole("button", { name: arrangement.arrangementReference }));
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "Book and account mappings verified" } });
+    fireEvent.click(screen.getByRole("button", { name: "Approve accounting mappings" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany-accounting-arrangements/arrangement-a/approve", expect.objectContaining({ expectedVersion: 3, revisionId: "mapping-a", reason: "Book and account mappings verified", requestId: expect.any(String) }), expect.any(Object)));
+    expect(vi.mocked(postEntityOperation).mock.calls.every(([path]) => !path.includes("/fund-structure/") && !path.includes("/post"))).toBe(true);
+    expect(screen.getByRole("link", { name: "Inspect approved legal terms and signed evidence" })).toHaveAttribute("href", expect.stringContaining("agreementId=legal-a"));
   });
 
-  it("retains a typed successor revision with signed source identity and governed due days", async () => {
-    const saved = vi.fn();
-    renderWithRouter(<AgreementEditor scope={scope} agreement={agreement} onSaved={saved} onCancel={vi.fn()} />);
-    fireEvent.change(screen.getByLabelText("Settlement due after calendar days"), { target: { value: "45" } });
-    fireEvent.change(screen.getByLabelText("Terms revision reason"), { target: { value: "Reviewed settlement amendment" } });
-    fireEvent.click(screen.getByRole("button", { name: "Retain successor revision" }));
-    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith(expect.stringContaining("/revisions"), expect.objectContaining({
-      expectedVersion: 3, settlementDueDays: 45, signedDocument: agreement.signedDocument, partyMappings: agreement.partyMappings, reason: "Reviewed settlement amendment"
-    }), expect.any(Object)));
+  it("retains mapping revisions against exact approved legal facts without editable legal copies", async () => {
+    renderWithRouter(<AccountingArrangementEditor scope={scope} arrangement={arrangement} onSaved={vi.fn()} onCancel={vi.fn()} />);
+    await screen.findByRole("heading", { name: "Approved legal version 4 · LEGAL-01" });
+    expect(screen.getByLabelText("Canonical legal agreement")).toBeDisabled();
+    expect(screen.queryByLabelText("Agreement currency")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Settlement due after calendar days")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("First party role")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Accounting profile reference"), { target: { value: "Reconciled mapping profile" } });
+    fireEvent.change(screen.getByLabelText("Accounting profile revision reason"), { target: { value: "Approved account mapping refresh" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save accounting profile draft" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith(expect.stringContaining("/revisions"), expect.objectContaining({ expectedVersion: 3, arrangementReference: "Reconciled mapping profile", canonicalAgreementVersion: 4, canonicalPayloadHash: legalRevision.payloadHash, partyMappings: arrangement.partyMappings, reason: "Approved account mapping refresh" }), expect.any(Object)));
+    const body = vi.mocked(postEntityOperation).mock.calls[0][1] as Record<string, unknown>;
+    expect(body).not.toHaveProperty("currency"); expect(body).not.toHaveProperty("signedDocument"); expect(body).not.toHaveProperty("partyOneRole");
   });
 
-  it("edits an informational guarantee without forcing accounting mappings or losing its parties", async () => {
-    const informational = { ...agreement, kind: "Guarantee" as const, partyMappings: [] };
-    renderWithRouter(<AgreementEditor scope={scope} agreement={informational} onSaved={vi.fn()} onCancel={vi.fn()} />);
-    expect(screen.getByLabelText("Party 1 entity")).toHaveValue("entity-a");
-    expect(screen.getByLabelText("Party 2 entity")).toHaveValue("entity-b");
+  it("reloads resolved legal facts after a mapping mutation returns only the raw profile", async () => {
+    let approved = false;
+    const approvedRecord = { ...arrangement.arrangement, status: "Approved" as const, version: 4, approvedBy: "owner" };
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.endsWith("/history") ? { events: [] }
+      : [{ ...arrangement, ...(approved ? approvedRecord : arrangement.arrangement), arrangement: approved ? approvedRecord : arrangement.arrangement }]);
+    vi.mocked(postEntityOperation).mockImplementation(async () => { approved = true; return approvedRecord; });
+    renderWithRouter(<EntityAccountingArrangements scope={scope} />);
+    fireEvent.click(await screen.findByRole("button", { name: arrangement.arrangementReference }));
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "Exact mappings reviewed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Approve accounting mappings" }));
+    await screen.findByText("Approved", { exact: true });
+    expect(screen.getByText("Canonical LEGAL-01 · legal version 4 · USD · Monthly")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Retire accounting mappings" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Approve accounting mappings" })).not.toBeInTheDocument();
+  });
+
+  it("retains an informational guarantee profile with derived parties and no accounting mappings", async () => {
+    const informational: IntercompanyAccountingArrangement = { ...arrangement, templateKind: "Guarantee", partyMappings: [], arrangement: { ...arrangement.arrangement, templateKind: "Guarantee", partyMappings: [] } };
+    renderWithRouter(<AccountingArrangementEditor scope={scope} arrangement={informational} onSaved={vi.fn()} onCancel={vi.fn()} />);
+    await screen.findByRole("heading", { name: "Approved legal version 4 · LEGAL-01" });
     expect(screen.queryByLabelText("Party 1 book")).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Terms revision reason"), { target: { value: "Guarantee document reference updated" } });
-    fireEvent.click(screen.getByRole("button", { name: "Retain successor revision" }));
-    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith(expect.stringContaining("/revisions"), expect.objectContaining({ partyMappings: [] }), expect.any(Object)));
+    expect(screen.queryByLabelText("Party 1 entity")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Accounting profile revision reason"), { target: { value: "Informational mapping review" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save accounting profile draft" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith(expect.stringContaining("/revisions"), expect.objectContaining({ templateKind: "Guarantee", partyMappings: [], canonicalAgreementVersion: 4 }), expect.any(Object)));
   });
 
-  it("targets an older approved revision for termination while a successor is pending", async () => {
-    const pending = { ...agreement, revisionId: "terms-pending", revisionNumber: 2, version: 7, status: "Draft" as const };
+  it("targets an older approved mapping revision for retirement while a successor is pending", async () => {
+    const pendingRecord = { ...arrangement.arrangement, revisionId: "mapping-pending", revisionNumber: 2, version: 7, status: "Draft" as const };
+    const pending = { ...arrangement, ...pendingRecord, arrangement: pendingRecord };
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.endsWith("/history") ? { events: [
-      { requestId: "approved-old", action: "Approve", actor: "owner", recordedAt: "2026-01-02", snapshot: { ...agreement, status: "Approved" } },
-      { requestId: "pending-new", action: "Revise", actor: "owner", recordedAt: "2026-11-01", snapshot: pending }
+      { requestId: "approved-old", action: "Approve", actor: "owner", recordedAt: "2026-01-02", snapshot: { ...arrangement.arrangement, status: "Approved" } },
+      { requestId: "pending-new", action: "Revise", actor: "owner", recordedAt: "2026-11-01", snapshot: pendingRecord }
     ] } : [pending]);
-    renderWithRouter(<EntityAgreements scope={scope} />);
-    fireEvent.click(await screen.findByRole("button", { name: pending.facilityReference }));
-    await screen.findByLabelText("Approved terms revision for terminal action");
-    fireEvent.change(screen.getByLabelText("Agreement action reason"), { target: { value: "Facility settlement completed" } });
-    fireEvent.click(screen.getByRole("button", { name: "Terminate agreement" }));
-    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith(expect.stringContaining("/Terminate"), expect.objectContaining({ revisionId: "terms-a", expectedVersion: 7 }), expect.any(Object)));
+    renderWithRouter(<EntityAccountingArrangements scope={scope} />);
+    fireEvent.click(await screen.findByRole("button", { name: pending.arrangementReference }));
+    await screen.findByLabelText("Approved mapping revision to retire");
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "Accounting mapping superseded" } });
+    fireEvent.click(screen.getByRole("button", { name: "Retire accounting mappings" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith(expect.stringContaining("/retire"), expect.objectContaining({ revisionId: "mapping-a", expectedVersion: 7 }), expect.any(Object)));
+  });
+
+  it("requires an explicit approved canonical version and pins its hash when creating a profile", async () => {
+    renderWithRouter(<AccountingArrangementEditor scope={scope} arrangement={null} onSaved={vi.fn()} onCancel={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "Save accounting profile draft" })).toBeDisabled();
+    await screen.findByRole("option", { name: /LEGAL-01 · Shared services agreement/ });
+    fireEvent.change(screen.getByLabelText("Accounting profile reference"), { target: { value: "New approved-version profile" } });
+    fireEvent.change(screen.getByLabelText("Canonical legal agreement"), { target: { value: "legal-a" } });
+    await screen.findByRole("option", { name: /Version 4.*independent-legal-reviewer/ });
+    fireEvent.change(screen.getByLabelText("Approved legal version"), { target: { value: "4" } });
+    fireEvent.change(screen.getByLabelText("Counterpart accounting template"), { target: { value: "Guarantee" } });
+    expect(screen.getByLabelText("Include accounting book mappings for this guarantee")).not.toBeChecked();
+    expect(screen.queryByLabelText("Party 1 book")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save accounting profile draft" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "Save accounting profile draft" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany-accounting-arrangements", expect.objectContaining({ canonicalAgreementId: "legal-a", canonicalAgreementVersion: 4, canonicalPayloadHash: "approved-native-payload", partyMappings: [] }), expect.any(Object)));
+    expect(vi.mocked(postEntityOperation).mock.calls.every(([path]) => !path.includes("/fund-structure/"))).toBe(true);
+  });
+
+  it("starts a new accounting profile in the operator's selected organization", async () => {
+    const otherOrganization = { organizationId: "org-b", name: "Organization B" };
+    renderWithRouter(<EntityAccountingArrangements scope={{ ...scope, graph: { ...scope.graph!, organizations: [...scope.graph!.organizations, otherOrganization] } }} />);
+    fireEvent.change(screen.getByLabelText("Accounting profile perimeter"), { target: { value: "org-b" } });
+    fireEvent.click(screen.getByRole("button", { name: "New accounting profile" }));
+    expect(screen.getByLabelText("Accounting profile organization")).toHaveValue("org-b");
+    expect(postEntityOperation).not.toHaveBeenCalled();
+  });
+
+  it("keeps pending decisions and unsaved mapping edits in their selected scope until completion or explicit cancel", async () => {
+    let rejectDecision: (error: Error) => void = () => {};
+    vi.mocked(postEntityOperation).mockImplementation(() => new Promise((_resolve, reject) => { rejectDecision = reject; }));
+    renderWithRouter(<EntityAccountingArrangements scope={scope} />);
+    const row = await screen.findByRole("button", { name: arrangement.arrangementReference });
+    fireEvent.click(row);
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "Mappings reviewed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Approve accounting mappings" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledTimes(1));
+    expect(row).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New accounting profile" })).toBeDisabled();
+    expect(screen.getByLabelText("Accounting profile perimeter")).toBeDisabled();
+    rejectDecision(new Error("Mapping decision unavailable"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Revise accounting mappings" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "Revise accounting mappings" }));
+    await screen.findByRole("heading", { name: "Approved legal version 4 · LEGAL-01" });
+    fireEvent.change(screen.getByLabelText("Accounting profile reference"), { target: { value: "Unsaved reviewed mapping" } });
+    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New accounting profile" })).toBeDisabled();
+    expect(screen.getByLabelText("Accounting profile perimeter")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Approve accounting mappings" })).toBeDisabled();
+    expect(screen.getByLabelText("Accounting profile reference")).toHaveValue("Unsaved reviewed mapping");
+    fireEvent.click(screen.getByRole("button", { name: "Cancel profile editing" }));
+    expect(screen.getByRole("button", { name: "Refresh accounting profiles" })).toBeEnabled();
+    expect(postEntityOperation).toHaveBeenCalledTimes(1);
   });
 
   it("preserves the full entered decimal quote as a string without browser conversion", async () => {
@@ -144,7 +218,7 @@ describe("Entity operations", () => {
   });
 
   it("shows delivery failure and links a specifically identified existing counterpart", async () => {
-    const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", agreementId: "agreement-a", agreementRevisionId: "terms-a", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
+    const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals") ? [proposal] : []);
     vi.mocked(postEntityOperation).mockResolvedValue({ ...proposal, status: "Linked", targetBookId: "book-b", targetJournalId: "existing-journal" });
     renderWithRouter(<EntityCounterpartProposals scope={scope} />);
@@ -158,7 +232,7 @@ describe("Entity operations", () => {
   });
 
   it.each([true, false])("uses the appended manual resolution without rewriting original delivery or offering more actions (resolved getters %s)", async (includeResolvedGetters) => {
-    let proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", agreementId: "agreement-a", agreementRevisionId: "terms-a", transactionId: "rejected-recharge", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "Drafted", attempts: 1, recordedAt: "2026-11-01", targetBookId: "book-b", targetJournalId: "original-rejected-generated-draft", lastError: null, dueDate: null, sourceDigest: "source-digest" };
+    let proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "rejected-recharge", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "Drafted", attempts: 1, recordedAt: "2026-11-01", targetBookId: "book-b", targetJournalId: "original-rejected-generated-draft", lastError: null, dueDate: null, sourceDigest: "source-digest" };
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals?") ? [proposal] : []);
     vi.mocked(postEntityOperation).mockImplementation(async () => {
       proposal = { ...proposal, latestLink: { requestId: "link-request", proposalId: "proposal-a", targetBookId: "book-b", targetJournalId: "manually-posted-counterpart", actor: "target-reviewer", reason: "Rejected generated draft replaced by existing reciprocal posted journal", recordedAt: "2026-11-12", rejectedDraftId: "original-rejected-generated-draft", rejectedDraftVersion: 6 },
@@ -185,23 +259,6 @@ describe("Entity operations", () => {
     expect(screen.getByText("target-reviewer · 2026-11-12")).toBeVisible();
   });
 
-  it("sets journal line authority from approved agreement and account-binding lookups", async () => {
-    const approved = { ...agreement, status: "Approved" };
-    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("account-bindings") ? [{ revisionId: "binding-revision", chartAccountNodeId: "ar", role: "Receivable", accountPath: "Assets:Group Receivable", accountName: "Group Receivable", revisionNumber: 2, isArchived: false }]
-      : path.includes("/agreements?") ? [approved] : null);
-    const line: ManualJournalEntryLine = { lineId: "line-a", side: "Debit", amount: 100, currency: "USD", accountPath: "Assets:Group Receivable" };
-    const updateLine = vi.fn();
-    const view = { draft: { journalEntryId: "journal-a", ledgerBookId: "book-a", accountingDate: "2026-11-12", currency: "USD", status: "Draft" }, updateLine } as unknown as ManualJournalEntryWorkbenchViewModel;
-    const { container } = renderWithRouter(<ManualJournalIntercompanyDimensions view={view} line={line} />);
-    const details = container.querySelector("details")!;
-    details.open = true; fireEvent(details, new Event("toggle"));
-    await screen.findByRole("option", { name: /Shared services facility.*revision 1/ });
-    fireEvent.change(screen.getByLabelText("Line approved intercompany agreement"), { target: { value: "agreement-a" } });
-    expect(updateLine).toHaveBeenCalledWith("line-a", expect.objectContaining({ dimensions: expect.objectContaining({ agreementId: "agreement-a", agreementRevisionId: "terms-a", counterpartyId: "entity-b", intercompanyTransactionId: "journal:journal-a" }) }));
-    fireEvent.change(screen.getByLabelText("Line intercompany account binding"), { target: { value: "binding-revision" } });
-    expect(updateLine).toHaveBeenCalledWith("line-a", expect.objectContaining({ dimensions: expect.objectContaining({ chartAccountNodeId: "ar", accountBindingRevisionId: "binding-revision" }) }));
-  });
-
   it("previews counterpart repricing without mutation, then explicitly applies the exact before-version and fingerprint", async () => {
     const before = { journalEntryId: "target-journal", ledgerBookId: "book-b", version: 4, status: "Draft", accountingDate: "2026-11-12",
       lines: [{ lineId: "target-line", side: "Debit", amount: 100, currency: "USD", accountPath: "Expenses:Shared service" }] } as ManualJournalEntryDraft;
@@ -219,22 +276,6 @@ describe("Entity operations", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply repricing and renew review" }));
     await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/proposals/proposal-a/refresh", expect.objectContaining({ expectedDraftVersion: 4, previewFingerprint: "reviewed-repricing", reason: "Approved closing source corrected", requestId: expect.any(String) }), expect.any(Object)));
     await waitFor(() => expect(applied).toHaveBeenCalledTimes(1));
-  });
-
-  it("offers only accepted signed artifacts linked to the exact agreement", async () => {
-    const document = { vaultId: "vault-a", subjectKind: "accounting-record", subjectId: "current", document: { documentId: "doc-a", artifactId: "artifact-a", fileName: "Signed facility.pdf", scope: "company-a", receivedAt: "2026-11-01", sourceHashSha256: "a".repeat(64), reviewerState: { status: "Accepted" }, objectLinks: [{ linkKind: "IntercompanyAgreement", objectId: "agreement-a" }] } } as EvidenceVaultDocumentEntry;
-    vi.mocked(getEntityOperation).mockResolvedValue([document,
-      { ...document, document: { ...document.document, documentId: "foreign-doc", fileName: "Foreign agreement.pdf", objectLinks: [{ linkKind: "IntercompanyAgreement", objectId: "another-agreement" }] } },
-      { ...document, document: { ...document.document, documentId: "unreviewed-doc", fileName: "Unreviewed agreement.pdf", reviewerState: { status: "Unreviewed" } } }
-    ]);
-    const select = vi.fn();
-    renderWithRouter(<SignedAgreementEvidencePicker agreementId="agreement-a" onSelect={select} />);
-    fireEvent.click(screen.getByRole("button", { name: "Find retained signed agreements" }));
-    await screen.findByRole("option", { name: /Signed facility.pdf/ });
-    expect(screen.queryByRole("option", { name: /Foreign agreement.pdf/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("option", { name: /Unreviewed agreement.pdf/ })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Retained signed agreement document"), { target: { value: "vault-a:doc-a:artifact-a" } });
-    expect(select).toHaveBeenCalledWith({ vaultId: "vault-a", documentId: "doc-a", artifactId: "artifact-a", contentHashSha256: "a".repeat(64), scope: "company-a" });
   });
 
   it("loads another operator's retained cutover preview and approves only its exact fingerprint", async () => {

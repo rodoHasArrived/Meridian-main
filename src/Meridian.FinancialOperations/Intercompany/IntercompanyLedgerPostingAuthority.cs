@@ -9,8 +9,8 @@ using Meridian.Storage.Ledger;
 namespace Meridian.FinancialOperations.Intercompany;
 
 /// <summary>Resolves agreement and account authority under leases retained through ledger commit.</summary>
-public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementStore agreements,
-    IntercompanyAgreementService service, IIntercompanyAccountBindingStore bindings,
+public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingArrangementStore agreements,
+    IntercompanyAccountingArrangementService service, IIntercompanyAccountBindingStore bindings,
     IAccountingConfigurationStore configuration, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners,
     ILegacyIntercompanyAttributionStore? legacyAttributions = null,
     IConsolidationFxAuthority? fxAuthority = null)
@@ -41,7 +41,7 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementSto
                     ?? DateOnly.FromDateTime(context.Write.Entry.Timestamp.UtcDateTime);
                 if (string.IsNullOrWhiteSpace(context.TenantId))
                 {
-                    Check(context, "AgreementTenantUnknown", !context.Write.Entry.Lines.Any(x => x.Dimensions?.AgreementId is not null),
+                    Check(context, "AgreementTenantUnknown", !context.Write.Entry.Lines.Any(x => x.Dimensions?.AccountingArrangementId is not null),
                         "Agreement authority requires an attributed tenant.");
                     continue;
                 }
@@ -86,11 +86,22 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementSto
                     var matches = accounts.Where(x => dimensions?.ChartAccountNodeId is { } node
                         ? x.ChartAccountNodeId == node
                         : x.AccountName == line.Account.Name || x.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal)).ToArray();
+                    // Exact reversals retain the original binding identity; a newer mapping revision
+                    // cannot replace source evidence or change the inverse economics.
+                    if (retainedInverse && Guid.TryParse(dimensions?.AccountBindingRevisionId, out var retainedBindingId))
+                    {
+                        var retainedBinding = await bindings.GetRevisionAsync(retainedBindingId, ct).ConfigureAwait(false);
+                        if (retainedBinding is not null && retainedBinding.LedgerBookId == context.Book.LedgerBookId
+                            && retainedBinding.ChartAccountNodeId == dimensions?.ChartAccountNodeId
+                            && retainedBinding.EffectiveFrom <= retainedOriginalEffectiveDate
+                            && (retainedBinding.EffectiveTo is null || retainedOriginalEffectiveDate < retainedBinding.EffectiveTo))
+                            matches = [retainedBinding];
+                    }
                     var knownIntercompany = line.Account.Name is ConsolidationService.ReceivableAccount or ConsolidationService.PayableAccount
                         || historical.Any(x => x.AccountName == line.Account.Name || x.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal))
                         || workspace?.ChartOfAccounts.Any(x => x.IntercompanyRole is not null &&
                             (x.AccountName == line.Account.Name || x.NodeId == dimensions?.ChartAccountNodeId)) == true;
-                    if (matches.Length == 0 && dimensions?.AgreementId is null && !knownIntercompany) continue;
+                    if (matches.Length == 0 && dimensions?.AccountingArrangementId is null && !knownIntercompany) continue;
                     try
                     {
                         if (matches.Length != 1) throw new InvalidOperationException("The intercompany account binding is missing or ambiguous.");
@@ -99,8 +110,8 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementSto
                         if (binding.IsArchived || chart is null || chart.IsArchived || chart.IntercompanyRole != binding.Role
                             || chart.AccountType != binding.AccountType || line.Account.Symbol is not null || line.Account.FinancialAccountId is not null)
                             throw new InvalidOperationException("The intercompany account is archived, reclassified, scoped or unavailable.");
-                        if (dimensions is null || !Guid.TryParse(dimensions.AgreementId, out var agreementId)
-                            || !Guid.TryParse(dimensions.AgreementRevisionId, out var revisionId)
+                        if (dimensions is null || !Guid.TryParse(dimensions.AccountingArrangementId, out var agreementId)
+                            || !Guid.TryParse(dimensions.AccountingArrangementRevisionId, out var revisionId)
                             || string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId)
                             || dimensions.AccountBindingRevisionId != binding.RevisionId.ToString("D")
                             || dimensions.ChartAccountNodeId != binding.ChartAccountNodeId)
@@ -108,9 +119,18 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementSto
                         if (!Guid.TryParse(dimensions.EntityId, out var entityId) || entityId != context.Book.FundStructureNodeId
                             || !Guid.TryParse(dimensions.CounterpartyId, out var counterpartyId) || entityId == counterpartyId)
                             throw new InvalidOperationException("Intercompany parties must match the authoritative book and a distinct counterparty.");
-                        var agreement = await service.ResolveApprovedRevisionAsync(context.TenantId, agreementId, revisionId,
-                            new DateTimeOffset((retainedOriginalEffectiveDate ?? date).ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
-                        if (agreement.Kind == IntercompanyAgreementKindDto.Guarantee)
+                        var agreement = retainedInverse
+                            ? await service.GetApprovedRevisionAsync(context.TenantId, agreementId, revisionId, ct).ConfigureAwait(false)
+                            : await service.ResolveApprovedRevisionAsync(context.TenantId, agreementId, revisionId,
+                                new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                        if (dimensions.IntercompanyAgreementId != agreement.CanonicalAgreementId
+                            || dimensions.IntercompanyAgreementVersion != agreement.CanonicalAgreementVersion
+                            || !context.VerifiedCanonicalAgreementRevisions.Any(revision =>
+                                revision.AgreementId == agreement.CanonicalAgreementId
+                                && revision.AgreementVersion == agreement.CanonicalAgreementVersion
+                                && string.Equals(revision.PayloadHash, agreement.CanonicalPayloadHash, StringComparison.Ordinal)))
+                            throw new InvalidOperationException("The exact canonical legal revision and payload must be verified under the retained native posting authority lease.");
+                        if (agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Guarantee)
                             throw new InvalidOperationException("Guarantees have no supported posting treatment in this release.");
                         if (!((agreement.PartyOneEntityId == entityId && agreement.PartyTwoEntityId == counterpartyId)
                             || (agreement.PartyTwoEntityId == entityId && agreement.PartyOneEntityId == counterpartyId)))
@@ -194,8 +214,8 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementSto
             foreach (var (record, line) in known)
             {
                 var fact = facts.SingleOrDefault(x => x.JournalEntryId == record.Entry.JournalEntryId && x.LineId == line.EntryId);
-                var agreementId = line.Dimensions?.AgreementId ?? fact?.AgreementId.ToString("D");
-                var revisionId = line.Dimensions?.AgreementRevisionId ?? fact?.AgreementRevisionId.ToString("D");
+                var agreementId = line.Dimensions?.AccountingArrangementId ?? fact?.AccountingArrangementId.ToString("D");
+                var revisionId = line.Dimensions?.AccountingArrangementRevisionId ?? fact?.AccountingArrangementRevisionId.ToString("D");
                 var valid = Guid.TryParse(agreementId, out var id) && Guid.TryParse(revisionId, out var revision);
                 if (valid && fact is not null)
                     valid = fact.SourceLineDigest == LegacyIntercompanyAttributionRules.SourceDigest(book, record, line);
@@ -204,8 +224,14 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAgreementSto
                     try
                     {
                         var date = record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime);
-                        await service.ResolveApprovedRevisionAsync(tenantId!, Guid.Parse(agreementId!), Guid.Parse(revisionId!),
+                        var resolved = await service.ResolveApprovedRevisionAsync(tenantId!, Guid.Parse(agreementId!), Guid.Parse(revisionId!),
                             new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                        valid = (line.Dimensions?.IntercompanyAgreementId ?? fact?.IntercompanyAgreementId) == resolved.CanonicalAgreementId
+                            && (line.Dimensions?.IntercompanyAgreementVersion ?? fact?.IntercompanyAgreementVersion) == resolved.CanonicalAgreementVersion
+                            && (fact is null || fact.IntercompanyAgreementPayloadHash == resolved.CanonicalPayloadHash
+                                && (line.Dimensions?.IntercompanyAgreementId is null
+                                    || line.Dimensions.IntercompanyAgreementId == fact.IntercompanyAgreementId
+                                        && line.Dimensions.IntercompanyAgreementVersion == fact.IntercompanyAgreementVersion));
                     }
                     catch (InvalidOperationException) { valid = false; }
                 }

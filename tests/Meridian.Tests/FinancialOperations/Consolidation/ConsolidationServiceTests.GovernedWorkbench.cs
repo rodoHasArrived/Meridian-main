@@ -1,3 +1,6 @@
+using Meridian.Tests.TestSupport;
+using Meridian.Storage.FundStructure;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Consolidation;
@@ -135,7 +138,17 @@ public sealed partial class ConsolidationServiceTests
             Fixture.Date.AddYears(-1), null, rates.RateSetId, 1, policy, "reviewer", Fixture.Time), rates);
         var fx = new Mock<IConsolidationFxAuthority>(MockBehavior.Strict);
         fx.Setup(x => x.ResolveAsync(Fixture.OverlayBookId, Fixture.Date, It.IsAny<CancellationToken>())).ReturnsAsync(context);
-        var (engine, service, bindings) = await ConsolidationGovernedServiceTests.Governed(version: version, fxAuthority: fx.Object);
+        var arrangement = IntercompanyArrangementTestData.Create(Guid.Parse("aaaaaaaa-1234-1234-1234-123456789012"),
+            Fixture.OrganizationId, IntercompanyAccountingTemplateKindDto.ManagementFee, Fixture.FirstId, Fixture.SecondId, "USD",
+            [new(Fixture.FirstId, Fixture.FirstBookId, "Receivable", "Payable", RevenueAccountNodeId: "Revenue", ExpenseAccountNodeId: "Expense"),
+             new(Fixture.SecondId, Fixture.SecondBookId, "Receivable", "Payable", RevenueAccountNodeId: "Revenue", ExpenseAccountNodeId: "Expense")],
+            Guid.Parse("bbbbbbbb-1234-1234-1234-123456789012"), Fixture.Time.AddYears(-1));
+        var arrangementStore = new Mock<IIntercompanyAccountingArrangementStore>();
+        arrangementStore.Setup(x => x.GetAsync("tenant-test", arrangement.ArrangementId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new IntercompanyAccountingArrangementHistoryDto([new(Guid.NewGuid(), "approval", IntercompanyAccountingArrangementActionDto.Approve,
+                "reviewer", Fixture.Time, "Reviewed fee mapping", arrangement.Arrangement)]));
+        var (engine, service, bindings) = await ConsolidationGovernedServiceTests.Governed(version: version, fxAuthority: fx.Object,
+            arrangements: IntercompanyArrangementTestData.Service(arrangementStore.Object, arrangement));
         var arIndex = bindings.FindIndex(x => x.LedgerBookId == Fixture.OverlayBookId && x.Role == IntercompanyAccountRoleDto.Receivable);
         bindings[arIndex] = bindings[arIndex] with { AccountName = "Related-party receivables" };
         bindings.Add(Output(IntercompanyAccountRoleDto.TranslationReserve, "Equity:Group Translation", "Equity"));
@@ -190,7 +203,8 @@ public sealed partial class ConsolidationServiceTests
             var binding = bindings.Single(x => x.LedgerBookId == book && x.Role == role);
             var monetary = bindings.Single(x => x.LedgerBookId == book && x.Role == (creditor ? IntercompanyAccountRoleDto.Receivable : IntercompanyAccountRoleDto.Payable));
             var dimensions = new LedgerLineDimensionSet(EntityId: entity.ToString("D"), CounterpartyId: cp.ToString("D"))
-                { AgreementId = "aaaaaaaa-1234-1234-1234-123456789012", AgreementRevisionId = "bbbbbbbb-1234-1234-1234-123456789012",
+                { IntercompanyAgreementId = arrangement.CanonicalAgreementId, IntercompanyAgreementVersion = arrangement.CanonicalAgreementVersion,
+                  AccountingArrangementId = "aaaaaaaa-1234-1234-1234-123456789012", AccountingArrangementRevisionId = "bbbbbbbb-1234-1234-1234-123456789012",
                   IntercompanyTransactionId = "fee-transaction-one" };
             var lines = new[]
             {

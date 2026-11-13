@@ -33,14 +33,14 @@ public static class IntercompanyEntityServiceRegistration
         if (hasFundStructureDatabase)
         {
             services.TryAddSingleton<IEntityLifecycleStore, PostgresEntityLifecycleStore>();
-            services.TryAddSingleton<IIntercompanyAgreementStore, PostgresIntercompanyAgreementStore>();
+            services.TryAddSingleton<IIntercompanyAccountingArrangementStore, PostgresIntercompanyAccountingArrangementStore>();
         }
         else
         {
             services.TryAddSingleton<IEntityLifecycleStore>(sp => new FileEntityLifecycleStore(
                 Path.Combine(Root(sp), "governance", "entity-lifecycle")));
-            services.TryAddSingleton<IIntercompanyAgreementStore>(sp => new FileIntercompanyAgreementStore(
-                Path.Combine(Root(sp), "governance", "intercompany-agreements")));
+            services.TryAddSingleton<IIntercompanyAccountingArrangementStore>(sp => new FileIntercompanyAccountingArrangementStore(
+                Path.Combine(Root(sp), "governance", "intercompany-accounting-arrangements")));
         }
 
         if (hasLedgerDatabase)
@@ -68,7 +68,8 @@ public static class IntercompanyEntityServiceRegistration
             services.TryAddSingleton<LegacyIntercompanyAttributionValidator>(sp =>
                 sp.GetService<ILedgerJournalStore>() is { } journals &&
                 sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings
-                    ? new LegacyIntercompanyAttributionValidator(journals, bindings, sp.GetRequiredService<IIntercompanyAgreementStore>())
+                    ? new LegacyIntercompanyAttributionValidator(journals, bindings, sp.GetRequiredService<IIntercompanyAccountingArrangementStore>(),
+                        sp.GetRequiredService<IIntercompanyAccountingArrangementLegalAuthority>())
                     : null!);
             services.TryAddSingleton<ILegacyIntercompanyAttributionStore>(sp =>
                 sp.GetService<LegacyIntercompanyAttributionValidator>() is { } validator
@@ -88,28 +89,31 @@ public static class IntercompanyEntityServiceRegistration
         services.TryAddSingleton<IConsolidationBookPolicyValidator>(sp =>
             sp.GetService<IAccountingPolicyService>() is { } policies
                 ? new ConsolidationBookPolicyValidator(policies) : null!);
-        services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, UnavailableAgreementEvidenceAuthority>();
-        services.TryAddSingleton<IIntercompanyAgreementScopeAuthority>(sp =>
+        services.TryAddSingleton<IIntercompanyAccountingArrangementLegalAuthority>(sp =>
+            sp.GetService<IIntercompanyAgreementStore>() is { } legalStore
+                ? new IntercompanyAccountingArrangementLegalAuthority(legalStore)
+                : new UnavailableCanonicalLegalAuthority());
+        services.TryAddSingleton<IIntercompanyAccountingArrangementScopeAuthority>(sp =>
         {
             if (sp.GetService<IFundStructureService>() is not { } structures ||
                 sp.GetService<ILedgerJournalStore>() is not { } journals ||
                 sp.GetService<IAccountingConfigurationStore>() is not { } chart ||
                 sp.GetService<IFundProfileTenancyRegistry>() is not { } owners)
                 return new UnavailableAgreementScopeAuthority();
-            return new FundStructureIntercompanyAgreementScopeAuthority(structures,
+            return new FundStructureIntercompanyAccountingArrangementScopeAuthority(structures,
                 sp.GetService<IFundStructureStore>(), journals, chart,
                 sp.GetRequiredService<IEntityLifecycleStore>(), owners,
                 allowUnpartitionedSyntheticStore: !isProduction && !hasFundStructureDatabase,
                 timeProvider: sp.GetRequiredService<TimeProvider>());
         });
-        services.TryAddSingleton<IntercompanyAgreementService>();
+        services.TryAddSingleton<IntercompanyAccountingArrangementService>();
         services.TryAddSingleton<IntercompanyBalanceScheduleService>(sp =>
             sp.GetService<ILedgerJournalStore>() is { } journals &&
             sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
             sp.GetService<IAccountingConfigurationStore>() is { } chart &&
             sp.GetService<IFundProfileTenancyRegistry>() is { } owners
-                ? new IntercompanyBalanceScheduleService(journals, sp.GetRequiredService<IntercompanyAgreementService>(),
-                    bindings, chart, owners, sp.GetRequiredService<IIntercompanyAgreementStore>(),
+                ? new IntercompanyBalanceScheduleService(journals, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    bindings, chart, owners, sp.GetRequiredService<IIntercompanyAccountingArrangementStore>(),
                     sp.GetService<ILegacyIntercompanyAttributionStore>()) : null!);
         services.TryAddSingleton<IIntercompanyBalanceScheduleSource>(sp => sp.GetService<IntercompanyBalanceScheduleService>()!);
         services.TryAddSingleton<IEntityLifecycleService, EntityLifecycleService>();
@@ -139,6 +143,8 @@ public static class IntercompanyEntityServiceRegistration
             () => sp.GetServices<ILedgerPostingAuthority>());
         services.TryAddSingleton<Func<IEnumerable<ILedgerBookControlPreflight>>>(sp =>
             () => sp.GetServices<ILedgerBookControlPreflight>());
+        services.TryAddSingleton<Func<IIntercompanyAgreementPostingAuthority?>>(sp =>
+            () => sp.GetService<IIntercompanyAgreementPostingAuthority>());
         services.TryAddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
             () => sp.GetService<IConsolidationPostingAuthority>());
         if (hasLedgerDatabase && hasFundStructureDatabase)
@@ -150,7 +156,8 @@ public static class IntercompanyEntityServiceRegistration
                 sp.GetService<IAccountingJournalDraftService>() is { } drafts
                     ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), journals, policy, drafts,
                         sp.GetService<IIntercompanyAccountBindingStore>(), sp.GetService<IConsolidationFxAuthority>(),
-                        sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>()) : null!);
+                        sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>(),
+                        sp.GetService<IntercompanyAccountingArrangementService>()) : null!);
             services.TryAddSingleton<IConsolidationDraftGuard>(sp => sp.GetService<ConsolidationService>()!);
             services.TryAddSingleton<IConsolidationPostingAuthority>(sp =>
                 sp.GetService<ConsolidationService>() is { } consolidation &&
@@ -158,7 +165,9 @@ public static class IntercompanyEntityServiceRegistration
                 sp.GetService<IAccountingPolicyService>() is { } policy
                     ? new PostgresConsolidationPostingAuthority(consolidation, structure, policy,
                         sp.GetService<IIntercompanyAccountBindingStore>(), sp.GetService<IConsolidationFxAuthority>(),
-                        sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>()) : null!);
+                        sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>(),
+                        sp.GetService<Meridian.Storage.FundStructure.IIntercompanyAccountingArrangementStore>(),
+                        sp.GetService<IIntercompanyAccountingArrangementLegalAuthority>()) : null!);
         }
         services.TryAddSingleton<ConsolidationTransitionService>(sp =>
             sp.GetService<ConsolidationService>() is { } consolidation &&
@@ -171,7 +180,9 @@ public static class IntercompanyEntityServiceRegistration
                 ? new ConsolidationTransitionService(consolidation, journals, transitions, policies, bindings,
                     sp.GetRequiredService<IConsolidationFxAuthority>(), legacy, owners,
                     sp.GetService<IFundStructureStore>() as PostgresFundStructureStore,
-                    sp.GetRequiredService<TimeProvider>()) : null!);
+                    sp.GetRequiredService<TimeProvider>(),
+                    sp.GetService<IIntercompanyAccountingArrangementStore>(),
+                    sp.GetService<IIntercompanyAccountingArrangementLegalAuthority>()) : null!);
         return services;
     }
 
@@ -199,22 +210,28 @@ public static class IntercompanyEntityServiceRegistration
         }
     }
 
-    private sealed class UnavailableAgreementScopeAuthority : IIntercompanyAgreementScopeAuthority
+    private sealed class UnavailableCanonicalLegalAuthority : IIntercompanyAccountingArrangementLegalAuthority
+    {
+        private static InvalidOperationException Unavailable() => new("Configure the canonical tenant-partitioned legal agreement registry before using accounting profiles.");
+        public Task<IntercompanyAgreementRevisionDto> GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default)
+            => Task.FromException<IntercompanyAgreementRevisionDto>(Unavailable());
+        public Task<IntercompanyAgreementRevisionDto> GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default)
+            => Task.FromException<IntercompanyAgreementRevisionDto>(Unavailable());
+        public Task<IReadOnlyList<IntercompanyAgreementRevisionDto>> ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default)
+            => Task.FromException<IReadOnlyList<IntercompanyAgreementRevisionDto>>(Unavailable());
+        public Task<IIntercompanyAccountingArrangementLegalLease> AcquireLeaseAsync(string tenantId, IReadOnlyList<IntercompanyCanonicalAgreementReferenceDto> references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default)
+            => Task.FromException<IIntercompanyAccountingArrangementLegalLease>(Unavailable());
+    }
+
+    private sealed class UnavailableAgreementScopeAuthority : IIntercompanyAccountingArrangementScopeAuthority
     {
         private static InvalidOperationException Unavailable()
             => new("Agreement changes require authoritative entity, ledger-book, chart and ownership services.");
-        public Task<IAsyncDisposable> AcquireLeaseAsync(string tenantId, IntercompanyAgreementDto agreement, CancellationToken ct = default)
-            => Task.FromException<IAsyncDisposable>(Unavailable());
-        public Task ValidateAsync(string tenantId, IntercompanyAgreementDto agreement, bool requireActive, CancellationToken ct = default)
+        public Task<IIntercompanyAccountingArrangementScopeLease> AcquireLeaseAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default)
+            => Task.FromException<IIntercompanyAccountingArrangementScopeLease>(Unavailable());
+        public Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, bool requireActive, CancellationToken ct = default)
             => Task.FromException(Unavailable());
-        public Task<IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>> GetLifecycleEvidenceAsync(string tenantId, IntercompanyAgreementDto agreement, CancellationToken ct = default)
+        public Task<IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>> GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default)
             => Task.FromException<IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>>(Unavailable());
     }
-}
-
-/// <summary>Allows non-workstation history reads without pretending signed-document approval is available.</summary>
-public sealed class UnavailableAgreementEvidenceAuthority : IIntercompanyAgreementEvidenceAuthority
-{
-    public Task VerifyAsync(string tenantId, Guid agreementId, IntercompanySignedDocumentDto document, CancellationToken ct = default)
-        => Task.FromException(new InvalidOperationException("Agreement approval requires the retained Evidence Vault verifier supplied by the workstation host."));
 }

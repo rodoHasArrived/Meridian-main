@@ -3,6 +3,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
@@ -17,7 +18,8 @@ public sealed partial class ConsolidationService(
     IIntercompanyAccountBindingStore? accountBindings = null,
     IConsolidationFxAuthority? fxAuthority = null,
     ILegacyIntercompanyAttributionStore? legacyAttributions = null,
-    IConsolidationTransitionStore? transitions = null) : IConsolidationDraftGuard
+    IConsolidationTransitionStore? transitions = null,
+    IntercompanyAccountingArrangementService? arrangements = null) : IConsolidationDraftGuard
 {
     public const string RuleId = "consolidation.receivable-payable";
     public const string RuleVersion = "w10-v1";

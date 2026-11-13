@@ -154,6 +154,8 @@ public static class RetainedPostingEquivalence
     {
         var retained = retainedEntry.Metadata.Normalize();
         var candidate = candidateEntry.Metadata.Normalize();
+        if (retained.PreparerAttestation != candidate.PreparerAttestation)
+            return "native preparer attestation";
         if (!TextMatches(retained.ActivityType, candidate.ActivityType))
             return "activity type";
         if (!TextMatches(retained.Symbol, candidate.Symbol))
@@ -281,7 +283,7 @@ public static class RetainedPostingEquivalence
     /// member: two structurally identical dimension sets built from separate requests would
     /// otherwise compare unequal and report a conflict for an exact replay.
     /// </summary>
-    private static bool DimensionsMatch(LedgerLineDimensionSet? retained, LedgerLineDimensionSet? candidate)
+    internal static bool DimensionsMatch(LedgerLineDimensionSet? retained, LedgerLineDimensionSet? candidate)
     {
         if (retained is null || candidate is null)
             return retained is null && candidate is null;
@@ -294,6 +296,8 @@ public static class RetainedPostingEquivalence
             && TextMatches(retained.CapitalAccountId, candidate.CapitalAccountId)
             && retained.InstrumentId == candidate.InstrumentId
             && retained.PositionId == candidate.PositionId
+            && retained.IntercompanyAgreementId == candidate.IntercompanyAgreementId
+            && retained.IntercompanyAgreementVersion == candidate.IntercompanyAgreementVersion
             && TextMatches(retained.TaxLotId, candidate.TaxLotId)
             && TextMatches(retained.CostCenterId, candidate.CostCenterId)
             && TextMatches(retained.CounterpartyId, candidate.CounterpartyId)
@@ -304,8 +308,8 @@ public static class RetainedPostingEquivalence
             && TextMatches(retained.CustomerId, candidate.CustomerId)
             && TextMatches(retained.VendorId, candidate.VendorId)
             && TextMatches(retained.ProjectId, candidate.ProjectId)
-            && TextMatches(retained.AgreementId, candidate.AgreementId)
-            && TextMatches(retained.AgreementRevisionId, candidate.AgreementRevisionId)
+            && TextMatches(retained.AccountingArrangementId, candidate.AccountingArrangementId)
+            && TextMatches(retained.AccountingArrangementRevisionId, candidate.AccountingArrangementRevisionId)
             && TextMatches(retained.ChartAccountNodeId, candidate.ChartAccountNodeId)
             && TextMatches(retained.AccountBindingRevisionId, candidate.AccountBindingRevisionId)
             && TextMatches(retained.IntercompanyTransactionId, candidate.IntercompanyTransactionId)

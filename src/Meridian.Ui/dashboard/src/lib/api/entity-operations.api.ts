@@ -11,7 +11,7 @@ export const entityOperationEndpoints = {
   capabilities: "/api/ledger/intercompany/capabilities",
   graph: "/api/fund-structure/graph?activeOnly=false",
   books: "/api/ledger/books",
-  agreements: "/api/fund-structure/intercompany-agreements",
+  accountingArrangements: "/api/ledger/intercompany-accounting-arrangements",
   lifecycle: (entityId: string) => `/api/fund-structure/entities/${encodeURIComponent(entityId)}/lifecycle`,
   controls: (bookId: string) => `/api/ledger/books/${encodeURIComponent(bookId)}/controls`,
   proposals: (bookId: string) => `/api/ledger/intercompany/proposals?sourceBookId=${encodeURIComponent(bookId)}`,

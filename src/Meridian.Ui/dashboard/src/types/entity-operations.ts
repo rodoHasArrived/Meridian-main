@@ -1,4 +1,5 @@
 import type { LedgerBook } from "@/types";
+import type { AgreementDetail, AgreementEvidence, AgreementRevision } from "./intercompany-agreements";
 
 export interface EntityOperationCapabilities {
   canManageAgreements: boolean;
@@ -18,28 +19,35 @@ export interface EntityOperationScope {
   graph: EntityOperationGraph | null;
   capabilities: EntityOperationCapabilities;
 }
-export type AgreementKind = "Loan" | "CostRecharge" | "ManagementFee" | "ExpenseShare" | "Guarantee";
-export type AgreementStatus = "Draft" | "Submitted" | "Approved" | "Rejected" | "Terminated" | "Novated";
-export interface AgreementPartyMapping {
+export type AccountingArrangementTemplate = "Loan" | "CostRecharge" | "ManagementFee" | "ExpenseShare" | "CashSweep" | "Guarantee" | "Manual";
+export type AccountingArrangementStatus = "Draft" | "Submitted" | "Approved" | "Rejected" | "Retired";
+export interface AccountingArrangementPartyMapping {
   entityId: string; ledgerBookId: string; receivableAccountNodeId: string; payableAccountNodeId: string;
   settlementAccountNodeId: string | null; revenueAccountNodeId: string | null; expenseAccountNodeId: string | null;
 }
-export interface SignedAgreementDocument {
-  vaultId: string; documentId: string; artifactId: string; contentHashSha256: string; scope: string;
-}
-export interface IntercompanyAgreement {
-  agreementId: string; organizationId: string; facilityReference: string; kind: AgreementKind;
-  partyOneEntityId: string; partyTwoEntityId: string; partyOneRole: string; partyTwoRole: string;
-  currency: string; settlementCadence: string; effectiveFrom: string; effectiveTo: string | null;
-  revisionId: string; revisionNumber: number; version: number; status: AgreementStatus;
-  partyMappings: AgreementPartyMapping[]; signedDocument: SignedAgreementDocument | null;
+export interface AccountingArrangementRecord {
+  arrangementId: string; organizationId: string; arrangementReference: string; templateKind: AccountingArrangementTemplate;
+  canonicalAgreementId: string; canonicalAgreementVersion: number; canonicalPayloadHash: string;
+  effectiveFrom: string; effectiveTo: string | null; revisionId: string; revisionNumber: number; version: number; status: AccountingArrangementStatus;
+  partyMappings: AccountingArrangementPartyMapping[];
   createdBy: string; createdAt: string; updatedBy: string; updatedAt: string; approvedBy: string | null;
-  approvedAt: string | null; terminatedAt: string | null; predecessorRevisionId: string | null; successorAgreementId: string | null;
-  settlementDueDays?: number | null;
+  approvedAt: string | null; retiredAt: string | null; predecessorRevisionId: string | null;
+  supersedesRevisionId?: string | null;
+  lifecycleEvidence?: { entityId: string; revision: number; contentHash: string }[] | null;
 }
-export interface AgreementHistory {
-  events: { requestId: string; action: string; actor: string; recordedAt: string; reason: string | null; snapshot: IntercompanyAgreement;
-    targetRevisionId?: string | null; targetRevisionSnapshot?: IntercompanyAgreement | null }[];
+/** Exact legal facts are server-derived from the pinned canonical approved version. */
+export interface IntercompanyAccountingArrangement {
+  arrangement: AccountingArrangementRecord; legalRevision: AgreementRevision;
+  arrangementId: string; organizationId: string; arrangementReference: string; templateKind: AccountingArrangementTemplate;
+  revisionId: string; revisionNumber: number; version: number; status: AccountingArrangementStatus;
+  partyMappings: AccountingArrangementPartyMapping[]; effectiveFrom: string; effectiveTo: string | null;
+  canonicalAgreementId: string; canonicalAgreementVersion: number; canonicalPayloadHash: string;
+  partyOneEntityId: string; partyTwoEntityId: string; partyOneRole: string; partyTwoRole: string;
+  currency: string; settlementCadence: string; settlementDueDays: number | null; canonicalEvidence: AgreementEvidence[];
+}
+export interface AccountingArrangementHistory {
+  events: { requestId: string; action: string; actor: string; recordedAt: string; reason: string | null; snapshot: AccountingArrangementRecord;
+    targetRevisionId?: string | null; targetRevisionSnapshot?: AccountingArrangementRecord | null }[];
 }
 export interface EntityLifecycleState {
   transitionId: string; effectiveFrom: string; effectiveTo: string | null; status: string; eventKind: string; successorEntityId: string | null;
@@ -58,7 +66,9 @@ export interface BookControlPreflight {
 }
 export interface IntercompanyProposal {
   source: { proposalId: string; sourceJournalId: string; sourceBookId: string; sourceEntityId: string; counterpartyEntityId: string; requiresSourceAllocation?: boolean;
-    agreementId: string; agreementRevisionId: string; transactionId: string; effectiveDate: string; sourceFunctionalCurrency: string };
+    accountingArrangementId: string; accountingArrangementRevisionId: string; intercompanyAgreementId?: string;
+    intercompanyAgreementVersion?: number; intercompanyAgreementPayloadHash?: string;
+    transactionId: string; effectiveDate: string; sourceFunctionalCurrency: string };
   status: "Pending" | "NeedsFix" | "Drafted" | "Linked"; attempts: number; recordedAt: string;
   targetBookId: string | null; targetJournalId: string | null; lastError: string | null; dueDate: string | null;
   sourceDigest: string;
@@ -68,7 +78,7 @@ export interface IntercompanyProposal {
   resolvedTargetJournalId?: string | null;
 }
 export interface IntercompanyBreak {
-  proposalId: string; agreementId: string; transactionId: string; classification: string; ageFrom: string; ageDays: number;
+  proposalId: string; accountingArrangementId: string; transactionId: string; classification: string; ageFrom: string; ageDays: number;
   agingBasis: string; detail: string; sourceJournalId: string; targetJournalId: string | null;
 }
 export type FxRateKind = "Closing" | "TransactionDate" | "Historical" | "PeriodAverage";
@@ -95,7 +105,7 @@ export interface EntityTimeline {
   entity: { entityId: string; name: string; baseCurrency: string; lifecycleStatus: string };
   asOf: string; lifecycleRevisions: EntityLifecycleRevision[];
   ownershipLinks: EntityOperationGraph["ownershipLinks"];
-  agreements: IntercompanyAgreement[]; books: LedgerBook[]; warnings: string[];
+  agreements: AgreementDetail[]; accountingArrangements: IntercompanyAccountingArrangement[]; books: LedgerBook[]; warnings: string[];
 }
 export interface ConsolidationTransitionRequest {
   transitionId: string; organizationId: string; ownershipRootId: string; previousEliminationBookId: string;

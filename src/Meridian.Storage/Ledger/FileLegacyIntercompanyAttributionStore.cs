@@ -27,7 +27,7 @@ public sealed class FileLegacyIntercompanyAttributionStore(string path, IFundSco
         Guid? expectedPreviousAttributionId, CancellationToken ct = default)
     {
         if (attribution.TenantId != RequireTenant()) throw new TenantScopeRejectedException("foreign legacy attribution");
-        await using var authority = await validator.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false);
+        await using var authority = await validator.AcquireAuthorityLeaseAsync(attribution, ct).ConfigureAwait(false);
         await validator.ValidateAsync(attribution, ct).ConfigureAwait(false);
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try

@@ -89,9 +89,18 @@ public sealed class SubscriptionOrchestrator
         await _applyGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var desired = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-                .Where(s => !string.IsNullOrWhiteSpace(s.Symbol))
-                .ToDictionary(s => s.Symbol.Trim(), s => s, StringComparer.OrdinalIgnoreCase);
+            var desired = new Dictionary<string, SymbolConfig>(StringComparer.OrdinalIgnoreCase);
+            foreach (var configuredSymbol in cfg.Symbols ?? Array.Empty<SymbolConfig>())
+            {
+                if (string.IsNullOrWhiteSpace(configuredSymbol.Symbol))
+                    continue;
+
+                var symbol = configuredSymbol.Symbol.Trim();
+                // Keep the first declaration, including its collection and contract settings.
+                // Normalize the provider payload as well as the dictionary key.
+                if (!desired.TryAdd(symbol, configuredSymbol with { Symbol = symbol }))
+                    _log.Warning("Ignoring duplicate subscription configuration for {Symbol}; the first declaration is used", symbol);
+            }
 
             // Unsubscribe removed symbols
             var allKeys = desired.Keys

@@ -71,8 +71,8 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Expander>
-                    <Expander Header="Intercompany agreements" Margin="0,6,0,0">
-                        <DataGrid ItemsSource="{Binding AgreementRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Entity agreements">
+                    <Expander Header="Legal agreements and accounting profiles" Margin="0,6,0,0">
+                        <DataGrid ItemsSource="{Binding AgreementRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Entity legal agreements and accounting profiles">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Kind" Binding="{Binding Name}" Width="160" />
                                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
@@ -171,7 +171,7 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Expander>
-                    <Expander Header="Source journals, agreements and account bindings">
+                    <Expander Header="Source journals, legal agreements, accounting profiles and account bindings">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Consolidation source journals">
                                 <DataGrid.Columns>

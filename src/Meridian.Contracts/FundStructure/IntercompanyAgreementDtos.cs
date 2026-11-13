@@ -2,100 +2,104 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.FundStructure;
 
-[JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAgreementKindDto>))]
-public enum IntercompanyAgreementKindDto { Loan, CostRecharge, ManagementFee, ExpenseShare, Guarantee }
-
-[JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAgreementStatusDto>))]
-public enum IntercompanyAgreementStatusDto { Draft, Submitted, Approved, Rejected, Terminated, Novated }
-
+[JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAgreementTypeDto>))]
+public enum IntercompanyAgreementTypeDto { Loan, ManagementFee, CostShare, CashSweep, Guarantee, Other }
 [JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAgreementActionDto>))]
-public enum IntercompanyAgreementActionDto { Create, Revise, Submit, Approve, Reject, Terminate, Novate }
+public enum IntercompanyAgreementActionDto { Activate, Amend, Terminate }
+[JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAgreementProposalStateDto>))]
+public enum IntercompanyAgreementProposalStateDto { Draft, Submitted, Approved, Rejected, Withdrawn }
+[JsonConverter(typeof(JsonStringEnumConverter<IntercompanyAgreementStatusDto>))]
+public enum IntercompanyAgreementStatusDto { Unapproved, Scheduled, Active, Expired, Terminated }
 
-/// <summary>One party's explicit book and stable chart node identities; paths are resolved from configuration.</summary>
-public sealed record IntercompanyPartyMappingDto(
-    Guid EntityId, Guid LedgerBookId, string ReceivableAccountNodeId, string PayableAccountNodeId,
-    string? SettlementAccountNodeId = null, string? RevenueAccountNodeId = null, string? ExpenseAccountNodeId = null);
+public sealed record IntercompanyAgreementTermsDto(
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
+    decimal? FixedAnnualRate = null, string? RateDescription = null, string? ScheduleDescription = null,
+    string? AllocationDescription = null, int? SettlementDays = null, string? Notes = null);
 
-/// <summary>Pins signed source bytes in the tenant-scoped Evidence Vault, rather than a mutable URL.</summary>
-public sealed record IntercompanySignedDocumentDto(
-    string VaultId, string DocumentId, string ArtifactId, string ContentHashSha256, string Scope);
+/// <summary>Submitted references are resolved by the evidence authority; supplied hashes are never trusted.</summary>
+public sealed record IntercompanyAgreementEvidenceDto(string Reference, string? ArtifactId = null, string? ContentHash = null);
 
-public sealed record IntercompanyEntityLifecycleReferenceDto(Guid EntityId, long Revision, string ContentHash);
+public sealed record IntercompanyAgreementDraftDto(
+    string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole,
+    IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly EffectiveFrom,
+    DateOnly? EffectiveTo = null, IntercompanyAgreementTermsDto? Terms = null,
+    IReadOnlyList<IntercompanyAgreementEvidenceDto>? Evidence = null,
+    IntercompanyAgreementActionDto Action = IntercompanyAgreementActionDto.Activate,
+    DateOnly? TerminationEffectiveDate = null, string? Purpose = null);
 
-/// <summary>Immutable terms identity. Version fences the whole agreement; RevisionId identifies exact terms.</summary>
-public sealed record IntercompanyAgreementDto(
-    Guid AgreementId, Guid OrganizationId, string FacilityReference, IntercompanyAgreementKindDto Kind,
-    Guid PartyOneEntityId, Guid PartyTwoEntityId, string PartyOneRole, string PartyTwoRole,
-    string Currency, string SettlementCadence, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo,
-    Guid RevisionId, int RevisionNumber, long Version, IntercompanyAgreementStatusDto Status,
-    IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings, IntercompanySignedDocumentDto? SignedDocument,
-    string CreatedBy, DateTimeOffset CreatedAt, string UpdatedBy, DateTimeOffset UpdatedAt,
-    string? ApprovedBy = null, DateTimeOffset? ApprovedAt = null, DateTimeOffset? TerminatedAt = null,
-    Guid? PredecessorRevisionId = null, Guid? SuccessorAgreementId = null,
-    IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>? LifecycleEvidence = null,
-    Guid? SupersedesRevisionId = null)
-{
-    /// <summary>Contractual calendar-day offset from source economic date; null means no governed due date is recorded.</summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? SettlementDueDays { get; init; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Guid? NovationSuccessorRevisionId { get; init; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public long? NovationSuccessorVersion { get; init; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>? NovationSuccessorLifecycleEvidence { get; init; }
-}
+/// <summary>Actor and tenant are deliberately absent: authenticated service context supplies both.</summary>
+public sealed record IntercompanyAgreementCommandDto(
+    Guid CommandId, Guid AgreementId, long ExpectedAggregateVersion, Guid ProposalId,
+    IntercompanyAgreementDraftDto? Draft = null, string? Rationale = null, string? SubmittedHash = null);
 
-/// <summary>One immutable append and its exact idempotent result, ordered by aggregate version.</summary>
-public sealed record IntercompanyAgreementEventDto(
-    Guid RequestId, string RequestDigest, IntercompanyAgreementActionDto Action, string Actor,
-    DateTimeOffset RecordedAt, string? Reason, IntercompanyAgreementDto Snapshot,
-    string PreviousHash = "", string ContentHash = "",
-    Guid? TargetRevisionId = null, IntercompanyAgreementDto? TargetRevisionSnapshot = null)
-{
-    /// <summary>The revision affected by the event; Snapshot always remains the current authoring projection.</summary>
-    [JsonIgnore] public IntercompanyAgreementDto AffectedRevision => TargetRevisionSnapshot ?? Snapshot;
-}
+public sealed record IntercompanyAgreementProposalDto(
+    Guid ProposalId, IntercompanyAgreementActionDto Action, IntercompanyAgreementProposalStateDto State,
+    IntercompanyAgreementDraftDto Draft, int? BaseAgreementVersion, IReadOnlyList<string> Authors,
+    string? Submitter, DateTimeOffset? SubmittedAtUtc, string? SubmittedHash,
+    DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, string? Rationale);
 
-public sealed record IntercompanyAgreementHistoryDto(IReadOnlyList<IntercompanyAgreementEventDto> Events)
-{
-    public IntercompanyAgreementDto Current => Events.Count > 0 ? Events[^1].Snapshot
-        : throw new InvalidOperationException("Agreement history is empty.");
-}
+public sealed record IntercompanyAgreementRevisionDto(
+    Guid AgreementId, int AgreementVersion, int? PredecessorAgreementVersion, int? BaseAgreementVersion,
+    IntercompanyAgreementActionDto Action, IntercompanyAgreementDraftDto Terms,
+    Guid ProposalId, string PayloadHash, IReadOnlyList<string> Authors,
+    string Submitter, string Approver, DateTimeOffset ApprovedAtUtc, string Rationale);
 
-public sealed record CreateIntercompanyAgreementRequest(
-    Guid RequestId, Guid AgreementId, Guid OrganizationId, string FacilityReference,
-    IntercompanyAgreementKindDto Kind, Guid PartyOneEntityId, Guid PartyTwoEntityId,
-    string PartyOneRole, string PartyTwoRole, string Currency, string SettlementCadence,
-    DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo,
-    IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings, IntercompanySignedDocumentDto? SignedDocument = null)
+public sealed record IntercompanyAgreementAuditDto(
+    Guid EventId, Guid ProposalId, string Action, string Actor, DateTimeOffset RecordedAtUtc,
+    long AggregateVersion, string? Rationale, IntercompanyAgreementDraftDto? Snapshot = null)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? SettlementDueDays { get; init; }
+    public IReadOnlyList<string>? MigrationWarnings { get; init; }
 }
 
-public sealed record ReviseIntercompanyAgreementRequest(
-    Guid RequestId, long ExpectedVersion, string FacilityReference, string PartyOneRole, string PartyTwoRole,
-    string Currency, string SettlementCadence, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo,
-    IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings, IntercompanySignedDocumentDto? SignedDocument,
-    string Reason)
+public sealed record IntercompanyAgreementCapabilitiesDto(
+    bool CanEdit, bool CanSubmit, bool CanApprove, bool CanReject, bool CanWithdraw,
+    bool CanAmend, bool CanTerminate, string? BlockingReason = null)
+{
+    public bool CanCreateProposal { get; init; }
+}
+
+public sealed record IntercompanyAgreementDetailDto(
+    Guid AgreementId, long AggregateVersion, string Code, string Name,
+    Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole,
+    IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly AsOf,
+    IntercompanyAgreementStatusDto EffectiveStatus, int? LatestApprovedVersion,
+    IntercompanyAgreementRevisionDto? ApplicableRevision,
+    IReadOnlyList<IntercompanyAgreementProposalDto> Proposals,
+    IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions,
+    IReadOnlyList<IntercompanyAgreementAuditDto> History,
+    IntercompanyAgreementCapabilitiesDto Capabilities)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? SettlementDueDays { get; init; }
+    public IReadOnlyList<string>? MigrationWarnings { get; init; }
 }
 
-public sealed record IntercompanyAgreementActionRequest(Guid RequestId, long ExpectedVersion, string? Reason = null,
-    DateTimeOffset? EffectiveAt = null, Guid? SuccessorAgreementId = null,
-    Guid? RevisionId = null, Guid? SuccessorRevisionId = null, long? ExpectedSuccessorVersion = null);
+public sealed record IntercompanyAgreementCommandReceiptDto(
+    Guid CommandId, string Action, string PayloadHash, string Actor, DateTimeOffset RecordedAtUtc,
+    long AggregateVersion, IntercompanyAgreementDetailDto Detail);
+public sealed record IntercompanyAgreementCommandResultDto(
+    IntercompanyAgreementDetailDto Detail, IntercompanyAgreementCommandReceiptDto Receipt, bool Replayed = false);
+public sealed record IntercompanyAgreementQueryDto(
+    Guid? EntityId = null, IntercompanyAgreementTypeDto? AgreementType = null,
+    IntercompanyAgreementStatusDto? Status = null, DateOnly? AsOf = null,
+    DateTimeOffset? KnownAtUtc = null, string? Cursor = null, int PageSize = 50);
+public sealed record IntercompanyAgreementListDto(IReadOnlyList<IntercompanyAgreementDetailDto> Items, string? NextCursor)
+{
+    public bool CanCreate { get; init; }
+    public bool ReferencePostingSupported { get; init; }
+}
 
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    GenerationMode = JsonSourceGenerationMode.Metadata)]
-[JsonSerializable(typeof(IntercompanyAgreementDto))]
-[JsonSerializable(typeof(IntercompanyAgreementDto[]))]
-[JsonSerializable(typeof(IntercompanyAgreementHistoryDto))]
-[JsonSerializable(typeof(IntercompanyAgreementHistoryDto[]))]
-[JsonSerializable(typeof(IntercompanyAgreementEventDto))]
-[JsonSerializable(typeof(CreateIntercompanyAgreementRequest))]
-[JsonSerializable(typeof(ReviseIntercompanyAgreementRequest))]
-[JsonSerializable(typeof(IntercompanyAgreementActionRequest))]
-public sealed partial class IntercompanyContractsJsonContext : JsonSerializerContext;
+public sealed record IntercompanyAgreementReviewPayloadDto(
+    IntercompanyAgreementDraftDto Draft, int? BaseAgreementVersion, int? PredecessorAgreementVersion, string? Rationale)
+{
+    public Guid AgreementId { get; init; }
+    public Guid ProposalId { get; init; }
+}
+
+/// <summary>Trusted server context, never deserialize this from a command body.</summary>
+public sealed record IntercompanyAgreementCallContext(string TenantId, string Actor);
+
+public class IntercompanyAgreementValidationException(string message) : InvalidOperationException(message);
+public sealed class IntercompanyAgreementConflictException(string message) : IntercompanyAgreementValidationException(message);
+public sealed class IntercompanyAgreementNotFoundException() : IntercompanyAgreementValidationException("Agreement or party was not found.");
+public sealed class IntercompanyAgreementForbiddenException(string message) : IntercompanyAgreementValidationException(message);

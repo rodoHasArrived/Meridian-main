@@ -22,7 +22,7 @@ public sealed partial class ConsolidationService
             var first = role is IntercompanyAccountRoleDto.Receivable or IntercompanyAccountRoleDto.Revenue;
             var isIncome = role is IntercompanyAccountRoleDto.Revenue or IntercompanyAccountRoleDto.Expense;
             return new MatchKey(first ? x.EntityId : x.CounterpartyId!, first ? x.CounterpartyId! : x.EntityId,
-                x.AgreementId, x.TransactionCurrency ?? x.Currency ?? book.BaseCurrency, isIncome,
+                x.AccountingArrangementId, x.AccountingArrangementRevisionId, x.TransactionCurrency ?? x.Currency ?? book.BaseCurrency, isIncome,
                 isIncome ? x.IntercompanyTransactionId : null);
         }).ToDictionary(x => x.Key, x => x.ToArray());
         // An attributed legacy population may move into agreement-specific groups. Retain old
@@ -38,13 +38,13 @@ public sealed partial class ConsolidationService
             var creditor = first ? line.Dimensions!.EntityId! : line.Dimensions!.CounterpartyId!;
             var debtor = first ? line.Dimensions!.CounterpartyId! : line.Dimensions!.EntityId!;
             if (grouped.Keys.Any(x => x.Creditor == creditor && x.Debtor == debtor &&
-                x.Agreement == line.Dimensions!.AgreementId && x.IsIncome == isIncome &&
+                x.Agreement == line.Dimensions!.AccountingArrangementId && x.Revision == line.Dimensions.AccountingArrangementRevisionId && x.IsIncome == isIncome &&
                 (!isIncome || x.Transaction == line.Dimensions.IntercompanyTransactionId))) continue;
-            grouped.TryAdd(new MatchKey(creditor, debtor, line.Dimensions!.AgreementId, book.BaseCurrency,
+            grouped.TryAdd(new MatchKey(creditor, debtor, line.Dimensions!.AccountingArrangementId, line.Dimensions.AccountingArrangementRevisionId, book.BaseCurrency,
                 isIncome, isIncome ? line.Dimensions.IntercompanyTransactionId : null), []);
         }
         foreach (var pair in grouped.OrderBy(x => x.Key.Creditor, StringComparer.Ordinal).ThenBy(x => x.Key.Debtor, StringComparer.Ordinal)
-            .ThenBy(x => x.Key.Agreement, StringComparer.Ordinal).ThenBy(x => x.Key.Currency, StringComparer.Ordinal)
+            .ThenBy(x => x.Key.Agreement, StringComparer.Ordinal).ThenBy(x => x.Key.Revision, StringComparer.Ordinal).ThenBy(x => x.Key.Currency, StringComparer.Ordinal)
             .ThenBy(x => x.Key.IsIncome).ThenBy(x => x.Key.Transaction, StringComparer.Ordinal))
         {
             var key = pair.Key;
@@ -75,7 +75,8 @@ public sealed partial class ConsolidationService
                 => posted.SelectMany(x => x.Entry.Lines).Where(x =>
                     ResolveBinding(overlayBindings, x.Account.Name, x.Dimensions?.ChartAccountNodeId)?.Role == role &&
                     x.Dimensions?.EntityId == entity && x.Dimensions.CounterpartyId == cp &&
-                    x.Dimensions.AgreementId == key.Agreement &&
+                    x.Dimensions.AccountingArrangementId == key.Agreement &&
+                    x.Dimensions.AccountingArrangementRevisionId == key.Revision &&
                     (!key.IsIncome || x.Dimensions.IntercompanyTransactionId == key.Transaction))
                     .Sum(x => x.Debit - x.Credit);
             var firstDelta = firstTarget * firstSign - Current(firstRole, key.Creditor, key.Debtor);
@@ -88,7 +89,7 @@ public sealed partial class ConsolidationService
                 Add(output(IntercompanyAccountRoleDto.TranslationReserve), key.Creditor, key.Debtor, -(firstDelta + secondDelta));
             matches.Add(new ConsolidationMatchDto(key.Creditor, key.Debtor, firstReporting, secondReporting,
                 Math.Min(firstTarget, secondTarget), firstReporting - firstTarget, secondReporting - secondTarget, group.ToArray())
-            { AgreementId = key.Agreement, Treatment = key.IsIncome ? RevenueExpenseRuleId : RuleId,
+            { AccountingArrangementId = key.Agreement, AccountingArrangementRevisionId = key.Revision, Treatment = key.IsIncome ? RevenueExpenseRuleId : RuleId,
               IntercompanyTransactionId = key.Transaction, MatchingCurrency = key.Currency,
               MatchedTransactionAmount = matchedOriginal, UnmatchedFirstTransactionAmount = firstOriginal - matchedOriginal,
               UnmatchedSecondTransactionAmount = secondOriginal - matchedOriginal,
@@ -103,7 +104,7 @@ public sealed partial class ConsolidationService
                     Description: key.IsIncome ? "Reviewed intercompany income elimination" : "Reviewed intercompany balance elimination",
                     EvidenceLink: $"consolidation:{scope}", Dimensions: new LedgerDimensionSetDto(
                         FundId: request.OwnershipRootId.ToString("D"), EntityId: entity, CounterpartyId: cp)
-                    { AgreementId = key.Agreement, IntercompanyTransactionId = key.Transaction,
+                    { AccountingArrangementId = key.Agreement, AccountingArrangementRevisionId = key.Revision, IntercompanyTransactionId = key.Transaction,
                       ChartAccountNodeId = binding.ChartAccountNodeId, AccountBindingRevisionId = binding.RevisionId.ToString("D") }));
             }
         }
@@ -113,6 +114,6 @@ public sealed partial class ConsolidationService
     private static decimal RoundConsolidation(decimal amount, string currency)
         => decimal.Round(amount, CurrencyMinorUnits.GetPrecision(currency.ToUpperInvariant()), MidpointRounding.AwayFromZero);
 
-    private sealed record MatchKey(string Creditor, string Debtor, string? Agreement, string Currency,
+    private sealed record MatchKey(string Creditor, string Debtor, string? Agreement, string? Revision, string Currency,
         bool IsIncome, string? Transaction);
 }

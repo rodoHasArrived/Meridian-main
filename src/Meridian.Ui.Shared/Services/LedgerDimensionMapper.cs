@@ -37,8 +37,10 @@ internal static class LedgerDimensionMapper
             ProjectId: dimensions.ProjectId)
         {
             PositionId = dimensions.PositionId,
-            AgreementId = dimensions.AgreementId,
-            AgreementRevisionId = dimensions.AgreementRevisionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = dimensions.AccountingArrangementId,
+            AccountingArrangementRevisionId = dimensions.AccountingArrangementRevisionId,
             ChartAccountNodeId = dimensions.ChartAccountNodeId,
             AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
             IntercompanyTransactionId = dimensions.IntercompanyTransactionId
@@ -71,8 +73,10 @@ internal static class LedgerDimensionMapper
             ProjectId: dimensions.ProjectId)
         {
             PositionId = dimensions.PositionId,
-            AgreementId = dimensions.AgreementId,
-            AgreementRevisionId = dimensions.AgreementRevisionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = dimensions.AccountingArrangementId,
+            AccountingArrangementRevisionId = dimensions.AccountingArrangementRevisionId,
             ChartAccountNodeId = dimensions.ChartAccountNodeId,
             AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
             IntercompanyTransactionId = dimensions.IntercompanyTransactionId

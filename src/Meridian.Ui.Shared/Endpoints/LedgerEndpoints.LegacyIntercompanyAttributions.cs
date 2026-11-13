@@ -34,7 +34,7 @@ public static partial class LedgerEndpoints
                 var book = await journals.GetLedgerBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
                 var mappings = await bindings.HistoryAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
                 var population = await journals.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: ledgerBookId), context.RequestAborted).ConfigureAwait(false);
-                var candidates = population.SelectMany(record => record.Entry.Lines.Where(line => line.Dimensions?.AgreementId is null &&
+                var candidates = population.SelectMany(record => record.Entry.Lines.Where(line => line.Dimensions?.AccountingArrangementId is null &&
                     mappings.Any(b => b.AccountName == line.Account.Name || b.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal)))
                     .Select(line => new { ledgerBookId, record.Entry.JournalEntryId, line.EntryId,
                         SourceLineDigest = LegacyIntercompanyAttributionRules.SourceDigest(book!, record, line),

@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Tenancy;
 using Meridian.FinancialOperations.Intercompany;
 using Meridian.Storage.FundStructure;
@@ -18,7 +19,7 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             var bindings = new Mock<IIntercompanyAccountBindingStore>();
             bindings.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(EmptyLedgerAuthorityLease.Instance);
             bindings.Setup(x => x.HistoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
-            var agreements = new Mock<IIntercompanyAgreementStore>();
+            var agreements = new Mock<IIntercompanyAccountingArrangementStore>();
             agreements.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).ReturnsAsync(EmptyLedgerAuthorityLease.Instance);
             var configuration = new Mock<IAccountingConfigurationStore>();
             configuration.Setup(x => x.GetAsync(It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>(), It.IsAny<string?>(), It.IsAny<string?>()))
@@ -33,7 +34,7 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             var owner = new Mock<IFundProfileTenancyRegistry>();
             owner.Setup(x => x.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns((string fund, CancellationToken _) => Task.FromResult<FundProfileOwnership?>(new(fund, "fixture-tenant", "fixture-company")));
-            var service = new IntercompanyAgreementService(agreements.Object, Mock.Of<IIntercompanyAgreementScopeAuthority>(), Mock.Of<IIntercompanyAgreementEvidenceAuthority>());
+            var service = new IntercompanyAccountingArrangementService(agreements.Object, Mock.Of<IIntercompanyAccountingArrangementScopeAuthority>(), Mock.Of<IIntercompanyAccountingArrangementLegalAuthority>());
             _source = new(ledger, service, bindings.Object, configuration.Object, owner.Object, agreements.Object);
         }
         public Task<IntercompanyBalanceScheduleDto> GetAsync(string? tenantId, string? companyId, string? fundProfileId,

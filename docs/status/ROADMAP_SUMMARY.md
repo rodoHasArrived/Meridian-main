@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-11-01
+Snapshot date: 2026-11-12
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -76,10 +76,10 @@ Snapshot date: 2026-11-01
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
 | W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | in_progress | green | high | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
-| W12-ICAGREE-001 | Governed intercompany agreement registry and legacy attribution | in_progress | green | high | Accounting and Ledger |
+| W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | in_progress | green | high | Accounting and Ledger |
 | W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | in_progress | green | medium | Accounting and Ledger |
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | in_progress | green | high | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |
 | W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
 | W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |
-| W14-ATTEST-001 | Single-principal attestation for governed approvals in the single-operator envelope | planned | green | medium | Platform Security and Governance |
+| W14-ATTEST-001 | Single-principal attestation for governed approvals in the single-operator envelope | in_progress | yellow | medium | Platform Security and Governance |

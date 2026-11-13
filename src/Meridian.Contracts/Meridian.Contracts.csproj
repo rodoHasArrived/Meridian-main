@@ -16,6 +16,7 @@
   <ItemGroup>
     <!-- ScheduleTermsWriteRules.IsCheckedMemberType (the walk's fail-closed member-type gate) is pinned by the test project. -->
     <InternalsVisibleTo Include="Meridian.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage" />
   </ItemGroup>
 
 </Project>

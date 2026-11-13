@@ -668,6 +668,8 @@ public sealed record EvidencePacketDto(
     public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LedgerAmountProofDto? LedgerAmount { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }
 }
 
 public sealed record EvidenceGraphDto(
@@ -678,6 +680,8 @@ public sealed record EvidenceGraphDto(
     IReadOnlyList<string> Warnings)
 {
     public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }
 }
 
 public sealed record EvidenceTemplateExportSettingsDto(

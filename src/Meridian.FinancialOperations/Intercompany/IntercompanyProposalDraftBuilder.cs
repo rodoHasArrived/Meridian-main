@@ -8,7 +8,7 @@ namespace Meridian.FinancialOperations.Intercompany;
 public static class IntercompanyProposalDraftBuilder
 {
     public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal,
-        IntercompanyAgreementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period,
+        ResolvedIntercompanyAccountingArrangementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period,
         IReadOnlyList<IntercompanyAccountBindingDto> sourceBindings,
         IReadOnlyList<IntercompanyAccountBindingDto> targetBindings,
         IReadOnlyList<ChartOfAccountsNodeDto> chart, ConsolidationFxAmountDto? fx, DateTimeOffset now,
@@ -19,9 +19,12 @@ public static class IntercompanyProposalDraftBuilder
             throw new InvalidOperationException("The source mirror rule version is unsupported.");
         if (source.RequiresSourceAllocation)
             throw new InvalidOperationException("The source has multiple intercompany event groups and unattributed contra legs. Split the source events or explicitly attribute their operating legs before proposing counterparts.");
-        if (agreement.Kind == IntercompanyAgreementKindDto.Guarantee)
+        if (agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Guarantee)
             throw new InvalidOperationException("Guarantee agreements have no supported mirror template.");
-        if (agreement.AgreementId != source.AgreementId || agreement.RevisionId != source.AgreementRevisionId)
+        if (agreement.ArrangementId != source.AccountingArrangementId || agreement.RevisionId != source.AccountingArrangementRevisionId
+            || agreement.CanonicalAgreementId != source.IntercompanyAgreementId
+            || agreement.CanonicalAgreementVersion != source.IntercompanyAgreementVersion
+            || agreement.CanonicalPayloadHash != source.IntercompanyAgreementPayloadHash)
             throw new InvalidOperationException("The exact approved source agreement revision is required.");
         var sourceMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.SourceEntityId && x.LedgerBookId == source.SourceBookId)
             ?? throw new InvalidOperationException("The source book has no approved mapping.");
@@ -69,9 +72,9 @@ public static class IntercompanyProposalDraftBuilder
         if (supportedLineIds.Count != source.Lines.Count || source.Lines.Select(line => line.LineId).Distinct().Count() != source.Lines.Count
             || source.Lines.Sum(line => line.Debit - line.Credit) != 0m)
             throw new InvalidOperationException("Every retained source leg must belong exclusively to one balanced, supported intercompany event. Split unrelated or ambiguous activity before proposing a counterpart.");
-        if (agreement.Kind == IntercompanyAgreementKindDto.Loan && hasOperatingLeg)
+        if (agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan && hasOperatingLeg)
             throw new InvalidOperationException("Loan interest requires its own reviewed treatment; the loan mirror supports principal only.");
-        var contraNode = agreement.Kind == IntercompanyAgreementKindDto.Loan || !hasOperatingLeg
+        var contraNode = agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan || !hasOperatingLeg
             ? targetMap.SettlementAccountNodeId
             : sourceReceivable ? targetMap.ExpenseAccountNodeId : targetMap.RevenueAccountNodeId;
         if (string.IsNullOrWhiteSpace(contraNode))
@@ -91,8 +94,10 @@ public static class IntercompanyProposalDraftBuilder
                 FundId: target.FundProfileId, BookId: target.LedgerBookId.ToString("D"))
             {
                 ChartAccountNodeId = account.NodeId,
-                AgreementId = binding is null ? null : agreement.AgreementId.ToString("D"),
-                AgreementRevisionId = binding is null ? null : agreement.RevisionId.ToString("D"),
+                IntercompanyAgreementId = agreement.CanonicalAgreementId,
+                IntercompanyAgreementVersion = agreement.CanonicalAgreementVersion,
+                AccountingArrangementId = binding is null ? null : agreement.ArrangementId.ToString("D"),
+                AccountingArrangementRevisionId = binding is null ? null : agreement.RevisionId.ToString("D"),
                 AccountBindingRevisionId = binding?.RevisionId.ToString("D"),
                 IntercompanyTransactionId = binding is null ? null : source.TransactionId
             };
@@ -111,8 +116,8 @@ public static class IntercompanyProposalDraftBuilder
         return new ManualJournalEntryDraftDto(source.ProposalId, ManualJournalEntryStatusDto.Draft,
             target.FundProfileId, target.LedgerBookId, target.AccountingBasis, source.EffectiveDate,
             period.PeriodId.ToString("D"), source.CounterpartyEntityId.ToString("D"), null, target.BaseCurrency,
-            $"{agreement.Kind} counterpart of journal {source.SourceJournalId:D}", "intercompany-proposal-service",
-            now, now, 1, lines, [$"journal:{source.SourceJournalId:D}", $"intercompany-agreement:{agreement.AgreementId:D}/revision:{agreement.RevisionId:D}"],
+            $"{agreement.TemplateKind} counterpart of journal {source.SourceJournalId:D}", "intercompany-proposal-service",
+            now, now, 1, lines, [$"journal:{source.SourceJournalId:D}", $"accounting-arrangement:{agreement.ArrangementId:D}/revision:{agreement.RevisionId:D}", $"intercompany-agreement:{agreement.CanonicalAgreementId:D}/version:{agreement.CanonicalAgreementVersion}"],
             [], TreasuryContext: new(source.EffectiveDate, $"intercompany-proposal:{source.ProposalId:D}",
                 FundEventType: "IntercompanyMirror"), TenantId: source.TenantId, CompanyId: source.CompanyId)
         {

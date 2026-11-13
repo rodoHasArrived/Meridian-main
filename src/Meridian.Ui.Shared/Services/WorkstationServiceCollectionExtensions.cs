@@ -20,6 +20,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Plaid;
@@ -86,6 +87,8 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null)
     {
+        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport,
+            CorporateActionCashDividendReconciliationSupport>();
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         services.TryAddSingleton<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>();
         services.AddHostedService(sp => sp.GetRequiredService<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>());
@@ -115,12 +118,6 @@ public static class WorkstationServiceCollectionExtensions
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
         services.AddOperatorTriageStorage(configuration, isProductionComposition);
         services.AddIntercompanyEntityServices(configuration);
-        if (services.Any(item => item.ServiceType == typeof(IIntercompanyAgreementEvidenceAuthority)
-            && item.ImplementationType == typeof(UnavailableAgreementEvidenceAuthority)))
-            services.Replace(ServiceDescriptor.Singleton<IIntercompanyAgreementEvidenceAuthority,
-                EvidenceVaultIntercompanyAgreementEvidenceAuthority>());
-        else
-            services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, EvidenceVaultIntercompanyAgreementEvidenceAuthority>();
 
         services.TryAddSingleton<ConfigStore>(sp =>
         {
@@ -161,6 +158,14 @@ public static class WorkstationServiceCollectionExtensions
         // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
         // request each time, so singleton accounting guards can consume it without capturing a scope.
         services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // Agreement writes require durable tenant-partitioned authority. An unconfigured local
+        // fund-structure graph must not silently become a production agreement registry.
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(Meridian.Storage.FundStructure.IIntercompanyAgreementStore)))
+        {
+            services.TryAddSingleton<IIntercompanyAgreementAccessAuthority, HttpContextIntercompanyAgreementAccessAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, WorkstationIntercompanyAgreementEvidenceAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementService, Meridian.Application.FundStructure.IntercompanyAgreementService>();
+        }
         // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
         // otherwise HTTP scope must take precedence over any ambient background authority.
         services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
@@ -1100,7 +1105,8 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetService<IAccountingJournalDraftService>() is { } journalDrafts
                 ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), ledger, policy, journalDrafts,
                     sp.GetService<IIntercompanyAccountBindingStore>(), sp.GetService<IConsolidationFxAuthority>(),
-                    sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>())
+                    sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>(),
+                    sp.GetService<IntercompanyAccountingArrangementService>())
                 : null!);
         services.TryAddSingleton<IConsolidationDraftGuard>(sp => sp.GetService<ConsolidationService>()!);
         services.TryAddSingleton<IConsolidationPostingAuthority>(sp =>
@@ -1110,7 +1116,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetService<IAccountingPolicyService>() is { } policies
                 ? new PostgresConsolidationPostingAuthority(consolidation, structure, policies,
                     sp.GetService<IIntercompanyAccountBindingStore>(), sp.GetService<IConsolidationFxAuthority>(),
-                    sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>()) : null!);
+                    sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>(),
+                        sp.GetService<Meridian.Storage.FundStructure.IIntercompanyAccountingArrangementStore>(),
+                        sp.GetService<IIntercompanyAccountingArrangementLegalAuthority>()) : null!);
         services.TryAddSingleton<ConsolidationWorkbenchService>(sp =>
             sp.GetService<ConsolidationService>() is { } consolidation &&
             sp.GetService<IManualJournalEntryWorkbenchService>() is ManualJournalEntryWorkbenchService workbench
@@ -1139,16 +1147,19 @@ public static class WorkstationServiceCollectionExtensions
                 intercompanyPostingAuthority: sp.GetService<IntercompanyLedgerPostingAuthority>()));
         services.TryAddSingleton<ManualJournalEntryWorkbenchService>(sp =>
             sp.GetRequiredService<IManualJournalEntryWorkbenchService>() as ManualJournalEntryWorkbenchService ?? null!);
+        services.TryAddSingleton<IEntityTimelineAccessAuthority, HttpContextEntityTimelineAccessAuthority>();
         services.TryAddSingleton<EntityTimelineService>(sp =>
-            sp.GetService<IFundStructureService>() is { } structure && sp.GetService<ILedgerJournalStore>() is { } journals
+            sp.GetService<IFundStructureService>() is { } structure && sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAgreementService>() is { } legalAgreements
                 ? new EntityTimelineService(structure, sp.GetRequiredService<Meridian.Storage.FundStructure.IEntityLifecycleStore>(),
-                    sp.GetRequiredService<IntercompanyAgreementService>(), journals) : null!);
+                    sp.GetRequiredService<IntercompanyAccountingArrangementService>(), journals, legalAgreements,
+                    sp.GetRequiredService<IEntityTimelineAccessAuthority>()) : null!);
         services.TryAddSingleton<IntercompanyProposalDeliveryService>(sp =>
             sp.GetService<IIntercompanyProposalStore>() is { } proposals &&
             sp.GetService<ILedgerJournalStore>() is { } journals &&
             sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
             sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench
-                ? new IntercompanyProposalDeliveryService(proposals, sp.GetRequiredService<IntercompanyAgreementService>(),
+                ? new IntercompanyProposalDeliveryService(proposals, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
                     journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench,
                     sp.GetRequiredService<IFundProfileTenancyRegistry>(), sp.GetRequiredService<IConsolidationFxAuthority>(),
@@ -1287,7 +1298,8 @@ public static class WorkstationServiceCollectionExtensions
                 ResolveWorkstationDataDirectory(sp),
                 logger,
                 sp.GetService<IReconciliationSlaPolicyProvider>(),
-                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>());
+                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>(),
+                preparerAttestationReferences: sp.GetRequiredService<Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier>());
         });
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(

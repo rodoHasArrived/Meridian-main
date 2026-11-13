@@ -15,6 +15,7 @@ public sealed partial class PostgresLedgerJournalStore
         RequireWriteTenant();
         if (entry.AggregateId == Guid.Empty || entry.Entry.JournalEntryId == Guid.Empty || entry.PeriodId == Guid.Empty)
             throw new LedgerValidationException("Posting identity and period are required.");
+        var mappings = await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
         var collisions = await FindPostingIdentityCollisionsAsync(connection, transaction,
             LedgerPostingIdentity.FromWrite(entry), ct).ConfigureAwait(false);
         if (collisions.Count == 0) return false;
@@ -27,6 +28,8 @@ public sealed partial class PostgresLedgerJournalStore
             forUpdate: _options.EnablePeriodLocking,
             callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false)
             ?? throw new LedgerValidationException("The retained posting period is unavailable.");
+        if (period.LedgerBookId != mappings[entry.PeriodId])
+            throw new LedgerValidationException("The retained period book changed while acquiring entitlement authority; retry the transaction.");
         if ((entry.LedgerBookId ?? entry.PostingCommand?.LedgerBookId) is { } claimedBook && claimedBook != period.LedgerBookId)
             throw new LedgerValidationException("The replay book differs from the retained posting's authoritative book.");
         if (verifyAudit)

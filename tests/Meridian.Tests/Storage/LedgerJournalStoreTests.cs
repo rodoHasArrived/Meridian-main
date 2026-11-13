@@ -2647,8 +2647,10 @@ public sealed class LedgerJournalStoreTests
             ProjectId: "project-1")
         {
             PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70"),
-            AgreementId = "51e16a9e-56f3-4765-81b6-403c38a29d71",
-            AgreementRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d72",
+            IntercompanyAgreementId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb"),
+            IntercompanyAgreementVersion = 1,
+            AccountingArrangementId = "51e16a9e-56f3-4765-81b6-403c38a29d71",
+            AccountingArrangementRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d72",
             ChartAccountNodeId = "51e16a9e-56f3-4765-81b6-403c38a29d73",
             AccountBindingRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d74",
             IntercompanyTransactionId = "recharge-transaction-1"

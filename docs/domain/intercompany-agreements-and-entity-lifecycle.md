@@ -6,23 +6,43 @@
 
 **Reviewed:** 2026-11-12
 
-An **intercompany agreement** is a tenant-owned legal relationship between two distinct legal
-entities, with a stable agreement identity and immutable term revisions. It is separate from a
-Security Master OTC instrument and from the ownership graph used to resolve consolidation.
-Multiple facilities of the same kind may coexist. Approved revisions of one facility cannot
-have conflicting effective windows; dates use `[EffectiveFrom, EffectiveTo)`.
+The [canonical intercompany agreement registry](intercompany-agreements.md) owns legal terms,
+parties, effective dates, currency, settlement terms, document evidence and independent approval.
+It is separate from Security Master OTC instruments and the consolidation ownership graph.
 
-The approved terms pin each party's entity, book and stable chart node identities, currency,
-settlement cadence, signed Evidence Vault artifact identity/hash, and lifecycle evidence.
-Loan, cost-recharge, management-fee and expense-share agreements may support configured journal
-templates. Guarantees are registry-only: they do not authorize postings or counterpart drafts.
-Loan mirrors support principal; interest requires its own reviewed treatment.
+An **intercompany accounting profile** is immutable operational configuration linked to one exact
+approved native agreement ID, integer version and payload hash. It owns only its accounting
+template, party books, stable account-node mappings and a validity window within the legal window.
+Legal facts are derived from that approved revision and cannot be edited through a profile.
+Profile submission, owner approval, rejection and retirement append history. Owner approval of
+configuration does not replace the native legal registry's independent approval. Separate
+facilities may coexist; approved revisions of one profile cannot have conflicting validity
+windows. Dates use `[EffectiveFrom, EffectiveTo)`.
 
-Creation and amendment retain draft terms. Submission, approval, rejection, termination and
-novation append lifecycle evidence rather than replacing approved terms. Approval requires the
-configured party/account authority and retained signed-document evidence. A successor agreement
-and novation evidence preserve the predecessor; merging an entity does not rewrite its agreements,
-books or journals automatically.
+Native legal drafts remain available during entity setup. Submitting or approving a new legal
+commitment checks effective and current lifecycle eligibility; termination remains a closure
+operation. Missing retained lifecycle history can use an active legacy snapshot only with an
+explicit migration warning retained in the legal audit and receipt. That warning does not grant
+governed accounting-profile activation or enforced-book posting eligibility.
+
+Loan, cost-recharge, management-fee and expense-share profiles support configured journal
+templates. Guarantees have no posting treatment. Loan mirrors support principal; interest needs
+its own reviewed treatment. A successor profile cannot novate a legal agreement: retain the
+separately approved native successor and predecessor termination. Entity mergers never rewrite
+legal parties, accounting profiles, books or journals automatically.
+
+Entity journal lines keep native legal GUID/version dimensions separate from string accounting
+profile/revision dimensions. Both pins and the trusted native payload hash travel with source
+and counterpart evidence. Native legal references can exist without a profile when the book's
+account-role controls permit it. Fund elimination overlays retain legal source provenance in
+their reviewed evidence rather than claiming to be an entity's legal-reference posting.
+
+Governed elimination requires reviewed accounting attribution for role-classified lines that
+carry native legal provenance. A native legal-only journal remains a valid source posting and
+visible in gross reporting; a reviewed profile sidecar is required before it can contribute to
+eliminated output. Opposite balances on different approved profile revisions remain separate
+breaks. Earlier unversioned overlays are reclassified explicitly rather than silently assigned
+to a newer revision.
 
 An **account-role binding** connects an immutable chart node identity to Receivable, Payable,
 Revenue, Expense or TranslationReserve. Chart path and ledger account name are separate fields.
@@ -62,7 +82,7 @@ history is visible until an audited migration preflight succeeds. Activation pin
 source population and authority. Warning mode does not waive balancing, period locks, approval,
 tenant isolation, consolidation freshness, or missing governed FX evidence.
 
-The shared entity timeline joins lifecycle revisions, ownership links, agreements and books.
+The shared entity timeline joins lifecycle revisions, ownership links, legal agreements, accounting profiles and books.
 Browser and desktop consume the same read model under Accounting/Portfolio navigation. A missing
 lifecycle baseline or an earlier uncovered interval is shown as unknown.
 

@@ -14,7 +14,7 @@ namespace Meridian.Ui.Shared.Services;
 
 /// <summary>Delivers retained sources into the destination's existing review queue.</summary>
 public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalStore store,
-    IntercompanyAgreementService agreements, ILedgerJournalStore journals,
+    IntercompanyAccountingArrangementService agreements, ILedgerJournalStore journals,
     IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration,
     IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench,
     IFundProfileTenancyRegistry owners, IConsolidationFxAuthority fx, TimeProvider? time = null)
@@ -35,8 +35,11 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
                 var reversal = source.ReversesJournalId is not null
                     ? await RetainedReversalAsync(source, ct).ConfigureAwait(false) : null;
                 var authorityDate = reversal?.OriginalDate ?? source.EffectiveDate;
-                var agreement = await agreements.ResolveApprovedRevisionAsync(source.TenantId, source.AgreementId,
-                    source.AgreementRevisionId, new DateTimeOffset(authorityDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                var agreement = reversal is not null
+                    ? await agreements.GetApprovedRevisionAsync(source.TenantId, source.AccountingArrangementId,
+                        source.AccountingArrangementRevisionId, ct).ConfigureAwait(false)
+                    : await agreements.ResolveApprovedRevisionAsync(source.TenantId, source.AccountingArrangementId,
+                        source.AccountingArrangementRevisionId, new DateTimeOffset(authorityDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
                 var maps = agreement.PartyMappings.Where(x => x.EntityId == source.CounterpartyEntityId
                     && (reversal is null || x.LedgerBookId == reversal.Prior.ResolvedTargetBookId)).ToArray();
                 if (maps.Length != 1) throw new InvalidOperationException("Select one approved counterpart book for this agreement revision.");
@@ -63,7 +66,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
                 if (periodCandidates.Length != 1)
                     throw new InvalidOperationException("Exactly one open destination period must contain the source effective date; no date is moved automatically.");
                 var manuallyBooked = await journals.QueryAsync(new(LedgerBookId: target.LedgerBookId,
-                    LineDimensions: new() { AgreementId = agreement.AgreementId.ToString("D"), IntercompanyTransactionId = source.TransactionId }), ct).ConfigureAwait(false);
+                    LineDimensions: new() { AccountingArrangementId = agreement.ArrangementId.ToString("D"), IntercompanyTransactionId = source.TransactionId }), ct).ConfigureAwait(false);
                 if (manuallyBooked.Count > 0 && source.ReversesJournalId is null)
                     throw new InvalidOperationException("A possible manually booked counterpart exists. Review and explicitly link it before creating another entry.");
                 var targetAccounts = await bindings.ListAsync(target.LedgerBookId, source.EffectiveDate, ct).ConfigureAwait(false);
@@ -133,7 +136,10 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         var matches = (await store.ListAsync(source.TenantId, source.SourceBookId, ct).ConfigureAwait(false))
             .Where(x => x.Source.SourceJournalId == originalId && x.Source.SourceBookId == source.SourceBookId
                 && x.Source.SourceEntityId == source.SourceEntityId && x.Source.CounterpartyEntityId == source.CounterpartyEntityId
-                && x.Source.AgreementId == source.AgreementId && x.Source.AgreementRevisionId == source.AgreementRevisionId
+                && x.Source.AccountingArrangementId == source.AccountingArrangementId && x.Source.AccountingArrangementRevisionId == source.AccountingArrangementRevisionId
+                && x.Source.IntercompanyAgreementId == source.IntercompanyAgreementId
+                && x.Source.IntercompanyAgreementVersion == source.IntercompanyAgreementVersion
+                && x.Source.IntercompanyAgreementPayloadHash == source.IntercompanyAgreementPayloadHash
                 && string.Equals(x.Source.TransactionId, source.TransactionId, StringComparison.Ordinal)).ToArray();
         if (matches.Length != 1 || matches[0].ResolvedTargetBookId is null || matches[0].ResolvedTargetJournalId is null)
             throw new InvalidOperationException("One exact original event and its reviewed posted counterpart are required before a reversal can be proposed.");
@@ -161,7 +167,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
             || draft.EntryType == ManualJournalEntryTypeDto.Reversal)
             throw new InvalidOperationException("Only an editable source-bound counterpart can be explicitly repriced; retained reversals use original economics.");
         var source = proposal.Source;
-        var terms = await agreements.ResolveApprovedRevisionAsync(tenant, source.AgreementId, source.AgreementRevisionId,
+        var terms = await agreements.ResolveApprovedRevisionAsync(tenant, source.AccountingArrangementId, source.AccountingArrangementRevisionId,
             new DateTimeOffset(source.EffectiveDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
         if (terms.Currency == book.BaseCurrency) throw new InvalidOperationException("This counterpart requires no foreign-currency repricing.");
         var sourceMap = terms.PartyMappings.Single(x => x.EntityId == source.SourceEntityId && x.LedgerBookId == source.SourceBookId);
@@ -225,7 +231,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         if (proposal.LatestLink is not null || proposal.Status == IntercompanyProposalStatusDto.Linked)
             throw new InvalidOperationException("A reviewed manual linkage already exists. Replacing a linked target requires a separate correction workflow.");
         var source = proposal.Source;
-        var agreement = await agreements.ResolveApprovedRevisionAsync(tenant, source.AgreementId, source.AgreementRevisionId,
+        var agreement = await agreements.ResolveApprovedRevisionAsync(tenant, source.AccountingArrangementId, source.AccountingArrangementRevisionId,
             new DateTimeOffset(source.EffectiveDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
         var destinations = agreement.PartyMappings.Where(x => x.EntityId == source.CounterpartyEntityId).ToArray();
         if (!destinations.Any(x => x.LedgerBookId == request.TargetBookId))
@@ -265,8 +271,8 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         var source = proposal.Source;
         evaluation ??= new(journals, agreements, owners, source.TenantId, source.CompanyId,
             DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime));
-        IntercompanyAgreementDto agreement;
-        try { agreement = await evaluation.TermsAsync(source.AgreementId, source.AgreementRevisionId, ct).ConfigureAwait(false); }
+        ResolvedIntercompanyAccountingArrangementDto agreement;
+        try { agreement = await evaluation.TermsAsync(source, ct).ConfigureAwait(false); }
         catch (InvalidOperationException error) { return error.Message; }
         var sourceMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.SourceEntityId && x.LedgerBookId == source.SourceBookId);
         var targetMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.CounterpartyEntityId && x.LedgerBookId == targetBookId);
@@ -300,9 +306,11 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         bool Node(LedgerEntry line) => line.Dimensions?.ChartAccountNodeId == mapping.ReceivableAccountNodeId
             || line.Dimensions?.ChartAccountNodeId == mapping.PayableAccountNodeId;
         var anchor = family.Single(record => record.Entry.JournalEntryId == anchorId);
-        bool Event(LedgerEntry line) => Guid.TryParse(line.Dimensions?.AgreementId, out var agreementId) && agreementId == source.AgreementId
-            && Guid.TryParse(line.Dimensions?.AgreementRevisionId, out var revisionId) && revisionId == source.AgreementRevisionId
-            && string.Equals(line.Dimensions?.IntercompanyTransactionId, source.TransactionId, StringComparison.Ordinal);
+        bool Event(LedgerEntry line) => Guid.TryParse(line.Dimensions?.AccountingArrangementId, out var agreementId) && agreementId == source.AccountingArrangementId
+            && Guid.TryParse(line.Dimensions?.AccountingArrangementRevisionId, out var revisionId) && revisionId == source.AccountingArrangementRevisionId
+            && string.Equals(line.Dimensions?.IntercompanyTransactionId, source.TransactionId, StringComparison.Ordinal)
+            && line.Dimensions?.IntercompanyAgreementId == source.IntercompanyAgreementId
+            && line.Dimensions?.IntercompanyAgreementVersion == source.IntercompanyAgreementVersion;
         var originals = anchor.Entry.Lines.Where(line => Node(line) && (!sourceAnchor || Event(line))).ToArray();
         if (originals.Length == 0) return (0m, "The source or counterpart has no authoritative monetary account identity.");
         var names = originals.Select(line => line.Account.Name).ToHashSet(StringComparer.Ordinal);
@@ -311,9 +319,11 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         foreach (var line in record.Entry.Lines.Where(line => Node(line) || (line.Dimensions?.ChartAccountNodeId is null && names.Contains(line.Account.Name))))
         {
             var dimensions = line.Dimensions;
-            var sameTransaction = Guid.TryParse(dimensions?.AgreementId, out var agreementId) && agreementId == source.AgreementId
-                && Guid.TryParse(dimensions?.AgreementRevisionId, out var revisionId) && revisionId == source.AgreementRevisionId
-                && dimensions?.IntercompanyTransactionId == source.TransactionId;
+            var sameTransaction = Guid.TryParse(dimensions?.AccountingArrangementId, out var agreementId) && agreementId == source.AccountingArrangementId
+                && Guid.TryParse(dimensions?.AccountingArrangementRevisionId, out var revisionId) && revisionId == source.AccountingArrangementRevisionId
+                && dimensions?.IntercompanyTransactionId == source.TransactionId
+                && dimensions.IntercompanyAgreementId == source.IntercompanyAgreementId
+                && dimensions.IntercompanyAgreementVersion == source.IntercompanyAgreementVersion;
             if (!sameTransaction)
             {
                 if (record.Entry.JournalEntryId == anchorId && !sourceAnchor)
@@ -331,12 +341,12 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         return (amount, null);
     }
 
-    private sealed class CounterpartEvaluation(ILedgerJournalStore journals, IntercompanyAgreementService agreements,
+    private sealed class CounterpartEvaluation(ILedgerJournalStore journals, IntercompanyAccountingArrangementService agreements,
         IFundProfileTenancyRegistry owners, string tenant, string? company, DateOnly asOf)
     {
         private readonly Dictionary<Guid, Task<LedgerBookRecord?>> _books = new();
         private readonly Dictionary<Guid, Task<IntercompanyJournalFamily>> _populations = new();
-        private readonly Dictionary<(Guid, Guid), Task<IntercompanyAgreementDto>> _terms = new();
+        private readonly Dictionary<(Guid, Guid, Guid), Task<ResolvedIntercompanyAccountingArrangementDto>> _terms = new();
         public Task<LedgerBookRecord?> BookAsync(Guid id, CancellationToken ct)
         {
             if (!_books.TryGetValue(id, out var task)) _books[id] = task = ReadBookAsync(id, ct);
@@ -356,17 +366,31 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         }
         private async Task<IntercompanyJournalFamily> ReadPopulationAsync(Guid book, CancellationToken ct)
             => new(await journals.QueryAsync(new(LedgerBookId: book, EffectiveTo: asOf), ct).ConfigureAwait(false), asOf);
-        public Task<IntercompanyAgreementDto> TermsAsync(Guid agreementId, Guid revision, CancellationToken ct)
+        public Task<ResolvedIntercompanyAccountingArrangementDto> TermsAsync(IntercompanyProposalSourceDto source, CancellationToken ct)
         {
-            var key = (agreementId, revision);
-            if (!_terms.TryGetValue(key, out var task)) _terms[key] = task = ReadTermsAsync(agreementId, revision, ct);
+            var key = (source.AccountingArrangementId, source.AccountingArrangementRevisionId, source.SourceJournalId);
+            if (!_terms.TryGetValue(key, out var task)) _terms[key] = task = ReadTermsAsync(source, ct);
             return task;
         }
-        private async Task<IntercompanyAgreementDto> ReadTermsAsync(Guid agreementId, Guid revision, CancellationToken ct)
+        private async Task<ResolvedIntercompanyAccountingArrangementDto> ReadTermsAsync(IntercompanyProposalSourceDto source, CancellationToken ct)
         {
-            var history = await agreements.GetHistoryAsync(tenant, agreementId, ct).ConfigureAwait(false);
-            return history?.Events.FirstOrDefault(item => item.Action == IntercompanyAgreementActionDto.Approve && item.AffectedRevision.RevisionId == revision)?.AffectedRevision
-                ?? throw new InvalidOperationException("The approved source agreement revision is unavailable.");
+            var date = source.EffectiveDate;
+            if (source.ReversesJournalId is { } originalId)
+            {
+                var original = await journals.QueryAsync(new(LedgerBookId: source.SourceBookId, JournalEntryId: originalId), ct).ConfigureAwait(false);
+                var inverse = await journals.QueryAsync(new(LedgerBookId: source.SourceBookId, JournalEntryId: source.SourceJournalId), ct).ConfigureAwait(false);
+                if (original.Count != 1 || inverse.Count != 1) throw new InvalidOperationException("The exact source correction lineage is unavailable.");
+                date = IntercompanyCounterpartReversalBuilder.VerifySource(source, original[0], inverse[0]);
+            }
+            var result = source.ReversesJournalId is not null
+                ? await agreements.GetApprovedRevisionAsync(tenant, source.AccountingArrangementId, source.AccountingArrangementRevisionId, ct).ConfigureAwait(false)
+                : await agreements.ResolveApprovedRevisionAsync(tenant, source.AccountingArrangementId,
+                    source.AccountingArrangementRevisionId, new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+            if (result.CanonicalAgreementId != source.IntercompanyAgreementId
+                || result.CanonicalAgreementVersion != source.IntercompanyAgreementVersion
+                || result.CanonicalPayloadHash != source.IntercompanyAgreementPayloadHash)
+                throw new InvalidOperationException("The retained source canonical legal pin differs from its accounting arrangement.");
+            return result;
         }
     }
 
@@ -398,15 +422,18 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
                     ? "AwaitingCounterpartPosting"
                     : mismatch.Contains("currency", StringComparison.OrdinalIgnoreCase) ? "CurrencyMismatch" : "AmountOrIdentityMismatch";
             }
-            IntercompanyAgreementDto? terms = null;
-            try { terms = await evaluation.TermsAsync(proposal.Source.AgreementId, proposal.Source.AgreementRevisionId, ct).ConfigureAwait(false); }
+            ResolvedIntercompanyAccountingArrangementDto? terms = null;
+            try { terms = await evaluation.TermsAsync(proposal.Source, ct).ConfigureAwait(false); }
             catch (InvalidOperationException error) { mismatch ??= error.Message; classification = "AgreementAuthorityUnavailable"; }
             var due = proposal.DueDate ?? (terms?.SettlementDueDays is { } days ? proposal.Source.EffectiveDate.AddDays(days) : (DateOnly?)null);
             var from = due ?? proposal.Source.EffectiveDate;
-            result.Add(new(proposal.Source.ProposalId, proposal.Source.AgreementId, proposal.Source.TransactionId,
+            result.Add(new(proposal.Source.ProposalId, proposal.Source.AccountingArrangementId, proposal.Source.TransactionId,
                 classification, from, Math.Max(0, asOf.DayNumber - from.DayNumber),
                 due is null ? "Source effective date" : "Contractual due date",
-                mismatch ?? proposal.LastError ?? classification, proposal.Source.SourceJournalId, targetJournal));
+                mismatch ?? proposal.LastError ?? classification, proposal.Source.SourceJournalId, targetJournal)
+            { IntercompanyAgreementId = proposal.Source.IntercompanyAgreementId,
+                IntercompanyAgreementVersion = proposal.Source.IntercompanyAgreementVersion,
+                IntercompanyAgreementPayloadHash = proposal.Source.IntercompanyAgreementPayloadHash });
         }
         return result;
     }

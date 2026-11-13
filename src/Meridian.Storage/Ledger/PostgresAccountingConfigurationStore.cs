@@ -102,6 +102,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // Native dividend posting holds this book exclusively while rebuilding its exact
+        // promoted rule and account binding. Configuration cannot change before that commit.
+        if (workspace.LedgerBookId is { } bookId)
+            await CashDividendEntitlementLock.AcquireAsync(connection, transaction, bookId, false, ct).ConfigureAwait(false);
         await UpsertWorkspaceAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
         await ReplaceChartAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
         await ReplaceTemplatesAsync(connection, transaction, workspace, ct).ConfigureAwait(false);

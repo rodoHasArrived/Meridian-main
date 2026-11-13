@@ -1,3 +1,4 @@
+using Meridian.Tests.TestSupport;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Intercompany;
@@ -22,10 +23,31 @@ public sealed class IntercompanyProposalDraftBuilderTests
         Assert.Equal(expectedSide, draft.Lines[0].Side);
         Assert.Equal(expectedNode, draft.Lines[0].Dimensions!.ChartAccountNodeId);
         Assert.Equal(0m, draft.Lines.Sum(x => x.Side == AccountingTemplateLineSideDto.Debit ? x.Amount : -x.Amount));
-        Assert.All(draft.Lines, line => Assert.Equal(100m, line.Amount));
+        Assert.All(draft.Lines, line =>
+        {
+            Assert.Equal(100m, line.Amount);
+            Assert.Equal(source.Source.IntercompanyAgreementId, line.Dimensions!.IntercompanyAgreementId);
+            Assert.Equal(source.Source.IntercompanyAgreementVersion, line.Dimensions.IntercompanyAgreementVersion);
+        });
         Assert.Equal(IntercompanyProposalTestData.EntityB.ToString("D"), draft.Lines[0].Dimensions!.EntityId);
         Assert.Equal(IntercompanyProposalTestData.EntityA.ToString("D"), draft.Lines[0].Dimensions!.CounterpartyId);
         Assert.Equal(source.Source.TransactionId, draft.Lines[0].Dimensions!.IntercompanyTransactionId);
+    }
+
+    [Theory]
+    [InlineData("id")]
+    [InlineData("version")]
+    [InlineData("hash")]
+    public void SourceCanonicalLegalPin_MustMatchTheExactApprovedAccountingArrangement(string changed)
+    {
+        var proposal = IntercompanyProposalTestData.Proposal();
+        proposal = proposal with { Source = changed switch
+        {
+            "id" => proposal.Source with { IntercompanyAgreementId = Guid.NewGuid() },
+            "version" => proposal.Source with { IntercompanyAgreementVersion = 999 },
+            _ => proposal.Source with { IntercompanyAgreementPayloadHash = new string('b', 64) }
+        } };
+        Assert.Throws<InvalidOperationException>(() => Build(proposal));
     }
 
     [Fact]
@@ -60,7 +82,7 @@ public sealed class IntercompanyProposalDraftBuilderTests
     public void ForeignCurrencyWithoutApprovedConversion_CannotInventFunctionalAmounts()
     {
         var source = IntercompanyProposalTestData.Proposal();
-        var agreement = IntercompanyProposalTestData.Agreement() with { Currency = "EUR" };
+        var agreement = IntercompanyProposalTestData.Agreement(currency: "EUR");
         source = source with { Source = source.Source with { Lines = source.Source.Lines.Select(line => line with { Currency = "EUR" }).ToArray() } };
         Assert.Throws<InvalidOperationException>(() => Build(source, agreement));
     }
@@ -104,12 +126,9 @@ public sealed class IntercompanyProposalDraftBuilderTests
         source = source with { Source = source.Source with { Lines = [source.Source.Lines[0],
             new(Guid.NewGuid(), "Expenses:Recharge", "Expense", "a-expense", 100m, 0m, "USD", 100m, 0m),
             new(Guid.NewGuid(), "Income:Recharge", "Revenue", "a-revenue", 0m, 200m, "USD", 0m, 200m)] } };
-        var agreement = IntercompanyProposalTestData.Agreement() with
-        {
-            Kind = IntercompanyAgreementKindDto.CostRecharge,
-            PartyMappings = IntercompanyProposalTestData.Agreement().PartyMappings.Select(mapping => mapping.EntityId == IntercompanyProposalTestData.EntityA
-                ? mapping with { RevenueAccountNodeId = "a-revenue", ExpenseAccountNodeId = "a-expense" } : mapping).ToArray()
-        };
+        var agreement = IntercompanyProposalTestData.Agreement(template: IntercompanyAccountingTemplateKindDto.CostRecharge,
+            mappings: IntercompanyProposalTestData.Agreement().PartyMappings.Select(mapping => mapping.EntityId == IntercompanyProposalTestData.EntityA
+                ? mapping with { RevenueAccountNodeId = "a-revenue", ExpenseAccountNodeId = "a-expense" } : mapping).ToArray());
 
         var error = Assert.Throws<InvalidOperationException>(() => Build(source, agreement));
 
@@ -122,12 +141,9 @@ public sealed class IntercompanyProposalDraftBuilderTests
         var source = IntercompanyProposalTestData.Proposal();
         source = source with { Source = source.Source with { Lines = [source.Source.Lines[0],
             new(Guid.NewGuid(), "Expenses:Shared", "Expense", "a-expense", 0m, 100m, "USD", 0m, 100m)] } };
-        var agreement = IntercompanyProposalTestData.Agreement() with
-        {
-            Kind = IntercompanyAgreementKindDto.ExpenseShare,
-            PartyMappings = IntercompanyProposalTestData.Agreement().PartyMappings.Select(mapping => mapping with
-                { ExpenseAccountNodeId = mapping.EntityId == IntercompanyProposalTestData.EntityA ? "a-expense" : "b-expense" }).ToArray()
-        };
+        var agreement = IntercompanyProposalTestData.Agreement(template: IntercompanyAccountingTemplateKindDto.ExpenseShare,
+            mappings: IntercompanyProposalTestData.Agreement().PartyMappings.Select(mapping => mapping with
+                { ExpenseAccountNodeId = mapping.EntityId == IntercompanyProposalTestData.EntityA ? "a-expense" : "b-expense" }).ToArray());
         var expense = new ChartOfAccountsNodeDto("b-expense", "Expenses:Shared", "Expenses:Shared", "Expense",
             IntercompanyRole: IntercompanyAccountRoleDto.Expense);
         var binding = new IntercompanyAccountBindingDto(Guid.NewGuid(), Guid.NewGuid(), 1, IntercompanyProposalTestData.BookB,
@@ -143,7 +159,7 @@ public sealed class IntercompanyProposalDraftBuilderTests
         Assert.Equal(100m, draft.Lines[1].Amount);
     }
 
-    private static ManualJournalEntryDraftDto Build(IntercompanyProposalDto source, IntercompanyAgreementDto? agreement = null)
+    private static ManualJournalEntryDraftDto Build(IntercompanyProposalDto source, ResolvedIntercompanyAccountingArrangementDto? agreement = null)
         => IntercompanyProposalDraftBuilder.Build(source, agreement ?? IntercompanyProposalTestData.Agreement(),
             IntercompanyProposalTestData.TargetBook(), IntercompanyProposalTestData.Period(), [],
             IntercompanyProposalTestData.TargetBindings(), IntercompanyProposalTestData.Chart(), null, IntercompanyProposalTestData.Now);
@@ -155,7 +171,7 @@ internal static class IntercompanyProposalTestData
     public static readonly Guid EntityB = Guid.Parse("b1111111-1111-1111-1111-111111111111");
     public static readonly Guid BookA = Guid.Parse("a2222222-2222-2222-2222-222222222222");
     public static readonly Guid BookB = Guid.Parse("b2222222-2222-2222-2222-222222222222");
-    public static readonly Guid AgreementId = Guid.Parse("c1111111-1111-1111-1111-111111111111");
+    public static readonly Guid AccountingArrangementId = Guid.Parse("c1111111-1111-1111-1111-111111111111");
     public static readonly Guid RevisionId = Guid.Parse("c2222222-2222-2222-2222-222222222222");
     public static readonly DateTimeOffset Now = new(2026, 6, 30, 10, 0, 0, TimeSpan.Zero);
     public static readonly DateOnly Date = new(2026, 6, 30);
@@ -163,20 +179,25 @@ internal static class IntercompanyProposalTestData
         "Target", "USD", Now, Now);
     public static LedgerAccountingPeriod Period() => new(Guid.NewGuid(), BookB, 2026, 6, "June",
         new(2026, 6, 1), Date, "Open", Now, null, 1);
-    public static IntercompanyAgreementDto Agreement() => new(AgreementId, Guid.NewGuid(), "loan-a-b", IntercompanyAgreementKindDto.Loan,
-        EntityA, EntityB, "Lender", "Borrower", "USD", "Monthly", Now.AddDays(-30), null, RevisionId, 1, 3,
-        IntercompanyAgreementStatusDto.Approved,
-        [new(EntityA, BookA, "a-receivable", "a-payable", "a-cash"), new(EntityB, BookB, "b-receivable", "b-payable", "b-cash")],
-        null, "preparer", Now.AddDays(-1), "reviewer", Now, "reviewer", Now);
+    public static ResolvedIntercompanyAccountingArrangementDto Agreement(string currency = "USD",
+        IntercompanyAccountingTemplateKindDto template = IntercompanyAccountingTemplateKindDto.Loan,
+        IReadOnlyList<IntercompanyPartyMappingDto>? mappings = null, DateTimeOffset? effectiveTo = null)
+        => IntercompanyArrangementTestData.Create(AccountingArrangementId, Guid.NewGuid(), template,
+            EntityA, EntityB, currency, mappings ??
+                [new(EntityA, BookA, "a-receivable", "a-payable", "a-cash"), new(EntityB, BookB, "b-receivable", "b-payable", "b-cash")],
+            RevisionId, Now.AddDays(-30), effectiveTo);
     public static IntercompanyProposalDto Proposal(bool receivable = true, bool sourceDebit = true, string transaction = "invoice-100")
     {
         var source = new IntercompanyProposalSourceDto(Guid.NewGuid(), "tenant-a", "company-a", Guid.NewGuid(), BookA,
-            EntityA, EntityB, AgreementId, RevisionId, transaction, Date, "USD",
+            EntityA, EntityB, AccountingArrangementId, RevisionId, transaction, Date, "USD",
             [new(Guid.NewGuid(), receivable ? "Assets:Due from B" : "Liabilities:Due to B", receivable ? "Asset" : "Liability",
                 receivable ? "a-receivable" : "a-payable", sourceDebit ? 100m : 0m, sourceDebit ? 0m : 100m,
                 "USD", sourceDebit ? 100m : 0m, sourceDebit ? 0m : 100m),
              new(Guid.NewGuid(), "Assets:Cash", "Asset", "a-cash", sourceDebit ? 0m : 100m, sourceDebit ? 100m : 0m,
-                "USD", sourceDebit ? 0m : 100m, sourceDebit ? 100m : 0m)]);
+                "USD", sourceDebit ? 0m : 100m, sourceDebit ? 100m : 0m)])
+        { IntercompanyAgreementId = Agreement().CanonicalAgreementId,
+            IntercompanyAgreementVersion = Agreement().CanonicalAgreementVersion,
+            IntercompanyAgreementPayloadHash = Agreement().CanonicalPayloadHash };
         return new(source, "retained-source-digest", IntercompanyProposalStatusDto.Pending, 0, Now);
     }
     public static IReadOnlyList<ChartOfAccountsNodeDto> Chart() => [

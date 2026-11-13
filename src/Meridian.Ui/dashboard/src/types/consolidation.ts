@@ -16,6 +16,7 @@ export interface ConsolidationSource {
   entityId: string;
   counterpartyId: string | null;
   accountPath: string;
+  accountType?: string | null;
   debit: number;
   credit: number;
   effectiveDate: string;
@@ -24,8 +25,11 @@ export interface ConsolidationSource {
   currency?: string | null;
   chartAccountNodeId?: string | null;
   accountBindingRevisionId?: string | null;
-  agreementId?: string | null;
-  agreementRevisionId?: string | null;
+  accountingArrangementId?: string | null;
+  accountingArrangementRevisionId?: string | null;
+  intercompanyAgreementId?: string | null;
+  intercompanyAgreementVersion?: number | null;
+  intercompanyAgreementPayloadHash?: string | null;
   intercompanyTransactionId?: string | null;
   transactionCurrency?: string | null;
   transactionDebit?: number | null;
@@ -53,7 +57,8 @@ export interface ConsolidationMatch {
   unmatchedReceivable: number;
   unmatchedPayable: number;
   sources: ConsolidationSource[];
-  agreementId?: string | null;
+  accountingArrangementId?: string | null;
+  accountingArrangementRevisionId?: string | null;
   treatment?: string | null;
   matchingCurrency?: string | null;
   matchedTransactionAmount?: number | null;

@@ -13,13 +13,13 @@ public sealed partial class PostgresLedgerJournalStore
     private async Task AppendIntercompanyProposalsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
         LedgerJournalEntryWrite write, CancellationToken ct)
     {
-        var groups = write.Entry.Lines.Where(line => line.Dimensions?.AgreementId is not null)
-            .GroupBy(line => new { line.Dimensions!.AgreementId, line.Dimensions.AgreementRevisionId,
+        var groups = write.Entry.Lines.Where(line => line.Dimensions?.AccountingArrangementId is not null)
+            .GroupBy(line => new { line.Dimensions!.AccountingArrangementId, line.Dimensions.AccountingArrangementRevisionId,
                 line.Dimensions.IntercompanyTransactionId, line.Dimensions.EntityId, line.Dimensions.CounterpartyId })
-            .OrderBy(group => group.Key.AgreementId, StringComparer.Ordinal).ToArray();
+            .OrderBy(group => group.Key.AccountingArrangementId, StringComparer.Ordinal).ToArray();
         if (groups.Length == 0 || ConsolidationPostingEvidenceGuard.Validate(write) is not null)
             return;
-        var unattributed = write.Entry.Lines.Where(line => line.Dimensions?.AgreementId is null).ToArray();
+        var unattributed = write.Entry.Lines.Where(line => line.Dimensions?.AccountingArrangementId is null).ToArray();
         var bookId = write.LedgerBookId ?? write.PostingCommand?.LedgerBookId
             ?? throw new LedgerValidationException("An intercompany proposal requires a source book.");
         var book = await LoadLedgerBookAsync(connection, transaction, bookId, ct).ConfigureAwait(false)
@@ -42,12 +42,21 @@ public sealed partial class PostgresLedgerJournalStore
         }
         foreach (var group in groups)
         {
-            if (!Guid.TryParse(group.Key.AgreementId, out var agreementId)
-                || !Guid.TryParse(group.Key.AgreementRevisionId, out var revisionId)
+            if (!Guid.TryParse(group.Key.AccountingArrangementId, out var agreementId)
+                || !Guid.TryParse(group.Key.AccountingArrangementRevisionId, out var revisionId)
                 || !Guid.TryParse(group.Key.EntityId, out var entityId)
                 || !Guid.TryParse(group.Key.CounterpartyId, out var counterpartyId)
                 || string.IsNullOrWhiteSpace(group.Key.IntercompanyTransactionId))
                 continue; // The authority participant retains the legacy warning or blocks enforced writes.
+            var legalIds = group.Select(line => (line.Dimensions!.IntercompanyAgreementId,
+                line.Dimensions.IntercompanyAgreementVersion)).Distinct().ToArray();
+            var legal = legalIds.Length == 1
+                ? GetVerifiedCanonicalAgreementRevisions(transaction, write.Entry.JournalEntryId)
+                    .SingleOrDefault(revision => revision.AgreementId == legalIds[0].IntercompanyAgreementId
+                        && revision.AgreementVersion == legalIds[0].IntercompanyAgreementVersion)
+                : null;
+            // Warning-mode legacy writes do not gain fabricated legal authority or delivery intent.
+            if (legal is null) continue;
             var key = $"intercompany-mirror-v1:{write.Entry.JournalEntryId:D}:{agreementId:D}:{revisionId:D}:" +
                 $"{group.Key.IntercompanyTransactionId}:{entityId:D}:{counterpartyId:D}";
             var proposalId = new Guid(SHA256.HashData(Encoding.UTF8.GetBytes(key)).AsSpan(0, 16));
@@ -62,7 +71,10 @@ public sealed partial class PostgresLedgerJournalStore
                     line.Currency?.TransactionDebit ?? line.Debit, line.Currency?.TransactionCredit ?? line.Credit)).ToArray(),
                 write.PostingCommand?.Intent == AccountingPostingIntentDto.Reversal ? write.SourceJournalEntryId : null)
             {
-                RequiresSourceAllocation = groups.Length > 1 && unattributed.Length > 0
+                RequiresSourceAllocation = groups.Length > 1 && unattributed.Length > 0,
+                IntercompanyAgreementId = legal.AgreementId,
+                IntercompanyAgreementVersion = legal.AgreementVersion,
+                IntercompanyAgreementPayloadHash = legal.PayloadHash
             };
             var payload = JsonSerializer.Serialize(source, IntercompanyProposalJsonContext.Default.IntercompanyProposalSourceDto);
             var digest = Sha256Digest.ComputeUtf8(payload);
@@ -204,7 +216,10 @@ public sealed partial class PostgresLedgerJournalStore
                 var candidate = JsonSerializer.Deserialize(reader.GetString(0), IntercompanyProposalJsonContext.Default.IntercompanyProposalSourceDto);
                 if (candidate is not null && candidate.SourceEntityId == retained.SourceEntityId
                     && candidate.CounterpartyEntityId == retained.CounterpartyEntityId
-                    && candidate.AgreementId == retained.AgreementId && candidate.AgreementRevisionId == retained.AgreementRevisionId
+                    && candidate.AccountingArrangementId == retained.AccountingArrangementId && candidate.AccountingArrangementRevisionId == retained.AccountingArrangementRevisionId
+                    && candidate.IntercompanyAgreementId == retained.IntercompanyAgreementId
+                    && candidate.IntercompanyAgreementVersion == retained.IntercompanyAgreementVersion
+                    && candidate.IntercompanyAgreementPayloadHash == retained.IntercompanyAgreementPayloadHash
                     && candidate.TransactionId == retained.TransactionId)
                     targets.Add((reader.IsDBNull(1) ? null : reader.GetGuid(1), reader.IsDBNull(2) ? null : reader.GetGuid(2)));
             }
@@ -246,9 +261,11 @@ public sealed partial class PostgresLedgerJournalStore
 
     private static bool MatchesIntercompanyCounterpartGroups(JournalEntry entry, IntercompanyProposalSourceDto retained)
     {
-        var lines = entry.Lines.Where(line => line.Dimensions?.AgreementId is not null).ToArray();
-        return lines.Length > 0 && lines.All(line => line.Dimensions!.AgreementId == retained.AgreementId.ToString("D")
-            && line.Dimensions.AgreementRevisionId == retained.AgreementRevisionId.ToString("D")
+        var lines = entry.Lines.Where(line => line.Dimensions?.AccountingArrangementId is not null).ToArray();
+        return lines.Length > 0 && lines.All(line => line.Dimensions!.AccountingArrangementId == retained.AccountingArrangementId.ToString("D")
+            && line.Dimensions.AccountingArrangementRevisionId == retained.AccountingArrangementRevisionId.ToString("D")
+            && line.Dimensions.IntercompanyAgreementId == retained.IntercompanyAgreementId
+            && line.Dimensions.IntercompanyAgreementVersion == retained.IntercompanyAgreementVersion
             && line.Dimensions.IntercompanyTransactionId == retained.TransactionId
             && line.Dimensions.EntityId == retained.CounterpartyEntityId.ToString("D")
             && line.Dimensions.CounterpartyId == retained.SourceEntityId.ToString("D"));

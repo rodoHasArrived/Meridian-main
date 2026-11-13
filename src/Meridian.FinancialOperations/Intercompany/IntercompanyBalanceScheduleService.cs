@@ -18,9 +18,9 @@ public interface IIntercompanyBalanceScheduleSource
 }
 
 /// <summary>Agreement-enriched posted balances for close readiness and external mapping controls.</summary>
-public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journals, IntercompanyAgreementService agreements,
+public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journals, IntercompanyAccountingArrangementService agreements,
     IIntercompanyAccountBindingStore bindings, IAccountingConfigurationStore configuration, IFundProfileTenancyRegistry owners,
-    IIntercompanyAgreementStore agreementStore, ILegacyIntercompanyAttributionStore? legacyAttributions = null) : IIntercompanyBalanceScheduleSource
+    IIntercompanyAccountingArrangementStore agreementStore, ILegacyIntercompanyAttributionStore? legacyAttributions = null) : IIntercompanyBalanceScheduleSource
 {
     public async Task<IntercompanyBalanceScheduleDto> GetAsync(string? tenantId, string? companyId,
         string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, CancellationToken ct = default)
@@ -78,7 +78,7 @@ public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journ
                 {
                     var dimensions = line.Dimensions;
                     LegacyIntercompanyAttributionDto? attribution = null;
-                    if (dimensions?.AgreementId is null)
+                    if (dimensions?.AccountingArrangementId is null)
                     {
                         attribution = attributions.SingleOrDefault(x => x.JournalEntryId == record.Entry.JournalEntryId && x.LineId == line.EntryId);
                         if (attribution is not null)
@@ -87,9 +87,15 @@ public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journ
                                 || !string.Equals(attribution.CompanyId, companyId, StringComparison.OrdinalIgnoreCase)
                                 || !Sha256Digest.FixedEquals(attribution.SourceLineDigest, LegacyIntercompanyAttributionRules.SourceDigest(book, record, line)))
                                 throw new InvalidOperationException("Legacy intercompany attribution differs from its immutable posted source or scope.");
+                            if (dimensions?.IntercompanyAgreementId is { } retainedLegalId
+                                && (retainedLegalId != attribution.IntercompanyAgreementId
+                                    || dimensions.IntercompanyAgreementVersion != attribution.IntercompanyAgreementVersion))
+                                throw new InvalidOperationException("Legacy attribution cannot replace retained canonical legal source provenance.");
                             dimensions = (dimensions ?? new()) with
                             {
-                                AgreementId = attribution.AgreementId.ToString("D"), AgreementRevisionId = attribution.AgreementRevisionId.ToString("D"),
+                                IntercompanyAgreementId = attribution.IntercompanyAgreementId,
+                                IntercompanyAgreementVersion = attribution.IntercompanyAgreementVersion,
+                                AccountingArrangementId = attribution.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = attribution.AccountingArrangementRevisionId.ToString("D"),
                                 AccountBindingRevisionId = attribution.AccountBindingRevisionId.ToString("D"), ChartAccountNodeId = attribution.ChartAccountNodeId,
                                 IntercompanyTransactionId = attribution.IntercompanyTransactionId
                             };
@@ -102,17 +108,17 @@ public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journ
                         ? x.ChartAccountNodeId == node
                         : x.AccountName == line.Account.Name || x.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal)).ToArray();
                     var known = line.Account.Name is Consolidation.ConsolidationService.ReceivableAccount or Consolidation.ConsolidationService.PayableAccount
-                        || candidates.Length > 0 || chart?.IntercompanyRole is not null || dimensions?.AgreementId is not null
+                        || candidates.Length > 0 || chart?.IntercompanyRole is not null || dimensions?.AccountingArrangementId is not null
                         || history.Any(x => x.AccountName == line.Account.Name || x.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal));
                     if (!known) continue;
-                    Guid? agreementId = Guid.TryParse(dimensions?.AgreementId, out var parsedAgreement) ? parsedAgreement : null;
+                    Guid? agreementId = Guid.TryParse(dimensions?.AccountingArrangementId, out var parsedAgreement) ? parsedAgreement : null;
                     if (!pending.Discover && (agreementId is null || !selectedAgreements.Contains(agreementId.Value))) continue;
                     var binding = candidates.Length == 1 ? candidates[0] : null;
                     var role = binding?.Role ?? chart?.IntercompanyRole;
                     // This schedule contains monetary accounts; operating elimination evidence is a separate treatment.
                     if (role is IntercompanyAccountRoleDto.Revenue or IntercompanyAccountRoleDto.Expense) continue;
                     Guid? counterparty = Guid.TryParse(dimensions?.CounterpartyId, out var parsedCounterparty) ? parsedCounterparty : null;
-                    Guid? revisionId = Guid.TryParse(dimensions?.AgreementRevisionId, out var parsedRevision) ? parsedRevision : null;
+                    Guid? revisionId = Guid.TryParse(dimensions?.AccountingArrangementRevisionId, out var parsedRevision) ? parsedRevision : null;
                     // Posted history resolves the retained effective binding. A later rename/archive
                     // cannot erase or reclassify an already-posted balance.
                     var verified = binding is { IsArchived: false }
@@ -123,19 +129,27 @@ public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journ
                         && (binding.AccountName == line.Account.Name || binding.HistoricalNames.Contains(line.Account.Name, StringComparer.Ordinal))
                         && dimensions?.AccountBindingRevisionId == binding.RevisionId.ToString("D")
                         && dimensions.EntityId == book.FundStructureNodeId.ToString("D") && counterparty is not null;
-                    IntercompanyAgreementDto? agreement = null;
+                    ResolvedIntercompanyAccountingArrangementDto? agreement = null;
                     if (agreementId is { } id && revisionId is { } revision)
                     {
                         try
                         {
-                            agreement = await agreements.ResolveApprovedRevisionAsync(tenantId, id, revision,
-                                new DateTimeOffset(effective.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                            var original = record.SourceJournalEntryId is { } originalId
+                                ? records.SingleOrDefault(item => item.Entry.JournalEntryId == originalId) : null;
+                            var exactInverse = original is not null && IntercompanyJournalCorrectionEvidence.IsExactInverse(record.Entry, original.Entry);
+                            agreement = exactInverse
+                                ? await agreements.GetApprovedRevisionAsync(tenantId, id, revision, ct).ConfigureAwait(false)
+                                : await agreements.ResolveApprovedRevisionAsync(tenantId, id, revision,
+                                    new DateTimeOffset(effective.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
                             var mapping = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == book.FundStructureNodeId && x.LedgerBookId == book.LedgerBookId);
                             verified &= mapping is not null && counterparty is { } other
                                 && ((agreement.PartyOneEntityId == book.FundStructureNodeId && agreement.PartyTwoEntityId == other)
                                     || (agreement.PartyTwoEntityId == book.FundStructureNodeId && agreement.PartyOneEntityId == other))
                                 && (role == IntercompanyAccountRoleDto.Receivable ? mapping.ReceivableAccountNodeId : mapping.PayableAccountNodeId) == binding?.ChartAccountNodeId
-                                && (line.Currency?.TransactionCurrency ?? book.BaseCurrency) == agreement.Currency;
+                                && (line.Currency?.TransactionCurrency ?? book.BaseCurrency) == agreement.Currency
+                                && dimensions?.IntercompanyAgreementId == agreement.CanonicalAgreementId
+                                && dimensions.IntercompanyAgreementVersion == agreement.CanonicalAgreementVersion
+                                && (attribution is null || attribution.IntercompanyAgreementPayloadHash == agreement.CanonicalPayloadHash);
                             if (pending.Discover)
                             {
                                 selectedAgreements.Add(id);
@@ -153,21 +167,25 @@ public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journ
                     else verified = false;
                     if (!verified) issues.Add(new("UnmappedLegacyIntercompany", "Posted intercompany facts lack exact approved agreement/account/party attribution; resolve legacy mapping explicitly.", true, book.LedgerBookId, record.Entry.JournalEntryId));
                     facts.Add(new(book.LedgerBookId, book.FundStructureNodeId, counterparty, agreementId, revisionId,
-                        agreement?.Kind.ToString(), binding?.ChartAccountNodeId ?? dimensions?.ChartAccountNodeId, role,
+                        agreement?.TemplateKind.ToString(), binding?.ChartAccountNodeId ?? dimensions?.ChartAccountNodeId, role,
                         line.Currency?.TransactionCurrency ?? book.BaseCurrency, book.BaseCurrency,
                         (line.Currency?.TransactionDebit ?? line.Debit) - (line.Currency?.TransactionCredit ?? line.Credit),
                         line.Debit - line.Credit, verified, record.Entry.JournalEntryId,
-                        dimensions?.AccountBindingRevisionId, record.GlobalSequence));
+                        dimensions?.AccountBindingRevisionId, record.GlobalSequence, agreement?.CanonicalAgreementId,
+                        agreement?.CanonicalAgreementVersion, agreement?.CanonicalPayloadHash));
                 }
             }
         }
-        var rows = facts.GroupBy(x => new { x.Book, x.Entity, x.Counterparty, x.Agreement, x.Revision, x.Kind, x.Node, x.Role, x.Currency, x.Functional })
+        var rows = facts.GroupBy(x => new { x.Book, x.Entity, x.Counterparty, x.Agreement, x.Revision, x.Kind, x.Node, x.Role, x.Currency, x.Functional, x.LegalId, x.LegalVersion, x.LegalHash })
             .Select(group => new IntercompanyBalanceScheduleRowDto(group.Key.Book, group.Key.Entity, group.Key.Counterparty,
                 group.Key.Agreement, group.Key.Revision, group.Key.Kind, group.Key.Node, group.Key.Role, group.Key.Currency, group.Key.Functional,
                 group.Sum(x => x.Amount), group.Sum(x => x.FunctionalAmount), group.All(x => x.Verified),
-                group.Select(x => x.Journal).Distinct().Order().ToArray(), group.Select(x => x.Binding).Where(x => x is not null).Cast<string>().Distinct().Order(StringComparer.Ordinal).ToArray()))
-            .OrderBy(x => x.LedgerBookId).ThenBy(x => x.AgreementId).ThenBy(x => x.ChartAccountNodeId, StringComparer.Ordinal).ToArray();
-        foreach (var pair in rows.Where(x => x.MappingVerified).GroupBy(x => new { x.AgreementId, x.TransactionCurrency,
+                group.Select(x => x.Journal).Distinct().Order().ToArray(), group.Select(x => x.Binding).Where(x => x is not null).Cast<string>().Distinct().Order(StringComparer.Ordinal).ToArray())
+            { IntercompanyAgreementId = group.Key.LegalId, IntercompanyAgreementVersion = group.Key.LegalVersion,
+                IntercompanyAgreementPayloadHash = group.Key.LegalHash })
+            .OrderBy(x => x.LedgerBookId).ThenBy(x => x.AccountingArrangementId).ThenBy(x => x.ChartAccountNodeId, StringComparer.Ordinal).ToArray();
+        foreach (var pair in rows.Where(x => x.MappingVerified).GroupBy(x => new { x.AccountingArrangementId, x.AccountingArrangementRevisionId, x.IntercompanyAgreementId,
+            x.IntercompanyAgreementVersion, x.IntercompanyAgreementPayloadHash, x.TransactionCurrency,
             Creditor = x.Role == IntercompanyAccountRoleDto.Receivable ? x.EntityId : x.CounterpartyEntityId!.Value,
             Debtor = x.Role == IntercompanyAccountRoleDto.Receivable ? x.CounterpartyEntityId!.Value : x.EntityId }))
             if (pair.Sum(x => x.TransactionSignedBalance) != 0m)
@@ -207,5 +225,5 @@ public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journ
         => new(tenant ?? "", company, fund, book, asOf, false, [], [new("IntercompanyScheduleUnavailable", reason, true)], "");
     private sealed record Fact(Guid Book, Guid Entity, Guid? Counterparty, Guid? Agreement, Guid? Revision, string? Kind,
         string? Node, IntercompanyAccountRoleDto? Role, string Currency, string Functional, decimal Amount,
-        decimal FunctionalAmount, bool Verified, Guid Journal, string? Binding, long Sequence);
+        decimal FunctionalAmount, bool Verified, Guid Journal, string? Binding, long Sequence, Guid? LegalId, int? LegalVersion, string? LegalHash);
 }

@@ -94,10 +94,14 @@ public sealed partial class ConsolidationService
                         (!v2Currency.IsFunctionalCurrency || v2Currency.FxRateToFunctional != 1m))
                         throw new InvalidOperationException("w10-v2 does not translate cross-currency source legs.");
                     var attribution = legacy.SingleOrDefault(x => x.JournalEntryId == record.Entry.JournalEntryId && x.LineId == line.EntryId);
-                    if (attribution is not null && (line.Dimensions?.AgreementId is not null ||
+                    if (attribution is not null && (line.Dimensions?.AccountingArrangementId is not null ||
                         !Meridian.Contracts.Integrity.Sha256Digest.FixedEquals(attribution.SourceLineDigest,
                             LegacyIntercompanyAttributionRules.SourceDigest(entityBook, record, line))))
                         throw new InvalidOperationException("Legacy attribution differs from its exact immutable journal source.");
+                    if (attribution is not null && line.Dimensions?.IntercompanyAgreementId is { } retainedLegalId
+                        && (retainedLegalId != attribution.IntercompanyAgreementId
+                            || line.Dimensions.IntercompanyAgreementVersion != attribution.IntercompanyAgreementVersion))
+                        throw new InvalidOperationException("Legacy attribution cannot replace retained canonical legal source provenance.");
                     var binding = ResolveBinding(bindings, line.Account.Name, attribution?.ChartAccountNodeId ?? line.Dimensions?.ChartAccountNodeId);
                     if (binding is null && (line.Dimensions?.AccountBindingRevisionId is not null ||
                         line.Account.Name is ReceivableAccount or PayableAccount))
@@ -110,6 +114,12 @@ public sealed partial class ConsolidationService
                     var formerExternal = supportedRole && counterparty is not null && !ids.Contains(counterparty) &&
                         formerMembers?.Contains(counterparty) == true;
                     var eligible = supportedRole && !formerExternal;
+                    if (eligible && (attribution?.IntercompanyAgreementId ?? line.Dimensions?.IntercompanyAgreementId) is not null
+                        && attribution is null && line.Dimensions?.AccountingArrangementId is null)
+                    {
+                        blockers.Add($"Intercompany source line {line.EntryId:D} retains a canonical legal agreement but requires reviewed accounting arrangement sidecar attribution before elimination.");
+                        eligible = false;
+                    }
                     if (eligible)
                     {
                         sourceRoles.Add(line.EntryId, binding!.Role);
@@ -119,6 +129,34 @@ public sealed partial class ConsolidationService
                             string.IsNullOrWhiteSpace(attribution?.IntercompanyTransactionId ?? line.Dimensions?.IntercompanyTransactionId))
                             blockers.Add($"Income elimination line {line.EntryId:D} requires a shared intercompany transaction identity.");
                     }
+                    var canonicalId = attribution?.IntercompanyAgreementId ?? line.Dimensions?.IntercompanyAgreementId;
+                    var canonicalVersion = attribution?.IntercompanyAgreementVersion ?? line.Dimensions?.IntercompanyAgreementVersion;
+                    var canonicalHash = attribution?.IntercompanyAgreementPayloadHash;
+                    var arrangementId = attribution?.AccountingArrangementId.ToString("D") ?? line.Dimensions?.AccountingArrangementId;
+                    var arrangementRevision = attribution?.AccountingArrangementRevisionId.ToString("D") ?? line.Dimensions?.AccountingArrangementRevisionId;
+                    if (arrangementId is not null)
+                    {
+                        if (arrangements is null || !Guid.TryParse(arrangementId, out var profileId)
+                            || !Guid.TryParse(arrangementRevision, out var profileRevision)
+                            || binding is null)
+                            throw new InvalidOperationException("Source accounting arrangement authority is unavailable or incomplete.");
+                        var authorityDate = EffectiveDate(record);
+                        var exactInverse = false;
+                        if (record.SourceJournalEntryId is { } originalId)
+                        {
+                            var original = population.SingleOrDefault(item => item.Entry.JournalEntryId == originalId);
+                            if (original is not null && IntercompanyJournalCorrectionEvidence.IsExactInverse(record.Entry, original.Entry))
+                            { authorityDate = EffectiveDate(original); exactInverse = true; }
+                        }
+                        var resolved = exactInverse
+                            ? await arrangements.GetApprovedRevisionAsync(binding.TenantId, profileId, profileRevision, ct).ConfigureAwait(false)
+                            : await arrangements.ResolveApprovedRevisionAsync(binding.TenantId, profileId, profileRevision,
+                                new DateTimeOffset(authorityDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                        if (canonicalId != resolved.CanonicalAgreementId || canonicalVersion != resolved.CanonicalAgreementVersion
+                            || (canonicalHash is not null && canonicalHash != resolved.CanonicalPayloadHash))
+                            throw new InvalidOperationException("Source canonical legal pins differ from the exact approved accounting arrangement.");
+                        canonicalHash = resolved.CanonicalPayloadHash;
+                    }
                     sources.Add(new ConsolidationSourceDto(entityBook.LedgerBookId, record.Entry.JournalEntryId, line.EntryId,
                         postingEntity.ToString("D"), counterparty, supportedRole ? Output(binding!.Role).AccountPath : line.Account.Name,
                         line.Debit, line.Credit, EffectiveDate(record), $"journal:{record.Entry.JournalEntryId:D}/line:{line.EntryId:D}")
@@ -127,8 +165,9 @@ public sealed partial class ConsolidationService
                         CounterpartyDisposition = formerExternal ? "FormerPerimeterExternal" : null,
                         Currency = entityBook.BaseCurrency, ChartAccountNodeId = binding?.ChartAccountNodeId,
                         AccountBindingRevisionId = attribution?.AccountBindingRevisionId.ToString("D") ?? binding?.RevisionId.ToString("D"),
-                        AgreementId = attribution?.AgreementId.ToString("D") ?? line.Dimensions?.AgreementId,
-                        AgreementRevisionId = attribution?.AgreementRevisionId.ToString("D") ?? line.Dimensions?.AgreementRevisionId,
+                        AccountingArrangementId = arrangementId, AccountingArrangementRevisionId = arrangementRevision,
+                        IntercompanyAgreementId = canonicalId, IntercompanyAgreementVersion = canonicalVersion,
+                        IntercompanyAgreementPayloadHash = canonicalHash,
                         IntercompanyTransactionId = attribution?.IntercompanyTransactionId ?? line.Dimensions?.IntercompanyTransactionId,
                         TransactionCurrency = line.Currency?.TransactionCurrency ?? entityBook.BaseCurrency,
                         TransactionDebit = line.Currency?.TransactionDebit ?? line.Debit,
@@ -170,7 +209,7 @@ public sealed partial class ConsolidationService
             roundingDifferences = translated.RoundingDifferences;
             blockers.AddRange(translated.Blockers);
         }
-        if (sources.Where(x => sourceRoles.ContainsKey(x.LineId)).GroupBy(x => x.AgreementId)
+        if (sources.Where(x => sourceRoles.ContainsKey(x.LineId)).GroupBy(x => new { x.AccountingArrangementId, x.AccountingArrangementRevisionId })
             .Any(group => group.Select(x => x.TransactionCurrency).Distinct(StringComparer.Ordinal).Count() > 1))
             throw new InvalidOperationException("Each agreement requires one unambiguous original matching currency; legacy balances need reviewed agreement attribution before cross-currency adoption.");
         var (matches, proposed) = MatchGoverned(sources, sourceRoles, overlay, overlayBindings, book, request, scope, income, Output);

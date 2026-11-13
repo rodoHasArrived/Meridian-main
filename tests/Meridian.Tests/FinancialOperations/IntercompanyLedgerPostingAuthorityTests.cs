@@ -8,6 +8,7 @@ using Meridian.FinancialOperations.Intercompany;
 using Meridian.Ledger;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.Ledger;
+using Meridian.Tests.TestSupport;
 using Moq;
 using Xunit;
 
@@ -129,7 +130,7 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task EndedOrNovatedAgreement_ExactSameBookSourceInverseAfterCutoff_UsesOriginalEffectiveDateOnly(bool novated)
+    public async Task EndedOrReplacedCanonicalAgreement_ExactSameBookSourceInverseAfterCutoff_PreservesNativeAndMappingIdentity(bool novated)
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var fixture = await Fixture.CreateAsync();
@@ -148,7 +149,7 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         // Retaining the source id alone never grants the historical-date exception.
         var ordinary = reversal with { PostingCommand = reversal.PostingCommand! with { Intent = AccountingPostingIntentDto.Originating } };
         var error = await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Authority().AcquireAsync([fixture.Context(ordinary)], cancellation.Token));
-        Assert.Contains("approved agreement revision window", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("approved accounting arrangement window", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -160,6 +161,10 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
     [InlineData("conflicting-source")]
     [InlineData("contra-scope")]
     [InlineData("contra-project")]
+    [InlineData("binding-revision")]
+    [InlineData("renamed-account")]
+    [InlineData("canonical-id")]
+    [InlineData("canonical-version")]
     public async Task HistoricalDateException_RefusesChangedEconomicsIdentityOrWrongSource(string changed)
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -177,11 +182,24 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         if (changed is "contra-scope" or "contra-project") reversal = reversal with { Entry = new(reversal.Entry.JournalEntryId,
             reversal.Entry.Timestamp, reversal.Entry.Description, reversal.Entry.Lines.Select(line => new LedgerEntry(line.EntryId,
                 line.JournalEntryId, line.Timestamp,
-                changed == "contra-scope" && line.Dimensions?.AgreementId is null
+                changed == "contra-scope" && line.Dimensions?.AccountingArrangementId is null
                     ? line.Account with { FinancialAccountId = "another-cash-account" } : line.Account,
                 line.Debit, line.Credit, line.Description,
-                changed == "contra-project" && line.Dimensions?.AgreementId is null
+                changed == "contra-project" && line.Dimensions?.AccountingArrangementId is null
                     ? new LedgerLineDimensionSet(ProjectId: "another-project") : line.Dimensions, line.Currency)).ToArray(), reversal.Entry.Metadata) };
+        if (changed is "binding-revision" or "renamed-account" or "canonical-id" or "canonical-version")
+            reversal = reversal with { Entry = new(reversal.Entry.JournalEntryId, reversal.Entry.Timestamp,
+                reversal.Entry.Description, reversal.Entry.Lines.Select(line => new LedgerEntry(line.EntryId,
+                    line.JournalEntryId, line.Timestamp,
+                    changed == "renamed-account" && line.Dimensions?.AccountingArrangementId is not null
+                        ? line.Account with { Name = "Renamed IC receivable" } : line.Account,
+                    line.Debit, line.Credit, line.Description,
+                    line.Dimensions?.AccountingArrangementId is not null ? line.Dimensions with
+                    {
+                        AccountBindingRevisionId = changed == "binding-revision" ? Guid.NewGuid().ToString("D") : line.Dimensions.AccountBindingRevisionId,
+                        IntercompanyAgreementId = changed == "canonical-id" ? Guid.NewGuid() : line.Dimensions.IntercompanyAgreementId,
+                        IntercompanyAgreementVersion = changed == "canonical-version" ? 2 : line.Dimensions.IntercompanyAgreementVersion
+                    } : line.Dimensions, line.Currency)).ToArray(), reversal.Entry.Metadata) };
         var context = fixture.Context(reversal);
         var error = await Assert.ThrowsAsync<LedgerValidationException>(() => fixture.Authority().AcquireAsync([context], cancellation.Token));
         Assert.Contains("exact economic inverse", error.Message, StringComparison.OrdinalIgnoreCase);
@@ -196,7 +214,7 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         var fixture = await Fixture.CreateAsync();
         var write = fixture.ConsolidationWrite();
         Assert.NotNull(ConsolidationPostingEvidenceGuard.Validate(write));
-        var store = new Mock<IIntercompanyAgreementStore>(MockBehavior.Strict);
+        var store = new Mock<IIntercompanyAccountingArrangementStore>(MockBehavior.Strict);
         var context = fixture.Context(write);
         await using var lease = await fixture.Authority(store.Object).AcquireAsync([context]);
         Assert.Contains(context.Decisions, x => x.Code == "DelegatedConsolidationAuthority" && x.Allowed);
@@ -226,9 +244,10 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         private Guid EntityId { get; } = Guid.NewGuid();
         private Guid OtherEntityId { get; } = Guid.NewGuid();
         private Guid OtherBookId { get; } = Guid.NewGuid();
-        private readonly InMemoryIntercompanyAgreementStore _store = new();
-        private IntercompanyAgreementService _service = null!;
-        private IntercompanyAgreementDto _agreement = null!;
+        private readonly InMemoryIntercompanyAccountingArrangementStore _store = new();
+        private IntercompanyAccountingArrangementService _service = null!;
+        private ResolvedIntercompanyAccountingArrangementDto _agreement = null!;
+        private Mock<IIntercompanyAccountingArrangementLegalAuthority> LegalAuthority { get; set; } = null!;
         public Mock<IIntercompanyAccountBindingStore> Bindings { get; } = new();
         public Mock<IAccountingConfigurationStore> Configuration { get; } = new();
         public Mock<IConsolidationFxAuthority> Fx { get; } = new();
@@ -236,28 +255,39 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         private Mock<ILedgerJournalStore> Journals { get; } = new();
         public List<TrackingLease> Leases { get; } = [];
         public IReadOnlyList<IntercompanyAccountBindingDto> CurrentBindings { get; set; } = [];
+        public IReadOnlyList<IntercompanyAccountBindingDto> RetainedBindings { get; private set; } = [];
         public AccountingConfigurationWorkspaceDto Workspace { get; set; } = null!;
         public ConsolidationFxContextDto FxContext { get; private set; } = null!;
 
         public static async Task<Fixture> CreateAsync()
         {
             var value = new Fixture();
-            value._service = new(value._store, new Scope(), new Evidence());
-            var draft = await value._service.CreateAsync(Tenant, "owner", new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "EUR facility",
-                IntercompanyAgreementKindDto.Loan, value.EntityId, value.OtherEntityId, "Lender", "Borrower", "EUR", "Monthly",
-                Time.AddMonths(-1), null, [new(value.EntityId, value.BookId, "ar", "ap"), new(value.OtherEntityId, value.OtherBookId, "ar", "ap")],
-                new("vault", "signed", "pdf", new string('a', 64), Company)));
-            var submitted = await value._service.ApplyActionAsync(Tenant, "owner", draft.AgreementId,
-                IntercompanyAgreementActionDto.Submit, new(Guid.NewGuid(), draft.Version));
-            value._agreement = await value._service.ApplyActionAsync(Tenant, "owner", draft.AgreementId,
-                IntercompanyAgreementActionDto.Approve, new(Guid.NewGuid(), submitted.Version));
+            value._agreement = IntercompanyArrangementTestData.Create(Guid.NewGuid(), Guid.NewGuid(),
+                IntercompanyAccountingTemplateKindDto.Loan, value.EntityId, value.OtherEntityId, "EUR",
+                [new(value.EntityId, value.BookId, "ar", "ap"), new(value.OtherEntityId, value.OtherBookId, "ar", "ap")],
+                Guid.NewGuid(), Time.AddMonths(-1), reference: "EUR accounting arrangement");
+            value.LegalAuthority = IntercompanyArrangementTestData.LegalAuthority(value._agreement);
+            value._service = new(value._store, new Scope(), value.LegalAuthority.Object);
+            var approved = value._agreement.Arrangement;
+            var draft = approved with { Version = 1, Status = IntercompanyAccountingArrangementStatusDto.Draft,
+                ApprovedBy = null, ApprovedAt = null };
+            await value._store.AppendAsync(Tenant, 0, new(Guid.NewGuid(), new string('a', 64),
+                IntercompanyAccountingArrangementActionDto.Create, "owner", Time, null, draft));
+            await value._store.AppendAsync(Tenant, 1, new(Guid.NewGuid(), new string('b', 64),
+                IntercompanyAccountingArrangementActionDto.Submit, "owner", Time, null,
+                draft with { Version = 2, Status = IntercompanyAccountingArrangementStatusDto.Submitted }));
+            await value._store.AppendAsync(Tenant, 2, new(Guid.NewGuid(), new string('c', 64),
+                IntercompanyAccountingArrangementActionDto.Approve, "owner", Time, null, approved));
             value.CurrentBindings = [new(Guid.NewGuid(), Guid.NewGuid(), 1, value.BookId, "ar", IntercompanyAccountRoleDto.Receivable,
                 "Assets:IC receivable", "IC receivable", "Asset", Date.AddMonths(-1), null, [], Tenant, Company, "owner", Time, "Reviewed node role")];
+            value.RetainedBindings = value.CurrentBindings;
             value.Workspace = new(Fund, value.BookId, AccountingConfigurationStatusDto.Active, "config-v1", Time, [],
                 [new("ar", "Assets:IC receivable", "IC receivable", "Asset", IntercompanyRole: IntercompanyAccountRoleDto.Receivable)],
                 [], [], [], [], TenantId: Tenant, CompanyId: Company);
             value.Bindings.Setup(x => x.ListAsync(value.BookId, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>())).ReturnsAsync(() => value.CurrentBindings);
             value.Bindings.Setup(x => x.HistoryAsync(value.BookId, It.IsAny<CancellationToken>())).ReturnsAsync(() => value.CurrentBindings);
+            value.Bindings.Setup(x => x.GetRevisionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken _) => value.RetainedBindings.SingleOrDefault(binding => binding.RevisionId == id));
             value.Bindings.Setup(x => x.AcquireAuthorityLeaseAsync(It.IsAny<CancellationToken>())).Returns(() => value.NewLease());
             value.Configuration.Setup(x => x.GetAsync(Fund, value.BookId, It.IsAny<CancellationToken>(), Tenant, Company)).ReturnsAsync(() => value.Workspace);
             value.Owners.Setup(x => x.ResolveAsync(Fund, It.IsAny<CancellationToken>())).ReturnsAsync(new FundProfileOwnership(Fund, Tenant, Company));
@@ -294,7 +324,7 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             FxContext = new(config, rates);
         }
 
-        public IntercompanyLedgerPostingAuthority Authority(IIntercompanyAgreementStore? store = null)
+        public IntercompanyLedgerPostingAuthority Authority(IIntercompanyAccountingArrangementStore? store = null)
             => new(store ?? _store, _service, Bindings.Object, Configuration.Object, Journals.Object, Owners.Object, fxAuthority: Fx.Object);
 
         public void RetainOriginal(LedgerJournalEntryWrite original, bool foreignBook = false)
@@ -309,22 +339,24 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
         public async Task EndAgreementAsync(DateOnly cutoff, bool novated = false)
         {
             var effective = new DateTimeOffset(cutoff.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-            if (!novated)
+            var retired = _agreement.Arrangement with { Version = _agreement.Version + 1,
+                Status = IntercompanyAccountingArrangementStatusDto.Retired, RetiredAt = effective, UpdatedAt = effective };
+            await _store.AppendAsync(Tenant, _agreement.Version, new(Guid.NewGuid(), new string('d', 64),
+                IntercompanyAccountingArrangementActionDto.Retire, "owner", effective, "Retire completed mapping", retired));
+            LegalAuthority.Setup(authority => authority.GetEffectiveRevisionAsync(Tenant, _agreement.Arrangement.CanonicalReference,
+                    It.Is<DateOnly>(date => date >= cutoff), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("The pinned canonical legal revision is no longer effective."));
+            if (novated)
             {
-                _agreement = await _service.ApplyActionAsync(Tenant, "owner", _agreement.AgreementId,
-                    IntercompanyAgreementActionDto.Terminate, new(Guid.NewGuid(), _agreement.Version, "Facility ended", effective));
-                return;
+                // A replacement is a separately approved native agreement; the historical source
+                // keeps the original canonical identity and cannot be relabeled to the successor.
+                var successor = IntercompanyArrangementTestData.Create(Guid.NewGuid(), _agreement.OrganizationId,
+                    _agreement.TemplateKind, EntityId, OtherEntityId, _agreement.Currency, _agreement.PartyMappings,
+                    Guid.NewGuid(), effective, canonicalId: Guid.NewGuid());
+                Assert.NotEqual(_agreement.CanonicalAgreementId, successor.CanonicalAgreementId);
+                LegalAuthority.Setup(authority => authority.ListEffectiveRevisionsAsync(Tenant, EntityId,
+                    It.Is<DateOnly>(date => date >= cutoff), It.IsAny<CancellationToken>())).ReturnsAsync([successor.LegalRevision]);
             }
-            var successorDraft = await _service.CreateAsync(Tenant, "owner", new(Guid.NewGuid(), Guid.NewGuid(), _agreement.OrganizationId,
-                "Approved successor facility", _agreement.Kind, EntityId, OtherEntityId, "Lender", "Borrower", _agreement.Currency,
-                "Monthly", effective, null, _agreement.PartyMappings, _agreement.SignedDocument));
-            var successorSubmitted = await _service.ApplyActionAsync(Tenant, "owner", successorDraft.AgreementId,
-                IntercompanyAgreementActionDto.Submit, new(Guid.NewGuid(), successorDraft.Version));
-            var successor = await _service.ApplyActionAsync(Tenant, "owner", successorDraft.AgreementId,
-                IntercompanyAgreementActionDto.Approve, new(Guid.NewGuid(), successorSubmitted.Version));
-            _agreement = await _service.ApplyActionAsync(Tenant, "owner", _agreement.AgreementId,
-                IntercompanyAgreementActionDto.Novate, new(Guid.NewGuid(), _agreement.Version, "Reviewed facility novation", effective,
-                    successor.AgreementId, _agreement.RevisionId, successor.RevisionId, successor.Version));
         }
 
         public LedgerJournalEntryWrite Reversal(LedgerJournalEntryWrite original, DateOnly effectiveDate,
@@ -336,7 +368,7 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             var lines = original.Entry.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), id, time, line.Account,
                 line.Credit * scale, line.Debit * scale, description,
                 line.Dimensions is { } dimensions ? dimensions with
-                { AgreementRevisionId = revisionOverride ?? dimensions.AgreementRevisionId,
+                { AccountingArrangementRevisionId = revisionOverride ?? dimensions.AccountingArrangementRevisionId,
                     IntercompanyTransactionId = transactionOverride ?? dimensions.IntercompanyTransactionId } : null,
                 line.Currency is { } currency ? new(currency.TransactionCurrency, currency.FunctionalCurrency,
                     currency.TransactionCredit * scale, currency.TransactionDebit * scale, currency.FxRateToFunctional) : null)).ToArray();
@@ -349,7 +381,8 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
 
         public LedgerPostingAuthorityContext Context(LedgerJournalEntryWrite write, LedgerBookControlModeDto mode = LedgerBookControlModeDto.Enforced)
             => new(write, new(BookId, Fund, EntityId, FundStructureNodeKindDto.Entity, "Entity USD book", "USD", Time, Time),
-                new(BookId, mode, 1, "entity-intercompany-v1", Time), Tenant);
+                new(BookId, mode, 1, "entity-intercompany-v1", Time), Tenant)
+            { VerifiedCanonicalAgreementRevisions = [_agreement.LegalRevision] };
 
         public LedgerJournalEntryWrite Write(bool includeAgreement = true, string functionalCurrency = "USD", string? symbol = null, string? financialAccount = null)
         {
@@ -357,8 +390,10 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
             var binding = CurrentBindings.FirstOrDefault();
             var dimensions = new LedgerLineDimensionSet(EntityId: EntityId.ToString("D"), CounterpartyId: OtherEntityId.ToString("D"))
             {
-                AgreementId = includeAgreement ? _agreement.AgreementId.ToString("D") : null,
-                AgreementRevisionId = includeAgreement ? _agreement.RevisionId.ToString("D") : null,
+                AccountingArrangementId = includeAgreement ? _agreement.ArrangementId.ToString("D") : null,
+                AccountingArrangementRevisionId = includeAgreement ? _agreement.RevisionId.ToString("D") : null,
+                IntercompanyAgreementId = includeAgreement ? _agreement.CanonicalAgreementId : null,
+                IntercompanyAgreementVersion = includeAgreement ? _agreement.CanonicalAgreementVersion : null,
                 IntercompanyTransactionId = includeAgreement ? "economic-occurrence-one" : null,
                 ChartAccountNodeId = "ar", AccountBindingRevisionId = binding?.RevisionId.ToString("D")
             };
@@ -397,16 +432,20 @@ public sealed class IntercompanyLedgerPostingAuthorityTests
 
     private sealed class TrackingLease : IAsyncDisposable
     { public bool Disposed { get; private set; } public ValueTask DisposeAsync() { Disposed = true; return ValueTask.CompletedTask; } }
-    private sealed class Scope : IIntercompanyAgreementScopeAuthority
+    private sealed class Scope : IIntercompanyAccountingArrangementScopeAuthority
     {
-        public Task<IAsyncDisposable> AcquireLeaseAsync(string tenantId, IntercompanyAgreementDto agreement, CancellationToken ct = default)
-            => Task.FromResult<IAsyncDisposable>(new TrackingLease());
-        public Task<IAsyncDisposable> AcquireLeasesAsync(string tenantId, IReadOnlyList<IntercompanyAgreementDto> agreements, CancellationToken ct = default)
-            => Task.FromResult<IAsyncDisposable>(new TrackingLease());
-        public Task ValidateAsync(string tenantId, IntercompanyAgreementDto agreement, bool requireActive, CancellationToken ct = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>> GetLifecycleEvidenceAsync(string tenantId, IntercompanyAgreementDto agreement, CancellationToken ct = default)
+        public Task<IIntercompanyAccountingArrangementScopeLease> AcquireLeaseAsync(string tenantId,
+            ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default)
+            => Task.FromResult<IIntercompanyAccountingArrangementScopeLease>(new ScopeLease());
+        public Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, bool requireActive,
+            CancellationToken ct = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>> GetLifecycleEvidenceAsync(string tenantId,
+            ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>>([new(agreement.PartyOneEntityId, 1, new string('a', 64)), new(agreement.PartyTwoEntityId, 1, new string('b', 64))]);
     }
-    private sealed class Evidence : IIntercompanyAgreementEvidenceAuthority
-    { public Task VerifyAsync(string tenantId, Guid agreementId, IntercompanySignedDocumentDto document, CancellationToken ct = default) => Task.CompletedTask; }
+    private sealed class ScopeLease : IIntercompanyAccountingArrangementScopeLease
+    {
+        public LegalEntityReadAuthorityProof? StructureAuthorityProof => null;
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
 }

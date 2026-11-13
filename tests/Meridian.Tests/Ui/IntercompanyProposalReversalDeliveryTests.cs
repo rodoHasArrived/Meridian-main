@@ -1,3 +1,4 @@
+using Meridian.Tests.TestSupport;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
@@ -28,7 +29,7 @@ public sealed class IntercompanyProposalReversalDeliveryTests
         proposals.Setup(x => x.ListAsync("tenant-a", IntercompanyProposalTestData.BookA, It.IsAny<CancellationToken>())).ReturnsAsync([
             fixture.Prior,
             fixture.Prior with { Source = fixture.Prior.Source with { ProposalId = Guid.NewGuid(), TransactionId = "other-equal-amount-event" } },
-            fixture.Prior with { Source = fixture.Prior.Source with { ProposalId = Guid.NewGuid(), AgreementRevisionId = Guid.NewGuid() } }]);
+            fixture.Prior with { Source = fixture.Prior.Source with { ProposalId = Guid.NewGuid(), AccountingArrangementRevisionId = Guid.NewGuid() } }]);
         string? failure = null;
         proposals.Setup(x => x.FailAsync("tenant-a", claim.Source.ProposalId, claim.ClaimToken!, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Callback<string, Guid, string, string, CancellationToken>((_, _, _, error, _) => failure = error).Returns(Task.CompletedTask);
@@ -42,11 +43,11 @@ public sealed class IntercompanyProposalReversalDeliveryTests
         journals.Setup(x => x.GetLedgerBookAsync(IntercompanyProposalTestData.BookB, It.IsAny<CancellationToken>())).ReturnsAsync(IntercompanyProposalTestData.TargetBook());
         var period = IntercompanyProposalTestData.Period() with { StartDate = new(2026, 7, 1), EndDate = new(2026, 7, 31) };
         journals.Setup(x => x.ListPeriodsAsync(IntercompanyProposalTestData.BookB, null, null, null, It.IsAny<CancellationToken>())).ReturnsAsync([period]);
-        var agreementStore = new Mock<IIntercompanyAgreementStore>();
-        agreementStore.Setup(x => x.GetAsync("tenant-a", fixture.Agreement.AgreementId, It.IsAny<CancellationToken>())).ReturnsAsync(
-            new IntercompanyAgreementHistoryDto([new(Guid.NewGuid(), "approval", IntercompanyAgreementActionDto.Approve,
-                "reviewer", IntercompanyProposalTestData.Now, "Retained synthetic approval", fixture.Agreement)]));
-        var agreements = new IntercompanyAgreementService(agreementStore.Object, Mock.Of<IIntercompanyAgreementScopeAuthority>(), Mock.Of<IIntercompanyAgreementEvidenceAuthority>());
+        var agreementStore = new Mock<IIntercompanyAccountingArrangementStore>();
+        agreementStore.Setup(x => x.GetAsync("tenant-a", fixture.Agreement.ArrangementId, It.IsAny<CancellationToken>())).ReturnsAsync(
+            new IntercompanyAccountingArrangementHistoryDto([new(Guid.NewGuid(), "approval", IntercompanyAccountingArrangementActionDto.Approve,
+                "reviewer", IntercompanyProposalTestData.Now, "Retained synthetic approval", fixture.Agreement.Arrangement)]));
+        var agreements = IntercompanyArrangementTestData.Service(agreementStore.Object, fixture.Agreement);
         var bindings = new Mock<IIntercompanyAccountBindingStore>();
         bindings.Setup(x => x.ListAsync(IntercompanyProposalTestData.BookB, claim.Source.EffectiveDate, It.IsAny<CancellationToken>())).ReturnsAsync(IntercompanyProposalTestData.TargetBindings());
         var configuration = new Mock<IAccountingConfigurationService>();

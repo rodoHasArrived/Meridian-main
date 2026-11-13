@@ -13,7 +13,7 @@ retains status; this plan records implementation decisions and verification boun
 
 | Stage | Decision and acceptance boundary |
 | --- | --- |
-| P1 registry | Immutable tenant-owned agreement revisions, signed Vault artifact/hash, explicit party roles/books/accounts/currency/cadence. Separate facilities may overlap; one facility's approved term revisions may not conflict. Guarantees remain registry-only. |
+| P1 registry | Reuse the canonical native legal registry for terms, evidence and independent review. Immutable accounting profiles pin its exact ID/version/hash and own only templates, party books, account mappings and bounded validity. Configuration owner approval never grants legal approval or novation. Guarantees have no posting treatment. |
 | P4 lifecycle | Effective-dated history; enforce immediately on new books, warn on existing books until audited activation. Winding-down supports evidenced controlled close, with no new commitments. Keep residual balances visible. |
 | P2 `w10-v2` | All direct 100%-owned legal entities, at least two, in one functional currency. Stable chart-node bindings with historical aliases; distinct chart paths and ledger names. Preserve v1 readers and posted overlays. |
 | P3 proposals | Atomic source-commit retention, durable retry, source-identity dedupe, explicit existing-counterpart linking, balanced destination drafts and destination review. Aging names its basis. Never auto-post. |
@@ -21,7 +21,7 @@ retains status; this plan records implementation decisions and verification boun
 | P5 `w10-v4` | The policy explicitly enables both `consolidation.receivable-payable` and `consolidation.revenue-expense`. Income pairs require a shared transaction identity. Both rules' exact versions remain in the reviewed evidence. |
 
 P1 and P4 share no implementation dependency. P2 follows their contract seams; P3 consumes
-approved agreements and mappings; v3/v4 follow role identity and governed FX authority. These
+approved legal revisions and accounting profiles; v3/v4 follow role identity and governed FX authority. These
 stages are policy capabilities, not automatic activation milestones. An unchanged v1 book
 continues to use its original rule; changing a book's version requires fresh review.
 
@@ -32,11 +32,18 @@ a linked reviewed reclassification: reverse the old attribution and add the new 
 with no duplicate net elimination. Missing or ambiguous history blocks activation. Never infer
 historical eligibility from the current status.
 
-Posting holds lifecycle, agreement/account and applicable consolidation authority through the
+Posting holds lifecycle, canonical legal, accounting-profile/account and applicable consolidation authority through the
 owned transaction commit. Consolidation keeps source/overlay version checks, authoritative
 ownership, ordered processing, stale-review refusal, deterministic reruns and linked corrections.
 Source-map, lifecycle, agreement, rate or policy changes require a new calculation and review.
 Migration controls do not weaken existing financial or authorization invariants.
+
+The integrated native registry uses one graph fence, sorted lifecycle authority and a proof-aware
+legal command transaction. Posting batches validate all native references under one sorted legal
+lease before operational profile authority; they never reacquire the same shared graph or legal
+fence behind a waiting writer. The bounded native preparer-attested dividend path retains these
+entity controls through its outer journal, spine and case commit. Ordinary manual review uses
+the same combined controls in a rollback-only validation transaction.
 
 The bounded perimeter excludes indirect/partial ownership, minority interests and investment/equity
 elimination. A reviewed reporting transition pins the prior book's retained overlays and the new member/source,

@@ -64,7 +64,7 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
         var fixture = Fixture();
         fixture = fixture with { Prior = fixture.Prior with { Source = fixture.Prior.Source with
         { TransactionId = difference == "transaction" ? "same-amount-other-invoice" : fixture.Prior.Source.TransactionId,
-            AgreementRevisionId = difference == "revision" ? Guid.NewGuid() : fixture.Prior.Source.AgreementRevisionId } } };
+            AccountingArrangementRevisionId = difference == "revision" ? Guid.NewGuid() : fixture.Prior.Source.AccountingArrangementRevisionId } } };
 
         Assert.Throws<InvalidOperationException>(() => Build(fixture));
     }
@@ -112,9 +112,11 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
             TargetBookId = null, TargetJournalId = null, LatestLink = null, Status = IntercompanyProposalStatusDto.Pending };
         var mainDimensions = new LedgerLineDimensionSet(FundId: "target-fund", EntityId: IntercompanyProposalTestData.EntityB.ToString("D"),
             CounterpartyId: IntercompanyProposalTestData.EntityA.ToString("D"), BookId: IntercompanyProposalTestData.BookB.ToString("D"))
-        { ChartAccountNodeId = "b-payable", AgreementId = prior.Source.AgreementId.ToString("D"), AgreementRevisionId = prior.Source.AgreementRevisionId.ToString("D"),
+        { IntercompanyAgreementId = prior.Source.IntercompanyAgreementId, IntercompanyAgreementVersion = prior.Source.IntercompanyAgreementVersion,
+                ChartAccountNodeId = "b-payable", AccountingArrangementId = prior.Source.AccountingArrangementId.ToString("D"), AccountingArrangementRevisionId = prior.Source.AccountingArrangementRevisionId.ToString("D"),
             IntercompanyTransactionId = prior.Source.TransactionId, AccountBindingRevisionId = Guid.NewGuid().ToString("D") };
-        var contraDimensions = mainDimensions with { ChartAccountNodeId = "b-cash", AgreementId = null, AgreementRevisionId = null,
+        var contraDimensions = mainDimensions with { IntercompanyAgreementId = prior.Source.IntercompanyAgreementId, IntercompanyAgreementVersion = prior.Source.IntercompanyAgreementVersion,
+                ChartAccountNodeId = "b-cash", AccountingArrangementId = null, AccountingArrangementRevisionId = null,
             IntercompanyTransactionId = null, AccountBindingRevisionId = null };
         var amount = foreign ? 125m : 100m;
         var timestamp = IntercompanyProposalTestData.Now;
@@ -123,8 +125,7 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
                 foreign ? new("EUR", "USD", 0m, 100m, 1.25m) : null),
             new(Guid.NewGuid(), originalId, timestamp, new("Assets:Cash", LedgerAccountType.Asset), amount, 0m, "Reviewed manual counterpart", contraDimensions,
                 foreign ? new("EUR", "USD", 100m, 0m, 1.25m) : null)], new JournalEntryMetadata(EffectiveDate: IntercompanyProposalTestData.Date));
-        return new(proposal, prior, IntercompanyProposalTestData.Agreement() with
-        { Currency = foreign ? "EUR" : "USD", EffectiveTo = IntercompanyProposalTestData.Now.AddHours(14) },
+        return new(proposal, prior, IntercompanyProposalTestData.Agreement(currency: foreign ? "EUR" : "USD", effectiveTo: IntercompanyProposalTestData.Now.AddHours(14)),
             new(entry, Guid.NewGuid(), Guid.NewGuid(), null, null, 1, timestamp));
     }
 
@@ -134,8 +135,9 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
         var entry = new JournalEntry(source.SourceJournalId, timestamp, "Source event", source.Lines.Select(line => new LedgerEntry(line.LineId,
             source.SourceJournalId, timestamp, new(line.AccountName, Enum.Parse<LedgerAccountType>(line.AccountType)), line.Debit, line.Credit, "Source event",
             new LedgerLineDimensionSet(EntityId: source.SourceEntityId.ToString("D"), CounterpartyId: source.CounterpartyEntityId.ToString("D"))
-            { ChartAccountNodeId = line.ChartAccountNodeId, AgreementId = source.AgreementId.ToString("D"),
-                AgreementRevisionId = source.AgreementRevisionId.ToString("D"), IntercompanyTransactionId = source.TransactionId })).ToArray(),
+            { IntercompanyAgreementId = source.IntercompanyAgreementId, IntercompanyAgreementVersion = source.IntercompanyAgreementVersion,
+                ChartAccountNodeId = line.ChartAccountNodeId, AccountingArrangementId = source.AccountingArrangementId.ToString("D"),
+                AccountingArrangementRevisionId = source.AccountingArrangementRevisionId.ToString("D"), IntercompanyTransactionId = source.TransactionId })).ToArray(),
             new JournalEntryMetadata(EffectiveDate: source.EffectiveDate));
         return new(entry, Guid.NewGuid(), Guid.NewGuid(), null, null, 1, timestamp);
     }
@@ -152,5 +154,5 @@ public sealed class IntercompanyCounterpartReversalBuilderTests
     }
 
     internal sealed record ReversalFixture(IntercompanyProposalDto Proposal, IntercompanyProposalDto Prior,
-        IntercompanyAgreementDto Agreement, LedgerJournalEntryRecord Original);
+        ResolvedIntercompanyAccountingArrangementDto Agreement, LedgerJournalEntryRecord Original);
 }

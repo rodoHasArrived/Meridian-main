@@ -61,7 +61,7 @@ and validating governance cash-flow query windows.
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
-| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
 | `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 

@@ -14,6 +14,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
     [InlineData("account-node")]
     [InlineData("binding-revision")]
     [InlineData("transaction")]
+    [InlineData("legal-agreement")]
+    [InlineData("legal-version")]
     public async Task FactorPaydown_ReplayRefusesChangedRetainedIntercompanyDimensionBeforeReceiptOrAtomicReplay(string field)
     {
         var harness = BuildFactorPaydownSpineHarness(regenerateCashFlowWrites: true);
@@ -31,8 +33,10 @@ public sealed partial class AssetAccountingEventSpineServiceTests
                 var dimensions = line.Dimensions!;
                 dimensions = field switch
                 {
-                    "agreement" => dimensions with { AgreementId = Guid.NewGuid().ToString("D") },
-                    "agreement-revision" => dimensions with { AgreementRevisionId = Guid.NewGuid().ToString("D") },
+                    "legal-agreement" => dimensions with { IntercompanyAgreementId = Guid.NewGuid() },
+                    "legal-version" => dimensions with { IntercompanyAgreementVersion = 2 },
+                    "agreement" => dimensions with { AccountingArrangementId = Guid.NewGuid().ToString("D") },
+                    "agreement-revision" => dimensions with { AccountingArrangementRevisionId = Guid.NewGuid().ToString("D") },
                     "account-node" => dimensions with { ChartAccountNodeId = "another-account-node" },
                     "binding-revision" => dimensions with { AccountBindingRevisionId = Guid.NewGuid().ToString("D") },
                     _ => dimensions with { IntercompanyTransactionId = "another-equal-amount-transaction" }

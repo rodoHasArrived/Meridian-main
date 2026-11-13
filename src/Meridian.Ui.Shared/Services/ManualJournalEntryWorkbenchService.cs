@@ -985,7 +985,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AccountingPostingCommandDto postingCommand,
         IReadOnlyList<string> evidenceLinks,
         DateTimeOffset recordedAtUtc,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool retainPostingApproval = true)
     {
         if (IsConsolidationDraft(draft))
         {
@@ -1069,7 +1070,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             postingCommand.SourceEventId,
             postingCommand.SourceJournalEntryId,
             BuildManualPostingKind(draft),
-            AdjustmentApproval: BuildManualAdjustmentApproval(draft, postingCommand, evidenceLinks, recordedAtUtc),
+            AdjustmentApproval: retainPostingApproval
+                ? BuildManualAdjustmentApproval(draft, postingCommand, evidenceLinks, recordedAtUtc) : null,
             PostingCommand: postingCommand,
             LedgerBookId: ledgerBook.LedgerBookId);
     }
@@ -1421,11 +1423,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
             PositionId = dimensions.PositionId,
-            AgreementId = NormalizeOptional(dimensions.AgreementId),
-            AgreementRevisionId = NormalizeOptional(dimensions.AgreementRevisionId),
+            AccountingArrangementId = NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions.AccountingArrangementRevisionId),
             ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
             AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
-            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId)
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId),
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
     }
 

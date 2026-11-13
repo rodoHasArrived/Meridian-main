@@ -112,7 +112,7 @@ public sealed class EntityConsolidationViewModel : BindableBase
         set { if (SetProperty(ref _selectedSource, value)) RaisePropertyChanged(nameof(SourceDetail)); }
     }
     public string SourceDetail => SelectedSource is { } source
-        ? $"Book {source.LedgerBookId:D} · journal {source.JournalEntryId:D} · line {source.LineId:D}\nEntity {source.EntityId} · counterparty {source.CounterpartyId ?? "unavailable"}\nAgreement {source.AgreementId ?? "unavailable"} / revision {source.AgreementRevisionId ?? "unavailable"}\nAccount binding {source.AccountBindingRevisionId ?? "unavailable"}\n{source.DrillThrough}"
+        ? $"Book {source.LedgerBookId:D} · journal {source.JournalEntryId:D} · line {source.LineId:D}\nEntity {source.EntityId} · counterparty {source.CounterpartyId ?? "unavailable"}\nAccounting profile {source.AccountingArrangementId ?? "unavailable"} / revision {source.AccountingArrangementRevisionId ?? "unavailable"}\nLegal agreement {source.IntercompanyAgreementId} / version {source.IntercompanyAgreementVersion}\nLegal hash {source.IntercompanyAgreementPayloadHash ?? "unavailable"}\nAccount binding {source.AccountBindingRevisionId ?? "unavailable"}\n{source.DrillThrough}"
         : "Select a source row to inspect retained journal, agreement and account-binding identities.";
 
     private ConsolidationRequestDto? Request => SelectedOrganization is { } organization && SelectedOwnershipRoot is { } root
@@ -197,8 +197,14 @@ public sealed class EntityConsolidationViewModel : BindableBase
             Replace(OwnershipRows, timeline.OwnershipLinks.Select(link => new AccountingWorkbenchRow(link.RelationshipType.ToString(),
                 link.OwnershipPercent?.ToString("G29", CultureInfo.InvariantCulture) ?? "Unspecified", $"{link.ParentNodeId:D} → {link.ChildNodeId:D}",
                 $"[{link.EffectiveFrom:O}, {link.EffectiveTo?.ToString("O", CultureInfo.InvariantCulture) ?? "open"}) · {link.OwnershipLinkId:D}")));
-            Replace(AgreementRows, timeline.Agreements.Select(agreement => new AccountingWorkbenchRow(agreement.Kind.ToString(), agreement.Status.ToString(),
-                $"{agreement.Currency} · {agreement.SettlementCadence}", $"{agreement.AgreementId:D} · revision {agreement.RevisionId:D} · [{agreement.EffectiveFrom:O}, {agreement.EffectiveTo?.ToString("O", CultureInfo.InvariantCulture) ?? "open"}) · signed artifact {agreement.SignedDocument?.ArtifactId ?? "unavailable"} · hash {agreement.SignedDocument?.ContentHashSha256 ?? "unavailable"}")));
+            Replace(AgreementRows, timeline.Agreements.Select(agreement => new AccountingWorkbenchRow(
+                "Legal agreement · " + agreement.AgreementType, agreement.EffectiveStatus.ToString(),
+                $"{agreement.Code} · {agreement.Currency}",
+                $"{agreement.AgreementId:D} · applicable version {agreement.ApplicableRevision?.AgreementVersion} · hash {agreement.ApplicableRevision?.PayloadHash ?? "unavailable"}"))
+                .Concat(timeline.AccountingArrangements.Select(profile => new AccountingWorkbenchRow(
+                    "Accounting profile · " + profile.TemplateKind, profile.Status.ToString(),
+                    $"{profile.ArrangementReference} · {profile.Currency}",
+                    $"{profile.ArrangementId:D} · revision {profile.RevisionId:D} · legal {profile.CanonicalAgreementId:D}/{profile.CanonicalAgreementVersion} · hash {profile.CanonicalPayloadHash} · [{profile.EffectiveFrom:O}, {profile.EffectiveTo?.ToString("O", CultureInfo.InvariantCulture) ?? "open"})"))));
             Replace(BookRows, timeline.Books.Select(book => new AccountingWorkbenchRow(book.DisplayName, book.AccountingBasis.ToString(),
                 book.BaseCurrency, $"{book.LedgerBookId:D} · {book.AccountingPolicyId}/{book.AccountingPolicyVersion}")));
             Status = "Retained lifecycle, ownership, agreements and books loaded from the shared entity projection.";

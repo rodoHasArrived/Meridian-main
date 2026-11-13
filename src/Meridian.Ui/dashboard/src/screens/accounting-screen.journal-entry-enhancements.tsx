@@ -8,6 +8,7 @@ import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { Input } from "@/components/ui/input";
 import { ManualJournalIntercompanyDimensions } from "./accounting-screen.journal-intercompany-dimensions";
+import { IntercompanyJournalReference } from "@/components/accounting/intercompany-journal-reference";
 
 export function focusManualJournalCell(lineId: string, column: string): void {
   const existing = document.getElementById(`manual-je-${column}-${lineId}`);
@@ -144,6 +145,15 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
             <DimensionField label="Cost center" value={view.draft.dimensions?.costCenterId ?? ""} placeholder="Journal-level cost center" onChange={(value) => view.updateDraftDimensions({ costCenterId: value })} />
           </div>
           <p className="text-xs text-muted-foreground">Blank line values inherit journal scope where available. Dimension edits invalidate the current validation and are autosaved as draft changes.</p>
+          <IntercompanyJournalReference key={`${selectedLine.lineId}:${selectedLine.dimensions?.intercompanyAgreementId ?? ""}:${selectedLine.dimensions?.intercompanyAgreementVersion ?? ""}`} line={selectedLine}
+            entityId={selectedLine.entityId ?? view.draft.entityId ?? ""} onApply={patch => {
+              const next = patch.dimensions;
+              const changed = next && (next.intercompanyAgreementId !== selectedLine.dimensions?.intercompanyAgreementId
+                || next.intercompanyAgreementVersion !== selectedLine.dimensions?.intercompanyAgreementVersion
+                || next.counterpartyId !== selectedLine.dimensions?.counterpartyId);
+              view.updateLine(selectedLine.lineId, changed ? { ...patch, dimensions: { ...next, accountingArrangementId: null, accountingArrangementRevisionId: null } } : patch);
+            }} />
+          <p className="text-xs text-muted-foreground">Applying a different legal agreement or counterparty clears the accounting arrangement selection. Select a compatible accounting arrangement before posting an intercompany-role line.</p>
           <ManualJournalIntercompanyDimensions key={`${view.draft.journalEntryId}:${selectedLine.lineId}`} view={view} line={selectedLine} />
           <TechnicalDetails label="Line system details">
             <dl className="grid gap-2 text-xs">

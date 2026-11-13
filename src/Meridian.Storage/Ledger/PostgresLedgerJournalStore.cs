@@ -14,8 +14,10 @@ public sealed partial class PostgresLedgerJournalStore :
     ITransactionalLedgerJournalStore,
     IAtomicTaxLotJournalStore,
     ILedgerBookControlStore,
+    ILedgerEntityControlJournalValidation,
     Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore,
-    ILedgerPostingIdentityCollisionLookup
+    ILedgerPostingIdentityCollisionLookup,
+    IIntercompanyAgreementJournalValidation
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -35,6 +37,7 @@ public sealed partial class PostgresLedgerJournalStore :
     private readonly Func<IConsolidationPostingAuthority?>? _consolidationAuthority;
     private readonly Func<IEnumerable<ILedgerPostingAuthority>>? _postingAuthorities;
     private readonly Func<IEnumerable<ILedgerBookControlPreflight>>? _controlPreflights;
+    private readonly Func<IIntercompanyAgreementPostingAuthority?>? _intercompanyAgreementAuthority;
 
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
@@ -44,7 +47,8 @@ public sealed partial class PostgresLedgerJournalStore :
         Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null,
         Func<IConsolidationPostingAuthority?>? consolidationAuthority = null,
         Func<IEnumerable<ILedgerPostingAuthority>>? postingAuthorities = null,
-        Func<IEnumerable<ILedgerBookControlPreflight>>? controlPreflights = null)
+        Func<IEnumerable<ILedgerBookControlPreflight>>? controlPreflights = null,
+        Func<IIntercompanyAgreementPostingAuthority?>? intercompanyAgreementAuthority = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
@@ -55,6 +59,7 @@ public sealed partial class PostgresLedgerJournalStore :
         _consolidationAuthority = consolidationAuthority;
         _postingAuthorities = postingAuthorities;
         _controlPreflights = controlPreflights;
+        _intercompanyAgreementAuthority = intercompanyAgreementAuthority;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
@@ -89,6 +94,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
         if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
         {
             await transaction.CommitAsync(ct).ConfigureAwait(false);
@@ -133,16 +139,26 @@ public sealed partial class PostgresLedgerJournalStore :
         CancellationToken ct,
         bool verifiedAmortizationReversal = false)
     {
-        ArgumentNullException.ThrowIfNull(connection);
-        ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
         entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry,
             _options.RequireGovernedPostingCommand, _options.RequireExpectedVersion);
-        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false)) return;
+        if (IntercompanyAgreementPostingGuard.HasReferences(entry.Entry) || entry.Entry.Metadata.Tags?.Keys.Any(key =>
+                key.EndsWith(".intercompanyAgreementId", StringComparison.OrdinalIgnoreCase) ||
+                key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) == true)
+        {
+            entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry,
+                _options.RequireGovernedPostingCommand, _options.RequireExpectedVersion);
+            if (IntercompanyAgreementPostingGuard.HasReferences(entry.Entry))
+                throw new LedgerValidationException(
+                    "Intercompany agreement references require the standalone append transaction so authoritative agreement leases remain held through commit.");
+        }
         if (ConsolidationPostingEvidenceGuard.Validate(entry) is not null)
             throw new LedgerValidationException(
                 "Consolidation requires the standalone append transaction so authoritative ownership and policy remain locked through commit.");
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(transaction);
+        if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false)) return;
         await AppendCoreAsync(connection, transaction, entry, ct, verifiedAmortizationReversal).ConfigureAwait(false);
     }
 
@@ -151,7 +167,8 @@ public sealed partial class PostgresLedgerJournalStore :
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct,
-        bool verifiedAmortizationReversal = false)
+        bool verifiedAmortizationReversal = false,
+        bool verifiedCashDividendAttestation = false)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);
@@ -160,8 +177,9 @@ public sealed partial class PostgresLedgerJournalStore :
         ArgumentNullException.ThrowIfNull(entry.Entry);
         entry = AccountingPostingCommandValidator.NormalizeAndValidate(
             entry,
-            _options.RequireGovernedPostingCommand,
-            _options.RequireExpectedVersion);
+            _options.RequireGovernedPostingCommand || verifiedCashDividendAttestation,
+            _options.RequireExpectedVersion || verifiedCashDividendAttestation,
+            allowPreparerAttestation: verifiedCashDividendAttestation);
 
         if (entry.AggregateId == Guid.Empty)
         {
@@ -178,13 +196,14 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
+        await AcquireCashDividendEntitlementsForWritesAsync(connection, transaction, [entry], ct).ConfigureAwait(false);
         if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false)) return;
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(
                 connection,
                 transaction,
                 entry.PeriodId,
-                forUpdate: _options.EnablePeriodLocking,
+                forUpdate: _options.EnablePeriodLocking || verifiedCashDividendAttestation,
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
@@ -206,6 +225,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         entry = RetainPostingAuthorityDecision(transaction, entry, period);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        await ValidateAgreementReversalNotAlreadyPostedAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
@@ -749,6 +769,7 @@ public sealed partial class PostgresLedgerJournalStore :
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await CashDividendEntitlementLock.AcquireAsync(connection, transaction, book.LedgerBookId, false, ct).ConfigureAwait(false);
         await EnsureFundWriteAuthorityAsync(connection, transaction, book.FundProfileId, ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, transaction, "ledger_books", "ledger_book_id", book.LedgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
