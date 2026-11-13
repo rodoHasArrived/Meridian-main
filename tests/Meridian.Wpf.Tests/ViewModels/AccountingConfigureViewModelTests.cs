@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -546,7 +547,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && draft.TotalCredits == 250m);
     }
 
-    [Fact(Skip = "Quarantined pending a product decision on the desktop evidence-capture path (a3a01eff): the WPF Configure VM supplies only string evidence URIs, but the hardened AccountingProductionCertificationProfileStore requires typed RetainedEvidenceIdentityDto bound to each certified artifact and forbids synthesizing it, so the save is rejected. Re-enable once the desktop path captures typed retained evidence (or the store accepts desktop string evidence).")]
+    [Fact]
     public async Task ProductionCertificationProfile_SaveRetainsOperatorScopedControlEvidence()
     {
         Directory.CreateDirectory(_root);
@@ -618,6 +619,43 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ApprovalQueueStudioConfigured = true;
         harness.ViewModel.DimensionMappingStudioConfigured = true;
         harness.ViewModel.ImplementationSandboxConfigured = true;
+        // Tenant setup is retained separately from certification; the certification command
+        // reads those controls from the shared store rather than trusting the VM checkboxes.
+        harness.ViewModel.TenantAdministrationEvidenceText =
+            "evidence://tenant-admin/full/alpha-fund/Alpha Fund LP/control-set";
+        harness.ViewModel.ApprovalQueueId = "certification-review";
+        harness.ViewModel.ApprovalQueueDisplayName = "Certification review";
+        harness.ViewModel.ApprovalQueueWorkflowKind = "ConfigurationPromotion";
+        harness.ViewModel.ApprovalQueueRequiredApprovalRole = "Controller";
+        harness.ViewModel.ApprovalQueueRequiredApprovalCount = 2;
+        harness.ViewModel.ApprovalQueueSegregationPolicy = "Preparer cannot approve their own change.";
+        harness.ViewModel.ApprovalQueueEvidenceRequirement = "retained reviewer evidence";
+        harness.ViewModel.DimensionMappingId = "certification-dimensions";
+        harness.ViewModel.DimensionMappingDisplayName = "Certification dimensions";
+        harness.ViewModel.DimensionMappingProviderId = "quickbooks-fixture";
+        harness.ViewModel.DimensionMappingMeridianDimensionsText = "fundId=alpha-fund";
+        harness.ViewModel.DimensionMappingProviderDimensionsText = "fundId=alpha-fund";
+        harness.ViewModel.DimensionMappingEvidenceRequirement = "retained dimension mapping evidence";
+        await harness.ViewModel.SaveTenantAdministrationProfileAsync();
+        (await harness.TenantAdministrationProfileStore.GetAsync("alpha-fund", "Alpha Fund LP"))
+            .Should().NotBeNull("certification reads authoritative retained tenant setup");
+
+        var subjectId = AccountingProductionCertificationAuthoritySubjects.BuildScopeSubjectId(
+            "alpha-fund", "Alpha Fund LP", "alpha-fund", harness.LedgerBookService.Book.LedgerBookId);
+        var reviewedAt = DateTimeOffset.Parse("2026-11-01T12:00:00Z", CultureInfo.InvariantCulture);
+        var reviewedEvidence = new RetainedEvidenceIdentityDto(
+            "reviewed-accounting-controls", "evidence-vault://certification/documents/reviewed-controls",
+            new string('a', 64), "retained-review-fixture", "controls-review-1",
+            RetainedEvidenceIdentityValidator.AcceptedReviewStatus, "independent-controller", reviewedAt,
+            new DateOnly(2026, 11, 1), 1, reviewedAt.AddMinutes(1), "evidence-vault",
+            AccountingProductionCertificationAuthoritySubjects.ScopeEvidence, subjectId);
+        harness.ProductionCertificationEvidenceAuthority.Sources =
+        [
+            new AccountingCertificationEvidenceSource(operatorEvidence[0], reviewedEvidence,
+                Enum.GetValues<AccountingWorkflowCertificationLaneKindDto>(),
+                Enum.GetValues<AccountingDimensionalCertificationLaneKindDto>(),
+                Enum.GetValues<AccountingTenantAdminCertificationLaneKindDto>())
+        ];
         harness.ViewModel.CanSaveProductionCertificationProfile.Should().BeTrue();
         harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeTrue();
 
@@ -636,15 +674,17 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             "alpha-fund",
             harness.LedgerBookService.Book.LedgerBookId);
         retained.Should().NotBeNull();
-        retained!.EvidenceReferences.Should().Contain("evidence://controller-review/alpha-fund/production-certification-kickoff");
+        retained!.EvidenceReferences.Should().Contain(reviewedEvidence.EvidenceUri);
         retained.EvidenceReferences.Should().Contain("correlation:" + retained.CorrelationId);
-
-        retained.EvidenceReferences.Should().Contain(operatorEvidence);
+        harness.ProductionCertificationEvidenceAuthority.LastRequest.Should().NotBeNull();
+        harness.ProductionCertificationEvidenceAuthority.LastRequest!.EvidenceReferences.Should().Contain(operatorEvidence);
+        retained.EvidenceReferences.Should().NotContain(operatorEvidence,
+            "operator locators select evidence, while retained provenance comes from authoritative typed identities");
         retained.PostingRulesLedgerBookNativeCertified.Should().BeTrue();
         retained.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
         retained.WorkflowCertificationArtifacts.Should().ContainSingle();
         retained.WorkflowCertificationArtifacts[0].Status.Should().Be(AccountingCertificationArtifactStatusDto.Certified);
-        retained.WorkflowCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
+        retained.WorkflowCertificationArtifacts[0].SourceService.Should().Be(nameof(AccountingProductionCertificationCommandService));
         retained.WorkflowCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
             AccountingWorkflowCertificationLaneKindDto.PostingRules,
             AccountingWorkflowCertificationLaneKindDto.JournalLifecycle,
@@ -657,8 +697,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         retained.WorkflowCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
             lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
         retained.DimensionalCertificationArtifacts.Should().ContainSingle();
-        retained.DimensionalCertificationArtifacts[0].DimensionScopeEvidenceKey.Should().Be("canonical-production");
-        retained.DimensionalCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
+        retained.DimensionalCertificationArtifacts[0].DimensionScopeEvidenceKey.Should().Be(subjectId);
+        retained.DimensionalCertificationArtifacts[0].SourceService.Should().Be(nameof(AccountingProductionCertificationCommandService));
         retained.DimensionalCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
             AccountingDimensionalCertificationLaneKindDto.PeriodReports,
             AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports,
@@ -671,7 +711,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         retained.DimensionalCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
             lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
         retained.TenantAdminCertificationArtifacts.Should().ContainSingle();
-        retained.TenantAdminCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
+        retained.TenantAdminCertificationArtifacts[0].SourceService.Should().Be(nameof(AccountingProductionCertificationCommandService));
         retained.TenantAdminCertificationArtifacts[0].LedgerBookId.Should().Be(harness.LedgerBookService.Book.LedgerBookId);
         retained.TenantAdminCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
             AccountingTenantAdminCertificationLaneKindDto.TenantScope,
@@ -693,6 +733,16 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         ]);
         retained.TenantAdminCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
             lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
+        retained.RetainedEvidence.Should().HaveCount(3).And.OnlyContain(evidence =>
+            evidence.ContentHashSha256 == reviewedEvidence.ContentHashSha256 &&
+            evidence.ReviewedBy == "independent-controller" &&
+            AccountingProductionCertificationEvidenceValidator.IsEligible(evidence));
+        retained.RetainedEvidence.Select(evidence => evidence.SubjectId).Should().BeEquivalentTo(
+        [
+            retained.WorkflowCertificationArtifacts[0].CertificationId,
+            retained.DimensionalCertificationArtifacts[0].CertificationId,
+            retained.TenantAdminCertificationArtifacts[0].CertificationId
+        ]);
         harness.ViewModel.ProductionCertificationProfileStatusText.Should().Contain("saved");
     }
 
@@ -735,6 +785,15 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ProductionCertificationEvidenceAuthority.InvocationCount.Should().Be(
             0,
             "blank operator evidence must be rejected before consulting retained-evidence authority");
+
+        harness.ViewModel.ProductionCertificationEvidenceText = "evidence://unverified/operator-assertion";
+        await harness.ViewModel.SaveProductionCertificationProfileAsync();
+        harness.ProductionCertificationEvidenceAuthority.InvocationCount.Should().Be(1);
+        (await harness.ProductionCertificationProfileStore.GetAsync(
+            "alpha-fund", "Alpha Fund LP", "alpha-fund", harness.LedgerBookService.Book.LedgerBookId))
+            .Should().BeNull("a nonempty URI must not substitute for typed retained authority");
+        harness.ViewModel.ProductionCertificationProfileStatusText.Should()
+            .Contain("No authoritative accounting production certification evidence");
     }
 
     [Fact]
@@ -1790,13 +1849,16 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         : IAccountingProductionCertificationEvidenceAuthority
     {
         public int InvocationCount { get; private set; }
+        public IReadOnlyList<AccountingCertificationEvidenceSource> Sources { get; set; } = [];
+        public AccountingCertificationEvidenceResolutionRequest? LastRequest { get; private set; }
 
         public Task<IReadOnlyList<AccountingCertificationEvidenceSource>> ResolveAsync(
             AccountingCertificationEvidenceResolutionRequest request,
             CancellationToken ct = default)
         {
             InvocationCount++;
-            return Task.FromResult<IReadOnlyList<AccountingCertificationEvidenceSource>>([]);
+            LastRequest = request;
+            return Task.FromResult(Sources);
         }
     }
 

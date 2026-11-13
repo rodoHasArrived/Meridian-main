@@ -18,7 +18,7 @@
   "handRolledNumberFormatting": {
     "src/screens/accounting-screen.formatting.ts": 2,
     "src/screens/accounting-screen.reconciliation-readiness.view-model.ts": 1,
-    "src/screens/accounting-screen.view-model.ts": 4,
+    "src/screens/accounting-screen.security-projections.ts": 4,
     "src/screens/cash-ladder-screen.view-model.ts": 2,
     "src/screens/covered-call-screen.formatters.ts": 3,
     "src/screens/covered-call-screen.tsx": 3,
@@ -42,8 +42,8 @@
   },
   "localMoneyFormatters": {
     "src/screens/accounting-screen.formatting.ts": 4,
+    "src/screens/accounting-screen.security-projections.ts": 1,
     "src/screens/accounting-screen.statement-run-detail.view-model.ts": 1,
-    "src/screens/accounting-screen.view-model.ts": 1,
     "src/screens/covered-call-screen.formatters.ts": 1,
     "src/screens/covered-call-screen.tsx": 1,
     "src/screens/data-quality-watch.view-model.ts": 1,

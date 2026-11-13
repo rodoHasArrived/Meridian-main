@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 

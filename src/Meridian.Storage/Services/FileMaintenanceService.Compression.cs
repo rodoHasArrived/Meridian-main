@@ -195,6 +195,9 @@ public sealed partial class FileMaintenanceService
         if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative))
             relative = Path.GetFileName(file);
         relative = relative.Replace('\\', '/');
+        // Maintenance GUIDs may contain date-shaped digits. Only the partition-bearing
+        // stem is authoritative; a fragment identifier must not change its close time.
+        relative = Regex.Replace(relative, @"\.merged-[0-9a-fA-F]{32}(?=\.jsonl(?:\.(?:gz|zst|lz4|br))?$)", string.Empty);
 
         static DateTimeOffset? Last(string text, string pattern, Func<Match, DateTimeOffset?> end)
         {

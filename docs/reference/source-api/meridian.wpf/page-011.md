@@ -445,7 +445,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.AccountingWorkbenchRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:5316](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L5316).
+Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:4839](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L4839).
 
 ```csharp
 public sealed record AccountingWorkbenchRow(string Name, string Status, string Detail, string Evidence, string Key = "");
@@ -509,7 +509,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.Accounting.ExternalGlEvidenceRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:5332](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L5332).
+Source: [src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs:4855](../../../../src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs#L4855).
 
 ```csharp
 public sealed record ExternalGlEvidenceRow(string AccountCode, string AccountName, string Status, decimal ExternalDebit, decimal ExternalCredit, decimal MeridianDebit, decimal MeridianCredit, decimal Variance, string Detail, string Evidence);

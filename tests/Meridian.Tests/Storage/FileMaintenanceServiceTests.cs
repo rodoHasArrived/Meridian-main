@@ -3,6 +3,11 @@ using FluentAssertions;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Services;
+using Meridian.Storage.Policies;
+using Meridian.Storage.Sinks;
+using Meridian.Domain.Events;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Tests.Infrastructure;
 using Xunit;
 
@@ -374,8 +379,8 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     {
         var dir = Path.Combine(TestDataRoot, "alpaca");
         Directory.CreateDirectory(dir);
-        var jsonlA = Path.Combine(dir, "a_20260101.jsonl");
-        var jsonlB = Path.Combine(dir, "b_20260102.jsonl");
+        var jsonlA = Path.Combine(dir, "SPY_trade_20260101.jsonl");
+        var jsonlB = Path.Combine(dir, "SPY_trade_20260101.merged-11111111111111111111111111111111.jsonl");
         var gzA = Path.Combine(dir, "c_20260103.jsonl.gz");
         var gzB = Path.Combine(dir, "d_20260104.jsonl.gz");
         await File.WriteAllTextAsync(jsonlA, "{\"seq\":1}\n");
@@ -387,13 +392,13 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         var gzABytes = await File.ReadAllBytesAsync(gzA);
         var gzBBytes = await File.ReadAllBytesAsync(gzB);
 
-        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat });
         var result = await service.DefragmentAsync(new DefragOptions(MaxFileAge: TimeSpan.FromDays(1)));
 
         result.FilesCreated.Should().Be(1);
         File.Exists(jsonlA).Should().BeFalse();
         File.Exists(jsonlB).Should().BeFalse();
-        var merged = Directory.GetFiles(dir, "merged_*.jsonl").Should().ContainSingle().Subject;
+        var merged = Directory.GetFiles(dir, "*.merged-*.jsonl").Should().ContainSingle().Subject;
         var mergedContent = await File.ReadAllTextAsync(merged);
         mergedContent.Should().Contain("{\"seq\":1}").And.Contain("{\"seq\":2}");
 
@@ -410,21 +415,21 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         // wrote real merged_* files that duplicated events on replay.
         var dir = Path.Combine(TestDataRoot, "polygon");
         Directory.CreateDirectory(dir);
-        var jsonlA = Path.Combine(dir, "a_20260101.jsonl");
-        var jsonlB = Path.Combine(dir, "b_20260102.jsonl");
+        var jsonlA = Path.Combine(dir, "SPY_trade_20260101.jsonl");
+        var jsonlB = Path.Combine(dir, "SPY_trade_20260101.merged-11111111111111111111111111111111.jsonl");
         await File.WriteAllTextAsync(jsonlA, "{\"seq\":1}\n");
         await File.WriteAllTextAsync(jsonlB, "{\"seq\":2}\n");
         foreach (var f in new[] { jsonlA, jsonlB })
             File.SetLastWriteTimeUtc(f, DateTime.UtcNow.AddDays(-2));
 
-        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat });
         var result = await service.DefragmentAsync(new DefragOptions(MaxFileAge: TimeSpan.FromDays(1), DryRun: true));
 
         result.FilesProcessed.Should().Be(2, "the dry run must still report the would-merge plan");
         result.FilesCreated.Should().Be(0);
         File.Exists(jsonlA).Should().BeTrue();
         File.Exists(jsonlB).Should().BeTrue();
-        Directory.GetFiles(dir, "merged_*", SearchOption.AllDirectories).Should().BeEmpty(
+        Directory.GetFiles(dir, "*.jsonl").Should().BeEquivalentTo(new[] { jsonlA, jsonlB },
             "a dry run must not write any merged files");
     }
 
@@ -436,15 +441,15 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
 
         var dir = Path.Combine(TestDataRoot, "locked-source");
         Directory.CreateDirectory(dir);
-        var lockedPath = Path.Combine(dir, "a_20260101.jsonl");
-        var deletablePath = Path.Combine(dir, "b_20260102.jsonl");
+        var lockedPath = Path.Combine(dir, "SPY_trade_20260101.jsonl");
+        var deletablePath = Path.Combine(dir, "SPY_trade_20260101.merged-11111111111111111111111111111111.jsonl");
         await File.WriteAllTextAsync(lockedPath, "{\"seq\":1}\n");
         await File.WriteAllTextAsync(deletablePath, "{\"seq\":2}\n");
         File.SetLastWriteTimeUtc(lockedPath, DateTime.UtcNow.AddDays(-2));
         File.SetLastWriteTimeUtc(deletablePath, DateTime.UtcNow.AddDays(-2));
         var lockedLength = new FileInfo(lockedPath).Length;
         await using var lockHandle = new FileStream(lockedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat });
 
         var result = await service.DefragmentAsync(new DefragOptions(MaxFileAge: TimeSpan.FromDays(1)));
 
@@ -455,5 +460,159 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         result.FilesDeleted.Should().Be(1);
         result.BytesAfter.Should().BeGreaterThan(lockedLength,
             "the actual footprint includes both the merged file and the source that survived deletion");
+    }
+
+    [Fact]
+    public void DefragOptions_DefaultQuietPeriod_IsAtLeastOneDay()
+    {
+        new DefragOptions().MaxFileAge.Should().BeGreaterThanOrEqualTo(TimeSpan.FromDays(1));
+        new DefragOptions(MinFileSizeBytes: 256).MaxFileAge.Should().BeGreaterThanOrEqualTo(TimeSpan.FromDays(1));
+    }
+
+    [Fact]
+    public async Task DefragmentAsync_CurrentPartitionWithOldTimestamps_IsUntouched()
+    {
+        var day = DateTimeOffset.UtcNow.ToString("yyyyMMdd");
+        var paths = await WriteFragmentsAsync($"SPY_trade_{day}");
+        var result = await FlatMaintenance().DefragmentAsync(new DefragOptions(MaxFileAge: TimeSpan.FromTicks(1)));
+
+        result.FilesProcessed.Should().Be(0, "an old mtime is not proof that today's event partition is closed");
+        paths.Should().OnlyContain(path => File.Exists(path));
+    }
+
+    [Fact]
+    public async Task DefragmentAsync_FlatLayout_KeepsSymbolTypeDateAndProviderPartitionsSeparate()
+    {
+        var partitions = new[]
+        {
+            "SPY_trade_20260101_provider_one", "AAPL_trade_20260101_provider_one",
+            "SPY_quote_20260101_provider_one", "SPY_trade_20260102_provider_one",
+            "SPY_trade_20260101_provider_two"
+        };
+        foreach (var partition in partitions)
+            await WriteFragmentsAsync(partition);
+        var options = new StorageOptions { RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat, IncludeProvider = true };
+
+        var result = await new FileMaintenanceService(options).DefragmentAsync(new DefragOptions());
+
+        result.Errors.Should().BeEmpty();
+        result.FilesCreated.Should().Be(partitions.Length);
+        var policy = new JsonlStoragePolicy(options);
+        var merged = Directory.GetFiles(TestDataRoot, "*.jsonl");
+        merged.Should().HaveCount(partitions.Length);
+        foreach (var partition in partitions)
+        {
+            var path = merged.Should().ContainSingle(path => Path.GetFileName(path).StartsWith(partition + ".merged-", StringComparison.Ordinal)).Subject;
+            (await File.ReadAllLinesAsync(path)).Should().HaveCount(2);
+            policy.TryParsePath(path).Should().Be(policy.TryParsePath(Path.Combine(TestDataRoot, partition + ".jsonl")));
+        }
+    }
+
+    [Theory]
+    [InlineData(DatePartition.Daily, "yyyy-MM-dd")]
+    [InlineData(DatePartition.Hourly, "yyyy-MM-dd_HH")]
+    [InlineData(DatePartition.Monthly, "yyyy-MM")]
+    public async Task DefragmentAsync_CurrentPartitionDateCannotBeOverriddenByOldProviderOrPrefixDate(
+        DatePartition partition, string dateFormat)
+    {
+        var prefix = "snapshot-20000101_";
+        var date = DateTimeOffset.UtcNow.ToString(dateFormat, System.Globalization.CultureInfo.InvariantCulture);
+        var paths = await WriteFragmentsAsync($"{prefix}SPY_trade_{date}_provider-2000-01-01");
+        var options = new StorageOptions
+        {
+            RootPath = TestDataRoot,
+            NamingConvention = FileNamingConvention.Flat,
+            IncludeProvider = true,
+            FilePrefix = prefix,
+            DatePartition = partition
+        };
+
+        var result = await new FileMaintenanceService(options).DefragmentAsync(new DefragOptions());
+
+        result.FilesProcessed.Should().Be(0, "only the owning date segment can establish that a partition is closed");
+        paths.Should().OnlyContain(path => File.Exists(path));
+    }
+
+    [Fact]
+    public async Task DefragmentAsync_OpenJsonlWriter_PreservesFsyncedAndSubsequentEvents()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot, NamingConvention = FileNamingConvention.Flat };
+        var policy = new JsonlStoragePolicy(options);
+        await using var sink = new JsonlStorageSink(options, policy,
+            new JsonlBatchOptions { Enabled = false, FlushInterval = TimeSpan.FromMinutes(5) });
+        var at = DateTimeOffset.Parse("2026-01-01T14:30:00Z");
+        MarketEvent Event(int sequence) => MarketEvent.Trade(at, "SPY",
+            new Trade(at, "SPY", 100m + sequence, 10, AggressorSide.Buy, sequence), "TEST", sequence);
+        await sink.AppendAsync(Event(1));
+        await sink.FlushAsync();
+        var source = policy.GetPath(Event(1));
+        var fragment = Path.Combine(Path.GetDirectoryName(source)!, Path.GetFileNameWithoutExtension(source) + ".merged-11111111111111111111111111111111.jsonl");
+        await File.WriteAllTextAsync(fragment, "{\"sequence\":0}\n");
+        foreach (var path in new[] { source, fragment })
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
+
+        var result = await new FileMaintenanceService(options).DefragmentAsync(new DefragOptions());
+
+        result.FilesDeleted.Should().Be(0, "the stream is still an active append destination even after fsync");
+        result.FilesCreated.Should().Be(0);
+        File.Exists(source).Should().BeTrue();
+        await sink.AppendAsync(Event(2));
+        await sink.FlushAsync();
+        (await File.ReadAllLinesAsync(source)).Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task DefragmentAsync_CrossProcessWriterLease_RefusesMergeUntilReleased()
+    {
+        var paths = await WriteFragmentsAsync("SPY_trade_20260101");
+        using (await JsonlWriterLock.AcquireSharedAsync(paths[0], TimeSpan.FromSeconds(5), CancellationToken.None))
+        {
+            var blocked = await FlatMaintenance().DefragmentAsync(new DefragOptions());
+            blocked.FilesDeleted.Should().Be(0);
+            paths.Should().OnlyContain(path => File.Exists(path));
+        }
+
+        var allowed = await FlatMaintenance().DefragmentAsync(new DefragOptions());
+        allowed.Errors.Should().BeEmpty();
+        allowed.FilesDeleted.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task FindOrphansAsync_AncestorTempNameAndQuarantinedEvidence_ArePreserved()
+    {
+        var dataRoot = Path.Combine(TestDataRoot, "_temp-volume", "data");
+        var livePath = Path.Combine(dataRoot, "SPY_trade_20260101.jsonl");
+        var quarantinedPath = Path.Combine(dataRoot, "_temp", "_quarantine", "evidence.jsonl");
+        var temporaryPath = Path.Combine(dataRoot, "_temp", "abandoned.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(quarantinedPath)!);
+        await File.WriteAllTextAsync(livePath, "{}\n");
+        await File.WriteAllTextAsync(quarantinedPath, "{}\n");
+        await File.WriteAllTextAsync(temporaryPath, "{}\n");
+
+        var report = await new FileMaintenanceService(new StorageOptions { RootPath = dataRoot }).FindOrphansAsync();
+
+        report.OrphanedFiles.Should().ContainSingle().Which.Path.Should().Be(temporaryPath);
+        File.Exists(quarantinedPath).Should().BeTrue();
+    }
+
+    private FileMaintenanceService FlatMaintenance() => new(new StorageOptions
+    {
+        RootPath = TestDataRoot,
+        NamingConvention = FileNamingConvention.Flat
+    });
+
+    private async Task<string[]> WriteFragmentsAsync(string partition)
+    {
+        var paths = new[]
+        {
+            Path.Combine(TestDataRoot, partition + ".jsonl"),
+            Path.Combine(TestDataRoot, partition + ".merged-11111111111111111111111111111111.jsonl")
+        };
+        for (var i = 0; i < paths.Length; i++)
+        {
+            await File.WriteAllTextAsync(paths[i], $"{{\"sequence\":{i}}}\n");
+            File.SetLastWriteTimeUtc(paths[i], DateTime.UtcNow.AddDays(-2));
+        }
+        return paths;
     }
 }
