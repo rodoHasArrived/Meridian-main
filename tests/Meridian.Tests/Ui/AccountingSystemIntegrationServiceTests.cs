@@ -7265,6 +7265,22 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             return Task.CompletedTask;
         }
 
+        public async Task<string> SaveRefreshTokenAsync(string? refreshToken, QuickBooksOnlineConnection expectedConnection, CancellationToken ct = default)
+        {
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+                await SaveRefreshTokenAsync(refreshToken, ct);
+            return "fake-qbo-generation";
+        }
+
+        public Task RecordConnectionAsync(
+            bool success,
+            string? externalCompanyId,
+            string? error,
+            string? expectedCredentialGeneration,
+            DateTimeOffset? occurredAtUtc = null,
+            CancellationToken ct = default)
+            => RecordConnectionAsync(success, externalCompanyId, error, occurredAtUtc, ct);
+
         public Task RecordConnectionAsync(
             bool success,
             string? externalCompanyId,

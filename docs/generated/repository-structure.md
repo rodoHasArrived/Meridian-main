@@ -4986,6 +4986,7 @@ Meridian-main
 │   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── prepare-next-work-acceptance.ps1
+│   │   ├── ProviderValidationEvidence.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
@@ -7114,6 +7115,7 @@ Meridian-main
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
+│   │   │   │   ├── CorporateActionFetchResult.cs
 │   │   │   │   ├── CrossProviderValidator.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalAggregateBarProvider.cs
@@ -12616,9 +12618,11 @@ Meridian-main
 │   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderAccountingRuntimeCredentialTests.cs
+│   │   │   │   ├── ProviderFamilyCatalogServiceTests.cs
 │   │   │   │   ├── ProviderIbFlexRuntimeCredentialTests.cs
 │   │   │   │   ├── ProviderModuleRuntimeCredentialTests.cs
 │   │   │   │   ├── ProviderPlaidRuntimeCredentialTests.cs
+│   │   │   │   ├── ProviderRoutingEligibilityTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   ├── ProviderRuntimeCredentialRecoveryTests.cs
 │   │   │   │   ├── ProviderRuntimeCredentialServiceTests.cs
@@ -12798,6 +12802,7 @@ Meridian-main
 │   │   ├── DataIntegration
 │   │   │   ├── AccountingSystem
 │   │   │   │   ├── QuickBooks
+│   │   │   │   │   ├── QuickBooksCredentialLifecycleTests.cs
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
@@ -13237,6 +13242,8 @@ Meridian-main
 │   │   │   │   ├── BaseSymbolSearchProviderTests.cs
 │   │   │   │   ├── CanonicalRegistrySymbolResolverTests.cs
 │   │   │   │   ├── CompositeProviderStaleDataTests.cs
+│   │   │   │   ├── CorporateActionFetchOutcomeTests.cs
+│   │   │   │   ├── CorporateActionFetchResultTests.cs
 │   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
@@ -15233,6 +15240,7 @@ Meridian-main
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── test_validation_plan.py
+│   │   ├── test_wave1_provider_validation.py
 │   │   ├── test_web_workstation_installer.py
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py

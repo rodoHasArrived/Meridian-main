@@ -601,6 +601,7 @@ Declared public members:
 | <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs#L54) |  |
 | <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs#L56) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs#L60) |  |
+| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageCorporateActionProvider.cs#L79) |  |
 
 ## AlphaVantageHistoricalDataProvider
 
@@ -1208,7 +1209,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:150](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L150).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L75).
 
 Command model produced by an ICorporateActionProvider implementation. Contains the fields needed to raise a CorporateActionDeclared domain event.
 
@@ -1216,27 +1217,14 @@ Command model produced by an ICorporateActionProvider implementation. Contains t
 public sealed record CorporateActionCommand(Guid SecurityId, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string? Description, string SourceProvider, string? SourceEventId = null, string? SourceEventVersion = null, DateTimeOffset? ObservedAtUtc = null, string? EvidenceHash = null, string? EvidenceReference = null, CorporateActionProviderReleaseStatusDto ReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly);
 ```
 
-## CorporateActionFetchResult
+## CorporateActionFetchFailure
 
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionFetchResult</code>. Kind: `class`.
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionFetchFailure</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:102](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L102).
+Source: [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L19).
 
-Outcome of ICorporateActionProvider.FetchWithOutcomeAsync. Observations is populated only for a CorporateActionFetchStatus.Complete fetch: part of a history is withheld rather than handed on as if it were all of it, and WithheldObservationCount records how many observations were read and withheld. Reason is a fixed provider-authored description; it never carries credentials or provider response bodies.
+Safe machine-readable failure metadata. Upstream payloads and exception text are excluded.
 
 ```csharp
-public sealed class CorporateActionFetchResult
+public sealed record CorporateActionFetchFailure(string Code, int? HttpStatusCode = null, TimeSpan? RetryAfter = null, string? Scope = null);
 ```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionFetchStatus Status { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:116](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L116) |  |
-| <code>public IReadOnlyList&lt;CorporateActionCommand&gt; Observations { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:118](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L118) |  |
-| <code>public string? Reason { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:120](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L120) |  |
-| <code>public int WithheldObservationCount { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:122](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L122) |  |
-| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:124](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L124) |  |
-| <code>public static CorporateActionFetchResult Complete(IReadOnlyList&lt;CorporateActionCommand&gt; observations);</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L126) |  |
-| <code>public static CorporateActionFetchResult Incomplete(string reason, int withheldObservationCount = 0);</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L132) |  |
-| <code>public static CorporateActionFetchResult Unavailable(string reason);</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:139](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L139) |  |
