@@ -4,13 +4,14 @@ This folder vendors selected plugins from [github/awesome-copilot](https://githu
 
 ## Included plugins
 
-- `csharp-dotnet-development` - .NET and C# implementation guidance.
 - `frontend-web-dev` - web UI and Playwright-focused frontend workflows.
 - `testing-automation` - TDD and test automation workflows.
 - `security-best-practices` - security and prompt-safety review workflows.
 
 ## Usage notes
 
+- The Claude-side plugin set (including `csharp-dotnet-development`) lives in `.claude/plugins/`;
+  `frontend-web-dev` is intentionally vendored in both places for Copilot and Claude hosts.
 - These plugin folders are vendored snapshots from Awesome Copilot.
 - Some skills intentionally overlap between plugins (for example Playwright and prompt-safety skills).
 - For Meridian tasks, repository instructions and path-specific rules in `.github/instructions/` always take precedence over generic plugin guidance.
