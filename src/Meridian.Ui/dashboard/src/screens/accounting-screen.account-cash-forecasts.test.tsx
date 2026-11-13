@@ -87,6 +87,83 @@ beforeEach(() => {
 afterEach(() => vi.clearAllMocks());
 
 describe("AccountCashForecastsPanel", () => {
+  it("prepares exact retained cash and dated FX without a JSON handoff, then explicitly captures a linked correction", async () => {
+    const user = userEvent.setup();
+    const original = snapshot();
+    const dirty = vi.fn();
+    api.listCashForecasts.mockResolvedValue([original]);
+    api.captureCashForecast.mockImplementation(async (_scope, inputs) => snapshot(inputs, { snapshotId: "snapshot-2" }));
+    render(view(scope, context, dirty));
+    await screen.findByText("Cash reconciliation blocked");
+    await user.click(screen.getByRole("button", { name: "Prepare from retained inputs" }));
+    expect(dirty).toHaveBeenLastCalledWith(true);
+    expect(screen.getByLabelText("Retained cash forecast")).toBeDisabled();
+    await user.clear(screen.getByLabelText("Minimum cash threshold (USD)"));
+    await user.type(screen.getByLabelText("Minimum cash threshold (USD)"), "9007199254740993.1234");
+    await user.type(screen.getByLabelText("Correction rationale"), "Review reserve using retained evidence");
+    await user.click(screen.getByRole("button", { name: "Review prepared inputs" }));
+
+    const preview = screen.getByRole("region", { name: "Prepared cash forecast preview" });
+    expect(within(preview).getByText("125.1275 EUR")).toBeInTheDocument();
+    expect(within(preview).getByText("1.08423715")).toBeInTheDocument();
+    expect(api.captureCashForecast).not.toHaveBeenCalled();
+    expect(api.parseCashForecastImport).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Capture cash forecast" }));
+    await screen.findByText("Cash forecast captured. Earlier predictions and their source revisions remain retained.");
+    const captured = api.captureCashForecast.mock.calls[0][1];
+    expect(captured).toMatchObject({
+      scope: original.inputs.scope, openingCash: original.inputs.openingCash, flows: original.inputs.flows,
+      fxConversions: original.inputs.fxConversions, minimumCashThreshold: "9007199254740993.1234",
+      previousSnapshotId: original.snapshotId, correctionRationale: "Review reserve using retained evidence"
+    });
+    expect(captured.runId).not.toBe(original.inputs.runId);
+    expect(captured.recordedAtUtc).not.toBe(original.inputs.recordedAtUtc);
+    expect(original.inputs.minimumCashThreshold).toBe("10.00");
+    expect(dirty).toHaveBeenLastCalledWith(false);
+  });
+
+  it("retains selected source revisions and exact command identity across a prepared-capture retry", async () => {
+    const user = userEvent.setup();
+    const input = request();
+    const latest = snapshot(input, { snapshotId: "snapshot-latest" });
+    api.listCashForecasts.mockResolvedValue([snapshot(input), latest]);
+    api.getCashForecast.mockResolvedValue(snapshot(input));
+    api.captureCashForecast.mockRejectedValueOnce(new Error("Service unavailable"))
+      .mockImplementationOnce(async (_scope, inputs) => snapshot(inputs, { snapshotId: "snapshot-next" }));
+    render(view());
+    await screen.findByText("Cash reconciliation blocked");
+    await user.selectOptions(screen.getByLabelText("Retained cash forecast"), "snapshot-1");
+    await waitFor(() => expect(screen.getByLabelText("Retained cash forecast")).toHaveValue("snapshot-1"));
+    await user.click(screen.getByRole("button", { name: "Prepare from retained inputs" }));
+    await user.click(screen.getByRole("checkbox", { name: /Coupon · Expected/ }));
+    await user.type(screen.getByLabelText("Correction rationale"), "Exclude this expected payment from the reviewed scenario");
+    await user.click(screen.getByRole("button", { name: "Review prepared inputs" }));
+    await user.click(screen.getByRole("button", { name: "Capture cash forecast" }));
+    await screen.findByRole("alert");
+    await user.click(screen.getByRole("button", { name: "Keep prepared inputs and retry" }));
+    await user.click(screen.getByRole("button", { name: "Capture cash forecast" }));
+    await screen.findByText("Cash forecast captured. Earlier predictions and their source revisions remain retained.");
+    const first = api.captureCashForecast.mock.calls[0][1];
+    expect(first.previousSnapshotId).toBe("snapshot-latest");
+    expect(first.flows).toEqual([]);
+    expect(first.fxConversions).toEqual(input.fxConversions);
+    expect(api.captureCashForecast.mock.calls[1][1]).toBe(first);
+  });
+
+  it("refuses to move retained opening observation dates while preparing a different period", async () => {
+    const user = userEvent.setup();
+    api.listCashForecasts.mockResolvedValue([snapshot()]);
+    render(view());
+    await screen.findByText("Cash reconciliation blocked");
+    await user.click(screen.getByRole("button", { name: "Prepare from retained inputs" }));
+    await user.clear(screen.getByLabelText("Cash period start"));
+    await user.type(screen.getByLabelText("Cash period start"), "2026-10-02");
+    await user.click(screen.getByRole("button", { name: "Review prepared inputs" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Retained dates cannot be moved");
+    expect(screen.queryByRole("region", { name: "Prepared cash forecast preview" })).not.toBeInTheDocument();
+    expect(api.captureCashForecast).not.toHaveBeenCalled();
+  });
+
   it("previews an imported scoped handoff and captures only after explicit review", async () => {
     const user = userEvent.setup();
     const input = request();
@@ -153,6 +230,7 @@ describe("AccountCashForecastsPanel", () => {
     expect(screen.getByText("Read-only cash forecasts")).toBeInTheDocument();
     expect(screen.queryByLabelText("Cash forecast handoff file")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Capture cash forecast" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Prepare from retained inputs" })).not.toBeInTheDocument();
   });
 
   it("shows certification and actual cash receipts only when retained by the server", async () => {

@@ -52,6 +52,7 @@ import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-tabl
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
 import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
   buildPortfolioExplorerPresentation,
   resolveBrokerageAccountFilterKeyCommand,
@@ -1127,6 +1128,16 @@ export function PortfolioScreen({
               status={brokerageInspector === "position" ? vm.selectedBrokeragePosition ? { label: vm.selectedBrokeragePosition.statusBadgeLabel, tone: vm.selectedBrokeragePosition.statusBadgeVariant } : null
                 : { label: vm.selectedBrokerageAccount.statusBadgeLabel, tone: vm.selectedBrokerageAccount.statusBadgeVariant }}
               empty={{ title: "No brokerage position selected", text: vm.brokerageEmptyText }}
+              actions={brokerageInspector === "position" && vm.selectedBrokeragePosition?.bondSecurityId ? (
+                <div className="flex flex-wrap gap-2" aria-label="Selected bond workflows">
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={bondWorkflowRoute(vm.selectedBrokeragePosition.bondSecurityId, "analytics")}>Bond analytics</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={bondWorkflowRoute(vm.selectedBrokeragePosition.bondSecurityId, "migration")}>Convention migration</Link>
+                  </Button>
+                </div>
+              ) : null}
             />
           </div>
         </CardContent>
@@ -1157,6 +1168,7 @@ export function PortfolioScreen({
               </div>
             ) : null}
             actions={vm.selectedPosition ? (
+              <>
               <Button asChild size="sm" variant="outline">
                 <Link
                   to={workstationRouteWithQuery("portfolioAssetDetail", {
@@ -1168,6 +1180,19 @@ export function PortfolioScreen({
                   Open asset detail
                 </Link>
               </Button>
+              <details className="text-sm">
+                <summary className="cursor-pointer font-medium text-foreground">Fixed-income actions</summary>
+                <p className="mt-2 text-xs text-muted-foreground">Resolve this holding in Security Master to open its bond workflow. If multiple instruments match, select the correct record first.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={holdingBondWorkflowRoute(vm.selectedPosition.title, "analytics")} aria-label={`Open bond analytics for ${vm.selectedPosition.title}`}>Bond analytics</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={holdingBondWorkflowRoute(vm.selectedPosition.title, "migration")} aria-label={`Open convention migration for ${vm.selectedPosition.title}`}>Convention migration</Link>
+                  </Button>
+                </div>
+              </details>
+              </>
             ) : null}
           />
         )}>

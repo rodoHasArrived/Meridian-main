@@ -1,6 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { Route, Routes, useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
 import { AssetDetailScreen } from "@/screens/asset-detail-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -54,6 +55,17 @@ const identity: SecurityIdentityDrillIn = {
 };
 
 const corporateActions: CorporateAction[] = [];
+const bondEntry: SecurityMasterEntry = {
+  ...entry,
+  securityId: "bond-1",
+  displayName: "Synthetic Treasury 2030",
+  classification: { ...entry.classification, assetClass: "Bond", primaryIdentifierValue: "US-SYNTHETIC" }
+};
+
+function WorkflowDestination() {
+  const location = useLocation();
+  return <output aria-label="Workflow destination">{location.pathname}{location.search}</output>;
+}
 
 const tradingParameters: TradingParameters = {
   securityId: "sec-aapl",
@@ -182,5 +194,61 @@ describe("AssetDetailScreen", () => {
 
     expect(await screen.findByText("Asset not found")).toBeInTheDocument();
     expect(screen.getByText(/No security matching "missing-id" was found/)).toBeInTheDocument();
+  });
+
+  it("links a selected bond directly to analytics and governed convention migration", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    await renderScreen("/portfolio/asset-detail?securityId=bond-1");
+
+    expect(screen.getByRole("link", { name: "Bond analytics" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-1&tab=evidence&bondAction=analytics");
+    expect(screen.getByRole("link", { name: "Convention migration" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-1&tab=evidence&bondAction=migration");
+    expect(screen.getByRole("link", { name: "Open Security Master" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-1");
+  });
+
+  it.each(["analytics", "migration"])("resolves an exact holding identity before opening %s", async (action) => {
+    vi.mocked(api.searchSecurities).mockResolvedValue([bondEntry]);
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    renderWithRouter(<Routes>
+      <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
+      <Route path="/accounting/security-master" element={<WorkflowDestination />} />
+    </Routes>, { initialEntries: [`/portfolio/asset-detail?symbol=US-SYNTHETIC&bondAction=${action}`] });
+
+    expect(await screen.findByLabelText("Workflow destination")).toHaveTextContent(`/accounting/security-master?securityId=bond-1&tab=evidence&bondAction=${action}`);
+    expect(api.getSecurityDetail).toHaveBeenCalledWith("bond-1", expect.objectContaining({ signal: expect.any(AbortSignal) }));
+  });
+
+  it("keeps ambiguous holding identities selectable and preserves the requested workflow", async () => {
+    vi.mocked(api.searchSecurities).mockResolvedValue([bondEntry, { ...bondEntry, securityId: "bond-2", displayName: "Other synthetic bond" }]);
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    const user = userEvent.setup();
+    renderWithRouter(<Routes>
+      <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
+      <Route path="/accounting/security-master" element={<WorkflowDestination />} />
+    </Routes>, { initialEntries: ["/portfolio/asset-detail?symbol=US-SYNTHETIC&bondAction=analytics"] });
+
+    const selected = await screen.findByRole("button", { name: /Synthetic Treasury 2030/ });
+    expect(api.getSecurityDetail).not.toHaveBeenCalled();
+    await user.click(selected);
+    expect(await screen.findByLabelText("Workflow destination")).toHaveTextContent("securityId=bond-1&tab=evidence&bondAction=analytics");
+  });
+
+  it("explains when a resolved holding cannot use a bond workflow", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    await renderScreen("/portfolio/asset-detail?securityId=sec-aapl&bondAction=analytics");
+
+    expect(screen.getByText("Bond workflow unavailable for this instrument")).toBeInTheDocument();
+    expect(screen.getByText(/The selected Security Master record is Equity/)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Bond analytics" })).not.toBeInTheDocument();
+  });
+
+  it("refuses to forward to a different security returned by the detail read", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    renderWithRouter(<Routes>
+      <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
+      <Route path="/accounting/security-master" element={<WorkflowDestination />} />
+    </Routes>, { initialEntries: ["/portfolio/asset-detail?securityId=other-bond&bondAction=analytics"] });
+
+    expect(await screen.findByText("Asset not found")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Workflow destination")).not.toBeInTheDocument();
   });
 });

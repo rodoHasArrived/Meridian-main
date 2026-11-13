@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { axe } from "jest-axe";
 import * as cashFlowApi from "@/lib/api/contractual-cash-flow.api";
 import * as curveApi from "@/lib/api/security-curves.api";
 import { ApiError } from "@/lib/api-errors";
-import { axe } from "jest-axe";
 import { ContractualCashFlowWorkbench } from "./contractual-cash-flow-workbench";
 import type { ContractualCashFlowResult, ContractualCashFlowRun } from "@/types/contractual-cash-flow.types";
 
@@ -90,9 +90,10 @@ describe("ContractualCashFlowWorkbench", () => {
     expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
   });
 
-  it("sends an exercise selection with its own notice date, defaulting to the exercise date, and refuses a late notice", async () => {
+  it("sends an approved exercise notice with its explicit historical date and refuses a late notice", async () => {
     api.previewContractualCashFlows.mockResolvedValue(calculated);
     render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME 5 2030" />);
+    fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
     await screen.findByLabelText("Include call exercise on coupon");
 
@@ -100,10 +101,11 @@ describe("ContractualCashFlowWorkbench", () => {
     fireEvent.change(screen.getByLabelText("Exercise date for coupon"), { target: { value: "2027-07-31" } });
     fireEvent.change(screen.getByLabelText("Exercise amount for coupon"), { target: { value: "1000000" } });
     fireEvent.change(screen.getByLabelText("Notice evidence for coupon"), { target: { value: " 3f2504e0-4f89-11d3-9a0c-0305e82c3301 " } });
+    fireEvent.change(screen.getByLabelText("Notice date for coupon"), { target: { value: "2026-10-01" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
     await waitFor(() => expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(2));
     expect(api.previewContractualCashFlows.mock.calls[1][2].exercises).toEqual([{
-      side: "Call", entryStartDate: "2027-01-31", streamId: "coupon", exerciseDate: "2027-07-31", noticeDate: "2027-07-31",
+      side: "Call", entryStartDate: "2027-01-31", streamId: "coupon", exerciseDate: "2027-07-31", noticeDate: "2026-10-01",
       amount: "1000000", hypotheticalNotice: false, noticeEvidenceId: "3f2504e0-4f89-11d3-9a0c-0305e82c3301"
     }]);
 
@@ -136,6 +138,73 @@ describe("ContractualCashFlowWorkbench", () => {
     fireEvent.click(screen.getByRole("button", { name: "Verify replay" }));
     await waitFor(() => expect(api.previewContractualCashFlows).toHaveBeenCalledWith("Security", "sec-1", retained.request, expect.anything()));
     expect(await screen.findByLabelText("Replay verification")).toHaveTextContent("Replay differs: retained output out-1, current out-2. Source terms unchanged.");
+  });
+
+  it("submits multiple contractual prepayment intervals with exact values and PSA seasoning", async () => {
+    api.previewContractualCashFlows.mockResolvedValue({ ...calculated, resolvedContract: { streams: [{ streamId: "coupon", prepaymentAllowed: true }] } });
+    render(<ContractualCashFlowWorkbench subjectKind="Loan" subjectId="loan-1" subjectLabel="Facility A" />);
+    expect(screen.getByRole("button", { name: "Add prepayment assumption" })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
+    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 1 stream"), { target: { value: "coupon" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 1 end date"), { target: { value: "2027-01-01" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 1 value"), { target: { value: "0.0612345678901234567" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 2 stream"), { target: { value: "coupon" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 start date"), { target: { value: "2027-01-01" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 end date"), { target: { value: "2027-07-01" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 method"), { target: { value: "Psa" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 value"), { target: { value: "1.5" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 seasoning origin"), { target: { value: "2026-01-01" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 recast policy"), { target: { value: "Recast" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await waitFor(() => expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(2));
+    expect(api.previewContractualCashFlows.mock.calls[1][2].prepayments).toEqual([
+      { streamId: "coupon", startDate: "2026-10-31", endDate: "2027-01-01", method: "Cpr", value: "0.0612345678901234567", policy: "PreservePayments" },
+      { streamId: "coupon", startDate: "2027-01-01", endDate: "2027-07-01", method: "Psa", value: "1.5", seasoningOrigin: "2026-01-01", policy: "Recast" }
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Remove prepayment 1" }));
+    expect(screen.getByLabelText("Prepayment 1 method")).toHaveValue("Psa");
+    expect(screen.queryByLabelText("Prepayment 2 method")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
+  });
+
+  it("requires an explicit hypothetical notice and sends the selected date separately from exercise", async () => {
+    api.previewContractualCashFlows.mockResolvedValue(calculated);
+    const { container } = render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME 5 2030" />);
+    fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
+    fireEvent.click(screen.getByLabelText("Include call exercise on coupon"));
+    fireEvent.change(screen.getByLabelText("Exercise amount for coupon"), { target: { value: "1000000" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Choose an exercise date, a notice date");
+    expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByLabelText("Notice date for coupon"), { target: { value: "2026-10-30" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("must be on/after valuation");
+    fireEvent.change(screen.getByLabelText("Notice date for coupon"), { target: { value: "2027-01-05" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await waitFor(() => expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(2));
+    expect(api.previewContractualCashFlows.mock.calls[1][2].exercises).toEqual([
+      { side: "Call", entryStartDate: "2027-01-31", streamId: "coupon", exerciseDate: "2027-01-31", noticeDate: "2027-01-05", amount: "1000000", hypotheticalNotice: true, noticeEvidenceId: null }
+    ]);
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("clears stream and prepayment context when the selected subject changes", async () => {
+    api.previewContractualCashFlows.mockResolvedValue(calculated);
+    const { rerender } = render(<ContractualCashFlowWorkbench subjectKind="Loan" subjectId="loan-1" subjectLabel="Facility A" />);
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
+    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 1 stream"), { target: { value: "coupon" } });
+    rerender(<ContractualCashFlowWorkbench subjectKind="Loan" subjectId="loan-2" subjectLabel="Facility B" />);
+    expect(screen.queryByLabelText("Prepayment 1 stream")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add prepayment assumption" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
   });
 
   it("compares the loaded retained run with another run of the same subject", async () => {
@@ -189,9 +258,11 @@ describe("ContractualCashFlowWorkbench", () => {
     await screen.findByRole("option", { name: /v1 · 2026-10-29/ });
     expect(screen.getByLabelText("Curve version 1")).toHaveValue("");
     fireEvent.change(screen.getByLabelText("Curve version 1"), { target: { value: "version-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
     for (const index of [1, 2]) {
       fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
-      fireEvent.change(screen.getByLabelText(`Prepayment ${index} stream id`), { target: { value: "coupon" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} stream`), { target: { value: "coupon" } });
       fireEvent.change(screen.getByLabelText(`Prepayment ${index} start date`), { target: { value: index === 1 ? "2026-10-31" : "2027-01-31" } });
       fireEvent.change(screen.getByLabelText(`Prepayment ${index} end date`), { target: { value: index === 1 ? "2027-01-31" : "2027-07-31" } });
       fireEvent.change(screen.getByLabelText(`Prepayment ${index} value`), { target: { value: index === 1 ? "0.06000000000001" : "1.25" } });
@@ -201,7 +272,8 @@ describe("ContractualCashFlowWorkbench", () => {
     fireEvent.change(screen.getByLabelText("Prepayment 2 recast policy"), { target: { value: "Recast" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
     await screen.findByText("25,000.123456789012");
-    const request = api.previewContractualCashFlows.mock.calls[0][2];
+    expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(2);
+    const request = api.previewContractualCashFlows.mock.calls[1][2];
     expect(request.curvePins).toEqual([{ benchmarkKey: "SOFR", curveId: "curve-1", curveVersionId: "version-1" }]);
     expect(request.prepayments).toEqual([
       { streamId: "coupon", startDate: "2026-10-31", endDate: "2027-01-31", method: "Cpr", value: "0.06000000000001", policy: "PreservePayments" },
@@ -226,23 +298,26 @@ describe("ContractualCashFlowWorkbench", () => {
   });
 
   it("refuses overlapping assumptions and PSA without a seasoning origin", async () => {
+    api.previewContractualCashFlows.mockResolvedValue({ ...calculated, resolvedContract: { streams: [{ streamId: "principal", prepaymentAllowed: true }] } });
     render(<ContractualCashFlowWorkbench subjectKind="Loan" subjectId="loan-1" subjectLabel="Facility" />);
     fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
     for (const index of [1, 2]) {
       fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
-      fireEvent.change(screen.getByLabelText(`Prepayment ${index} stream id`), { target: { value: "principal" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} stream`), { target: { value: "principal" } });
       fireEvent.change(screen.getByLabelText(`Prepayment ${index} start date`), { target: { value: "2026-11-01" } });
       fireEvent.change(screen.getByLabelText(`Prepayment ${index} end date`), { target: { value: "2027-01-31" } });
       fireEvent.change(screen.getByLabelText(`Prepayment ${index} value`), { target: { value: "0.06" } });
     }
     fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("overlaps another prepayment interval");
-    expect(api.previewContractualCashFlows).not.toHaveBeenCalled();
+    expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: "Remove prepayment 2" }));
     fireEvent.change(screen.getByLabelText("Prepayment 1 method"), { target: { value: "Psa" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("PSA needs a seasoning origin");
-    expect(api.previewContractualCashFlows).not.toHaveBeenCalled();
+    expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(1);
   });
 
   it("shows permission refusal and makes run retention unavailable without blocking previews", async () => {
@@ -260,16 +335,26 @@ describe("ContractualCashFlowWorkbench", () => {
 
   it("clears foreign scenario inputs and ignores delayed results after subject changes", async () => {
     let resolve!: (result: ContractualCashFlowResult) => void;
-    api.previewContractualCashFlows.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    api.previewContractualCashFlows.mockResolvedValueOnce(calculated).mockReturnValueOnce(new Promise((done) => { resolve = done; }));
     const { rerender } = render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
-    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
-    fireEvent.click(screen.getByRole("button", { name: "Remove prepayment 1" }));
+    fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
+    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 1 stream"), { target: { value: "coupon" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 1 end date"), { target: { value: "2027-01-31" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 1 value"), { target: { value: "0.06" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(api.previewContractualCashFlows).toHaveBeenCalledTimes(2);
+    expect(api.previewContractualCashFlows.mock.calls[1][2].prepayments).toEqual([
+      { streamId: "coupon", startDate: "2026-10-31", endDate: "2027-01-31", method: "Cpr", value: "0.06", policy: "PreservePayments" }
+    ]);
     rerender(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-2" subjectLabel="OTHER" />);
     resolve(calculated);
     await waitFor(() => expect(screen.getByRole("button", { name: "Preview scenario" })).toBeEnabled());
     expect(screen.queryByLabelText("Scenario evidence")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Prepayment 1 stream id")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Prepayment 1 stream")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add prepayment assumption" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
   });
 
@@ -286,8 +371,12 @@ describe("ContractualCashFlowWorkbench", () => {
   });
 
   it("exposes accessible labels and keyboard-operable assumption configuration", async () => {
+    api.previewContractualCashFlows.mockResolvedValue(calculated);
     const { container } = render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
     fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 1 stream"), { target: { value: "coupon" } });
     fireEvent.change(screen.getByLabelText("Prepayment 1 method"), { target: { value: "Psa" } });
     expect((await axe(container)).violations).toEqual([]);
   });

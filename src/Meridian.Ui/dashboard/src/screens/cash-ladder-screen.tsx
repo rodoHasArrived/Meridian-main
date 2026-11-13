@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { CashLadderProjectionEvidence } from "@/screens/cash-ladder-screen.projection-evidence";
 import { cn } from "@/lib/utils";
 import {
   buildCashLadderChart,
@@ -53,13 +54,16 @@ const metricToneMap = {
   danger: "danger"
 } as const;
 
-const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
+function drillColumns(onInspect: (row: CashLadderDrillRow) => void): DenseDataTableColumn<CashLadderDrillRow>[] {
+  return [
   {
     id: "instrument",
     label: "Instrument",
     render: (row) => (
       <div className="flex flex-col">
-        <span className="font-semibold text-foreground">{row.instrument}</span>
+        {row.assetClass !== "CapitalActivity" && row.securityId && row.securityId !== "00000000-0000-0000-0000-000000000000" ? (
+          <Link className="font-semibold text-foreground underline underline-offset-2" to={workstationRouteWithQuery("portfolioAssetDetail", { securityId: row.securityId })}>{row.instrument}</Link>
+        ) : <span className="font-semibold text-foreground">{row.instrument}</span>}
         <span className="text-xs text-muted-foreground">{row.assetClass}</span>
       </div>
     )
@@ -99,7 +103,9 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
     label: "Projection run",
     render: (row) => (
       <div className="flex flex-col">
-        <span className="font-mono text-foreground">{row.projectionRunId}</span>
+        {row.assetClass !== "CapitalActivity" && row.projectionRunIdentity && row.securityId && row.securityId !== "00000000-0000-0000-0000-000000000000" ? (
+          <button type="button" className="text-left font-mono text-foreground underline underline-offset-2" aria-label={`Inspect projection run for ${row.instrument}`} onClick={() => onInspect(row)}>{row.projectionRunId}</button>
+        ) : <span className="font-mono text-foreground">{row.projectionRunId}</span>}
         <span className="text-xs text-muted-foreground">{row.projectionEngineVersion}</span>
       </div>
     )
@@ -112,7 +118,12 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
   {
     id: "source",
     label: "Source",
-    render: (row) => <span className="text-xs text-muted-foreground">{row.sourceDomain}</span>
+    render: (row) => <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      {row.sourceDomain === "SecurityMaster" && row.sourceEntityId ? (
+        <Link className="underline underline-offset-2" to={workstationRouteWithQuery("accountingSecurityMaster", { securityId: row.sourceEntityId, tab: "evidence" })}>Security Master evidence</Link>
+      ) : <span>{row.sourceDomain}</span>}
+      {row.sourceEntityId ? <span className="break-all font-mono">{row.sourceEntityId}</span> : <span>Source identity unavailable</span>}
+    </div>
   },
   {
     id: "scenario",
@@ -126,7 +137,8 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
         <span className="text-xs text-muted-foreground">—</span>
       )
   }
-];
+  ];
+}
 
 export interface CashLadderScreenProps {
   fundAccountId?: string;
@@ -149,11 +161,15 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
   const [selection, setSelection] = useState<{ requestKey: string; index: number } | null>(null);
+  const [evidenceSelection, setEvidenceSelection] = useState<{ requestKey: string; row: CashLadderDrillRow } | null>(null);
   const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash]);
   const ladder = result?.requestKey === requestKey ? result.ladder : null;
   const status = result?.requestKey === requestKey ? result.status : "loading";
   const selectedBucket = selection?.requestKey === requestKey ? selection.index : null;
-  const setSelectedBucket = (index: number | null) => setSelection(index === null ? null : { requestKey, index });
+  const setSelectedBucket = (index: number | null) => {
+    setSelection(index === null ? null : { requestKey, index });
+    setEvidenceSelection(null);
+  };
   const minimumCashDirty = useRef(false);
 
   useEffect(() => {
@@ -491,7 +507,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
               </CardHeader>
               <CardContent>
                 <DenseDataTable
-                  columns={drillColumns}
+                  columns={drillColumns((row) => setEvidenceSelection({ requestKey, row }))}
                   rows={drillRows}
                   getRowId={(row) => row.id}
                   emptyText={
@@ -501,6 +517,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   }
                   ariaLabel="Cash ladder contributing flows"
                 />
+                {evidenceSelection?.requestKey === requestKey && ladder ? (
+                  <CashLadderProjectionEvidence key={evidenceSelection.row.id} row={evidenceSelection.row} onClose={() => setEvidenceSelection(null)} />
+                ) : null}
               </CardContent>
             </Card>
 
