@@ -17,6 +17,15 @@ use the scoped retained date population before pagination and bind cursors to th
 Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
 predecessor validation, frozen-case checks and durable command replay without changing economics.
 
+`DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
+`LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
+account roles resolve through the shared `IChartOfAccounts` registry while preserving historical
+account names, instrument symbols and loan account scope. The outbox produces the same economic
+lines as authoritative posting, including reversal, principal receipt, amortization and restructuring.
+Unknown roles, unbalanced projections, missing required amounts and negative source amounts fail
+before posting or draft creation. Public compatibility line helpers use registry definitions without
+inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
+
 Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
 Provider requests and coverage checkpoints retain the original symbol identities.
 

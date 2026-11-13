@@ -5178,6 +5178,7 @@ Meridian-main
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
 │   │   │   ├── DirectLendingJournalLines.cs
+│   │   │   ├── DirectLendingJournalLines.Events.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingSchedulePeriods.cs
 │   │   │   ├── DirectLendingServicerStatementService.cs
@@ -6439,6 +6440,7 @@ Meridian-main
 │   │   │   ├── IDerivativePosition.cs
 │   │   │   └── OptionPosition.cs
 │   │   ├── Events
+│   │   │   ├── IRetainedTradeEventPublisher.cs
 │   │   │   ├── ITradeEventPublisher.cs
 │   │   │   ├── LedgerPostingConsumer.cs
 │   │   │   ├── TradeExecutedEvent.cs
@@ -7281,6 +7283,7 @@ Meridian-main
 │   │   ├── FundEconomicsJournalFactory.cs
 │   │   ├── FundLedgerBook.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── IChartOfAccounts.cs
 │   │   ├── IDepreciationScheduleCalculator.cs
 │   │   ├── ILedgerReportBinaryRenderer.cs
 │   │   ├── IPrivateCapitalStore.cs
@@ -7293,6 +7296,7 @@ Meridian-main
 │   │   ├── JournalTemplateBook.cs
 │   │   ├── Ledger.cs
 │   │   ├── LedgerAccount.cs
+│   │   ├── LedgerAccountRole.cs
 │   │   ├── LedgerAccounts.cs
 │   │   ├── LedgerAccountSummary.cs
 │   │   ├── LedgerAccountTaxLotPolicy.cs
@@ -7391,6 +7395,9 @@ Meridian-main
 │   │   ├── ReadOnlyCollectionHelpers.cs
 │   │   ├── RecurringJournalEvidence.cs
 │   │   ├── RecurringJournalSchedule.cs
+│   │   ├── SecurityTradePosting.cs
+│   │   ├── SecurityTradePostingKind.cs
+│   │   ├── SecurityTradePostingProjector.cs
 │   │   ├── ShadowNavOverrideDraft.cs
 │   │   ├── ShadowNavValidationFinding.cs
 │   │   ├── ShadowNavValidationPolicy.cs
@@ -7401,8 +7408,10 @@ Meridian-main
 │   │   ├── ShortCarryProjector.cs
 │   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
+│   │   ├── StandardChartOfAccounts.cs
 │   │   ├── StructuredNoteAccountingTemplate.cs
 │   │   ├── TaxCharacter.cs
+│   │   ├── TradeFillAccountingEvidence.cs
 │   │   ├── ValuationFreshnessPolicy.cs
 │   │   ├── ValuationMarkEvidence.cs
 │   │   ├── ValuationProvenanceTag.cs
@@ -11621,6 +11630,7 @@ Meridian-main
 │   │   ├── OrderCommissionTests.cs
 │   │   ├── PortfolioCorporateActionSnapshotTests.cs
 │   │   ├── SecurityMasterAssetEventSourceTests.cs
+│   │   ├── SharedTradePostingParityTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
@@ -12071,6 +12081,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
+│   │   │   │   ├── DirectLendingJournalLinesTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
@@ -12438,11 +12449,14 @@ Meridian-main
 │   │   │   ├── Enhancements
 │   │   │   │   ├── AllocationEngineTests.cs
 │   │   │   │   ├── DerivativePositionTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.AccountingEvidence.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.BuyToCover.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.CompletedEvidenceReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.PreCoverAccountingReplay.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.SharedChart.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.StrategyAttribution.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.VariationMargin.cs
 │   │   │   │   ├── MarginModelTests.cs
@@ -12482,6 +12496,7 @@ Meridian-main
 │   │   │   ├── OrderApprovalReservationsTests.cs
 │   │   │   ├── OrderBrokerIdentityIndexTests.cs
 │   │   │   ├── OrderDispatchRegistryTests.cs
+│   │   │   ├── OrderFillProcessorTests.AccountingEvidence.cs
 │   │   │   ├── OrderFillProcessorTests.cs
 │   │   │   ├── OrderLifecycleServicesTests.cs
 │   │   │   ├── OrderManagementLifecycleCoordinatorTests.cs
@@ -12507,11 +12522,13 @@ Meridian-main
 │   │   │   ├── PaperLotConventionTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
 │   │   │   ├── PaperPositionUnitizedLotTests.cs
+│   │   │   ├── PaperSessionAccountingProvenanceTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperSessionRecoveryConcurrencyTests.cs
 │   │   │   ├── PaperSessionVariationMarginTests.cs
 │   │   │   ├── PaperTradingCostModelTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
+│   │   │   ├── PaperTradingPortfolioAccountingEvidenceTests.cs
 │   │   │   ├── PaperTradingPortfolioBasisParityTests.cs
 │   │   │   ├── PaperTradingPortfolioContractMultiplierTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
@@ -12525,6 +12542,7 @@ Meridian-main
 │   │   │   ├── RiskValidatorSubstitute.cs
 │   │   │   ├── RobinhoodHostedSynchronizationTests.cs
 │   │   │   ├── SessionTcaReporterTests.cs
+│   │   │   ├── TradeFillAccountingEvidencePersistenceTests.cs
 │   │   │   ├── TradeFillHandoffFailureStoreConcurrencyTests.cs
 │   │   │   ├── TradierExecutionReconciliationTests.cs
 │   │   │   ├── TypedOrderEntryTests.cs
@@ -12958,7 +12976,9 @@ Meridian-main
 │   │   │   ├── PrivateCapitalPostingAuthorityTests.cs
 │   │   │   ├── RecurringJournalEvidenceTests.cs
 │   │   │   ├── RecurringJournalScheduleTests.cs
+│   │   │   ├── SecurityTradePostingProjectorTests.cs
 │   │   │   ├── ShareClassUnitRegisterTests.cs
+│   │   │   ├── StandardChartOfAccountsTests.cs
 │   │   │   ├── StructuredNoteAccountingTemplateTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp

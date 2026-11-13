@@ -958,7 +958,7 @@ public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = 
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1422](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1422).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1435](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1435).
 
 Defines one account within a multi-account paper trading session.
 
@@ -1077,7 +1077,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.CreatePaperSessionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1800](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1800).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1846](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1846).
 
 Request to create a new paper session.
 

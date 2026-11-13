@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 11970 |
-| Valid | 11466 |
+| Total code blocks | 11978 |
+| Valid | 11474 |
 | Invalid | 0 |
 | Skipped | 504 |
 
@@ -20,7 +20,7 @@
 | `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 270 | 270 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11094 | 11094 | 0 | 0 |
+| `csharp` | 11102 | 11102 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 69 | 69 | 0 | 0 |
@@ -171,7 +171,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.application/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-003.md` | 50 |
-| `docs/reference/source-api/meridian.application/page-004.md` | 56 |
+| `docs/reference/source-api/meridian.application/page-004.md` | 57 |
 | `docs/reference/source-api/meridian.application/page-005.md` | 51 |
 | `docs/reference/source-api/meridian.application/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-007.md` | 51 |
@@ -302,7 +302,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ledger/page-003.md` | 52 |
 | `docs/reference/source-api/meridian.ledger/page-004.md` | 50 |
 | `docs/reference/source-api/meridian.ledger/page-005.md` | 50 |
-| `docs/reference/source-api/meridian.ledger/page-006.md` | 7 |
+| `docs/reference/source-api/meridian.ledger/page-006.md` | 14 |
 | `docs/reference/source-api/meridian.mcp/page-001.md` | 20 |
 | `docs/reference/source-api/meridian.platform/page-001.md` | 51 |
 | `docs/reference/source-api/meridian.platform/page-002.md` | 50 |
