@@ -12,7 +12,7 @@ import {
 import { resolveFigureEvidence, useWorkspaceFigureContext, type FigureSourceKey } from "@/lib/workspace-figure-context";
 import type { MetricFreshness, MetricSnapshot } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { metricBasisLabel, presentMetricChange } from "@/lib/metric-context";
+import { metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
 import { useId } from "react";
 import { MetricPassport } from "@/components/meridian/metric-passport";
 
@@ -67,6 +67,7 @@ export function StatStrip({
   scope?: string | null;
 }) {
   const workspace = useWorkspaceFigureContext();
+  const basisTermId = useId();
   const basisId = useId();
   if (suppliedMetrics.length === 0) {
     return null;
@@ -86,8 +87,13 @@ export function StatStrip({
         ? { ...metric, provenance: { ...metric.provenance, source: `${metric.provenance.source} (${dataLabel})` } }
         : metric)
     : stamped;
-  const firstBasis = metricBasisLabel(metrics[0]!);
-  const sharedBasis = metrics.every(metric => metricBasisLabel(metric) === firstBasis) ? firstBasis : null;
+  // The basis the figures share is stated once, beside a "Basis" term; an undeclared one reads
+  // "Not declared by source" there. Mixed bases fall back to a standalone line per figure.
+  const firstBasis = metricBasisValue(metrics[0]!);
+  const sharedBasis = metrics.every(metric => metricBasisValue(metric) === firstBasis) ? firstBasis : null;
+  // Each figure is described by the term and its value ("Basis Not declared by source"), since the
+  // value alone does not say what it is.
+  const sharedBasisDescription = sharedBasis ? `${basisTermId} ${basisId}` : undefined;
   // Figures from different sources: state each source once with the figures it supplies.
   const provenanceLine = describeMetricProvenance(sharedMetricProvenance(metrics)) ?? describeGroupedMetricProvenance(metrics);
   const stripFreshness = worstMetricFreshness(metrics);
@@ -117,7 +123,7 @@ export function StatStrip({
               <dt className={cn("whitespace-nowrap text-[11px] font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "uppercase tracking-[0.08em]")}>
                 {metricLabel}
               </dt>
-              <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5" aria-describedby={sharedBasis ? basisId : undefined}>
+              <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5" aria-describedby={sharedBasisDescription}>
                 <span
                   className={cn(
                     "inline-flex items-baseline gap-1 whitespace-nowrap font-mono text-sm font-semibold tabular-nums",
@@ -138,7 +144,7 @@ export function StatStrip({
             </div>
           );
         })}
-        {sharedBasis ? <div className="flex min-w-0 items-baseline gap-2 text-xs text-muted-foreground"><dt>Basis</dt><dd id={basisId}>{sharedBasis}</dd></div> : null}
+        {sharedBasis ? <div className="flex min-w-0 items-baseline gap-2 text-xs text-muted-foreground"><dt id={basisTermId}>Basis</dt><dd id={basisId}>{sharedBasis}</dd></div> : null}
       </dl>
       {footnote ? (
         <p className="mt-1.5 text-xs leading-4 text-muted-foreground" data-testid="stat-strip-provenance">
