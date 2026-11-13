@@ -224,6 +224,8 @@ Meridian-main
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-browser-workstation
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
 │   │   │   └── SKILL.md
