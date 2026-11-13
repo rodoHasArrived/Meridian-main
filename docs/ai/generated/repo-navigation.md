@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-13T08:06:30Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-13T08:38:54Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,12 +134,13 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `2b722d17c3` (2026-11-13T08:25:24Z) | 33 |
 | `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `cf2f0e0735` (2026-11-13T02:44:01Z) | 80 |
 | `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `cf2f0e0735` (2026-11-13T02:44:01Z) | 7 |
 | `src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs` | Desktop and UI Workflows | `cf2f0e0735` (2026-11-13T02:44:01Z) | 2 |
 | `src/Meridian.Strategies/Storage/StrategyRunStore.cs` | Execution, Risk, and Strategies | `cf2f0e0735` (2026-11-13T02:44:01Z) | 1 |
 | `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `ad80338ec2` (2026-11-13T01:51:21Z) | 87 |
-| `src/Meridian.Application/README.md` | Host and Composition | `ad80338ec2` (2026-11-13T01:51:21Z) | 59 |
+| `src/Meridian.Application/README.md` | Host and Composition | `ad80338ec2` (2026-11-13T01:51:21Z) | 61 |
 | `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | `ad80338ec2` (2026-11-13T01:51:21Z) | 12 |
 | `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs` | Desktop and UI Workflows | `ad80338ec2` (2026-11-13T01:51:21Z) | 8 |
 | `src/Meridian.DataIntegration/README.md` | Unmapped | `ad80338ec2` (2026-11-13T01:51:21Z) | 6 |
@@ -148,5 +149,4 @@ Recent source-file activity from the last 14 days.
 | `src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs` | Unmapped | `ad80338ec2` (2026-11-13T01:51:21Z) | 2 |
 | `src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs` | Host and Composition | `e658268173` (2026-11-13T01:11:48Z) | 3 |
 | `src/Meridian.Storage/README.md` | Providers and Storage | `47054e6b41` (2026-11-13T00:53:23Z) | 35 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `47054e6b41` (2026-11-13T00:53:23Z) | 10 |
 

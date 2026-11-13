@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T08:06:30Z",
+  "generatedAt": "2026-11-13T08:38:54Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2425,6 +2425,14 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-13T08:25:24Z",
+      "lastCommit": "2b722d17c3",
+      "lastSummary": "Align execution test validation and refresh accounting CI evidence",
+      "touches": 33
+    },
+    {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-13T02:44:01Z",
@@ -2470,7 +2478,7 @@
       "lastModified": "2026-11-13T01:51:21Z",
       "lastCommit": "ad80338ec2",
       "lastSummary": "Reuse fingerprint primitives and bind agreement explorer filters",
-      "touches": 59
+      "touches": 61
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/design-system-contract.test.ts",
@@ -2665,84 +2673,76 @@
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 48
-    },
-    {
       "path": "src/Meridian.Ledger/README.md",
       "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 18
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 20
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs",
+      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Backtesting/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "65558a7e58",
+      "lastSummary": "Repair type-barrel validation and refresh generated documentation",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs",
+      "path": "src/Meridian.Execution/Events/LedgerPostingConsumer.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-11-12T22:42:19Z",
+      "lastCommit": "76e53dc95a",
+      "lastSummary": "Unify retained trade posting economics and lending templates",
       "touches": 5
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityCashFlowReceiptJsonContext.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-12T22:31:30Z",
-      "lastCommit": "2184a593ab",
-      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
-      "touches": 2
     }
   ],
   "recentChangesWindowDays": 14,

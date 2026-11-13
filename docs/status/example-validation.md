@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 11911 |
-| Valid | 11411 |
+| Total code blocks | 11910 |
+| Valid | 11410 |
 | Invalid | 0 |
 | Skipped | 500 |
 
@@ -20,7 +20,7 @@
 | `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 270 | 270 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11039 | 11039 | 0 | 0 |
+| `csharp` | 11038 | 11038 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 69 | 69 | 0 | 0 |
@@ -278,7 +278,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.financialoperations/page-001.md` | 60 |
 | `docs/reference/source-api/meridian.financialoperations/page-002.md` | 61 |
 | `docs/reference/source-api/meridian.financialoperations/page-003.md` | 52 |
-| `docs/reference/source-api/meridian.financialoperations/page-004.md` | 64 |
+| `docs/reference/source-api/meridian.financialoperations/page-004.md` | 63 |
 | `docs/reference/source-api/meridian.financialoperations/page-005.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-007.md` | 50 |
