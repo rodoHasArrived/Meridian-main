@@ -52,10 +52,10 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.CapitalActivityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:196](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L196).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:224](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L224).
 
 ```csharp
-public sealed record CapitalActivityDto(string ActivityId, string CommitmentId, string EntityId, string ActivityType, string Currency, decimal Amount, DateOnly EffectiveDate, DateOnly? NoticeDate, DateOnly? DueDate, string Status, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
+public sealed record CapitalActivityDto(string ActivityId, string CommitmentId, string EntityId, string ActivityType, string Currency, [property : System.Text.Json.Serialization.JsonRequired] decimal Amount, DateOnly EffectiveDate, DateOnly? NoticeDate, DateOnly? DueDate, string Status, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
 ```
 
 ## CapitalCommitmentDto
@@ -65,7 +65,7 @@ Qualified name: <code>Meridian.Ui.Shared.Contracts.CapitalCommitmentDto</code>. 
 Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:175](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L175).
 
 ```csharp
-public sealed record CapitalCommitmentDto(string CommitmentId, string EntityId, string VehicleName, string Strategy, string Currency, decimal CommitmentAmount, decimal CalledAmount, decimal UnfundedAmount, decimal DistributedAmount, decimal CurrentNav, int? VintageYear, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
+public sealed record CapitalCommitmentDto(string CommitmentId, string EntityId, string VehicleName, string Strategy, string Currency, [property : System.Text.Json.Serialization.JsonRequired] decimal CommitmentAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal CalledAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal UnfundedAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal DistributedAmount, [property : System.Text.Json.Serialization.JsonRequired] decimal CurrentNav, int? VintageYear, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc, bool BalancesAvailable = true, string BalanceStatus = "Retained", string? SnapshotId = null, int? SourceRevision = null, DateTimeOffset? RecordedAtUtc = null, PrivateCapitalExactBalancesDto? ExactBalances = null, string? SourceContentSha256 = null);
 ```
 
 ## CoveredCallBacktestRequest
@@ -95,13 +95,24 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.CoveredCallChainPreview</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:220](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L220).
+Source: [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:227](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L227).
 
 Chain-preview response: candidate set plus headline counts.
 
 ```csharp
-public sealed record CoveredCallChainPreview(string UnderlyingSymbol, DateOnly AsOf, decimal UnderlyingPrice, IReadOnlyList<CoveredCallChainRow> Candidates, int TotalContractsScanned, int FiltersPassed);
+public sealed record CoveredCallChainPreview(string UnderlyingSymbol, DateOnly AsOf, decimal UnderlyingPrice, IReadOnlyList<CoveredCallChainRow> Candidates, int TotalContractsScanned, int FiltersPassed)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CoveredCallChainPreviewRequest? Filters { get; init; }</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:235](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L235) |  |
+| <code>public bool CoverageKnown { get; init; }</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:236](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L236) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; RequestedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:237](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L237) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:238](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L238) |  |
+| <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:239](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L239) |  |
+| <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:240](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L240) |  |
 
 ## CoveredCallChainPreviewRequest
 
@@ -124,8 +135,18 @@ Source: [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:206](../../../
 One candidate call option after filtering, used by the chain-preview UI.
 
 ```csharp
-public sealed record CoveredCallChainRow(decimal Strike, DateOnly Expiration, int DaysToExpiration, decimal Bid, decimal Ask, double Delta, double? ImpliedVolatility, long OpenInterest, long Volume, bool MeetsAllFilters, string? RejectReason);
+public sealed record CoveredCallChainRow(decimal Strike, DateOnly Expiration, int DaysToExpiration, decimal Bid, decimal Ask, double Delta, double? ImpliedVolatility, long OpenInterest, long Volume, bool MeetsAllFilters, string? RejectReason)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool DeltaAvailable { get; init; } = true;</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:219](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L219) |  |
+| <code>public bool OpenInterestAvailable { get; init; } = true;</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:220](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L220) |  |
+| <code>public bool VolumeAvailable { get; init; } = true;</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:221](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L221) |  |
+| <code>public int? Multiplier { get; init; }</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:222](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L222) |  |
+| <code>public double? SpreadFraction { get; init; }</code> | [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:223](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L223) |  |
 
 ## CoveredCallEquityPoint
 
@@ -167,7 +188,7 @@ public sealed record CoveredCallOpenPositionDto(Guid PositionId, decimal Strike,
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.CoveredCallProblemDetails</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:229](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L229).
+Source: [src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs:244](../../../../src/Meridian.Ui.Shared/Contracts/CoveredCallContracts.cs#L244).
 
 Standard problem-details payload returned on 4xx/5xx responses.
 
@@ -337,7 +358,7 @@ public sealed record FamilyOfficeEntitiesResponseDto(IReadOnlyList<FamilyEntityD
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeEvidenceLinkDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:234](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L234).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:262](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L262).
 
 Link to a source document, packet, or operator evidence route backing a family-office value.
 
@@ -371,7 +392,7 @@ public sealed record FamilyOfficeOwnershipGraphResponseDto(FamilyOwnershipGraphD
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.FamilyOfficeReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:219](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L219).
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:247](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L247).
 
 Operator readiness projection for whether the family-office workspace can be trusted for decisions.
 

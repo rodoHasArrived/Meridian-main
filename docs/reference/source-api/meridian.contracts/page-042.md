@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralHeldLineDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L140).
+
+One collateral balance as the snapshot saw it, with the haircut applied: the haircut of the agreement&#x27;s eligible-collateral line at computation time, not the one copied onto the balance.
+
+```csharp
+public sealed record OtcCollateralHeldLineDto(Guid BalanceId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string Description, decimal ValuedAmount, decimal HaircutPercent, decimal HaircutAdjusted, DateOnly ValuedAsOf);
+```
+
+## OtcCollateralJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:522](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L522).
+
+Provides source-generated JSON metadata for OTC collateral contracts.
+
+```csharp
+public sealed partial class OtcCollateralJsonContext : JsonSerializerContext;
+```
+
+## OtcCollateralKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L20).
+
+What the collateral is.
+
+```csharp
+public enum OtcCollateralKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L22) |  |
+| <code>Security</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L23) |  |
+
 ## OtcCollateralMovementDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralMovementDto</code>. Kind: `record`.
@@ -756,40 +799,4 @@ Preferred-equity-specific terms returned by the preferred-terms query.
 
 ```csharp
 public sealed record PreferredEquityTermsDto(Guid SecurityId, string? Classification, decimal? DividendRate, string? DividendType, bool? IsCumulative, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, long Version);
-```
-
-## PricingHierarchyEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L58).
-
-One entry in a per-security pricing source priority chain.
-
-```csharp
-public sealed record PricingHierarchyEntryDto(int Priority, string SourceId, string SourceDisplayName, int MaxDaysStale);
-```
-
-## PrincipalPaydownCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PrincipalPaydownCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:194](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L194).
-
-Principal returned on a factor-amortizing instrument.
-
-```csharp
-public sealed record PrincipalPaydownCorporateActionTerms(string EventType, decimal? PaydownRatio, decimal? PrincipalAmount, decimal? PostPaydownFactor) : CorporateActionTerms(EventType);
-```
-
-## PublishSecurityCurveVersionRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L96).
-
-Publishes the points of a curve as of an economic date. Identical content for the same curve and as-of returns the retained version.
-
-```csharp
-public sealed record PublishSecurityCurveVersionRequest(Guid CurveId, DateOnly AsOf, IReadOnlyList<SecurityCurvePointDto> Points, string Source, DateTimeOffset? SourcedAt = null, string? PublishedBy = null);
 ```

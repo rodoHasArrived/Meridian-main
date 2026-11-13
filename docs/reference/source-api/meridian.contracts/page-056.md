@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerJournalLine
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:637](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L637).
+
+Shared journal row for workstation audit surfaces.
+
+```csharp
+public sealed record LedgerJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## LedgerReconciliationContractCompatibility
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerReconciliationContractCompatibility</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:6](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L6).
+
+Rejects ledger reconciliation and continuity payloads missing required contract fields.
+
+```csharp
+public static class LedgerReconciliationContractCompatibility
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void EnsureFundLedgerSummaryRequiredFields(FundLedgerSummary summary);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:8](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L8) |  |
+| <code>public static void EnsureReconciliationSummaryRequiredFields(ReconciliationRunSummary summary);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:25](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L25) |  |
+| <code>public static void EnsureContinuityRequiredFields(StrategyRunContinuityDto continuity);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:38](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L38) |  |
+
+## LedgerSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:588](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L588).
+
+Shared ledger rollup for workstation Accounting and audit surfaces.
+
+```csharp
+public sealed record LedgerSummary(string LedgerReference, string RunId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<LedgerTrialBalanceLine> TrialBalance, IReadOnlyList<LedgerJournalLine> Journal, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## LedgerTrialBalanceLine
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:616](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L616).
+
+Shared trial-balance row for workstation ledger views.
+
+```csharp
+public sealed record LedgerTrialBalanceLine(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Balance, int EntryCount, WorkstationSecurityReference? Security = null, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
 ## MarginCertificationRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MarginCertificationRequestDto</code>. Kind: `record`.
@@ -114,7 +170,7 @@ public sealed record MeridianAssuranceScoreDto(int Score, EvidenceStatusDto Stat
 
 Qualified name: <code>Meridian.Contracts.Workstation.MetricsDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:849](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L849).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:853](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L853).
 
 High-level metrics delta between two runs.
 
@@ -448,7 +504,7 @@ public sealed record OnboardingWorkspaceDto(string WorkspaceId, string Name, str
 
 Qualified name: <code>Meridian.Contracts.Workstation.OpenLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1115](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1115).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1119](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1119).
 
 Workstation-facing summary of a single open lot for a strategy run.
 
@@ -537,44 +593,4 @@ Discussion is retained workflow evidence, never an approval decision.
 
 ```csharp
 public sealed record OperationsApprovalCommentDto(string CommentId, string ApprovalId, string Author, string Body, IReadOnlyList<string> Mentions, DateTimeOffset CreatedAtUtc, string CommandId);
-```
-
-## OperationsApprovalCommentRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCommentRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L18).
-
-```csharp
-public sealed record OperationsApprovalCommentRequestDto(long ExpectedVersion, string ApprovalId, string CommandId, string Actor, string Body, IReadOnlyList<string>? Mentions = null);
-```
-
-## OperationsApprovalDecisionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalDecisionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:686](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L686).
-
-```csharp
-public sealed record OperationsApprovalDecisionRequestDto(long ExpectedVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## OperationsApprovalDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1316](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1316).
-
-```csharp
-public sealed record OperationsApprovalDto(string ApprovalId, OperationsApprovalStateDto Status, string? Operator, string? Reviewer, string? Rationale, DateTimeOffset? SubmittedAtUtc, DateTimeOffset? DecidedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
-```
-
-## OperationsApprovalPolicyMatrixDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:746](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L746).
-
-```csharp
-public sealed record OperationsApprovalPolicyMatrixDto(string PolicyId, string Version, DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
 ```

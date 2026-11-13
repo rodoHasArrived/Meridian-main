@@ -1,5 +1,19 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic["SecurityScheduleDiagnostic"] {
+        +string Code
+        +string Message
+        +string Path
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult["SecurityScheduleParseResult"] {
+        +IReadOnlyList~SecurityScheduleDiagnostic~ Diagnostics
+        +IReadOnlyList~T~ Entries
+        +SecuritySchedulePresence Presence
+        +IReadOnlyList~T~ SourceEntries
+        +string? SourcePath
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySchedulePresence["SecuritySchedulePresence"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException["SecurityScheduleValidationException"] {
         +IReadOnlyList~SecurityScheduleDiagnostic~ Diagnostics
     }
@@ -497,6 +511,9 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
+    Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
+    Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityTermBinding --> Meridian_Contracts_SecurityMaster_SecurityTermRead
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto

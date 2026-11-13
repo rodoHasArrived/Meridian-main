@@ -6,6 +6,118 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportPackWorkflowRecordStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportPackWorkflowRecordStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L11).
+
+Compatibility-only snapshot seam. Production composition does not register this store; canonical report-pack workflow authority is reporting governance.
+
+```csharp
+public interface IReportPackWorkflowRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L13) |  |
+| <code>void Save(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L15) |  |
+
+## IReportTemplateGovernanceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportTemplateGovernanceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L98).
+
+Loads and saves reporting template governance records.
+
+```csharp
+public interface IReportTemplateGovernanceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
+| <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
+
+## IStatementCaseworkCommitFaultInjector
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
+
+Provides fault-injection callbacks at retained statement casework commit boundaries.
+
+```csharp
+public interface IStatementCaseworkCommitFaultInjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |
+
+## IStatementReconciliationCaseworkHandoffService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationCaseworkHandoffService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L16).
+
+Applies single or bulk casework changes and hands their results back to statement-owned workflows.
+
+```csharp
+public interface IStatementReconciliationCaseworkHandoffService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L18) |  |
+| <code>Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L23) |  |
+
+## IStatementReconciliationIntakeAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationIntakeAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L41).
+
+Resolves accounting scope and publishes retained statement intake to governed reconciliation workflows.
+
+```csharp
+public interface IStatementReconciliationIntakeAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:43](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L43) |  |
+| <code>Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:47](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L47) |  |
+
+## ITradingOperatorReadinessProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ITradingOperatorReadinessProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:13](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L13).
+
+Provides the current trading operator readiness assessment, optionally scoped to a fund account.
+
+```csharp
+public interface ITradingOperatorReadinessProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:15](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L15) |  |
+
 ## LedgerAmountProvenanceService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerAmountProvenanceService</code>. Kind: `class`.
@@ -928,98 +1040,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
 | <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
-
-## PostedPeriodComparisonService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedPeriodComparisonService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L11).
-
-Source-backed comparisons of posted accounting periods under retained fund ownership.
-
-```csharp
-public sealed class PostedPeriodComparisonService(ILedgerJournalStore journals, ILedgerBookService books, IFundProfileTenancyRegistry tenancy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
-| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:139](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L139) |  |
-| <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L169) |  |
-
-## PrivateCapitalBankObservationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
-
-Imports reviewed settled bank observations without creating a payment or posting cash.
-
-```csharp
-public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |
-
-## PrivateCapitalFundEventCommandCenterService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalFundEventCommandCenterService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L9).
-
-Builds private-capital fund-event command-center projections with readiness and published-output evidence.
-
-```csharp
-public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapitalFundEventCommandCenterService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
-| <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |
-
-## ProductExposure
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProductExposure</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L25).
-
-```csharp
-public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
-```
-
-## PromotionTrustEvidenceServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PromotionTrustEvidenceServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L10).
-
-Registers promotion trust evidence services in the dependency injection container.
-
-```csharp
-public static class PromotionTrustEvidenceServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPromotionTrustEvidenceServices(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L13) | Registers the same source-backed promotion trust provider for browser and desktop hosts. |
-
-## ProviderCalendarReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderCalendarReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:25](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L25).
-
-```csharp
-public sealed record ProviderCalendarReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderCalendarEvent Item);
-```

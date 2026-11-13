@@ -722,8 +722,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
           </div>
         </div>
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Card className="panel-surface min-w-0">
           <CardHeader>
             <div className="eyebrow-label">Risk State</div>
             <CardTitle className="flex items-center gap-2">
@@ -784,7 +784,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
 
-        <Card className="panel-surface-strong bg-panel-strong">
+        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Brokerage Wiring</div>
             <CardTitle className="flex items-center gap-2">

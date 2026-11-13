@@ -19,7 +19,8 @@ public sealed record AuditTrailExplorerQueryDto(
     string? RelatedObjectId = null,
     DateTimeOffset? FromUtc = null,
     DateTimeOffset? ToUtc = null,
-    int Limit = 100);
+    int Limit = 100,
+    string? OrderId = null);
 
 /// <summary>
 /// Normalized timeline row used by shared audit explorer surfaces.
@@ -46,7 +47,9 @@ public sealed record AuditTrailTimelineEntryDto(
     int? ActionLedgerSequence = null,
     string? PreviousActionHash = null,
     string? CurrentActionHash = null,
-    string? ActionLedgerStatus = null);
+    string? ActionLedgerStatus = null,
+    string? OrderId = null,
+    string? BrokerName = null);
 
 /// <summary>
 /// Result contract for cross-object audit trail search.
@@ -55,7 +58,13 @@ public sealed record AuditTrailExplorerResultDto(
     DateTimeOffset AsOf,
     int TotalMatched,
     int Returned,
-    IReadOnlyList<AuditTrailTimelineEntryDto> Entries);
+    IReadOnlyList<AuditTrailTimelineEntryDto> Entries,
+    IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null,
+    string? CoverageNote = null,
+    string? OrderIdentityStatus = null);
+
+/// <summary>Source availability is independent of the number of matching records.</summary>
+public sealed record AuditTrailSourceStatusDto(string Source, string State);
 
 /// <summary>
 /// Stable object-kind vocabulary for audit explorer rows.

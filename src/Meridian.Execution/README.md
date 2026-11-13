@@ -11,6 +11,8 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Execution
 
+`PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
+
 Failed execution probes use bounded, single-line diagnostic fields, including provider error text.
 The original symbol remains authoritative for probing and order validation, and a failed probe
 still refuses the order.

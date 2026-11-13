@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
+import { BondEconomicsHorizon } from "@/components/meridian/bond-economics-horizon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
@@ -22,23 +23,9 @@ import type {
 type CashFlow = BondAnalyticsResult["cashFlows"][number];
 const cashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
   { id: "payment", label: "Payment date", render: (row) => row.paymentDate },
-  {
-    id: "accrual",
-    label: "Accrual period",
-    render: (row) => `${row.accrualStart} – ${row.accrualEnd}`
-  },
-  {
-    id: "interest",
-    label: "Interest / 100",
-    align: "right",
-    render: (row) => decimalText(row.interest)
-  },
-  {
-    id: "principal",
-    label: "Principal / 100",
-    align: "right",
-    render: (row) => decimalText(row.principal)
-  }
+  { id: "accrual", label: "Accrual period", render: (row) => `${row.accrualStart} – ${row.accrualEnd}` },
+  { id: "interest", label: "Interest / 100", align: "right", render: (row) => decimalText(row.interest) },
+  { id: "principal", label: "Principal / 100", align: "right", render: (row) => decimalText(row.principal) }
 ];
 
 const decimalText = (value: BondDecimal | null | undefined): string => bondDecimalText(value);
@@ -484,7 +471,8 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 }
               />
             ) : null}
-            {!result.isBlocked ? (
+            {!isFloating ? <BondEconomicsHorizon result={result} /> : null}
+            {!result.isBlocked && isFloating ? (
               <details>
                 <summary className="cursor-pointer text-sm font-semibold">
                   Projected contractual payments ({result.cashFlows.length})
@@ -494,7 +482,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                   {isFloating ? " Observed or forecast describes the fixing, not the payment. Reset status follows the calculation date; rates are annual fractions (0.03 = 3%) and spread is in basis points (100 bp = 1%)." : null}
                 </p>
                 <DenseDataTable
-                  columns={isFloating ? floatingCashFlowColumns : cashFlowColumns}
+                  columns={floatingCashFlowColumns}
                   rows={result.cashFlows}
                   getRowId={(row) => row.flowId}
                   ariaLabel="Projected bond payments"

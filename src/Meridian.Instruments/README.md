@@ -11,6 +11,8 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Instruments
 
+Fixed/zero-coupon analytics also return authoritative maturity/exercise alternatives and all governing yield-to-worst ties for the browser horizon. Issuer calls and maturity govern YTW; holder puts remain distinct. Interest and principal retain per-100-face units and maturity projection semantics. Floating v3 keeps its separate observed/forecast evidence and does not gain unsupported callable analytics.
+
 Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing
 already-reset periods. Security/version, index, currency, exact reset date and economic/knowledge
 eligibility must agree. Existing declared fixings remain authoritative; duplicate source selections

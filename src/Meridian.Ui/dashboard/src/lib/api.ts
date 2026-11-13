@@ -1,13 +1,3 @@
-import type { FundStructureSetupDraft, FundStructureSetupPreview, FundStructureSetupResult } from "./api/fund-structure-setup.contracts";
-export type {
-  FundStructureSetupDraft,
-  FundStructureNodePreview,
-  FundStructureSetupValidationIssue,
-  FundStructureSetupValidationSummary,
-  FundStructureSetupPreview,
-  FundStructureSetupResult
-} from "./api/fund-structure-setup.contracts";
-
 import { reportingSchedulePauseEndpoint, reportingScheduleResumeEndpoint, reportingScheduleRunNowEndpoint } from "@/lib/reporting-schedule-endpoints";
 import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import {
@@ -16,6 +6,20 @@ import {
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
+import type { StrategySweepResultGroup } from "@/types/workstation-6";
+import type {
+  FundStructureSetupDraft,
+  FundStructureSetupPreview,
+  FundStructureSetupResult
+} from "./api/fund-structure-setup.contracts";
+export type {
+  FundStructureSetupDraft,
+  FundStructureNodePreview,
+  FundStructureSetupValidationIssue,
+  FundStructureSetupValidationSummary,
+  FundStructureSetupPreview,
+  FundStructureSetupResult
+} from "./api/fund-structure-setup.contracts";
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
 export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
@@ -3002,7 +3006,7 @@ export function getRunTimeline(options: { mode?: string; status?: string; strate
 }
 
 export function getRunSweeps(limit?: number) {
-  return getJson<unknown>(workstationRunSweepsEndpoint(limit));
+  return getJson<StrategySweepResultGroup[]>(workstationRunSweepsEndpoint(limit), { allowDevelopmentFallback: false });
 }
 
 // --- Security Master search ---

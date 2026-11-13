@@ -860,6 +860,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             .ToArray();
         return processingCase with
         {
+            ElectionCalendar = CorporateActionElectionCalendar.Read(processingCase.SourceSnapshot?.ProposedAction.Payload),
             ActionAvailability = new CorporateActionCaseActionAvailabilityDto(
                 CanAddEvidence: !immutable,
                 CanRecordConflict: canRecordConflict,
@@ -898,7 +899,10 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             proposal.Version,
             proposal.State,
             scope,
-            proposal.ActionAvailability ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, false, ["Action availability was not projected."]));
+            proposal.ActionAvailability ?? new CorporateActionSourceProposalActionAvailabilityDto(false, false, false, ["Action availability was not projected."]))
+        {
+            ElectionCalendar = CorporateActionElectionCalendar.Read(proposal.ProposedAction.Payload),
+        };
     }
 
     private static CorporateActionProviderEventIdentityDto NormalizeProviderIdentity(

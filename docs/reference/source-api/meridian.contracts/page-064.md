@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SampleHoldingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleHoldingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L39).
+
+```csharp
+public sealed record SampleHoldingDto(string Symbol, decimal Quantity, decimal AveragePrice, decimal LastPrice, decimal MarketValue, decimal UnrealizedPnl);
+```
+
+## SampleMarketHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleMarketHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L58).
+
+```csharp
+public sealed record SampleMarketHistoryDto(IReadOnlyList<string> Symbols, int Sessions, string Route);
+```
+
+## SampleWorkspaceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleWorkspaceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L23).
+
+Populated snapshot of the sample demo tenant loaded when a user chooses &quot;Use sample data&quot;. Present only for sample workspaces; lets onboarding surfaces show a believable, populated workspace (holdings, breaks, a report, a paper strategy) instead of only a mode badge.
+
+```csharp
+public sealed record SampleWorkspaceDto(string Headline, string Summary, string PortfolioName, decimal PortfolioValue, decimal Cash, decimal UnrealizedPnl, IReadOnlyList<SampleHoldingDto> Holdings, IReadOnlyList<string> Watchlist, IReadOnlyList<SampleBreakDto> ReconciliationBreaks, SampleArtifactDto Report, SampleArtifactDto Strategy, SampleMarketHistoryDto MarketHistory, IReadOnlyList<SampleHighlightDto> Highlights, string Provenance = "Seeded");
+```
+
+## SecurityClassificationSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityClassificationSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs#L8).
+
+Workstation-facing Security Master classification summary for Data and Accounting surfaces.
+
+```csharp
+public sealed record SecurityClassificationSummaryDto(string AssetClass, string? SubType, string? PrimaryIdentifierKind, string? PrimaryIdentifierValue, string? MatchedIdentifierKind = null, string? MatchedIdentifierValue = null, string? MatchedProvider = null, string? RiskCountry = null, string? IssuerType = null, string? TypeName = null);
+```
+
 ## SecurityEconomicDefinitionSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto</code>. Kind: `record`.
@@ -597,61 +641,3 @@ Enum declarations:
 | <code>Blocked = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L10) |  |
 | <code>Review = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L11) |  |
 | <code>Trusted = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L12) |  |
-
-## SecurityMasterWorkstationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterWorkstationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs#L43).
-
-Workstation-facing Security Master row used by Data, Accounting, and search surfaces.
-
-```csharp
-public sealed record SecurityMasterWorkstationDto(Guid SecurityId, string DisplayName, SecurityStatusDto Status, SecurityClassificationSummaryDto Classification, SecurityEconomicDefinitionSummaryDto EconomicDefinition);
-```
-
-## SettlementInstruction
-
-Qualified name: <code>Meridian.Contracts.Workstation.SettlementInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L19).
-
-```csharp
-public sealed record SettlementInstruction(Guid InstructionId, Guid AccountId, string Currency, decimal GrossAmount, DateOnly SettlementDate, string Counterparty, string SettlementMethod, string Reference);
-```
-
-## SinglePrincipalAttestationAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L103).
-
-```csharp
-public sealed record SinglePrincipalAttestationAuditEventDto(Guid CommandId, long Sequence, string Action, string Actor, DateTimeOffset RecordedAt, string Reason, Guid? ReceiptId = null);
-```
-
-## SinglePrincipalAttestationPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L4).
-
-Versioned, non-authoritative preparer assertions. These are never approval receipts.
-
-```csharp
-public static class SinglePrincipalAttestationPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Version = &quot;single-principal-evidence-v1&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L6) |  |
-| <code>public const string DraftVersion = &quot;single-principal-evidence-v2&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L7) |  |
-| <code>public const string EvidenceAcknowledgment = &quot;ATTEST-EVIDENCE-ACK&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L8) |  |
-| <code>public const string DraftCheck = &quot;ATTEST-DRAFT-CHECK&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L9) |  |
-| <code>public const string Disclosure = &quot;Attested by preparer — not independently reviewed&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L10) |  |
-| <code>public const string Confirmation = &quot;I inspected the exact retained evidence and accept responsibility for this preparer assertion. This is not independent review or approval.&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L11) |  |
-| <code>public const string DraftConfirmation = &quot;I inspected the exact retained non-postable calculation and listed checks. This preparer check grants no approval or posting authority.&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L12) |  |
-| <code>public const string DecisionKind = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L13) |  |
-| <code>public const int SchemaVersion = 1;</code> | [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L14) |  |

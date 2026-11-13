@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12133 |
-| Valid | 11632 |
+| Total code blocks | 12145 |
+| Valid | 11644 |
 | Invalid | 0 |
 | Skipped | 501 |
 
@@ -20,7 +20,7 @@
 | `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 271 | 271 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11259 | 11259 | 0 | 0 |
+| `csharp` | 11271 | 11271 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 69 | 69 | 0 | 0 |
@@ -255,7 +255,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-067.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-068.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-069.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-070.md` | 40 |
+| `docs/reference/source-api/meridian.contracts/page-070.md` | 44 |
 | `docs/reference/source-api/meridian.core/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |
@@ -360,11 +360,11 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.services/page-016.md` | 12 |
 | `docs/reference/source-api/meridian.ui.shared/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-002.md` | 50 |
-| `docs/reference/source-api/meridian.ui.shared/page-003.md` | 62 |
-| `docs/reference/source-api/meridian.ui.shared/page-004.md` | 71 |
+| `docs/reference/source-api/meridian.ui.shared/page-003.md` | 54 |
+| `docs/reference/source-api/meridian.ui.shared/page-004.md` | 80 |
 | `docs/reference/source-api/meridian.ui.shared/page-005.md` | 59 |
-| `docs/reference/source-api/meridian.ui.shared/page-006.md` | 114 |
-| `docs/reference/source-api/meridian.ui.shared/page-007.md` | 60 |
+| `docs/reference/source-api/meridian.ui.shared/page-006.md` | 111 |
+| `docs/reference/source-api/meridian.ui.shared/page-007.md` | 63 |
 | `docs/reference/source-api/meridian.ui.shared/page-008.md` | 52 |
 | `docs/reference/source-api/meridian.ui.shared/page-009.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-010.md` | 51 |
@@ -375,7 +375,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.shared/page-015.md` | 55 |
 | `docs/reference/source-api/meridian.ui.shared/page-016.md` | 57 |
 | `docs/reference/source-api/meridian.ui.shared/page-017.md` | 67 |
-| `docs/reference/source-api/meridian.ui.shared/page-018.md` | 13 |
+| `docs/reference/source-api/meridian.ui.shared/page-018.md` | 20 |
 | `docs/reference/source-api/meridian.workflow/page-001.md` | 11 |
 | `docs/reference/source-api/meridian.wpf/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-002.md` | 50 |

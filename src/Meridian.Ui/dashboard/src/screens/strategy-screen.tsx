@@ -9,6 +9,7 @@ import { EntityLink } from "@/components/meridian/entity-inspector";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { StrategyRobustness } from "@/components/meridian/strategy-robustness";
 import { tableColumnsWithExport, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { SeverityBadge } from "@/components/operations";
@@ -888,6 +889,8 @@ export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
           </StrategyRunEquityPathCompare>
         </CardContent>
       </Card>
+
+      {showRuns ? <StrategyRobustness /> : null}
 
       {vm.showComparisonPanel && (
         <Card>

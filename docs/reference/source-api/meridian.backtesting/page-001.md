@@ -59,7 +59,7 @@ public sealed record BacktestStudioRunHandle(string RunId, string EngineRunHandl
 
 Qualified name: <code>Meridian.Backtesting.BacktestStudioRunOrchestrator</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:14](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L14).
+Source: [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:15](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L15).
 
 Coordinates Backtest Studio runs across multiple engines while persisting them through the shared strategy-run model.
 
@@ -71,12 +71,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BacktestStudioRunOrchestrator(IStrategyRepository repository, IEnumerable&lt;IBacktestStudioEngine&gt; engines, ILogger&lt;BacktestStudioRunOrchestrator&gt; logger);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:23](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L23) |  |
-| <code>public async Task&lt;BacktestStudioRunHandle&gt; StartAsync(BacktestStudioRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:38](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L38) | Starts a Backtest Studio run, records the initial shared run entry, and monitors completion in the background. |
-| <code>public Task&lt;BacktestStudioRunStatus&gt; GetStatusAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:105](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L105) | Returns the current status for a previously started Backtest Studio run. |
-| <code>public Task&lt;BacktestResult&gt; GetCanonicalResultAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:117](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L117) | Returns the canonical result for a previously started Backtest Studio run. |
-| <code>public Task CancelAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:129](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L129) | Requests cancellation for a previously started Backtest Studio run. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:138](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L138) |  |
+| <code>public BacktestStudioRunOrchestrator(IStrategyRepository repository, IEnumerable&lt;IBacktestStudioEngine&gt; engines, ILogger&lt;BacktestStudioRunOrchestrator&gt; logger);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:24](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L24) |  |
+| <code>public async Task&lt;BacktestStudioRunHandle&gt; StartAsync(BacktestStudioRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:39](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L39) | Starts a Backtest Studio run, records the initial shared run entry, and monitors completion in the background. |
+| <code>public Task&lt;BacktestStudioRunStatus&gt; GetStatusAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:106](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L106) | Returns the current status for a previously started Backtest Studio run. |
+| <code>public Task&lt;BacktestResult&gt; GetCanonicalResultAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:118](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L118) | Returns the canonical result for a previously started Backtest Studio run. |
+| <code>public Task CancelAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:130](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L130) | Requests cancellation for a previously started Backtest Studio run. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs:139](../../../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs#L139) |  |
 
 ## BacktestStudioRunRequest
 
