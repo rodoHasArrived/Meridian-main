@@ -75,6 +75,10 @@ replay. An unavailable Security Master remains visible in the run's bias disclos
 
 ## Important workflows
 
+`BacktestEngine` notifies `IBacktestOrderTerminationObserver` when filled, cancelled, expired or
+rejected pending orders are retired, allowing the shared strategy to release pending intent.
+See the [shared SMA contract](../Meridian.Backtesting.Sdk/README.md#shared-sma-decision-contract).
+
 `SecurityTradePostingProjector` supplies the shared long/short trade and commission line
 projection from the simulator's exact lot facts. The simulator attaches investing attribution
 before posting each projected trade; commissions retain their separate operating cash flow.

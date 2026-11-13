@@ -58,8 +58,8 @@ public sealed class BacktestStrategyLiveAdapter : LiveStrategyBase, ILiveOrderOu
 
     /// <inheritdoc/>
     /// <remarks>
-    /// Forwarded only when the wrapped strategy tracks its own working orders. Terminal outcomes
-    /// have no meaning on the replay path, so most strategies do not implement the seam.
+    /// Forwarded when the wrapped strategy tracks working orders, preferring the live outcome
+    /// contract and otherwise notifying the shared replay terminal observer.
     /// </remarks>
     public void OnOrderTerminated(Guid orderId, LiveOrderOutcome outcome)
     {
