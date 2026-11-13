@@ -57,10 +57,10 @@ export function MarginComparisonOverview({ accounts, selectedId, onSelect }: {
           const estimate = knownCurrency ? value(account, "meridian") : null;
           return <div>
             <svg viewBox="0 0 300 30" className="h-8 w-full" role="img" aria-label={`Broker ${amount(broker, currency)}; Meridian ${amount(estimate, currency)}`}>
-              <line x1="12" x2="288" y1="15" y2="15" stroke="var(--chart-grid, #E4E3DE)" />
-              {reported(broker) && reported(estimate) ? <line x1={position(broker)} x2={position(estimate)} y1="15" y2="15" stroke="var(--chart-axis, #5E666F)" /> : null}
+              <line x1="12" x2="288" y1="15" y2="15" stroke="var(--chart-grid, #E2DED5)" />
+              {reported(broker) && reported(estimate) ? <line x1={position(broker)} x2={position(estimate)} y1="15" y2="15" stroke="var(--chart-axis, #606870)" /> : null}
               {reported(broker) ? <circle cx={position(broker)} cy="15" r="5" fill="hsl(var(--primary, 208 17% 19%))" /> : null}
-              {reported(estimate) ? <path d={`M${position(estimate)},8l7,7l-7,7l-7,-7z`} fill="none" stroke="var(--chart-axis, #5E666F)" strokeWidth="2" /> : null}
+              {reported(estimate) ? <path d={`M${position(estimate)},8l7,7l-7,7l-7,-7z`} fill="none" stroke="var(--chart-axis, #606870)" strokeWidth="2" /> : null}
             </svg>
             <span className="block font-mono">Broker {amount(broker, currency)}</span><span className="block font-mono text-muted-foreground">Meridian {amount(estimate, currency)}</span>
           </div>;
@@ -69,8 +69,8 @@ export function MarginComparisonOverview({ accounts, selectedId, onSelect }: {
           const excess = knownCurrency ? account.providerExcessLiquidity : null;
           return <div>
             <svg viewBox="0 0 300 30" className="h-8 w-full" role="img" aria-label={`Broker excess liquidity ${amount(excess, currency)}${reported(excess) && excess < 0 ? ", deficit" : ""}; zero at center`}>
-              <line x1="12" x2="288" y1="15" y2="15" stroke="var(--chart-grid, #E4E3DE)" />
-              {reported(excess) ? <rect x={excess < 0 ? 150 - Math.abs(excess) / maxExcess * 138 : 150} y="8" width={Math.abs(excess) / maxExcess * 138} height="14" fill={excess < 0 ? "var(--chart-drawdown, #A8443C)" : "var(--chart-equity, #3A7A56)"} /> : null}
+              <line x1="12" x2="288" y1="15" y2="15" stroke="var(--chart-grid, #E2DED5)" />
+              {reported(excess) ? <rect x={excess < 0 ? 150 - Math.abs(excess) / maxExcess * 138 : 150} y="8" width={Math.abs(excess) / maxExcess * 138} height="14" fill={excess < 0 ? "var(--chart-drawdown, #B54B42)" : "var(--chart-equity, #2E7655)"} /> : null}
               <line x1="150" x2="150" y1="3" y2="27" stroke="currentColor" strokeWidth="1.5" />
             </svg>
             <span className="block font-mono">{amount(excess, currency)}{reported(excess) && excess < 0 ? " · Deficit" : ""}</span>

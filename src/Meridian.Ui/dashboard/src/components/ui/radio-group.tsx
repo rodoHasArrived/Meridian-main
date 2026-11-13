@@ -77,6 +77,12 @@ export function RadioGroup({
         event.preventDefault();
         select(event, optionValue);
         break;
+      case "Home":
+      case "End": {
+        const next = event.key === "Home" ? enabled[0] : enabled[enabled.length - 1];
+        if (next) { event.preventDefault(); select(event, next.value); }
+        break;
+      }
       default:
         break;
     }
@@ -95,7 +101,7 @@ export function RadioGroup({
           <label
             key={option.value}
             className={cn(
-              "inline-flex items-start gap-2 text-sm",
+              "inline-flex min-h-6 items-start gap-2 text-sm",
               itemDisabled ? "cursor-not-allowed opacity-55" : "cursor-pointer"
             )}
             onKeyDown={(event) => !itemDisabled && handleKeyDown(event, option.value)}

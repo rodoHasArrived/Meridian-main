@@ -11,6 +11,7 @@ import { EntityBookControls } from "./accounting-screen.entity-book-controls";
 import { EntityAccountingArrangements } from "./accounting-screen.entity-agreements";
 import { AccountingArrangementEditor } from "./accounting-screen.entity-agreement-editor";
 import { EntityCounterpartProposals } from "./accounting-screen.entity-proposals";
+import { EntityFxAuthority } from "./accounting-screen.entity-fx";
 import { FxRateSetEditor } from "./accounting-screen.entity-fx-rates";
 import { CounterpartRepricing } from "./accounting-screen.entity-counterpart-repricing";
 import type { ManualJournalEntryDraft } from "@/types";
@@ -74,6 +75,38 @@ describe("Entity operations", () => {
       expectedVersion: 8, preflightDigest: "reviewed-preflight", reason: "Historical mapping reconciled", evidenceReference: "vault:migration-report"
     }, expect.objectContaining({ signal: expect.any(AbortSignal) })));
     expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("keeps controlled-close provenance and navigation bound to the authorized server receipt after editing the next request", async () => {
+    vi.mocked(postEntityOperation).mockResolvedValue({ authorizationId: "authorization-a", journalEntryId: "authorized-journal-a", ledgerBookId: "authorized-book", fundProfileId: "authorized-profile", draftVersion: 7, postingFingerprint: "fingerprint-a", authorizedBy: "reviewer-a" });
+    renderWithRouter(<EntityBookControls scope={scope} />);
+    fireEvent.click(screen.getByText("Authorize a controlled wind-down journal"));
+    fireEvent.change(screen.getByLabelText("Controlled-close draft journal ID"), { target: { value: "requested-journal-a" } });
+    fireEvent.change(screen.getByLabelText("Controlled-close draft version"), { target: { value: "7" } });
+    fireEvent.change(screen.getByLabelText("Source obligation evidence"), { target: { value: "retained:obligation-a" } });
+    fireEvent.change(screen.getByLabelText("Controlled-close reason"), { target: { value: "Settle retained obligation" } });
+    fireEvent.click(screen.getByRole("button", { name: "Retain controlled-close authorization" }));
+    const link = await screen.findByRole("link", { name: "Review authorized journal" });
+    const expectedPath = "/accounting/journal-entries?fundProfileId=authorized-profile&ledgerBookId=authorized-book&journalEntryId=authorized-journal-a";
+    expect(link).toHaveAttribute("href", expectedPath);
+    fireEvent.change(screen.getByLabelText("Controlled-close draft journal ID"), { target: { value: "next-journal-b" } });
+    fireEvent.change(screen.getByLabelText("Controlled-close draft version"), { target: { value: "8" } });
+    expect(link).toHaveAttribute("href", expectedPath);
+    expect(screen.getByText("Authorized journal authorized-journal-a · version 7")).toBeVisible();
+    expect(screen.getByText("Draft fingerprint fingerprint-a")).toBeVisible();
+    expect(postEntityOperation).toHaveBeenCalledTimes(1);
+  });
+
+  it("withholds authorized-journal navigation when receipt identity is incomplete", async () => {
+    vi.mocked(postEntityOperation).mockResolvedValue({ authorizationId: "incomplete-a", postingFingerprint: "fingerprint-a", authorizedBy: "reviewer-a" });
+    renderWithRouter(<EntityBookControls scope={scope} />);
+    fireEvent.click(screen.getByText("Authorize a controlled wind-down journal"));
+    fireEvent.change(screen.getByLabelText("Controlled-close draft journal ID"), { target: { value: "requested-journal-a" } });
+    fireEvent.change(screen.getByLabelText("Source obligation evidence"), { target: { value: "retained:obligation-a" } });
+    fireEvent.change(screen.getByLabelText("Controlled-close reason"), { target: { value: "Settle retained obligation" } });
+    fireEvent.click(screen.getByRole("button", { name: "Retain controlled-close authorization" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Authorized journal identity is unavailable");
+    expect(screen.queryByRole("link", { name: "Review authorized journal" })).not.toBeInTheDocument();
   });
 
   it("keeps blocked migration decisions visible and prevents activation", async () => {
@@ -215,6 +248,42 @@ describe("Entity operations", () => {
     fireEvent.change(screen.getByLabelText("Quote 1 evidence"), { target: { value: "retained-provider-observation" } });
     fireEvent.click(screen.getByRole("button", { name: "Approve and retain rate set" }));
     await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/consolidation/fx/rate-sets/approve", expect.objectContaining({ rates: [expect.objectContaining({ rate: "1.1234567890123456789012345678", fromCurrency: "EUR", toCurrency: "USD", kind: "Closing" })] }), expect.any(Object)));
+  });
+
+  it.each(["rates", "policy"])("retains the %s editor and its authority scope until save completes or the operator cancels", async (editor) => {
+    const rateSet = { rateSetId: "rates-a", revision: 1, rates: [], sourceEvidence: "retained:rates", approvedBy: "reviewer", approvedAt: "2026-11-13", contentHash: "rates-hash" };
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.endsWith("/rate-sets") ? [rateSet] : null);
+    let complete: (value: unknown) => void = () => {};
+    vi.mocked(postEntityOperation).mockImplementation(() => new Promise((resolve) => { complete = resolve; }));
+    renderWithRouter(<EntityFxAuthority scope={scope} />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Configure book translation" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: editor === "rates" ? "New approved rate set" : "Configure book translation" }));
+    expect(screen.getByLabelText("FX configuration as of")).toBeDisabled();
+    for (const name of ["Refresh FX authority", "New approved rate set", "Configure book translation", "Revise rate set 1"]) {
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+      expect(screen.getByRole("button", { name })).toHaveAttribute("title", expect.stringContaining("Save or cancel"));
+    }
+    const cancelName = editor === "rates" ? "Cancel rate editing" : "Cancel policy editing";
+    fireEvent.click(screen.getByRole("button", { name: cancelName }));
+    expect(screen.getByLabelText("FX configuration as of")).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: editor === "rates" ? "New approved rate set" : "Configure book translation" }));
+    if (editor === "rates") {
+      fireEvent.change(screen.getByLabelText("Rate-set source evidence"), { target: { value: "retained:new-rates" } });
+      fireEvent.change(screen.getByLabelText("Quote 1 source currency"), { target: { value: "EUR" } });
+      fireEvent.change(screen.getByLabelText("Quote 1 exact rate"), { target: { value: "1.2345" } });
+      fireEvent.change(screen.getByLabelText("Quote 1 evidence"), { target: { value: "retained:quote" } });
+    } else {
+      fireEvent.change(screen.getByLabelText("Approved FX rate-set revision"), { target: { value: "rates-a:1" } });
+    }
+    fireEvent.click(screen.getByRole("button", { name: editor === "rates" ? "Approve and retain rate set" : "Approve and retain book FX policy" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole("button", { name: cancelName })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New approved rate set" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Configure book translation" })).toBeDisabled();
+    complete(rateSet);
+    await waitFor(() => expect(screen.queryByRole("button", { name: cancelName })).not.toBeInTheDocument());
+    expect(screen.getByLabelText("FX configuration as of")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "New approved rate set" })).toBeEnabled();
   });
 
   it("shows delivery failure and links a specifically identified existing counterpart", async () => {

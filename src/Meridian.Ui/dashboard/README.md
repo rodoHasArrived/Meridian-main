@@ -11,6 +11,16 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+Strategy grid cells, maturity bars and ownership-map nodes include the same displayed text and
+word boundaries in their accessible names, retaining coordinates, currency and full record
+identity. Margin SVG labels inherit the current foreground in light and dark themes.
+
+Execution notifications retain an accepted stream snapshot when an older snapshot request finishes.
+Execution-alert preference loading and save feedback stay bound to the current account and attempt;
+account changes and unmounting retire older callbacks. The preference, journal and server-preview
+controls use the shared keyboard-focus and target-size contracts. The journal's **Before date**
+filter uses an exclusive UTC end boundary, matching the execution summary.
+
 Financial visualization panels extend the existing Loan Book, Bond Analytics, Margin Control,
 Trading order inspector, Market Data desk, Family Office, corporate-action inbox and disposal tax
 details. React owns SVG/HTML rendering and table/inspector selection; monetary aggregation and
@@ -64,6 +74,11 @@ independent approval remain in Accounting Configure's canonical agreement regist
 capabilities come from the host. Current draft scope must match the preview before mutation;
 loading, stale, blocked and unavailable states remain visible. See
 [intercompany operations](../../../docs/operators/intercompany-entity-controls.md).
+Guarantee mappings and FX options use shared keyboard-focus and target-size controls; disabled
+commands explain their existing blockers. Controlled-close receipt navigation retains the server
+response's journal, book, profile and version even when the next request is edited; incomplete
+receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
+explicit cancel, and pending saves retain the mounted editor.
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
@@ -77,6 +92,13 @@ The existing four fixed-number and one signed-money formatting ratchet allowance
 unchanged declarations into the projections module; aggregate ceilings remain unchanged.
 The Settings typography allowance likewise follows the unchanged JSX: 16 occurrences remain in
 the screen and 45 belong to the provider components, retaining the prior aggregate ceiling of 61.
+Fund-structure setup transport types live in `lib/api/fund-structure-setup.contracts.ts`, with
+`lib/api.ts` retaining its public type exports. Promotion form normalization, keyed evidence validation
+and checklist presentation live in `trading-screen.promotion-evidence.ts`; the existing view-model
+entrypoint retains its public exports, React gate state and command transport. Payloads, evidence-token
+rules and approval semantics are unchanged. Three fixed-number formatting allowances follow their
+unchanged checklist declarations; the original aggregate allowance of six remains unchanged.
+
 Strategy overview composition lives in `strategy-overview-hub.tsx`; equity-path comparison state,
 load results and presentation live in `strategy-screen.equity-paths.view-model.ts` and
 `strategy-screen.equity-paths.tsx`. The existing Strategy
@@ -268,6 +290,34 @@ the same reviewed request for retry. Focused tests are in
 `accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
 `accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
+## Financial visual evidence
+
+Report-writer chart previews are explicitly labeled **Signed value summary** beside the configured
+chart type. They use a symmetric scale around a visible zero baseline; missing, non-numeric and
+non-finite observations remain unavailable. Reported values, series labels, warnings and the
+underlying grid stay inspectable. The summary does not claim to render the configured chart type.
+
+The retained income comparison adds a baseline → journal → population → methodology → unexplained
+→ current waterfall. Exact decimal strings are summed and checked with integer arithmetic before
+only bounded drawing coordinates become numbers. Missing, incompatible or inconsistent bridges
+withhold the plot. The server residual is included once; unexplained records remain separate, and
+nonzero unsupported records cannot produce a reconciled success banner through netting. Each
+contribution opens the existing retained-support sheet, preserving URL state and keyboard return.
+
+Open-position exposure and P&L cells retain their original financial strings with small relative
+bars. A strict presentation adapter accepts only the source's demonstrated invariant dollar formats
+(including grouped values and K/M suffixes). These are rounded display comparisons, not concentration
+calculations or an inferred ISO currency. Each column uses its own largest absolute supported value
+across all loaded positions before filters, grouped by source currency. Rows without a currency stay
+in a separate, explicitly unavailable-currency group; no currency conversion is applied. Unsupported formats retain
+the original amount and say Graphic unavailable. Losses extend left of a visible zero marker;
+the largest displayed exposures with the shared mark-review assessment receive a textual cue.
+
+Focused coverage: `report-writer-grid-format.test.ts`, `report-writer-chart-preview.test.tsx`,
+`income-movement-waterfall.test.ts`, `reporting-income-comparison.test.tsx`,
+`position-value-graphic.test.ts`, `position-value-graphic.test.tsx`, and the existing position-control
+and Portfolio view-model tests.
+
 ## Portfolio Open positions controls
 
 Open positions supports case-insensitive symbol search, exact Side filtering from loaded rows,
@@ -296,6 +346,15 @@ Focused coverage: `portfolio-positions-table.test.ts`, `use-portfolio-positions-
 and Trading blotters retain their existing interaction models.
 
 ## Shared workstation header
+
+The notification bell counts unread events, separately from unresolved financial work.
+Its operator inbox belongs to the current account scope: changing accounts immediately
+withholds old rows and cancels obsolete reads. Polls do not overlap, and reads time out
+after 15 seconds so a stalled request cannot prevent recovery. Failed inbox reads
+clear prior inbox evidence and show an unavailable message with Retry inbox; independent
+system events and price alerts remain available. Loading and unavailable counts explicitly
+cover loaded feeds only. Regression coverage is in `use-notification-center.test.tsx` and
+`notification-center.test.tsx`.
 
 The browser shell renders `WorkspaceHeader` as one row above every route:
 
@@ -2255,6 +2314,16 @@ and checks token-backed components, responsive utilities, typography, opacity, a
 Any future separately processed stylesheet that uses `@apply` must first reference
 `src/styles/index.css` with `@reference` to access the workstation theme without emitting it twice.
 ### Meridian Design System 4.3.0 integration
+
+Setup and activation surfaces use the canonical surface, ink, status, radius and chrome
+roles. Their provider recovery, cancellation, progress and navigation behavior remains
+owned by the existing first-run model.
+
+Native date adapters retain ISO civil dates across time zones, expose labels and validation
+on their actual controls, and support calendar keyboard navigation inside dialogs. Selection
+controls retain one tab stop and move DOM focus with their arrow/Home/End commands.
+Current-view printing preserves the mounted financial rows, selected context, session and
+provenance without fetching offscreen records; governed report generation remains a separate workflow.
 
 The root `Meridian Design System/` package is the visual source bundle for tokens,
 component references, patterns, templates, and governance scripts. The browser workstation consumes

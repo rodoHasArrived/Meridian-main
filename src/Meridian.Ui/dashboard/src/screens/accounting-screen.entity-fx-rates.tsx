@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormGrid } from "@/components/ui/form";
 import type { ConsolidationFxRate, ConsolidationFxRateSet, EntityOperationScope, FxRateKind } from "@/types/entity-operations";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
@@ -41,8 +42,8 @@ export function FxRateSetEditor({ scope, previous, onSaved, onCancel }: { scope:
         <OperationField label={`Quote ${index + 1} evidence`} value={rate.sourceEvidence} onChange={(value) => update(index, { sourceEvidence: value })} required />
         {rate.kind === "PeriodAverage" ? <><OperationField label={`Quote ${index + 1} averaging period start`} value={rate.periodStart ?? ""} onChange={(value) => update(index, { periodStart: value || null })} type="date" required />
           <OperationField label={`Quote ${index + 1} averaging period end`} value={rate.periodEnd ?? ""} onChange={(value) => update(index, { periodEnd: value || null })} type="date" required /></> : null}
-      </FormGrid><label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={rate.allowInverse} onChange={(event) => update(index, { allowInverse: event.target.checked })} />Allow explicit inversion of quote {index + 1}</label>
-        <Button className="mt-3" type="button" size="sm" variant="outline" disabled={rates.length === 1} onClick={() => setRates((current) => current.filter((_, row) => row !== index))}>Remove quote {index + 1}</Button>
+      </FormGrid><Checkbox className="mt-3" checked={rate.allowInverse} onCheckedChange={(checked) => update(index, { allowInverse: checked })} label={`Allow explicit inversion of quote ${index + 1}`} />
+        <Button className="mt-3" type="button" size="sm" variant="outline" disabled={rates.length === 1} disabledReason="A rate set must retain at least one quote." onClick={() => setRates((current) => current.filter((_, row) => row !== index))}>Remove quote {index + 1}</Button>
       </fieldset>)}
       <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => setRates((current) => [...current, newQuote(scope.book.baseCurrency)])}>Add FX quote</Button>
         <Button type="submit">Approve and retain rate set</Button><Button type="button" variant="outline" onClick={onCancel}>Cancel rate editing</Button></div>

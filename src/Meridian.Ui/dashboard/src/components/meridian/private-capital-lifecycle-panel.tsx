@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -32,6 +33,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
   const id = useId();
   const membership = holderEntityIds ? [...holderEntityIds].sort().join("|") : "*";
   const epoch = useRef(0);
+  const draftGeneration = useRef(0);
   const [data, setData] = useState<PrivateCapitalRecords | null>(null);
   const [choices, setChoices] = useState<PrivateCapitalChoices>({ entities: [], vehicles: [] });
   const [loading, setLoading] = useState(true);
@@ -59,6 +61,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
 
   useEffect(() => {
     const revision = ++epoch.current;
+    draftGeneration.current += 1;
     const controller = new AbortController();
     setData(null); setLoading(true); setError(""); setNotice(""); setBusy(false);
     setChoices({ entities: [], vehicles: [] }); setPreview(null); setConfirmed(false);
@@ -76,7 +79,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
       if (epoch.current !== revision || controller.signal.aborted) return;
       setError(reason instanceof Error ? reason.message : "Private-capital records could not be loaded."); setLoading(false);
     });
-    return () => { controller.abort(); epoch.current = revision + 1; };
+    return () => { controller.abort(); epoch.current = revision + 1; draftGeneration.current += 1; };
   }, [api, scopeKey, membership, refresh]);
 
   useEffect(() => {
@@ -104,7 +107,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
   const writableHolders = choices.entities.filter(item => !allowed || allowed.has(item.id));
   const writable = data?.canManage === true && writableHolders.length > 0;
   const locked = busy || uncertain !== null;
-  const invalidate = () => { setPreview(null); setConfirmed(false); acceptRequest.current = null; setNotice(""); };
+  const invalidate = () => { draftGeneration.current += 1; setPreview(null); setConfirmed(false); acceptRequest.current = null; setNotice(""); };
   const fail = (reason: unknown, operation?: "accept" | "register") => {
     setError(reason instanceof Error ? reason.message : "The operation could not be completed.");
     // A later rejection cannot disprove a prior dispatch whose response was lost.
@@ -189,7 +192,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
               {capitalMeasures.map(([key]) => {
                 const value = item.snapshot?.[key]; const width = capitalBarWidth(value, values) / 2;
                 return <td key={key} className="min-w-28 p-2 text-right font-mono"><span>{textAmount(value)}</span>
-                  {value != null && <svg viewBox="0 0 100 8" className="mt-1 h-2 w-full" aria-hidden="true"><line x1="50" x2="50" y1="0" y2="8" stroke="var(--chart-axis)" /><rect x={Number(value) < 0 ? 50 - width : 50} y="1" width={width} height="6" fill={Number(value) < 0 ? "var(--semantic-warning, #9a5d1a)" : "var(--chart-equity, #3a7a56)"} /></svg>}
+                  {value != null && <svg viewBox="0 0 100 8" className="mt-1 h-2 w-full" aria-hidden="true"><line x1="50" x2="50" y1="0" y2="8" stroke="var(--chart-axis)" /><rect x={Number(value) < 0 ? 50 - width : 50} y="1" width={width} height="6" fill={Number(value) < 0 ? "var(--chart-warning, #986717)" : "var(--chart-equity, #2E7655)"} /></svg>}
                 </td>;
               })}
             </tr>)}</tbody>
@@ -240,7 +243,9 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
               <p className="break-all font-mono text-xs">{csvHeaders}</p>
               <label className="block text-sm">CSV file<Input type="file" accept=".csv,text/csv" onChange={event => {
                 const file = event.target.files?.[0]; const revision = epoch.current; invalidate();
-                if (file) void file.text().then(text => { if (epoch.current === revision) setCsv(text); }).catch(reason => { if (epoch.current === revision) fail(reason); });
+                const generation = draftGeneration.current;
+                if (file) void file.text().then(text => { if (epoch.current === revision && draftGeneration.current === generation) setCsv(text); })
+                  .catch(reason => { if (epoch.current === revision && draftGeneration.current === generation) fail(reason); });
               }} /></label>
               <label className="block text-sm">CSV content<textarea className="min-h-28 w-full border bg-background p-2 font-mono text-xs" value={csv} onChange={event => { setCsv(event.target.value); invalidate(); }} /></label>
             </div>}
@@ -254,7 +259,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
           <div className="overflow-x-auto"><table className="w-full text-xs" aria-label="Reviewed private-capital observations"><thead><tr><th>Commitment / as-of</th>{capitalMeasures.map(([key, label]) => <th key={key}>{label}</th>)}</tr></thead>
             <tbody>{preview.rows.map((item, index) => <tr key={`${item.commitmentId}-${index}`}><th className="p-2 text-left font-normal">{item.commitmentId} · {item.asOfDate}{item.supersedesSnapshotId ? ` · corrects ${item.supersedesSnapshotId}` : ""}</th>{capitalMeasures.map(([key]) => <td className="p-2 text-right font-mono" key={key}>{textAmount(item[key])}</td>)}</tr>)}</tbody></table></div>
           <p className="break-all text-xs">Source document {preview.evidence.documentId} · fingerprint {preview.fingerprint}</p>
-          <label htmlFor={`${id}-confirm`} className="flex gap-2 text-sm"><input id={`${id}-confirm`} type="checkbox" checked={confirmed} disabled={locked} onChange={event => setConfirmed(event.target.checked)} />I reviewed these source amounts and correction references.</label>
+          <Checkbox id={`${id}-confirm`} checked={confirmed} disabled={locked} onChange={event => setConfirmed(event.target.checked)} label="I reviewed these source amounts and correction references." />
           <Button disabled={busy || !confirmed || uncertain === "register"} onClick={() => void accept()}>{uncertain === "accept" ? "Retry same acceptance" : "Accept reviewed observations"}</Button>
         </section>}
       </details>}

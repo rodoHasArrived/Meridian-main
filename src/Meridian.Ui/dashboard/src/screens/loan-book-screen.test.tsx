@@ -66,7 +66,7 @@ describe("LoanBookScreen", () => {
       { currency: "USD", year: 2030, quarter: 1, principalOutstanding: "3250000", loanIds: [first.loanId] },
       { currency: "EUR", year: 2030, quarter: 2, principalOutstanding: "3250000", loanIds: [second.loanId] }
     ] })} />);
-    await userEvent.click(screen.getByRole("button", { name: /2030 Q1, 1 facility/ }));
+    await userEvent.click(screen.getByRole("button", { name: /2030 Q1 1 facility/ }));
     const table = screen.getByRole("table", { name: "Direct lending facilities" });
     expect(table).toHaveTextContent("Senior Term Facility A");
     expect(table).not.toHaveTextContent("Separate EUR facility");

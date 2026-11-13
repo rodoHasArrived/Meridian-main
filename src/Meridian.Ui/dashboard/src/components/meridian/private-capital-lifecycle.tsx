@@ -66,10 +66,10 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
                   <span className="block text-xs text-muted-foreground">{row.strategy} · {entityName(row.entityId)}</span></th>
                 {PRIVATE_CAPITAL_METRICS.map(({ key: metric, label }) => <td key={metric} className="p-2 text-right font-mono text-xs">
                   <span>{available ? money(row[metric], row.currency) : "Unavailable"}</span>
-                  <svg aria-hidden="true" viewBox="0 0 100 8" className="mt-1 h-2 w-full" preserveAspectRatio="none"><rect width="100" height="8" fill="var(--chart-grid, #E4E3DE)" />
+                  <svg aria-hidden="true" viewBox="0 0 100 8" className="mt-1 h-2 w-full" preserveAspectRatio="none"><rect width="100" height="8" fill="var(--chart-grid, #E2DED5)" />
                     {available ? <rect x={view.hasNegative ? 50 + Math.min(0, row[metric]) / (view.maximum || 1) * 50 : 0}
                       width={Math.abs(row[metric]) / (view.maximum || 1) * (view.hasNegative ? 50 : 100)} height="8" fill={label === "Distributions" ? "var(--chart-equity)" : "var(--chart-axis)"} /> : null}
-                    {view.hasNegative ? <line x1="50" x2="50" y1="0" y2="8" stroke="var(--chart-border, #AFABA1)" strokeWidth="0.5" /> : null}</svg>
+                    {view.hasNegative ? <line x1="50" x2="50" y1="0" y2="8" stroke="var(--chart-border, #AAA49A)" strokeWidth="0.5" /> : null}</svg>
                 </td>)}
                 <td className="p-2 text-xs">{available ? row.balanceStatus ?? "Retained" : "Unavailable"}<span className="block text-muted-foreground">As of {row.asOfDate}</span></td>
               </tr>;

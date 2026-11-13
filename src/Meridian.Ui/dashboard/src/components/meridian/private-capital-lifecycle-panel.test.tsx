@@ -1,10 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { PrivateCapitalLifecyclePanel } from "./private-capital-lifecycle-panel";
 import { buildCapitalRows } from "./private-capital-lifecycle.view-model";
 import type { privateCapitalApi } from "@/lib/api/private-capital-records.api";
-import type { PrivateCapitalRecordCommitment, PrivateCapitalRecords, PrivateCapitalSnapshot } from "@/types/private-capital.types";
+import type { PrivateCapitalPreview, PrivateCapitalRecordCommitment, PrivateCapitalRecords, PrivateCapitalSnapshot } from "@/types/private-capital.types";
 
 const evidence = { vaultId: "vault", documentId: "source", contentHash: "a".repeat(64) };
 const commitment: PrivateCapitalRecordCommitment = { commitmentId: "c1", holderEntityId: "entity", vehicleSecurityId: "vehicle",
@@ -17,6 +17,25 @@ const records: PrivateCapitalRecords = { commitments: [commitment], snapshots: [
 function client(data = records): typeof privateCapitalApi {
   return { records: vi.fn().mockResolvedValue(data), choices: vi.fn().mockResolvedValue({ entities: [{ id: "entity", label: "Holder entity" }], vehicles: [{ id: "vehicle", label: "Synthetic Fund" }] }),
     register: vi.fn(), preview: vi.fn(), accept: vi.fn() };
+}
+
+function deferredFile(name: string) {
+  let resolve!: (text: string) => void;
+  let reject!: (reason: Error) => void;
+  const result = new Promise<string>((done, fail) => { resolve = done; reject = fail; });
+  const file = new File([], name, { type: "text/csv" });
+  Object.defineProperty(file, "text", { value: vi.fn(() => result) });
+  return { file, resolve, reject };
+}
+
+async function openCsvEntry(api: typeof privateCapitalApi) {
+  render(<PrivateCapitalLifecyclePanel api={api} />);
+  fireEvent.click(await screen.findByText("Register or import source observations"));
+  fireEvent.change(screen.getByLabelText("Evidence vault ID"), { target: { value: "vault" } });
+  fireEvent.change(screen.getByLabelText("Evidence document ID"), { target: { value: "source" } });
+  fireEvent.change(screen.getByLabelText("Evidence SHA-256"), { target: { value: evidence.contentHash } });
+  fireEvent.change(screen.getByLabelText("Entry method"), { target: { value: "csv" } });
+  fireEvent.change(screen.getByLabelText("Review or correction rationale"), { target: { value: "Review source" } });
 }
 
 describe("private-capital lifecycle", () => {
@@ -57,6 +76,62 @@ describe("private-capital lifecycle", () => {
     await screen.findByText(/No retained commitment register entries/);
     resolve(records);
     await waitFor(() => expect(screen.queryByRole("table")).not.toBeInTheDocument());
+  });
+
+  it.each(["success", "failure"] as const)("retains the newer CSV file when an older file finishes with %s", async outcome => {
+    const api = client({ ...records, canManage: true });
+    await openCsvEntry(api);
+    const older = deferredFile("older.csv");
+    const newer = deferredFile("newer.csv");
+    fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [older.file] } });
+    fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [newer.file] } });
+    await act(async () => newer.resolve("newer source CSV"));
+    expect(screen.getByLabelText("CSV content")).toHaveValue("newer source CSV");
+
+    await act(async () => {
+      if (outcome === "success") older.resolve("obsolete source CSV");
+      else older.reject(new Error("Obsolete file read failed"));
+    });
+    expect(screen.getByLabelText("CSV content")).toHaveValue("newer source CSV");
+    expect(screen.queryByText("Obsolete file read failed")).not.toBeInTheDocument();
+    expect(api.preview).not.toHaveBeenCalled();
+  });
+
+  it("preserves manually edited CSV instead of replacing it with a pending file", async () => {
+    const api = client({ ...records, canManage: true });
+    vi.mocked(api.preview).mockResolvedValue({ batchId: "manual-batch", fingerprint: "manual-fingerprint", rows: [snapshot], evidence,
+      rationale: "Review source", createdAt: "2026-11-12T00:00:00Z", createdBy: "operator" });
+    await openCsvEntry(api);
+    const pending = deferredFile("pending.csv");
+    fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [pending.file] } });
+    fireEvent.change(screen.getByLabelText("CSV content"), { target: { value: "reviewed manual CSV" } });
+    await act(async () => pending.resolve("obsolete file CSV"));
+
+    expect(screen.getByLabelText("CSV content")).toHaveValue("reviewed manual CSV");
+    fireEvent.submit(screen.getByRole("form", { name: "Preview private-capital observations" }));
+    await screen.findByRole("region", { name: "Private-capital import preview" });
+    expect(api.preview).toHaveBeenCalledWith({ rows: null, csv: "reviewed manual CSV", evidence, rationale: "Review source" });
+  });
+
+  it("retires a pending file before previewing the current draft", async () => {
+    const api = client({ ...records, canManage: true });
+    let resolvePreview!: (value: PrivateCapitalPreview) => void;
+    vi.mocked(api.preview).mockImplementation(() => new Promise(done => { resolvePreview = done; }));
+    await openCsvEntry(api);
+    fireEvent.change(screen.getByLabelText("CSV content"), { target: { value: "current reviewed CSV" } });
+    const pending = deferredFile("still-reading.csv");
+    fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [pending.file] } });
+    fireEvent.submit(screen.getByRole("form", { name: "Preview private-capital observations" }));
+    await waitFor(() => expect(api.preview).toHaveBeenCalledWith({ rows: null, csv: "current reviewed CSV", evidence, rationale: "Review source" }));
+    await act(async () => pending.resolve("late file CSV"));
+    expect(screen.getByLabelText("CSV content")).toHaveValue("current reviewed CSV");
+
+    await act(async () => resolvePreview({ batchId: "reviewed-batch", fingerprint: "reviewed-fingerprint", rows: [snapshot], evidence,
+      rationale: "Review source", createdAt: "2026-11-12T00:00:00Z", createdBy: "operator" }));
+    expect(screen.getByRole("region", { name: "Private-capital import preview" })).toHaveTextContent("reviewed-fingerprint");
+    expect(screen.getByLabelText("CSV content")).toHaveValue("current reviewed CSV");
+    expect(screen.getByRole("button", { name: "Accept reviewed observations" })).toBeDisabled();
+    expect(api.accept).not.toHaveBeenCalled();
   });
 
   it("requires reviewed preview and reuses the command identity after an uncertain acceptance", async () => {

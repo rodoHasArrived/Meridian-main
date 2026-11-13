@@ -49,8 +49,8 @@ describe("loan maturity concentration", () => {
       { currency: "JPY", year: 2027, quarter: 1, principalOutstanding: "125", loanIds: ["jpy"] }
     ] };
     const { container } = render(<LoanBookScreen summary={summary} />);
-    expect(screen.getByRole("button", { name: /2027 Q1, 1 facility, JPY 125/ })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /2027 Q1, 1 facility, USD 125/ }));
+    expect(screen.getByRole("button", { name: /2027 Q1 1 facility JPY 125/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /2027 Q1 1 facility USD 125/ }));
     const table = screen.getByRole("table", { name: "Direct lending facilities" });
     expect(within(table).getByText("Dollar facility", { exact: false })).toBeInTheDocument();
     expect(within(table).getByText("$125.00")).toBeInTheDocument();

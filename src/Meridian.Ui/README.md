@@ -40,6 +40,10 @@ The host-served workstation bundle uses paired React/React DOM runtime packages 
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.
 
+The rebuilt browser assets include the current design-system date and keyboard adapters and
+current-view print styling. Printed views retain mounted selection, financial context, session and
+provenance; printing does not fetch unmounted records or change report authority.
+
 Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
 CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
 trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
@@ -151,6 +155,11 @@ in a generic family (no serif fallback for data text), Ledger Explorer amounts a
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
 leaves once setup is complete. No shared contract changed; entity display names still need a
 shared seam before the ledger can show them.
+
+Dashboard source includes signed report-value summaries, a retained investment-income movement
+waterfall with exact-decimal bridge checks, and position-table display graphics. Financial strings,
+missing observations, shared mark assessments and retained supporting-record paths remain visible.
+The host-served bundle is rebuilt from these dashboard changes.
 
 ## Purpose
 
