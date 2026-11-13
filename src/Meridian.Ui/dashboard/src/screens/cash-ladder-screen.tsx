@@ -1,4 +1,5 @@
 import { formatNumber } from "@/lib/format";
+import { AccountBondPlanningPanel } from "@/components/meridian/account-bond-planning-panel";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
@@ -212,6 +213,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
 
   return (
     <div className="space-y-4 p-4" data-testid="cash-ladder-screen">
+      <AccountBondPlanningPanel accountId={fundAccountId} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Layers3 className="size-5 text-muted-foreground" aria-hidden />

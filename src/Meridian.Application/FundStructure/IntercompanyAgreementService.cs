@@ -1,5 +1,6 @@
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
+using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
 
 namespace Meridian.Application.FundStructure;
@@ -7,7 +8,8 @@ namespace Meridian.Application.FundStructure;
 /// <summary>Agreement commands execute under the store's durable authority lock, including approval rechecks.</summary>
 public sealed partial class IntercompanyAgreementService(
     IIntercompanyAgreementStore store, IIntercompanyAgreementAccessAuthority access,
-    IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null) : IIntercompanyAgreementService
+    IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null,
+    IEntityLifecycleStore? lifecycleStore = null, IFundStructureStore? structureStore = null) : IIntercompanyAgreementService
 {
     private readonly TimeProvider _clock = timeProvider ?? TimeProvider.System;
 
@@ -26,14 +28,26 @@ public sealed partial class IntercompanyAgreementService(
     public Task<IntercompanyAgreementCommandResultDto> WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default)
         => ExecuteAsync(context, command, "Withdraw", ct);
 
-    private Task<IntercompanyAgreementCommandResultDto> ExecuteAsync(IntercompanyAgreementCallContext context,
+    private async Task<IntercompanyAgreementCommandResultDto> ExecuteAsync(IntercompanyAgreementCallContext context,
         IntercompanyAgreementCommandDto command, string action, CancellationToken ct)
     {
         ValidateContext(context);
         if (command.CommandId == Guid.Empty || command.AgreementId == Guid.Empty || command.ProposalId == Guid.Empty)
             throw new IntercompanyAgreementValidationException("Command, agreement and proposal identities are required.");
         var hash = IntercompanyAgreementRules.CommandHash(command);
-        return store.ExecuteAsync(context.TenantId, command.AgreementId, async (tx, token) =>
+        var probe = await store.GetAsync(context.TenantId, command.AgreementId, ct).ConfigureAwait(false);
+        var proposed = action is "Create" or "CreateProposal" or "SaveDraft" ? command.Draft
+            : probe?.Proposals.SingleOrDefault(item => item.ProposalId == command.ProposalId)?.Draft;
+        var parties = proposed is null ? Array.Empty<Guid>() : new[] { proposed.PartyOneId, proposed.PartyTwoId }.Distinct().Order().ToArray();
+        // Keep graph -> sorted lifecycle -> legal aggregate order. Eligibility is evaluated only
+        // inside the CAS callback; an exact retained command retry remains valid after later status changes.
+        await using var graph = structureStore is PostgresFundStructureStore postgres
+            ? await postgres.AcquireConsolidationAuthorityLeaseAsync(ct).ConfigureAwait(false) : null;
+        if (store is PostgresIntercompanyAgreementStore && lifecycleStore is not null && graph is not ILegalEntityReadAuthorityLease)
+            throw new IntercompanyAgreementValidationException("Native agreement lifecycle validation requires retained legal-entity graph authority.");
+        await using var lifecycle = lifecycleStore is not null && parties.Length > 0
+            ? await lifecycleStore.AcquireReadLeaseAsync(context.TenantId, parties, ct).ConfigureAwait(false) : null;
+        async Task<IntercompanyAgreementCommandResultDto> Apply(IIntercompanyAgreementStoreTransaction tx, CancellationToken token)
         {
             var current = tx.State;
             if (current is not null)
@@ -54,27 +68,38 @@ public sealed partial class IntercompanyAgreementService(
                 throw new IntercompanyAgreementConflictException("Agreement changed; compare the current version and submit again.");
             if (action == "Create" && current is not null)
                 throw new IntercompanyAgreementConflictException("Agreement already exists.");
+            if (action is "Submit" or "Approve")
+            {
+                var pending = current?.Proposals.SingleOrDefault(item => item.ProposalId == command.ProposalId)?.Draft;
+                if (proposed is null || pending is null || pending.PartyOneId != proposed.PartyOneId || pending.PartyTwoId != proposed.PartyTwoId)
+                    throw new IntercompanyAgreementConflictException("The pending agreement parties changed after lifecycle authority was acquired.");
+            }
             var state = current ?? new IntercompanyAgreementStoreState(command.AgreementId, 0, [], [], [], []);
             var now = _clock.GetUtcNow();
-            var updated = await ApplyAsync(tx, context, state, command, action, now, token).ConfigureAwait(false);
+            var migrationWarnings = new List<string>();
+            var updated = await ApplyAsync(tx, context, state, command, action, now, migrationWarnings, token).ConfigureAwait(false);
             var version = checked(state.AggregateVersion + 1);
             updated = updated with
             {
                 AggregateVersion = version,
                 History = [.. state.History, new IntercompanyAgreementAuditDto(Guid.NewGuid(), command.ProposalId, action,
-                    context.Actor, now, version, command.Rationale, updated.Proposals.Single(p => p.ProposalId == command.ProposalId).Draft)]
+                    context.Actor, now, version, command.Rationale, updated.Proposals.Single(p => p.ProposalId == command.ProposalId).Draft)
+                    { MigrationWarnings = migrationWarnings.Count == 0 ? null : migrationWarnings.Distinct().ToArray() }]
             };
             var detail = Project(updated, context, Today(), null);
             var receipt = new IntercompanyAgreementCommandReceiptDto(command.CommandId, action, hash, context.Actor, now, version, detail);
             updated = updated with { Receipts = [.. state.Receipts, receipt] };
             tx.Save(updated);
             return new IntercompanyAgreementCommandResultDto(detail, receipt);
-        }, ct);
+        }
+        return graph is ILegalEntityReadAuthorityLease retainedGraph
+            ? await store.ExecuteAsync(context.TenantId, command.AgreementId, retainedGraph.StructureAuthorityProof, Apply, ct).ConfigureAwait(false)
+            : await store.ExecuteAsync(context.TenantId, command.AgreementId, Apply, ct).ConfigureAwait(false);
     }
 
     private async Task<IntercompanyAgreementStoreState> ApplyAsync(IIntercompanyAgreementStoreTransaction tx,
         IntercompanyAgreementCallContext context, IntercompanyAgreementStoreState state,
-        IntercompanyAgreementCommandDto command, string action, DateTimeOffset now, CancellationToken ct)
+        IntercompanyAgreementCommandDto command, string action, DateTimeOffset now, List<string> migrationWarnings, CancellationToken ct)
     {
         var initial = state.Revisions.FirstOrDefault(r => r.Action == IntercompanyAgreementActionDto.Activate);
         if (action is "Create" or "CreateProposal")
@@ -119,7 +144,7 @@ public sealed partial class IntercompanyAgreementService(
         else if (action == "Submit")
         {
             RequireState(existing, IntercompanyAgreementProposalStateDto.Draft);
-            var canonical = await ValidateReviewAsync(tx, context, state, existing, command.Rationale ?? existing.Rationale, ct).ConfigureAwait(false);
+            var canonical = await ValidateReviewAsync(tx, context, state, existing, command.Rationale ?? existing.Rationale, migrationWarnings, ct).ConfigureAwait(false);
             proposalUpdate = existing with
             {
                 Draft = canonical,
@@ -139,7 +164,7 @@ public sealed partial class IntercompanyAgreementService(
                 throw new IntercompanyAgreementValidationException("Approval rationale is required.");
             if (command.SubmittedHash != existing.SubmittedHash || ReviewHash(state, existing) != existing.SubmittedHash)
                 throw new IntercompanyAgreementConflictException("Approval must bind the exact submitted hash.");
-            var canonical = await ValidateReviewAsync(tx, context, state, existing, existing.Rationale, ct).ConfigureAwait(false);
+            var canonical = await ValidateReviewAsync(tx, context, state, existing, existing.Rationale, migrationWarnings, ct).ConfigureAwait(false);
             if (!IntercompanyAgreementRules.SameEvidence(canonical.Evidence ?? [], existing.Draft.Evidence ?? []))
                 throw new IntercompanyAgreementConflictException("Evidence changed after submission; replace the proposal and obtain fresh review.");
             var revision = new IntercompanyAgreementRevisionDto(state.AgreementId, state.Revisions.Count + 1,
@@ -175,11 +200,14 @@ public sealed partial class IntercompanyAgreementService(
 
     private async Task<IntercompanyAgreementDraftDto> ValidateReviewAsync(IIntercompanyAgreementStoreTransaction tx,
         IntercompanyAgreementCallContext context, IntercompanyAgreementStoreState state, IntercompanyAgreementProposalDto proposal,
-        string? rationale, CancellationToken ct)
+        string? rationale, List<string> migrationWarnings, CancellationToken ct)
     {
         var draft = proposal.Draft;
         IntercompanyAgreementRules.ValidateComplete(draft);
         var (first, second) = await RequirePartiesAsync(tx, context, draft, ct).ConfigureAwait(false);
+        if (draft.Action != IntercompanyAgreementActionDto.Terminate)
+            foreach (var entity in new[] { first, second })
+                await ValidateNewCommitmentLifecycleAsync(context, entity, draft.EffectiveFrom, migrationWarnings, ct).ConfigureAwait(false);
         if (proposal.BaseAgreementVersion != IntercompanyAgreementTimeline.SemanticBase(state.Revisions, draft))
             throw new IntercompanyAgreementConflictException("The effective-date base revision changed; replace this proposal.");
         IntercompanyAgreementRules.ValidateExistence(draft, state.Revisions, first, second);
@@ -190,6 +218,29 @@ public sealed partial class IntercompanyAgreementService(
         if (retained.Count == 0 || retained.Any(e => string.IsNullOrWhiteSpace(e.Reference) || string.IsNullOrWhiteSpace(e.ArtifactId) || string.IsNullOrWhiteSpace(e.ContentHash)))
             throw new IntercompanyAgreementValidationException("At least one resolved retained agreement artifact is required.");
         return draft with { Evidence = retained.OrderBy(e => e.Reference, StringComparer.Ordinal).ToArray() };
+    }
+
+    private async Task ValidateNewCommitmentLifecycleAsync(IntercompanyAgreementCallContext context,
+        LegalEntitySummaryDto entity, DateOnly effectiveFrom, List<string> migrationWarnings, CancellationToken ct)
+    {
+        var revision = lifecycleStore is null ? null
+            : await lifecycleStore.GetLatestAsync(context.TenantId, entity.EntityId, ct).ConfigureAwait(false);
+        if (revision is null)
+        {
+            // Native registry migration remains available for retained active entity snapshots.
+            // New governed accounting profiles and enforced books still require a real baseline.
+            if (!entity.IsActive || entity.LifecycleStatus is LegalEntityLifecycleStatusDto.Draft or LegalEntityLifecycleStatusDto.Forming
+                or LegalEntityLifecycleStatusDto.WindingDown or LegalEntityLifecycleStatusDto.Dissolved or LegalEntityLifecycleStatusDto.Merged)
+                throw new IntercompanyAgreementValidationException("The retained entity status does not permit a new legal commitment.");
+            migrationWarnings.Add($"Entity {entity.EntityId:D} has no retained effective lifecycle baseline; native legal authoring used its active legacy snapshot. Governed accounting activation still requires migration.");
+            return;
+        }
+        foreach (var date in new[] { new DateTimeOffset(effectiveFrom.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)), _clock.GetUtcNow() })
+        {
+            var eligibility = EntityLifecyclePolicy.Evaluate(revision, date, EntityLifecycleOperationDto.NewAgreement, false);
+            if (!eligibility.Allowed)
+                throw new IntercompanyAgreementValidationException(eligibility.Message);
+        }
     }
 
     private async Task<(LegalEntitySummaryDto First, LegalEntitySummaryDto Second)> RequirePartiesAsync(

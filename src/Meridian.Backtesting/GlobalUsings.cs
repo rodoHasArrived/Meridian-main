@@ -11,3 +11,4 @@ global using Microsoft.Extensions.Logging;
 // Preserve the BacktestLedger name used throughout the Engine project.
 global using BacktestLedger = Meridian.Ledger.Ledger;
 [assembly: InternalsVisibleTo("Meridian.Backtesting.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Tests")]

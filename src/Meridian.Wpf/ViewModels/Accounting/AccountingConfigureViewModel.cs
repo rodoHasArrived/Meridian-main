@@ -8,6 +8,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Contracts.Integrity;
@@ -19,6 +20,7 @@ namespace Meridian.Wpf.ViewModels.Accounting;
 public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private const string DefaultActor = "desktop-user";
+
     private const string DefaultLifecycleActor = "desktop-controller";
 
     private static readonly ManualJournalEntryTypePreset[] ManualJournalEntryTypePresets =
@@ -146,153 +148,299 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
     ];
 
     private readonly FundContextService _fundContextService;
+
     private readonly IAccountingConfigurationService _configurationService;
+
     private readonly IManualJournalEntryWorkbenchService _manualJournalEntryWorkbenchService;
+
     private readonly ICapitalAccountWorkbenchService? _capitalAccountWorkbenchService;
+
     private readonly IAccountingConfigurationStore? _configurationStore;
+
     private readonly IManualJournalEntryDraftStore? _manualJournalEntryDraftStore;
+
     private readonly AccountingSystemIntegrationService? _accountingSystemIntegrationService;
+
     private readonly FundOperationsWorkspaceReadService? _fundOperationsWorkspaceReadService;
+
     private readonly IAccountingPolicyService? _accountingPolicyService;
+
     private readonly IAccountingPostingCandidateService? _accountingPostingCandidateService;
+
     private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
+
     private readonly ILedgerBookService? _ledgerBookService;
+
     private readonly AccountingProductionReadinessService? _accountingProductionReadinessService;
+
     private readonly IAccountingProductionCertificationProfileStore? _productionCertificationProfileStore;
+
     private readonly AccountingProductionCertificationCommandService? _productionCertificationCommandService;
+
     private readonly IAccountingTenantAdministrationProfileStore? _tenantAdministrationProfileStore;
+
     private readonly IAccountingMigrationRunWorkerPlanStore? _migrationRunWorkerPlanStore;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
+
     private ManualJournalEntryDraftDto? _selectedDraft;
+
     private string? _selectedRecurringJournalEntityId;
+
     private string? _recurringJournalFundProfileId;
+
     private Guid? _recurringJournalLedgerBookId;
+
     private Guid _newManualJournalDraftId = Guid.NewGuid();
+
     private DateTimeOffset _newManualJournalDraftTimestamp = DateTimeOffset.UtcNow;
+
     private LedgerPeriodDto? _selectedManualJournalPeriod;
+
     private FundProfileDetail? _activeFundProfile;
+
     private bool _isLoading;
+
     private string _statusText = "Select a fund-linked context to load accounting configuration.";
+
     private string _activeFundText = "No fund selected";
+
     private string _storagePostureText = "Storage has not been inspected.";
+
     private string _configurationStatusText = "Not loaded";
+
     private string _configurationDetailText = "Configuration readiness loads from shared accounting DTOs.";
+
     private string _rulesStudioStatusText = "Rules Studio has not loaded.";
+
     private string _rulesStudioDetailText = "Rule versions, tests, generated postings, and promotion approvals load from shared accounting configuration.";
+
     private string _rulesStudioActionText = "Rules Studio actions have not run.";
+
     private string _manualJournalStatusText = "Manual journal workbench has not loaded.";
+
     private string _capitalAccountWorkbenchStatusText = "Capital Account Workbench has not loaded.";
+
     private string _externalGlStatusText = "External GL evidence has not loaded.";
+
     private string _postingPostureText = "Posting/export posture has not loaded.";
+
     private string _chartAccountSetupStatusText = "Chart account setup has not been saved.";
+
     private string _chartAccountNodeId = "assets-cash-operating";
+
     private string _chartAccountPath = "Assets:Cash:Operating";
+
     private string _chartAccountName = "Operating Cash";
+
     private string _chartAccountType = "Asset";
+
     private string _chartAccountParentPath = "Assets:Cash";
+
     private string _chartAccountFinancialAccountId = string.Empty;
+
     private string _chartAccountEvidenceText = "wpf://accounting/configure/chart-account/setup";
+
     private string _postingRuleDraftStatusText = "Posting-rule draft has not been saved.";
+
     private string _postingRuleDraftRuleId = "wpf-configured-posting-rule-v1";
+
     private string _postingRuleDraftDisplayName = "WPF configured posting rule";
+
     private string _postingRuleDraftSourceEventType = "ManualJournalEntry.Configured";
+
     private string _postingRuleDraftTemplateId = "desktop-manual-adjustment-v1";
+
     private string _postingRuleDraftDescription = "Desktop-authored posting rule retained through Accounting Configure.";
+
     private int _postingRuleDraftPriority = 10;
+
     private string _postingRuleDraftEvidenceText = "evidence://wpf/accounting/rules/configured-posting-rule";
+
     private string _externalGlMappingProfileStatusText = "External GL mapping profile has not been saved.";
+
     private string _externalGlMappingProviderId = "quickbooks-fixture";
+
     private string _externalGlMappingProfileId = "quickbooks-fixture-ledger-book-mapping";
+
     private string _externalGlMappingDisplayName = "External GL mapping";
+
     private string _externalGlMappingAccountMappingsText = "Assets:Cash:Operating=qbo-1000\nIncome:Investment Income=qbo-4000\nExpenses:Operating Expenses=qbo-6000";
+
     private string _externalGlMappingMeridianDimensionsText = string.Empty;
+
     private string _externalGlMappingExternalDimensionsText = string.Empty;
+
     private string _externalGlMappingEvidenceText = "approval:external-gl-mapping:quickbooks-fixture-ledger-book-mapping";
+
     private bool _externalGlMappingProfileCertified = true;
+
     private string _closeReadinessText = "Close readiness has not loaded.";
+
     private string _closeDetailText = "Close posture is projected from shared operations continuity state.";
+
     private string _evidencePostureText = "Evidence posture has not loaded.";
+
     private string _reconciliationPostureText = "Reconciliation posture has not loaded.";
+
     private string _policyPostureText = "Accounting policy posture has not loaded.";
+
     private string _postingCandidateStatusText = "Posting-rule journal candidate has not been built.";
+
     private string _postingCandidateDetailText = "Build a governed draft candidate from the selected posting rule without posting to the ledger.";
+
     private string _manualJournalLifecycleStatusText = "Manual journal lifecycle actions have not run.";
+
     private string _ledgerBookSetupStatusText = "Ledger-book setup action has not run.";
+
     private string _ledgerBookAdministrationText = "Ledger-book administration has not loaded.";
+
     private string _productionReadinessStatusText = "Production readiness has not loaded.";
+
     private string _productionReadinessDetailText = "Shared accounting rollout posture has not been assessed.";
+
     private string _productionReadinessScoreText = "No score";
+
     private string _productionReadinessLedgerBookText = "Ledger-book rollout readiness has not loaded.";
+
     private string _productionReadinessExternalGlText = "External GL readiness has not loaded.";
+
     private string _productionReadinessDimensionalReportingText = "Dimensional reporting readiness has not loaded.";
+
     private string _productionReadinessTenantAdminText = "Tenant administration readiness has not loaded.";
+
     private string _productionCertificationProfileStatusText = "Production certification profile has not loaded.";
+
     private string _productionCertificationProfileScopeText = "Fund and ledger-book scope have not loaded.";
+
     private string _productionCertificationProfileUpdatedText = "No retained production certification profile loaded.";
+
     private string _productionCertificationEvidenceText = string.Empty;
+
     private bool _postingRulesLedgerBookNativeCertified;
+
     private bool _journalLifecycleLedgerBookNativeCertified;
+
     private bool _closeReportingLedgerBookNativeCertified;
+
     private bool _closePlanConfigurationLedgerBookNativeCertified;
+
     private bool _externalGlLedgerBookNativeCertified;
+
     private bool _reconciliationLedgerBookNativeCertified;
+
     private bool _directLendingLedgerBookNativeCertified;
+
     private bool _strategyLedgerReadLedgerBookNativeCertified;
+
     private bool _periodReportDimensionQueriesCertified;
+
     private bool _crossPeriodReportDimensionQueriesCertified;
+
     private bool _journalQueryDimensionFiltersCertified;
+
     private bool _externalExportDimensionMappingCertified;
+
     private bool _ledgerLineDimensionsPersistedCertified;
+
     private bool _trialBalanceDimensionFiltersCertified;
+
     private bool _reportPackageDimensionProvenanceCertified;
+
     private string _tenantAdministrationProfileStatusText = "Tenant administration setup profile has not loaded.";
+
     private string _tenantAdministrationProfileScopeText = "Tenant and company scope have not loaded.";
+
     private string _tenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
+
     private string _implementationSandboxProofStatusText = "Implementation sandbox proof has not been retained.";
+
     private string _tenantAdministrationEvidenceText = string.Empty;
+
     private bool _tenantScopeConfigured;
+
     private bool _adminRoleProfileConfigured;
+
     private bool _scopedAccessPoliciesConfigured;
+
     private bool _reportingGroupsConfigured;
+
     private bool _accountingAdminSurfaceConfigured;
+
     private bool _wpfAccountingAdminSurfaceConfigured;
+
     private bool _chartAdministrationStudioConfigured;
+
     private bool _ruleTestPromotionStudioConfigured;
+
     private bool _closeSetupStudioConfigured;
+
     private bool _providerMappingStudioConfigured;
+
     private bool _tenantCompanyReportGroupSetupStudioConfigured;
+
     private bool _auditReviewToolingConfigured;
+
     private bool _bulkImportExportSafeguardsConfigured;
+
     private bool _performanceValidationConfigured;
+
     private bool _disasterRecoveryRunbookConfigured;
+
     private bool _ledgerBookAdministrationStudioConfigured;
+
     private bool _postingRuleAuthoringStudioConfigured;
+
     private bool _approvalQueueStudioConfigured;
+
     private string _approvalQueueId = "accounting-configuration-approval";
+
     private string _approvalQueueDisplayName = "Accounting configuration approval";
+
     private string _approvalQueueWorkflowKind = "ConfigurationPromotion";
+
     private string _approvalQueueRequiredApprovalRole = "Controller";
+
     private int _approvalQueueRequiredApprovalCount = 2;
+
     private string _approvalQueueSegregationPolicy = "Preparer cannot approve own configuration change.";
+
     private string _approvalQueueEvidenceRequirement = "approval-queue;configuration-approval;segregation-review";
+
     private bool _dimensionMappingStudioConfigured;
+
     private string _dimensionMappingId = "canonical-provider-dimension-map";
+
     private string _dimensionMappingDisplayName = "Canonical provider dimension map";
+
     private string _dimensionMappingProviderId = "quickbooks-fixture";
+
     private string _dimensionMappingMeridianDimensionsText = string.Empty;
+
     private string _dimensionMappingProviderDimensionsText = string.Empty;
+
     private string _dimensionMappingEvidenceRequirement = "dimension-mapping;external-dimension-mapping;gl-dimension-mapping";
+
     private bool _implementationSandboxConfigured;
+
     private string _selectedReconciliationView = "Open breaks";
+
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
+
     private string _draftMemo = "Manual accounting adjustment";
+
     private string _draftCurrency = "USD";
+
     private decimal _draftAmount = 100m;
+
     private string _draftDebitAccountPath = "Assets:Cash";
+
     private string _draftCreditAccountPath = "Income:Investment Income";
+
     private string _draftEvidenceLink = "evidence://manual-je/source-document";
+
     private ManualJournalEntryTypeDto _selectedEntryType = ManualJournalEntryTypeDto.General;
+
     private AccountingBasisKindDto _selectedAccountingBasis = AccountingBasisKindDto.Primary;
 
     private readonly DesktopAuthenticationSession? _authenticationSession;
@@ -325,15 +473,18 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         DesktopAuthenticationSession? authenticationSession = null,
         IRecurringJournalQueueSource? recurringJournalQueueSource = null,
         IAccountingAuditIntegrityApiClient? auditIntegrityClient = null,
-        IFactorPaydownApiClient? factorPaydownClient = null)
+        IFactorPaydownApiClient? factorPaydownClient = null,
+        IWorkstationEntityConsolidationApiClient? entityConsolidationClient = null,
+        IWorkstationManualJournalApiClient? manualJournalApiClient = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
         RecurringJournalQueue = new RecurringJournalQueueViewModel(recurringJournalQueueSource);
         AuditChainIntegrity = new AuditChainIntegrityViewModel(auditIntegrityClient);
         FactorPaydown = new FactorPaydownViewModel(factorPaydownClient);
+        EntityConsolidation = new EntityConsolidationViewModel(entityConsolidationClient);
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
-        _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
+        _manualJournalEntryWorkbenchService = manualJournalApiClient ?? manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
         _configurationStore = configurationStore;
         _manualJournalEntryDraftStore = manualJournalEntryDraftStore;
@@ -341,7 +492,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _accountingPolicyService = accountingPolicyService;
         _accountingPostingCandidateService = accountingPostingCandidateService;
-        _manualJournalEntryLifecycleService = manualJournalEntryLifecycleService
+        _manualJournalEntryLifecycleService = manualJournalApiClient ?? manualJournalEntryLifecycleService
             ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
         _ledgerBookService = ledgerBookService;
         _accountingProductionReadinessService = accountingProductionReadinessService;
@@ -380,11 +531,11 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         RetainImplementationSandboxProofCommand = new AsyncRelayCommand(
             () => RetainImplementationSandboxProofAsync(),
             () => CanRetainImplementationSandboxProof);
-        ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve), () => CanEditManualJournalDraft);
-        PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post), () => CanEditManualJournalDraft);
-        ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse), () => CanEditManualJournalDraft);
-        RebookManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Rebook), () => CanEditManualJournalDraft);
-        LockManualJournalAfterCloseCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.LockAfterClose), () => CanEditManualJournalDraft);
+        ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve), () => CanApplySelectedJournalAction(JournalEntryLifecycleActionDto.Approve));
+        PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post), () => CanApplySelectedJournalAction(JournalEntryLifecycleActionDto.Post));
+        ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse), () => CanApplySelectedJournalAction(JournalEntryLifecycleActionDto.Reverse));
+        RebookManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Rebook), () => CanApplySelectedJournalAction(JournalEntryLifecycleActionDto.Rebook));
+        LockManualJournalAfterCloseCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.LockAfterClose), () => CanApplySelectedJournalAction(JournalEntryLifecycleActionDto.LockAfterClose));
 
         AccountingBasisOptions = new ObservableCollection<AccountingBasisKindDto>(
             Enum.GetValues<AccountingBasisKindDto>());
@@ -424,19 +575,33 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
     public IAsyncRelayCommand LockManualJournalAfterCloseCommand { get; }
 
     public ObservableCollection<AccountingWorkbenchRow> ValidationRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ChartRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> TemplateRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> PostingRuleRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> RulesStudioRuleRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> RulesStudioPromotionRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> RulesStudioActionRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> SetupReadinessRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> LedgerBookRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> AuditRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProviderRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ExternalGlMappingProfileRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ExternalGlEvidencePackageRows { get; } = [];
+
     public ObservableCollection<ExternalGlEvidenceRow> ExternalGlRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalDraftRows { get; } = [];
 
     public RecurringJournalQueueViewModel RecurringJournalQueue { get; }
@@ -454,33 +619,61 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
                 _ = RecurringJournalQueue.LoadAsync(_recurringJournalFundProfileId, _recurringJournalLedgerBookId, value);
         }
     }
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventLedgerRecordRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountSubledgerRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalPaymentIntentRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLedgerImpactRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalReportOutputRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalEntryTypeRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> CapitalAccountInvestorRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> CapitalAccountAllocationRuleRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> CapitalAccountStatementLineageRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> CapitalAccountAuditDrillThroughRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> CapitalAccountCapabilityRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> EvidenceRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ReconciliationRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> PolicyRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> PostingCandidateRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessComponentRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessWorkflowRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessDimensionalControlRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessGapRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationPlanRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationArtifactRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationWorkerPlanRows { get; } = [];
+
     public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
+
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
         "Open breaks",
@@ -488,6 +681,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         "Critical or SLA",
         "All"
     ];
+
     public ObservableCollection<AccountingBasisKindDto> AccountingBasisOptions { get; }
     public ObservableCollection<ManualJournalEntryTypeDto> ManualJournalEntryTypeOptions { get; }
 
@@ -1561,1216 +1755,6 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         }
     }
 
-    public async Task SeedBaselineConfigurationAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            StatusText = "Select a fund-linked context before seeding accounting configuration.";
-            return;
-        }
-
-        var fundProfileId = _activeFundProfile.FundProfileId;
-        var evidence = new[] { $"accounting-config://{fundProfileId}/desktop-baseline" };
-        try
-        {
-            _configuration ??= await _configurationService.GetWorkspaceAsync(fundProfileId, ct: ct).ConfigureAwait(false);
-            var ledgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId;
-            await _configurationService.UpsertChartNodeAsync(
-                new UpsertChartOfAccountsNodeRequest(
-                    fundProfileId,
-                    new ChartOfAccountsNodeDto("assets-cash", "Assets:Cash", "Cash", "Asset"),
-                    ResolveActor(),
-                    CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-            await _configurationService.UpsertChartNodeAsync(
-                new UpsertChartOfAccountsNodeRequest(
-                    fundProfileId,
-                    new ChartOfAccountsNodeDto("income-investment", "Income:Investment Income", "Investment Income", "Revenue"),
-                    ResolveActor(),
-                    CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-            await _configurationService.UpsertChartNodeAsync(
-                new UpsertChartOfAccountsNodeRequest(
-                    fundProfileId,
-                    new ChartOfAccountsNodeDto("expenses-investment-fees", "Expenses:Investment Fees", "Investment Fees", "Expense"),
-                    ResolveActor(),
-                    CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-            foreach (var node in BuildManualJournalEntryTypeChartNodes())
-            {
-                await _configurationService.UpsertChartNodeAsync(
-                    new UpsertChartOfAccountsNodeRequest(
-                        fundProfileId,
-                        node,
-                        ResolveActor(),
-                        CorrelationId: "wpf-accounting-config-seed",
-                        EvidenceLinks: evidence,
-                        LedgerBookId: ledgerBookId),
-                    ct).ConfigureAwait(false);
-            }
-
-            await _configurationService.UpsertTemplateAsync(
-                new UpsertJournalEntryTemplateRequest(
-                    fundProfileId,
-                    new JournalEntryTemplateDto(
-                        "desktop-manual-adjustment-v1",
-                        "Desktop manual adjustment",
-                        "Balanced manual adjustment template for WPF accounting drafts.",
-                        [
-                            new JournalEntryTemplateLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 1m, _activeFundProfile.BaseCurrency, "Debit configured cash account."),
-                            new JournalEntryTemplateLineDto("credit-income", "Income:Investment Income", AccountingTemplateLineSideDto.Credit, 1m, _activeFundProfile.BaseCurrency, "Credit configured income account.")
-                        ]),
-                    ResolveActor(),
-                    CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-            foreach (var template in BuildManualJournalEntryTypeTemplates(_activeFundProfile.BaseCurrency))
-            {
-                await _configurationService.UpsertTemplateAsync(
-                    new UpsertJournalEntryTemplateRequest(
-                        fundProfileId,
-                        template,
-                        ResolveActor(),
-                        CorrelationId: "wpf-accounting-config-seed",
-                        EvidenceLinks: evidence,
-                        LedgerBookId: ledgerBookId),
-                    ct).ConfigureAwait(false);
-            }
-
-            await _configurationService.UpsertPostingRuleAsync(
-                new UpsertPostingRuleRequest(
-                    fundProfileId,
-                    new PostingRuleDto(
-                        "manual-adjustment-policy-v1",
-                        "Manual adjustment policy",
-                        "ManualJournalEntry",
-                        "desktop-manual-adjustment-v1",
-                        Description: "Fund/book configurable WPF policy route for manual accounting adjustments."),
-                    ResolveActor(),
-                    CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-            foreach (var rule in BuildManualJournalEntryTypePostingRules())
-            {
-                await _configurationService.UpsertPostingRuleAsync(
-                    new UpsertPostingRuleRequest(
-                        fundProfileId,
-                        rule,
-                        ResolveActor(),
-                        CorrelationId: "wpf-accounting-config-seed",
-                        EvidenceLinks: evidence,
-                        LedgerBookId: ledgerBookId),
-                    ct).ConfigureAwait(false);
-            }
-
-            _configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-            ApplyConfiguration(_configuration);
-            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
-            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-            StatusText = "Baseline chart, template, and posting policy were saved with audit evidence.";
-        }
-        catch (Exception ex)
-        {
-            StatusText = $"Baseline accounting configuration could not be saved: {ex.Message}";
-        }
-    }
-
-    public async Task ActivateConfigurationAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            StatusText = "Select a fund-linked context before activating accounting configuration.";
-            return;
-        }
-
-        try
-        {
-            _configuration = await _configurationService.ActivateAsync(
-                new ActivateAccountingConfigurationRequest(
-                    _activeFundProfile.FundProfileId,
-                    ResolveActor(),
-                    _configuration?.LedgerBookId,
-                    CorrelationId: "wpf-accounting-config-activate",
-                    EvidenceLinks: ["accounting-config://desktop-activation"]),
-                ct).ConfigureAwait(false);
-            ApplyConfiguration(_configuration);
-            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-            StatusText = "Accounting configuration is active.";
-        }
-        catch (Exception ex)
-        {
-            StatusText = $"Accounting configuration activation is blocked: {ex.Message}";
-        }
-    }
-
-    public async Task CreateLedgerBookSetupAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            LedgerBookSetupStatusText = "Select a fund-linked context before creating ledger-book setup.";
-            StatusText = LedgerBookSetupStatusText;
-            return;
-        }
-
-        if (_ledgerBookService is null)
-        {
-            LedgerBookSetupStatusText = "Ledger-book service is not registered for this desktop session.";
-            StatusText = LedgerBookSetupStatusText;
-            return;
-        }
-
-        var candidate = _configuration?.LedgerBookSetupCandidate;
-        if (candidate is null)
-        {
-            LedgerBookSetupStatusText = "No shared ledger-book setup candidate is available for the current configuration scope.";
-            StatusText = LedgerBookSetupStatusText;
-            return;
-        }
-
-        try
-        {
-            var created = await _ledgerBookService.CreateBookAsync(
-                new CreateLedgerBookRequest(
-                    candidate.FundProfileId,
-                    candidate.FundStructureNodeId,
-                    candidate.FundStructureNodeKind,
-                    candidate.DisplayName,
-                    candidate.BaseCurrency,
-                    candidate.Description,
-                    candidate.AccountingBasis,
-                    candidate.AccountingPolicyId,
-                    candidate.AccountingPolicyVersion),
-                ct).ConfigureAwait(false);
-
-            _configuration = await _configurationService.GetWorkspaceAsync(
-                candidate.FundProfileId,
-                created.LedgerBookId,
-                ct).ConfigureAwait(false);
-            ApplyConfiguration(_configuration);
-            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
-            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
-            await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
-            await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
-            await RefreshExternalGlAsync(ct).ConfigureAwait(false);
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-
-            LedgerBookSetupStatusText = $"Created ledger book {created.DisplayName} ({created.LedgerBookId:D}) from shared setup candidate.";
-            StatusText = LedgerBookSetupStatusText;
-        }
-        catch (Exception ex)
-        {
-            LedgerBookSetupStatusText = $"Ledger-book setup is blocked: {ex.Message}";
-            StatusText = LedgerBookSetupStatusText;
-        }
-    }
-
-    public async Task SaveTenantAdministrationProfileAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            TenantAdministrationProfileStatusText = "Select a fund-linked context before saving tenant administration setup controls.";
-            StatusText = TenantAdministrationProfileStatusText;
-            return;
-        }
-
-        if (_tenantAdministrationProfileStore is null)
-        {
-            TenantAdministrationProfileStatusText = "Tenant administration profile store is not registered for this desktop session.";
-            StatusText = TenantAdministrationProfileStatusText;
-            return;
-        }
-
-        var tenantId = ResolveTenantAdministrationTenantId();
-        var companyId = ResolveTenantAdministrationCompanyId();
-        var evidence = WithLedgerBookTenantAdministrationEvidence(
-            NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
-            tenantId,
-            companyId,
-            _configuration?.LedgerBookId,
-            LedgerBookAdministrationStudioConfigured,
-            ImplementationSandboxConfigured);
-        if (evidence.Count == 0)
-        {
-            TenantAdministrationProfileStatusText = "Retained setup evidence is required before saving tenant administration controls.";
-            StatusText = TenantAdministrationProfileStatusText;
-            NotifyTenantAdministrationSaveStateChanged();
-            return;
-        }
-
-        var approvalQueueConfigurations = BuildApprovalQueueConfigurations();
-        if (ApprovalQueueStudioConfigured && approvalQueueConfigurations.Count == 0)
-        {
-            TenantAdministrationProfileStatusText = "Complete approval queue id, display name, workflow kind, approval role/count, segregation policy, and evidence requirement before saving.";
-            StatusText = TenantAdministrationProfileStatusText;
-            return;
-        }
-
-        var dimensionMappingConfigurations = BuildDimensionMappingConfigurations();
-        if (DimensionMappingStudioConfigured && dimensionMappingConfigurations.Count == 0)
-        {
-            TenantAdministrationProfileStatusText = "Complete dimension mapping id, display name, provider id, Meridian/provider dimensions, and evidence requirement before saving.";
-            StatusText = TenantAdministrationProfileStatusText;
-            return;
-        }
-
-        try
-        {
-            var correlationId = $"wpf-accounting-tenant-admin-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-            var profile = new AccountingTenantAdministrationProfileDto(
-                tenantId,
-                companyId,
-                TenantScopeConfigured,
-                AdminRoleProfileConfigured,
-                ScopedAccessPoliciesConfigured,
-                ReportingGroupsConfigured,
-                AccountingAdminSurfaceConfigured,
-                DateTimeOffset.UtcNow,
-                DefaultLifecycleActor,
-                evidence,
-                correlationId,
-                WpfAccountingAdminSurfaceConfigured: WpfAccountingAdminSurfaceConfigured,
-                ChartAdministrationStudioConfigured: ChartAdministrationStudioConfigured,
-                RuleTestPromotionStudioConfigured: RuleTestPromotionStudioConfigured,
-                CloseSetupStudioConfigured: CloseSetupStudioConfigured,
-                ProviderMappingStudioConfigured: ProviderMappingStudioConfigured,
-                TenantCompanyReportGroupSetupStudioConfigured: TenantCompanyReportGroupSetupStudioConfigured,
-                AuditReviewToolingConfigured: AuditReviewToolingConfigured,
-                BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
-                PerformanceValidationConfigured: PerformanceValidationConfigured,
-                DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
-                LedgerBookAdministrationStudioConfigured: LedgerBookAdministrationStudioConfigured,
-                PostingRuleAuthoringStudioConfigured: PostingRuleAuthoringStudioConfigured,
-                ApprovalQueueStudioConfigured: ApprovalQueueStudioConfigured,
-                DimensionMappingStudioConfigured: DimensionMappingStudioConfigured,
-                ImplementationSandboxConfigured: ImplementationSandboxConfigured,
-                ApprovalQueueConfigurations: approvalQueueConfigurations,
-                DimensionMappingConfigurations: dimensionMappingConfigurations);
-
-            var saved = await _tenantAdministrationProfileStore.UpsertAsync(
-                new AccountingTenantAdministrationProfileUpsertRequestDto(
-                    profile,
-                    DefaultLifecycleActor,
-                    correlationId,
-                    evidence),
-                ct).ConfigureAwait(false);
-
-            ApplyTenantAdministrationProfile(saved, "Tenant administration setup profile saved; production readiness refreshed from retained controls.");
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-            StatusText = TenantAdministrationProfileStatusText;
-        }
-        catch (Exception ex)
-        {
-            TenantAdministrationProfileStatusText = $"Tenant administration setup profile save failed: {ex.Message}";
-            StatusText = TenantAdministrationProfileStatusText;
-        }
-    }
-
-    public async Task RetainImplementationSandboxProofAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            ImplementationSandboxProofStatusText = "Select a fund-linked context before retaining implementation sandbox proof.";
-            StatusText = ImplementationSandboxProofStatusText;
-            return;
-        }
-
-        if (_tenantAdministrationProfileStore is null)
-        {
-            ImplementationSandboxProofStatusText = "Tenant administration profile store is not registered for this desktop session.";
-            StatusText = ImplementationSandboxProofStatusText;
-            return;
-        }
-
-        if (_configuration?.LedgerBookId is not { } ledgerBookId)
-        {
-            ImplementationSandboxProofStatusText = "Select a ledger-book-scoped Accounting Configure workspace before retaining implementation sandbox proof.";
-            StatusText = ImplementationSandboxProofStatusText;
-            return;
-        }
-
-        var tenantId = ResolveTenantAdministrationTenantId();
-        var companyId = ResolveTenantAdministrationCompanyId();
-        var evidence = WithLedgerBookTenantAdministrationEvidence(
-            NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
-            tenantId,
-            companyId,
-            ledgerBookId,
-            LedgerBookAdministrationStudioConfigured,
-            implementationSandboxConfigured: true);
-        var approvalQueueConfigurations = BuildApprovalQueueConfigurations();
-        if (ApprovalQueueStudioConfigured && approvalQueueConfigurations.Count == 0)
-        {
-            ImplementationSandboxProofStatusText = "Complete approval queue id, display name, workflow kind, approval role/count, segregation policy, and evidence requirement before retaining implementation sandbox proof.";
-            StatusText = ImplementationSandboxProofStatusText;
-            return;
-        }
-
-        var dimensionMappingConfigurations = BuildDimensionMappingConfigurations();
-        if (DimensionMappingStudioConfigured && dimensionMappingConfigurations.Count == 0)
-        {
-            ImplementationSandboxProofStatusText = "Complete dimension mapping id, display name, provider id, Meridian/provider dimensions, and evidence requirement before retaining implementation sandbox proof.";
-            StatusText = ImplementationSandboxProofStatusText;
-            return;
-        }
-
-        try
-        {
-            var correlationId = $"wpf-accounting-sandbox-proof-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-            var profile = new AccountingTenantAdministrationProfileDto(
-                tenantId,
-                companyId,
-                TenantScopeConfigured,
-                AdminRoleProfileConfigured,
-                ScopedAccessPoliciesConfigured,
-                ReportingGroupsConfigured,
-                AccountingAdminSurfaceConfigured,
-                DateTimeOffset.UtcNow,
-                DefaultLifecycleActor,
-                evidence,
-                correlationId,
-                WpfAccountingAdminSurfaceConfigured: WpfAccountingAdminSurfaceConfigured,
-                ChartAdministrationStudioConfigured: ChartAdministrationStudioConfigured,
-                RuleTestPromotionStudioConfigured: RuleTestPromotionStudioConfigured,
-                CloseSetupStudioConfigured: CloseSetupStudioConfigured,
-                ProviderMappingStudioConfigured: ProviderMappingStudioConfigured,
-                TenantCompanyReportGroupSetupStudioConfigured: TenantCompanyReportGroupSetupStudioConfigured,
-                AuditReviewToolingConfigured: AuditReviewToolingConfigured,
-                BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
-                PerformanceValidationConfigured: PerformanceValidationConfigured,
-                DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
-                LedgerBookAdministrationStudioConfigured: LedgerBookAdministrationStudioConfigured,
-                PostingRuleAuthoringStudioConfigured: PostingRuleAuthoringStudioConfigured,
-                ApprovalQueueStudioConfigured: ApprovalQueueStudioConfigured,
-                DimensionMappingStudioConfigured: DimensionMappingStudioConfigured,
-                ImplementationSandboxConfigured: true,
-                ApprovalQueueConfigurations: approvalQueueConfigurations,
-                DimensionMappingConfigurations: dimensionMappingConfigurations);
-
-            var saved = await _tenantAdministrationProfileStore.UpsertAsync(
-                new AccountingTenantAdministrationProfileUpsertRequestDto(
-                    profile,
-                    DefaultLifecycleActor,
-                    correlationId,
-                    evidence),
-                ct).ConfigureAwait(false);
-
-            ApplyTenantAdministrationProfile(saved, "Tenant administration setup profile saved; production readiness refreshed from retained controls.");
-            ImplementationSandboxProofStatusText = "Implementation sandbox proof retained; production readiness refreshed from fixture and ledger-book validation evidence.";
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-            StatusText = ImplementationSandboxProofStatusText;
-        }
-        catch (Exception ex)
-        {
-            ImplementationSandboxProofStatusText = $"Implementation sandbox proof save failed: {ex.Message}";
-            StatusText = ImplementationSandboxProofStatusText;
-        }
-    }
-
-    public async Task SaveProductionCertificationProfileAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            ProductionCertificationProfileStatusText = "Select a fund-linked context before saving production certification controls.";
-            StatusText = ProductionCertificationProfileStatusText;
-            return;
-        }
-
-        if (_productionCertificationCommandService is null)
-        {
-            ProductionCertificationProfileStatusText = "Production certification authority is not registered for this desktop session.";
-            StatusText = ProductionCertificationProfileStatusText;
-            return;
-        }
-
-        var retainedEvidence = NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText);
-        if (retainedEvidence.Count == 0)
-        {
-            ProductionCertificationProfileStatusText = "Retained evidence is required before saving production certification controls.";
-            StatusText = ProductionCertificationProfileStatusText;
-            NotifyProductionCertificationSaveStateChanged();
-            return;
-        }
-
-        try
-        {
-            var correlationId = $"wpf-accounting-production-certification-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-            var actor = ResolveActor();
-            var profile = new AccountingProductionCertificationProfileDto(
-                _activeFundProfile.FundProfileId,
-                _configuration?.LedgerBookId,
-                PostingRulesLedgerBookNativeCertified,
-                JournalLifecycleLedgerBookNativeCertified,
-                CloseReportingLedgerBookNativeCertified,
-                ExternalGlLedgerBookNativeCertified,
-                PeriodReportDimensionQueriesCertified,
-                CrossPeriodReportDimensionQueriesCertified,
-                JournalQueryDimensionFiltersCertified,
-                ExternalExportDimensionMappingCertified,
-                default,
-                actor,
-                retainedEvidence,
-                correlationId,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                ReconciliationLedgerBookNativeCertified,
-                DirectLendingLedgerBookNativeCertified,
-                StrategyLedgerReadLedgerBookNativeCertified,
-                LedgerLineDimensionsPersistedCertified,
-                TrialBalanceDimensionFiltersCertified,
-                ReportPackageDimensionProvenanceCertified,
-                ClosePlanConfigurationLedgerBookNativeCertified);
-
-            var saved = await _productionCertificationCommandService.CertifyAsync(
-                new AccountingProductionCertificationProfileUpsertRequestDto(
-                    profile,
-                    actor,
-                    correlationId,
-                    retainedEvidence),
-                actor,
-                ct).ConfigureAwait(false);
-
-            ApplyProductionCertificationProfile(saved, "Production certification profile saved; readiness refreshed from retained book and dimension controls.");
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-            StatusText = ProductionCertificationProfileStatusText;
-        }
-        catch (Exception ex)
-        {
-            ProductionCertificationProfileStatusText = $"Production certification profile save failed: {ex.Message}";
-            StatusText = ProductionCertificationProfileStatusText;
-        }
-    }
-
-    public async Task SaveManualJournalDraftAsync(CancellationToken ct = default)
-    {
-        if (!CanEditManualJournalDraft) { ManualJournalStatusText = AssetAccountingDraftRestrictionText; return; }
-        if (_activeFundProfile is null)
-        {
-            ManualJournalStatusText = "Select a fund-linked context before saving a manual journal draft.";
-            return;
-        }
-
-        try
-        {
-            var saved = await _manualJournalEntryWorkbenchService.SaveDraftAsync(
-                new SaveManualJournalEntryDraftRequest(
-                    BuildManualJournalDraft(),
-                    ResolveActor(),
-                    CorrelationId: "wpf-manual-je-save",
-                    EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink),
-                    LedgerBookId: _configuration?.LedgerBookId),
-                ct).ConfigureAwait(false);
-            _selectedDraft = saved;
-            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
-            ManualJournalStatusText = $"Draft {saved.JournalEntryId:D} saved as {saved.Status}; {saved.ValidationIssues.Count} validation issue(s).";
-            RaisePropertyChanged(nameof(CanSubmitManualJournal));
-            RaiseManualJournalDraftComputedProperties();
-        }
-        catch (Exception ex)
-        {
-            ManualJournalStatusText = $"Manual journal draft could not be saved: {ex.Message}";
-        }
-    }
-
-    public async Task ValidateManualJournalDraftAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            ManualJournalStatusText = "Select a fund-linked context before validating a manual journal draft.";
-            return;
-        }
-
-        try
-        {
-            var validated = await _manualJournalEntryWorkbenchService.ValidateDraftAsync(
-                new ValidateManualJournalEntryDraftRequest(
-                    BuildManualJournalDraft(),
-                    ResolveActor(),
-                    CorrelationId: "wpf-manual-je-validate",
-                    LedgerBookId: _configuration?.LedgerBookId),
-                ct).ConfigureAwait(false);
-            ManualJournalStatusText = AccountingWorkbenchPresentation.BuildManualJournalValidationText(validated);
-            ApplyManualJournalValidationRows(validated.ValidationIssues);
-        }
-        catch (Exception ex)
-        {
-            ManualJournalStatusText = $"Manual journal validation failed: {ex.Message}";
-        }
-    }
-
-    public async Task SubmitManualJournalDraftAsync(CancellationToken ct = default)
-    {
-        if (_selectedDraft is null)
-        {
-            ManualJournalStatusText = "Save the manual journal draft before submitting approval.";
-            return;
-        }
-
-        try
-        {
-            var submitted = await _manualJournalEntryWorkbenchService.SubmitApprovalAsync(
-                new SubmitManualJournalEntryApprovalRequest(
-                    _selectedDraft.JournalEntryId,
-                    _selectedDraft.FundProfileId,
-                    ResolveActor(),
-                    _selectedDraft.Version,
-                    Notes: "Submitted from WPF Accounting Configure.",
-                    CorrelationId: "wpf-manual-je-submit",
-                    EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink),
-                    LedgerBookId: _selectedDraft.LedgerBookId),
-                ct).ConfigureAwait(false);
-            _selectedDraft = submitted;
-            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
-            ManualJournalStatusText = $"Draft submitted for approval as {submitted.ApprovalId}.";
-            RaisePropertyChanged(nameof(CanSubmitManualJournal));
-            RaiseManualJournalDraftComputedProperties();
-        }
-        catch (Exception ex)
-        {
-            ManualJournalStatusText = $"Manual journal approval submission is blocked: {ex.Message}";
-        }
-    }
-
-    public async Task ApplyManualJournalLifecycleActionAsync(
-        JournalEntryLifecycleActionDto action,
-        CancellationToken ct = default)
-    {
-        if (!CanApplySelectedJournalAction(action)) { ManualJournalLifecycleStatusText = AssetAccountingDraftRestrictionText; return; }
-        if (_manualJournalEntryLifecycleService is null)
-        {
-            ManualJournalLifecycleStatusText = "Manual journal lifecycle service is not registered for this desktop session.";
-            return;
-        }
-
-        if (_selectedDraft is null)
-        {
-            ManualJournalLifecycleStatusText = "Save or select a manual journal draft before applying lifecycle actions.";
-            return;
-        }
-
-        try
-        {
-            var request = BuildManualJournalLifecycleRequest(_selectedDraft, action);
-            var result = await _manualJournalEntryLifecycleService
-                .ApplyLifecycleActionAsync(request, ct)
-                .ConfigureAwait(false);
-            _selectedDraft = result.JournalEntry;
-            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
-            ApplyManualJournalLifecycleRows(result);
-            ManualJournalLifecycleStatusText =
-                $"{action} moved journal {_selectedDraft.JournalEntryId:D} from {result.Transition.FromStatus} to {result.Transition.ToStatus}; {result.GeneratedJournalEntries.Count} correction draft(s) generated.";
-            ManualJournalStatusText = $"Manual journal lifecycle action {action} completed as {_selectedDraft.Status}.";
-            RaisePropertyChanged(nameof(CanSubmitManualJournal));
-            RaiseManualJournalDraftComputedProperties();
-        }
-        catch (Exception ex)
-        {
-            ManualJournalLifecycleStatusText = $"Manual journal lifecycle action {action} is blocked: {ex.Message}";
-            ManualJournalLifecycleRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    action.ToString(),
-                    "Blocked",
-                    ex.Message,
-                    "No lifecycle transition was written; approval, posting, correction, and close-lock controls remain enforced.",
-                    _selectedDraft.JournalEntryId.ToString("D"))
-            ]);
-        }
-    }
-
-    public async Task SaveExternalGlMappingProfileAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            ExternalGlMappingProfileStatusText = "Select a fund-linked context before saving external GL mapping profiles.";
-            StatusText = ExternalGlMappingProfileStatusText;
-            return;
-        }
-
-        if (_accountingSystemIntegrationService is null)
-        {
-            ExternalGlMappingProfileStatusText = "External GL mapping profile service is not registered for this desktop session.";
-            StatusText = ExternalGlMappingProfileStatusText;
-            return;
-        }
-
-        var providerId = ExternalGlMappingProviderId.Trim();
-        var profileId = ExternalGlMappingProfileId.Trim();
-        var displayName = ExternalGlMappingDisplayName.Trim();
-        var accountMappings = ParseExternalGlAccountMappings(ExternalGlMappingAccountMappingsText);
-        var meridianDimensions = ParseLedgerDimensionSet(
-            ExternalGlMappingMeridianDimensionsText,
-            BuildDefaultMeridianExternalGlDimensions(providerId, profileId));
-        var externalDimensions = ParseLedgerDimensionSet(
-            ExternalGlMappingExternalDimensionsText,
-            BuildDefaultProviderExternalGlDimensions());
-        var retainedEvidence = NormalizeTenantAdministrationEvidence(ExternalGlMappingEvidenceText);
-        if (string.IsNullOrWhiteSpace(providerId) ||
-            string.IsNullOrWhiteSpace(profileId) ||
-            string.IsNullOrWhiteSpace(displayName) ||
-            accountMappings.Count == 0 ||
-            retainedEvidence.Count == 0)
-        {
-            ExternalGlMappingProfileStatusText = "Provider, profile id, display name, account mappings, and retained mapping evidence are required before saving.";
-            StatusText = ExternalGlMappingProfileStatusText;
-            NotifyExternalGlMappingProfileSaveStateChanged();
-            return;
-        }
-
-        try
-        {
-            var profile = new ExternalGlMappingProfileDto(
-                profileId,
-                providerId,
-                displayName,
-                DateTimeOffset.UtcNow,
-                [BuildExternalGlDimensionMappingProfile(providerId, profileId, meridianDimensions, externalDimensions, ExternalGlMappingProfileCertified)],
-                accountMappings,
-                ExternalGlMappingProfileCertified ? AccountingCertificationStateDto.Certified : AccountingCertificationStateDto.ReadyForReview);
-            var evidence = WithExternalGlMappingProfileEvidence(
-                retainedEvidence,
-                providerId,
-                _activeFundProfile.FundProfileId,
-                profileId,
-                _configuration?.LedgerBookId);
-            var saved = await _accountingSystemIntegrationService.UpsertMappingProfileAsync(
-                new AccountingSystemMappingProfileUpsertRequestDto(
-                    profile,
-                    DefaultLifecycleActor,
-                    providerId,
-                    _activeFundProfile.FundProfileId,
-                    _configuration?.LedgerBookId,
-                    $"wpf-external-gl-mapping-profile-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
-                    evidence,
-                    ResolveTenantAdministrationTenantId(),
-                    ResolveTenantAdministrationCompanyId()),
-                ct).ConfigureAwait(false);
-            ApplyExternalGlMappingProfileDraft(saved);
-            ExternalGlMappingProfileStatusText = $"External GL mapping profile {saved.ProfileId} saved as {saved.CertificationState}; readiness refreshed from retained provider mapping.";
-            StatusText = ExternalGlMappingProfileStatusText;
-            await RefreshExternalGlAsync(ct).ConfigureAwait(false);
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            ExternalGlMappingProfileStatusText = $"External GL mapping profile save failed: {ex.Message}";
-            StatusText = ExternalGlMappingProfileStatusText;
-        }
-    }
-
-    public async Task SaveChartAccountAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            ChartAccountSetupStatusText = "Select a fund-linked context before saving chart accounts.";
-            StatusText = ChartAccountSetupStatusText;
-            return;
-        }
-
-        var nodeId = ChartAccountNodeId.Trim();
-        var path = ChartAccountPath.Trim();
-        var accountName = ChartAccountName.Trim();
-        var accountType = ChartAccountType.Trim();
-        var evidence = NormalizeTenantAdministrationEvidence(ChartAccountEvidenceText);
-        if (string.IsNullOrWhiteSpace(nodeId) ||
-            string.IsNullOrWhiteSpace(path) ||
-            string.IsNullOrWhiteSpace(accountName) ||
-            string.IsNullOrWhiteSpace(accountType) ||
-            evidence.Count == 0)
-        {
-            ChartAccountSetupStatusText = "Node id, account path, account name, account type, and retained evidence are required before saving chart accounts.";
-            StatusText = ChartAccountSetupStatusText;
-            NotifyChartAccountSaveStateChanged();
-            return;
-        }
-
-        try
-        {
-            _configuration ??= await _configurationService.GetWorkspaceAsync(_activeFundProfile.FundProfileId, ct: ct).ConfigureAwait(false);
-            var ledgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId ?? _configuration.LedgerBookId;
-            var node = new ChartOfAccountsNodeDto(
-                nodeId,
-                path,
-                accountName,
-                accountType,
-                string.IsNullOrWhiteSpace(ChartAccountParentPath) ? null : ChartAccountParentPath.Trim(),
-                FinancialAccountId: string.IsNullOrWhiteSpace(ChartAccountFinancialAccountId) ? null : ChartAccountFinancialAccountId.Trim());
-            _configuration = await _configurationService.UpsertChartNodeAsync(
-                new UpsertChartOfAccountsNodeRequest(
-                    _activeFundProfile.FundProfileId,
-                    node,
-                    ResolveActor(),
-                    CorrelationId: $"wpf-accounting-chart-account-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-
-            ApplyConfiguration(_configuration);
-            ApplyNextChartAccountDraft(_configuration);
-            ChartAccountSetupStatusText = $"Chart account {path} saved through shared Accounting Configure.";
-            StatusText = ChartAccountSetupStatusText;
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            ChartAccountSetupStatusText = $"Chart account setup failed: {ex.Message}";
-            StatusText = ChartAccountSetupStatusText;
-        }
-    }
-
-    public async Task SavePostingRuleDraftAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null)
-        {
-            PostingRuleDraftStatusText = "Select a fund-linked context before saving posting-rule drafts.";
-            StatusText = PostingRuleDraftStatusText;
-            return;
-        }
-
-        var ruleId = PostingRuleDraftRuleId.Trim();
-        var displayName = PostingRuleDraftDisplayName.Trim();
-        var sourceEventType = PostingRuleDraftSourceEventType.Trim();
-        var templateId = PostingRuleDraftTemplateId.Trim();
-        var evidence = NormalizeTenantAdministrationEvidence(PostingRuleDraftEvidenceText);
-        if (string.IsNullOrWhiteSpace(ruleId) ||
-            string.IsNullOrWhiteSpace(displayName) ||
-            string.IsNullOrWhiteSpace(sourceEventType) ||
-            string.IsNullOrWhiteSpace(templateId) ||
-            evidence.Count == 0)
-        {
-            PostingRuleDraftStatusText = "Rule id, display name, source event, template id, and retained evidence are required before saving posting-rule drafts.";
-            StatusText = PostingRuleDraftStatusText;
-            NotifyPostingRuleDraftSaveStateChanged();
-            return;
-        }
-
-        try
-        {
-            _configuration ??= await _configurationService.GetWorkspaceAsync(_activeFundProfile.FundProfileId, ct: ct).ConfigureAwait(false);
-            var ledgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId ?? _configuration.LedgerBookId;
-            if (!_configuration.JournalTemplates.Any(template =>
-                    string.Equals(template.TemplateId, templateId, StringComparison.OrdinalIgnoreCase) &&
-                    !template.IsArchived))
-            {
-                PostingRuleDraftStatusText = $"Posting-rule draft blocked: template {templateId} is not available in the loaded Accounting Configure workspace.";
-                StatusText = PostingRuleDraftStatusText;
-                return;
-            }
-
-            var rule = new PostingRuleDto(
-                ruleId,
-                displayName,
-                sourceEventType,
-                templateId,
-                RuleVersion: "draft",
-                Description: string.IsNullOrWhiteSpace(PostingRuleDraftDescription)
-                    ? null
-                    : PostingRuleDraftDescription.Trim(),
-                Priority: PostingRuleDraftPriority,
-                Scope: new LedgerDimensionSetDto(
-                    FundId: _activeFundProfile.FundProfileId,
-                    BookId: ledgerBookId?.ToString("D", CultureInfo.InvariantCulture)),
-                RequiresPromotionApproval: true);
-
-            _configuration = await _configurationService.UpsertPostingRuleAsync(
-                new UpsertPostingRuleRequest(
-                    _activeFundProfile.FundProfileId,
-                    rule,
-                    ResolveActor(),
-                    CorrelationId: $"wpf-accounting-posting-rule-draft-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
-                    EvidenceLinks: evidence,
-                    LedgerBookId: ledgerBookId),
-                ct).ConfigureAwait(false);
-
-            ApplyConfiguration(_configuration);
-            ApplyNextPostingRuleDraft(_configuration, ruleId);
-            PostingRuleDraftStatusText = $"Posting-rule draft {ruleId} saved through shared Accounting Configure.";
-            StatusText = PostingRuleDraftStatusText;
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            PostingRuleDraftStatusText = $"Posting-rule draft save failed: {ex.Message}";
-            StatusText = PostingRuleDraftStatusText;
-        }
-    }
-
-    public async Task RefreshExternalGlAsync(CancellationToken ct = default)
-    {
-        ProviderRows.Clear();
-        ExternalGlMappingProfileRows.Clear();
-        ExternalGlEvidencePackageRows.Clear();
-        ExternalGlRows.Clear();
-        if (_accountingSystemIntegrationService is null)
-        {
-            ExternalGlStatusText = "External GL evidence service is not registered for this desktop session.";
-            PostingPostureText = "Posting/export remains unavailable.";
-            return;
-        }
-
-        try
-        {
-            var providers = await _accountingSystemIntegrationService.ListProvidersAsync(ct).ConfigureAwait(false);
-            foreach (var provider in providers)
-            {
-                var requirementSummary = provider.MappingRequirements.Count == 0
-                    ? provider.StatusDetail
-                    : $"{provider.StatusDetail} Requirements: {string.Join(", ", provider.MappingRequirements.Take(3).Select(static requirement => requirement.Label))}.";
-                ProviderRows.Add(new AccountingWorkbenchRow(
-                    provider.DisplayName,
-                    provider.State.ToString(),
-                    requirementSummary,
-                    provider.ProviderId));
-            }
-
-            if (_activeFundProfile is null)
-            {
-                ExternalGlStatusText = "Select a fund-linked context before importing external GL evidence.";
-                PostingPostureText = "Posting/export remains disabled until Meridian-owned ledger entries are approved.";
-                return;
-            }
-
-            var mappingProfiles = await _accountingSystemIntegrationService
-                .ListMappingProfilesAsync(
-                    fundProfileId: _activeFundProfile.FundProfileId,
-                    ledgerBookId: _configuration?.LedgerBookId,
-                    ct: ct,
-                    tenantId: ResolveTenantAdministrationTenantId(),
-                    companyId: ResolveTenantAdministrationCompanyId())
-                .ConfigureAwait(false);
-            foreach (var profile in mappingProfiles.Take(20))
-            {
-                ExternalGlMappingProfileRows.Add(new AccountingWorkbenchRow(
-                    profile.DisplayName,
-                    profile.CertificationState.ToString(),
-                    $"{profile.ProviderId}; {profile.AccountMappings.Count} account mapping(s), {profile.DimensionMappings.Count} dimension mapping(s).",
-                    profile.ProfileId,
-                    profile.ProfileId));
-            }
-
-            if (mappingProfiles.Count > 0)
-            {
-                ApplyExternalGlMappingProfileDraft(mappingProfiles[0]);
-            }
-            else
-            {
-                ApplyDefaultExternalGlMappingDimensionDraft();
-            }
-
-            var reconciliation = await _accountingSystemIntegrationService
-                .ReconcileLatestAsync(fundProfileId: _activeFundProfile.FundProfileId, ledgerBookId: _configuration?.LedgerBookId, ct: ct)
-                .ConfigureAwait(false);
-
-            foreach (var package in reconciliation.EvidencePackages.Take(20))
-            {
-                ExternalGlEvidencePackageRows.Add(new AccountingWorkbenchRow(
-                    package.Label,
-                    package.Status.ToString(),
-                    package.RequiredActions.Count > 0
-                        ? string.Join(" ", package.RequiredActions)
-                        : $"{package.EvidenceReferenceCount} retained evidence reference(s).",
-                    package.EvidenceReferences.FirstOrDefault() ?? package.PackageId,
-                    package.PackageId));
-            }
-
-            foreach (var row in reconciliation.Rows.Take(50))
-            {
-                ExternalGlRows.Add(new ExternalGlEvidenceRow(
-                    row.AccountCode,
-                    row.AccountName,
-                    row.Status.ToString(),
-                    row.ExternalDebit,
-                    row.ExternalCredit,
-                    row.MeridianDebit,
-                    row.MeridianCredit,
-                    row.Variance,
-                    row.Detail,
-                    row.EvidenceRef ?? string.Empty));
-            }
-
-            ExternalGlStatusText = $"{reconciliation.ProviderId} evidence: {reconciliation.MatchedCount} matched, {reconciliation.BreakCount} review row(s).";
-            PostingPostureText = reconciliation.PostingEnabled
-                ? "External GL posting/export is enabled by connection policy."
-                : reconciliation.PostingDisabledReason;
-        }
-        catch (Exception ex)
-        {
-            ExternalGlStatusText = $"External GL evidence could not be loaded: {ex.Message}";
-            PostingPostureText = "Posting/export remains disabled while external GL evidence is unavailable.";
-        }
-    }
-
-    public async Task CreateFundScopedPolicyAsync(CancellationToken ct = default)
-    {
-        if (_accountingPolicyService is null)
-        {
-            PolicyPostureText = "Accounting policy service is not registered for this desktop session.";
-            return;
-        }
-
-        if (_activeFundProfile is null)
-        {
-            PolicyPostureText = "Select a fund-linked context before creating a fund-scoped accounting policy.";
-            return;
-        }
-
-        try
-        {
-            var policyId = $"{_activeFundProfile.FundProfileId}-{SelectedAccountingBasis.ToString().ToLowerInvariant()}-desktop-v1";
-            await _accountingPolicyService.CreatePolicyAsync(
-                new CreateAccountingPolicyRequest(
-                    SelectedAccountingBasis,
-                    policyId,
-                    "v1",
-                    $"{_activeFundProfile.DisplayName} {SelectedAccountingBasis} desktop policy",
-                    DateOnly.FromDateTime(DateTime.UtcNow),
-                    IsDefault: true,
-                    RulesJson: "{\"source\":\"wpf-accounting-configure\"}",
-                    FundProfileId: _activeFundProfile.FundProfileId),
-                ct).ConfigureAwait(false);
-            await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
-            PolicyPostureText = $"Fund-scoped {SelectedAccountingBasis} policy is available for {_activeFundProfile.DisplayName}.";
-        }
-        catch (Exception ex)
-        {
-            PolicyPostureText = $"Fund-scoped accounting policy could not be created: {ex.Message}";
-        }
-    }
-
-    public async Task ExecuteRulesStudioTestsAsync(CancellationToken ct = default)
-    {
-        RulesStudioActionRows.Clear();
-        if (_activeFundProfile is null || _configuration is null)
-        {
-            RulesStudioActionText = "Load a fund-linked accounting configuration before executing rule tests.";
-            return;
-        }
-
-        try
-        {
-            var result = await _configurationService.ExecuteRuleTestCasesAsync(
-                new ExecuteAccountingRuleTestCasesRequestDto(
-                    _activeFundProfile.FundProfileId,
-                    ResolveActor(),
-                    TestCases: [],
-                    LedgerBookId: _configuration.LedgerBookId),
-                ct).ConfigureAwait(false);
-
-            ApplyRulesStudioTestResult(result);
-            RulesStudioActionText =
-                $"Executed {result.Results.Count} saved rule test case(s): {result.PassedCount} passed, {result.FailedCount} failed.";
-        }
-        catch (Exception ex)
-        {
-            RulesStudioActionText = $"Rules Studio test execution is blocked: {ex.Message}";
-            RulesStudioActionRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    "Run saved tests",
-                    "Blocked",
-                    ex.Message,
-                    "No rule state was changed.",
-                    _configuration.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund")
-            ]);
-        }
-    }
-
-    public async Task ApproveRulesStudioPromotionAsync(CancellationToken ct = default)
-    {
-        if (_activeFundProfile is null || _configuration?.RulesStudio is null)
-        {
-            RulesStudioActionText = "Load a fund-linked Rules Studio workspace before approving promotion.";
-            return;
-        }
-
-        var queueItem = _configuration.RulesStudio.PromotionQueue
-            .OrderBy(static item => item.CriticalIssueCount)
-            .ThenBy(static item => item.MissingRegressionEvidenceCount)
-            .ThenBy(static item => item.RuleId, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
-        if (queueItem is null)
-        {
-            RulesStudioActionText = "No posting-rule promotions are waiting for approval.";
-            RulesStudioActionRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    "Promotion approval",
-                    "No queue",
-                    "The shared Rules Studio promotion queue is empty.",
-                    "Seed or edit a promotion-gated rule before approval.",
-                    string.Empty)
-            ]);
-            return;
-        }
-
-        try
-        {
-            var approvalId = string.IsNullOrWhiteSpace(queueItem.ApprovalId)
-                ? $"wpf-approval-{queueItem.RuleId}-{queueItem.RuleVersion}"
-                : queueItem.ApprovalId;
-            var evidenceLink = $"evidence://accounting/rules/{queueItem.RuleId}/{queueItem.RuleVersion}/desktop-approval/{approvalId}";
-            _configuration = await _configurationService.ApprovePostingRulePromotionAsync(
-                new ApprovePostingRulePromotionRequest(
-                    _activeFundProfile.FundProfileId,
-                    queueItem.RuleId,
-                    queueItem.RuleVersion,
-                    ResolveActor(),
-                    approvalId,
-                    "Desktop controller approved the posting rule after Rules Studio regression review.",
-                    EvidenceLinks: [evidenceLink],
-                    RequestedBy: queueItem.RequestedBy,
-                    RequestedAtUtc: queueItem.RequestedAtUtc,
-                    CorrelationId: "wpf-rules-studio-promotion-approve",
-                    LedgerBookId: _configuration.LedgerBookId),
-                ct).ConfigureAwait(false);
-
-            ApplyConfiguration(_configuration);
-            RulesStudioActionText = $"Approved posting-rule promotion {queueItem.RuleId}/{queueItem.RuleVersion}.";
-            RulesStudioActionRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    queueItem.RuleId,
-                    "Approved",
-                    $"{queueItem.DisplayName} | {queueItem.RuleVersion}",
-                    evidenceLink,
-                    approvalId)
-            ]);
-        }
-        catch (Exception ex)
-        {
-            RulesStudioActionText = $"Posting-rule promotion approval is blocked: {ex.Message}";
-            RulesStudioActionRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    queueItem.RuleId,
-                    "Blocked",
-                    ex.Message,
-                    queueItem.SuggestedAction,
-                    queueItem.ApprovalId ?? string.Empty)
-            ]);
-        }
-    }
-
-    private void ApplyRulesStudioTestResult(AccountingRuleTestSuiteResultDto result)
-    {
-        var rows = new List<AccountingWorkbenchRow>
-        {
-            new(
-                "Regression suite",
-                $"{result.PassedCount}/{result.TotalCount} passed",
-                $"Executed by {result.Actor} at {result.ExecutedAtUtc:yyyy-MM-dd HH:mm:ss} UTC.",
-                result.FailedCount == 0
-                    ? "All saved rule tests passed."
-                    : $"{result.FailedCount} saved rule test(s) failed and block promotion or activation.",
-                result.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund")
-        };
-
-        rows.AddRange(result.Results.Select(testCase =>
-        {
-            var issueText = testCase.AssertionIssues.Count == 0
-                ? "No assertion issues."
-                : string.Join("; ", testCase.AssertionIssues.Select(static issue => issue.Code).Take(4));
-            var selectedMatch = testCase.DryRunResult.RuleMatches.FirstOrDefault(match =>
-                string.Equals(match.RuleId, testCase.DryRunResult.SelectedRuleId, StringComparison.OrdinalIgnoreCase));
-            var selectedRule = testCase.DryRunResult.SelectedRuleId is null
-                ? "No selected rule"
-                : $"{testCase.DryRunResult.SelectedRuleId}/{selectedMatch?.RuleVersion ?? "unknown"}";
-            return new AccountingWorkbenchRow(
-                testCase.TestCaseId,
-                testCase.Passed ? "Passed" : "Failed",
-                $"{testCase.DisplayName} | {selectedRule}",
-                issueText,
-                $"{testCase.DryRunResult.FundProfileId}:{testCase.DryRunResult.SourceEventType}");
-        }));
-
-        RulesStudioActionRows.ReplaceWith(rows);
-    }
-
-    public async Task BuildPostingCandidateAsync(CancellationToken ct = default)
-    {
-        PostingCandidateRows.Clear();
-        if (_accountingPostingCandidateService is null)
-        {
-            PostingCandidateStatusText = "Posting-rule candidate service is not registered for this desktop session.";
-            PostingCandidateDetailText = "The desktop surface cannot build governed draft candidates until the shared service is registered.";
-            return;
-        }
-
-        if (_activeFundProfile is null || _configuration is null)
-        {
-            PostingCandidateStatusText = "Select and load a fund-linked accounting configuration before building a posting candidate.";
-            PostingCandidateDetailText = "Candidate generation requires chart accounts, posting rules, dimensions, and retained evidence.";
-            return;
-        }
-
-        var rule = ResolvePostingCandidateRule(_configuration);
-        if (rule is null)
-        {
-            PostingCandidateStatusText = "No active posting rule is available for the selected manual journal entry type.";
-            PostingCandidateDetailText = "Seed or configure posting rules before building a governed draft candidate.";
-            return;
-        }
-
-        var ledgerBook = ResolveActiveLedgerBook(_configuration);
-        var currency = string.IsNullOrWhiteSpace(DraftCurrency)
-            ? _activeFundProfile.BaseCurrency
-            : DraftCurrency.Trim().ToUpperInvariant();
-        var effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        var correlationId = Guid.NewGuid();
-        var sourceEventId = Guid.NewGuid();
-        var evidenceLinks = BuildPostingCandidateEvidenceLinks(rule);
-
-        try
-        {
-            var result = await _accountingPostingCandidateService.BuildCandidateAsync(
-                    new PostingRuleJournalCandidateRequestDto(
-                        _activeFundProfile.FundProfileId,
-                        rule.SourceEventType,
-                        Math.Abs(DraftAmount),
-                        currency,
-                        effectiveDate,
-                        ResolveActor(),
-                        AggregateId: Guid.NewGuid(),
-                        PeriodId: Guid.NewGuid(),
-                        AccountingTimestamp: DateTimeOffset.UtcNow,
-                        Description: $"{rule.DisplayName} governed journal draft candidate",
-                        AccountingBasis: ledgerBook?.AccountingBasis ?? SelectedAccountingBasis,
-                        LedgerBookId: _configuration.LedgerBookId ?? ledgerBook?.LedgerBookId,
-                        Dimensions: BuildPostingCandidateDimensions(rule),
-                        CounterpartyId: rule.Scope?.CounterpartyId,
-                        InstrumentSymbol: rule.Scope?.InstrumentId?.ToString("D"),
-                        CorrelationId: correlationId,
-                        SourceEventId: sourceEventId,
-                        PolicyId: ledgerBook?.AccountingPolicyId,
-                        TreatmentKind: MapPostingCandidateTreatment(SelectedEntryType),
-                        PostingKind: LedgerPostingKindDto.Originating,
-                        TreasuryContext: BuildManualJournalTreasuryContext(
-                            _activeFundProfile.FundProfileId,
-                            SelectedEntryType,
-                            effectiveDate,
-                            sourceEventId),
-                        EvidenceLinks: evidenceLinks),
-                    ct)
-                .ConfigureAwait(false);
-
-            ApplyPostingCandidateResult(rule, result, correlationId, sourceEventId);
-        }
-        catch (Exception ex)
-        {
-            PostingCandidateStatusText = $"Posting-rule candidate generation failed: {ex.Message}";
-            PostingCandidateDetailText = "No journal draft candidate was created; ledger posting remains unavailable.";
-        }
-    }
-
     private void ApplyLockedState()
     {
         _configuration = null;
@@ -2856,1180 +1840,6 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         NotifyProductionCertificationSaveStateChanged();
         NotifyTenantAdministrationSandboxStateChanged();
         RaiseManualJournalDraftComputedProperties();
-    }
-
-    private void ApplyConfiguration(AccountingConfigurationWorkspaceDto workspace)
-    {
-        ChartRows.ReplaceWith(workspace.ChartOfAccounts.Select(node =>
-            new AccountingWorkbenchRow(node.Path, node.AccountType, node.AccountName, node.IsArchived ? "Archived" : "Active")));
-        TemplateRows.ReplaceWith(workspace.JournalTemplates.Select(template =>
-            new AccountingWorkbenchRow(template.TemplateId, template.Version, template.DisplayName, $"{template.Lines.Count} line(s)")));
-        PostingRuleRows.ReplaceWith(workspace.PostingRules.Select(rule =>
-            new AccountingWorkbenchRow(rule.RuleId, rule.SourceEventType, rule.DisplayName, rule.TemplateId)));
-        AuditRows.ReplaceWith(workspace.AuditTrail.Take(20).Select(audit =>
-            new AccountingWorkbenchRow(audit.Action, audit.Actor, UtcFormat.FormatUtcTimestamp(audit.RecordedAtUtc), audit.CorrelationId ?? string.Empty)));
-        ApplySetupReadinessRows(workspace);
-        ApplyLedgerBookRows(workspace);
-        ApplyManualJournalValidationRows(workspace.ValidationIssues);
-
-        var critical = workspace.ValidationIssues.Count(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
-        ConfigurationStatusText = $"{workspace.Status} {workspace.ConfigurationVersion}";
-        ConfigurationDetailText = critical > 0
-            ? $"{critical} critical configuration issue(s) block activation."
-            : "Chart, templates, posting rules, validation, and audit are shared-contract backed.";
-        ApplyRulesStudio(workspace.RulesStudio);
-        NotifyChartAccountSaveStateChanged();
-        NotifyPostingRuleDraftSaveStateChanged();
-        NotifyTenantAdministrationSandboxStateChanged();
-    }
-
-    private void ApplyNextChartAccountDraft(AccountingConfigurationWorkspaceDto workspace)
-    {
-        var nextIndex = workspace.ChartOfAccounts.Count(node => !node.IsArchived) + 1;
-        ChartAccountNodeId = $"wpf-chart-account-{nextIndex.ToString(CultureInfo.InvariantCulture)}";
-        ChartAccountPath = $"Assets:Configured Account {nextIndex.ToString(CultureInfo.InvariantCulture)}";
-        ChartAccountName = $"Configured Account {nextIndex.ToString(CultureInfo.InvariantCulture)}";
-        ChartAccountType = "Asset";
-        ChartAccountParentPath = "Assets";
-        ChartAccountFinancialAccountId = string.Empty;
-        ChartAccountEvidenceText = $"wpf://accounting/configure/chart-account/{nextIndex.ToString(CultureInfo.InvariantCulture)}";
-    }
-
-    private void ApplyNextPostingRuleDraft(AccountingConfigurationWorkspaceDto workspace, string previousRuleId)
-    {
-        var nextIndex = workspace.PostingRules.Count(rule => !rule.IsArchived) + 1;
-        PostingRuleDraftRuleId = $"wpf-configured-posting-rule-{nextIndex.ToString(CultureInfo.InvariantCulture)}";
-        PostingRuleDraftDisplayName = $"WPF configured posting rule {nextIndex.ToString(CultureInfo.InvariantCulture)}";
-        PostingRuleDraftSourceEventType = "ManualJournalEntry.Configured";
-        PostingRuleDraftTemplateId = workspace.JournalTemplates.FirstOrDefault(template =>
-                !template.IsArchived &&
-                string.Equals(template.TemplateId, PostingRuleDraftTemplateId, StringComparison.OrdinalIgnoreCase))
-            ?.TemplateId
-            ?? workspace.JournalTemplates.FirstOrDefault(template => !template.IsArchived)?.TemplateId
-            ?? "desktop-manual-adjustment-v1";
-        PostingRuleDraftDescription = $"Drafted after {previousRuleId} from WPF Accounting Configure.";
-        PostingRuleDraftPriority = nextIndex * 10;
-        PostingRuleDraftEvidenceText = $"evidence://wpf/accounting/rules/configured-posting-rule-{nextIndex.ToString(CultureInfo.InvariantCulture)}";
-    }
-
-    private void ApplySetupReadinessRows(AccountingConfigurationWorkspaceDto workspace)
-    {
-        var selectedBook = ResolveActiveLedgerBook(workspace);
-        var missingLedgerBookIssue = workspace.ValidationIssues.FirstOrDefault(issue =>
-            string.Equals(issue.Code, "configuration.ledger-book-missing", StringComparison.OrdinalIgnoreCase));
-        var setupCandidate = workspace.LedgerBookSetupCandidate;
-        var criticalCount = workspace.ValidationIssues.Count(issue =>
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
-        var selectedBookStatus = missingLedgerBookIssue is not null
-            ? "Missing"
-            : selectedBook is not null
-                ? selectedBook.DisplayName
-                : workspace.LedgerBookId.HasValue
-                    ? "Scoped"
-                    : "Fund scope";
-        var selectedBookDetail = missingLedgerBookIssue?.Message
-            ?? (selectedBook is not null
-                ? $"{selectedBook.AccountingBasis} basis; policy {selectedBook.AccountingPolicyId}/{selectedBook.AccountingPolicyVersion}."
-                : workspace.LedgerBookId.HasValue
-                    ? $"Ledger book {workspace.LedgerBookId.Value:D} is selected; setup details are not loaded."
-                    : "Configuration is using the fund-level setup scope.");
-        var selectedBookAction = missingLedgerBookIssue?.SuggestedAction
-            ?? setupCandidate?.SuggestedAction
-            ?? (workspace.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund");
-        var activationDetail = criticalCount > 0
-            ? $"{criticalCount} critical shared validation issue(s) must be resolved before activation."
-            : "Shared accounting configuration validation has no critical blockers.";
-
-        SetupReadinessRows.ReplaceWith(
-        [
-            new AccountingWorkbenchRow(
-                "Selected ledger book",
-                selectedBookStatus,
-                selectedBookDetail,
-                selectedBookAction,
-                workspace.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund"),
-            new AccountingWorkbenchRow(
-                "Activation readiness",
-                criticalCount > 0 ? "Blocked" : "Ready",
-                activationDetail,
-                missingLedgerBookIssue?.SuggestedAction ?? "Activation can use the current shared configuration scope.",
-                $"critical:{criticalCount}")
-        ]);
-    }
-
-    private void ApplyLedgerBookRows(AccountingConfigurationWorkspaceDto workspace)
-    {
-        var selectedLedgerBookId = workspace.LedgerBookId ?? ResolveActiveLedgerBook(workspace)?.LedgerBookId;
-        var rows = workspace.LedgerBooks
-            .OrderByDescending(book => selectedLedgerBookId.HasValue && book.LedgerBookId == selectedLedgerBookId.Value)
-            .ThenBy(static book => book.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .Select(book =>
-            {
-                var selected = selectedLedgerBookId.HasValue && book.LedgerBookId == selectedLedgerBookId.Value;
-                var scope = $"{book.FundProfileId} / {book.FundStructureNodeKind} {book.FundStructureNodeId:D}";
-                var detail =
-                    $"{book.AccountingBasis} basis | {book.BaseCurrency} | {scope} | Updated {book.UpdatedAt:yyyy-MM-dd}";
-                var evidence = string.IsNullOrWhiteSpace(book.Description)
-                    ? $"Policy {book.AccountingPolicyId}/{book.AccountingPolicyVersion}"
-                    : $"{book.Description} | Policy {book.AccountingPolicyId}/{book.AccountingPolicyVersion}";
-
-                return new AccountingWorkbenchRow(
-                    book.DisplayName,
-                    selected ? "Selected" : "Available",
-                    detail,
-                    evidence,
-                    book.LedgerBookId.ToString("D", CultureInfo.InvariantCulture));
-            })
-            .ToArray();
-
-        LedgerBookRows.ReplaceWith(rows);
-        LedgerBookAdministrationText = rows.Length == 0
-            ? "No ledger books are registered for this accounting configuration workspace."
-            : $"{rows.Length} ledger book(s) registered; selected {rows.FirstOrDefault(row => row.Status == "Selected")?.Name ?? "none"}.";
-    }
-
-    private void ApplyRulesStudio(AccountingRulesStudioDto? rulesStudio)
-    {
-        if (rulesStudio is null)
-        {
-            RulesStudioStatusText = "Rules Studio unavailable";
-            RulesStudioDetailText = "The shared accounting configuration workspace did not include a Rules Studio projection.";
-            RulesStudioRuleRows.Clear();
-            RulesStudioPromotionRows.Clear();
-            RulesStudioActionRows.Clear();
-            return;
-        }
-
-        var summary = rulesStudio.Summary;
-        RulesStudioStatusText =
-            $"{summary.ActiveRules}/{summary.TotalRules} active rule(s), {summary.GeneratedPostingRules} generated posting rule(s), {summary.SavedTestCaseCount} saved test case(s).";
-        RulesStudioDetailText =
-            $"{summary.EffectiveDatedRules} effective-dated; {summary.PendingPromotionApprovalRules} pending promotion approval; {summary.RulesMissingCurrentVersionRegressionTests} missing current-version regression tests; {summary.CriticalIssueCount} critical issue(s).";
-
-        RulesStudioRuleRows.ReplaceWith(rulesStudio.Rules.Select(rule =>
-            new AccountingWorkbenchRow(
-                rule.RuleId,
-                rule.CanActivate ? "Activation-ready" : rule.CanRequestPromotion ? "Promotion-ready" : "Blocked",
-                $"{rule.SourceEventType} | {rule.RuleVersion} | priority {rule.Priority} | {AccountingWorkbenchPresentation.FormatEffectiveWindow(rule.EffectiveFrom, rule.EffectiveTo)}",
-                $"{rule.ConditionCount + rule.ConditionGroupCount} condition set(s); {rule.FormulaCount} formula(s); {rule.AllocationCount} allocation(s); {rule.GeneratedPostingLineCount} generated line(s); {rule.SavedTestCaseCount} test(s)",
-                rule.PromotionApprovalId ?? string.Empty)));
-
-        RulesStudioPromotionRows.ReplaceWith(rulesStudio.PromotionQueue.Select(item =>
-            new AccountingWorkbenchRow(
-                item.RuleId,
-                item.ApprovalState?.ToString() ?? "Not requested",
-                $"{item.DisplayName} | {item.RuleVersion} | requested by {item.RequestedBy}",
-                $"{item.RegressionTestCaseCount} regression test(s); {item.MissingRegressionEvidenceCount} missing evidence; {item.CriticalIssueCount} critical issue(s); {item.SuggestedAction}",
-                item.ApprovalId ?? string.Empty)));
-    }
-
-    private async Task LoadProductionCertificationProfileAsync(CancellationToken ct)
-    {
-        if (_activeFundProfile is null)
-        {
-            ProductionCertificationProfileStatusText = "Locked until a fund context is selected.";
-            ProductionCertificationProfileScopeText = "Fund and ledger-book scope require a fund context.";
-            ProductionCertificationProfileUpdatedText = "No retained production certification profile loaded.";
-            return;
-        }
-
-        var tenantId = ResolveTenantAdministrationTenantId();
-        var companyId = ResolveTenantAdministrationCompanyId();
-        var ledgerBookId = _configuration?.LedgerBookId;
-        ProductionCertificationProfileScopeText = ledgerBookId.HasValue
-            ? $"Tenant {tenantId}; company {companyId}; fund {_activeFundProfile.FundProfileId}; ledger book {ledgerBookId:D}."
-            : $"Tenant {tenantId}; company {companyId}; fund {_activeFundProfile.FundProfileId}; fund-level scope.";
-
-        if (_productionCertificationProfileStore is null)
-        {
-            ProductionCertificationProfileStatusText = "Production certification profile store is not registered for this desktop session.";
-            ProductionCertificationProfileUpdatedText = "Retained production certification controls are unavailable.";
-            NotifyProductionCertificationSaveStateChanged();
-            return;
-        }
-
-        try
-        {
-            var profile = await _productionCertificationProfileStore.GetAsync(tenantId, companyId, _activeFundProfile.FundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-            if (profile is null)
-            {
-                ProductionCertificationProfileStatusText = "No retained production certification profile exists for the active accounting scope.";
-                ProductionCertificationProfileUpdatedText = "Save book-native and dimensional controls with retained evidence before production certification.";
-                ProductionCertificationEvidenceText = ledgerBookId.HasValue
-                    ? $"evidence://ledger-book/{ledgerBookId:D}/production-certification"
-                    : $"evidence://fund/{_activeFundProfile.FundProfileId}/production-certification";
-                NotifyProductionCertificationSaveStateChanged();
-                return;
-            }
-
-            ApplyProductionCertificationProfile(profile, "Production certification profile loaded from the shared store.");
-        }
-        catch (Exception ex)
-        {
-            ProductionCertificationProfileStatusText = $"Production certification profile could not load: {ex.Message}";
-            ProductionCertificationProfileUpdatedText = "Retained production certification controls are unavailable.";
-            NotifyProductionCertificationSaveStateChanged();
-        }
-    }
-
-    private void ApplyProductionCertificationProfile(
-        AccountingProductionCertificationProfileDto profile,
-        string statusText)
-    {
-        PostingRulesLedgerBookNativeCertified = profile.PostingRulesLedgerBookNativeCertified;
-        JournalLifecycleLedgerBookNativeCertified = profile.JournalLifecycleLedgerBookNativeCertified;
-        CloseReportingLedgerBookNativeCertified = profile.CloseReportingLedgerBookNativeCertified;
-        ClosePlanConfigurationLedgerBookNativeCertified = profile.ClosePlanConfigurationLedgerBookNativeCertified;
-        ExternalGlLedgerBookNativeCertified = profile.ExternalGlLedgerBookNativeCertified;
-        ReconciliationLedgerBookNativeCertified = profile.ReconciliationLedgerBookNativeCertified;
-        DirectLendingLedgerBookNativeCertified = profile.DirectLendingLedgerBookNativeCertified;
-        StrategyLedgerReadLedgerBookNativeCertified = profile.StrategyLedgerReadLedgerBookNativeCertified;
-        PeriodReportDimensionQueriesCertified = profile.PeriodReportDimensionQueriesCertified;
-        CrossPeriodReportDimensionQueriesCertified = profile.CrossPeriodReportDimensionQueriesCertified;
-        JournalQueryDimensionFiltersCertified = profile.JournalQueryDimensionFiltersCertified;
-        ExternalExportDimensionMappingCertified = profile.ExternalExportDimensionMappingCertified;
-        LedgerLineDimensionsPersistedCertified = profile.LedgerLineDimensionsPersistedCertified;
-        TrialBalanceDimensionFiltersCertified = profile.TrialBalanceDimensionFiltersCertified;
-        ReportPackageDimensionProvenanceCertified = profile.ReportPackageDimensionProvenanceCertified;
-        ProductionCertificationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
-        ProductionCertificationProfileScopeText = profile.LedgerBookId.HasValue
-            ? $"Tenant {AccountingWorkbenchPresentation.FormatReadinessScope(profile.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; ledger book {profile.LedgerBookId:D}."
-            : $"Tenant {AccountingWorkbenchPresentation.FormatReadinessScope(profile.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; fund-level scope.";
-        ProductionCertificationProfileUpdatedText =
-            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatUtcTimestamp(profile.UpdatedAtUtc)}.";
-        ProductionCertificationProfileStatusText = statusText;
-        NotifyProductionCertificationSaveStateChanged();
-    }
-
-    private async Task LoadTenantAdministrationProfileAsync(CancellationToken ct)
-    {
-        if (_activeFundProfile is null)
-        {
-            TenantAdministrationProfileStatusText = "Locked until a fund context is selected.";
-            TenantAdministrationProfileScopeText = "Tenant and company scope require a fund context.";
-            TenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
-            ImplementationSandboxProofStatusText = "Implementation sandbox proof is locked until a fund context is selected.";
-            TenantAdministrationControlRows.Clear();
-            NotifyTenantAdministrationSandboxStateChanged();
-            return;
-        }
-
-        var tenantId = ResolveTenantAdministrationTenantId();
-        var companyId = ResolveTenantAdministrationCompanyId();
-        TenantAdministrationProfileScopeText = $"Tenant {tenantId}; company {companyId}.";
-
-        if (_tenantAdministrationProfileStore is null)
-        {
-            TenantAdministrationProfileStatusText = "Tenant administration profile store is not registered for this desktop session.";
-            TenantAdministrationProfileUpdatedText = "Retained tenant setup controls are unavailable.";
-            ImplementationSandboxProofStatusText = "Implementation sandbox proof is unavailable for this desktop session.";
-            ApplyTenantAdministrationControlRows();
-            NotifyTenantAdministrationSaveStateChanged();
-            NotifyTenantAdministrationSandboxStateChanged();
-            return;
-        }
-
-        try
-        {
-            var profile = await _tenantAdministrationProfileStore.GetAsync(tenantId, companyId, ct).ConfigureAwait(false);
-            if (profile is null)
-            {
-                TenantAdministrationProfileStatusText = "No retained tenant administration setup profile exists for the active fund context.";
-                TenantAdministrationProfileUpdatedText = "Save setup controls with retained evidence before production certification.";
-                TenantAdministrationEvidenceText = $"evidence://tenant-admin/{tenantId}/{companyId}/setup";
-                ImplementationSandboxProofStatusText = "Implementation sandbox proof has not been retained.";
-                ApplyTenantAdministrationControlRows();
-                NotifyTenantAdministrationSaveStateChanged();
-                NotifyTenantAdministrationSandboxStateChanged();
-                return;
-            }
-
-            ApplyTenantAdministrationProfile(profile, "Tenant administration setup profile loaded from the shared store.");
-        }
-        catch (Exception ex)
-        {
-            TenantAdministrationProfileStatusText = $"Tenant administration setup profile could not load: {ex.Message}";
-            TenantAdministrationProfileUpdatedText = "Retained tenant setup controls are unavailable.";
-            ImplementationSandboxProofStatusText = "Implementation sandbox proof could not load.";
-            ApplyTenantAdministrationControlRows();
-            NotifyTenantAdministrationSaveStateChanged();
-            NotifyTenantAdministrationSandboxStateChanged();
-        }
-    }
-
-    private void ApplyTenantAdministrationProfile(
-        AccountingTenantAdministrationProfileDto profile,
-        string statusText)
-    {
-        TenantScopeConfigured = profile.TenantScopeConfigured;
-        AdminRoleProfileConfigured = profile.AdminRoleProfileConfigured;
-        ScopedAccessPoliciesConfigured = profile.ScopedAccessPoliciesConfigured;
-        ReportingGroupsConfigured = profile.ReportingGroupsConfigured;
-        AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured;
-        WpfAccountingAdminSurfaceConfigured = profile.WpfAccountingAdminSurfaceConfigured;
-        ChartAdministrationStudioConfigured = profile.ChartAdministrationStudioConfigured;
-        RuleTestPromotionStudioConfigured = profile.RuleTestPromotionStudioConfigured;
-        CloseSetupStudioConfigured = profile.CloseSetupStudioConfigured;
-        ProviderMappingStudioConfigured = profile.ProviderMappingStudioConfigured;
-        TenantCompanyReportGroupSetupStudioConfigured = profile.TenantCompanyReportGroupSetupStudioConfigured;
-        AuditReviewToolingConfigured = profile.AuditReviewToolingConfigured;
-        BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured;
-        PerformanceValidationConfigured = profile.PerformanceValidationConfigured;
-        DisasterRecoveryRunbookConfigured = profile.DisasterRecoveryRunbookConfigured;
-        LedgerBookAdministrationStudioConfigured = profile.LedgerBookAdministrationStudioConfigured;
-        PostingRuleAuthoringStudioConfigured = profile.PostingRuleAuthoringStudioConfigured;
-        ApprovalQueueStudioConfigured = profile.ApprovalQueueStudioConfigured;
-        ApplyApprovalQueueConfiguration(profile.ApprovalQueueConfigurations.FirstOrDefault());
-        DimensionMappingStudioConfigured = profile.DimensionMappingStudioConfigured;
-        ApplyDimensionMappingConfiguration(profile.DimensionMappingConfigurations.FirstOrDefault());
-        ImplementationSandboxConfigured = profile.ImplementationSandboxConfigured;
-        TenantAdministrationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
-        TenantAdministrationProfileScopeText = $"Tenant {profile.TenantId}; company {profile.CompanyId}.";
-        TenantAdministrationProfileUpdatedText =
-            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatUtcTimestamp(profile.UpdatedAtUtc)}.";
-        TenantAdministrationProfileStatusText = statusText;
-        ImplementationSandboxProofStatusText = ImplementationSandboxConfigured
-            ? "Implementation sandbox proof retained with fixture and ledger-book validation evidence."
-            : "Implementation sandbox proof has not been retained.";
-        ApplyTenantAdministrationControlRows();
-        NotifyTenantAdministrationSaveStateChanged();
-        NotifyTenantAdministrationSandboxStateChanged();
-    }
-
-    private void NotifyTenantAdministrationSaveStateChanged()
-    {
-        RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
-        SaveTenantAdministrationProfileCommand.NotifyCanExecuteChanged();
-    }
-
-    private void NotifyTenantAdministrationSandboxStateChanged()
-    {
-        RaisePropertyChanged(nameof(CanRetainImplementationSandboxProof));
-        RetainImplementationSandboxProofCommand.NotifyCanExecuteChanged();
-    }
-
-    private void NotifyChartAccountSaveStateChanged()
-    {
-        RaisePropertyChanged(nameof(CanSaveChartAccount));
-        SaveChartAccountCommand.NotifyCanExecuteChanged();
-    }
-
-    private void NotifyPostingRuleDraftSaveStateChanged()
-    {
-        RaisePropertyChanged(nameof(CanSavePostingRuleDraft));
-        SavePostingRuleDraftCommand.NotifyCanExecuteChanged();
-    }
-
-    private void NotifyExternalGlMappingProfileSaveStateChanged()
-    {
-        RaisePropertyChanged(nameof(CanSaveExternalGlMappingProfile));
-        SaveExternalGlMappingProfileCommand.NotifyCanExecuteChanged();
-    }
-
-    private void NotifyProductionCertificationSaveStateChanged()
-    {
-        RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
-        SaveProductionCertificationProfileCommand.NotifyCanExecuteChanged();
-    }
-
-    private IReadOnlyList<AccountingApprovalQueueConfigurationDto> BuildApprovalQueueConfigurations()
-    {
-        if (string.IsNullOrWhiteSpace(ApprovalQueueId) ||
-            string.IsNullOrWhiteSpace(ApprovalQueueDisplayName) ||
-            string.IsNullOrWhiteSpace(ApprovalQueueWorkflowKind) ||
-            string.IsNullOrWhiteSpace(ApprovalQueueRequiredApprovalRole) ||
-            ApprovalQueueRequiredApprovalCount <= 0 ||
-            string.IsNullOrWhiteSpace(ApprovalQueueSegregationPolicy) ||
-            string.IsNullOrWhiteSpace(ApprovalQueueEvidenceRequirement))
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingApprovalQueueConfigurationDto(
-                ApprovalQueueId.Trim(),
-                ApprovalQueueDisplayName.Trim(),
-                ApprovalQueueWorkflowKind.Trim(),
-                ApprovalQueueRequiredApprovalRole.Trim(),
-                ApprovalQueueRequiredApprovalCount,
-                ApprovalQueueSegregationPolicy.Trim(),
-                ApprovalQueueEvidenceRequirement.Trim())
-        ];
-    }
-
-    private void ApplyApprovalQueueConfiguration(AccountingApprovalQueueConfigurationDto? configuration)
-    {
-        configuration ??= new AccountingApprovalQueueConfigurationDto(
-            "accounting-configuration-approval",
-            "Accounting configuration approval",
-            "ConfigurationPromotion",
-            "Controller",
-            2,
-            "Preparer cannot approve own configuration change.",
-            "approval-queue;configuration-approval;segregation-review");
-
-        ApprovalQueueId = configuration.QueueId;
-        ApprovalQueueDisplayName = configuration.DisplayName;
-        ApprovalQueueWorkflowKind = configuration.WorkflowKind;
-        ApprovalQueueRequiredApprovalRole = configuration.RequiredApprovalRole;
-        ApprovalQueueRequiredApprovalCount = Math.Max(1, configuration.RequiredApprovalCount);
-        ApprovalQueueSegregationPolicy = configuration.SegregationPolicy;
-        ApprovalQueueEvidenceRequirement = configuration.EvidenceRequirement;
-    }
-
-    private IReadOnlyList<AccountingDimensionMappingConfigurationDto> BuildDimensionMappingConfigurations()
-    {
-        if (string.IsNullOrWhiteSpace(DimensionMappingId) ||
-            string.IsNullOrWhiteSpace(DimensionMappingDisplayName) ||
-            string.IsNullOrWhiteSpace(DimensionMappingProviderId) ||
-            string.IsNullOrWhiteSpace(DimensionMappingMeridianDimensionsText) ||
-            string.IsNullOrWhiteSpace(DimensionMappingProviderDimensionsText) ||
-            string.IsNullOrWhiteSpace(DimensionMappingEvidenceRequirement))
-        {
-            return [];
-        }
-
-        var providerId = DimensionMappingProviderId.Trim();
-        return
-        [
-            new AccountingDimensionMappingConfigurationDto(
-                DimensionMappingId.Trim(),
-                DimensionMappingDisplayName.Trim(),
-                providerId,
-                ParseLedgerDimensionSet(DimensionMappingMeridianDimensionsText, BuildDefaultMeridianExternalGlDimensions(providerId, DimensionMappingId.Trim())),
-                ParseLedgerDimensionSet(DimensionMappingProviderDimensionsText, BuildDefaultProviderExternalGlDimensions()),
-                DimensionMappingEvidenceRequirement.Trim())
-        ];
-    }
-
-    private void ApplyDimensionMappingConfiguration(AccountingDimensionMappingConfigurationDto? configuration)
-    {
-        configuration ??= new AccountingDimensionMappingConfigurationDto(
-            "canonical-provider-dimension-map",
-            "Canonical provider dimension map",
-            "quickbooks-fixture",
-            BuildDefaultMeridianExternalGlDimensions("quickbooks-fixture", "canonical-provider-dimension-map"),
-            BuildDefaultProviderExternalGlDimensions(),
-            "dimension-mapping;external-dimension-mapping;gl-dimension-mapping");
-
-        DimensionMappingId = configuration.MappingId;
-        DimensionMappingDisplayName = configuration.DisplayName;
-        DimensionMappingProviderId = configuration.ProviderId;
-        DimensionMappingMeridianDimensionsText = FormatExternalGlLedgerDimensionSet(configuration.MeridianDimensions);
-        DimensionMappingProviderDimensionsText = FormatExternalGlLedgerDimensionSet(configuration.ProviderDimensions);
-        DimensionMappingEvidenceRequirement = configuration.EvidenceRequirement;
-    }
-
-    private void ApplyTenantAdministrationControlRows()
-    {
-        TenantAdministrationControlRows.ReplaceWith(
-        [
-            new AccountingWorkbenchRow(
-                "Tenant config",
-                TenantScopeConfigured ? "Configured" : "Missing",
-                "Tenant scope, accounting configuration, and company setup are retained.",
-                ResolveTenantAdministrationTenantId(),
-                "tenant-config"),
-            new AccountingWorkbenchRow(
-                "Admin roles",
-                AdminRoleProfileConfigured ? "Configured" : "Missing",
-                "Accounting admin role profiles are configured for governed setup.",
-                DefaultLifecycleActor,
-                "admin-roles"),
-            new AccountingWorkbenchRow(
-                "Scoped access",
-                ScopedAccessPoliciesConfigured ? "Configured" : "Missing",
-                "Accounting permissions are scoped to tenant, company, fund, or book boundaries.",
-                ResolveTenantAdministrationCompanyId(),
-                "scoped-access"),
-            new AccountingWorkbenchRow(
-                "Reporting groups",
-                ReportingGroupsConfigured ? "Configured" : "Missing",
-                "Reporting group principals are configured for close, report, and export review.",
-                "close/report/export",
-                "reporting-groups"),
-            new AccountingWorkbenchRow(
-                "Operator surface",
-                AccountingAdminSurfaceConfigured ? "Configured" : "Missing",
-                "Accounting setup controls are exposed through the governed operator surface.",
-                "WPF Accounting Configure",
-                "operator-surface"),
-            new AccountingWorkbenchRow(
-                "WPF admin",
-                WpfAccountingAdminSurfaceConfigured ? "Configured" : "Missing",
-                "Desktop accounting setup controls are exposed through the governed WPF administration surface.",
-                "WPF Accounting Configure",
-                "wpf-admin-studio"),
-            new AccountingWorkbenchRow(
-                "Chart admin",
-                ChartAdministrationStudioConfigured ? "Configured" : "Missing",
-                "Chart, ledger-book chart, account template, and activation controls are retained.",
-                "chart setup",
-                "chart-administration-studio"),
-            new AccountingWorkbenchRow(
-                "Rule tests",
-                RuleTestPromotionStudioConfigured ? "Configured" : "Missing",
-                "Rules Studio tests, dry-run previews, generated postings, and promotion queues are retained.",
-                "rules studio",
-                "rule-test-promotion-studio"),
-            new AccountingWorkbenchRow(
-                "Close setup",
-                CloseSetupStudioConfigured ? "Configured" : "Missing",
-                "Close checklist, dependencies, sign-offs, materiality, late adjustments, and period locks are retained.",
-                "close setup",
-                "close-setup-studio"),
-            new AccountingWorkbenchRow(
-                "Provider maps",
-                ProviderMappingStudioConfigured ? "Configured" : "Missing",
-                "QuickBooks, Xero, NetSuite, dimension mapping, import evidence, and guarded export setup are retained.",
-                "provider mapping",
-                "provider-mapping-studio"),
-            new AccountingWorkbenchRow(
-                "Tenant/report setup",
-                TenantCompanyReportGroupSetupStudioConfigured ? "Configured" : "Missing",
-                "Tenant, company, scoped access, admin role, and report group setup controls are retained.",
-                "tenant/company/report",
-                "tenant-company-report-group-studio"),
-            new AccountingWorkbenchRow(
-                "Audit review",
-                AuditReviewToolingConfigured ? "Configured" : "Missing",
-                "Audit, evidence, transition, and exception review tooling are retained for operations.",
-                "audit/evidence review",
-                "audit-review-tooling"),
-            new AccountingWorkbenchRow(
-                "Bulk safeguards",
-                BulkImportExportSafeguardsConfigured ? "Configured" : "Missing",
-                "Bulk import, guarded export, reconciliation, preview, approval, and rollback safeguards are retained.",
-                "import/export",
-                "bulk-import-export-safeguards"),
-            new AccountingWorkbenchRow(
-                "Performance proof",
-                PerformanceValidationConfigured ? "Configured" : "Missing",
-                "Accounting configuration, ledger queries, close, report, and export performance validation is retained.",
-                "load/capacity",
-                "performance-validation"),
-            new AccountingWorkbenchRow(
-                "Recovery runbook",
-                DisasterRecoveryRunbookConfigured ? "Configured" : "Missing",
-                "Disaster recovery, restore, replay, escalation, and operating runbook evidence is retained.",
-                "DR/runbook",
-                "disaster-recovery-runbook"),
-            new AccountingWorkbenchRow(
-                "Book admin",
-                LedgerBookAdministrationStudioConfigured ? "Configured" : "Missing",
-                "Ledger-book creation, selection, policy, activation, and period setup are retained.",
-                "ledger books",
-                "ledger-book-administration-studio"),
-            new AccountingWorkbenchRow(
-                "Rule authoring",
-                PostingRuleAuthoringStudioConfigured ? "Configured" : "Missing",
-                "Event predicates, scopes, thresholds, formulas, allocations, and posting previews are retained.",
-                "posting rules",
-                "posting-rule-authoring-studio"),
-            new AccountingWorkbenchRow(
-                "Approvals",
-                ApprovalQueueStudioConfigured ? "Configured" : "Missing",
-                "Rule promotion, journal, configuration, and segregation approval queues are retained.",
-                "approvals",
-                "approval-queue-studio"),
-            new AccountingWorkbenchRow(
-                "Dimension maps",
-                DimensionMappingStudioConfigured ? "Configured" : "Missing",
-                $"Canonical and external GL dimension mapping setup is retained for {DimensionMappingProviderId}.",
-                string.IsNullOrWhiteSpace(DimensionMappingId) ? "dimensions" : DimensionMappingId,
-                "dimension-mapping-studio"),
-            new AccountingWorkbenchRow(
-                "Sandbox proof",
-                ImplementationSandboxConfigured ? "Configured" : "Missing",
-                "Implementation fixture, migration rehearsal, import, rule, close, and report validation is retained.",
-                "implementation",
-                "implementation-sandbox")
-        ]);
-    }
-
-    private async Task RefreshProductionReadinessAsync(CancellationToken ct)
-    {
-        if (_activeFundProfile is null)
-        {
-            ProductionReadinessStatusText = "Locked";
-            ProductionReadinessDetailText = "Select a fund-linked context before assessing accounting production readiness.";
-            ProductionReadinessScoreText = "No score";
-            ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
-            ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
-            ProductionReadinessDimensionalReportingText = "Locked until a fund context is selected.";
-            ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
-            ProductionReadinessComponentRows.Clear();
-            ProductionReadinessIssueRows.Clear();
-            ProductionReadinessWorkflowRows.Clear();
-            ProductionReadinessDimensionalControlRows.Clear();
-            ProductionReadinessGapRows.Clear();
-            ProductionReadinessMigrationPlanRows.Clear();
-            ProductionReadinessMigrationArtifactRows.Clear();
-            ProductionReadinessMigrationWorkerPlanRows.Clear();
-            return;
-        }
-
-        if (_accountingProductionReadinessService is null)
-        {
-            ProductionReadinessStatusText = "Unavailable";
-            ProductionReadinessDetailText = "Accounting production-readiness service is not registered for this desktop session.";
-            ProductionReadinessScoreText = "No score";
-            ProductionReadinessLedgerBookText = "Ledger-book readiness cannot be assessed.";
-            ProductionReadinessExternalGlText = "External GL readiness cannot be assessed.";
-            ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness cannot be assessed.";
-            ProductionReadinessTenantAdminText = "Tenant administration readiness cannot be assessed.";
-            ProductionReadinessComponentRows.Clear();
-            ProductionReadinessWorkflowRows.Clear();
-            ProductionReadinessDimensionalControlRows.Clear();
-            ProductionReadinessGapRows.Clear();
-            ProductionReadinessMigrationPlanRows.Clear();
-            ProductionReadinessMigrationArtifactRows.Clear();
-            ProductionReadinessMigrationWorkerPlanRows.Clear();
-            ProductionReadinessIssueRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    "production-readiness.service-missing",
-                    AccountingConfigurationValidationSeverityDto.Critical.ToString(),
-                    ProductionReadinessDetailText,
-                    "Register AccountingProductionReadinessService in the Accounting feature module.")
-            ]);
-            return;
-        }
-
-        try
-        {
-            var request = BuildProductionReadinessRequest();
-            var readiness = await _accountingProductionReadinessService.AssessAsync(request, ct).ConfigureAwait(false);
-            var workerPlans = await LoadMigrationWorkerPlansAsync(readiness, ct).ConfigureAwait(false);
-            ApplyProductionReadiness(readiness, workerPlans);
-        }
-        catch (Exception ex)
-        {
-            ProductionReadinessStatusText = "Unavailable";
-            ProductionReadinessDetailText = $"Accounting production readiness could not be assessed: {ex.Message}";
-            ProductionReadinessScoreText = "No score";
-            ProductionReadinessLedgerBookText = "Ledger-book readiness could not be assessed.";
-            ProductionReadinessExternalGlText = "External GL readiness could not be assessed.";
-            ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness could not be assessed.";
-            ProductionReadinessTenantAdminText = "Tenant administration readiness could not be assessed.";
-            ProductionReadinessComponentRows.Clear();
-            ProductionReadinessWorkflowRows.Clear();
-            ProductionReadinessDimensionalControlRows.Clear();
-            ProductionReadinessGapRows.Clear();
-            ProductionReadinessMigrationPlanRows.Clear();
-            ProductionReadinessMigrationArtifactRows.Clear();
-            ProductionReadinessMigrationWorkerPlanRows.Clear();
-            ProductionReadinessIssueRows.ReplaceWith(
-            [
-                new AccountingWorkbenchRow(
-                    "production-readiness.assessment-failed",
-                    AccountingConfigurationValidationSeverityDto.Critical.ToString(),
-                    ProductionReadinessDetailText,
-                    "Resolve shared accounting service registration or configuration errors before rollout.")
-            ]);
-        }
-    }
-
-    private AccountingProductionReadinessRequestDto BuildProductionReadinessRequest()
-    {
-        var workspace = _configuration;
-        var setupCandidate = workspace?.LedgerBookSetupCandidate;
-        var requiredScopes = setupCandidate is null
-            ? Array.Empty<LedgerBookRequiredScopeDto>()
-            :
-            [
-                new LedgerBookRequiredScopeDto(
-                    setupCandidate.FundStructureNodeId,
-                    setupCandidate.FundStructureNodeKind,
-                    setupCandidate.AccountingBasis,
-                    setupCandidate.DisplayName)
-            ];
-
-        return new AccountingProductionReadinessRequestDto(
-            _activeFundProfile?.FundProfileId,
-            workspace?.LedgerBookId,
-            setupCandidate?.AccountingBasis ?? (workspace is null ? null : ResolveActiveLedgerBook(workspace)?.AccountingBasis),
-            ProviderId: null,
-            TenantId: ResolveTenantAdministrationTenantId(),
-            CompanyId: ResolveTenantAdministrationCompanyId(),
-            TenantScopeConfigured: TenantScopeConfigured,
-            AdminRoleProfileConfigured: AdminRoleProfileConfigured,
-            ScopedAccessPoliciesConfigured: ScopedAccessPoliciesConfigured,
-            ReportingGroupsConfigured: ReportingGroupsConfigured,
-            AccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
-            WpfAccountingAdminSurfaceConfigured: WpfAccountingAdminSurfaceConfigured,
-            ChartAdministrationStudioConfigured: ChartAdministrationStudioConfigured,
-            RuleTestPromotionStudioConfigured: RuleTestPromotionStudioConfigured,
-            CloseSetupStudioConfigured: CloseSetupStudioConfigured,
-            ProviderMappingStudioConfigured: ProviderMappingStudioConfigured,
-            TenantCompanyReportGroupSetupStudioConfigured: TenantCompanyReportGroupSetupStudioConfigured,
-            AuditReviewToolingConfigured: AuditReviewToolingConfigured,
-            BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
-            PerformanceValidationConfigured: PerformanceValidationConfigured,
-            DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
-            LedgerBookAdministrationStudioConfigured: LedgerBookAdministrationStudioConfigured,
-            PostingRuleAuthoringStudioConfigured: PostingRuleAuthoringStudioConfigured,
-            ApprovalQueueStudioConfigured: ApprovalQueueStudioConfigured,
-            DimensionMappingStudioConfigured: DimensionMappingStudioConfigured,
-            ImplementationSandboxConfigured: ImplementationSandboxConfigured,
-            TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
-            PostingRulesLedgerBookNativeCertified: PostingRulesLedgerBookNativeCertified,
-            JournalLifecycleLedgerBookNativeCertified: JournalLifecycleLedgerBookNativeCertified,
-            CloseReportingLedgerBookNativeCertified: CloseReportingLedgerBookNativeCertified,
-            ClosePlanConfigurationLedgerBookNativeCertified: ClosePlanConfigurationLedgerBookNativeCertified,
-            ExternalGlLedgerBookNativeCertified: ExternalGlLedgerBookNativeCertified,
-            ReconciliationLedgerBookNativeCertified: ReconciliationLedgerBookNativeCertified,
-            DirectLendingLedgerBookNativeCertified: DirectLendingLedgerBookNativeCertified,
-            StrategyLedgerReadLedgerBookNativeCertified: StrategyLedgerReadLedgerBookNativeCertified,
-            LedgerBookWorkflowEvidenceLinks: NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
-            PeriodReportDimensionQueriesCertified: PeriodReportDimensionQueriesCertified,
-            CrossPeriodReportDimensionQueriesCertified: CrossPeriodReportDimensionQueriesCertified,
-            JournalQueryDimensionFiltersCertified: JournalQueryDimensionFiltersCertified,
-            ExternalExportDimensionMappingCertified: ExternalExportDimensionMappingCertified,
-            LedgerLineDimensionsPersistedCertified: LedgerLineDimensionsPersistedCertified,
-            TrialBalanceDimensionFiltersCertified: TrialBalanceDimensionFiltersCertified,
-            ReportPackageDimensionProvenanceCertified: ReportPackageDimensionProvenanceCertified,
-            DimensionalReportingEvidenceLinks: NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
-            RequiredLedgerBookScopes: requiredScopes);
-    }
-
-    private async Task<IReadOnlyList<AccountingMigrationRunWorkerPlanDto>> LoadMigrationWorkerPlansAsync(
-        AccountingProductionReadinessDto readiness,
-        CancellationToken ct)
-    {
-        if (_migrationRunWorkerPlanStore is null)
-        {
-            return [];
-        }
-
-        var fundProfileId = _activeFundProfile?.FundProfileId;
-        var ledgerBookId = _configuration?.LedgerBookId;
-        return await _migrationRunWorkerPlanStore.ListAsync(
-                fundProfileId,
-                ledgerBookId,
-                kind: null,
-                ct: ct,
-                tenantId: ResolveTenantAdministrationTenantId(),
-                companyId: ResolveTenantAdministrationCompanyId())
-            .ConfigureAwait(false);
-    }
-
-    private void ApplyProductionReadiness(
-        AccountingProductionReadinessDto readiness,
-        IReadOnlyList<AccountingMigrationRunWorkerPlanDto> migrationWorkerPlans)
-    {
-        ProductionReadinessStatusText = $"{readiness.Status} | {readiness.Score}/100";
-        ProductionReadinessScoreText = $"{readiness.Score}/100";
-        ProductionReadinessDetailText =
-            $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {UtcFormat.FormatUtcTimestamp(readiness.GeneratedAtUtc)}.";
-        ProductionReadinessLedgerBookText = readiness.LedgerBookRollout is null
-            ? "Ledger-book rollout assessment is unavailable."
-            : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 10} workflow control(s).";
-        ProductionReadinessExternalGlText =
-            $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
-        ProductionReadinessDimensionalReportingText = readiness.DimensionalReporting is null
-            ? "Dimensional reporting readiness is unavailable."
-            : $"{readiness.DimensionalReporting.CompletedControlCount}/{readiness.DimensionalReporting.RequiredControlCount} ledger/query/report/export dimension control(s); ledger book {AccountingWorkbenchPresentation.FormatReadinessScope(readiness.DimensionalReporting.LedgerBookId?.ToString("D"))}; {readiness.DimensionalReporting.EvidenceReferences.Count} retained evidence link(s).";
-        ProductionReadinessTenantAdminText = readiness.TenantAdministration is null
-            ? "Tenant administration readiness is unavailable."
-            : $"{readiness.TenantAdministration.CompletedControlCount}/{readiness.TenantAdministration.RequiredControlCount} tenant admin control(s); tenant {AccountingWorkbenchPresentation.FormatReadinessScope(readiness.TenantAdministration.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(readiness.TenantAdministration.CompanyId)}; {readiness.TenantAdministration.EvidenceReferences.Count} retained evidence link(s).";
-
-        ProductionReadinessComponentRows.ReplaceWith(readiness.Components.Select(component =>
-            new AccountingWorkbenchRow(
-                component.Label,
-                $"{component.Status} | {component.Score}/100",
-                component.Summary,
-                component.EvidenceReferences.Count > 0
-                    ? string.Join("; ", component.EvidenceReferences)
-                    : component.Route ?? string.Empty,
-                component.Area.ToString())));
-
-        ProductionReadinessIssueRows.ReplaceWith(readiness.Issues
-            .Where(static issue => issue.Severity is AccountingConfigurationValidationSeverityDto.Critical or AccountingConfigurationValidationSeverityDto.Warning)
-            .Take(12)
-            .Select(issue => new AccountingWorkbenchRow(
-                issue.Code,
-                issue.Severity.ToString(),
-                issue.Message,
-                issue.SuggestedAction,
-                issue.EvidenceReferences.Count > 0
-                    ? string.Join("; ", issue.EvidenceReferences)
-                    : issue.Area.ToString())));
-        ProductionReadinessWorkflowRows.ReplaceWith(AccountingWorkbenchPresentation.BuildLedgerBookWorkflowRows(readiness.LedgerBookWorkflows));
-        ProductionReadinessDimensionalControlRows.ReplaceWith(AccountingWorkbenchPresentation.BuildDimensionalReportingRows(readiness.DimensionalReporting));
-        ProductionReadinessGapRows.ReplaceWith(AccountingWorkbenchPresentation.BuildProductionGapRows(readiness.ProductionGaps));
-        ProductionReadinessMigrationPlanRows.ReplaceWith(readiness.MigrationRolloutPlan.Select(item =>
-            new AccountingWorkbenchRow(
-                item.Label,
-                $"{item.Status} | {(item.Certified ? "Certified" : "Not certified")}",
-                $"{item.ScopeLabel}; latest run {(string.IsNullOrWhiteSpace(item.LatestRunId) ? "missing" : item.LatestRunId)}{(item.LatestRunStatus.HasValue ? $" ({item.LatestRunStatus.Value})" : string.Empty)}; {item.MigratedRecordCount:N0} record(s), {item.IssueCount:N0} issue(s).",
-                item.BlockingIssueCodes.Count > 0
-                    ? $"{item.RequiredAction} | {string.Join(", ", item.BlockingIssueCodes)}"
-                    : item.RequiredAction,
-                item.Code)));
-        ProductionReadinessMigrationArtifactRows.ReplaceWith(readiness.MigrationRunArtifacts
-            .OrderByDescending(static artifact => artifact.StartedAtUtc)
-            .ThenBy(static artifact => artifact.RunId, StringComparer.OrdinalIgnoreCase)
-            .Take(8)
-            .Select(artifact => new AccountingWorkbenchRow(
-                AccountingWorkbenchPresentation.FormatMigrationArtifactKind(artifact.Kind),
-                artifact.Status.ToString(),
-                $"{AccountingWorkbenchPresentation.FormatMigrationArtifactScope(artifact)}; {artifact.MigratedRecordCount:N0} record(s), {artifact.IssueCount:N0} issue(s); started {UtcFormat.FormatUtcTimestamp(artifact.StartedAtUtc)}{(artifact.CompletedAtUtc.HasValue ? $", completed {UtcFormat.FormatUtcTimestamp(artifact.CompletedAtUtc.Value)}" : string.Empty)}.",
-                artifact.EvidenceReferences.Count > 0
-                    ? string.Join("; ", artifact.EvidenceReferences)
-                    : AccountingWorkbenchPresentation.FormatLedgerDimensionSet(artifact.Dimensions),
-                artifact.RunId)));
-        ProductionReadinessMigrationWorkerPlanRows.ReplaceWith(migrationWorkerPlans
-            .OrderBy(static plan => plan.Kind)
-            .ThenBy(static plan => plan.PlanId, StringComparer.OrdinalIgnoreCase)
-            .Take(8)
-            .Select(plan => new AccountingWorkbenchRow(
-                AccountingWorkbenchPresentation.FormatMigrationArtifactKind(plan.Kind),
-                plan.SourceRecordCount == plan.MigratedRecordCount ? "Reconciled" : "Mismatch",
-                $"{AccountingWorkbenchPresentation.FormatMigrationWorkerPlanScope(plan)}; {plan.SourceRecordCount:N0} source record(s), {plan.MigratedRecordCount:N0} migrated record(s).",
-                plan.EvidenceReferences.Count > 0
-                    ? string.Join("; ", plan.EvidenceReferences)
-                    : AccountingWorkbenchPresentation.FormatLedgerDimensionSet(plan.Dimensions),
-                plan.PlanId)));
-    }
-
-    private PostingRuleDto? ResolvePostingCandidateRule(AccountingConfigurationWorkspaceDto workspace)
-    {
-        var sourceEventType = $"ManualJournalEntry.{SelectedEntryType}";
-        return workspace.PostingRules
-                   .Where(static rule => !rule.IsArchived)
-                   .Where(rule => string.Equals(rule.SourceEventType, sourceEventType, StringComparison.OrdinalIgnoreCase))
-                   .OrderByDescending(static rule => rule.Priority)
-                   .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
-                   .FirstOrDefault()
-               ?? workspace.PostingRules
-                   .Where(static rule => !rule.IsArchived)
-                   .OrderByDescending(static rule => rule.Priority)
-                   .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
-                   .FirstOrDefault();
-    }
-
-    private LedgerBookDto? ResolveActiveLedgerBook(AccountingConfigurationWorkspaceDto workspace)
-        => workspace.LedgerBooks.FirstOrDefault(book => book.LedgerBookId == workspace.LedgerBookId)
-           ?? workspace.LedgerBooks.FirstOrDefault();
-
-    private LedgerDimensionSetDto BuildPostingCandidateDimensions(PostingRuleDto rule)
-        => rule.Scope is { } scope
-            ? scope with
-            {
-                FundId = string.IsNullOrWhiteSpace(scope.FundId) ? _activeFundProfile?.FundProfileId : scope.FundId,
-                EntityId = string.IsNullOrWhiteSpace(scope.EntityId) ? AccountingWorkbenchPresentation.FirstDimensionValue(_activeFundProfile?.EntityIds) : scope.EntityId
-            }
-            : new LedgerDimensionSetDto(
-                FundId: _activeFundProfile?.FundProfileId,
-                EntityId: AccountingWorkbenchPresentation.FirstDimensionValue(_activeFundProfile?.EntityIds),
-                SleeveId: AccountingWorkbenchPresentation.FirstDimensionValue(_activeFundProfile?.SleeveIds),
-                InvestorId: RequiresPrivateCapitalTreasuryContext(SelectedEntryType)
-                    ? $"investor:{_activeFundProfile?.FundProfileId}:default"
-                    : null,
-                CapitalAccountId: RequiresPrivateCapitalTreasuryContext(SelectedEntryType)
-                    ? $"capital-account:{_activeFundProfile?.FundProfileId}:default"
-                    : null,
-                CounterpartyId: rule.Scope?.CounterpartyId);
-
-    private IReadOnlyList<string> BuildPostingCandidateEvidenceLinks(PostingRuleDto rule)
-    {
-        var links = new List<string>();
-        links.AddRange(NormalizeEvidenceLink(DraftEvidenceLink));
-        links.Add($"accounting-rule://{rule.RuleId}/{rule.RuleVersion}");
-        links.Add($"desktop://accounting/configure/posting-candidate/{rule.RuleId}");
-        return links
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private void ApplyPostingCandidateResult(
-        PostingRuleDto rule,
-        PostingRuleJournalCandidateResultDto result,
-        Guid correlationId,
-        Guid sourceEventId)
-    {
-        var rows = new List<AccountingWorkbenchRow>
-        {
-            new(
-                result.SelectedRuleId ?? rule.RuleId,
-                result.SelectedRuleVersion ?? rule.RuleVersion,
-                $"{result.DryRunResult.SourceEventType} | priority match | correlation {correlationId:D}",
-                $"{result.DryRunResult.RuleMatches.Count} dry-run match(es); source event {sourceEventId:D}",
-                result.SelectedRuleId ?? rule.RuleId),
-            new(
-                "Draft command",
-                result.PostingCommand?.ApprovalState.ToString() ?? "Blocked",
-                result.JournalEntryId is null
-                    ? "No journal draft candidate was created."
-                    : $"Journal draft {result.JournalEntryId:D}; debits {result.TotalDebits:0.##}; credits {result.TotalCredits:0.##}; imbalance {result.Imbalance:0.##}",
-                $"Submit for approval: {result.CanSubmitForApproval}; auto-post: {result.CanPostWithoutAdditionalApproval}; posting remains JE lifecycle-gated.",
-                result.PostingCommand?.CommandId.ToString("D") ?? string.Empty),
-            new(
-                "Evidence",
-                $"{result.EvidenceLinks.Count} retained link(s)",
-                string.Join("; ", result.EvidenceLinks.Take(4)),
-                result.EvidenceLinks.Count > 4 ? $"{result.EvidenceLinks.Count - 4} additional link(s)" : "All links shown",
-                string.Empty)
-        };
-
-        rows.AddRange(result.GeneratedPostingLines.Select(line =>
-            new AccountingWorkbenchRow(
-                line.AccountPath,
-                line.Side.ToString(),
-                $"{line.Amount:0.##} {line.Currency} | dimensions {FormatLedgerDimensions(line.Dimensions)}",
-                line.Description ?? line.AmountFormulaId,
-                line.LineId)));
-
-        rows.AddRange(result.Issues.Select(issue =>
-            new AccountingWorkbenchRow(
-                issue.Code,
-                issue.BlocksCandidate ? "Blocking" : issue.Severity.ToString(),
-                issue.Message,
-                issue.SuggestedAction ?? string.Empty,
-                issue.TargetId ?? string.Empty)));
-
-        PostingCandidateRows.ReplaceWith(rows);
-        PostingCandidateStatusText = result.HasBlockingIssues
-            ? $"Posting candidate is blocked by {result.Issues.Count(issue => issue.BlocksCandidate)} issue(s); no posting command is executable."
-            : $"Posting candidate built for {result.SelectedRuleId ?? rule.RuleId}; draft is {(result.CanSubmitForApproval ? "approval-ready" : "validation-gated")} and not posted.";
-        PostingCandidateDetailText =
-            $"{result.GeneratedPostingLines.Count} generated line(s), debits {result.TotalDebits:0.##}, credits {result.TotalCredits:0.##}, {result.EvidenceLinks.Count} evidence link(s); posting remains governed by JE lifecycle.";
-    }
-
-    private JournalEntryLifecycleActionRequestDto BuildManualJournalLifecycleRequest(
-        ManualJournalEntryDraftDto draft,
-        JournalEntryLifecycleActionDto action)
-    {
-        var notes = action switch
-        {
-            JournalEntryLifecycleActionDto.Approve => "Approved from WPF Accounting Configure with retained reviewer evidence.",
-            JournalEntryLifecycleActionDto.Post => "Posted from WPF Accounting Configure after approval review.",
-            JournalEntryLifecycleActionDto.Reverse => "Reverse from WPF Accounting Configure with retained correction review.",
-            JournalEntryLifecycleActionDto.Rebook => "Rebook from WPF Accounting Configure with retained correction review.",
-            JournalEntryLifecycleActionDto.LockAfterClose => "Close lock from WPF Accounting Configure with retained period-lock evidence.",
-            _ => $"Lifecycle action {action} from WPF Accounting Configure."
-        };
-        return new JournalEntryLifecycleActionRequestDto(
-            draft.JournalEntryId,
-            draft.FundProfileId,
-            action,
-            DefaultLifecycleActor,
-            draft.Version,
-            notes,
-            CorrelationId: $"wpf-manual-je-{action.ToString().ToLowerInvariant()}",
-            EvidenceLinks: AccountingWorkbenchPresentation.BuildManualJournalLifecycleEvidenceLinks(draft, action),
-            RebookLines: action == JournalEntryLifecycleActionDto.Rebook
-                ? AccountingWorkbenchPresentation.BuildManualJournalRebookLines(draft)
-                : [],
-            LedgerBookId: draft.LedgerBookId);
-    }
-
-    private void ApplyManualJournalLifecycleRows(JournalEntryLifecycleActionResultDto result)
-    {
-        var rows = new List<AccountingWorkbenchRow>
-        {
-            new(
-                result.Transition.Action.ToString(),
-                $"{result.Transition.FromStatus} -> {result.Transition.ToStatus}",
-                $"{result.Transition.Actor} at {UtcFormat.FormatUtcTimestamp(result.Transition.RecordedAtUtc)}",
-                $"{result.Transition.EvidenceLinks.Count} evidence link(s); {result.Transition.Notes ?? "no notes"}",
-                result.Transition.TransitionId)
-        };
-        rows.AddRange(result.GeneratedJournalEntries.Select(entry =>
-            new AccountingWorkbenchRow(
-                entry.JournalEntryId.ToString("D"),
-                entry.Status.ToString(),
-                $"{FormatManualJournalEntryType(entry.EntryType)} | {entry.Memo}",
-                $"{entry.TotalDebits:0.##} / {entry.TotalCredits:0.##} {entry.Currency}; reversal {entry.ReversalOfJournalEntryId?.ToString("D") ?? "none"}; rebook {entry.RebookedFromJournalEntryId?.ToString("D") ?? "none"}",
-                entry.JournalEntryId.ToString("D"))));
-        rows.AddRange((result.JournalEntry.LifecycleTransitions ?? [])
-            .Reverse()
-            .Take(8)
-            .Select(transition => new AccountingWorkbenchRow(
-                transition.Action.ToString(),
-                $"{transition.FromStatus} -> {transition.ToStatus}",
-                $"{transition.Actor} at {UtcFormat.FormatUtcTimestamp(transition.RecordedAtUtc)}",
-                $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
-                transition.TransitionId)));
-
-        ManualJournalLifecycleRows.ReplaceWith(rows);
-    }
-
-    private async Task LoadManualJournalWorkbenchAsync(CancellationToken ct)
-    {
-        if (_activeFundProfile is null)
-        {
-            return;
-        }
-
-        var workbench = await _manualJournalEntryWorkbenchService
-            .GetWorkbenchAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, ct)
-            .ConfigureAwait(false);
-
-        RememberManualJournalDrafts(workbench.Drafts);
-        ManualJournalDraftRows.ReplaceWith(workbench.Drafts.Select(draft =>
-            new AccountingWorkbenchRow(
-                $"{FormatManualJournalEntryType(draft.EntryType)} | {draft.Memo}",
-                draft.Status.ToString(),
-                $"{draft.TotalDebits:0.##} / {draft.TotalCredits:0.##} {draft.Currency}",
-                $"{draft.ValidationIssues.Count} issue(s) | v{draft.Version}",
-                draft.JournalEntryId.ToString("D"))));
-        ApplyPrivateCapitalActivityRows(workbench.PrivateCapitalActivity);
-        await LoadCapitalAccountWorkbenchAsync(ct).ConfigureAwait(false);
-        _selectedDraft ??= workbench.Drafts.FirstOrDefault();
-        var entityOptions = (_activeFundProfile.EntityIds ?? [])
-            .Concat(workbench.Drafts.Where(draft => draft.FundProfileId == _activeFundProfile.FundProfileId
-                && draft.LedgerBookId == _configuration?.LedgerBookId).Select(draft => draft.EntityId))
-            .Where(entity => !string.IsNullOrWhiteSpace(entity)).OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
-        RecurringJournalEntityOptions.ReplaceWith(entityOptions);
-        _recurringJournalFundProfileId = _activeFundProfile.FundProfileId;
-        _recurringJournalLedgerBookId = _configuration?.LedgerBookId;
-        var entityId = entityOptions.Contains(SelectedRecurringJournalEntityId, StringComparer.Ordinal)
-            ? SelectedRecurringJournalEntityId : entityOptions.Length == 1 ? entityOptions[0] : null;
-        SetProperty(ref _selectedRecurringJournalEntityId, entityId, nameof(SelectedRecurringJournalEntityId));
-        await LoadGovernedQueuesAsync(entityId, ct).ConfigureAwait(false);
-        ApplyManualJournalLifecycleRows(_selectedDraft);
-        ManualJournalStatusText = AccountingWorkbenchPresentation.BuildManualJournalStatusText(workbench);
-        RaisePropertyChanged(nameof(CanSubmitManualJournal));
-        RaiseManualJournalDraftComputedProperties();
-    }
-
-    private void ApplyManualJournalLifecycleRows(ManualJournalEntryDraftDto? draft)
-    {
-        if (draft is null)
-        {
-            ManualJournalLifecycleRows.Clear();
-            return;
-        }
-
-        ManualJournalLifecycleRows.ReplaceWith(draft.LifecycleTransitions
-            .Reverse()
-            .Take(10)
-            .Select(transition => new AccountingWorkbenchRow(
-                transition.Action.ToString(),
-                $"{transition.FromStatus} -> {transition.ToStatus}",
-                $"{transition.Actor} at {UtcFormat.FormatUtcTimestamp(transition.RecordedAtUtc)}",
-                $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
-                transition.TransitionId)));
-    }
-
-    private void RaiseManualJournalDraftComputedProperties()
-    {
-        NotifyAssetAccountingDraftState();
-        RaisePropertyChanged(nameof(ManualJournalDraftReferenceText));
-        RaisePropertyChanged(nameof(ManualJournalDraftDateText));
-        RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
-        RaisePropertyChanged(nameof(ManualJournalDraftBalanceText));
-        RaisePropertyChanged(nameof(ManualJournalDraftBalanceBadgeText));
-    }
-
-    private async Task LoadManualJournalPeriodAsync(CancellationToken ct)
-    {
-        _selectedManualJournalPeriod = null;
-        if (_ledgerBookService is null || _configuration is null)
-        {
-            RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
-            return;
-        }
-
-        var ledgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId ?? _configuration.LedgerBookId;
-        if (!ledgerBookId.HasValue)
-        {
-            RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
-            return;
-        }
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var openPeriods = await _ledgerBookService.ListOpenPeriodsAsync(ledgerBookId.Value, ct).ConfigureAwait(false);
-        _selectedManualJournalPeriod = openPeriods
-            .OrderByDescending(period => period.StartDate <= today && today <= period.EndDate)
-            .ThenByDescending(period => period.StartDate)
-            .ThenByDescending(period => period.PeriodNo)
-            .FirstOrDefault();
-        RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
-    }
-
-    private async Task LoadCapitalAccountWorkbenchAsync(CancellationToken ct)
-    {
-        if (_activeFundProfile is null)
-        {
-            ClearCapitalAccountWorkbenchRows();
-            CapitalAccountWorkbenchStatusText = "Select a fund-linked context before loading the Capital Account Workbench.";
-            return;
-        }
-
-        if (_capitalAccountWorkbenchService is null)
-        {
-            ClearCapitalAccountWorkbenchRows();
-            CapitalAccountWorkbenchStatusText = "Capital Account Workbench service is not registered in this desktop session.";
-            return;
-        }
-
-        var workbench = await _capitalAccountWorkbenchService
-            .GetWorkbenchAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, ct: ct)
-            .ConfigureAwait(false);
-
-        ApplyCapitalAccountWorkbenchRows(workbench);
-    }
-
-    private void ApplyCapitalAccountWorkbenchRows(CapitalAccountWorkbenchDto workbench)
-    {
-        CapitalAccountInvestorRows.ReplaceWith(workbench.InvestorAccounts.Select(account =>
-        {
-            var payment = account.PaymentIntentEvidence is null
-                ? "payment evidence not included"
-                : $"{account.PaymentIntentEvidence.Status} | {account.PaymentIntentEvidence.Summary}";
-            return new AccountingWorkbenchRow(
-                account.CapitalAccountId,
-                account.ReadinessLabel,
-                $"{AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(account.OpeningNetActivity, account.Currency)} opening -> {AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(account.EndingNetActivity, account.Currency)} ending | {AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(account.NetCapitalActivity, account.Currency)} net",
-                $"{account.FundEventCount} event(s); {account.PostedFundEventCount} posted; {account.PublishedReportOutputCount} published statement(s); {account.EvidenceCategorySummary} | {account.EvidenceLinkCount} evidence | {payment}",
-                account.ActivityRoute);
-        }));
-
-        CapitalAccountAllocationRuleRows.ReplaceWith(workbench.AllocationRules.Select(rule =>
-            new AccountingWorkbenchRow(
-                rule.Label,
-                rule.IsSatisfied ? "Satisfied" : "Needs evidence",
-                $"{rule.CapitalAccountId} | {rule.InvestorId ?? "unassigned investor"} | {rule.Basis}",
-                $"{rule.Reason} | {rule.EvidenceLinkCount} evidence | required: {AccountingWorkbenchPresentation.FormatRequiredEvidence(rule.RequiredEvidence)}",
-                rule.Route ?? string.Empty)));
-
-        CapitalAccountStatementLineageRows.ReplaceWith(workbench.StatementLineage.Select(lineage =>
-        {
-            var published = lineage.PublishedAtUtc is null
-                ? lineage.ReportWorkflowState ?? "not published"
-                : $"{lineage.ReportWorkflowState ?? "Published"} by {lineage.PublishedBy ?? "unknown"} at {UtcFormat.FormatUtcTimestamp(lineage.PublishedAtUtc.Value)}";
-            var restatement = lineage.HasRestatementLineage
-                ? $"{lineage.RestatementReasonCode ?? "Restated"} | {lineage.RestatementChangedLineCount} changed line(s) | {lineage.RestatementEvidenceLinkCount} evidence"
-                : lineage.RestatementStatus;
-            return new AccountingWorkbenchRow(
-                lineage.DisplayName,
-                lineage.HasRestatementLineage ? "Restated" : lineage.IsPublished ? "Published" : lineage.IsReportReady ? "Ready" : "Review",
-                $"{lineage.ReportOutputType} | {published} | {lineage.ReportLineProvenanceCount} provenance line(s)",
-                $"{restatement} | manifest {lineage.PublicationManifestId ?? "none"} | retained {lineage.RetainedManifestPath ?? "none"} | hash {lineage.PublicationEvidenceHash ?? "none"}",
-                lineage.ReportOutputRoute ?? lineage.ReportRoute);
-        }));
-
-        CapitalAccountAuditDrillThroughRows.ReplaceWith(workbench.AuditDrillThroughs.Select(drill =>
-            new AccountingWorkbenchRow(
-                drill.Label,
-                drill.IsAvailable ? "Available" : "Missing route",
-                $"{drill.Kind} | {drill.Summary}",
-                $"{drill.EvidenceLinkCount} evidence | related: {AccountingWorkbenchPresentation.FormatRequiredEvidence(drill.RelatedIds)}",
-                drill.Route ?? string.Empty)));
-
-        CapitalAccountCapabilityRows.ReplaceWith(
-            workbench.LiveCapabilities
-                .Select(item => new AccountingWorkbenchRow(item, "Live", "v0.18 Capital Account Workbench slice", "Backed by shared service records and browser/WPF rows.", workbench.WorkbenchRoute))
-                .Concat(workbench.PlannedCapabilities.Select(item => new AccountingWorkbenchRow(item, "Planned", "Deferred outside this narrow slice.", "Not represented as live runtime behavior.", string.Empty))));
-
-        CapitalAccountWorkbenchStatusText =
-            $"{workbench.StatusLabel}: {workbench.StatusReason} {workbench.InvestorAccountCount} investor account(s), {workbench.AllocationRules.Count} allocation rule(s), {workbench.StatementCount} statement lineage row(s), {workbench.RestatementLineageCount} restatement row(s), {workbench.AuditDrillThroughCount} audit drill-through(s).";
     }
 
     private async Task LoadOperationsPostureAsync(CancellationToken ct)
@@ -4119,301 +1929,6 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         PolicyPostureText = $"{policies.Count} accounting basis policy record(s) available; create fund-scoped overrides from this workbench.";
     }
 
-    private void ApplyManualJournalEntryTypePreset(ManualJournalEntryTypeDto entryType)
-    {
-        var preset = GetManualJournalEntryTypePreset(entryType);
-        DraftMemo = preset.Memo;
-        DraftDebitAccountPath = preset.DebitAccountPath;
-        DraftCreditAccountPath = preset.CreditAccountPath;
-        DraftEvidenceLink = preset.EvidenceLink;
-    }
-
-    private static IReadOnlyList<ChartOfAccountsNodeDto> BuildManualJournalEntryTypeChartNodes()
-        =>
-        [
-            new ChartOfAccountsNodeDto("liabilities-accrued-expenses", "Liabilities:Accrued Expenses", "Accrued Expenses", "Liability"),
-            new ChartOfAccountsNodeDto("assets-prepaid-expenses", "Assets:Prepaid Expenses", "Prepaid Expenses", "Asset"),
-            new ChartOfAccountsNodeDto("expenses-operating-expenses", "Expenses:Operating Expenses", "Operating Expenses", "Expense"),
-            new ChartOfAccountsNodeDto("expenses-amortization-expense", "Expenses:Amortization Expense", "Amortization Expense", "Expense"),
-            new ChartOfAccountsNodeDto("assets-accumulated-amortization", "Assets:Accumulated Amortization", "Accumulated Amortization", "ContraAsset"),
-            new ChartOfAccountsNodeDto("liabilities-deferred-revenue", "Liabilities:Deferred Revenue", "Deferred Revenue", "Liability"),
-            new ChartOfAccountsNodeDto("equity-capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
-            new ChartOfAccountsNodeDto("equity-distributions", "Equity:Distributions", "Distributions", "Equity"),
-            new ChartOfAccountsNodeDto("assets-subscription-receivable", "Assets:Subscription Receivable", "Subscription Receivable", "Asset"),
-            new ChartOfAccountsNodeDto("equity-redemptions", "Equity:Redemptions", "Redemptions", "Equity"),
-            new ChartOfAccountsNodeDto("equity-lp-transfer-out", "Equity:LP Transfer Out", "LP Transfer Out", "Equity"),
-            new ChartOfAccountsNodeDto("equity-lp-transfer-in", "Equity:LP Transfer In", "LP Transfer In", "Equity"),
-            new ChartOfAccountsNodeDto("expenses-management-fees", "Expenses:Management Fees", "Management Fees", "Expense")
-        ];
-
-    private static IReadOnlyList<JournalEntryTemplateDto> BuildManualJournalEntryTypeTemplates(string currency)
-    {
-        var normalizedCurrency = string.IsNullOrWhiteSpace(currency) ? "USD" : currency.Trim().ToUpperInvariant();
-        return ManualJournalEntryTypePresets
-            .Where(preset => preset.EntryType != ManualJournalEntryTypeDto.General)
-            .Select(preset => new JournalEntryTemplateDto(
-                GetManualJournalEntryTemplateId(preset.EntryType),
-                $"{preset.Label} desktop template",
-                preset.Description,
-                [
-                    new JournalEntryTemplateLineDto(
-                        $"{GetManualJournalEntrySlug(preset.EntryType)}-debit",
-                        preset.DebitAccountPath,
-                        AccountingTemplateLineSideDto.Debit,
-                        1m,
-                        normalizedCurrency,
-                        $"Debit {preset.DebitAccountPath}."),
-                    new JournalEntryTemplateLineDto(
-                        $"{GetManualJournalEntrySlug(preset.EntryType)}-credit",
-                        preset.CreditAccountPath,
-                        AccountingTemplateLineSideDto.Credit,
-                        1m,
-                        normalizedCurrency,
-                        $"Credit {preset.CreditAccountPath}.")
-                ]))
-            .ToArray();
-    }
-
-    private static IReadOnlyList<PostingRuleDto> BuildManualJournalEntryTypePostingRules()
-        => ManualJournalEntryTypePresets
-            .Where(preset => preset.EntryType != ManualJournalEntryTypeDto.General)
-            .Select(preset => new PostingRuleDto(
-                GetManualJournalEntryPostingRuleId(preset.EntryType),
-                $"{preset.Label} policy",
-                $"ManualJournalEntry.{preset.EntryType}",
-                GetManualJournalEntryTemplateId(preset.EntryType),
-                Description: $"Fund/book configurable WPF policy route for {preset.Label.ToLowerInvariant()} manual journal entries."))
-            .ToArray();
-
-    private static ManualJournalEntryTypePreset GetManualJournalEntryTypePreset(ManualJournalEntryTypeDto entryType)
-        => ManualJournalEntryTypePresets.FirstOrDefault(preset => preset.EntryType == entryType)
-            ?? ManualJournalEntryTypePresets[0];
-
-    private static string FormatManualJournalEntryType(ManualJournalEntryTypeDto entryType)
-        => GetManualJournalEntryTypePreset(entryType).Label;
-
-    private static string GetManualJournalEntryTemplateId(ManualJournalEntryTypeDto entryType)
-        => entryType == ManualJournalEntryTypeDto.General
-            ? "desktop-manual-adjustment-v1"
-            : $"desktop-{GetManualJournalEntrySlug(entryType)}-v1";
-
-    private static string GetManualJournalEntryPostingRuleId(ManualJournalEntryTypeDto entryType)
-        => entryType == ManualJournalEntryTypeDto.General
-            ? "manual-adjustment-policy-v1"
-            : $"manual-{GetManualJournalEntrySlug(entryType)}-policy-v1";
-
-    private static string GetManualJournalEntrySlug(ManualJournalEntryTypeDto entryType)
-        => entryType switch
-        {
-            ManualJournalEntryTypeDto.AccruedBalance => "accrued-balance",
-            ManualJournalEntryTypeDto.AccruedExpense => "accrued-expense",
-            ManualJournalEntryTypeDto.PrepaidExpense => "prepaid-expense",
-            ManualJournalEntryTypeDto.Expense => "expense",
-            ManualJournalEntryTypeDto.Amortization => "amortization",
-            ManualJournalEntryTypeDto.Deferral => "deferral",
-            ManualJournalEntryTypeDto.Reclassification => "reclassification",
-            ManualJournalEntryTypeDto.Reversal => "reversal",
-            ManualJournalEntryTypeDto.CapitalCall => "capital-call",
-            ManualJournalEntryTypeDto.Distribution => "distribution",
-            ManualJournalEntryTypeDto.Subscription => "subscription",
-            ManualJournalEntryTypeDto.Redemption => "redemption",
-            ManualJournalEntryTypeDto.LpTransfer => "lp-transfer",
-            ManualJournalEntryTypeDto.ManagementFee => "management-fee",
-            _ => "manual-adjustment"
-        };
-
-    private static TreasuryLedgerContextDto? BuildManualJournalTreasuryContext(
-        string fundProfileId,
-        ManualJournalEntryTypeDto entryType,
-        DateOnly accountingDate,
-        Guid journalEntryId)
-    {
-        if (!RequiresPrivateCapitalTreasuryContext(entryType))
-        {
-            return null;
-        }
-
-        var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? "default-fund" : fundProfileId.Trim();
-        var slug = GetManualJournalEntrySlug(entryType);
-        var dateToken = accountingDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-        var entryToken = journalEntryId.ToString("N");
-        return new TreasuryLedgerContextDto(
-            EffectiveDate: accountingDate,
-            IdempotencyKey: $"wpf:{normalizedFundProfileId}:{slug}:{entryToken}",
-            FundEventId: $"fund-event:{normalizedFundProfileId}:{slug}:{dateToken}",
-            FundEventType: entryType.ToString(),
-            CapitalAccountId: $"capital-account:{normalizedFundProfileId}:default",
-            InvestorId: $"investor:{normalizedFundProfileId}:default",
-            PaymentIntentId: RequiresPaymentLinkage(entryType) ? $"payment:{normalizedFundProfileId}:{slug}:{entryToken}" : null,
-            SettlementReference: RequiresPaymentLinkage(entryType) ? $"settlement:{normalizedFundProfileId}:{slug}:{dateToken}" : null);
-    }
-
-    private static bool RequiresPrivateCapitalTreasuryContext(ManualJournalEntryTypeDto entryType)
-        => entryType is ManualJournalEntryTypeDto.CapitalCall
-            or ManualJournalEntryTypeDto.Distribution
-            or ManualJournalEntryTypeDto.Subscription
-            or ManualJournalEntryTypeDto.Redemption
-            or ManualJournalEntryTypeDto.LpTransfer
-            or ManualJournalEntryTypeDto.ManagementFee;
-
-    private static bool RequiresPaymentLinkage(ManualJournalEntryTypeDto entryType)
-        => entryType is ManualJournalEntryTypeDto.CapitalCall
-            or ManualJournalEntryTypeDto.Distribution
-            or ManualJournalEntryTypeDto.Redemption
-            or ManualJournalEntryTypeDto.ManagementFee;
-
-    private static AccountingTreatmentKindDto MapPostingCandidateTreatment(ManualJournalEntryTypeDto entryType)
-        => entryType switch
-        {
-            ManualJournalEntryTypeDto.AccruedBalance or ManualJournalEntryTypeDto.AccruedExpense => AccountingTreatmentKindDto.Accrual,
-            ManualJournalEntryTypeDto.PrepaidExpense => AccountingTreatmentKindDto.PrepaidExpense,
-            ManualJournalEntryTypeDto.Expense or ManualJournalEntryTypeDto.ManagementFee => AccountingTreatmentKindDto.Expense,
-            ManualJournalEntryTypeDto.Amortization => AccountingTreatmentKindDto.Amortization,
-            ManualJournalEntryTypeDto.Deferral => AccountingTreatmentKindDto.Deferral,
-            ManualJournalEntryTypeDto.Reclassification => AccountingTreatmentKindDto.Reclassification,
-            ManualJournalEntryTypeDto.Reversal => AccountingTreatmentKindDto.Reversal,
-            _ => AccountingTreatmentKindDto.General
-        };
-
-    private void ApplyManualJournalValidationRows(IReadOnlyList<AccountingConfigurationValidationIssueDto> issues)
-    {
-        ValidationRows.ReplaceWith(issues.Select(issue =>
-            new AccountingWorkbenchRow(issue.Code, issue.Severity.ToString(), issue.Message, issue.SuggestedAction ?? string.Empty, issue.TargetId ?? string.Empty)));
-    }
-
-    private void ApplyPrivateCapitalActivityRows(PrivateCapitalActivityProjectionDto? activity)
-    {
-        if (activity is null)
-        {
-            ManualJournalFundEventLedgerRecordRows.Clear();
-            ManualJournalCapitalAccountRows.Clear();
-            ManualJournalCapitalAccountSubledgerRows.Clear();
-            ManualJournalPaymentIntentRows.Clear();
-            ManualJournalFundEventRows.Clear();
-            ManualJournalLedgerImpactRows.Clear();
-            ManualJournalReportOutputRows.Clear();
-            return;
-        }
-
-        ManualJournalFundEventLedgerRecordRows.ReplaceWith(activity.FundEventRecords.Select(record =>
-        {
-            var reportOutput = string.IsNullOrWhiteSpace(record.PrimaryReportOutputType)
-                ? "no primary report"
-                : record.PrimaryReportOutputType;
-            var reportWorkflow = string.IsNullOrWhiteSpace(record.ReportWorkflowState)
-                ? "no workflow"
-                : record.ReportWorkflowState;
-            var approval = string.IsNullOrWhiteSpace(record.ApprovalId)
-                ? "no approval route"
-                : $"{record.ApprovalId} via {record.ApprovalRoute ?? "approval route unavailable"}";
-            var nextAction = string.IsNullOrWhiteSpace(record.NextActionRoute)
-                ? record.NextAction
-                : $"{record.NextAction} via {record.NextActionRoute}";
-            return new AccountingWorkbenchRow(
-                $"{record.FundEventType} | {record.Memo}",
-                record.IsPosted ? "Posted" : record.ApprovalState.ToString(),
-                $"{AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(record.NetCapitalActivity, record.Currency)} net / {AccountingWorkbenchPresentation.FormatCurrencyAmount(record.GrossAmount, record.Currency)} gross | {AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(record.CapitalAccountOpeningNetActivity, record.Currency)} opening -> {AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(record.CapitalAccountEndingNetActivity, record.Currency)} ending | {record.EffectiveDate:yyyy-MM-dd}",
-                $"{record.CapitalAccountSubledgerEntryCount} subledger | {record.LedgerImpactCount} ledger | {record.ReportOutputCount} report | {reportOutput} | {reportWorkflow} | {record.ReportLineProvenanceCount} provenance | readiness {record.ReadinessLabel}: {record.ReadinessReason} | next {nextAction} | {record.EvidenceLinkCount} evidence via {record.EvidenceRoute} | approval {approval} | {record.ValidationIssueCount} issue(s)",
-                record.ActivityRoute);
-        }));
-        ManualJournalCapitalAccountRows.ReplaceWith(activity.CapitalAccounts.Select(account =>
-            new AccountingWorkbenchRow(
-                account.CapitalAccountId,
-                AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(account.NetActivity, account.Currency),
-                $"{account.FundEventCount} event(s); last {FormatFundEventDate(account.LastFundEventType, account.LastEffectiveDate)}",
-                $"Calls {AccountingWorkbenchPresentation.FormatCurrencyAmount(account.Contributions, account.Currency)}; distributions {AccountingWorkbenchPresentation.FormatCurrencyAmount(account.Distributions, account.Currency)}",
-                account.InvestorId ?? string.Empty)));
-        ManualJournalCapitalAccountSubledgerRows.ReplaceWith(activity.CapitalAccountSubledgers.Select(subledger =>
-            new AccountingWorkbenchRow(
-                subledger.CapitalAccountId,
-                AccountingWorkbenchPresentation.BuildCapitalAccountSubledgerStatus(subledger),
-                $"{AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(subledger.OpeningNetActivity, subledger.Currency)} opening -> {AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(subledger.EndingNetActivity, subledger.Currency)} ending | {AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(subledger.NetCapitalActivity, subledger.Currency)} net | {AccountingWorkbenchPresentation.FormatSubledgerDateRange(subledger)}",
-                $"Calls {AccountingWorkbenchPresentation.FormatCurrencyAmount(subledger.Contributions, subledger.Currency)}; distributions {AccountingWorkbenchPresentation.FormatCurrencyAmount(subledger.Distributions, subledger.Currency)}; subscriptions {AccountingWorkbenchPresentation.FormatCurrencyAmount(subledger.Subscriptions, subledger.Currency)}; redemptions {AccountingWorkbenchPresentation.FormatCurrencyAmount(subledger.Redemptions, subledger.Currency)}; fees {AccountingWorkbenchPresentation.FormatCurrencyAmount(subledger.ManagementFees, subledger.Currency)} | {subledger.FundEventCount} event(s); {subledger.ApprovalQueueCount} approval queue; {subledger.PostedFundEventCount} posted; {subledger.PublishedReportOutputCount} published report(s) | readiness {subledger.ReadinessLabel}: {subledger.ReadinessReason}; next {AccountingWorkbenchPresentation.FormatSubledgerNextAction(subledger)} | {subledger.EvidenceLinkCount} evidence; {AccountingWorkbenchPresentation.BuildEvidenceCategoryReadinessSummary(subledger.EvidenceCategories)} | {subledger.ValidationIssueCount} issue(s)",
-                subledger.ActivityRoute)));
-        ManualJournalPaymentIntentRows.ReplaceWith(activity.PaymentIntents.Select(AccountingWorkbenchPresentation.BuildManualJournalPaymentIntentRow));
-        ManualJournalFundEventRows.ReplaceWith(activity.FundEvents.Select(item =>
-            new AccountingWorkbenchRow(
-                $"{item.FundEventType} | {item.Memo}",
-                item.IsPosted ? "Posted" : item.JournalStatus.ToString(),
-                $"{AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(item.NetCapitalActivity, item.Currency)} net / {AccountingWorkbenchPresentation.FormatCurrencyAmount(item.GrossAmount, item.Currency)} gross",
-                $"{item.CapitalAccountId} | {item.EvidenceLinks.Count} evidence",
-                item.FundEventId)));
-        ManualJournalLedgerImpactRows.ReplaceWith(activity.LedgerImpacts.Select(impact =>
-            new AccountingWorkbenchRow(
-                impact.FundEventType,
-                impact.IsPostingReady ? "Posting ready" : impact.IsBalanced ? "Review" : "Unbalanced",
-                $"{AccountingWorkbenchPresentation.FormatCurrencyAmount(impact.TotalDebits, impact.Currency)} debit / {AccountingWorkbenchPresentation.FormatCurrencyAmount(impact.TotalCredits, impact.Currency)} credit",
-                $"{impact.LineCount} line(s) | {impact.EvidenceLinks.Count} evidence | {impact.ValidationIssues.Count} issue(s)",
-                impact.CapitalAccountId)));
-        ManualJournalReportOutputRows.ReplaceWith(activity.ReportOutputs.Select(output =>
-        {
-            var workflow = string.IsNullOrWhiteSpace(output.ReportWorkflowState)
-                ? output.ReportOutputType
-                : output.ReportWorkflowState;
-            var reportPack = string.IsNullOrWhiteSpace(output.ReportPackId)
-                ? workflow
-                : $"{workflow} | {output.ReportPackId}";
-            var publication = string.IsNullOrWhiteSpace(output.PublicationManifestId)
-                ? "no publication manifest"
-                : output.PublicationManifestId;
-            var reportOutputRoute = string.IsNullOrWhiteSpace(output.ReportOutputRoute)
-                ? output.ReportRoute
-                : output.ReportOutputRoute;
-            var nextActionRoute = string.IsNullOrWhiteSpace(output.NextActionRoute)
-                ? reportOutputRoute
-                : output.NextActionRoute;
-            var nextAction = string.IsNullOrWhiteSpace(output.NextAction)
-                ? "Open report output"
-                : output.NextAction;
-            var readinessLabel = string.IsNullOrWhiteSpace(output.ReadinessLabel)
-                ? output.IsPublished ? "Published" : output.IsReportReady ? "Ready" : "Review"
-                : output.ReadinessLabel;
-            var readinessReason = string.IsNullOrWhiteSpace(output.ReadinessReason)
-                ? "No report-output readiness reason"
-                : output.ReadinessReason;
-
-            return new AccountingWorkbenchRow(
-                output.DisplayName,
-                readinessLabel,
-                $"{AccountingWorkbenchPresentation.FormatSignedCurrencyAmount(output.NetCapitalActivity, output.Currency)} | {output.EffectiveDate:yyyy-MM-dd} | {reportPack}",
-                $"{output.EvidenceLinkCount} evidence | {output.ValidationIssues.Count} issue(s) | {output.ReportLineProvenanceCount} provenance | {publication} | readiness {readinessLabel}: {readinessReason} | next {nextAction} via {nextActionRoute}",
-                nextActionRoute);
-        }));
-    }
-
-    private static string FormatFundEventDate(string? eventType, DateOnly? effectiveDate)
-        => effectiveDate is null
-            ? eventType ?? "No effective date"
-            : $"{eventType ?? "Fund event"} {effectiveDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
-
-    private static string FormatLedgerDimensions(LedgerDimensionSetDto? dimensions)
-    {
-        if (dimensions is null)
-        {
-            return "none";
-        }
-
-        var values = new[]
-            {
-                dimensions.FundId,
-                dimensions.EntityId,
-                dimensions.SleeveId,
-                dimensions.StrategyId,
-                dimensions.InvestorId,
-                dimensions.CapitalAccountId,
-                dimensions.InstrumentId?.ToString("D"),
-                dimensions.TaxLotId,
-                dimensions.CostCenterId,
-                dimensions.CounterpartyId
-            }
-            .Where(static value => !string.IsNullOrWhiteSpace(value))
-            .Select(static value => value!.Trim())
-            .Take(5)
-            .ToArray();
-
-        return values.Length == 0 ? "none" : string.Join(" / ", values);
-    }
-
     private string BuildStoragePosture()
     {
         var configStore = _configurationStore?.GetType().Name ?? "not registered";
@@ -4496,352 +2011,7 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
             .Replace('|', '-')
             .Replace(Environment.NewLine, " ", StringComparison.Ordinal);
     }
-
-    private static IReadOnlyList<string> NormalizeTenantAdministrationEvidence(string? value)
-        => string.IsNullOrWhiteSpace(value)
-            ? []
-            : value
-                .Split(['\r', '\n', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Where(static item => !string.IsNullOrWhiteSpace(item))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-
-    private void ApplyExternalGlMappingProfileDraft(ExternalGlMappingProfileDto profile)
-    {
-        ExternalGlMappingProviderId = profile.ProviderId;
-        ExternalGlMappingProfileId = profile.ProfileId;
-        ExternalGlMappingDisplayName = profile.DisplayName;
-        ExternalGlMappingAccountMappingsText = string.Join(
-            Environment.NewLine,
-            profile.AccountMappings
-                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(static pair => $"{pair.Key}={pair.Value}"));
-        var dimensionMapping = profile.DimensionMappings.FirstOrDefault();
-        ExternalGlMappingMeridianDimensionsText = FormatExternalGlLedgerDimensionSet(
-            dimensionMapping?.MeridianDimensions ?? BuildDefaultMeridianExternalGlDimensions(profile.ProviderId, profile.ProfileId));
-        ExternalGlMappingExternalDimensionsText = FormatExternalGlLedgerDimensionSet(
-            dimensionMapping?.ExternalDimensions ?? BuildDefaultProviderExternalGlDimensions());
-        ExternalGlMappingEvidenceText = $"approval:external-gl-mapping:{profile.ProfileId}";
-        ExternalGlMappingProfileCertified = profile.CertificationState == AccountingCertificationStateDto.Certified;
-    }
-
-    private void ApplyDefaultExternalGlMappingDimensionDraft()
-    {
-        var providerId = string.IsNullOrWhiteSpace(ExternalGlMappingProviderId)
-            ? "quickbooks-fixture"
-            : ExternalGlMappingProviderId.Trim();
-        var profileId = string.IsNullOrWhiteSpace(ExternalGlMappingProfileId)
-            ? $"{providerId}-ledger-book-mapping"
-            : ExternalGlMappingProfileId.Trim();
-        ExternalGlMappingMeridianDimensionsText = FormatExternalGlLedgerDimensionSet(BuildDefaultMeridianExternalGlDimensions(providerId, profileId));
-        ExternalGlMappingExternalDimensionsText = FormatExternalGlLedgerDimensionSet(BuildDefaultProviderExternalGlDimensions());
-    }
-
-    private DimensionMappingProfileDto BuildExternalGlDimensionMappingProfile(
-        string providerId,
-        string profileId,
-        LedgerDimensionSetDto meridianDimensions,
-        LedgerDimensionSetDto externalDimensions,
-        bool certified)
-    {
-        return new DimensionMappingProfileDto(
-            $"{profileId}-dimension-scope",
-            "Canonical and provider dimension scope",
-            providerId,
-            meridianDimensions,
-            externalDimensions,
-            certified ? AccountingCertificationStateDto.Certified : AccountingCertificationStateDto.ReadyForReview);
-    }
-
-    private LedgerDimensionSetDto BuildDefaultMeridianExternalGlDimensions(string providerId, string profileId)
-    {
-        var ledgerBookText = _configuration?.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture);
-        var fundProfileId = _activeFundProfile?.FundProfileId ?? "fund-scope";
-        var entityId = _configuration?.LedgerBookSetupCandidate?.FundStructureNodeId.ToString("D", CultureInfo.InvariantCulture)
-            ?? _activeFundProfile?.EntityIds?.FirstOrDefault()
-            ?? fundProfileId;
-        return new LedgerDimensionSetDto(
-            FundId: fundProfileId,
-            EntityId: entityId,
-            BookId: ledgerBookText,
-            CostCenterId: "fund-accounting",
-            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["Provider"] = providerId,
-                ["MappingProfile"] = profileId
-            });
-    }
-
-    private LedgerDimensionSetDto BuildDefaultProviderExternalGlDimensions()
-    {
-        var ledgerBookText = _configuration?.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture);
-        var fundProfileId = _activeFundProfile?.FundProfileId ?? "fund-scope";
-        var entityId = _configuration?.LedgerBookSetupCandidate?.FundStructureNodeId.ToString("D", CultureInfo.InvariantCulture)
-            ?? _activeFundProfile?.EntityIds?.FirstOrDefault()
-            ?? fundProfileId;
-        return new LedgerDimensionSetDto(
-            FundId: fundProfileId,
-            EntityId: entityId,
-            BookId: ledgerBookText is null ? null : $"Book:{ledgerBookText}",
-            CostCenterId: "FundAccounting",
-            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["Class"] = fundProfileId,
-                ["Book"] = ledgerBookText ?? "fund-scope"
-            });
-    }
-
-    private static IReadOnlyDictionary<string, string> ParseExternalGlAccountMappings(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        return value
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(static line =>
-            {
-                var index = line.IndexOf('=');
-                return index <= 0 || index >= line.Length - 1
-                    ? default
-                    : new KeyValuePair<string, string>(line[..index].Trim(), line[(index + 1)..].Trim());
-            })
-            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
-            .GroupBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First().Value, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static LedgerDimensionSetDto ParseLedgerDimensionSet(string? value, LedgerDimensionSetDto defaults)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return defaults;
-        }
-
-        var externalDimensions = new Dictionary<string, string>(defaults.ExternalGlDimensions ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-        var fundId = defaults.FundId;
-        var entityId = defaults.EntityId;
-        var sleeveId = defaults.SleeveId;
-        var strategyId = defaults.StrategyId;
-        var investorId = defaults.InvestorId;
-        var capitalAccountId = defaults.CapitalAccountId;
-        var instrumentId = defaults.InstrumentId;
-        var taxLotId = defaults.TaxLotId;
-        var costCenterId = defaults.CostCenterId;
-        var counterpartyId = defaults.CounterpartyId;
-        var organizationId = defaults.OrganizationId;
-        var portfolioId = defaults.PortfolioId;
-        var bookId = defaults.BookId;
-        var accountId = defaults.AccountId;
-        var customerId = defaults.CustomerId;
-        var vendorId = defaults.VendorId;
-        var projectId = defaults.ProjectId;
-
-        foreach (var pair in ParseExternalGlAccountMappings(value))
-        {
-            switch (NormalizeDimensionKey(pair.Key))
-            {
-                case "fundid":
-                    fundId = pair.Value;
-                    break;
-                case "entityid":
-                    entityId = pair.Value;
-                    break;
-                case "sleeveid":
-                    sleeveId = pair.Value;
-                    break;
-                case "strategyid":
-                    strategyId = pair.Value;
-                    break;
-                case "investorid":
-                    investorId = pair.Value;
-                    break;
-                case "capitalaccountid":
-                    capitalAccountId = pair.Value;
-                    break;
-                case "instrumentid":
-                    if (Guid.TryParse(pair.Value, out var parsedInstrumentId))
-                    {
-                        instrumentId = parsedInstrumentId;
-                    }
-                    break;
-                case "taxlotid":
-                    taxLotId = pair.Value;
-                    break;
-                case "costcenterid":
-                    costCenterId = pair.Value;
-                    break;
-                case "counterpartyid":
-                    counterpartyId = pair.Value;
-                    break;
-                case "organizationid":
-                    organizationId = pair.Value;
-                    break;
-                case "portfolioid":
-                    portfolioId = pair.Value;
-                    break;
-                case "bookid":
-                    bookId = pair.Value;
-                    break;
-                case "accountid":
-                    accountId = pair.Value;
-                    break;
-                case "customerid":
-                    customerId = pair.Value;
-                    break;
-                case "vendorid":
-                    vendorId = pair.Value;
-                    break;
-                case "projectid":
-                    projectId = pair.Value;
-                    break;
-                default:
-                    externalDimensions[pair.Key] = pair.Value;
-                    break;
-            }
-        }
-
-        return new LedgerDimensionSetDto(
-            fundId,
-            entityId,
-            sleeveId,
-            strategyId,
-            investorId,
-            capitalAccountId,
-            instrumentId,
-            taxLotId,
-            costCenterId,
-            counterpartyId,
-            externalDimensions,
-            organizationId,
-            portfolioId,
-            bookId,
-            accountId,
-            customerId,
-            vendorId,
-            projectId);
-    }
-
-    private static string NormalizeDimensionKey(string key)
-    {
-        return new string(key.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
-    }
-
-    private static string FormatExternalGlLedgerDimensionSet(LedgerDimensionSetDto dimensions)
-    {
-        var rows = new List<string>();
-        Add("fundId", dimensions.FundId);
-        Add("entityId", dimensions.EntityId);
-        Add("sleeveId", dimensions.SleeveId);
-        Add("strategyId", dimensions.StrategyId);
-        Add("investorId", dimensions.InvestorId);
-        Add("capitalAccountId", dimensions.CapitalAccountId);
-        Add("instrumentId", dimensions.InstrumentId?.ToString("D", CultureInfo.InvariantCulture));
-        Add("taxLotId", dimensions.TaxLotId);
-        Add("costCenterId", dimensions.CostCenterId);
-        Add("counterpartyId", dimensions.CounterpartyId);
-        Add("organizationId", dimensions.OrganizationId);
-        Add("portfolioId", dimensions.PortfolioId);
-        Add("bookId", dimensions.BookId);
-        Add("accountId", dimensions.AccountId);
-        Add("customerId", dimensions.CustomerId);
-        Add("vendorId", dimensions.VendorId);
-        Add("projectId", dimensions.ProjectId);
-        foreach (var pair in (dimensions.ExternalGlDimensions ?? new Dictionary<string, string>()).OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            Add(pair.Key, pair.Value);
-        }
-
-        return string.Join(Environment.NewLine, rows);
-
-        void Add(string key, string? entryValue)
-        {
-            if (!string.IsNullOrWhiteSpace(entryValue))
-            {
-                rows.Add($"{key}={entryValue.Trim()}");
-            }
-        }
-    }
-
-    private static IReadOnlyList<string> WithExternalGlMappingProfileEvidence(
-        IReadOnlyList<string> evidence,
-        string providerId,
-        string fundProfileId,
-        string profileId,
-        Guid? ledgerBookId)
-        => evidence
-            .Append($"approval:external-gl-mapping:{profileId}")
-            .Append($"evidence://external-gl/mapping-certification/provider/{providerId}/fund/{fundProfileId}/profile/{profileId}")
-            .Concat(ledgerBookId is { } bookId
-                ? [$"evidence://ledger-book/{bookId:D}/external-gl/mapping-certification/{profileId}"]
-                : [])
-            .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .Select(static item => item.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-    private static IReadOnlyList<string> WithLedgerBookTenantAdministrationEvidence(
-        IReadOnlyList<string> evidence,
-        string tenantId,
-        string companyId,
-        Guid? ledgerBookId,
-        bool ledgerBookAdministrationStudioConfigured,
-        bool implementationSandboxConfigured)
-    {
-        if (ledgerBookId is not { } bookId)
-        {
-            return evidence;
-        }
-
-        var bookText = bookId.ToString("D", CultureInfo.InvariantCulture);
-        var generated = new List<string>();
-        if (ledgerBookAdministrationStudioConfigured
-            && !HasTenantAdministrationLedgerBookEvidence(evidence, bookText, "ledger-book-administration"))
-        {
-            generated.Add($"evidence://tenant-admin/{tenantId}/{companyId}/ledger-book-administration/ledgerBookId={bookText}");
-        }
-
-        if (implementationSandboxConfigured)
-        {
-            generated.AddRange(BuildImplementationSandboxEvidence(tenantId, companyId, bookText));
-        }
-
-        return evidence
-            .Concat(generated)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static bool HasTenantAdministrationLedgerBookEvidence(
-        IReadOnlyList<string> evidence,
-        string ledgerBookId,
-        string marker)
-        => evidence.Any(reference =>
-            reference.Contains(ledgerBookId, StringComparison.OrdinalIgnoreCase) &&
-            reference.Contains(marker, StringComparison.OrdinalIgnoreCase));
-
-    private static IReadOnlyList<string> BuildImplementationSandboxEvidence(
-        string tenantId,
-        string companyId,
-        string ledgerBookId)
-        =>
-        [
-            $"evidence://tenant-admin/{tenantId}/{companyId}/implementation-sandbox/ledgerBookId={ledgerBookId}",
-            $"evidence://tenant-admin/{tenantId}/{companyId}/sandbox-validation/ledgerBookId={ledgerBookId}",
-            $"evidence://tenant-admin/{tenantId}/{companyId}/fixture-validation/ledgerBookId={ledgerBookId}",
-            $"evidence://tenant-admin/{tenantId}/{companyId}/implementation-fixture/ledgerBookId={ledgerBookId}"
-        ];
-
 }
-
-public sealed record AccountingWorkbenchRow(
-    string Name,
-    string Status,
-    string Detail,
-    string Evidence,
-    string Key = "");
 
 internal sealed record ManualJournalEntryTypePreset(
     ManualJournalEntryTypeDto EntryType,

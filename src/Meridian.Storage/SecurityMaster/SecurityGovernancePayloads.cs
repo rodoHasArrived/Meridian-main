@@ -101,7 +101,11 @@ public sealed record CurveDefinedPayload(
     string DayCount,
     string Interpolation,
     string Source,
-    string? Description) : ISecurityGovernancePayload;
+    string? Description) : ISecurityGovernancePayload
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy RatePolicy { get; init; }
+}
 
 /// <summary><c>Curves</c> / <c>CurveVersionPublished</c>.</summary>
 public sealed record CurveVersionPublishedPayload(

@@ -1,5 +1,6 @@
 using Meridian.Execution.Logging;
 using System.Collections.Concurrent;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
@@ -143,6 +144,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             var fillRecords = await _store.LoadFillRecordsAsync(record.SessionId, ct).ConfigureAwait(false);
             var settlements = await LoadValidatedSettlementsAsync(record.SessionId, ct).ConfigureAwait(false);
             var appliedFillHashes = new Dictionary<Guid, string>();
+            var provenance = new Dictionary<Guid, (int Version, string? FinancialAccountId)>();
             var fillHistory = new List<ExecutionReport>(fillRecords.Count);
             var hasUnappliedFill = false;
             foreach (var fillRecord in fillRecords)
@@ -154,6 +156,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                         $"Paper session '{record.SessionId}' contains duplicate FillId '{fillRecord.FillId:D}'.");
                 }
 
+                provenance.Add(fillRecord.FillId, (fillRecord.AccountingEvidenceVersion, fillRecord.FinancialAccountId));
                 var fillSnapshot = CloneExecutionReport(fillRecord.Fill);
                 fillHistory.Add(fillSnapshot);
                 if (!fillRecord.IsApplied)
@@ -163,8 +166,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 }
             }
 
-            var portfolio = new PaperTradingPortfolio(record.InitialCash, new Meridian.Ledger.Ledger());
-            ReplayInto(portfolio, fillHistory, settlements);
+            var portfolio = new PaperTradingPortfolio(record.InitialCash, new Meridian.Ledger.Ledger(), record.CreatedAt);
+            ReplayInto(portfolio, fillHistory, settlements, provenance);
 
             var ledgerEntries = await _store.LoadLedgerJournalAsync(record.SessionId, ct).ConfigureAwait(false);
             var reconstruction = ReconstructLedger(ledgerEntries);
@@ -187,6 +190,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             };
             foreach (var appliedFill in appliedFillHashes)
                 session.AppliedFillHashes.Add(appliedFill.Key, appliedFill.Value);
+            foreach (var item in provenance)
+                session.FillAccountingProvenance.Add(item.Key, item.Value);
             session.FillHistory.AddRange(fillHistory);
             session.SettlementHistory.AddRange(settlements);
             session.OrderHistory.AddRange(orders.Select(CloneOrderState));
@@ -256,7 +261,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
             }
 
-            var sessionId = $"PAPER-{DateTimeOffset.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+            var createdAt = DateTimeOffset.UtcNow;
+            var sessionId = $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
             var ledger = new Meridian.Ledger.Ledger();
             var session = new PaperSession
             {
@@ -264,9 +270,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 StrategyId = request.StrategyId,
                 StrategyName = request.StrategyName,
                 InitialCash = request.InitialCash,
-                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = createdAt,
                 Symbols = request.Symbols?.ToList() ?? [],
-                Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger),
+                Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger, createdAt),
                 // New sessions record the matching and cost policies in effect so promotion
                 // evidence can cite exactly which paper execution model produced them.
                 MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
@@ -396,6 +402,16 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 if (!session.IsActive)
                     return true;
 
+                var integrityBreaks = session.Portfolio?.CheckLedgerIntegrity() ?? [];
+                if (integrityBreaks.Count > 0)
+                {
+                    // A final journal must agree with the portfolio before it becomes the
+                    // authoritative closed-session snapshot. Leave the session active on failure.
+                    throw new InvalidOperationException(
+                        $"Paper session '{sessionId}' has ledger integrity breaks: "
+                        + string.Join("; ", integrityBreaks.Select(b =>
+                            $"{b.AccountId}/{b.Check}: expected {b.Expected}, actual {b.Actual}")));
+                }
                 closedAt = DateTimeOffset.UtcNow;
                 closeCandidate = ToPersistedRecord(session, isActive: false, closedAt);
             }
@@ -414,8 +430,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                         ct,
                         requireDurableSuccess: true).ConfigureAwait(false);
                     _logger.LogInformation(
-                        "Persisted {Count} ledger entries for paper session {SessionId}",
-                        ledger.JournalEntryCount, sessionId);
+                        "Persisted {Count} ledger entries for paper session {SessionHash}",
+                        ledger.JournalEntryCount, Sha256Digest.ComputeUtf8(session.SessionId ?? string.Empty));
                 }
 
                 // The close record is the final fallible persistence step while the session gate
@@ -433,8 +449,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             }
 
             _logger.LogInformation(
-                "Closed paper session {SessionId} — final equity: {Equity:C}",
-                sessionId, finalEquity);
+                "Closed paper session {SessionHash} — final equity: {Equity:C}",
+                Sha256Digest.ComputeUtf8(session.SessionId ?? string.Empty), finalEquity);
 
             return true;
         }
@@ -463,6 +479,18 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             return null;
         }
         return BuildSessionDetailDto(session);
+    }
+
+    /// <summary>Detached execution-report evidence without rebuilding the session portfolio or ledger.</summary>
+    public IReadOnlyList<ExecutionReport> GetSessionFillHistory(string sessionId)
+    {
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
+            return [];
+        lock (session.SyncRoot)
+        {
+            return session.FillHistory.Select(CloneExecutionReport).ToArray();
+        }
     }
 
     /// <summary>Returns a defensive portfolio snapshot for an active session, or null.</summary>
@@ -671,10 +699,19 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
     /// Reusing the FillId with identical content is idempotent; reusing it with different
     /// content fails closed.
     /// </summary>
-    public async Task RecordFillAsync(
+    public Task RecordFillAsync(
         string sessionId,
         Guid fillId,
         ExecutionReport fill,
+        CancellationToken ct = default)
+        => RecordFillAsync(sessionId, fillId, fill, accountingEvidenceVersion: 0, financialAccountId: null, ct);
+
+    internal async Task RecordFillAsync(
+        string sessionId,
+        Guid fillId,
+        ExecutionReport fill,
+        int accountingEvidenceVersion,
+        string? financialAccountId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(fill);
@@ -701,7 +738,11 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         try
         {
             var fillSnapshot = CloneExecutionReport(fill);
-            var record = PaperSessionFillRecord.Create(fillId, fillSnapshot, DateTimeOffset.UtcNow);
+            var record = (PaperSessionFillRecord.Create(fillId, fillSnapshot, DateTimeOffset.UtcNow) with
+            {
+                AccountingEvidenceVersion = accountingEvidenceVersion,
+                FinancialAccountId = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim()
+            }).Validate();
             if (!sessions.TryGetValue(sessionId, out var session))
             {
                 throw new InvalidOperationException(
@@ -727,12 +768,27 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                     + $"(existing hash {appendResult.ExistingCanonicalHash ?? "unknown"}, candidate {record.CanonicalHash}).");
             }
 
+            if (appendResult.Status == PaperSessionFillAppendStatus.ExistingSame && _store is not null)
+            {
+                // Report hashes predate accounting provenance. A custom/legacy store cannot
+                // silently upgrade a retained unknown treatment merely because that hash matches.
+                var retained = (await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false))
+                    .SingleOrDefault(item => item.FillId == fillId);
+                if (retained is null || !retained.HasSameAccountingProvenance(record)
+                    || !string.Equals(retained.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal))
+                    throw new InvalidDataException($"Paper-session FillId '{fillId:D}' has different retained accounting provenance.");
+            }
+
             bool alreadyApplied;
             lock (session.SyncRoot)
             {
                 alreadyApplied = session.AppliedFillHashes.TryGetValue(fillId, out var appliedHash);
+                var retainedProvenance = session.FillAccountingProvenance.GetValueOrDefault(fillId);
                 if (alreadyApplied
-                    && !string.Equals(appliedHash, record.CanonicalHash, StringComparison.Ordinal))
+                    && (!string.Equals(appliedHash, record.CanonicalHash, StringComparison.Ordinal)
+                        || retainedProvenance.Version != record.AccountingEvidenceVersion
+                        || !string.Equals(retainedProvenance.FinancialAccountId, record.FinancialAccountId,
+                            StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new InvalidDataException(
                         $"Paper-session FillId '{fillId:D}' is already applied with different content.");
@@ -743,13 +799,14 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             {
                 // Build the projection off-side. If applying the candidate throws, its durable
                 // claim remains unacknowledged and no partial portfolio/history state is visible.
-                var replacementPortfolio = BuildPortfolioProjection(session, fillSnapshot);
+                var replacementPortfolio = BuildPortfolioProjection(session, record);
                 ct.ThrowIfCancellationRequested();
                 lock (session.SyncRoot)
                 {
                     session.Portfolio = replacementPortfolio;
                     session.FillHistory.Add(fillSnapshot);
                     session.AppliedFillHashes.Add(fillId, record.CanonicalHash);
+                    session.FillAccountingProvenance.Add(fillId, (record.AccountingEvidenceVersion, record.FinancialAccountId));
                 }
             }
 
@@ -910,8 +967,12 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
 
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
             var settlements = await LoadValidatedSettlementsAsync(sessionId, ct).ConfigureAwait(false);
-            var portfolio = new PaperTradingPortfolio(session.InitialCash);
-            ReplayInto(portfolio, fills.Select(fill => CloneExecutionReport(fill.Fill)).ToArray(), settlements);
+            var portfolio = new PaperTradingPortfolio(session.InitialCash, null, session.CreatedAt);
+            foreach (var fill in fills)
+                fill.Validate();
+            var provenance = fills.ToDictionary(fill => fill.FillId,
+                fill => (fill.AccountingEvidenceVersion, fill.FinancialAccountId));
+            ReplayInto(portfolio, fills.Select(fill => CloneExecutionReport(fill.Fill)).ToArray(), settlements, provenance);
 
             return CreatePortfolioSnapshot(portfolio);
         }
@@ -961,6 +1022,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             : await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
 
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
+        foreach (var ledgerBreak in session.Portfolio?.CheckLedgerIntegrity() ?? [])
+            mismatchReasons.Add($"Ledger integrity {ledgerBreak.AccountId}/{ledgerBreak.Check}: expected {ledgerBreak.Expected}, actual {ledgerBreak.Actual}.");
         var currentLedger = GetLedger(sessionId);
         var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
         var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
@@ -1116,7 +1179,10 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 SecurityId: entry.Metadata.SecurityId,
                 OrderId: entry.Metadata.OrderId,
                 LedgerView: entry.Metadata.LedgerView?.ToString(),
-                StrategyId: strategyId));
+                StrategyId: strategyId)
+            {
+                Metadata = entry.Metadata
+            });
         }
 
         return dtos;
@@ -1194,7 +1260,14 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                     dto.JournalEntryId,
                     dto.Timestamp,
                     dto.Description,
-                    lines);
+                    lines,
+                    dto.Metadata ?? new JournalEntryMetadata(
+                        ActivityType: dto.ActivityType,
+                        Symbol: dto.Symbol,
+                        SecurityId: dto.SecurityId,
+                        OrderId: dto.OrderId,
+                        LedgerView: Enum.TryParse<LedgerViewKind>(dto.LedgerView, out var view) ? view : null,
+                        StrategyId: dto.StrategyId));
 
                 ledger.Post(entry);
             }
@@ -1267,16 +1340,21 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
 
     private static PaperTradingPortfolio BuildPortfolioProjection(
         PaperSession session,
-        ExecutionReport? candidate = null,
+        PaperSessionFillRecord? candidate = null,
         PaperSessionSettlementRecord? candidateSettlement = null)
     {
         ExecutionReport[] fills;
+        Dictionary<Guid, (int Version, string? FinancialAccountId)> provenance;
         PaperSessionSettlementRecord[] settlements;
         lock (session.SyncRoot)
         {
             var snapshots = session.FillHistory.Select(CloneExecutionReport);
+            provenance = new(session.FillAccountingProvenance);
             if (candidate is not null)
-                snapshots = snapshots.Append(CloneExecutionReport(candidate));
+            {
+                snapshots = snapshots.Append(CloneExecutionReport(candidate.Fill));
+                provenance.Add(candidate.FillId, (candidate.AccountingEvidenceVersion, candidate.FinancialAccountId));
+            }
             fills = snapshots.ToArray();
             settlements = candidateSettlement is null
                 ? session.SettlementHistory.ToArray()
@@ -1284,8 +1362,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         }
 
         var ledger = new Meridian.Ledger.Ledger();
-        var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger);
-        ReplayInto(portfolio, fills, settlements);
+        var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger, session.CreatedAt);
+        ReplayInto(portfolio, fills, settlements, provenance);
         return portfolio;
     }
 
@@ -1298,7 +1376,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
     private static void ReplayInto(
         PaperTradingPortfolio portfolio,
         IReadOnlyList<ExecutionReport> fills,
-        IReadOnlyList<PaperSessionSettlementRecord> settlements)
+        IReadOnlyList<PaperSessionSettlementRecord> settlements,
+        IReadOnlyDictionary<Guid, (int Version, string? FinancialAccountId)>? accountingProvenance = null)
     {
         var ordered = settlements
             .Select(static (settlement, index) => (settlement, index))
@@ -1311,7 +1390,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         {
             while (next < ordered.Length && ordered[next].SettledAt < fill.Timestamp)
                 ApplySettlement(portfolio, ordered[next++]);
-            portfolio.ApplyRecordedFill(fill);
+            var provenance = accountingProvenance?.GetValueOrDefault(PaperSessionFillRecord.ComputeCanonicalFillId(fill))
+                ?? (Version: 0, FinancialAccountId: (string?)null);
+            portfolio.ApplyRecordedFill(fill, provenance.Version, provenance.FinancialAccountId);
         }
 
         while (next < ordered.Length)
@@ -1395,7 +1476,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 record.StrategyName,
                 record.InitialCash,
                 record.Symbols));
-            _ = new PaperTradingPortfolio(record.InitialCash);
+            _ = new PaperTradingPortfolio(record.InitialCash, null, record.CreatedAt);
         }
         catch (ArgumentException ex)
         {
@@ -1783,6 +1864,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         public List<ExecutionReport> FillHistory { get; } = [];
         public List<PaperSessionSettlementRecord> SettlementHistory { get; } = [];
         public Dictionary<Guid, string> AppliedFillHashes { get; } = [];
+        public Dictionary<Guid, (int Version, string? FinancialAccountId)> FillAccountingProvenance { get; } = [];
 
         /// <summary>
         /// Ledger reconstructed from persisted JSONL entries on load (closed sessions only).

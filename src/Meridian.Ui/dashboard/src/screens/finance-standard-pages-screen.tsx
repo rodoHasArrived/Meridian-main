@@ -36,7 +36,9 @@ import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from
 import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
+import { EntityOperationsPanel } from "@/screens/accounting-screen.entity-operations";
 import { FactorPaydownPanel } from "@/screens/accounting-screen.factor-paydown-panel";
+import { CanonicalAmortizationPanel } from "@/screens/accounting-screen.canonical-amortization-panel";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -723,6 +725,12 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown, tabSearchParams)}>Prepare factor paydown</Link>
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingConsolidation, tabSearchParams)}>Open consolidation</Link>
       </nav>
+      <details className="rounded border border-border p-4">
+        <summary className="cursor-pointer font-semibold">Prepare canonical lot amortization</summary>
+        <div className="mt-4">
+      <CanonicalAmortizationPanel periodVersion={postedLedger.selectedPeriodVersion} active={active} bookId={selectedBookId} periodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} fundProfileId={selectedFundId} accountingBasis={postedLedger.selectedBook?.accountingBasis} />
+        </div>
+      </details>
     </div>
   );
 }
@@ -773,6 +781,7 @@ function AccountingScopedWorkflowScreen({ kind }: { kind: "factor-paydown" | "co
       ) : periodId && bookId ? (
         <ConsolidationPanel key={`${bookId}:${periodId}`} initialBookId={bookId} initialPeriodId={periodId} />
       ) : <StatusBanner tone="warning" title="Accounting scope unavailable" detail={postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? "Choose an available ledger book and period before preparing consolidation."} />}
+      {kind === "consolidation" && postedLedger.selectedBook ? <EntityOperationsPanel key={bookId} book={postedLedger.selectedBook} /> : null}
     </div>
   );
 }

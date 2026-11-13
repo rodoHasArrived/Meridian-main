@@ -1,3 +1,5 @@
+using Meridian.Contracts.FundStructure;
+
 namespace Meridian.Storage.Ledger;
 
 /// <summary>Checks approved agreement authority and retains exclusion against amendments through ledger commit.</summary>
@@ -6,6 +8,13 @@ public interface IIntercompanyAgreementPostingAuthority
     Task<IAsyncDisposable> AcquireValidatedLeaseAsync(
         IntercompanyAgreementPostingRequest request,
         CancellationToken ct = default);
+}
+
+/// <summary>Validates a transaction's union of agreement IDs under one sorted retained lease.</summary>
+public interface IIntercompanyAgreementBatchPostingAuthority : IIntercompanyAgreementPostingAuthority
+{
+    Task<IAsyncDisposable> AcquireValidatedBatchLeaseAsync(
+        IReadOnlyList<IntercompanyAgreementPostingRequest> requests, CancellationToken ct = default);
 }
 
 /// <summary>Read-only preparation/review validation using the same authority as durable append.</summary>
@@ -38,6 +47,7 @@ public sealed class IntercompanyAgreementPostingRequest
     public string BookCurrency { get; }
     public IReadOnlyList<IntercompanyAgreementPostingLine> Lines { get; }
     public bool IsVerifiedSourceReversal { get; }
+    public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; internal set; }
 }
 
 public sealed record IntercompanyAgreementPostingLine(

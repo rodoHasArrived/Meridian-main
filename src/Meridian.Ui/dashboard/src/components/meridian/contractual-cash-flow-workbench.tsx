@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { PreparerDraftCheckPanel } from "@/components/meridian/preparer-draft-check-panel";
-import { describeApiError } from "@/lib/api-errors";
+import { describeApiError, isApiError } from "@/lib/api-errors";
 import {
   compareContractualCashFlowRuns,
   getContractualCashFlowRun,
@@ -14,6 +14,9 @@ import {
   previewContractualCashFlows,
   retainContractualCashFlowRun
 } from "@/lib/api/contractual-cash-flow.api";
+import { ExactCurveInputs } from "@/components/meridian/exact-curve-inputs";
+import type { ExactCurvePin } from "@/types/security-curves.types";
+import { buildScenarioPrepayments, type ScenarioPrepaymentDraft } from "./scenario-prepayment-inputs";
 import { bondDecimalText, DECIMAL_LITERAL, utcInstantFromLocalInput } from "@/lib/bond-decimal-format";
 import {
   PREPAYMENT_METHODS,
@@ -47,17 +50,6 @@ interface ExerciseChoice {
   noticeEvidenceId: string;
 }
 
-interface PrepaymentChoice {
-  id: string;
-  streamId: string;
-  startDate: string;
-  endDate: string;
-  method: PrepaymentMethod;
-  value: string;
-  seasoningOrigin: string;
-  policy: RecastPolicy;
-}
-
 const newRunId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `run-${Date.now().toString(36)}`;
 
@@ -83,7 +75,7 @@ const eventColumns: DenseDataTableColumn<ContractualCashFlowEvent>[] = [
 
 /**
  * Cash-flow scenario workbench over the shared contractual cash-flow routes: hypothetical valuation date,
- * knowledge cutoff, horizon, rate shock, explicit notice dates and multiple prepayment assumptions; the result
+ * knowledge cutoff, horizon, rate shock, explicit notice dates, immutable curve pins and multiple dated prepayment assumptions; the result
  * ladder with blockers; retained runs under a client-generated identity; and a retained-run browser that
  * verifies replay by comparing the retained output hash with a fresh preview of the retained request.
  * Nothing here changes terms or posts anything, and displayed amounts are never resubmitted.
@@ -93,8 +85,10 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const [knowledgeCutoff, setKnowledgeCutoff] = useState(nowLocalMinutes);
   const [horizon, setHorizon] = useState("");
   const [rateScenario, setRateScenario] = useState<RateScenario>("Base");
-  const [prepayments, setPrepayments] = useState<PrepaymentChoice[]>([]);
+  const [prepayments, setPrepayments] = useState<ScenarioPrepaymentDraft[]>([]);
   const [streams, setStreams] = useState<Array<{ streamId: string; prepaymentAllowed: boolean }>>([]);
+  const [curvePins, setCurvePins] = useState<ExactCurvePin[]>([]);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const [exerciseChoices, setExerciseChoices] = useState<Record<string, ExerciseChoice>>({});
   const [eligibility, setEligibility] = useState<CashFlowExerciseEligibility[]>([]);
   const [result, setResult] = useState<ContractualCashFlowResult | null>(null);
@@ -110,6 +104,12 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const inFlight = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    inFlight.current?.abort();
+    setBusy(null);
+    setPrepayments([]);
+    setCurvePins([]);
+    setPermissionDenied(false);
+    setRunIdInput("");
     setResult(null);
     setRun(null);
     setLoadedRun(null);
@@ -118,10 +118,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     setCompareRunId("");
     setEligibility([]);
     setExerciseChoices({});
-    setPrepayments([]);
     setStreams([]);
-    setBusy(null);
-    setRunIdInput("");
     setError(null);
     setRunId(newRunId());
     return () => inFlight.current?.abort();
@@ -160,26 +157,21 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
         noticeEvidenceId: noticeEvidenceId || null
       });
     }
-    for (const assumption of prepayments) {
-      if (!assumption.streamId || !assumption.startDate || !assumption.endDate || !DECIMAL_LITERAL.test(assumption.value.trim()))
-        return "Each prepayment assumption needs a contractual stream, a [start, end) interval and a decimal value.";
-      if (assumption.startDate < valuationDate || assumption.endDate <= assumption.startDate)
-        return "A prepayment interval must start on/after valuation and end after its start date.";
-      if (assumption.method === "Psa" && (!assumption.seasoningOrigin || assumption.seasoningOrigin > assumption.startDate))
-        return "PSA requires a seasoning origin on/before the interval start.";
-    }
+    if (horizon && horizon < valuationDate) return "The scenario horizon cannot precede the valuation date.";
+    const assumptions = buildScenarioPrepayments(prepayments, valuationDate);
+    if (typeof assumptions === "string") return assumptions;
+    if (curvePins.some((pin) => !pin.role.trim() || !pin.curveId || !pin.curveVersionId))
+      return "Each curve pin needs a benchmark key, a curve and an exact retained version.";
+    if (new Set(curvePins.map((pin) => pin.role.trim())).size !== curvePins.length)
+      return "Curve benchmark keys must be unique.";
     return {
       valuationDate,
       knowledgeCutoff: utcInstantFromLocalInput(knowledgeCutoff),
       horizon: horizon || null,
       rateScenario,
       exercises: exercises.length > 0 ? exercises : null,
-      prepayments: prepayments.length > 0
-        ? prepayments.map(({ streamId, startDate, endDate, method, value, seasoningOrigin, policy }) => ({
-          streamId, startDate, endDate, method, value: value.trim(), policy,
-          seasoningOrigin: method === "Psa" ? seasoningOrigin : null
-        }))
-        : null
+      prepayments: assumptions.length > 0 ? assumptions : null,
+      curvePins: curvePins.length > 0 ? curvePins.map((pin) => ({ benchmarkKey: pin.role.trim(), curveId: pin.curveId, curveVersionId: pin.curveVersionId })) : null
     };
   }
 
@@ -192,7 +184,14 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     try {
       return await work(controller.signal);
     } catch (failure) {
-      if (!controller.signal.aborted) setError(describeApiError(failure, fallback).summary);
+      if (!controller.signal.aborted) {
+        if (isApiError(failure) && (failure.status === 401 || failure.status === 403)) {
+          if (action === "retain") setPermissionDenied(true);
+          setError(`${describeApiError(failure, fallback).summary} ${action === "retain" ? retentionPermission : viewPermission} is required. Refresh after your access changes.`);
+        } else if (isApiError(failure) && (failure.status === 404 || failure.status === 503)) {
+          setError("The selected record or cash-flow calculation service is unavailable. Check the record and service configuration, then retry.");
+        } else setError(describeApiError(failure, fallback).summary);
+      }
       return undefined;
     } finally {
       if (!controller.signal.aborted) setBusy(null);
@@ -215,6 +214,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   }
 
   async function retain() {
+    if (permissionDenied || !result?.isCalculated || busy !== null) return;
     const request = buildRequest();
     if (typeof request === "string") { setError(request); return; }
     await guard("retain", async (signal) => {
@@ -240,7 +240,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     await guard("load", async (signal) => {
       const next = await getContractualCashFlowRun(subjectKind, subjectId, id, { signal });
       if (signal.aborted) return;
-      if (next.subjectKind !== subjectKind || next.subjectId.toLowerCase() !== subjectId.toLowerCase()) throw new Error("The retained run names another subject. Refresh the selected record.");
+      if (next.subjectKind !== subjectKind || next.subjectId.toLowerCase() !== subjectId.toLowerCase() || next.runId.toLowerCase() !== id.toLowerCase()) throw new Error("The returned replay packet does not match the selected subject and run identity.");
       setLoadedRun(next);
     }, "Retained cash-flow run could not be loaded.");
   }
@@ -271,7 +271,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   }
 
   const shown = result;
-  const canRetain = shown !== null && shown.isCalculated && run === null && busy === null;
+  const retentionPermission = subjectKind === "Security" ? "Modify Security Master permission" : "Manage Direct Lending permission and an authenticated tenant";
+  const viewPermission = subjectKind === "Security" ? "View or Modify Security Master permission" : "View or Manage Direct Lending permission";
+  const canRetain = shown !== null && shown.isCalculated && run === null && busy === null && !permissionDenied;
 
   return (
     <section className="grid gap-3 rounded-lg border border-border/70 bg-background/40 p-4 text-xs" aria-label={`${subjectLabel} cash-flow scenarios`}>
@@ -282,6 +284,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           retained runs are complete replay packets under a client-generated identity.
         </p>
       </div>
+
+      <p className="text-muted-foreground">Preview and replay require {viewPermission}. Retaining a run requires {retentionPermission}; the server checks access for each request.</p>
+      {permissionDenied ? <StatusBanner tone="warning" title="Run retention unavailable" detail={`Your session cannot retain runs. ${retentionPermission} is required.`} /> : null}
 
       <form onSubmit={(event) => void preview(event)} aria-label={`${subjectLabel} scenario inputs`} className="grid gap-2 md:grid-cols-4">
         <label className="grid gap-1 font-medium text-muted-foreground">Valuation date (UTC)
@@ -305,7 +310,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
             CPR/SMM use fractions (0.06 = 6%); PSA uses multiples (1 = 100% PSA). Amount is cash on the start date.
             Preview first to discover contractual streams; the service checks whether prepayment is supported.</p>
           {prepayments.map((assumption, index) => {
-            const update = (next: Partial<PrepaymentChoice>) => edit(() => setPrepayments((previous) => previous.map((item) => item.id === assumption.id ? { ...item, ...next } : item)));
+            const update = (next: Partial<ScenarioPrepaymentDraft>) => edit(() => setPrepayments((previous) => previous.map((item) => item.id === assumption.id ? { ...item, ...next } : item)));
             return (
               <fieldset key={assumption.id} className="grid gap-2 rounded-md border border-border/60 p-3 md:grid-cols-4">
                 <legend className="px-1 font-medium">Prepayment {index + 1}</legend>
@@ -348,6 +353,10 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           <Button type="button" size="sm" variant="outline" className="justify-self-start" disabled={!streams.some((stream) => stream.prepaymentAllowed)}
             onClick={() => edit(() => setPrepayments((previous) => [...previous, { id: newRunId(), streamId: "", startDate: valuationDate, endDate: "", method: "Cpr", value: "", seasoningOrigin: "", policy: "PreservePayments" }]))}>Add prepayment assumption</Button>
         </fieldset>
+        <div className="md:col-span-4">
+          <p className="mb-2 text-muted-foreground">Some scenarios require benchmark pins. Use the benchmark key declared by the contract (for example SOFR); missing economic inputs appear as calculation blockers.</p>
+          <ExactCurveInputs roleLabel="Benchmark key" pins={curvePins} onChange={(pins) => edit(() => setCurvePins(pins))} />
+        </div>
 
         {eligibility.length > 0 ? (
           <fieldset className="grid gap-2 md:col-span-4">
@@ -430,7 +439,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       <div className="grid gap-2 border-t border-border/60 pt-3">
         <div className="flex flex-wrap items-end gap-2">
           <label className="grid gap-1 font-medium text-muted-foreground">Retained run identity
-            <Input value={runIdInput} aria-label="Retained run identity" onChange={(e) => setRunIdInput(e.target.value)} className="min-w-[20rem]" />
+            <Input value={runIdInput} aria-label="Retained run identity" onChange={(e) => { inFlight.current?.abort(); setBusy(null); setLoadedRun(null); setReplayStatus(null); setComparison(null); setCompareRunId(""); setRunIdInput(e.target.value); }} className="min-w-[20rem]" />
           </label>
           <Button type="button" size="sm" variant="outline" disabled={busy !== null} aria-busy={busy === "load"} onClick={() => void loadRun()}>
             {busy === "load" ? "Loading…" : "Load retained run"}
@@ -444,11 +453,12 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
             Run {loadedRun.runId} · {loadedRun.subjectKind} · recorded {loadedRun.recordedAt} by {loadedRun.actor} · valuation {loadedRun.request.valuationDate} · {loadedRun.request.rateScenario ?? "Base"} · {loadedRun.result.events.length} events · output {loadedRun.result.evidence.outputHash}
           </p>
         ) : null}
+        {loadedRun ? <details className="rounded border border-border/60 p-2"><summary>Retained calculation inputs</summary><pre className="overflow-auto whitespace-pre-wrap break-all">{JSON.stringify(loadedRun.request, null, 2)}</pre></details> : null}
         {replayStatus ? <p role="status" aria-label="Replay verification">{replayStatus}</p> : null}
         {loadedRun ? (
           <div className="flex flex-wrap items-end gap-2">
             <label className="grid gap-1 font-medium text-muted-foreground">Compare with retained run
-              <Input value={compareRunId} aria-label="Comparison run identity" onChange={(e) => setCompareRunId(e.target.value)} className="min-w-[20rem]" />
+              <Input value={compareRunId} aria-label="Comparison run identity" onChange={(e) => { inFlight.current?.abort(); setBusy(null); setComparison(null); setCompareRunId(e.target.value); }} className="min-w-[20rem]" />
             </label>
             <Button type="button" size="sm" variant="outline" disabled={busy !== null} aria-busy={busy === "compare"} onClick={() => void compare()}>
               {busy === "compare" ? "Comparing…" : "Compare runs"}

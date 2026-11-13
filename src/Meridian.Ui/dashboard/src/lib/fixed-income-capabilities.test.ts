@@ -43,16 +43,23 @@ describe("fixed-income operation traceability", () => {
 
   it("cannot present missing workflow seams or component coverage as complete browser acceptance", () => {
     const ids = new Set<string>();
+    const operationIds = new Set<string>();
     for (const capability of capabilities) {
       expect(ids.has(capability.id), `duplicate capability ${capability.id}`).toBe(false);
       ids.add(capability.id);
       for (const operation of capability.operations) {
+        expect(operationIds.has(operation.id), `duplicate operation ${operation.id}`).toBe(false);
+        operationIds.add(operation.id);
         expect(operation.permission.trim(), `${operation.id}: permission policy`).not.toBe("");
         expect(operation.browserAcceptance.scenario.trim(), `${operation.id}: browser scenario`).not.toBe("");
         if (!operation.api || !operation.client || !operation.screenAction) {
           expect(operation.remainingGaps.length, `${operation.id}: missing seam explanation`).toBeGreaterThan(0);
         }
         if (operation.browserAcceptance.status === "synthetic-verified") {
+          expect(operation.api, `${operation.id}: complete API seam required`).not.toBeNull();
+          expect(operation.client, `${operation.id}: complete client seam required`).not.toBeNull();
+          expect(operation.screenAction, `${operation.id}: complete operator action required`).not.toBeNull();
+          expect(operation.remainingGaps, `${operation.id}: partial operation is not complete acceptance`).toHaveLength(0);
           expect(operation.browserAcceptance.browserTest, `${operation.id}: executed browser test required`).not.toBeNull();
           expect(existsSync(resolve(root, operation.browserAcceptance.browserTest!)), `${operation.id}: browser test source`).toBe(true);
         }

@@ -8,7 +8,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class ManualJournalAgreementReviewTests
+public sealed partial class ManualJournalAgreementReviewTests
 {
     [Fact]
     public async Task MissingAgreement_RemainsAWarningWithoutRequestingAuthority()

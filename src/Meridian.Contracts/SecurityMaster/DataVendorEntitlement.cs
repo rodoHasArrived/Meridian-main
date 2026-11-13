@@ -22,7 +22,11 @@ public enum DataVendorDataType
     CashFlows,
     FxRates,
     CreditRisk,
-    Classification
+    Classification,
+    RateFixings,
+    InflationIndexes,
+    Curves,
+    Holdings
 }
 
 public sealed record DataVendorEntitlementDto(

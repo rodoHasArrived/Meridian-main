@@ -22,6 +22,8 @@ public sealed partial class PortableDataPackager
             using var stream = File.OpenRead(packagePath);
             using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
+            ValidateReservedEntryPaths(archive);
+
             var manifestEntry = archive.GetEntry(ManifestFileName);
             if (manifestEntry == null)
                 return null;

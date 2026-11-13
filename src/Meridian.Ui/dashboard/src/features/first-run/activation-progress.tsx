@@ -68,11 +68,11 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
           title={model.triggerTitle}
           onClick={() => setOpen(true)}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-colors",
-            "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+            "inline-flex items-center gap-1.5 rounded-[var(--radius-chip)] px-2.5 py-1 text-xs transition-colors",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--interaction-focus)]",
             model.finished
-              ? "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25"
-              : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+              ? "bg-[var(--state-healthy-bg)] text-[var(--chrome-ok)] hover:bg-[var(--topbar-field-bg)]"
+              : "bg-[var(--topbar-field-bg)] text-[var(--topbar-text)] hover:bg-[var(--topbar-field-border)] hover:text-[var(--topbar-text)]"
           )}
         >
           {model.finished ? <Check size={13} aria-hidden="true" /> : <ListChecks size={13} aria-hidden="true" />}
@@ -86,7 +86,7 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
         type="button"
         aria-label="Open desktop workstation"
         title="Open desktop workstation"
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--interaction-focus)]"
         onClick={() => void apiPostJson(WORKSTATION_API_ENDPOINTS.desktopLaunch, { page: "Portfolio" })}
       >
         <MonitorUp className="h-4 w-4" aria-hidden="true" />
@@ -134,7 +134,7 @@ function GettingStartedRow({
   return (
     <div
       className={cn(
-        "rounded-lg border p-3",
+        "rounded-[var(--radius-card)] border p-3",
         step.isNext ? "border-primary/50 bg-primary/5" : "border-border/60 bg-transparent"
       )}
     >
@@ -156,7 +156,7 @@ function GettingStartedRow({
         <button
           type="button"
           onClick={() => onOpen(step.route)}
-          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="inline-flex shrink-0 items-center gap-1 rounded-[var(--radius-button)] border border-border/60 px-2 py-1 text-xs text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--interaction-focus)]"
         >
           {step.isComplete ? "Revisit" : step.actionLabel}
           <ArrowRight className="h-3 w-3" aria-hidden="true" />

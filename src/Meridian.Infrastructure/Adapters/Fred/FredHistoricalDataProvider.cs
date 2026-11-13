@@ -28,7 +28,7 @@ namespace Meridian.Infrastructure.Adapters.Fred;
     EnvironmentVariables = new[] { "FRED_API_KEY", "FRED__APIKEY" },
     DisplayName = "API Key",
     Description = "FRED API key from https://fred.stlouisfed.org/docs/api/api_key.html")]
-public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISecurityRateObservationProvider
+public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISecurityRateObservationProvider
 {
     private const string ApiBaseUrl = "https://api.stlouisfed.org/fred";
     private readonly string? _apiKey;
@@ -59,9 +59,9 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
 
         try
         {
-            using var response = await Http.GetAsync(
+            using var response = await ExecuteGetAsync(
                 $"{ApiBaseUrl}/series/observations?series_id=GDP&api_key={Uri.EscapeDataString(_apiKey)}&file_type=json&limit=1",
-                ct).ConfigureAwait(false);
+                "GDP", "availability", ct).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
@@ -83,8 +83,6 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
         if (string.IsNullOrWhiteSpace(_apiKey))
             throw new InvalidOperationException("FRED API key is required. Set FRED_API_KEY environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSeriesId = NormalizeSymbol(symbol);
         var url = BuildRequestUrl(normalizedSeriesId, from, to);
 
@@ -92,7 +90,7 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
             var httpResult = await HandleHttpResponseAsync(response, normalizedSeriesId, "economic observations", ct).ConfigureAwait(false);
 
             if (httpResult.IsNotFound)
@@ -144,9 +142,9 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
         if (string.IsNullOrWhiteSpace(_apiKey))
             throw new InvalidOperationException("FRED API key is required. Configure the connection before loading rate observations.");
         var normalized = NormalizeSymbol(seriesId);
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-        using var metadataResponse = await Http.GetAsync(
-            $"{ApiBaseUrl}/series?series_id={Uri.EscapeDataString(normalized)}&api_key={Uri.EscapeDataString(_apiKey)}&file_type=json", ct).ConfigureAwait(false);
+        using var metadataResponse = await ExecuteGetAsync(
+            $"{ApiBaseUrl}/series?series_id={Uri.EscapeDataString(normalized)}&api_key={Uri.EscapeDataString(_apiKey)}&file_type=json",
+            normalized, "typed series metadata", ct).ConfigureAwait(false);
         metadataResponse.EnsureSuccessStatusCode();
         var metadata = JsonSerializer.Deserialize<FredSeriesResponse>(await metadataResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false));
         var series = metadata?.Series?.SingleOrDefault() ?? throw new InvalidOperationException("FRED did not return a unique series with units.");
@@ -157,9 +155,9 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISe
             { } units when units.StartsWith("Index", StringComparison.OrdinalIgnoreCase) => SecurityRateUnit.IndexLevel,
             _ => throw new InvalidOperationException($"FRED units '{series.Units}' are not a supported rate or index convention. Review the series before ingestion.")
         };
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
         // lin retains the original level; transformations are explicit evidence, never heuristics.
-        using var response = await Http.GetAsync(BuildRequestUrl(normalized, from, to) + "&units=lin", ct).ConfigureAwait(false);
+        using var response = await ExecuteGetAsync(BuildRequestUrl(normalized, from, to) + "&units=lin",
+            normalized, "typed rate observations", ct).ConfigureAwait(false);
         var result = await HandleHttpResponseAsync(response, normalized, "typed rate observations", ct).ConfigureAwait(false);
         if (result.IsNotFound)
             return [];

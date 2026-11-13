@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { isBondAssetClass } from "@/lib/fixed-income-navigation";
+import { measureDisplayedPositionAmounts, type PositionValueMeasurement } from "@/lib/position-value-graphic";
 import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
@@ -70,6 +71,8 @@ export interface PortfolioPositionRow {
   currency: string | null;
   weight: string;
   weightBasis: string | null;
+  exposureGraphic: PositionValueMeasurement | null;
+  pnlGraphic: PositionValueMeasurement | null;
   markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
@@ -667,6 +670,9 @@ export function buildPortfolioScreenViewModel({
         ? runs[0].id
         : null;
 
+  const positionCurrencies = positions.map((position) => position.currency);
+  const exposureGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.exposure), positionCurrencies);
+  const pnlGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.unrealizedPnl), positionCurrencies);
   const positionRows: PortfolioPositionRow[] = positions.map((p, index) => {
     const id = positionId(p.symbol, p.side, index);
     const tone = pnlTone(p.unrealizedPnl);
@@ -687,6 +693,8 @@ export function buildPortfolioScreenViewModel({
       dayPnl: p.dayPnl,
       unrealizedPnl: p.unrealizedPnl,
       exposure: p.exposure,
+      exposureGraphic: exposureGraphics[index],
+      pnlGraphic: pnlGraphics[index],
       pnlTone: tone,
       isSelected,
       expanded: isSelected,

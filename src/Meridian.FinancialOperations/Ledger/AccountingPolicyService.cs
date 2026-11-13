@@ -190,8 +190,26 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
                 [new AccountingPolicyRuleDto("consolidation.receivable-payable", AccountingTreatmentKindDto.ConsolidationElimination,
                     RuleVersion: "w10-v1", SourceEventType: "Consolidation", JournalTemplateId: "intercompany-receivable-payable-v1",
                     RequiresEvidence: true, RequiresApproval: true, AllowsAutoPosting: false,
-                    Description: "Two directly wholly owned entities; Primary basis; same currency; reciprocal receivable/payable only.")]))
+                    Description: "Two directly wholly owned entities; Primary basis; same currency; reciprocal receivable/payable only.")])),
+            Consolidation(2, "Role-based multi-entity receivable/payable consolidation"),
+            Consolidation(3, "Governed whole-book FX and multi-entity consolidation"),
+            Consolidation(4, "Governed FX and intercompany balance/income elimination")
         ];
+
+        AccountingPolicyDto Consolidation(int version, string displayName)
+        {
+            var key = $"w10-v{version}";
+            var rules = new List<AccountingPolicyRuleDto>
+            {
+                new("consolidation.receivable-payable", AccountingTreatmentKindDto.ConsolidationElimination, key,
+                    "Consolidation", $"intercompany-receivable-payable-v{version}", true, true, false)
+            };
+            if (version >= 4)
+                rules.Add(new("consolidation.revenue-expense", AccountingTreatmentKindDto.ConsolidationElimination, key,
+                    "Consolidation", "intercompany-revenue-expense-v1", true, true, false));
+            return new($"consolidation-v{version}", AccountingBasisKindDto.Primary, key, displayName, start, null,
+                false, "{}", createdAt, RulePack: new("consolidation.rules", key, rules));
+        }
 
         AccountingPolicyDto Default(
             AccountingBasisKindDto basis,

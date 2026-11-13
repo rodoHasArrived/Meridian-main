@@ -68,7 +68,7 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
     {
         try
         {
-            using var response = await Http.GetAsync($"{ApiBaseUrl}/AAPL?range=1d&interval=1d", ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync($"{ApiBaseUrl}/AAPL?range=1d&interval=1d", "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch

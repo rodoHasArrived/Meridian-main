@@ -97,18 +97,25 @@ stages are ordered so each is independently valuable and the decision can stop a
 Every component above is existing evidence. At acceptance stage 1 was in progress as
 remediation-plan slice 10 and stages 2 and 3 had not started; the status below is current.
 
-*Status at 2026-11-11:* stages 1 and 2 are complete. Both codec arms are asserted from the
-schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). For 20 of the 32
-classes both arms are generated from one binding table; the other 12 are still hand-written. S3-E now replaces every
-per-class scalar field with one of the 52 shared module homes, including the residual complement
-and complete declared schedules. Each field group has replay checks; a global reflection ratchet
-requires every stored field on all 32 payloads to use a registered module type. The permanent
-legacy upcaster and retained-history fold remain. Every term rule is now expressed on the
-definition surface; the codec-only validator that held the remainder is removed. A record is
-refused any module member its class's flat row does not persist, and the retained-history fold
-no longer refills a value the row held and a revision cleared. See the
-remediation plan's follow-through section for current-output extensions and compatibility
-boundaries.
+*Status at 2026-11-13:* all three stages are complete.
+
+- **Stage 1.** The flat codec is lossless: new writes carry no `retainedEconomicTerms`.
+- **Stage 2.** Commands and validation run on the economic definition. Every term rule is
+  expressed on the definition surface; the codec-only validator that held the remainder is
+  removed. A record is refused any module member its class's flat row does not persist.
+- **Stage 3.** Every class's decode is schema-bound (S3-D, 32 of 32). Both codec arms of 31 of
+  the 32 classes are generated from one binding table (`SecurityAssetTermsCodecBindings`).
+  CustomAsset has no flat codec to generate: its stored terms are the approved profile's own
+  document, written back verbatim. S3-E replaced every per-class scalar field with one of the 52
+  shared module homes, including the residual complement and complete declared schedules. Each
+  field group has replay checks, and a reflection ratchet requires every stored field on all 32
+  payloads to use a registered module type. Equity's `preferredTerms` now has a declared inner
+  shape, so the only reads outside the schema are the three CustomAsset legacy-salvage reads.
+
+What remains is permanent by design: the legacy `SecurityProjection` replay upcaster and the
+read-only fold of retained terms on historical rows, which no longer refills a value the row
+held and a revision cleared. See the remediation plan's follow-through section for current-output
+extensions and compatibility boundaries.
 
 ## Preconditions the decision item names
 

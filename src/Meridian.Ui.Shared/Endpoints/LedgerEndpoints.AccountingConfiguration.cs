@@ -690,6 +690,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented);
 
         MapFactorPaydownEndpoints(app, jsonOptions);
+        MapCanonicalAmortizationEndpoints(app, jsonOptions);
         MapAuditIntegrityEndpoint(app, jsonOptions);
     }
 

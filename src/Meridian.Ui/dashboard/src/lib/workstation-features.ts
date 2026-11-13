@@ -1,5 +1,5 @@
 import { ACCOUNTING_NAVIGATION_ITEMS } from "@/lib/accounting-navigation";
-import { WORKSTATION_ROUTE_CATALOG, workspacePath, type WorkstationRouteKey } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, marketDataDeskPath, workspacePath, type WorkstationRouteKey } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 import type { FixedIncomeCapabilityId } from "@/lib/fixed-income-capabilities";
 export { FIXED_INCOME_CAPABILITIES as WORKSTATION_CAPABILITY_TRACES } from "@/lib/fixed-income-capabilities";
@@ -98,6 +98,7 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("dataImport", "Import data", "Load a file, preview its records, and validate the import before committing it to a governed data workflow.", ["upload data", "import file", "csv import"]),
     feature("dataProviders", "Providers", "Review provider catalog, onboarding posture, connection health, and routing evidence.", ["data provider health", "data connections", "connection status"]),
     feature("dataQuotes", "Market data", "Inspect quotes, trades, depth, charts, and staged tickets.", ["live quotes", "prices", "market charts", "ticker"], { paletteLabel: "Live quotes" }),
+    { ...feature("dataQuotes", "Options screening", "Explore calls and puts, construct a strategy basket, and inspect dated broker assessments.", ["options", "delta", "option chain", "broker assessment", "strategy basket"], { id: "data-options", paletteLabel: "Options screening" }), route: marketDataDeskPath("options") },
     feature("dataOperations", "Ingestion operations", "Preview, trigger, and review historical data backfill jobs.", ["historical prices", "price history", "historical data", "backfill", "ingestion operations"], { id: "data-backfills", paletteLabel: "Backfill queues" }),
     // The Backfill queue view used to be reachable only from the Data in-page tab strip; with the
     // sidebar as the single sub-route navigation it needs its own entry. Its own id: the

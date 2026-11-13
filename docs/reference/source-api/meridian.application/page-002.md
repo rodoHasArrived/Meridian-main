@@ -552,6 +552,24 @@ Marks services whose implementations are prohibited in production compositions.
 public interface INonProductionOnlyService;
 ```
 
+## IntercompanyEntityServiceRegistration
+
+Qualified name: <code>Meridian.Application.Composition.IntercompanyEntityServiceRegistration</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs:18](../../../../src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs#L18).
+
+Shared authority and persistence for CLI, browser and desktop hosts.
+
+```csharp
+public static class IntercompanyEntityServiceRegistration
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddIntercompanyEntityServices(this IServiceCollection services, CompositionConfiguration configuration);</code> | [src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs:20](../../../../src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs#L20) |  |
+
 ## IStartupRefusalGuard
 
 Qualified name: <code>Meridian.Application.Composition.IStartupRefusalGuard</code>. Kind: `interface`.
@@ -1003,26 +1021,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public HostModeOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:22](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L22) |  |
 | <code>public async Task&lt;int&gt; RunAsync(CliArguments cliArgs, AppConfig cfg, string cfgPath, ConfigurationService configService, DeploymentContext deployment, CancellationToken ct = default, IApplicationLifecycleCoordinator? lifecycle = null);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:28](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L28) |  |
-
-## IApplicationLifecycleCoordinator
-
-Qualified name: <code>Meridian.Application.Composition.Startup.IApplicationLifecycleCoordinator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:11](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L11).
-
-Compatibility process-lifetime contract retained while callers migrate to IRuntimeLifecycleControlPlane.
-
-```csharp
-public interface IApplicationLifecycleCoordinator : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:13](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L13) |  |
-| <code>bool IsShutdownRequested { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:14](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L14) |  |
-| <code>string? ShutdownReason { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:15](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L15) |  |
-| <code>CancellationToken ShutdownToken { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:16](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L16) |  |
-| <code>string? LocalShutdownToken { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:17](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L17) |  |
-| <code>Task RequestShutdownAsync(string reason, string? detail = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:19](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L19) |  |

@@ -6,6 +6,7 @@ import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldChec
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
+import { PositionValueGraphic } from "@/components/meridian/position-value-graphic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -160,14 +161,14 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     label: "Unrealized P&L",
     numeric: true,
     hideable: true,
-    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+    render: (row) => <PositionValueGraphic value={row.unrealizedPnl} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
   },
   {
     id: "exposure",
     label: "Exposure",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.exposure}</span>
+    render: (row) => <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
   }
 ];
 
@@ -1226,6 +1227,7 @@ export function PortfolioScreen({
                 onReset={positionsTable.resetControls}
                 shareError={positionsTable.shareError}
               />
+              {vm.hasPositions ? <p className="mb-2 text-xs text-muted-foreground">Bars compare rounded, displayed $ amounts only. Each column uses its largest magnitude across all loaded positions before filters, grouped by supplied source currency. Amounts without currency stay in a separate approximate display group. P&L extends left for losses and right for gains from zero; no currency is inferred from $, and no conversion is applied.</p> : null}
               {vm.hasPositions ? (
                 <TableWorkbench
                   workbenchId="portfolio-positions"

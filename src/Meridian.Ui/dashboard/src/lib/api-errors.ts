@@ -1,3 +1,5 @@
+import { EXECUTION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+
 export interface ApiValidationIssue {
   field: string;
   label: string;
@@ -108,6 +110,35 @@ export function createApiErrorFromResponseBody(
 
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
+}
+
+export function readOrderSubmissionRefusal(error: unknown): string | null {
+  if (!isApiError(error) || error.path !== EXECUTION_API_ENDPOINTS.ordersSubmit) {
+    return null;
+  }
+
+  // The submit route reserves these responses for validation, authorization, rate limits,
+  // and confirmed rejections. Timeouts and unqualified server errors carry no such proof.
+  const refusalStatus = [400, 401, 403, 404, 405, 413, 415, 422, 429].includes(error.status);
+  if (!refusalStatus && error.status !== 503) {
+    return null;
+  }
+
+  let body: { type?: unknown; success?: unknown; errorMessage?: unknown; requiresOrderReconciliation?: unknown } | null = null;
+  try {
+    body = error.responseBody ? JSON.parse(error.responseBody) : null;
+  } catch {
+    // A definitive response can have a plain-text or empty body.
+  }
+  const unavailableBeforeDispatch = error.status === 503
+    && body?.type === "https://meridian.io/errors/execution-pre-dispatch-unavailable";
+  if ((!refusalStatus && !unavailableBeforeDispatch) || body?.requiresOrderReconciliation === true) {
+    return null;
+  }
+
+  return body?.success === false && typeof body.errorMessage === "string" && body.errorMessage.trim()
+    ? body.errorMessage.trim()
+    : error.message;
 }
 
 /**

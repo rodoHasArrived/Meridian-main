@@ -77,6 +77,10 @@ public interface IEvidenceArtifactStore
     Task<EvidenceManifestFile?> TryOpenDocumentContentAsync(string vaultId, string documentId,
         string tenantId, string scope, CancellationToken ct = default) => Task.FromResult<EvidenceManifestFile?>(null);
 
+    /// <summary>Streams and verifies one exact pinned artifact within the vault's configured document limits.</summary>
+    Task<bool> VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256,
+        string tenantId, string scope, CancellationToken ct = default) => Task.FromResult(false);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);
@@ -416,10 +420,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             JsonSerializer.Serialize(vaultIdentity, _jsonOptions), ct).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Retained evidence vault intake {VaultId} for {SubjectKind}/{SubjectId}.",
-            vaultId,
-            subjectKind,
-            subjectId);
+            "Retained evidence vault intake {VaultId}.",
+            vaultId);
 
         return new EvidenceVaultIntakeResponseDto(
             IntakeId: artifactId,
@@ -1962,19 +1964,19 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
             // A locked or transiently unreadable file must skip this entry, not fail the
             // whole vault listing.
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be read.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be accessed.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }
@@ -2003,17 +2005,17 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be deserialized.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be read.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be accessed.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }

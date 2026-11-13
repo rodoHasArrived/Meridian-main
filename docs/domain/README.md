@@ -18,12 +18,15 @@ follow-up.
 Start with:
 
 - [Strategy, Orders, and Execution](strategy-order-execution.md)
+- [Options Screening and Imported Broker Assessments](options-screening-and-assessments.md)
 - [Brokerage Account Snapshot](brokerage-account-snapshot.md)
 - [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)
 - [Operational Evidence Graph](operational-evidence-graph.md)
 - [Account Oversight Evidence](account-oversight-evidence.md)
 - [Account and Book Scopes](account-and-book-scopes.md)
+- [Intercompany Agreements and Entity Lifecycle](intercompany-agreements-and-entity-lifecycle.md)
+
 - [Intercompany Agreements](intercompany-agreements.md)
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)

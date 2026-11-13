@@ -1,5 +1,7 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 
@@ -72,6 +74,56 @@ public sealed class SecurityRateIngestionRulesTests
         var first = SecurityRateIngestionRules.BuildPublication(Request(Observation()), Definition(), "operator");
         var revised = SecurityRateIngestionRules.BuildPublication(Request(Observation() with { VintageDate = AsOf.AddDays(-1) }), Definition(), "operator");
         SecurityCurveRules.ContentSha256(AsOf, first.Points).Should().NotBe(SecurityCurveRules.ContentSha256(AsOf, revised.Points));
+    }
+
+    [Theory]
+    [InlineData("unit")]
+    [InlineData("kind")]
+    public void WireRequest_MustDeclareSourceUnitsAndEconomicRole_WithoutZeroEnumInference(string omitted)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var request = Request(Observation());
+        var json = JsonNode.Parse(JsonSerializer.Serialize(request, options))!.AsObject();
+        var observation = json["points"]!.AsArray()[0]!["observation"]!.AsObject();
+        observation.Remove(omitted).Should().BeTrue();
+        Action read = () => JsonSerializer.Deserialize<IngestSecurityRatesRequest>(json.ToJsonString(), options);
+        read.Should().Throw<JsonException>("missing source units or role cannot become Fraction or ObservedFixing before curve admission");
+        // Complete retained payloads still use the original exact values and unchanged wire fields.
+        JsonSerializer.Deserialize<IngestSecurityRatesRequest>(JsonSerializer.Serialize(request, options), options)
+            .Should().BeEquivalentTo(request);
+    }
+
+    [Fact]
+    public void RetainedStoreSerializers_KeepExplicitZeroEnumMeanings_AndStillReplay()
+    {
+        var observation = Observation() with
+        {
+            Value = 0.04125m,
+            OriginalValue = "0.04125",
+            Unit = SecurityRateUnit.Fraction,
+            SourceUnits = "Fraction",
+            Kind = SecurityRateObservationKind.ObservedFixing
+        };
+        SecurityCurvePointDto[] points = [new(AsOf.AddYears(1), observation.Value)
+        { RateEvidence = new(observation, SecurityRateConstructionMethod.ObservedFixingFlatForecast, "Reviewed flat forecast", "operator") }];
+        var curveJson = JsonSerializer.Serialize(points, SecurityCurvesJsonContext.Default.SecurityCurvePointDtoArray);
+        using var curve = JsonDocument.Parse(curveJson);
+        var retainedObservation = curve.RootElement[0].GetProperty("RateEvidence").GetProperty("Observation");
+        retainedObservation.GetProperty("Unit").GetString().Should().Be("Fraction");
+        retainedObservation.GetProperty("Kind").GetString().Should().Be("ObservedFixing");
+        JsonSerializer.Deserialize(curveJson, SecurityCurvesJsonContext.Default.SecurityCurvePointDtoArray)![0]
+            .RateEvidence!.Observation.Should().BeEquivalentTo(observation);
+
+        var candidate = new BondObservedFixingCandidate(Guid.NewGuid(), 1, "SOFR", observation.ObservationDate,
+            observation.Value, observation, "operator", "Reviewed exact reset");
+        var receipt = new BondObservedFixingReceipt(Guid.NewGuid(), candidate, observation.RetrievedAt, new string('a', 64));
+        var receiptJson = JsonSerializer.Serialize(receipt, BondObservedFixingJsonContext.Default.BondObservedFixingReceipt);
+        using var fixing = JsonDocument.Parse(receiptJson);
+        var fixingObservation = fixing.RootElement.GetProperty("Fixing").GetProperty("Observation");
+        fixingObservation.GetProperty("Unit").GetString().Should().Be("Fraction");
+        fixingObservation.GetProperty("Kind").GetString().Should().Be("ObservedFixing");
+        JsonSerializer.Deserialize(receiptJson, BondObservedFixingJsonContext.Default.BondObservedFixingReceipt)
+            .Should().BeEquivalentTo(receipt);
     }
 
     private static SecurityRateObservationDto Observation() => new("fred", "SOFR", 4.12345678901234567890123456m,

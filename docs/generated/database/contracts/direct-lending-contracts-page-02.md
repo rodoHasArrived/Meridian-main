@@ -2,11 +2,14 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-123 of 123. References crossing pages remain available in the dependency manifest.
+Objects 81-124 of 124. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_PostDailyAccrualRequest["PostDailyAccrualRequest"] {
+        +DateOnly AccrualDate
+    }
     class Meridian_Contracts_DirectLending_ProjectedCashFlowDto["ProjectedCashFlowDto"] {
         +DateOnly? AccrualEndDate
         +DateOnly? AccrualStartDate

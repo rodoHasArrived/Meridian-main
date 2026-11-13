@@ -4,9 +4,11 @@ using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Npgsql;
 
 namespace Meridian.Tests.Storage;
 
@@ -89,6 +91,23 @@ public sealed class SecurityEntitlementInventoryPostgresTests
         var book = new LedgerBookRecord(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Entitlement fixture", "USD", now, now);
         await store.SaveLedgerBookAsync(book, ct);
+        // These inventory regressions inspect retained acquisitions, including unidentified
+        // imported legacy lots. Seed their explicit pre-controls compatibility profile;
+        // ordinary newly created books still default to Enforced in the production store.
+        await using (var connection = new NpgsqlConnection(database.Options.ConnectionString))
+        {
+            await connection.OpenAsync(ct);
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"""
+                update "{database.Options.SchemaName}".ledger_book_controls
+                set mode='LegacyWarning'
+                where ledger_book_id=@book and mode='Enforced' and version=1
+                    and activated_at_utc is null and migration_receipt_id is null;
+                """;
+            command.Parameters.AddWithValue("book", book.LedgerBookId);
+            (await command.ExecuteNonQueryAsync(ct)).Should().Be(1);
+        }
+        (await store.GetBookControlsAsync(book.LedgerBookId, ct))!.Mode.Should().Be(LedgerBookControlModeDto.LegacyWarning);
         var period = await store.SavePeriodAsync(new(Guid.NewGuid(), book.LedgerBookId, 2026, 5, "2026-05",
             new(2026, 5, 1), new(2026, 5, 31), "Open", now, null, 0), 0, ct: ct);
         return (store, book, period);

@@ -82,11 +82,9 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             // Quick health check with ticker details endpoint
             var url = $"{BaseUrl}/v3/reference/tickers/AAPL?apiKey={Uri.EscapeDataString(_apiKey)}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -364,8 +362,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
                     provider: Name, symbol: symbol);
             }
 
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-            using var response = await Http.GetAsync(pageUri, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(pageUri.AbsoluteUri, symbol, dataType, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 await HandleHttpResponseOrThrowAsync(response, symbol, dataType, ct).ConfigureAwait(false);

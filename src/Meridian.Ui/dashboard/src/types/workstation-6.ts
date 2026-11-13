@@ -1385,7 +1385,7 @@ export interface RunAttributionSummary {
 // --- Strategy run summary ---
 
 export type StrategyRunMode = "Backtest" | "Paper" | "Live";
-export type StrategyRunEngine = "Internal" | "QuantConnect" | "External";
+export type StrategyRunEngine = "Internal" | "QuantConnect" | "External" | "Unknown" | "MeridianNative" | "Lean" | "BrokerPaper" | "BrokerLive";
 export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled" | "Stopped";
 export type StrategyRunPromotionState =
   | "None"
@@ -1413,6 +1413,20 @@ export interface StrategyRunSummary {
   fillCount: number;
   lastUpdatedAt: string;
   auditReference: string | null;
+  parameters?: Record<string, string> | null;
+}
+
+export interface StrategySweepResultGroup {
+  sweepId: string;
+  sweepDefinitionHash: string;
+  objective: string | null;
+  startedAt: string;
+  runCount: number;
+  runs: StrategyRunSummary[];
+  objectiveRankings: Array<{ runId: string; objectiveValue: number | null }>;
+  comparisonContextVerified?: boolean;
+  historyMayBeTruncated?: boolean;
+  coverageDescription?: string;
 }
 
 export type BiasDisclosureSeverity = "info" | "caution" | "warning";

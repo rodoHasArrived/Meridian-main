@@ -4,7 +4,7 @@
 // every user west of UTC — a settlement date entered as the 26th posted as the 25th.)
 // The field is typeable; the calendar is a full ARIA grid with the standard keyboard model.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate.js";
+import { calendarDate, toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -102,6 +102,12 @@ export function DatePicker({
   const base = id || auto;
   const gridId = `${base}-grid`;
   const errorId = `${base}-error`;
+  const {
+    "aria-labelledby": labelledBy, "aria-describedby": describedBy,
+    "aria-invalid": invalid, "aria-errormessage": errorMessage,
+    "aria-required": ariaRequired, ...containerProps
+  } = rest;
+  const feedbackIds = [...new Set([...(describedBy || "").split(/\s+/).filter(Boolean), ...(error ? [errorId] : [])])].join(" ") || undefined;
 
   const selected = React.useMemo(() => fromISO(value), [value]);
   const minD = React.useMemo(() => fromISO(min), [min]);
@@ -200,11 +206,11 @@ export function DatePicker({
   const weeks = React.useMemo(() => weeksFor(cursor, weekStartsOn), [cursor, weekStartsOn]);
   const dow = React.useMemo(() => dowLabels(weekStartsOn), [weekStartsOn]);
   const today = new Date();
-  const prevBlocked = minD && new Date(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
-  const nextBlocked = maxD && new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1) > maxD;
+  const prevBlocked = minD && calendarDate(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
+  const nextBlocked = maxD && calendarDate(cursor.getFullYear(), cursor.getMonth() + 1, 1) > maxD;
 
   return (
-    <div ref={rootRef} {...rest}>
+    <div ref={rootRef} {...containerProps}>
       {label && (
         <label className="mds-date-label" htmlFor={base}>
           {label}{required && <span className="mds-date-req" aria-hidden="true">*</span>}
@@ -224,9 +230,11 @@ export function DatePicker({
             value={draft}
             disabled={disabled}
             aria-label={!label ? ariaLabel : undefined}
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? errorId : undefined}
-            aria-required={required || undefined}
+            aria-labelledby={labelledBy}
+            aria-invalid={error ? true : invalid}
+            aria-describedby={feedbackIds}
+            aria-errormessage={errorMessage}
+            aria-required={required ? true : ariaRequired}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commitTyped}
             onKeyDown={onFieldKey}

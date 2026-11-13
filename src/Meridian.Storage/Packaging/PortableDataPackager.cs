@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Logging;
@@ -22,6 +23,7 @@ public sealed partial class PortableDataPackager
     private readonly ILogger _log = LoggingSetup.ForContext<PortableDataPackager>();
     private readonly string _dataRoot;
     private readonly CompressionProfileManager? _compressionManager;
+    private readonly IPortableLedgerValidator? _ledgerValidator;
 
     private const string ManifestFileName = "manifest.json";
     private const string DataDirectory = "data";
@@ -37,9 +39,18 @@ public sealed partial class PortableDataPackager
     public event EventHandler<PackageProgress>? ProgressChanged;
 
     public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager = null)
+        : this(dataRoot, compressionManager, ledgerValidator: null)
+    {
+    }
+
+    /// <summary>Configures an accounting-owned validator without introducing accounting model
+    /// dependencies into the storage transport. The original constructor remains market-data only.</summary>
+    public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager,
+        IPortableLedgerValidator? ledgerValidator)
     {
         _dataRoot = dataRoot;
         _compressionManager = compressionManager;
+        _ledgerValidator = ledgerValidator;
     }
 
     /// <summary>
@@ -66,6 +77,10 @@ public sealed partial class PortableDataPackager
                     $"Package format '{options.Format}' is not implemented; use PackageFormat.Zip.");
             }
 
+            var ledgerPayload = options.Ledger;
+            if (ledgerPayload is not null)
+                await ValidateLedgerPayloadAsync(ledgerPayload, ct);
+
             // Ensure output directory exists
             Directory.CreateDirectory(options.OutputDirectory);
 
@@ -73,7 +88,7 @@ public sealed partial class PortableDataPackager
             ReportProgress(result.JobId, PackageStage.Scanning, 0, 0, 0, 0);
             var sourceFiles = await ScanSourceFilesAsync(options, ct);
 
-            if (sourceFiles.Count == 0)
+            if (sourceFiles.Count == 0 && ledgerPayload is null)
             {
                 return PackageResult.CreateFailure("No data files found matching the specified criteria");
             }
@@ -83,6 +98,14 @@ public sealed partial class PortableDataPackager
             // Build manifest
             ReportProgress(result.JobId, PackageStage.GeneratingManifest, 0, sourceFiles.Count, 0, 0);
             var manifest = await BuildManifestAsync(sourceFiles, options, ct);
+            // Snapshot once; concurrent subsequent postings cannot change the packaged generation.
+            var ledgerContent = ledgerPayload?.Json;
+            if (ledgerContent is not null)
+            {
+                manifest.LedgerSnapshotPath = "metadata/ledger.json";
+                manifest.LedgerSnapshotSha256 = Sha256Digest.ComputeUtf8(ledgerContent);
+                manifest.LedgerBalanceChecksumSha256 = ledgerPayload!.BalanceChecksumSha256;
+            }
 
             // Determine output file name
             var packageFileName = GetPackageFileName(options);
@@ -91,7 +114,7 @@ public sealed partial class PortableDataPackager
             // Create the package
             ReportProgress(result.JobId, PackageStage.Writing, 0, sourceFiles.Count, 0, manifest.UncompressedSizeBytes);
 
-            await CreatePackageFileAsync(packagePath, sourceFiles, manifest, options, ct);
+            await CreatePackageFileAsync(packagePath, sourceFiles, manifest, options, ledgerContent, ct);
 
             // Compute package checksum
             ReportProgress(result.JobId, PackageStage.ComputingChecksums, sourceFiles.Count, sourceFiles.Count, 0, 0);
@@ -190,6 +213,10 @@ public sealed partial class PortableDataPackager
 
             result.PackageId = manifest.PackageId;
             result.Manifest = manifest;
+
+            // Accounting evidence must validate before any archive entry reaches its destination,
+            // even when the caller elects to skip market-data file checksum checks.
+            await ValidatePortableLedgerAsync(packagePath, manifest, ct);
 
             // Create destination directory
             Directory.CreateDirectory(destinationDirectory);
@@ -303,13 +330,14 @@ public sealed partial class PortableDataPackager
                 issues.Add("Missing package ID in manifest");
             }
 
-            if (manifest.Files == null || manifest.Files.Length == 0)
+            if ((manifest.Files == null || manifest.Files.Length == 0) && manifest.LedgerSnapshotPath is null)
             {
                 issues.Add("No files listed in manifest");
             }
 
             // Verify files exist in package
             var missingFiles = await VerifyFilesInPackageAsync(packagePath, manifest, format, ct);
+            await ValidatePortableLedgerAsync(packagePath, manifest, ct);
             if (missingFiles.Count > 0)
             {
                 issues.Add($"{missingFiles.Count} files listed in manifest are missing from package");

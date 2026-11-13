@@ -1,0 +1,210 @@
+/* Browser-print adapter for Meridian Design System/tokens/print.css.
+   Prints the current view and selected inspector without changing application state.
+   Pagination and virtualization still determine which records are mounted: this is
+   not a replacement for a governed report/export of the complete dataset. */
+@media print {
+  @page { margin: 0.6in; }
+
+  /* Print is a light document even when the workstation is dark. System ink
+     preserves financial signs, state labels and provenance on monochrome printers.
+     This only changes presentation of mounted records; it never fetches rows. */
+  :root,
+  :root[data-theme] {
+    color-scheme: light;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 25%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --ws-page-bg: Canvas;
+    --ws-surface: Canvas;
+    --ws-surface-subtle: Canvas;
+    --ws-surface-raised: Canvas;
+    --ws-border: CanvasText;
+    --ws-border-strong: CanvasText;
+    --ws-row-border: CanvasText;
+    --ws-row-selected: Canvas;
+    --ws-text: CanvasText;
+    --ws-text-secondary: CanvasText;
+    --ws-text-muted: CanvasText;
+    --ws-accent: CanvasText;
+    --ws-accent-pressed: CanvasText;
+    --text-on-fill: Canvas;
+    --interaction-selected: CanvasText;
+    --interaction-selected-surface: Canvas;
+  }
+
+  html,
+  body,
+  #root,
+  .workstation-frame,
+  .workstation-shell,
+  .workbench,
+  .workbench-scroll {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: var(--ws-page-bg) !important;
+  }
+
+  .workstation-frame,
+  .workstation-shell,
+  .workbench,
+  .workspace-workbench-shell,
+  .workspace-workbench-shell-layout,
+  .workspace-workbench-shell-main {
+    display: block !important;
+  }
+
+  /* Preserve provenance, live/degraded warnings, workspace title and scope.
+     Only navigation, telemetry and screen commands are removed. */
+  .workstation-masthead > :not(.workstation-actions):not(.workstation-trust-strip),
+  .workstation-actions > :not(.workstation-session-card),
+  .workstation-rail-desktop,
+  .workstation-statusbar,
+  .workstation-header-actions,
+  .workspace-workbench-inspect-toggle,
+  .skip-link,
+  .mds-no-print,
+  [aria-label="Notifications"].fixed {
+    display: none !important;
+  }
+
+  /* The session is financial context: retain environment and acting principal
+     as a plain line after removing the masthead's screen controls. */
+  .workstation-masthead {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0.25rem 0 !important;
+    background: var(--ws-page-bg) !important;
+    color: var(--ws-text) !important;
+  }
+
+  .workstation-actions,
+  .workstation-session-card {
+    display: flex !important;
+    justify-content: flex-start !important;
+  }
+
+  .workstation-masthead::before {
+    content: "Data provenance: " attr(data-provenance) !important;
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    height: auto !important;
+    background: none !important;
+    color: CanvasText !important;
+    font-size: 0.75rem;
+  }
+
+  .workstation-trust-strip,
+  .workstation-trust-summary {
+    display: block !important;
+    max-width: none !important;
+    overflow: visible !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+  }
+
+  .workstation-trust-summary *,
+  .workstation-trust-environment {
+    color: CanvasText !important;
+    background: Canvas !important;
+  }
+
+  .workstation-trust-chevron { display: none !important; }
+
+  .workstation-session-card,
+  .workstation-session-name,
+  .workstation-session-role {
+    background: transparent !important;
+    color: var(--ws-text) !important;
+  }
+
+  .workstation-session-card .mds-badge {
+    color: CanvasText !important;
+    background: Canvas !important;
+    border-color: CanvasText !important;
+  }
+
+  .workbench-scroll { padding: 0.75rem 0 !important; }
+
+  .workspace-workbench-shell-context-rail,
+  .workspace-workbench-shell-inspector,
+  .workspace-workbench-shell-evidence-drawer,
+  .dense-data-table-wrap,
+  .workbench .overflow-auto,
+  .workbench .overflow-x-auto,
+  .workbench .overflow-y-auto {
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Keep the existing selection and its evidence together on paper, including
+     when the laptop layout switches between the work list and inspector. */
+  .workspace-workbench-shell--switchable .workspace-workbench-shell-main,
+  .workspace-workbench-shell--switchable .workspace-workbench-shell-inspector {
+    display: block !important;
+  }
+
+  .workspace-workbench-shell-layout > * + *,
+  .workspace-workbench-shell-main > * + *,
+  .workspace-workbench-shell-evidence-drawer {
+    margin-top: 0.75rem;
+  }
+
+  .workbench table {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .workbench thead {
+    position: static !important;
+    display: table-header-group;
+  }
+
+  .workbench tr { break-inside: avoid; }
+
+  .workbench th,
+  .workbench td,
+  .workbench table .truncate {
+    height: auto !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    text-overflow: clip !important;
+  }
+
+  /* Keep amounts and their signs together while descriptive columns wrap. */
+  .workbench td .font-mono,
+  .workbench td.font-mono {
+    white-space: nowrap !important;
+    overflow-wrap: normal;
+  }
+
+  /* Spacer rows represent unmounted records, not printable blank pages. */
+  .dense-data-table-spacer { display: none !important; }
+
+  .workstation-frame * { box-shadow: none !important; }
+  .workstation-frame svg text { fill: CanvasText !important; }
+  .workbench tr[aria-selected="true"] { outline: 1px solid CanvasText; outline-offset: -1px; }
+
+  .workstation-provenance,
+  .workbench [role="alert"],
+  .workbench [aria-selected="true"],
+  .workbench .mds-badge,
+  .workbench .mds-sev,
+  .workbench .mds-rpanel,
+  .workbench svg {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

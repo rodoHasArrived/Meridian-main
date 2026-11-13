@@ -6,10 +6,15 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Backtesting
+
+Simulated security buys, disposals, short sales/covers, return of capital and fractional
+corporate-action settlements retain producer-supplied investing cash-flow attribution when
+their journals are first posted. Reported cash flows therefore use the actual cash movement;
+carrying-basis relief and realized gain/loss do not become separate operating cash flows.
 
 With short selling disabled, `SimulatedPortfolio` rejects any sell that would leave the position net short, including a sell larger than the current long (long 100, sell 150); it previously rejected only sells from a flat or short position.
 
@@ -48,15 +53,12 @@ identity fallback, while hosts can compose the narrow services independently.
 The original aggregate-query constructor remains available with its original CLR signature and
 optional arguments for existing compiled callers.
 
-`AddMeridianBacktesting` builds that service itself when a host registers the Security Master
-(corporate-action query plus resolver) but no `ICorporateActionAdjustmentService`, so
-`AdjustForCorporateActions` behaves the same on the browser/CLI host as on WPF; without a Security
-Master the engine still reports that corporate actions were not applied.
-`SecurityMasterAssetEventSource` (`IBacktestAssetEventSource`) maps confirmed cash distributions
-and share splits to `AssetEvent`s for raw-price runs. The engine uses it only when
-`BacktestRequest.PopulateAssetEventsFromSecurityMaster` is set and the request supplies no events,
-and rejects it together with `AdjustForCorporateActions`, because back-adjusted prices already
-contain those actions. Mergers, spin-offs and other position transformations are not mapped.
+`AddMeridianBacktesting` composes `CorporateActionAdjustmentService` from the corporate-action
+query and resolver when no adjustment service is registered, retaining adjusted-price support
+across browser, CLI and WPF hosts. Identity and corporate-action queries also enable the broader
+automatic portfolio-event source. The factory retains `SecurityMasterAssetEventSource` as the
+narrow explicit opt-in compatibility source; request policy selects one population path before
+replay. An unavailable Security Master remains visible in the run's bias disclosure.
 
 ## Key folders and files
 
@@ -73,6 +75,12 @@ contain those actions. Mergers, spin-offs and other position transformations are
 
 ## Important workflows
 
+`SecurityTradePostingProjector` supplies the shared long/short trade and commission line
+projection from the simulator's exact lot facts. The simulator attaches investing attribution
+before posting each projected trade; commissions retain their separate operating cash flow.
+Lot selection, corporate-action basis relief and day-end integrity comparisons remain simulation
+responsibilities, without reconstructing carrying value from rounded quotes or realized P&L.
+
 The native engine resolves lot denomination from each available Security Master definition
 before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
 1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
@@ -85,6 +93,14 @@ consumption walk. Composite lots supply their exact retained component basis; fu
 reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and the simulation's
 SpecificId-to-FIFO fallback are preserved. This calculation convergence does not manufacture
 canonical SecurityIds or acquisition FX, authorize short posting, or replace retained Ledger lots.
+
+`SimulatedPortfolio` resolves posting accounts through the shared `IChartOfAccounts` and
+`StandardChartOfAccounts` role registry, retaining existing account identities and brokerage/symbol
+scopes for capital, fills, financing, income, and corporate actions. Fill and commission journal
+lines consume the shared `SecurityTradePostingProjector` with each leg's exact relieved basis or
+short proceeds; simulation keeps its descriptions, activity types, and fill/order references.
+The simulator retains short-payable accounting; it does not migrate historical execution journals
+that record short positions as credits to Securities.
 
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
@@ -161,6 +177,36 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 
 ## Execution realism and result trustworthiness
 
+- `SecurityMasterBacktestAssetEventSource` connects the existing provider ingest/proposal pipeline
+  to native portfolio replay. `ApplyStoredCorporateActions` defaults to true when the host has
+  Security Master query services, unless explicit compatibility mode is selected below. Only
+  confirmed, effective, non-cancelled revisions become automatic events. Identical economics are
+  deduplicated and conflicting instructions fail before
+  replay. Stored splits, USD dividends, return of capital, mergers and ticker changes are supported.
+  Successor securities are followed after mergers, and later actions use the successor ticker.
+  Unsupported action types, missing successor terms, non-USD cash and ambiguous same-day successor
+  ordering require reviewed manual events with automatic loading disabled.
+- `PopulateAssetEventsFromSecurityMaster = true` selects the explicit compatibility path instead
+  of broad automatic loading. A supplied `AssetEvents` list, including an empty list, takes
+  precedence. Without that list, the path requires `AdjustForCorporateActions = false` and a
+  configured source. Its `SecurityMasterAssetEventSource` maps confirmed cash distributions and
+  share splits; it does not map mergers, spin-offs or other position transformations. Selecting
+  this path never also calls the broad source.
+- Portfolio action accounting uses unadjusted prices, including when explicit `AssetEvents` are
+  supplied. Already-adjusted bars are refused for an event-bearing replay so splits and cash cannot
+  be counted twice. Stored dividends credit ex-date holders on the ex-date; payable-date settlement
+  is not modeled. This economic replay uses currently retained confirmed Security Master revisions
+  and makes no historical transaction-visibility claim. Provider proposals still require the
+  existing ingest acceptance workflow; backtests never approve provider observations.
+
+Every native day-end snapshot reconciles as-of trial balance, per-account cash, long lot basis,
+short proceeds, and transfer clearing balances. Differences remain on
+`BacktestResult.LedgerIntegrityBreaks`; `BacktestRequest.FailOnLedgerIntegrityBreak` aborts with
+inspectable `LedgerIntegrityException.Breaks`. Comparisons use the shared ledger balance tolerance
+and include residual accounts for closed positions. Return-of-capital distributions reduce each
+long lot/component's exact basis to zero before recognizing excess gain. `BasisReturned` stays
+separate from income in cash-flow evidence and symbol attribution; short payments remain expenses.
+
 Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
 metrics, and stitched walk-forward metrics use the same 365-observation annualization because
 the native snapshot series includes weekends. Trade cash flows contain only consideration;
@@ -189,6 +235,18 @@ accepted partial fills rather than charging each execution as a new order.
   harness: per rolling (or anchored) training window it sweeps the parameter grid, selects the best
   set by a configurable objective, evaluates it once on the adjacent unseen test window, and stitches
   the test windows into aggregate OOS metrics with train-vs-test degradation reporting.
+
+### Retained sweep comparison identity
+
+Studio sweep records retain each run's parameter values while a versioned experiment fingerprint
+excludes point values and includes invariant window, universe, native request and cost configuration.
+The native request uses source-generated JSON with the existing `sweep-v2` serializer contract;
+property names, enum representation, decimal scale and dictionary order retain their hash semantics.
+Read models additionally separate strategy, engine, dataset, feed and mode. Legacy fingerprints remain
+exploratory and are not heuristically merged. Objective rankings honor the named supported metric;
+unknown objectives do not substitute final equity. Returned parameter coordinates support the browser
+sensitivity grid, with explicit history-limit and absent expected-grid warnings. This is retained-run
+analysis, not a new supported host sweep-launch workflow or promotion authorization.
 
 ## API / contract notes
 

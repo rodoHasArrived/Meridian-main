@@ -11,13 +11,13 @@
 | Surface | Count |
 | --- | ---: |
 | `agent-skills-compatible-hosts` | 18 |
-| `claude` | 46 |
+| `claude` | 47 |
 | `codex` | 145 |
-| `docs-ai` | 44 |
+| `docs-ai` | 42 |
 | `github-actions` | 2 |
 | `github-copilot` | 44 |
 | `local-ai-maintenance-tools` | 8 |
-| `mcp` | 14 |
+| `mcp` | 15 |
 | `reusable-prompts` | 3 |
 | `root-assistant-compatibility` | 2 |
 

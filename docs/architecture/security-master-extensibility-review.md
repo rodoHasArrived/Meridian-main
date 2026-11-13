@@ -896,16 +896,16 @@ OtherSecurity, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, Com
 CryptoCurrency, Cfd, Warrant, FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption,
 CapFloor, StructuredNote.
 
-**Still hand-written (12 classes), and why.**
+**Still hand-written at this entry (12 classes), and why.**
 
-| Classes | What the generator lacks |
+| Classes | What the generator lacked |
 | --- | --- |
 | Deposit, CertificateOfDeposit, CommercialPaper, CashSweep | A module built by a helper or a vocabulary conversion (the scalar call module, the coupon-kind constant, the asset-backed flag, the sweep vehicle and frequency) |
 | Bond, Swap, DirectLoan, StructuredCredit, CommitmentGuarantee | Structural members: coupon structures, schedules, legs, covenants, the declared-schedule containers and their version gating |
 | Equity, InvestmentFund, CustomAsset | A bespoke classification decode, a pinned historical read order, and the verbatim profile document |
 
-The first group needs only a module-level row kind. The second needs the structural codecs
-named in the table. Neither is started.
+The first group needed only a module-level row kind; cohort 2 below adds it. The second needs
+the structural codecs named in the table, and is not started.
 
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23); adjacent suites —
@@ -913,6 +913,131 @@ namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23);
 231 passed; `Meridian.Contracts.UnitTests` — 384 passed. `dotnet format whitespace
 --verify-no-changes` and schema-control verification pass. The full local `bash scripts/ci.sh`
 was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+#### Cohort 2 — the four classes built from helpers — 2026-11-12
+
+Deposit, CertificateOfDeposit, CommercialPaper and CashSweep now have both codec arms generated,
+so 24 of the 32 classes are generated. Three row kinds were added to the binding table, and
+nothing else about it changed:
+
+| Row | Meaning | Used by |
+| --- | --- | --- |
+| `Module` | A whole record field built by a helper expression (the scalar call module from `isCallable` or `callableDate`; the declared-schedule containers) | Deposit, CertificateOfDeposit |
+| `WrittenFrom` | A key the writer takes from a record property, read back by a `Module` row of the same field | Deposit `isCallable`, CertificateOfDeposit `callableDate` |
+| `Converted` | A member read through its own conversion and written from a record property (the asset-backed flag, the sweep vehicle and frequency) | CommercialPaper, CashSweep |
+
+A class can also be flagged as carrying the declared-schedule containers (ADR-024). Its decode
+then takes the versioned-terms decoding, and its writer writes the block and the call and put
+schedules from the version that declares them, exactly as the hand-written arm did. Only
+CertificateOfDeposit uses this so far; Bond and StructuredCredit will when their structural
+members are generated.
+
+To let the generated F# writer use the schedule payload helpers, `SecurityTermsWriteVersion`
+moved unchanged from `Interop.SecurityMaster.fs` into its own file, compiled ahead of the
+generated writer.
+
+The coverage test now excludes read-only schema fields (`AuthoringEnabled` false), which the codec
+never writes. `cashFlowContract`, declared read-only on CertificateOfDeposit since the cohort-1
+entry, is the first such field on a generated class.
+
+Behaviour is unchanged: no golden, corpus or fixture moved, and no existing test changed.
+
+#### Cohort 3 — the five structural classes — 2026-11-13
+
+Bond, Swap, DirectLoan, StructuredCredit and CommitmentGuarantee now have both codec arms
+generated, so 29 of the 32 classes are generated. Three row kinds and two class settings were
+added:
+
+| Addition | Meaning | Used by |
+| --- | --- | --- |
+| `Listed` row | A list member read by its own decode and written entry by entry, each entry key named against an entry member | covenants, principal schedules, the dated factor schedule |
+| `Computed` row | A member read through its own conversion and written as a converted value (an F# expression, not a property) | Bond payment frequency and subclass, StructuredCredit kind, Swap legs |
+| `WrittenAs` row | One of several keys a single member is written as, read back by that member's decode row | Bond's coupon structure, written as ten keys |
+| Decode inputs | Whether the decode also takes the parsed economic schedules, the versioned-terms decoding (outside the declared-schedule flag) or the profile-resolved terms document | Bond, DirectLoan, StructuredCredit; Swap; CommitmentGuarantee |
+| Conventions flag | Whether the writer takes the schedule-conventions version flag for a block nested in a list entry | Swap legs |
+
+An optional module other than the rate convention may now be built whole by a module row (Bond's
+`Workflow`). The coverage test excludes `bondWorkflow` with `rateUnit`: the snapshot wrapper writes
+both after the class's document is stamped, and `bondWorkflow` is absent rather than null when
+undeclared.
+
+The table names a few hand-written helpers rather than restating them. On the decode side these
+are the coupon structure (`ToBondCouponStructure`, the coupon half of the former `ToBondTerms`),
+the validated principal and factor schedules, covenants and swap legs. On the writer side,
+`FlatWriterParts` (new, compiled before the generated writer) holds the coupon union's per-key
+projections and the swap-leg payload with and without its block. Those were the inline
+expressions of the hand-written arms, moved unchanged.
+
+Behaviour is unchanged. One ordering detail needed care: the generated decode builds a record's
+fields in order, so Bond's dates now come before its coupon. A write still reads the coupon
+contract first (`DecodeBond`), so a floating coupon with no index and no maturity is still refused
+for the index. A new theory pins that; without the coupon-first read it reports the missing
+maturity instead. Reads were already ordered by the legacy read-order guard. No golden, corpus or
+fixture moved. The schema-bound decode ratchet and existing comments now name
+`ToBondCouponStructure`.
+
+Still hand-written at this entry (3): Equity, InvestmentFund and CustomAsset, for the bespoke
+reasons in the cohort-1 table.
+
+#### Cohort 4 — Equity and InvestmentFund; CustomAsset stays verbatim — 2026-11-13
+
+Equity and InvestmentFund now have both codec arms generated, so 31 of the 32 classes are
+generated. Neither needed a new row kind:
+
+- **Equity.** The classification union is written as four keys (`classification`,
+  `otherClassification`, `preferredTerms`, `convertibleTerms`) through `WrittenAs` rows. The
+  decode stays `ToEquityClassificationOption`, with its write-strict, read-tolerant handling of
+  unrecognized and unnamed `Other` classifications. `EquityCapitalCodec` moved unchanged into the
+  writer-parts file, which compiles before the generated writer, and is split into one function per
+  key. `toPayload` and `toJson` are rebuilt from those functions, so the economic document's
+  `equityCapital` serialization is unchanged.
+- **InvestmentFund.** Plain rows plus a `Computed` distribution policy.
+  `ToInvestmentFundReferenceTerms` is removed. Its comment pinned the old scalar read order, but
+  none of these reads can throw (absent or mistyped values read as absent, and an unrecognized
+  distribution policy is kept as `Other`), so record order changes no outcome.
+
+**CustomAsset is not generated, by design.** Its flat codec is not a set of class keys. A record
+holds the approved profile's document: the profile id, the profile version and the
+profile-governed fields. The writer emits that document verbatim and unstamped (it already
+carries its profile schema version), and the decode either keeps it whole or, on a read of a
+legacy row without a profile envelope, salvages the row as an OtherSecurity. A binding table row
+would only restate that pass-through, and the profile's own schema governs the fields. ADR-027
+stage 3's goal, one statement of which key carries which member, is met for every class that has
+class keys.
+
+Behaviour is unchanged. No golden, corpus or fixture moved and no test changed.
+
+**`Equity.preferredTerms` now has a declared inner shape.** It had none, so its eleven decode
+reads went through the unbound-read ledger (`UnboundCompatibilityReads`). The schema now declares
+it, matching the decode exactly:
+
+- `preferredTerms` itself: `dividendRate`, `redemptionPrice`, `redemptionDate` and `callableDate`
+  optional; `dividendType` required, one of Fixed, Floating or Cumulative; `participationTerms`
+  optional; `liquidationPreference` required.
+- `participationTerms`: both members optional (an absent participation flag reads as false).
+- `liquidationPreference`: `kind` required, one of Pari, Senior or Subordinated; `multiple`
+  optional (read only for Senior).
+
+The eleven reads are now bound and their ledger entries are retired. The only unbound reads left
+are the three CustomAsset legacy-salvage reads, which are permanent.
+
+This is a deliberate write-contract change. The schema validator now walks `preferredTerms` the
+way it already walked `convertibleTerms`:
+
+- A value outside the two vocabularies, or a missing required member, was already refused by the
+  decode. The validator now refuses it first, with the schema's codes.
+- A mistyped optional member (a `dividendRate` of `"6.25"`) used to be read as absent and silently
+  dropped. It is now refused (`SM_TERM_TYPE_INVALID`), as it already was inside `convertibleTerms`.
+
+A new theory pins both vocabulary refusals and the type refusal. The underlying-role coverage
+check lists `liquidationPreference` as not a link, because "preference" only contains "reference".
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;
+`Meridian.FSharp.Tests` — 642 passed; `Meridian.Contracts.UnitTests` — 384 passed;
+`Meridian.FundStructure.Tests` — 231 passed. `dotnet format whitespace --verify-no-changes` and
+schema-control verification pass. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
 
 ### ADR-027 stage-3 — the codec-only validation remainder ends — 2026-11-11
 
@@ -9880,6 +10005,24 @@ record did.
   None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
   with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
   projection still floors a negative rate at zero.
+
+  *2026-11-13: all three are now implemented.* Verified against source on this date:
+  - *Undeclared legacy rates.* The optional governed `rateUnit` term, with no default, is
+    version-gated and written through the governed edit lifecycle.
+  - *Negative rates.* Live readers that do not model signed interest return the typed
+    `NegativeInterestUnsupported` blocker (`SecurityInterestSupport`) and no partial output. That
+    covers the cash-flow projections (scalar, declared bond leg and swap leg), accounting events,
+    the portfolio cash ladder, bond analytics, asset-obligation projection and the structured
+    cash-flow ledger gate. A zero floor survives only in two places: when a cash-flow receipt
+    captured before `bond-cash-flow-context-v3` is replayed, and when the v1 cash ladder is
+    explicitly selected. Both reproduce historical output and never compute anything new.
+  - *StructuredNote.* The catalog declares fair value through profit or loss and keeps the class
+    outside the accrual slice. `structured-note-fvtpl-v1` (`StructuredNoteAccountingTemplate`)
+    posts only the change from retained carrying value, through the daily valuation route, with
+    no coupon accrual.
+
+  The remediation plan's follow-through section and `docs/domain/security.md` describe the current
+  behaviour.
 - **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
   the two D10 decisions that need code, are done in pull requests that follow this one, not
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility

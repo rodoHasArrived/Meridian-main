@@ -53,7 +53,8 @@ describe("command palette view model", () => {
     ["journal entries", "/accounting/journal-entries"],
     ["report templates", "/reporting/library"],
     ["recurring reports", "/reporting/scheduled"],
-    ["connect broker", "/settings/providers"]
+    ["connect broker", "/settings/providers"],
+    ["options screening", "/data/quotes?view=options"]
   ])("finds %s even when workflow and entity services are unavailable", (query, route) => {
     const model = buildCommandPaletteViewModel("/", undefined, {
       workflowError: "Workflow service unavailable",

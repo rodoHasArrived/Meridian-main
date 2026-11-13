@@ -167,19 +167,34 @@ The `Meridian.Domain` project includes a `BannedReferences.txt` file that explic
 
 ## UI Layer Dependency Rules
 
-The four UI-facing projects follow the same dependency direction rules but are isolated from one another:
+The UI-facing projects follow one dependency direction. `Ui.Shared` is the shared workstation seam
+that both clients consume, so it sits below them:
 
-* **`Meridian.Ui.Shared`** – web endpoint mapping and host wiring; may reference `Application` and `Contracts`. Must not reference `Ui.Services` or `Wpf`.
-* **`Meridian.Ui.Services`** – cross-feature shared UI services (API client, fixture data, validation); may reference `Contracts` and lightweight platform-neutral libs. Must not reference WPF or `Ui.Shared`.
+* **`Meridian.Ui.Shared`** – shared workstation seam: endpoint mapping, host wiring, read models,
+  workflow services, and route constants for both workstations. May reference `Application`,
+  `Contracts`, and the domain/service projects it projects (for example Reporting, Execution, Risk,
+  Storage). Must not reference `Ui.Services`, `Wpf`, `Ui`, or any WPF-only API, and must stay
+  host-agnostic.
+* **`Meridian.Ui.Services`** – cross-feature shared UI services (API client, fixture data,
+  validation). May reference `Ui.Shared`, `Contracts`, and platform-neutral service projects. Must
+  not reference `Wpf`.
 * **`Meridian.Ui`** – intentionally thin web host; delegates to `Ui.Shared`. No application logic lives here.
-* **`Meridian.Wpf`** – Windows desktop host with XAML views and WPF services; references `Ui.Services` and `Contracts`. Must not reference `Ui.Shared` or `Ui`.
+* **`Meridian.Wpf`** – Windows desktop host with XAML views and WPF services. May reference
+  `Ui.Services`, `Ui.Shared` (shared services, read models, workflows, and `UiApiRoutes` constants),
+  and `Contracts`. Must not reference `Ui` or re-host `Ui.Shared` endpoint mapping; desktop
+  workflows consume the local API seam or shared services instead.
+
+MSBuild's cycle rejection and the `net10.0-windows` target of `Wpf` already enforce the
+"must not reference" direction above (`Ui.Shared` cannot reference its own consumers, and
+`net10.0` projects cannot reference the Windows-only host). `ReportingReadModelBoundaryTests`
+additionally keeps `Meridian.Reporting.ReadModels` free of every UI project.
 
 See [Desktop & UI Layer Architecture](desktop-layers.md) for a detailed diagram and communication flow.
 
 ---
 
-**Version:** 1.6.2
-**Last Updated:** 2026-10-02
+**Version:** 1.7.0
+**Last Updated:** 2026-11-13
 **Audience:** Contributors and AI assistants working on project architecture and dependency management.
 
 ## Accounting persistence and risk contracts

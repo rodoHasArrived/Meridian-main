@@ -73,15 +73,19 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             { Database = "lot_reference_authority_in_another_database" }.ConnectionString;
             var invalid = new (PostgresLedgerJournalStore Store, string Message)[]
             {
-                (new(database.Options), "*reference authority requires PostgreSQL*"),
+                (new(database.Options, postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities),
+                    "*reference authority requires PostgreSQL*"),
                 (new(database.Options, backfillSecurityMaster: () => Mock.Of<ISecurityMasterStore>(),
-                    backfillPositions: () => Mock.Of<IInstrumentPositionProjectionStore>()), "*reference authority requires PostgreSQL*"),
+                    backfillPositions: () => Mock.Of<IInstrumentPositionProjectionStore>(),
+                    postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities), "*reference authority requires PostgreSQL*"),
                 (new(database.Options, backfillSecurityMaster: () => new PostgresSecurityMasterStore(new()
                     { ConnectionString = otherDatabase, Schema = authority.SecurityOptions.Schema }),
-                    backfillPositions: () => authority.Positions), "*Security Master in the same PostgreSQL database*"),
+                    backfillPositions: () => authority.Positions,
+                    postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities), "*Security Master in the same PostgreSQL database*"),
                 (new(database.Options, backfillSecurityMaster: () => authority.Securities,
                     backfillPositions: () => new PostgresAssetOperationsProjectionStore(new()
-                    { ConnectionString = otherDatabase, Schema = authority.PositionOptions.Schema })),
+                    { ConnectionString = otherDatabase, Schema = authority.PositionOptions.Schema }),
+                    postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities),
                     "*book positions in the same PostgreSQL database*")
             };
             foreach (var item in invalid)

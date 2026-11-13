@@ -68,11 +68,11 @@ public sealed class SecurityVersionedTermsTests
     }
 
     [Fact]
-    public void TheVersionedContainers_AreTheScheduleBlocksCallPutArraysAndCalculationCompanions()
+    public void TheVersionedContainers_AreTheScheduleBlocksCallPutArraysCalculationCompanionsAndBondWorkflow()
     {
         VersionedContainers().Select(static container => $"{container.AssetClass}.{container.Path}").Should().BeEquivalentTo(new[]
         {
-            "Bond.scheduleConventions", "Bond.callSchedule", "Bond.putSchedule", "Bond.cashFlowContract",
+            "Bond.scheduleConventions", "Bond.callSchedule", "Bond.putSchedule", "Bond.cashFlowContract", "Bond.bondWorkflow",
             "CertificateOfDeposit.scheduleConventions", "CertificateOfDeposit.callSchedule", "CertificateOfDeposit.putSchedule", "CertificateOfDeposit.cashFlowContract",
             "DirectLoan.cashFlowContract",
             "StructuredCredit.scheduleConventions", "StructuredCredit.callSchedule", "StructuredCredit.putSchedule", "StructuredCredit.cashFlowContract",
@@ -97,7 +97,7 @@ public sealed class SecurityVersionedTermsTests
             .Should().Be(new SecurityVersionedTermDecoding(ProfileGoverned: false, Through: 1));
         SecurityVersionedTerms.Decoding("Bond", Json("{" + BondBody + "}"), writeMode: false).Through.Should().Be(1);
         SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: false).Through.Should().Be(3);
-        SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: true).Through.Should().Be(3);
+        SecurityVersionedTerms.Decoding("Bond", Terms(3, BondBody), writeMode: true).Through.Should().Be(5);
         SecurityVersionedTerms.Decoding("StructuredCredit", Terms(1, "\"tranche\":\"A-1\""), writeMode: true).Through.Should().Be(6);
 
         SecurityVersionedTerms.Decoding("StructuredCredit", Json("""{"customProfileId":"structured-credit-v1","profileFields":{}}"""), writeMode: false)
@@ -220,13 +220,13 @@ public sealed class SecurityVersionedTermsTests
     [Fact]
     public void ReadDeclaredScheduleConventions_IsUnreadable_WithTheReadGuardsText()
     {
-        var terms = Terms(5, $"{BondBody},\"scheduleConventions\":{CanonicalBlock}");
+        var terms = Terms(6, $"{BondBody},\"scheduleConventions\":{CanonicalBlock}");
 
         var read = SecurityVersionedTerms.ReadDeclaredScheduleConventions("Bond", terms);
 
         read.Status.Should().Be(SecurityDeclaredConventionsStatus.Unreadable);
         read.Block.IsEmpty.Should().BeTrue();
-        read.UnreadableReason.Should().Be("Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.")
+        read.UnreadableReason.Should().Be("Unsupported assetClassTermsVersion '6' for asset class 'Bond'; this node reads versions 1 through 5.")
             .And.Be(ReadGuardMessage("Bond", terms));
     }
 
@@ -332,7 +332,7 @@ public sealed class SecurityVersionedTermsTests
             ("Bond", Json("""{"schemaVersion":2,"termsFormat":"economic","assetClassTermsVersion":9}"""),
                 "Terms payload for asset class 'Bond' declares termsFormat 'economic', which is not an asset-specific-terms format; " +
                 "route it through SecurityAssetSpecificTermsUpcasterChain before reading."),
-            ("Bond", Terms(5, BondBody), "Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4."),
+            ("Bond", Terms(6, BondBody), "Unsupported assetClassTermsVersion '6' for asset class 'Bond'; this node reads versions 1 through 5."),
             ("StructuredCredit", Terms(0, "\"tranche\":\"A-1\""), "Unsupported assetClassTermsVersion '0' for asset class 'StructuredCredit'; this node reads versions 1 through 6."),
             ("Swap", Terms(5, "\"legs\":[]"), "Unsupported assetClassTermsVersion '5' for asset class 'Swap'; this node reads versions 1 through 4."),
         };

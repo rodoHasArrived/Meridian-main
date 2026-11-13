@@ -14,6 +14,7 @@ import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTrading
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { bondWorkflowRoute, isBondAssetClass, resolveBondWorkflowAction } from "@/lib/fixed-income-navigation";
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
+import { BondSettlementPanel } from "@/components/meridian/bond-settlement-panel";
 import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
 import { cn } from "@/lib/utils";
@@ -413,6 +414,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           </div>
         </TabPanel>
         <TabPanel>
+          <div className="space-y-4">
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Trading parameters</CardTitle>
@@ -451,6 +453,14 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
               )}
             </CardContent>
           </Card>
+          {["bond", "fixedincome"].includes(entry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")) ? (
+            <details className="rounded border border-border p-4">
+              <summary className="cursor-pointer font-semibold">Prepare bond settlement</summary>
+              <div className="mt-4"><BondSettlementPanel key={entry.securityId} securityId={entry.securityId}
+                termsVersion={identity?.securityId === entry.securityId ? identity.version : null} /></div>
+            </details>
+          ) : null}
+          </div>
         </TabPanel>
         <TabPanel>
           <ContractualCashFlowWorkbench subjectKind="Security" subjectId={entry.securityId} subjectLabel={overview.displayName} />
