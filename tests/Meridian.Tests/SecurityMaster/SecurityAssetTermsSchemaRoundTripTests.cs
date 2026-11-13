@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -717,6 +718,35 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
             .Should().Throw<InvalidOperationException>()
             .WithMessage("*SM_TERM_VALUE_NOT_ALLOWED*couponType*Floter*")
             .WithMessage("*Fixed, Floating, ZeroCoupon, Step, InflationLinked*");
+    }
+
+    [Theory]
+    [InlineData("dividendType", "Participating", "SM_TERM_VALUE_NOT_ALLOWED")]
+    [InlineData("liquidationPreference.kind", "Junior", "SM_TERM_VALUE_NOT_ALLOWED")]
+    // A mistyped optional member was read as absent and silently dropped; it is now refused.
+    [InlineData("dividendRate", "6.25", "SM_TERM_TYPE_INVALID")]
+    public void Equity_PreferredTermOutsideItsDeclaredShape_IsRejectedOnWrite(string path, string value, string code)
+    {
+        // preferredTerms has a declared inner shape, so the schema validator walks it: a value the
+        // shape does not allow is refused with the schema's code.
+        var payload = JsonNode.Parse(JsonSerializer.Serialize(new
+        {
+            classification = "Preferred",
+            preferredTerms = new
+            {
+                dividendType = "Cumulative",
+                liquidationPreference = new { kind = "Pari" }
+            }
+        }))!.AsObject();
+        var segments = path.Split('.');
+        var container = payload["preferredTerms"]!.AsObject();
+        foreach (var segment in segments[..^1])
+            container = container[segment]!.AsObject();
+        container[segments[^1]] = value;
+
+        FluentActions.Invoking(() => CreateSnapshot("Equity", payload))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage($"*{code}*{segments[^1]}*");
     }
 
     [Theory]
