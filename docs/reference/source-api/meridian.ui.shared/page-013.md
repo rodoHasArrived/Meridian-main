@@ -6,59 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## LiveBrokeragePortfolioSyncService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioSyncService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs:6](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs#L6).
-
-```csharp
-public sealed partial class LiveBrokeragePortfolioSyncService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:38](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L38).
-
-Publishes a live account only after complete portfolio evidence and OMS reconciliation agree. Restart, disconnect, stale evidence, and subsequent order/fill changes require a fresh sync. No cached snapshot is restored as trading authority after a restart.
-
-```csharp
-public sealed partial class LiveBrokeragePortfolioSyncService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LiveBrokeragePortfolioSyncService(Func&lt;IBrokerageGateway?&gt; gatewayAccessor, Func&lt;IOrderManager?&gt; orderManagerAccessor, BrokerageExecutionReconciliationService reconciliation, TimeProvider? timeProvider = null, TimeSpan? maxAge = null, ISecurityMasterQueryService? securityMaster = null);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:50](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L50) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:67](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L67) |  |
-| <code>public TimeSpan MaximumAge =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:69](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L69) |  |
-| <code>public void InvalidateAccountBinding(Guid fundAccountId, string providerId, string externalAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:71](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L71) |  |
-| <code>public IReadOnlyList&lt;LiveBrokeragePortfolioStatus&gt; GetStatuses() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:89](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L89) |  |
-| <code>public BrokeragePortfolioSnapshotDto? GetRiskSnapshot(Guid fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:92](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L92) |  |
-| <code>public IReadOnlyList&lt;OrderState&gt; GetExposureReservingOrders(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:99](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L99) | Keeps the last reconciled unfilled reservation until holdings are refreshed. Retiring it from a new fill while retaining old broker holdings would briefly lose that fill&#x27;s exposure. |
-| <code>public LiveBrokeragePortfolioStatus GetStatus(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:139](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L139) |  |
-| <code>public async Task&lt;LiveBrokeragePortfolioStatus&gt; SynchronizeAsync(Guid fundAccountId, string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:178](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L178) |  |
-
-## ManagementFeeAccrualCalculation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:205](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L205).
-
-Day-weighted management fee on the net assets the ledger held at the close of the day before the accrual window. Terms: annualRate, yearBasisDays.
-
-```csharp
-public sealed class ManagementFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:207](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L207) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:209](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L209) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:211](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L211) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:213](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L213) |  |
-
 ## ManualJournalEntryWorkbenchService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ManualJournalEntryWorkbenchService</code>. Kind: `class`.
@@ -1014,4 +961,24 @@ Result from the test-module endpoint.
 
 ```csharp
 public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
+```
+
+## ProviderNewsReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
+
+```csharp
+public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
+```
+
+## ProviderPnlReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderPnlReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L24).
+
+```csharp
+public sealed record ProviderPnlReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderAccountPnl Item);
 ```

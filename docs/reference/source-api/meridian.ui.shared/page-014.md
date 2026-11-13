@@ -6,26 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderNewsReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
-
-```csharp
-public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
-```
-
-## ProviderPnlReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderPnlReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L24).
-
-```csharp
-public sealed record ProviderPnlReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderAccountPnl Item);
-```
-
 ## ProviderProjectionAvailability
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderProjectionAvailability</code>. Kind: `record`.
@@ -283,63 +263,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsConfigured =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:166](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L166) |  |
 | <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L168) |  |
-
-## ReportAccessPolicyEvaluator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessPolicyEvaluator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L22).
-
-Compatibility adapter for Reporting-owned access policy normalization and evaluation.
-
-```csharp
-public static class ReportAccessPolicyEvaluator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReportAccessPolicyDto Normalize(ReportAccessPolicyDto? policy, string? defaultOwnerPrincipalId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L24) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L27) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L30) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportingOutputManifest manifest, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L33) |  |
-| <code>public static string BuildSummary(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L36) |  |
-
-## ReportAccessQueryContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessQueryContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L6).
-
-```csharp
-public sealed record ReportAccessQueryContext(string? ActorPrincipalId = null, IReadOnlyList<string>? GroupPrincipalIds = null, string? CompanyId = null, bool HasGlobalOverride = false, string? TenantId = null, bool RequireBoundScope = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingAccessQueryContext ToReportingContext() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L15) | Converts the compatibility context to the Reporting-owned query contract. |
-
-## ReportAmountBindingBuilder
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportAmountBindingBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L9).
-
-Projects account amounts and exact line identities from the retained canonical ledger population.
-
-```csharp
-public static class ReportAmountBindingBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L11) |  |
-| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L39) |  |
 
 ## ReportingAccessGrantService
 
@@ -808,48 +731,91 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHttpRelayCli
 public sealed record ReportingHttpRelayClientOptions(Uri Endpoint, string BearerCredential, TimeSpan Timeout);
 ```
 
-## ReportingIncomeComparisonService
+## ReportingLegacyArchiveReceipt
 
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingIncomeComparisonService</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingLegacyArchiveReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L8).
-
-Tenant-scoped comparisons retained through the existing immutable artifact store.
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L29).
 
 ```csharp
-public sealed class ReportingIncomeComparisonService(IReportingRunStore runs, IReportingArtifactStore artifacts, IReportingGovernanceRepository governance)
+public sealed record ReportingLegacyArchiveReceipt(string ArchiveId, string RecordKind, int RecordCount, string ActorPrincipalId, string Reason, DateTimeOffset ArchivedAtUtc, string ArchivedPayloadHashSha256);
+```
+
+## ReportingLegacyStateInventoryEntry
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingLegacyStateInventoryEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L17).
+
+```csharp
+public sealed record ReportingLegacyStateInventoryEntry(string RecordKind, string RecordId, string SourceSchemaVersion, string? TenantId, string? OrganizationId, string? CompanyId, string RawPayloadHashSha256, string CanonicalPayloadHashSha256, bool IsArchived, string Remediation);
+```
+
+## ReportingLegacyStateRequiresArchiveException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingLegacyStateRequiresArchiveException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L43).
+
+Raised when structurally valid pre-governance state is present but has not yet been explicitly archived. Legacy state is distinguishable from corruption, but it is never promoted to current authority or treated as an empty current store.
+
+```csharp
+public sealed class ReportingLegacyStateRequiresArchiveException : InvalidOperationException
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingIncomeComparisonRunDto&gt;&gt; ListCandidatesAsync(ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L15) |  |
-| <code>public async Task&lt;ReportingIncomeComparisonDto&gt; CreateAsync(ReportingIncomeComparisonRequestDto request, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:45](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L45) |  |
-| <code>public async Task&lt;ReportingIncomeComparisonDto&gt; GetAsync(string comparisonId, ReportAccessQueryContext access, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:67](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L67) |  |
-| <code>public async Task&lt;ReportingIncomeContributionSupportDto&gt; GetSupportAsync(string comparisonId, string contributionId, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingIncomeComparisonService.cs#L71) |  |
+| <code>public ReportingLegacyStateRequiresArchiveException(string statePath, string recordKind, int recordCount) : base($&quot;Durable reporting {recordKind} state at &#x27;{statePath}&#x27; uses the read-only v1 format &quot; + $&quot;({recordCount} record(s)). Explicitly archive it, then freshly recertify or recapture &quot; + &quot;the records with current immutable governance bindings before reporting can continue.&quot;);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L45) |  |
+| <code>public string StatePath { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L59) |  |
+| <code>public string RecordKind { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L61) |  |
+| <code>public int RecordCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L63) |  |
 
-## ReportingLedgerPopulationSnapshot
+## ReportingMigrationReadinessState
 
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingLedgerPopulationSnapshot</code>. Kind: `record`.
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingMigrationReadinessState</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L12).
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L33).
 
-Frozen journals, tax relief and corporate-action lot evidence used by both activity rows and financial statements.
+Process-local receipt that the hosted migration prerequisite completed successfully. Merely registering a migration runner is not evidence that migrations ran.
 
 ```csharp
-public sealed record ReportingLedgerPopulationSnapshot(LedgerAmountScopeDto Scope, LedgerReportPackRequest Request, ImmutableArray<LedgerJournalEntryRecord> Journals, ImmutableArray<LedgerTaxLotReliefProjection> TaxLotReliefProjections)
+public sealed class ReportingMigrationReadinessState
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; ReportAmounts { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L18) |  |
-| <code>public long PeriodVersion { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L20) |  |
-| <code>public ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; DatasetRows { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L22) |  |
-| <code>public ImmutableArray&lt;CanonicalCorporateActionLotReport&gt; CorporateActionLotReports { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L25) | Corporate-action lot evidence captured with the journals; empty for legacy populations. |
-| <code>public ReportingRetainedLedgerPopulation Retain();</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L33) |  |
-| <code>public static ReportingLedgerPopulationSnapshot Decode(ReportingAuthoritativeSourceCheckpoint checkpoint);</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L43) |  |
-| <code>public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L100) |  |
-| <code>public LedgerFinancialReportPack Replay();</code> | [src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs:104](../../../../src/Meridian.Ui.Shared/Services/ReportingLedgerPopulationSnapshot.cs#L104) |  |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L37) |  |
+
+## ReportingProviderReceiptAuthentication
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthentication</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L7).
+
+```csharp
+public sealed record ReportingProviderReceiptAuthentication(string Timestamp, string Signature);
+```
+
+## ReportingProviderReceiptAuthenticationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthenticationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L11).
+
+```csharp
+public sealed record ReportingProviderReceiptAuthenticationRequest(string TransportId, string JobId, SecureReportingDeliveryReceiptCommand Receipt, ReportingProviderReceiptAuthentication Authentication);
+```
+
+## ReportingRecipientDestinationBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRecipientDestinationBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L133).
+
+```csharp
+public sealed record ReportingRecipientDestinationBinding(string TenantId, string? CompanyId, string PrincipalId, string TransportId, string Destination, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
+```

@@ -797,25 +797,6 @@ Declared public members:
 | <code>public LedgerClientReportDocumentPackage BuildClientDocumentPackage(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L40) | Renders the atomic PDF/XLSX primary-document pair for a governed client package from the exact supplied report pack. Both documents flow through the same composition-root renderer; if either render fails or returns no bytes, no package is returned. |
 | <code>public IReadOnlyList&lt;LedgerReportPackArtifact&gt; BuildClientDeliverables(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:60](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L60) | Builds the scheduled-export delivery artifacts (manifest + one artifact per declared format) for reportPack, rendering PDF/XLSX through the wired renderer. |
 
-## LedgerDisposalTaxReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerDisposalTaxReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L13).
-
-Reads certified, journal-backed disposal results without recalculating replacement matches or substituting today&#x27;s mutable account policy for the retained revision.
-
-```csharp
-public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? history, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerJournalTaxResultsDto&gt; ReadAsync(Guid ledgerBookId, Guid periodId, JournalEntry entry, string functionalCurrency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L17) |  |
-| <code>public static LedgerDisposalTaxResultDto Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency, DateOnly asOfDate);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:48](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L48) |  |
-
 ## LedgerMarkToMarketCarryingValueSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValueSource</code>. Kind: `class`.
@@ -880,25 +861,6 @@ Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Succ
 public sealed partial class LedgerReportingAuthoritativeSource
 ```
 
-## LedgerReportingPartnersCapitalSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingPartnersCapitalSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L16).
-
-Produces the certified partners-capital roll-forward for a governed reporting run by hydrating the scoped ledger from the durable journal store and reusing the tested LedgerFinancialStatementBuilder.BuildForPeriod computation — the same hydrate-and-build pattern the live capital-account reconciliation resolver uses. Read-only: it posts nothing and mutates no state.
-
-```csharp
-public sealed class LedgerReportingPartnersCapitalSource : IReportingPartnersCapitalSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportingPartnersCapitalSource(ILedgerJournalStore? journalStore = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L20) |  |
-| <code>public async Task&lt;CertifiedPartnersCapitalProjection?&gt; CaptureAsync(ReportingRunParametersDto parameters, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L23) |  |
-
 ## LedgerReportingSchedulePeriodResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
@@ -947,3 +909,56 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:29](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L29) |  |
+
+## LiveBrokeragePortfolioSyncService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioSyncService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs:6](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs#L6).
+
+```csharp
+public sealed partial class LiveBrokeragePortfolioSyncService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:38](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L38).
+
+Publishes a live account only after complete portfolio evidence and OMS reconciliation agree. Restart, disconnect, stale evidence, and subsequent order/fill changes require a fresh sync. No cached snapshot is restored as trading authority after a restart.
+
+```csharp
+public sealed partial class LiveBrokeragePortfolioSyncService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LiveBrokeragePortfolioSyncService(Func&lt;IBrokerageGateway?&gt; gatewayAccessor, Func&lt;IOrderManager?&gt; orderManagerAccessor, BrokerageExecutionReconciliationService reconciliation, TimeProvider? timeProvider = null, TimeSpan? maxAge = null, ISecurityMasterQueryService? securityMaster = null);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:50](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L50) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:67](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L67) |  |
+| <code>public TimeSpan MaximumAge =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:69](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L69) |  |
+| <code>public void InvalidateAccountBinding(Guid fundAccountId, string providerId, string externalAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:71](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L71) |  |
+| <code>public IReadOnlyList&lt;LiveBrokeragePortfolioStatus&gt; GetStatuses() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:89](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L89) |  |
+| <code>public BrokeragePortfolioSnapshotDto? GetRiskSnapshot(Guid fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:92](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L92) |  |
+| <code>public IReadOnlyList&lt;OrderState&gt; GetExposureReservingOrders(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:99](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L99) | Keeps the last reconciled unfilled reservation until holdings are refreshed. Retiring it from a new fill while retaining old broker holdings would briefly lose that fill&#x27;s exposure. |
+| <code>public LiveBrokeragePortfolioStatus GetStatus(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:139](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L139) |  |
+| <code>public async Task&lt;LiveBrokeragePortfolioStatus&gt; SynchronizeAsync(Guid fundAccountId, string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:178](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L178) |  |
+
+## ManagementFeeAccrualCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:205](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L205).
+
+Day-weighted management fee on the net assets the ledger held at the close of the day before the accrual window. Terms: annualRate, yearBasisDays.
+
+```csharp
+public sealed class ManagementFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:207](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L207) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:209](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L209) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:211](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L211) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:213](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L213) |  |

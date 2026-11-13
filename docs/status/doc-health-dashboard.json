@@ -1,11 +1,11 @@
 {
-  "total_files": 1177,
+  "total_files": 1178,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 309,
   "health_score": 84,
-  "signal_digest": "sha256:74585a6c9f8583ef006a967412fa3cd9b5123ab8aa74c901996ab08f632daa83",
+  "signal_digest": "sha256:20bf533cc11e37de4e905a3143fa6cc6cb5123d2d910c1471bc2b19815f31835",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -4792,6 +4792,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.referencedata/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting.readmodels/page-001.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

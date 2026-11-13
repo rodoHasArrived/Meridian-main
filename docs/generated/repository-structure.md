@@ -2226,6 +2226,8 @@ Meridian-main
 │   │   │   │   ├── page-002.md
 │   │   │   │   ├── page-003.md
 │   │   │   │   └── page-004.md
+│   │   │   ├── meridian.reporting.readmodels
+│   │   │   │   └── page-001.md
 │   │   │   ├── meridian.risk
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.storage
@@ -7654,8 +7656,15 @@ Meridian-main
 │   │   ├── SecurityMasterReportingLookup.cs
 │   │   └── StatementReconciliationReportAuthorityContracts.cs
 │   ├── Meridian.Reporting.ReadModels
+│   │   ├── LedgerDisposalTaxReadService.cs
 │   │   ├── Meridian.Reporting.ReadModels.csproj
-│   │   └── README.md
+│   │   ├── README.md
+│   │   ├── ReportAccessPolicyEvaluator.cs
+│   │   ├── ReportAmountBindingBuilder.cs
+│   │   ├── ReportingIncomeComparisonService.cs
+│   │   ├── ReportingLedgerPopulationSnapshot.cs
+│   │   ├── ReportingPartnersCapitalSource.cs
+│   │   └── ReportPeriodRange.cs
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── BracketChildLimbRule.cs
@@ -10335,7 +10344,6 @@ Meridian-main
 │   │   │   ├── LedgerBookOrdering.cs
 │   │   │   ├── LedgerClientReportExportService.cs
 │   │   │   ├── LedgerDimensionMapper.cs
-│   │   │   ├── LedgerDisposalTaxReadService.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.Successors.cs
@@ -10399,8 +10407,6 @@ Meridian-main
 │   │   │   ├── RecurringJournalPeriodAuthority.cs
 │   │   │   ├── RecurringJournalRunner.cs
 │   │   │   ├── RecurringJournalSubjectAuthority.cs
-│   │   │   ├── ReportAccessPolicyEvaluator.cs
-│   │   │   ├── ReportAmountBindingBuilder.cs
 │   │   │   ├── ReportingAccessGrantService.cs
 │   │   │   ├── ReportingArtifactVaultService.cs
 │   │   │   ├── ReportingCertifiedArtifactProducer.cs
@@ -10413,9 +10419,6 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
-│   │   │   ├── ReportingIncomeComparisonService.cs
-│   │   │   ├── ReportingLedgerPopulationSnapshot.cs
-│   │   │   ├── ReportingPartnersCapitalSource.cs
 │   │   │   ├── ReportingPrimaryDocumentRenderer.cs
 │   │   │   ├── ReportingReconciliationEvidenceSource.cs
 │   │   │   ├── ReportingReconciliationEvidenceStore.cs
@@ -10455,7 +10458,6 @@ Meridian-main
 │   │   │   ├── ReportPackSecurityLineMatcher.cs
 │   │   │   ├── ReportPackValidationService.cs
 │   │   │   ├── ReportPackWorkflowRecordStore.cs
-│   │   │   ├── ReportPeriodRange.cs
 │   │   │   ├── ReportWriterDatasetSourceService.cs
 │   │   │   ├── ReportWriterGridArtifactService.cs
 │   │   │   ├── RiskRuleRuntimeService.cs
