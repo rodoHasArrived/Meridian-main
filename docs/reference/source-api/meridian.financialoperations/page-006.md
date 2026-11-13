@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementConnectorDescriptor
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L9).
+
+Describes a statement connector so operators can discover what formats can be imported and whether the connector can fetch statements remotely in addition to accepting files.
+
+```csharp
+public sealed record StatementConnectorDescriptor(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
+```
+
 ## StatementConnectorLimits
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorLimits</code>. Kind: `class`.
@@ -853,24 +865,3 @@ Declared public members:
 | <code>DateOnly RollBackToBusinessDay(DateOnly date);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L62) | Returns date when it is a business day, otherwise the previous one. |
 | <code>int CountBusinessDaysBetween(DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L68) | Signed business-day distance: the number of business days in (from, to&#93; when to is later, negated when earlier, and zero for the same date. |
 | <code>DateOnly AddBusinessDays(DateOnly date, int businessDays);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L70) |  |
-
-## IBrokerCustodianReconciliationFeedAdapter
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IBrokerCustodianReconciliationFeedAdapter</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L63).
-
-Reads broker or custodian source data into canonical reconciliation feed batches.
-
-```csharp
-public interface IBrokerCustodianReconciliationFeedAdapter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string AdapterId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L65) |  |
-| <code>string AdapterVersion { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L66) |  |
-| <code>CanonicalReconciliationSourceKind SourceKind { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L67) |  |
-| <code>Task&lt;BrokerCustodianFeedBatch&gt; ReadAsync(BrokerCustodianFeedDescriptor descriptor, Stream source, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L69) |  |

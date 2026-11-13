@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowSlaState
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaState</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:7](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L7).
+
+Lifecycle state of a WorkflowSlaTimer at a point in time.
+
+```csharp
+public enum WorkflowSlaState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OnTrack</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:10](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L10) | Within the on-track window (before the warning threshold). |
+| <code>Warning</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:13](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L13) | Past the warning threshold but not yet due. |
+| <code>Breached</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:16](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L16) | Past the due time without being stopped. |
+| <code>Stopped</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:19](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L19) | Stopped (the tracked work completed) before breaching. |
+
 ## WorkflowSlaTimer
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaTimer</code>. Kind: `record`.
@@ -194,8 +215,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:31](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L31) |  |
-| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:47](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L47) |  |
+| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:32](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L32) |  |
+| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:50](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L50) |  |
 
 Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs#L5).
 
@@ -1148,13 +1169,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static PrivateCapitalPaymentIntentEvidenceDto BuildForFundEvent(PrivateCapitalFundEventDto fundEvent, IEnumerable&lt;string&gt; evidenceLinks, string? evidenceRoute);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs:31](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs#L31) |  |
 | <code>public static PrivateCapitalPaymentIntentEvidenceDto BuildForSubledger(IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; records, IEnumerable&lt;string&gt; evidenceLinks, string currency, DateOnly? effectiveDate, decimal netActivity, string? evidenceRoute);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs:61](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalPaymentIntentEvidenceBuilder.cs#L61) |  |
-
-## AccountCashBalanceSource
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSource</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L11).
-
-```csharp
-public sealed record AccountCashBalanceSource(string SourceId, ReconciliationSourceType SourceType, string Version, string EvidenceReference, DateTimeOffset CapturedAtUtc, bool CompletePopulation, IReadOnlyList<AccountCashBalanceSourceRow> Rows);
-```

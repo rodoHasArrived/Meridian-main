@@ -4,10 +4,10 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-13
 
 The [canonical intercompany agreement registry](intercompany-agreements.md) owns legal terms,
-parties, effective dates, currency, settlement terms, document evidence and independent approval.
+parties, effective dates, currency, settlement terms, document evidence and legal review.
 It is separate from Security Master OTC instruments and the consolidation ownership graph.
 
 An **intercompany accounting profile** is immutable operational configuration linked to one exact
@@ -15,7 +15,7 @@ approved native agreement ID, integer version and payload hash. It owns only its
 template, party books, stable account-node mappings and a validity window within the legal window.
 Legal facts are derived from that approved revision and cannot be edited through a profile.
 Profile submission, owner approval, rejection and retirement append history. Owner approval of
-configuration does not replace the native legal registry's independent approval. Separate
+configuration does not replace the native legal registry's reviewed decision. Separate
 facilities may coexist; approved revisions of one profile cannot have conflicting validity
 windows. Dates use `[EffectiveFrom, EffectiveTo)`.
 
@@ -50,11 +50,24 @@ Historical account names remain aliases for the same identity and cannot be reas
 binding. Retiring a source mapping does not remove its outstanding posted balances. New postings
 and elimination output still require current eligible mappings.
 
-A **legacy intercompany attribution** is independently reviewed sidecar evidence over an exact
+A **legacy intercompany attribution** is reviewed sidecar evidence over an exact
 book, journal and line digest. It pins an approved agreement revision, account-binding revision
 and transaction identity without editing the source journal. Corrections append a successor.
 Missing source identity, currency, party or approval evidence remains unresolved; no historic
 agreement or lifecycle period is invented from today's snapshot.
+
+Existing attribution defaults to independent review. Explicit `OperatorReviewed` mode permits
+the same retained preparing/reviewing operator with review rationale and evidence; it is labeled
+operator-reviewed rather than independently approved. The additional fields omit their legacy
+defaults/nulls, preserving historical source and attribution representations. Corrections still
+append a successor over exact source evidence rather than rewriting a journal.
+
+Revocation is an explicit reviewed successor with `Revoked = true`, the expected current
+attribution identity and a required `ReviewRationale`. It retains the prior source digest,
+canonical legal ID/version/hash, accounting-profile revision, account-binding revision and
+transaction pins exactly; only successor/review metadata changes. Active resolution excludes the
+revoked assertion while history keeps both records. Omitting `Revoked` preserves legacy JSON,
+and revocation never changes the canonical native agreement hash or posted source.
 
 The structured due-to/from schedule reads actual posted journal amounts and enriches them with
 agreement/account/party evidence. Agreement terms alone never establish a balance. Close readiness
@@ -85,6 +98,46 @@ tenant isolation, consolidation freshness, or missing governed FX evidence.
 The shared entity timeline joins lifecycle revisions, ownership links, legal agreements, accounting profiles and books.
 Browser and desktop consume the same read model under Accounting/Portfolio navigation. A missing
 lifecycle baseline or an earlier uncovered interval is shown as unknown.
+
+## Obligation monitoring and structured legal terms
+
+Structured declarations extend the existing native legal revision, with exact decimal strings,
+explicit schedule/calendar conventions and calculation-free date previews. Loans, management
+fees and bilateral cost shares remain governed by their canonical parties, currency and legal
+window. Guarantees add beneficiary/limit disclosure without posting or ordinary balance coverage.
+See [structured terms and external-review attestation](intercompany-agreements.md#structured-declarations-and-date-previews).
+
+Legal agreement decisions and evidenced lifecycle revisions may retain an explicit external-review
+attestation from the same Meridian operator who prepared them. The external reviewer, accepted
+document, exact subject hash and attesting operator remain distinct audit facts. Ordinary
+independent legal review remains available; the external-review companion does not change
+independent journal review or posting controls. Legacy lifecycle revisions keep their original
+hashes when this optional evidence is absent. Historical unknown intervals remain unknown.
+
+The obligation monitor reads the existing posted due-to/from schedule and canonical legal/lifecycle
+authority for an explicit book/fund scope and as-of date. The default expiry horizon is 30 calendar
+days. It reports approaching expiry, expired agreement exposure, missing/invalid coverage, unknown
+lifecycle and retained exposure involving winding-down, dissolved or merged entities. It also
+returns guarantee disclosure and source-version/fingerprint evidence. Amounts come from journals,
+not legal terms or matching-party guesses.
+
+Only the new obligation-monitor HTTP response writes decimal amounts in its embedded balance
+schedule as exact decimal strings. The canonical balance-schedule serializer, its retained
+numeric representation and its existing fingerprint remain unchanged. Transport formatting does
+not become a new financial source or change the schedule's evidence hash.
+
+Version changes during evaluation produce stale findings; unavailable source authority remains
+unavailable rather than a statement that every balance is uncovered. These observations are an
+optional advisory companion to close readiness. They do not change required contributors,
+blockers, `IsComplete`, `IsReadyToClose`, posting eligibility or period-close authority. The existing
+blocking schedule requirements retain their own behavior.
+
+This extension reuses the existing legal, lifecycle and attribution stores. Optional typed terms
+round-trip in retained PostgreSQL JSONB payloads without replacing tables or migrating approved
+payload hashes. It adds no new consolidation rule version: existing `w10-v1` through `w10-v4`
+evidence, reporting transitions and roadmap statuses retain their established meanings.
+
+## Reporting perimeter and implementation owners
 
 A **reporting perimeter transition** is a reviewed cutover into a new empty dedicated elimination
 book. Its immutable receipt pins the old history, effective member diff and new source/policy/FX

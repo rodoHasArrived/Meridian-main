@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RoutingMatrixControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Diagnostics.RoutingMatrixControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs:33](../../../../src/Meridian.Wpf/Workstation/Diagnostics/WorkstationDiagnosticsControls.cs#L33).
+
+Provides a data-grid surface for workflow routing rows.
+
+```csharp
+public sealed class RoutingMatrixControl : DataGrid
+```
+
 ## DetailPaneControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Layout.DetailPaneControl</code>. Kind: `class`.
@@ -722,19 +734,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static WorkstationCommandModel FromWorkspaceCommand(WorkspaceCommandItem command);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:192](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L192) |  |
 | <code>public static WorkstationCommandGroupModel FromWorkspaceCommandGroup(WorkspaceCommandGroup commandGroup);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:226](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L226) |  |
-
-## WorkstationCommandModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:158](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L158).
-
-```csharp
-public sealed record WorkstationCommandModel(string Id, string Label, string Description, string Glyph = "", string Tone = WorkspaceTone.Secondary, bool IsEnabled = true, string DisabledReason = "", bool IsBusy = false, string ConfirmationText = "", string ShortcutHint = "", WorkstationActionPostureModel? Posture = null, string EvidenceSourceText = "", string TargetText = "", string GroupLabel = "")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string AutomationId =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:174](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L174) |  |

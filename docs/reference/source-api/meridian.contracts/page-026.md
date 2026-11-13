@@ -44,11 +44,29 @@ public sealed record CustodianStatementBatchDto(Guid BatchId, Guid AccountId, Da
 
 Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:44](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L44).
+Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:48](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L48).
 
 ```csharp
 public sealed record EntityLifecycleEligibilityDto(bool Allowed, string ReasonCode, string Message, LegalEntityLifecycleStatusDto? Status, long? Revision, bool Warning = false);
 ```
+
+## EntityLifecycleExternalReviewIntegrity
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleExternalReviewIntegrity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:50](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L50).
+
+Computes the legal lifecycle subject separately from its external-review receipt.
+
+```csharp
+public static class EntityLifecycleExternalReviewIntegrity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string SubmittedHash(AppendEntityLifecycleRevisionRequestDto request);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L52) |  |
 
 ## EntityLifecycleOperationDto
 
@@ -77,6 +95,16 @@ Enum declarations:
 | <code>Read</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:17](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L17) |  |
 | <code>Consolidation</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:18](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L18) |  |
 
+## EntityLifecycleReviewPayloadDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleReviewPayloadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:46](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L46).
+
+```csharp
+public sealed record EntityLifecycleReviewPayloadDto(Guid EntityId, long ExpectedRevision, IReadOnlyList<EntityLifecycleStateDto> Timeline, string Reason, string EvidenceReference);
+```
+
 ## EntityLifecycleRevisionDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto</code>. Kind: `record`.
@@ -86,8 +114,14 @@ Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:31](../../.
 An immutable complete timeline; retained decisions pin its revision and hash.
 
 ```csharp
-public sealed record EntityLifecycleRevisionDto(string TenantId, Guid EntityId, long Revision, DateTimeOffset RecordedAtUtc, string RecordedBy, string Reason, string EvidenceReference, string PreviousHash, string ContentHash, IReadOnlyList<EntityLifecycleStateDto> Timeline, bool LegacySnapshot = false);
+public sealed record EntityLifecycleRevisionDto(string TenantId, Guid EntityId, long Revision, DateTimeOffset RecordedAtUtc, string RecordedBy, string Reason, string EvidenceReference, string PreviousHash, string ContentHash, IReadOnlyList<EntityLifecycleStateDto> Timeline, bool LegacySnapshot = false)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L45) |  |
 
 ## EntityLifecycleRevisionIntegrity
 
@@ -107,7 +141,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void ValidateTimeline(Guid entityId, IReadOnlyList&lt;EntityLifecycleStateDto&gt; timeline);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:11](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L11) |  |
 | <code>public static EntityLifecycleRevisionDto Seal(EntityLifecycleRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:34](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L34) |  |
-| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:58](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L58) |  |
+| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:70](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L70) |  |
 
 ## EntityLifecycleStateDto
 
@@ -130,14 +164,20 @@ Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:7](../../../.
 Shared authoritative entity inspection; clients render it without rebuilding business state.
 
 ```csharp
-public sealed record EntityTimelineDto(Guid OrganizationId, LegalEntitySummaryDto Entity, DateTimeOffset AsOf, IReadOnlyList<EntityLifecycleRevisionDto> LifecycleRevisions, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<IntercompanyAgreementDetailDto> Agreements, IReadOnlyList<ResolvedIntercompanyAccountingArrangementDto> AccountingArrangements, IReadOnlyList<LedgerBookDto> Books, IReadOnlyList<string> Warnings);
+public sealed record EntityTimelineDto(Guid OrganizationId, LegalEntitySummaryDto Entity, DateTimeOffset AsOf, IReadOnlyList<EntityLifecycleRevisionDto> LifecycleRevisions, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<IntercompanyAgreementDetailDto> Agreements, IReadOnlyList<ResolvedIntercompanyAccountingArrangementDto> AccountingArrangements, IReadOnlyList<LedgerBookDto> Books, IReadOnlyList<string> Warnings)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanAttestExternalLifecycleReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:14](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L14) |  |
 
 ## EntityTimelineJsonContext
 
 Qualified name: <code>Meridian.Contracts.FundStructure.EntityTimelineJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:18](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L18).
+Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:22](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L22).
 
 ```csharp
 public partial class EntityTimelineJsonContext : JsonSerializerContext;
@@ -229,7 +269,7 @@ public sealed record FundStructureAssignmentQuery(Guid? NodeId = null, string? A
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureContractsJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/FundStructure/FundStructureContractsJsonContext.cs:121](../../../../src/Meridian.Contracts/FundStructure/FundStructureContractsJsonContext.cs#L121).
+Source: [src/Meridian.Contracts/FundStructure/FundStructureContractsJsonContext.cs:124](../../../../src/Meridian.Contracts/FundStructure/FundStructureContractsJsonContext.cs#L124).
 
 Provides source-generated JSON metadata for fund structure, account, reconciliation, and setup contracts.
 
@@ -566,24 +606,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:596](../../..
 
 ```csharp
 public sealed record GovernanceCashFlowVarianceBucketDto(int BucketIndex, DateTimeOffset RealizedBucketStart, DateTimeOffset RealizedBucketEnd, DateTimeOffset ProjectedBucketStart, DateTimeOffset ProjectedBucketEnd, decimal RealizedInflows, decimal RealizedOutflows, decimal RealizedNetFlow, decimal ProjectedInflows, decimal ProjectedOutflows, decimal ProjectedNetFlow, decimal VarianceAmount, int RealizedEventCount, int ProjectedEventCount, string Currency);
-```
-
-## GovernanceCashFlowVarianceSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:613](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L613).
-
-```csharp
-public sealed record GovernanceCashFlowVarianceSummaryDto(decimal RealizedInflows, decimal RealizedOutflows, decimal RealizedNetFlow, decimal ProjectedInflows, decimal ProjectedOutflows, decimal ProjectedNetFlow, decimal VarianceAmount, string ComparisonBasis);
-```
-
-## GovernanceCashFlowViewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:623](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L623).
-
-```csharp
-public sealed record GovernanceCashFlowViewDto(GovernanceCashFlowScopeDto Scope, DateTimeOffset AsOf, DateTimeOffset HistoricalWindowStart, DateTimeOffset ProjectionWindowEnd, string Currency, int HistoricalDays, int ForecastDays, int BucketDays, int AccountCount, decimal? CurrentCashBalance, decimal? ProjectedClosingCashBalance, IReadOnlyList<GovernanceCashFlowAccountViewDto> Accounts, IReadOnlyList<GovernanceCashFlowEntryDto> RealizedEntries, IReadOnlyList<GovernanceCashFlowEntryDto> ProjectedEntries, GovernanceCashFlowLadderDto RealizedLadder, GovernanceCashFlowLadderDto ProjectedLadder, GovernanceCashFlowVarianceSummaryDto VarianceSummary, IReadOnlyList<GovernanceCashFlowVarianceBucketDto> VarianceBuckets, FundStructureSharedDataAccessDto? SharedDataAccess = null, int SecurityProjectedEntryCount = 0);
 ```

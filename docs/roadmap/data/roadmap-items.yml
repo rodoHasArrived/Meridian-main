@@ -1985,7 +1985,10 @@ items:
       minority interest and investment/equity elimination remain unsupported. Member changes use
       a retained independently approved cutover to a new empty dedicated book, with old history
       preserved and no old overlay deductions from the rebuilt target. Unapproved in-place changes
-      remain blocked. Source presence does not establish acceptance.
+      remain blocked. The separate 2026-11-13 obligation-monitor and structured-terms extension
+      reuses native legal/lifecycle and posted balance sources, adds evidence-bound external review
+      and operator-reviewed attribution corrections/revocation, and supplies nonblocking advisories.
+      It does not change exact v1-v4 behavior or this row's status. Source presence does not establish acceptance.
     exit_criteria:
       - Consolidated views no longer double-count intercompany balances and state whether they are presenting gross or eliminated figures, and an eliminated figure reflects only approved and posted eliminations, with a proposed draft visible solely as a labeled preview.
       - Eliminations are proposed as reviewable drafts on the existing approval rail and never post automatically, driven by a rule on the existing policy seam with no parallel discriminator beside it. Approval fails closed when either source balance has moved since the draft was computed, and a posted elimination is corrected through a linked reversing or adjusting entry rather than replaced in place.
@@ -2034,7 +2037,11 @@ items:
         path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationTransitionServiceTests.cs
       - type: test
         path: tests/Meridian.Tests/Storage/ConsolidationBookCreationTests.cs
-    last_reviewed: 2026-11-12
+      - type: source
+        path: src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs
+      - type: test
+        path: tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs
+    last_reviewed: 2026-11-13
 
   - id: W10-LOT-002
     title: Security-identified open-lot convergence

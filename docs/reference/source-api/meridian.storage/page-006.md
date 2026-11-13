@@ -540,13 +540,13 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static string SourceDigest(LedgerBookRecord book, LedgerJournalEntryRecord record, LedgerEntry line) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:12](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L12) |  |
 | <code>public static IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; Resolve(IEnumerable&lt;LegacyIntercompanyAttributionDto&gt; history) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:16](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L16) |  |
-| <code>public static void ValidateAppend(LegacyIntercompanyAttributionDto fact, Guid? expectedPrevious, IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; history);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:20](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L20) |  |
+| <code>public static void ValidateAppend(LegacyIntercompanyAttributionDto fact, Guid? expectedPrevious, IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; history);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:21](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L21) |  |
 
 ## LegacyIntercompanyAttributionValidator
 
 Qualified name: <code>Meridian.Storage.Ledger.LegacyIntercompanyAttributionValidator</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:47](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L47).
+Source: [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:76](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L76).
 
 Checks reviewer assertions against immutable journal facts and retained approved terms.
 
@@ -558,8 +558,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:51](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L51) |  |
-| <code>public async Task ValidateAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:80](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L80) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:80](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L80) |  |
+| <code>public async Task ValidateAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:113](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L113) |  |
 
 ## OpenLotBackfillRules
 

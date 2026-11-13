@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationCommandModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:158](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L158).
+
+```csharp
+public sealed record WorkstationCommandModel(string Id, string Label, string Description, string Glyph = "", string Tone = WorkspaceTone.Secondary, bool IsEnabled = true, string DisabledReason = "", bool IsBusy = false, string ConfirmationText = "", string ShortcutHint = "", WorkstationActionPostureModel? Posture = null, string EvidenceSourceText = "", string TargetText = "", string GroupLabel = "")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string AutomationId =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:174](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L174) |  |
+
 ## WorkstationEvidenceLinkModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationEvidenceLinkModel</code>. Kind: `record`.

@@ -6,6 +6,547 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RejectCorporateActionSourceProposalRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:613](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L613).
+
+```csharp
+public sealed record RejectCorporateActionSourceProposalRequestDto(Guid ProposalId, long ExpectedVersion, string IdempotencyKey, string Actor, string Reason, string? CorrelationId = null);
+```
+
+## ResolveConflictRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveConflictRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L75).
+
+Request to resolve or dismiss a golden record conflict. ChosenWinnerSource records the operator-selected winning source so the resolution and its winner are captured atomically with the conflict&#x27;s open→resolved transition.
+
+```csharp
+public sealed record ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null, string? ChosenWinnerSource = null);
+```
+
+## ResolveCorporateActionConflictRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:655](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L655).
+
+Versioned, idempotent disposition of one open source-term conflict. Waivers require retained evidence just like resolutions; neither disposition implicitly confirms the case terms.
+
+```csharp
+public sealed record ResolveCorporateActionConflictRequestDto(Guid CaseId, Guid ConflictId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Disposition, string Resolution, string EvidenceReference, string EvidenceHash, string Actor, string? CorrelationId = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
+```
+
+## ResolveSecurityRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveSecurityRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L3).
+
+```csharp
+public sealed record ResolveSecurityRequest(SecurityIdentifierKind IdentifierKind, string IdentifierValue, string? Provider, DateTimeOffset? AsOfUtc, bool ActiveOnly = false);
+```
+
+## ScheduleConventionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleConventionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L26).
+
+A scheduleConventions block as the shared reader (SecurityVersionedTerms.ReadScheduleConventions) reads it: how the contractual schedule kernel (ADR-025) builds an instrument&#x27;s periods. The members follow the F# ScheduleConventions record in order and meaning. Text members are kept verbatim, blank strings included, so a consumer can refuse a blank spelling instead of reading it as absent; a member the block does not carry, or carries with the wrong JSON kind, is null.
+
+```csharp
+public sealed record ScheduleConventionTerms(string? BusinessDayConvention, bool? AccrualAdjusted, IReadOnlyList<string> PaymentCalendars, int? PaymentLagBusinessDays, string? RollConvention, bool? EndOfMonthRule, DateOnly? FirstRegularDate, DateOnly? LastRegularDate, string? Direction, string? StubPolicy, string? CouponRateUnit, string? CouponCashBasis)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScheduleConventionTerms Empty { get; } = new (null, null, [], null, null, null, null, null, null, null, null, null);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L41) | No convention declared. |
+| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L45) | Whether nothing is declared: no payment calendar and every other member null. |
+
+## ScheduleAnchorMode
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L18).
+
+How successive grid dates are derived from the anchor.
+
+```csharp
+public enum ScheduleAnchorMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Anchored</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L21) | Every grid date is the anchor plus k tenors, so month-end clamping never accumulates. |
+| <code>Compounded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L28) | Every grid date is the previous grid date plus one tenor, so a clamp into a short month carries forward. This reproduces the legacy compounded generators and is restricted to forward, anchor-day, short-stub schedules without explicit regular dates. |
+
+## ScheduleCalendarPurpose
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L81).
+
+What a calendar was used for while generating a schedule.
+
+```csharp
+public enum ScheduleCalendarPurpose
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Accrual</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L84) | Adjusting inner accrual boundaries. |
+| <code>EffectiveDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L87) | Adjusting the effective date. |
+| <code>TerminationDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L90) | Adjusting the termination date. |
+| <code>Payment</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L93) | Adjusting or lagging payment dates. |
+
+## ScheduleCalendarUsage
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L100).
+
+Evidence of one calendar, identified by id and content hash, used for one purpose.
+
+```csharp
+public sealed record ScheduleCalendarUsage(string CalendarId, string ContentHash, ScheduleCalendarPurpose Purpose);
+```
+
+## ScheduleDayCount
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L16).
+
+Day-count fractions for schedule periods: builds the DayCountPeriodContext a generated period implies and dispatches to the canonical DayCountConventions.TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?).
+
+```csharp
+public static class ScheduleDayCount
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DayCountPeriodContext ContextFor(SchedulePeriod period, ScheduleGenerationResult schedule);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L21) | The day-count context of period within schedule. |
+| <code>public static bool TryFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, DateOnly start, DateOnly end, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L44) | The fraction of &#91;start, end) inside period, or a refusal when the window leaves the period&#x27;s accrual dates, the convention lacks context, or ICMA is asked of an accrual-adjusted schedule. |
+| <code>public static bool TryPeriodFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L79) | The fraction of the whole accrual period of period; see TryFraction. |
+
+## ScheduleDiagnostic
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L78).
+
+A non-fatal observation recorded while generating a schedule.
+
+```csharp
+public sealed record ScheduleDiagnostic(ScheduleDiagnosticCode Code, string CalendarId, DateOnly Date, string Message);
+```
+
+## ScheduleDiagnosticCode
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L67).
+
+A non-fatal observation recorded while generating a schedule.
+
+```csharp
+public enum ScheduleDiagnosticCode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>CalendarCoverageExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L70) | A calendar was asked about a date outside its declared coverage. |
+
+## ScheduleDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
+
+Which end of the schedule the regular grid is generated from.
+
+```csharp
+public enum ScheduleDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
+| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
+
+## ScheduleFailure
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L64).
+
+A refusal from the schedule kernel.
+
+```csharp
+public sealed record ScheduleFailure(ScheduleFailureCode Code, string Message, DateOnly? Date = null);
+```
+
+## ScheduleFailureCode
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L6).
+
+Why the schedule kernel refused a ScheduleSpec.
+
+```csharp
+public enum ScheduleFailureCode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>InvalidPeriodLimit</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L9) | ScheduleSpec.MaxPeriods is set below 1. |
+| <code>NegativePaymentLag</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L12) | ScheduleSpec.PaymentLagBusinessDays is negative. |
+| <code>TermTenorDisallowsRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L15) | A term tenor was given explicit regular dates. |
+| <code>TenorNotAllowedForDirection</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L18) | A day or week tenor was asked to generate backward. |
+| <code>RollNotAllowedForTenor</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L21) | A day or week tenor was given a roll other than the anchor day. |
+| <code>CompoundedModeRestricted</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L24) | Compounded mode was combined with backward generation, a roll, explicit regular dates or a non-short stub policy. |
+| <code>RegularDateOutOfRange</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L27) | An explicit regular date lies outside the schedule span or out of order. |
+| <code>DirectionConflictsWithRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L30) | The generation direction conflicts with the explicit regular dates given. |
+| <code>AdjustmentRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L33) | A business-day convention other than unadjusted has no calendar. |
+| <code>PaymentLagRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L36) | A payment lag was set without a payment calendar. |
+| <code>AnchorNotOnRollDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L39) | The generation anchor does not satisfy the roll convention. |
+| <code>RegularDatesNotOnGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L42) | The last regular date is not on the grid generated from the first regular date. |
+| <code>DoesNotFitRegularGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L45) | The stub policy requires a regular grid and the span does not fit one. |
+| <code>PeriodLimitExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L48) | The schedule would exceed ScheduleSpec.MaxPeriods. |
+| <code>AdjustedPeriodCollapsed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L51) | Business-day adjustment made a period&#x27;s accrual end fall on or before its start. |
+| <code>InvalidSpecification</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L54) | The spec is structurally invalid: a default tenor or an undefined enum value. |
+| <code>BusinessDayAdjustmentFailed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L57) | A business-day adjustment or payment lag could not be applied: the calendar is degenerate or the walk leaves the supported date range. |
+
+## ScheduleGenerationResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L111).
+
+The output of ScheduleGenerator.Generate: the periods on success, or a failure, plus the diagnostics and calendar evidence of the run.
+
+```csharp
+public sealed record ScheduleGenerationResult(ScheduleSpec Spec, IReadOnlyList<SchedulePeriod> Periods, ScheduleFailure? Failure, IReadOnlyList<ScheduleDiagnostic> Diagnostics, IReadOnlyList<ScheduleCalendarUsage> CalendarsUsed)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[MemberNotNullWhen(false, nameof(Failure))] public bool Succeeded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L120) | Whether generation succeeded; when false, Failure is set. |
+| <code>public string KernelVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L123) | The kernel version that produced the schedule. |
+
+## ScheduleGenerator
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs#L7).
+
+```csharp
+public static partial class ScheduleGenerator
+```
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L29).
+
+The contractual schedule kernel: one pure, deterministic generator of period dates for every Meridian schedule consumer. It owns date and period arithmetic, business-day adjustment and the reference periods day counts are measured against; economic interpretation stays with its owners.
+
+```csharp
+public static partial class ScheduleGenerator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string KernelVersion = &quot;contractual-schedule-kernel-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L32) | The version of the kernel&#x27;s generation semantics, stamped on every result. |
+| <code>public static ScheduleGenerationResult Generate(ScheduleSpec spec);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L36) | Generates the schedule spec describes, or the reason it cannot be generated. |
+| <code>public static IEnumerable&lt;DateOnly&gt; RollDates(DateOnly anchor, ScheduleTenor tenor, ScheduleAnchorMode mode, ScheduleRoll roll = default);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L68) | The grid dates from anchor, lazily: k = 0, 1, 2, … until the next date would leave the DateOnly range. The anchored grid rolls each date with roll; the compounded grid steps from the previous date. |
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs#L7).
+
+```csharp
+public static partial class ScheduleGenerator
+```
+
+## SchedulePeriod
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L46).
+
+One period of a contractual schedule: its unadjusted dates (its identity and its ICMA reference frame), its adjusted accrual dates, its payment date, and its notional reference periods.
+
+```csharp
+public sealed record SchedulePeriod(int Sequence, DateOnly UnadjustedStart, DateOnly UnadjustedEnd, DateOnly AccrualStart, DateOnly AccrualEnd, DateOnly PaymentDate, SchedulePeriodKind Kind, IReadOnlyList<DayCountReferencePeriod> ReferencePeriods, bool IsFinal)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsStub =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L58) | Whether the period is an initial or final stub, short or long. |
+| <code>public bool Equals(SchedulePeriod? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L71) | Value equality over every member, comparing ReferencePeriods element by element. The generated record equality would compare the list by reference, so the same period from two generations of the same spec would be unequal; schedules are regenerated rather than stored, so a period must equal its regenerated twin. |
+| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L85) | A hash consistent with Equals(SchedulePeriod?). |
+
+## SchedulePeriodId
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L24).
+
+Deterministic identity for a schedule period, keyed on its unadjusted dates within a consumer-chosen scope and stream, so a calendar, business-day convention or payment-lag change never re-identifies a period.
+
+```csharp
+public static class SchedulePeriodId
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static Guid Derive(Guid scopeId, string streamKey, SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L34) | The id of period within scopeId and streamKey. |
+| <code>public static Guid Derive(Guid scopeId, string streamKey, DateOnly unadjustedStart, DateOnly unadjustedEnd);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L42) | The id of the period &#91;unadjustedStart, unadjustedEnd&#93; within scopeId and streamKey. |
+| <code>public static string PeriodKey(SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L63) | The period&#x27;s unadjusted dates as yyyy-MM-dd/yyyy-MM-dd. |
+
+## SchedulePeriodKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L7).
+
+The shape of a schedule period relative to the regular grid.
+
+```csharp
+public enum SchedulePeriodKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Regular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L10) | A full regular period on the grid. |
+| <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L13) | The single period of a term tenor. |
+| <code>ShortInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L16) | An initial period shorter than a regular period. |
+| <code>LongInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L19) | An initial period longer than a regular period. |
+| <code>ShortFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L22) | A final period shorter than a regular period. |
+| <code>LongFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L25) | A final period longer than a regular period. |
+
+## ScheduleRoll
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L33).
+
+The roll convention of a schedule grid: where in its month each month-based grid date falls. default(ScheduleRoll) is AnchorDay.
+
+```csharp
+public readonly record struct ScheduleRoll
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScheduleRoll AnchorDay { get; } = default;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L42) | Keep the raw grid date as it is. |
+| <code>public static ScheduleRoll EndOfMonth { get; } = new (ScheduleRollKind.EndOfMonth, 0);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L45) | Roll each grid date to the last day of its month. |
+| <code>public static ScheduleRoll Imm { get; } = new (ScheduleRollKind.Imm, 0);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L48) | Roll each grid date to the third Wednesday of its month. |
+| <code>public static ScheduleRoll FixedDay(int dayOfMonth);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L52) | Roll each grid date to dayOfMonth, clamped to the month&#x27;s length. |
+| <code>public static ScheduleRoll ForAnchor(DateOnly anchor, bool endOfMonthRule) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L64) | The roll a schedule anchored on anchor implies: EndOfMonth when endOfMonthRule is set and the anchor is a month end, otherwise FixedDay(int) of the anchor&#x27;s day. |
+| <code>public ScheduleRollKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L70) | The roll rule. |
+| <code>public int DayOfMonth { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L73) | The fixed day of month for ScheduleRollKind.FixedDay; 0 otherwise. |
+| <code>public DateOnly Apply(DateOnly rawGridDate);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L76) | Places rawGridDate within its month according to the rule. |
+| <code>public bool Matches(DateOnly date) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L89) | Whether date already satisfies the rule. |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L92) | The rule in shorthand, for example FixedDay(15) or EndOfMonth. |
+
+## ScheduleRollKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L8).
+
+The rule that places each month-based grid date within its month.
+
+```csharp
+public enum ScheduleRollKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AnchorDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L11) | Keep the anchor&#x27;s day of month, clamped to shorter months (DateOnly.AddMonths semantics). |
+| <code>FixedDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L14) | A fixed day of month (1 to 31), clamped to shorter months. |
+| <code>EndOfMonth</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L17) | The last day of the month. |
+| <code>Imm</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L20) | The third Wednesday of the month (IMM dates). |
+
+## ScheduleSpec
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L77).
+
+The inputs of the contractual schedule kernel: the span, tenor, generation direction and mode, roll, stub policy, optional explicit regular dates, business-day adjustments and payment lag.
+
+```csharp
+public sealed record ScheduleSpec(DateOnly EffectiveDate, DateOnly TerminationDate, ScheduleTenor Tenor, ScheduleDirection Direction = ScheduleDirection.Forward, ScheduleAnchorMode AnchorMode = ScheduleAnchorMode.Anchored, ScheduleRoll Roll = default, ScheduleStubPolicy StubPolicy = ScheduleStubPolicy.Short, DateOnly? FirstRegularDate = null, DateOnly? LastRegularDate = null, BusinessDayAdjustment? AccrualAdjustment = null, BusinessDayAdjustment? PaymentAdjustment = null, BusinessDayAdjustment? EffectiveDateAdjustment = null, BusinessDayAdjustment? TerminationDateAdjustment = null, int PaymentLagBusinessDays = 0, int? MaxPeriods = ScheduleSpec.DefaultMaxPeriods)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int DefaultMaxPeriods = 1200;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L95) | The default period limit, matching the 1200-period bound of the legacy constant-yield generators. |
+| <code>public static ScheduleSpec IssueAnchoredForward(DateOnly issueDate, DateOnly maturity, ScheduleTenor tenor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L110) | The Security Master coupon-period roll: forward from the issue date in anchored mode, anchor-day roll, a short final stub, no adjustments and no period limit. |
+| <code>public static ScheduleSpec CompoundedForward(DateOnly start, DateOnly termination, ScheduleTenor tenor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L125) | The legacy compounded roll: forward from start, each date one tenor after the previous one, anchor-day roll, a short final stub, no adjustments and no period limit. |
+| <code>public static ScheduleSpec BackwardFromTermination(DateOnly effective, DateOnly termination, ScheduleTenor tenor, ScheduleRoll roll, ScheduleStubPolicy stubPolicy = ScheduleStubPolicy.Short) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L141) | The market bond convention: generated backward from termination in anchored mode with roll, any stub at the start, no adjustments and the default period limit. |
+
+## ScheduleStubPolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L33).
+
+What happens when the regular grid does not fit the schedule&#x27;s span exactly.
+
+```csharp
+public enum ScheduleStubPolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Short</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L36) | The remainder becomes a short stub. |
+| <code>Long</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L39) | The remainder is merged into the adjacent regular period, giving a long stub. |
+| <code>RequireRegular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L42) | A remainder is refused with ScheduleFailureCode.DoesNotFitRegularGrid. |
+
+## ScheduleTenor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L35).
+
+The length of one regular schedule period, such as 3M, 1Y, 2W, 1D, or T for a single term period.
+
+```csharp
+public readonly struct ScheduleTenor : IEquatable<ScheduleTenor>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ScheduleTenor(int count, ScheduleTenorUnit unit);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L41) | Creates a tenor of count units. A ScheduleTenorUnit.Term tenor&#x27;s count is fixed at 1. |
+| <code>public int Count { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L64) | The number of units per period; 1 for a term tenor and 0 only for default. |
+| <code>public ScheduleTenorUnit Unit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L67) | The unit the tenor counts in. |
+| <code>public static ScheduleTenor Days(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L70) | A tenor of count days. |
+| <code>public static ScheduleTenor Weeks(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L73) | A tenor of count weeks. |
+| <code>public static ScheduleTenor Months(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L76) | A tenor of count months. |
+| <code>public static ScheduleTenor Years(int count) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L79) | A tenor of count years. |
+| <code>public static ScheduleTenor Term { get; } = new (1, ScheduleTenorUnit.Term);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L82) | The single-period tenor: one period from effective date to termination. |
+| <code>public bool IsMonthBased =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L85) | Whether the tenor steps in calendar months (a month or year tenor). |
+| <code>public int? MonthsPerPeriod =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:88](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L88) | Months per period: Count for months, twelve times it for years, otherwise null. |
+| <code>public int? PeriodsPerYear =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L100) | Regular periods per year when the tenor divides a year evenly by market convention: 12/n for an n-month tenor that divides twelve, 1 for one year, 52 and 26 for one and two weeks, 365 for one day; otherwise null. |
+| <code>public DateOnly Advance(DateOnly date, int periods);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L116) | date moved by periods tenors (negative moves back). Month steps clamp the day to the target month&#x27;s length, as DateOnly.AddMonths does. |
+| <code>public bool TryAdvance(DateOnly date, int periods, out DateOnly result);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L132) | Non-throwing Advance: false when the result falls outside the DateOnly range, or when the tenor is a term tenor (or default). |
+| <code>public static bool TryFromPaymentFrequency(SecurityPaymentFrequency frequency, out ScheduleTenor tenor);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L181) | Maps a Security Master payment frequency to its tenor: Daily 1D, Weekly 1W, BiWeekly 2W, Monthly 1M, BiMonthly 2M, Quarterly 3M, SemiAnnual 6M, Annual 12M and AtMaturity the term tenor. Irregular has no tenor and returns false. |
+| <code>public bool Equals(ScheduleTenor other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:202](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L202) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L205) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L208) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:211](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L211) | The tenor in market shorthand: 3M, 1Y, 2W, 1D, or T for a term tenor. |
+| <code>public static bool operator == (ScheduleTenor left, ScheduleTenor right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:221](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L221) | Whether two tenors have the same count and unit. |
+| <code>public static bool operator != (ScheduleTenor left, ScheduleTenor right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:224](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L224) | Whether two tenors differ in count or unit. |
+
+## ScheduleTenorUnit
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L8).
+
+The unit a ScheduleTenor counts in.
+
+```csharp
+public enum ScheduleTenorUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Day</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L11) | Calendar days. |
+| <code>Week</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L14) | Weeks of seven calendar days. |
+| <code>Month</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L17) | Calendar months, clamped to the target month&#x27;s length. |
+| <code>Year</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L20) | Years, counted as twelve calendar months each. |
+| <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L23) | A single period from the effective date to the termination date. |
+
+## ScheduleSpecFactory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleSpecFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L109).
+
+Maps a security&#x27;s declared scheduleConventions block (ADR-025) to a ScheduleSpec for the contractual schedule kernel, or says why it cannot. The block is read only where the mapping decodes it (SecurityVersionedTerms: the same predicate, the same read guard and the same leg selection), and the schedule anchors are read at the payload root by exact key, as the mapping reads them, so the factory cannot follow conventions the record does not declare.
+
+```csharp
+public static class ScheduleSpecFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DeclaredMappingVersion = SecurityVersionedTerms.DeclaredScheduleMappingVersion;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L116) | The version of this mapping from a declared block to a schedule spec. It is SecurityVersionedTerms.DeclaredScheduleMappingVersion itself, so the startup capability line and the schedule evidence cannot name different mappings. |
+| <code>public static DeclaredScheduleResolution Resolve(SecurityDetailDto security, StructuredCashFlowTerms terms, IBusinessDayCalendarSource? calendars);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L157) | Resolves the schedule security declares, with its payment calendars from calendars. DeclaredScheduleStatus.Undeclared means the record declares nothing this node decodes and its projection stays on the legacy path; DeclaredScheduleStatus.Refused carries the reason the projection is blocked. |
+| <code>public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:220](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L220) | The calendar-free check of what security declares: every rule of Resolve except calendar resolution, then the schedule kernel over the spec with no business-day adjustments and no payment lag. A kernel failure is DeclaredScheduleRefusalCode.KernelRefused, so a write rule that calls this refuses every block a factory rule or a calendar-free kernel failure would block. That is all it guarantees: every check that runs after the factory can still block a Declared result, among them calendar availability, the calendar-dependent kernel failures and the declared walk&#x27;s refusals (a contractual principal schedule, a missing or unrecognized dayCount, Level on a Term period, Act/Act ICMA on adjusted accrual dates, Business/252 without a calendar). A Declared result carries that calendar-free spec. |
+
+## ScheduleTermsWriteRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L19).
+
+Semantic write rules for declared schedule terms. Readable-only containers and profile fields retain ADR-024&#x27;s separate guards; this validator never grants a readable version write authority.
+
+```csharp
+public static partial class ScheduleTermsWriteRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(string assetClass, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L22) | Checks the complete effective payload against this node&#x27;s writable schedule contract. |
+| <code>public static void Validate(string assetClass, JsonElement payload, JsonElement? retained) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L29) | Checks the complete effective payload of a write that replaces retained (the stored terms; null for a create). Containers unchanged from it are judged as retained declarations. |
+| <code>public static void ValidateDeclarations(string assetClass, JsonElement payload, int termsVersion) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L33) | Pure pre-rollout diagnostics through an explicit readable version, without changing the write version. |
+| <code>public static void ValidateDeclarations(string assetClass, JsonElement payload, int termsVersion, JsonElement? retained);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L41) | Diagnostics through an explicit readable version for a payload that replaces retained; a stored row read back passes itself, so only the rules it was stored under apply. |
+| <code>public static void EnsureAmendmentDoesNotPromoteStrayContainers(string assetClass, JsonElement retained, JsonElement? replacement);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L106) | Prevents a write-version raise from turning retained, undeclared residue into a contract on an unrelated amendment. An explicit clear repairs it; an explicitly higher-stamped replacement states the new declaration and is subsequently checked by the ordinary write validator. |
+| <code>public static bool IsUnsetScheduleEntry(JsonElement row) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs:239](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.cs#L239) | Whether an element of a versioned callSchedule or putSchedule array is unset: JSON null, or an object with no populated member. ADR-024&#x27;s protocol-unset spellings are not entries and the tolerant codec drops them. This exception belongs only to the versioned call/put arrays, never ordinary item arrays. Readers that ask &quot;does this row declare a schedule&quot; use it so they agree with what a write admits as declaring nothing. |
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs#L13).
+
+```csharp
+public static partial class ScheduleTermsWriteRules
+```
+
 ## SecurityAccountingDisposition
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition</code>. Kind: `enum`.
@@ -476,468 +1017,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:55](../.
 
 ```csharp
 public sealed record SecurityAssetProfileFieldDefinitionDto(string Key, string Label, SecurityAssetProfileFieldTypeDto FieldType, bool IsRequired, IReadOnlyList<string> AllowedValues, string? Description, decimal? MinValue, decimal? MaxValue, bool IsProjected, bool IsSearchable);
-```
-
-## SecurityAssetProfileFieldTypeDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L16).
-
-```csharp
-public enum SecurityAssetProfileFieldTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Text</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L18) |  |
-| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L19) |  |
-| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L20) |  |
-| <code>Boolean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L21) |  |
-| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L22) |  |
-| <code>Enum</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L23) |  |
-| <code>CurrencyCode</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L24) |  |
-| <code>SecurityLink</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L25) |  |
-
-## SecurityAssetProfileGovernanceAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L148).
-
-```csharp
-public sealed record SecurityAssetProfileGovernanceAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string ProfileId, int Version, SecurityAssetProfileStatusDto Status, int? PreviousVersion, string? ApprovalReference);
-```
-
-## SecurityAssetProfileGovernanceResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:166](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L166).
-
-```csharp
-public sealed record SecurityAssetProfileGovernanceResultDto(SecurityAssetProfileDefinitionDto Profile, SecurityAssetProfileLineageDto Lineage, SecurityAssetProfileGovernanceAuditEventDto AuditEvent);
-```
-
-## SecurityAssetProfileIdentifierPreferenceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileIdentifierPreferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L73).
-
-```csharp
-public sealed record SecurityAssetProfileIdentifierPreferenceDto(SecurityIdentifierKind Kind, bool IsRequiredForClose, string Reason);
-```
-
-## SecurityAssetProfileLineageDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileLineageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L161).
-
-```csharp
-public sealed record SecurityAssetProfileLineageDto(string ProfileId, IReadOnlyList<SecurityAssetProfileDefinitionDto> Versions, IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> AuditEvents);
-```
-
-## SecurityAssetProfilePromotionCandidateDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:193](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L193).
-
-```csharp
-public sealed record SecurityAssetProfilePromotionCandidateDto(string ProfileId, int Version, string Name, string Category, string? SubType, SecurityAssetProfilePromotionReadinessDto Readiness, int Score, bool IsCandidate, string RecommendedPackageId, string RecommendedPackageName, IReadOnlyList<string> DedicatedBehaviorNeeds, IReadOnlyList<SecurityAssetProfilePromotionSignalDto> Signals, string PromotionRationale);
-```
-
-## SecurityAssetProfilePromotionReadinessDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionReadinessDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:172](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L172).
-
-```csharp
-public enum SecurityAssetProfilePromotionReadinessDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Watchlist</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L174) |  |
-| <code>Candidate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L175) |  |
-| <code>ReadyForFirstClassPackage</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L176) |  |
-
-## SecurityAssetProfilePromotionSignalDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionSignalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L187).
-
-```csharp
-public sealed record SecurityAssetProfilePromotionSignalDto(string Code, string Label, string Detail, SecurityAssetProfilePromotionSignalSeverityDto Severity);
-```
-
-## SecurityAssetProfilePromotionSignalSeverityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionSignalSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:180](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L180).
-
-```csharp
-public enum SecurityAssetProfilePromotionSignalSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:182](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L182) |  |
-| <code>Advisory</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:183](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L183) |  |
-| <code>Strong</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L184) |  |
-
-## SecurityAssetProfileRollbackRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileRollbackRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L139).
-
-```csharp
-public sealed record SecurityAssetProfileRollbackRequestDto(string ProfileId, int TargetVersion, DateOnly EffectiveFrom, string ApprovalReference, string? RequestedBy, string Rationale, string? CorrelationId = null);
-```
-
-## SecurityAssetProfileStatusDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L7).
-
-```csharp
-public enum SecurityAssetProfileStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L9) |  |
-| <code>Approved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L10) |  |
-| <code>Superseded</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L11) |  |
-| <code>Retired</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L12) |  |
-
-## SecurityAssetProfileTermsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L104).
-
-```csharp
-public sealed record SecurityAssetProfileTermsDto(string CustomProfileId, int ProfileVersion, IReadOnlyDictionary<string, JsonElement> ProfileFields, SecurityAssetProfileApprovalMetadataDto ProfileApproval, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```
-
-## SecurityAssetSpecificTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L13).
-
-An asset-specific-terms payload paired with the schema version it resolves to. Produced by SecurityAssetSpecificTermsV0ToCurrentUpcaster so callers get both the normalized (explicitly versioned) JSON and the version to persist into the queryable schema_version column in one step.
-
-```csharp
-public sealed record SecurityAssetSpecificTerms(JsonElement Payload, int SchemaVersion);
-```
-
-## SecurityAssetSpecificTermsUpcasterChain
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1657](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1657).
-
-The composed migrate-on-read chain for asset-specific-terms payloads — the single entry point that turns &quot;whatever version is stored&quot; into a payload current readers accept: unstamped (version 0) → stamped AssetSpecificTermsSchema.Legacy via SecurityAssetSpecificTermsV0ToCurrentUpcaster; a cross-family economic-terms document (stamped EconomicTermsSchema.Current and carrying economic-terms module keys) → flattened v1 via the lossy SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster; accepted versions pass through unchanged; unknown future versions — including a payload stamped with the reserved AssetSpecificTermsSchema.ReservedForEconomicTerms that does not have the economic-terms shape — pass through with their version preserved, so acceptance stays the guard&#x27;s decision and newer or misrouted payloads degrade with a precise diagnostic instead of being silently emptied in the chain.
-
-```csharp
-public static class SecurityAssetSpecificTermsUpcasterChain
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityAssetSpecificTerms Normalize(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1660](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1660) | Normalizes a stored asset-specific-terms payload to the newest readable form. |
-| <code>public static SecurityAssetSpecificTerms Normalize(JsonElement payload, string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1671](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1671) | Class-aware variant: a cross-family economic-terms document is flattened onto the flat keys assetClass declares (see SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(JsonElement, string?)). Every other payload normalizes exactly as Normalize(JsonElement). |
-| <code>public static SecurityAssetSpecificTerms? Normalize(string json);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1677](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1677) | Text-input variant; returns null when the text is not JSON. |
-
-## SecurityAssetSpecificTermsUpcasterPipeline
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1709](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1709).
-
-The registered ISchemaUpcaster{T} form of SecurityAssetSpecificTermsUpcasterChain: a single injectable choke point that composes the full asset-specific-terms migrate-on-read chain (v0 stamping plus cross-family economic-terms v2 → v1 flattening) for callers that resolve upcasters through the ISchemaUpcaster{T} seam. Unknown future versions pass through with their version preserved, keeping acceptance the guard&#x27;s decision. ToSchemaVersion names the version accepted flat payloads normalize to. It is a property of the pipeline, not of any one result: a profile-backed payload passes through as AssetSpecificTermsSchema.CustomAssetProfile, and callers must read the version off the returned SecurityAssetSpecificTerms.SchemaVersion, never off this declaration.
-
-```csharp
-public sealed class SecurityAssetSpecificTermsUpcasterPipeline : ISchemaUpcaster<SecurityAssetSpecificTerms>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityAssetSpecificTermsUpcasterPipeline Instance { get; } = new ();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1712](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1712) | Shared stateless instance for callers that resolve the pipeline outside DI. |
-| <code>public int FromSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1715](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1715) | The oldest (unstamped legacy) payload family this pipeline reads from. |
-| <code>public int ToSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1718](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1718) | The normalized asset-specific-terms version the pipeline resolves accepted flat payloads to. |
-| <code>public SecurityAssetSpecificTerms? Upcast(string json) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1721](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1721) | Normalizes a stored asset-specific-terms payload through the full chain. |
-
-## SecurityAssetSpecificTermsV0ToCurrentUpcaster
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L22).
-
-Migrate-on-read upcaster for Security Master asset-specific-terms payloads. Legacy payloads were persisted before explicit versioning and carry no schemaVersion; on read they are treated as SecurityMasterSchemaVersions.LegacyAssetSpecificTerms and stamped so every downstream consumer — validation, projection, and the promoted schema_version column — sees an explicitly versioned payload without a bulk data migration.
-
-```csharp
-public sealed class SecurityAssetSpecificTermsV0ToCurrentUpcaster : ISchemaUpcaster<SecurityAssetSpecificTerms>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityAssetSpecificTermsV0ToCurrentUpcaster Instance { get; } = new ();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L25) | Shared stateless instance for callers that resolve the upcaster outside DI. |
-| <code>public int FromSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L28) | The unstamped legacy payload family (no schemaVersion property). |
-| <code>public int ToSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L31) | The version an unstamped payload is normalized to. |
-| <code>public SecurityAssetSpecificTerms? Upcast(string json);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L37) | Reads a stored asset-specific-terms JSON document and returns its normalized form, or null when the text cannot be parsed as JSON. |
-| <code>public static int ResolveSchemaVersion(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L60) | Returns the schema version stamped on the payload, or SecurityMasterSchemaVersions.DefaultAssetSpecificTerms when the payload predates explicit versioning. This is the single place &quot;what version is this payload?&quot; is decided. |
-| <code>public static SecurityAssetSpecificTerms Normalize(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L79) | Stamps a missing schemaVersion onto an object payload so downstream code never has to re-derive the legacy default. Payloads that already carry a numeric schemaVersion, and non-object payloads, are returned unchanged. The returned JsonElement is cloned so it is safe to use after the source document is disposed. |
-
-## SecurityAssetTermEditorKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermEditorKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L89).
-
-The editor a form should render for one term field.
-
-```csharp
-public enum SecurityAssetTermEditorKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Text</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L91) |  |
-| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L92) |  |
-| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L93) |  |
-| <code>Toggle</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:94](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L94) |  |
-| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L95) |  |
-| <code>Identifier</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L96) |  |
-| <code>Choice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L97) |  |
-| <code>Convention</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L103) | A typed convention (day count, settlement method): free text the convention&#x27;s parser must recognize, with SecurityAssetTermUiHint.Choices offering the canonical spellings. |
-| <code>Json</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L104) |  |
-
-## SecurityAssetTermField
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermField</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L86).
-
-```csharp
-public sealed record SecurityAssetTermField(string Key, SecurityAssetTermFieldType Type, bool Required, IReadOnlyList<string> Aliases, IReadOnlyList<string> AllowedValues, SecurityAssetTermVocabularyEscape? Escape = null, bool CarriesUndeclaredValueVerbatim = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool AuthoringEnabled { get; init; } = true;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L96) | False for readable calculation companions whose authoring has not been activated. |
-| <code>public SecurityAssetTermField ReadOnly() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L98) |  |
-| <code>public bool IsDiscriminant =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L107) | True when the field carries a CLOSED vocabulary: its value selects a domain case, and a value outside AllowedValues cannot be decoded back into the one it names. Fields whose domain type has an open &quot;other&quot; case (a bond subclass, a paymentFrequency) are deliberately not discriminants — they round-trip any label losslessly, so constraining them would reject values the domain accepts today. |
-| <code>public bool Allows(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L115) | True when value is one of the declared vocabulary members, or the field declares no vocabulary at all. The comparison is ORDINAL and case-sensitive because the codecs are: the serializer emits one exact spelling per case and the deserializer switches on it, so &quot;fixed&quot; is as undecodable as &quot;Variable&quot;. |
-| <code>public string DescribeUndeclaredValue(string assetClass, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L124) | The shared rejection reason for a value outside this field&#x27;s vocabulary, naming the declared members and the escape when one exists. Both the operator edit surface and the write-mode codec reject through this text so a rejected value reads the same wherever it is caught. |
-| <code>public static SecurityAssetTermField Req(string key, SecurityAssetTermFieldType type, params string[] aliases) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L136) | A field the serialize side always emits (a non-optional domain field). |
-| <code>public static SecurityAssetTermField Opt(string key, SecurityAssetTermFieldType type, params string[] aliases) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L140) | A field emitted only when its optional domain value is present. |
-| <code>public static SecurityAssetTermField ReqOneOf(string key, params string[] allowedValues) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L144) | A required discriminant string constrained to a closed vocabulary. |
-| <code>public static SecurityAssetTermField OptOneOf(string key, params string[] allowedValues) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L148) | An optional discriminant string constrained to a closed vocabulary. |
-| <code>public SecurityAssetTermField WithEscape(string value, string labelKey, params string[] dependentKeys) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L156) | Declares the vocabulary member that absorbs an out-of-vocabulary label, the key carrying that raw label, and the keys the escape decode cannot reattach. See SecurityAssetTermVocabularyEscape. |
-| <code>public SecurityAssetTermField WithVerbatimUndeclaredValue() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:164](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L164) | Declares that the codec carries an out-of-vocabulary value VERBATIM in this same key, so the vocabulary is a write-time constraint only and never a reason to refuse re-serializing a record that already holds one. See CarriesUndeclaredValueVerbatim. |
-| <code>public SecurityTermConventionKind Convention { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:173](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L173) | The typed convention this string field carries, or SecurityTermConventionKind.None. Unlike a closed vocabulary, a convention accepts every spelling its parser recognizes and preserves its meaning; day counts serialize as canonical market labels, while other conventions retain their original spelling. It rejects values the parser cannot type. |
-| <code>public SecurityAssetTermField WithConvention(SecurityTermConventionKind convention) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L176) | Declares the typed convention this string field carries. |
-| <code>public SecurityAssetTermRole Role { get; init; } = SecurityAssetTermRole.Economic;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L184) | Whether the field is part of the instrument&#x27;s economics or an operational reference (a pricing source, a vendor feed). Operational fields are kept beside the economics for compatibility but never feed cash-flow, accounting or economic-definition math. |
-| <code>public SecurityAssetTermField AsOperational() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L187) | Declares the field an operational reference rather than an economic term. |
-| <code>public SecurityUnderlyingRole? UnderlyingRole { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:196](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L196) | The role the field&#x27;s value plays in the underlying graph, or null when the field names nothing the instrument depends on. SecurityUnderlyingLinkDeriver builds the derived graph from these declarations alone: a value that is a security id links to that record, any other text is recorded as an unresolved reference. |
-| <code>public SecurityAssetTermField LinksUnderlying(SecurityUnderlyingRole role) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L199) | Declares the field a reference the underlying graph links in role. |
-| <code>public int SinceTermsVersion { get; init; } = SecurityTermsEnvelope.DefaultAssetClassTermsVersion;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:215](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L215) | The asset-class terms version (SecurityAssetClassDescriptor.TermsVersion) that introduced this field; 1 for every field the class carried before per-class versioning. A payload stamped with an earlier version never carries it. The committed manifests under tests/fixtures/security-master/terms-versions are checked against it: a field must first appear in the manifest of this version. A field above the class&#x27;s write version is readable but not writable (SecurityAssetClassDescriptor.ReadsTermsThrough): a node decodes it from payloads stamped at or above this version and refuses it on every write path. A class may read several versions ahead of what it writes, each introduced by its own top-level fields (Bond: scheduleConventions at 2, callSchedule and putSchedule at 3). The members of a container introduced above version 1 are frozen with it: a later member needs a new container key. |
-| <code>public SecurityAssetTermField Since(int termsVersion);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L222) | Declares the terms version that introduced the field. Like WithConvention and AsOperational it is a single-member with, so it composes with every other modifier in any order. |
-| <code>public bool SatisfiesConvention(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:232](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L232) | True when value satisfies this field&#x27;s convention (or it declares none). Blank values are left to the required/optional rules. |
-
-## SecurityAssetTermFieldDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:162](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L162).
-
-Wire form of one term field with its UI hint, for schema-driven forms.
-
-```csharp
-public sealed record SecurityAssetTermFieldDefinitionDto(string Key, string FieldPath, string Label, string Type, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, bool ScalarEditable, IReadOnlyList<string> Choices, IReadOnlyList<string> Aliases, SecurityAssetTermRole Role = SecurityAssetTermRole.Economic);
-```
-
-## SecurityAssetTermFieldType
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L11).
-
-The JSON value shape a Security Master asset-specific-term field takes in the flat (AssetSpecificTermsSchema.Legacy) payload. This is the codec-level type, distinct from the operator-facing SecurityAssetProfileFieldTypeDto used by custom profiles.
-
-```csharp
-public enum SecurityAssetTermFieldType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>String</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L14) | A JSON string. |
-| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L17) | A JSON number read as decimal. |
-| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L20) | A JSON number read as int. |
-| <code>Boolean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L23) | A JSON boolean. |
-| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L26) | A JSON string parsed as a System.DateOnly (or an ISO timestamp). |
-| <code>Guid</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L29) | A JSON string parsed as a System.Guid. |
-| <code>Array</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L32) | A JSON array. |
-| <code>Object</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L35) | A nested JSON object. |
-
-## SecurityAssetTermFormModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermFormModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L10).
-
-Client-side form rules for schema-driven term editors, shared by the desktop workstation and mirrored by the browser&#x27;s passport editor. The governed field-edit validator on the server stays authoritative; these rules only stop obviously invalid input before it is staged.
-
-```csharp
-public static class SecurityAssetTermFormModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermFieldDefinitionDto&gt; PickableFields(SecurityAssetClassDefinitionDto? definition) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L13) | The scalar-editable fields an operator can pick, in registry order. |
-| <code>public static IReadOnlyList&lt;string&gt; ValueChoices(SecurityAssetTermFieldDefinitionDto? field) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L19) | The closed set of values a field offers as a choice list, or empty for free input. |
-| <code>public static string? Validate(SecurityAssetTermFieldDefinitionDto? field, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L28) | A validation message for value, or null when it may be staged. |
-
-## SecurityAssetTermRole
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L77).
-
-One declarative field in the per-asset-class asset-specific-terms contract: the canonical JSON key, its value type, whether the serialize side always emits it, any legacy flat key aliases a tolerant reader should also accept, and — for discriminant strings — the closed vocabulary its value must come from.
-
-```csharp
-public enum SecurityAssetTermRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Economic</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L80) | The instrument&#x27;s contractual economics. |
-| <code>Operational</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L83) | An operational or vendor reference (pricing source, data feed) carried with the terms. |
-
-## SecurityAssetTermsCodecBindings
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L121).
-
-The single statement of which flat key carries which member of a per-class record, for the classes whose flat codec is generated (ADR-027 stage 3). Both codec arms are generated from this table: the decode arm in SecurityMasterMapping.GeneratedDecode.cs and the writer arm in Interop.SecurityMaster.GeneratedWriter.fs. Neither file is edited by hand; SecurityFlatCodecGenerationTests regenerates both and fails when the committed source differs. A member with no row is one the class&#x27;s flat row does not carry, and decodes as absent. Key types and requiredness are the schema&#x27;s (SecurityAssetTermsSchema); a row names only what the schema does not say: the member, the reader&#x27;s tolerance, and the few values a class fixes or derives.
-
-```csharp
-public static class SecurityAssetTermsCodecBindings
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityClassCodecBinding&gt; Classes { get; } = [Class(&quot;Equity&quot;, B(&quot;Capital.ShareClass&quot;, &quot;shareClass&quot;, SecurityTermRead.OptionalString), Computed(&quot;Capital.VotingRightsCat&quot;, &quot;votingRightsCat&quot;, &quot;ToVotingRightsCatOption(bound.OptionalString(\&quot;votingRightsCat\&quot;))&quot;, &quot;terms.Capital.VotingRightsCat &#124;&gt; Option.map VotingRightsCat.asString&quot;), Fixed(&quot;Capital.Classification&quot;, &quot;ToEquityClassificationOption(bound, mode)&quot;), WrittenAs(&quot;Capital.Classification&quot;, &quot;classification&quot;, &quot;EquityCapitalCodec.classification terms.Capital&quot;), WrittenAs(&quot;Capital.Classification&quot;, &quot;otherClassification&quot;, &quot;EquityCapitalCodec.otherClassification terms.Capital&quot;), WrittenAs(&quot;Capital.Classification&quot;, &quot;preferredTerms&quot;, &quot;EquityCapitalCodec.preferredTerms terms.Capital&quot;), WrittenAs(&quot;Capital.Classification&quot;, &quot;convertibleTerms&quot;, &quot;EquityCapitalCodec.convertibleTerms terms.Capital&quot;)), Class(&quot;Option&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;expiry&quot;, SecurityTermRead.RequiredDate, via : &quot;Expiry&quot;), B(&quot;ListingDetail.OptChainId&quot;, &quot;optChainId&quot;, SecurityTermRead.OptionalString), B(&quot;ListingDetail.SettlementType&quot;, &quot;settlementType&quot;, SecurityTermRead.OptionalString), B(&quot;ListingDetail.IsAdjusted&quot;, &quot;isAdjusted&quot;, SecurityTermRead.BooleanDefaultFalse), B(&quot;ListingDetail.LastTradingDt&quot;, &quot;lastTradingDt&quot;, SecurityTermRead.OptionalDate), B(&quot;Exercise.OptionRight&quot;, &quot;putCall&quot;, SecurityTermRead.RequiredString), B(&quot;Exercise.StrikePrice&quot;, &quot;strike&quot;, SecurityTermRead.RequiredDecimal), new (&quot;Exercise.ExerciseStyle&quot;, &quot;exerciseStyle&quot;, null, DecodeExpression : &quot;CanonicalExerciseStyle(ParseExerciseStyle(bound.OptionalString(\&quot;exerciseStyle\&quot;)))&quot;), B(&quot;Exercise.UnderlyingSecurityId&quot;, &quot;underlyingId&quot;, SecurityTermRead.RequiredSecurityId), B(&quot;TradingParameters.ContractMultiplier&quot;, &quot;multiplier&quot;, SecurityTermRead.RequiredDecimal)), Class(&quot;Future&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;expiry&quot;, SecurityTermRead.RequiredDate, via : &quot;Expiry&quot;), B(&quot;ListingDetail.SettlementType&quot;, &quot;settlementType&quot;, SecurityTermRead.OptionalString), B(&quot;ListingDetail.LastTradingDt&quot;, &quot;lastTradingDt&quot;, SecurityTermRead.OptionalDate), B(&quot;ListingDetail.RootSymbol&quot;, &quot;rootSymbol&quot;, SecurityTermRead.RequiredString), B(&quot;ListingDetail.ContractMonth&quot;, &quot;contractMonth&quot;, SecurityTermRead.RequiredString), B(&quot;ListingDetail.FirstNoticeDt&quot;, &quot;firstNoticeDt&quot;, SecurityTermRead.OptionalDate), B(&quot;ListingDetail.DeliveryMonthDt&quot;, &quot;deliveryMonthDt&quot;, SecurityTermRead.OptionalDate), B(&quot;ListingDetail.DeliveryLocationCode&quot;, &quot;deliveryLocationCode&quot;, SecurityTermRead.OptionalString), B(&quot;ListingDetail.IsRollTarget&quot;, &quot;isRollTarget&quot;, SecurityTermRead.BooleanDefaultFalse), B(&quot;ListingDetail.RollWindowDays&quot;, &quot;rollWindowDays&quot;, SecurityTermRead.OptionalInt), B(&quot;TradingParameters.ContractMultiplier&quot;, &quot;multiplier&quot;, SecurityTermRead.RequiredDecimal)), new (&quot;Bond&quot;, false, [B(&quot;Dates.IssueDate&quot;, &quot;issueDate&quot;, SecurityTermRead.OptionalDate), B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.RequiredDate, via : &quot;Maturity&quot;), Fixed(&quot;CouponStructure.Structure&quot;, &quot;ToBondCouponStructure(bound, mode, economicSchedules)&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;couponType&quot;, &quot;FlatWriterParts.couponType terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;couponRate&quot;, &quot;BondTerms.couponRate terms&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;floatingIndex&quot;, &quot;FlatWriterParts.floatingIndex terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;spreadBps&quot;, &quot;FlatWriterParts.floatingSpreadBps terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;capRate&quot;, &quot;FlatWriterParts.floatingCapRate terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;floorRate&quot;, &quot;FlatWriterParts.floatingFloorRate terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;stepSchedule&quot;, &quot;FlatWriterParts.stepSchedule terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;inflationIndex&quot;, &quot;FlatWriterParts.inflationIndex terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;inflationBaseIndexValue&quot;, &quot;FlatWriterParts.inflationBaseIndexValue terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;inflationIndexRatio&quot;, &quot;FlatWriterParts.inflationIndexRatio terms.Coupon&quot;), WrittenAs(&quot;CouponStructure.Structure&quot;, &quot;dayCount&quot;, &quot;BondTerms.dayCount terms &#124;&gt; Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel&quot;), Computed(&quot;CouponStructure.PaymentFrequency&quot;, &quot;paymentFrequency&quot;, &quot;ToPaymentFrequencyOption(bound.OptionalString(\&quot;paymentFrequency\&quot;))&quot;, &quot;terms.PaymentFrequency &#124;&gt; Option.map PaymentFrequency.label&quot;), Module(&quot;Callability&quot;, &quot;EconomicCallTermsModule.Scalar(bound.OptionalBoolean(\&quot;isCallable\&quot;) ?? false, ToOption(bound.OptionalDateOnly(\&quot;callDate\&quot;)))&quot;), WrittenFrom(&quot;Callability.IsCallable&quot;, &quot;isCallable&quot;, &quot;IsCallable&quot;), WrittenFrom(&quot;Callability.FirstCallDate&quot;, &quot;callDate&quot;, &quot;CallDate&quot;), B(&quot;IssuerTerms.IssuerName&quot;, &quot;issuerName&quot;, SecurityTermRead.OptionalString), Computed(&quot;DebtClassification.Subclass&quot;, &quot;subclass&quot;, &quot;ParseBondSubclass(bound.OptionalString(\&quot;subclass\&quot;))&quot;, &quot;BondSubclass.label terms.Subclass&quot;), B(&quot;DebtClassification.Seniority&quot;, &quot;seniority&quot;, SecurityTermRead.OptionalString), B(&quot;RedemptionFacts.Par&quot;, &quot;par&quot;, SecurityTermRead.OptionalDecimal), B(&quot;RedemptionFacts.LegalFinalMaturity&quot;, &quot;legalFinalMaturity&quot;, SecurityTermRead.OptionalDate), B(&quot;RedemptionFacts.PreRefundDate&quot;, &quot;preRefundDate&quot;, SecurityTermRead.OptionalDate), B(&quot;RedemptionFacts.MandatoryPutDate&quot;, &quot;mandatoryPutDate&quot;, SecurityTermRead.OptionalDate), Listed(&quot;Principal.Payments&quot;, &quot;principalSchedule&quot;, &quot;PrincipalPayments(economicSchedules)&quot;, &quot;PrincipalSchedule&quot;, PrincipalPaymentItems), Module(&quot;DeclaredSchedule&quot;, &quot;new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),\n                ReadCallPutSchedules(json, assetClass, versionedTerms))&quot;), Module(&quot;Workflow&quot;, &quot;ReadBondWorkflowTerms(json, versionedTerms)&quot;), ], VersionedSchedules : true, Inputs : SecurityCodecInputs.EconomicSchedules), Class(&quot;FxSpot&quot;, B(&quot;CurrencyPair.BaseCurrency&quot;, &quot;baseCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.QuoteCurrency&quot;, &quot;quoteCurrency&quot;, SecurityTermRead.RequiredString)), Class(&quot;Deposit&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.OptionalDate), B(&quot;IssuerTerms.InstitutionName&quot;, &quot;institutionName&quot;, SecurityTermRead.RequiredString, via : &quot;InstitutionName&quot;), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;depositType&quot;, SecurityTermRead.RequiredString, via : &quot;DepositType&quot;), Fixed(&quot;CouponTerms.CouponType&quot;, &quot;FSharpOption&lt;CouponKind&gt;.Some(CouponKind.NewOtherCoupon(\&quot;SimpleInterest\&quot;))&quot;), B(&quot;CouponTerms.CouponRate&quot;, &quot;interestRate&quot;, SecurityTermRead.OptionalDecimal), B(&quot;CouponTerms.DayCount&quot;, &quot;dayCount&quot;, SecurityTermRead.DayCount), Module(&quot;Callability&quot;, &quot;EconomicCallTermsModule.Scalar(bound.OptionalBoolean(\&quot;isCallable\&quot;) ?? false, null)&quot;), WrittenFrom(&quot;Callability.IsCallable&quot;, &quot;isCallable&quot;, &quot;IsCallable&quot;)), Class(&quot;MoneyMarketFund&quot;, B(&quot;FundTerms.FundFamily&quot;, &quot;fundFamily&quot;, SecurityTermRead.OptionalString), B(&quot;FundTerms.WeightedAverageMaturityDays&quot;, &quot;weightedAverageMaturityDays&quot;, SecurityTermRead.OptionalInt), B(&quot;FundTerms.SweepEligible&quot;, &quot;sweepEligible&quot;, SecurityTermRead.BooleanDefaultFalse), B(&quot;FundTerms.LiquidityFeeEligible&quot;, &quot;liquidityFeeEligible&quot;, SecurityTermRead.BooleanDefaultFalse)), ScheduledClass(&quot;CertificateOfDeposit&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.RequiredDate, via : &quot;Maturity&quot;), B(&quot;IssuerTerms.IssuerName&quot;, &quot;issuerName&quot;, SecurityTermRead.RequiredString, via : &quot;IssuerName&quot;), Fixed(&quot;CouponTerms.CouponType&quot;, &quot;FSharpOption&lt;CouponKind&gt;.Some(CouponKind.Fixed)&quot;), B(&quot;CouponTerms.CouponRate&quot;, &quot;couponRate&quot;, SecurityTermRead.OptionalDecimal), B(&quot;CouponTerms.DayCount&quot;, &quot;dayCount&quot;, SecurityTermRead.DayCount), Module(&quot;Callability&quot;, &quot;EconomicCallTermsModule.Scalar(bound.OptionalDateOnly(\&quot;callableDate\&quot;).HasValue, ToOption(bound.OptionalDateOnly(\&quot;callableDate\&quot;)))&quot;), WrittenFrom(&quot;Callability.FirstCallDate&quot;, &quot;callableDate&quot;, &quot;CallableDate&quot;), Module(&quot;DeclaredSchedule&quot;, &quot;new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),\n                ReadCallPutSchedules(json, assetClass, versionedTerms))&quot;)), Class(&quot;CommercialPaper&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.RequiredDate, via : &quot;Maturity&quot;), B(&quot;IssuerTerms.IssuerName&quot;, &quot;issuerName&quot;, SecurityTermRead.RequiredString, via : &quot;IssuerName&quot;), Converted(&quot;IssuerTerms.IssuerProgram&quot;, &quot;isAssetBacked&quot;, &quot;ToOption((bound.OptionalBoolean(\&quot;isAssetBacked\&quot;) ?? false) ? \&quot;AssetBacked\&quot; : null)&quot;, &quot;IsAssetBacked&quot;), B(&quot;DiscountTerms.DiscountRate&quot;, &quot;discountRate&quot;, SecurityTermRead.OptionalDecimal), Fixed(&quot;CouponTerms.CouponType&quot;, &quot;FSharpOption&lt;CouponKind&gt;.Some(CouponKind.DiscountNote)&quot;), B(&quot;CouponTerms.DayCount&quot;, &quot;dayCount&quot;, SecurityTermRead.DayCount)), Class(&quot;TreasuryBill&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.RequiredDate, via : &quot;Maturity&quot;), B(&quot;Auction.AuctionDate&quot;, &quot;auctionDate&quot;, SecurityTermRead.OptionalDate), Fixed(&quot;IssuerTerms.IssuerName&quot;, &quot;ToOption(\&quot;US Treasury\&quot;)&quot;), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;cusip&quot;, SecurityTermRead.OptionalString), Fixed(&quot;IssuerTerms.IssuerCountry&quot;, &quot;ToOption(\&quot;US\&quot;)&quot;), B(&quot;DiscountTerms.DiscountRate&quot;, &quot;discountRate&quot;, SecurityTermRead.OptionalDecimal)), Class(&quot;Repo&quot;, B(&quot;FinancingTerms.Counterparty&quot;, &quot;counterparty&quot;, SecurityTermRead.RequiredString, via : &quot;Counterparty&quot;), B(&quot;FinancingTerms.CollateralType&quot;, &quot;collateralType&quot;, SecurityTermRead.OptionalString), B(&quot;FinancingTerms.Haircut&quot;, &quot;haircut&quot;, SecurityTermRead.OptionalDecimal), B(&quot;FinancingTerms.OpenDate&quot;, &quot;startDate&quot;, SecurityTermRead.RequiredDate, via : &quot;StartDate&quot;), B(&quot;FinancingTerms.CloseDate&quot;, &quot;endDate&quot;, SecurityTermRead.RequiredDate, via : &quot;EndDate&quot;), B(&quot;DiscountTerms.YieldRate&quot;, &quot;repoRate&quot;, SecurityTermRead.OptionalDecimal)), Class(&quot;CashSweep&quot;, B(&quot;SweepTerms.ProgramName&quot;, &quot;programName&quot;, SecurityTermRead.RequiredString, via : &quot;ProgramName&quot;), Converted(&quot;SweepTerms.SweepVehicleType&quot;, &quot;sweepVehicleType&quot;, &quot;FSharpOption&lt;SweepVehicle&gt;.Some(ToCodecSweepVehicle(bound.RequiredString(\&quot;sweepVehicleType\&quot;)))&quot;, &quot;SweepVehicleType&quot;), Converted(&quot;SweepTerms.SweepFrequency&quot;, &quot;sweepFrequency&quot;, &quot;ToCodecSweepFrequency(ToOption(bound.OptionalString(\&quot;sweepFrequency\&quot;)))&quot;, &quot;SweepFrequency&quot;), B(&quot;SweepTerms.TargetAccountType&quot;, &quot;targetAccountType&quot;, SecurityTermRead.OptionalString), B(&quot;DiscountTerms.YieldRate&quot;, &quot;yieldRate&quot;, SecurityTermRead.OptionalDecimal)), Class(&quot;OtherSecurity&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.OptionalDate), B(&quot;ClassificationDetail.Category&quot;, &quot;category&quot;, SecurityTermRead.RequiredString), B(&quot;ClassificationDetail.SubType&quot;, &quot;subType&quot;, SecurityTermRead.OptionalString), B(&quot;IssuerTerms.IssuerName&quot;, &quot;issuerName&quot;, SecurityTermRead.OptionalString), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;settlementType&quot;, SecurityTermRead.OptionalString)), new (&quot;Swap&quot;, false, [B(&quot;Dates.EffectiveDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate, via : &quot;EffectiveDate&quot;), Also(&quot;Dates.IssueDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate), B(&quot;Dates.MaturityDate&quot;, &quot;maturityDate&quot;, SecurityTermRead.RequiredDate, via : &quot;MaturityDate&quot;), Computed(&quot;SwapLegs.Legs&quot;, &quot;legs&quot;, &quot;ToSwapLegs(json, assetClass, versionedTerms, mode)&quot;, &quot;terms.Legs &#124;&gt; List.map (FlatWriterParts.swapLeg writesScheduleConventions)&quot;), ], Inputs : SecurityCodecInputs.VersionedTerms, WritesConventionsFlag : true), new (&quot;DirectLoan&quot;, false, [B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.OptionalDate), B(&quot;IssuerTerms.IssuerName&quot;, &quot;borrower&quot;, SecurityTermRead.RequiredString, via : &quot;Borrower&quot;), Listed(&quot;LoanCovenants.Entries&quot;, &quot;covenants&quot;, &quot;ToCovenants(GetRequiredArray(json, \&quot;covenants\&quot;).EnumerateArray())&quot;, &quot;Covenants&quot;, CovenantItems), B(&quot;FloatingRate.ReferenceIndex&quot;, &quot;referenceIndex&quot;, SecurityTermRead.OptionalString), B(&quot;FloatingRate.SpreadBps&quot;, &quot;spreadBps&quot;, SecurityTermRead.OptionalDecimal), B(&quot;FloatingRate.ResetFrequency&quot;, &quot;resetFrequency&quot;, SecurityTermRead.OptionalString), B(&quot;CouponTerms.CouponRate&quot;, &quot;currentCouponRate&quot;, SecurityTermRead.OptionalDecimal), Listed(&quot;Principal.Payments&quot;, &quot;principalSchedule&quot;, &quot;PrincipalPayments(economicSchedules)&quot;, &quot;PrincipalSchedule&quot;, PrincipalPaymentItems), B(&quot;ReferenceDataSource.PricingSource&quot;, &quot;pricingSource&quot;, SecurityTermRead.OptionalString), ], Inputs : SecurityCodecInputs.EconomicSchedules), new (&quot;StructuredCredit&quot;, true, [Converted(&quot;CouponTerms.CouponType&quot;, &quot;couponOrIndex&quot;, &quot;FSharpOption&lt;CouponKind&gt;.Some(CouponKind.NewOtherCoupon(bound.RequiredString(\&quot;couponOrIndex\&quot;)))&quot;, &quot;CouponOrIndex&quot;), Computed(&quot;TrancheContract.Kind&quot;, &quot;structuredCreditKind&quot;, &quot;ToStructuredCreditKindOption(bound.OptionalConventionString(\&quot;structuredCreditKind\&quot;))&quot;, &quot;terms.Kind &#124;&gt; Option.map StructuredCreditKind.asString&quot;), B(&quot;TrancheContract.Seniority&quot;, &quot;seniority&quot;, SecurityTermRead.ConventionString), B(&quot;TrancheContract.AttachmentPoint&quot;, &quot;attachmentPoint&quot;, SecurityTermRead.StrictDecimal), B(&quot;TrancheContract.DetachmentPoint&quot;, &quot;detachmentPoint&quot;, SecurityTermRead.StrictDecimal), B(&quot;TrancheContract.ReinvestmentPeriodEnd&quot;, &quot;reinvestmentPeriodEnd&quot;, SecurityTermRead.StrictDate), B(&quot;TrancheContract.NonCallPeriodEnd&quot;, &quot;nonCallPeriodEnd&quot;, SecurityTermRead.StrictDate), B(&quot;Pool.Factor&quot;, &quot;currentFactor&quot;, SecurityTermRead.OptionalDecimal), B(&quot;Pool.WeightedAvgCoupon&quot;, &quot;weightedAverageCoupon&quot;, SecurityTermRead.StrictDecimal), B(&quot;Pool.WeightedAvgMaturityMonths&quot;, &quot;weightedAverageMaturityMonths&quot;, SecurityTermRead.StrictInt), B(&quot;Pool.WeightedAvgLoanAgeMos&quot;, &quot;weightedAverageLoanAgeMonths&quot;, SecurityTermRead.StrictInt), B(&quot;Pool.CollateralType&quot;, &quot;collateralType&quot;, SecurityTermRead.RequiredString, via : &quot;CollateralType&quot;), B(&quot;Pool.PoolIdentifier&quot;, &quot;poolId&quot;, SecurityTermRead.OptionalString), B(&quot;Pool.TrancheClass&quot;, &quot;tranche&quot;, SecurityTermRead.RequiredString, via : &quot;Tranche&quot;), Fixed(&quot;Pool.IsInterestOnly&quot;, &quot;false&quot;), Fixed(&quot;Pool.IsPrincipalOnly&quot;, &quot;false&quot;), B(&quot;Pool.NotionalBalance&quot;, &quot;originalFace&quot;, SecurityTermRead.RequiredDecimal, via : &quot;OriginalFace&quot;), B(&quot;Pool.FactorScheduleReference&quot;, &quot;factorSchedule&quot;, SecurityTermRead.OptionalString), Listed(&quot;Pool.FactorScheduleEntries&quot;, &quot;factorScheduleEntries&quot;, &quot;FactorScheduleEntries(economicSchedules)&quot;, &quot;FactorScheduleEntries&quot;, (&quot;asOfDate&quot;, &quot;AsOfDate&quot;), (&quot;factor&quot;, &quot;Factor&quot;)), B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.OptionalDate), Module(&quot;DeclaredSchedule&quot;, &quot;new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),\n                ReadCallPutSchedules(json, assetClass, versionedTerms))&quot;), ], VersionedSchedules : true, Inputs : SecurityCodecInputs.EconomicSchedules), ResolvedClass(&quot;PrivateFundInterest&quot;, B(&quot;PrivateAssetValuation.Vintage&quot;, &quot;vintage&quot;, SecurityTermRead.RequiredInt), B(&quot;PrivateAssetValuation.NavDate&quot;, &quot;navDate&quot;, SecurityTermRead.RequiredDate), B(&quot;PrivateAssetValuation.Lockup&quot;, &quot;lockup&quot;, SecurityTermRead.OptionalString), B(&quot;Notional.CommittedAmount&quot;, &quot;commitment&quot;, SecurityTermRead.RequiredDecimal), B(&quot;Notional.FundedAmount&quot;, &quot;fundedAmount&quot;, SecurityTermRead.OptionalDecimal), B(&quot;Notional.UnfundedAmount&quot;, &quot;unfundedAmount&quot;, SecurityTermRead.OptionalDecimal), B(&quot;IssuerTerms.IssuerName&quot;, &quot;gpSponsor&quot;, SecurityTermRead.RequiredString, via : &quot;GpSponsor&quot;), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;strategy&quot;, SecurityTermRead.RequiredString, via : &quot;Strategy&quot;)), ResolvedClass(&quot;PrivateCompanyEquity&quot;, B(&quot;Capital.ShareClass&quot;, &quot;shareClass&quot;, SecurityTermRead.RequiredString, via : &quot;ShareClass&quot;), B(&quot;PrivateAssetValuation.OwnershipPercent&quot;, &quot;ownershipPercent&quot;, SecurityTermRead.OptionalDecimal), B(&quot;PrivateAssetValuation.CostBasis&quot;, &quot;costBasis&quot;, SecurityTermRead.RequiredDecimal), B(&quot;PrivateAssetValuation.LatestValuation&quot;, &quot;latestValuation&quot;, SecurityTermRead.OptionalDecimal), B(&quot;PrivateAssetValuation.TransferRestrictions&quot;, &quot;transferRestrictions&quot;, SecurityTermRead.OptionalString), B(&quot;IssuerTerms.IssuerName&quot;, &quot;issuer&quot;, SecurityTermRead.RequiredString, via : &quot;Issuer&quot;), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;round&quot;, SecurityTermRead.RequiredString, via : &quot;Round&quot;)), ResolvedClass(&quot;RealEstateHolding&quot;, B(&quot;PrivateAssetValuation.OwnershipPercent&quot;, &quot;ownershipPercent&quot;, SecurityTermRead.RequiredDecimal, via : &quot;PrivateAssetValuation.OwnershipPercent&quot;), B(&quot;PrivateAssetValuation.AddressOrMarket&quot;, &quot;addressOrMarket&quot;, SecurityTermRead.RequiredString), B(&quot;PrivateAssetValuation.AppraisalValue&quot;, &quot;appraisalValue&quot;, SecurityTermRead.RequiredDecimal), B(&quot;PrivateAssetValuation.ValuationDate&quot;, &quot;valuationDate&quot;, SecurityTermRead.RequiredDate), B(&quot;PrivateAssetValuation.DebtStack&quot;, &quot;debtStack&quot;, SecurityTermRead.OptionalString), B(&quot;IssuerTerms.IssuerName&quot;, &quot;sponsor&quot;, SecurityTermRead.OptionalString), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;propertyType&quot;, SecurityTermRead.RequiredString, via : &quot;PropertyType&quot;), Fixed(&quot;IssuerTerms.IssuerSector&quot;, &quot;ToOption(\&quot;RealEstate\&quot;)&quot;)), new (&quot;CommitmentGuarantee&quot;, true, [B(&quot;Dates.EffectiveDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate, via : &quot;EffectiveDate&quot;), Also(&quot;Dates.IssueDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate), B(&quot;Dates.MaturityDate&quot;, &quot;expiryDate&quot;, SecurityTermRead.OptionalDate), B(&quot;Notional.CommittedAmount&quot;, &quot;committedAmount&quot;, SecurityTermRead.RequiredDecimal), B(&quot;Notional.UnfundedAmount&quot;, &quot;unfundedAmount&quot;, SecurityTermRead.OptionalDecimal), B(&quot;IssuerTerms.IssuerName&quot;, &quot;counterparty&quot;, SecurityTermRead.RequiredString, via : &quot;Counterparty&quot;), B(&quot;IssuerTerms.IssuerProgram&quot;, &quot;beneficiary&quot;, SecurityTermRead.OptionalString), B(&quot;ContractualRate.FeeRate&quot;, &quot;feeRate&quot;, SecurityTermRead.OptionalDecimal), B(&quot;CollateralTerms.CollateralType&quot;, &quot;collateral&quot;, SecurityTermRead.OptionalString), Listed(&quot;LoanCovenants.Entries&quot;, &quot;covenants&quot;, &quot;ToCovenants(GetOptionalArrayItems(terms, \&quot;covenants\&quot;))&quot;, &quot;Covenants&quot;, CovenantItems), ], Inputs : SecurityCodecInputs.ResolvedTermsDocument), Class(&quot;Commodity&quot;, B(&quot;CommodityContract.CommodityType&quot;, &quot;commodityType&quot;, SecurityTermRead.RequiredString), B(&quot;CommodityContract.Denomination&quot;, &quot;denomination&quot;, SecurityTermRead.OptionalString), B(&quot;CommodityContract.ContractSize&quot;, &quot;contractSize&quot;, SecurityTermRead.OptionalDecimal)), Class(&quot;CryptoCurrency&quot;, B(&quot;CurrencyPair.BaseCurrency&quot;, &quot;baseCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.QuoteCurrency&quot;, &quot;quoteCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;DigitalAsset.Network&quot;, &quot;network&quot;, SecurityTermRead.OptionalString)), Class(&quot;Cfd&quot;, B(&quot;UnderlyingExposure.UnderlyingAssetClass&quot;, &quot;underlyingAssetClass&quot;, SecurityTermRead.RequiredString), B(&quot;UnderlyingExposure.UnderlyingDescription&quot;, &quot;underlyingDescription&quot;, SecurityTermRead.OptionalString), B(&quot;UnderlyingExposure.Leverage&quot;, &quot;leverage&quot;, SecurityTermRead.OptionalDecimal)), Class(&quot;Warrant&quot;, B(&quot;Dates.MaturityDate&quot;, &quot;expiry&quot;, SecurityTermRead.OptionalDate), B(&quot;Exercise.OptionRight&quot;, &quot;warrantType&quot;, SecurityTermRead.RequiredString), B(&quot;Exercise.StrikePrice&quot;, &quot;strike&quot;, SecurityTermRead.OptionalDecimal), B(&quot;Exercise.UnderlyingSecurityId&quot;, &quot;underlyingId&quot;, SecurityTermRead.RequiredSecurityId), B(&quot;TradingParameters.ContractMultiplier&quot;, &quot;multiplier&quot;, SecurityTermRead.OptionalDecimal)), Class(&quot;FxForward&quot;, B(&quot;Dates.EffectiveDate&quot;, &quot;tradeDate&quot;, SecurityTermRead.StrictDate), B(&quot;Dates.MaturityDate&quot;, &quot;valueDate&quot;, SecurityTermRead.RequiredDate, via : &quot;ValueDate&quot;), B(&quot;CurrencyPair.BaseCurrency&quot;, &quot;baseCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.QuoteCurrency&quot;, &quot;quoteCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.ForwardRate&quot;, &quot;forwardRate&quot;, SecurityTermRead.StrictDecimal), B(&quot;Notional.Notional&quot;, &quot;notional&quot;, SecurityTermRead.StrictDecimal), B(&quot;Settlement.SettlementType&quot;, &quot;settlementType&quot;, SecurityTermRead.ConventionString)), Class(&quot;NonDeliverableForward&quot;, B(&quot;Dates.EffectiveDate&quot;, &quot;fixingDate&quot;, SecurityTermRead.RequiredDate, via : &quot;FixingDate&quot;), B(&quot;Dates.MaturityDate&quot;, &quot;valueDate&quot;, SecurityTermRead.RequiredDate, via : &quot;ValueDate&quot;), B(&quot;CurrencyPair.BaseCurrency&quot;, &quot;baseCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.QuoteCurrency&quot;, &quot;quoteCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.SettlementCurrency&quot;, &quot;settlementCurrency&quot;, SecurityTermRead.RequiredString), B(&quot;CurrencyPair.ForwardRate&quot;, &quot;forwardRate&quot;, SecurityTermRead.StrictDecimal), B(&quot;Notional.Notional&quot;, &quot;notional&quot;, SecurityTermRead.StrictDecimal), B(&quot;ReferenceDataSource.FixingSource&quot;, &quot;fixingSource&quot;, SecurityTermRead.ConventionString)), Class(&quot;CreditDefaultSwap&quot;, B(&quot;Dates.EffectiveDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate, via : &quot;EffectiveDate&quot;), Also(&quot;Dates.IssueDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate), B(&quot;Dates.MaturityDate&quot;, &quot;maturityDate&quot;, SecurityTermRead.RequiredDate, via : &quot;MaturityDate&quot;), B(&quot;CreditProtection.ReferenceEntity&quot;, &quot;referenceEntity&quot;, SecurityTermRead.RequiredString), B(&quot;CreditProtection.ReferenceObligation&quot;, &quot;referenceObligation&quot;, SecurityTermRead.ConventionString), B(&quot;CreditProtection.ProtectionSide&quot;, &quot;protectionSide&quot;, SecurityTermRead.RequiredString), B(&quot;CreditProtection.Seniority&quot;, &quot;seniority&quot;, SecurityTermRead.ConventionString), B(&quot;CreditProtection.RestructuringClause&quot;, &quot;restructuringClause&quot;, SecurityTermRead.ConventionString), B(&quot;CreditProtection.UpfrontPoints&quot;, &quot;upfrontPoints&quot;, SecurityTermRead.StrictDecimal), B(&quot;CreditProtection.RecoveryRateAssumption&quot;, &quot;recoveryRateAssumption&quot;, SecurityTermRead.StrictDecimal), B(&quot;CreditProtection.IndexName&quot;, &quot;indexName&quot;, SecurityTermRead.ConventionString), B(&quot;Notional.Notional&quot;, &quot;notional&quot;, SecurityTermRead.RequiredDecimal), B(&quot;ContractualRate.FixedCouponBps&quot;, &quot;fixedCouponBps&quot;, SecurityTermRead.RequiredDecimal, via : &quot;FixedCouponBps&quot;), B(&quot;ContractualRate.PaymentFrequency&quot;, &quot;paymentFrequency&quot;, SecurityTermRead.ConventionString), B(&quot;ContractualRate.DayCount&quot;, &quot;dayCount&quot;, SecurityTermRead.DayCount)), Class(&quot;Swaption&quot;, B(&quot;Dates.EffectiveDate&quot;, &quot;underlyingEffectiveDate&quot;, SecurityTermRead.StrictDate), B(&quot;Dates.MaturityDate&quot;, &quot;expiry&quot;, SecurityTermRead.RequiredDate, via : &quot;Expiry&quot;), B(&quot;Exercise.OptionRight&quot;, &quot;payerReceiver&quot;, SecurityTermRead.RequiredString), B(&quot;Exercise.StrikeRate&quot;, &quot;strikeRate&quot;, SecurityTermRead.RequiredDecimal), B(&quot;Exercise.ExerciseStyle&quot;, &quot;exerciseStyle&quot;, SecurityTermRead.ConventionString), B(&quot;Notional.Notional&quot;, &quot;notional&quot;, SecurityTermRead.RequiredDecimal), B(&quot;UnderlyingSwap.MaturityDate&quot;, &quot;underlyingMaturityDate&quot;, SecurityTermRead.RequiredDate), B(&quot;UnderlyingSwap.FloatingIndex&quot;, &quot;floatingIndex&quot;, SecurityTermRead.ConventionString), B(&quot;UnderlyingSwap.FixedLegPaymentFrequency&quot;, &quot;fixedLegPaymentFrequency&quot;, SecurityTermRead.ConventionString), B(&quot;UnderlyingSwap.FixedLegDayCount&quot;, &quot;fixedLegDayCount&quot;, SecurityTermRead.DayCount), B(&quot;Settlement.SettlementType&quot;, &quot;settlementType&quot;, SecurityTermRead.ConventionString)), Class(&quot;CapFloor&quot;, B(&quot;Dates.EffectiveDate&quot;, &quot;effectiveDate&quot;, SecurityTermRead.RequiredDate, via : &quot;EffectiveDate&quot;), B(&quot;Dates.MaturityDate&quot;, &quot;maturityDate&quot;, SecurityTermRead.RequiredDate, via : &quot;MaturityDate&quot;), B(&quot;Exercise.OptionRight&quot;, &quot;capFloorType&quot;, SecurityTermRead.RequiredString), B(&quot;Exercise.PremiumAmount&quot;, &quot;premiumAmount&quot;, SecurityTermRead.StrictDecimal), B(&quot;FloatingRate.ReferenceIndex&quot;, &quot;referenceIndex&quot;, SecurityTermRead.RequiredString), B(&quot;FloatingRate.ResetFrequency&quot;, &quot;resetFrequency&quot;, SecurityTermRead.ConventionString), B(&quot;FloatingRate.FloorRate&quot;, &quot;floorStrike&quot;, SecurityTermRead.StrictDecimal), B(&quot;FloatingRate.CapRate&quot;, &quot;capStrike&quot;, SecurityTermRead.StrictDecimal), B(&quot;Notional.Notional&quot;, &quot;notional&quot;, SecurityTermRead.RequiredDecimal), B(&quot;ContractualRate.DayCount&quot;, &quot;dayCount&quot;, SecurityTermRead.DayCount)), Class(&quot;StructuredNote&quot;, B(&quot;Dates.IssueDate&quot;, &quot;issueDate&quot;, SecurityTermRead.StrictDate), B(&quot;Dates.MaturityDate&quot;, &quot;maturity&quot;, SecurityTermRead.RequiredDate, via : &quot;Maturity&quot;), B(&quot;StructuredPayoff.UnderlyingDescription&quot;, &quot;underlyingDescription&quot;, SecurityTermRead.RequiredString), B(&quot;StructuredPayoff.PrincipalProtectionPct&quot;, &quot;principalProtectionPct&quot;, SecurityTermRead.StrictDecimal), B(&quot;StructuredPayoff.ParticipationRate&quot;, &quot;participationRate&quot;, SecurityTermRead.StrictDecimal), B(&quot;StructuredPayoff.ReturnCap&quot;, &quot;returnCap&quot;, SecurityTermRead.StrictDecimal), B(&quot;StructuredPayoff.BarrierLevel&quot;, &quot;barrierLevel&quot;, SecurityTermRead.StrictDecimal), B(&quot;Notional.Denomination&quot;, &quot;denomination&quot;, SecurityTermRead.StrictDecimal), B(&quot;IssuerTerms.IssuerName&quot;, &quot;issuerName&quot;, SecurityTermRead.RequiredString, via : &quot;IssuerName&quot;), B(&quot;ContractualRate.CouponRate&quot;, &quot;couponRate&quot;, SecurityTermRead.StrictDecimal), B(&quot;ContractualRate.PaymentFrequency&quot;, &quot;paymentFrequency&quot;, SecurityTermRead.ConventionString)), Class(&quot;InvestmentFund&quot;, B(&quot;FundShare.FundType&quot;, &quot;fundType&quot;, SecurityTermRead.OptionalString), B(&quot;FundShare.NavCurrency&quot;, &quot;navCurrency&quot;, SecurityTermRead.OptionalString), Computed(&quot;FundShare.DistributionPolicy&quot;, &quot;distributionPolicy&quot;, &quot;ToDistributionPolicyOption(bound.OptionalString(\&quot;distributionPolicy\&quot;))&quot;, &quot;terms.DistributionPolicy &#124;&gt; Option.map DistributionPolicy.label&quot;), B(&quot;FundShare.IsStableNav&quot;, &quot;isStableNav&quot;, SecurityTermRead.OptionalBoolean), B(&quot;FundTerms.FundFamily&quot;, &quot;fundFamily&quot;, SecurityTermRead.OptionalString), B(&quot;ReferenceDataSource.PricingSource&quot;, &quot;pricingSource&quot;, SecurityTermRead.OptionalString)), ];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:179](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L179) | The generated classes, in catalog order. |
-| <code>public static IReadOnlyDictionary&lt;string, SecurityClassCodecBinding&gt; ByAssetClass { get; } = Classes.ToDictionary(static binding =&gt; binding.AssetClass, StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:513](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L513) | The generated classes by name. |
-
-## SecurityAssetTermsFieldEditValidator
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L16).
-
-Schema validation for operator field edits that target a security&#x27;s asset-specific terms. The workbench edit surface historically accepted any free-text field path and any string value; this validator anchors assetSpecificTerms.* edits to the declared SecurityAssetTermsSchema contract for the record&#x27;s asset class — the key must be a declared term field (or a profile-governed profileFields path on profile-backed classes) and the value must coerce to the declared type. Paths outside the asset-terms namespace are the annotation surface and pass through unchanged. Discriminant fields carry the additional constraint that the value must be one of the schema&#x27;s declared vocabulary members.
-
-```csharp
-public static class SecurityAssetTermsFieldEditValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AssetSpecificTermsPrefix = &quot;assetSpecificTerms.&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L18) |  |
-| <code>public static bool TargetsAssetSpecificTerms(string? fieldPath);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L27) | True when the field path addresses the asset-specific-terms namespace — including the EXACT root assetSpecificTerms (no trailing dot). The bare root never validates (it names no schema field), but it must still classify as reserved: treating it as a free annotation would let a root-level asset-terms value stage past the schema, pinned-profile validation, and the overrides endpoint&#x27;s reserved-namespace rejection. |
-| <code>public static bool TryValidate(string assetClass, string fieldPath, string? newValue, out string canonicalFieldPath, out string? error);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L52) | Validates an asset-terms field edit against the declared schema for assetClass. Returns true when the edit is acceptable; otherwise error carries an actionable rejection reason. A null or whitespace newValue is always acceptable — it clears the overlay value rather than asserting a typed one. canonicalFieldPath is the schema-normalized path the edit must be PERSISTED under: aliases resolve to the declared field key and casing/whitespace variants collapse to one spelling, so assetSpecificTerms.dayCount and its alias assetSpecificTerms.dayCountConvention address the same override key, revision lineage, and provenance row instead of forking per spelling. Paths outside the asset-terms namespace (and rejected edits) pass through unchanged. |
-
-## SecurityAssetTermsSchema
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:269](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L269).
-
-The single declarative source of truth for the flat, per-asset-class asset-specific-terms field contract. Historically the same field/type table was hand-maintained three times — the F# serialize side (Interop.SecurityMaster.assetSpecificTermsJson), the C# deserialize side (SecurityMasterMapping.ToSecurityKind), and the relational projection decoders in the Postgres store — which let them silently drift (e.g. the projection store reading a nested coupon object the serializer never wrote, so bond coupon columns landed null). This table names each class&#x27;s fields once so those codec surfaces can be validated against a single contract instead of against each other. It mirrors the data-driven pattern already proven by AssetClassValidatorRegistry.
-
-```csharp
-public static class SecurityAssetTermsSchema
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermField&gt; ElementFields(string assetClass, string key) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:898](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L898) | The declared fields within an array element or nested object, or an empty list when no inner shape is registered. These describe the serialized shape; optional legacy input may omit fields such as a swap leg&#x27;s principal-exchange flag, which defaults to false. |
-| <code>public static IReadOnlyCollection&lt;string&gt; AssetClasses { get; } = FieldsByAssetClass.Keys.ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:902](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L902) | The asset classes with a declared terms schema. |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermField&gt; Fields(string assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:905](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L905) | The declared fields for assetClass, or an empty list when none is declared. |
-| <code>public static IEnumerable&lt;SecurityAssetTermField&gt; DiscriminantFields(string assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:913](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L913) | The declared CLOSED-vocabulary fields for assetClass — the discriminants whose value selects a domain case. Callers that must enforce or audit the vocabularies walk this instead of hard-coding a field list per asset class. |
-| <code>public static bool TryGetFields(string assetClass, out IReadOnlyList&lt;SecurityAssetTermField&gt; fields) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:917](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L917) | Tries to resolve the declared fields for assetClass. |
-| <code>public static SecurityAssetTermField? Field(string assetClass, string key);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:921](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L921) | The declared field for key in assetClass, or null. |
-| <code>public static IReadOnlyList&lt;string&gt; DeclaredSpellings(string key);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:946](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L946) | Every spelling the schema declares for the top-level term key: the key itself first, then each alias any class&#x27;s top-level field with that key declares, in class declaration order, deduplicated case-insensitively. Element (array/nested) fields are not consulted, so a swap leg&#x27;s per-leg aliases never widen a top-level term&#x27;s spellings. Readers that accept &quot;either spelling&quot; of a term derive the list here instead of restating it. |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermField&gt; WritableFields(string assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:978](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L978) | The declared fields of assetClass a node writes: those introduced at or below its write version (SecurityAssetClassCatalog.GetTermsVersion). Authoring surfaces (the asset-class registry, term blocks, the field-edit validator) offer these, never a field the node only reads. |
-| <code>public static IReadOnlyCollection&lt;string&gt; ElementFieldPaths =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:988](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L988) | The registered inner-shape paths (Class.key, or Class.container.key for a shape inside an element), so guards can check every registered shape. |
-| <code>public static bool IsPopulatedTermValue(JsonElement value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:996](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L996) | Whether a term value is populated. An absent or null value is not, and an array or object is populated only when an element or member is; every other value is, including false, 0 and the empty string. Absent, null, &#91;&#93; and an all-null object therefore all mean the term is unset (ADR-024). |
-| <code>public static IReadOnlyList&lt;(string Path, SecurityAssetTermField Field)&gt; PopulatedTermsAbove(string assetClass, JsonElement payload, int termsVersion) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:1012](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L1012) | The populated terms of a flat payload that were introduced above termsVersion: top-level fields, and fields inside a declared object or array element (a swap leg&#x27;s legs&#91;1&#93;.scheduleConventions). Keys and aliases match case-insensitively, as the readers do. A profile-governed payload (SecurityTermsEnvelope.IsProfileGovernedPayload) has no versioned class terms and yields nothing. |
-| <code>public static JsonObject NormalizedTermsAbove(string assetClass, JsonElement payload, int termsVersion, out IReadOnlyList&lt;string&gt; conflictingPaths) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:1028](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L1028) | The terms of a flat payload introduced above termsVersion, keyed by canonical path (scheduleConventions, legs&#91;1&#93;.scheduleConventions) with every null member, &#91;&#93; and {} removed, so two payloads that carry the same versioned content compare equal however they spelled its absence. A path more than one spelling populates is reported in conflictingPaths. A profile-governed payload yields an empty object. |
-| <code>public static JsonObject NormalizedTermsAbove(string assetClass, JsonElement payload, int termsVersion, int throughVersion, out IReadOnlyList&lt;string&gt; conflictingPaths);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:1041](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L1041) | NormalizedTermsAbove(string, JsonElement, int, out IReadOnlyList{string}) bounded above: only the terms introduced after termsVersion and at or before throughVersion. The round-trip guard bounds it by a row&#x27;s own stamp, because a term above the stamp is an undeclared key of that row, which no reader decodes. |
-
-## SecurityAssetTermUiHint
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L123).
-
-Presentation hints for one asset-specific term, derived from its declared field so both workstations build edit and create forms from the term schema instead of free-text paths.
-
-```csharp
-public sealed record SecurityAssetTermUiHint(string Key, string FieldPath, string Label, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, IReadOnlyList<string> Choices, bool ScalarEditable);
-```
-
-## SecurityAssetTermVocabularyEscape
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L48).
-
-The designated vocabulary member that absorbs a value outside the declared vocabulary: classification = &quot;Other&quot; pairs with a LabelKey (otherClassification) carrying the raw label verbatim, so an unrecognized value survives the codec loop under a canonical discriminant instead of vanishing. The escape is lossless only while the record carries none of the DependentKeys. Those are payload the IN-vocabulary cases own — an equity&#x27;s preferredTerms hangs off classification = &quot;Preferred&quot; — and the escape decode has nowhere to reattach them, so it would silently delete them.
-
-```csharp
-public sealed record SecurityAssetTermVocabularyEscape(string Value, string LabelKey, IReadOnlyList<string> DependentKeys);
 ```

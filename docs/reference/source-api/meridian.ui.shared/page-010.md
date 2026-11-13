@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyMarkToMarketIntakeRunResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyMarkToMarketIntakeRunResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:123](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L123).
+
+Valuation evidence and workbench intake outcome for one daily-close run.
+
+```csharp
+public sealed record DailyMarkToMarketIntakeRunResult(DailyMarkToMarketRun Valuation, AutomatedJournalDraftIntakeResult Intake, string? BatchCorrelationId = null);
+```
+
 ## DailyValuationBatchLifecycleService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationBatchLifecycleService</code>. Kind: `class`.
@@ -901,13 +913,3 @@ Declared public members:
 | <code>public FileAccountingTenantAdministrationProfileStore(string snapshotPath, ILogger&lt;FileAccountingTenantAdministrationProfileStore&gt; logger) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting tenant administration profile snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:96](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L96) |  |
 | <code>public async Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:116](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L116) |  |
 | <code>public async Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:133](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L133) |  |
-
-## AccountingTenantAdministrationProfileSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingTenantAdministrationProfileStore.AccountingTenantAdministrationProfileSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:485](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L485).
-
-```csharp
-public sealed record AccountingTenantAdministrationProfileSnapshot(IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);
-```

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-13
 
 An intercompany agreement records the reviewed terms between two legal entities in one tenant.
 It explains the contractual source of intercompany activity; it is not a journal, a payment or
@@ -15,14 +15,63 @@ The agreement has a stable ID and approved integer versions. Each approved versi
 parties and roles, currency, effective dates, terms, submitted evidence hashes, actors and decision
 time. Party identities, roles, type and currency are fixed after activation. A replacement or
 novation needs a new agreement. There is one open proposal per agreement; draft edits retain their
-history, submission freezes the reviewed snapshot, and approval requires a reviewer who did not
-author or submit it. Authenticated server context supplies tenant and actor.
+history, and submission freezes the reviewed snapshot. Ordinary independent approval requires a
+reviewer who did not author or submit it. The separate external-review attestation described below
+allows the preparing operator to record an external review without impersonating that reviewer.
+Authenticated server context supplies tenant and actor.
 
 The registry covers loans, management fees, cost shares, cash sweeps, guarantees and other documented
 bilateral arrangements. Rates, schedules and allocation descriptions are retained terms, not an
-accrual or settlement calculation. Settlement days mean calendar days. Evidence must resolve to an
+accrual or settlement calculation. Legacy `SettlementDays` means calendar days. Evidence must resolve to an
 accepted retained Evidence Vault document in the operator's tenant/company scope; an arbitrary URL,
 client-provided hash or inaccessible artifact cannot authorize approval.
+
+## Structured declarations and date previews
+
+Optional `Terms.StructuredTerms` adds versioned legal declarations to this registry; it does not
+introduce a parallel contract record or an editable legal field on accounting profiles. An absent
+structured companion means `Unstructured`. Null companions are omitted from JSON so retained
+command/review hashes and approved payloads remain unchanged. Existing approved revisions are not
+rewritten; adding structured terms requires a new legal proposal and review.
+
+| Kind | Structured declarations |
+| --- | --- |
+| Loan | Fixed annual decimal rate, or declared floating index and spread in basis points; explicit day count, compounding and schedule. |
+| Management fee | Fixed monetary amount, or annual decimal fee rate and calculation-base reference; schedule. |
+| Cost share | Fixed percentages among distinct existing agreement parties totaling exactly 100%, or an explicit allocation-driver reference; schedule. |
+| Guarantee | Beneficiary reference and optional declared limit; disclosure only, without a posting treatment or obligation schedule. |
+
+Currency remains the agreement's legal currency. Structured schedules declare bounds, payment
+frequency, calendar, business-day convention and `SettlementBusinessDays`. That business-day lag
+does not reinterpret legacy calendar-day `SettlementDays`. Decimal rates use fractions (`0.05`
+means 5% annually), spread uses basis points, and all new decimal declarations travel as exact
+decimal strings. Structured completeness does not establish that fixings, measured allocation
+drivers or an amount-calculation engine are available.
+
+The shared date preview maps declared terms to the existing schedule/day-count/calendar kernels.
+It returns accrual boundaries and payment dates with the legal subject hash, kernel version and
+calendar ID/hash. Missing calendars, unsupported conventions or incomplete declarations produce
+an unavailable preview. `WEEKENDS` must be selected explicitly; no fallback or prose interpretation
+supplies missing terms. Calendar-data changes affect preview evidence rather than rewriting the
+approved legal declaration.
+
+The preview calculates dates only. It does not calculate interest or fees, allocate costs, fetch
+fixings, generate counterpart proposals, settle balances or infer due dates for retained journals.
+
+## External-review attestation
+
+An explicit external-review decision binds the exact submitted hash and expected aggregate
+version. It retains a distinct external reviewer's name/reference, non-future review date,
+accepted immutable document evidence, rationale, and the authenticated attesting operator/time.
+The preparing operator may attest; the named external reviewer must be distinct from that
+operator and is not represented as an authenticated Meridian approver.
+
+The evidence authority resolves the exact retained document artifact and source-byte hash in
+the operator's tenant/company scope. Changed evidence, an altered subject hash or missing authority
+blocks the decision without changing the retained legal state. Clients label this decision
+“Externally reviewed; attested by …”. Omitting the external-review companion retains the existing
+independent-review rules and historical JSON representation. This choice grants no journal
+approval or posting authority.
 
 ## Effective time and historical knowledge
 

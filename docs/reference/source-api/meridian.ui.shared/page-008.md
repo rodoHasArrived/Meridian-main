@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingCertificationEvidenceResolutionRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceResolutionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:41](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L41).
+
+```csharp
+public sealed record AccountingCertificationEvidenceResolutionRequest(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> EvidenceReferences);
+```
+
 ## AccountingCertificationEvidenceSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceSource</code>. Kind: `record`.
@@ -919,22 +929,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public BondExerciseNoticeReadService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null, IBondCalculationPolicy? policy = null);</code> | [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L18) |  |
 | <code>public async Task&lt;BondExerciseNoticeWatchResult?&gt; GetAsync(Guid securityId, DateTimeOffset asOf, int horizonDays, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:27](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L27) | Returns null when no security is retained under the id (or none is eligible at knownAt and none exists now). |
-
-## BondPerformanceSourceVerifier
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceSourceVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:9](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L9).
-
-Cached calculation receipts do not replace current source-byte and accepted-review authority.
-
-```csharp
-public sealed class BondPerformanceSourceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondPerformanceSourceVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:14](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L14) |  |
-| <code>public Task VerifyFxAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;AccountCashFxConversionDto&gt; conversions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:24](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L24) |  |

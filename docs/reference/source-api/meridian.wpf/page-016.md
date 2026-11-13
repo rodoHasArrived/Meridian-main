@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolsPageViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SymbolsPageViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L27).
+
+ViewModel for the Symbols subscription management page. All state, business logic, watchlist event handling, and backend sync live here; the code-behind is thinned to lifecycle wiring and pure UI-input delegation. Includes bridge to Security Master workstation for symbol enrichment. Provides contextual commands for the command palette when activated.
+
+```csharp
+public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlyDictionary&lt;string, string[]&gt; SymbolTemplates = new Dictionary&lt;string, string[]&gt;{[&quot;FAANG&quot;]= new[] { &quot;META&quot;, &quot;AAPL&quot;, &quot;AMZN&quot;, &quot;NFLX&quot;, &quot;GOOGL&quot; }, [&quot;MagnificentSeven&quot;]= new[] { &quot;AAPL&quot;, &quot;MSFT&quot;, &quot;GOOGL&quot;, &quot;AMZN&quot;, &quot;NVDA&quot;, &quot;META&quot;, &quot;TSLA&quot; }, [&quot;MajorETFs&quot;]= new[] { &quot;SPY&quot;, &quot;QQQ&quot;, &quot;IWM&quot;, &quot;DIA&quot;, &quot;VTI&quot; }, [&quot;Semiconductors&quot;]= new[] { &quot;NVDA&quot;, &quot;AMD&quot;, &quot;INTC&quot;, &quot;TSM&quot;, &quot;AVGO&quot;, &quot;QCOM&quot; }, [&quot;Financials&quot;]= new[] { &quot;JPM&quot;, &quot;BAC&quot;, &quot;WFC&quot;, &quot;GS&quot;, &quot;MS&quot;, &quot;C&quot; } };</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L48) |  |
+| <code>public SymbolsPageSectionViewModel SymbolsSection =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L58) |  |
+| <code>public ObservableCollection&lt;SymbolViewModel&gt; Symbols =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:61](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L61) |  |
+| <code>public ObservableCollection&lt;SymbolViewModel&gt; FilteredSymbols =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L62) |  |
+| <code>public ObservableCollection&lt;WatchlistInfo&gt; Watchlists =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L63) |  |
+| <code>public string SymbolCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L67) |  |
+| <code>public string SelectionCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L74) |  |
+| <code>public bool CanBulkAction { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L81) |  |
+| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L87) |  |
+| <code>public string SelectedSubscriptionFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L105) |  |
+| <code>public string SelectedExchangeFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L123) |  |
+| <code>public string VisibleSymbolScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L141) |  |
+| <code>public bool HasActiveFilters { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L154) |  |
+| <code>public bool HasVisibleSymbols { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L167) |  |
+| <code>public bool IsSymbolsEmptyStateVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:180](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L180) |  |
+| <code>public string SymbolsEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L193) |  |
+| <code>public string SymbolsEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L206) |  |
+| <code>public SymbolViewModel? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L219) |  |
+| <code>public bool HasSelectedSymbol =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L239) |  |
+| <code>public string SelectedSymbolTicker { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:243](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L243) |  |
+| <code>public bool CanAddToSecurityMaster { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L256) |  |
+| <code>public bool CanViewInSecurityMaster { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:273](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L273) |  |
+| <code>public Guid? SelectedSymbolSecurityId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:286](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L286) |  |
+| <code>public string PageTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:293](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L293) |  |
+| <code>public ObservableCollection&lt;ActionEntry&gt; Actions { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:294](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L294) |  |
+| <code>public RelayCommand AddToSecurityMasterCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:297](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L297) |  |
+| <code>public RelayCommand ViewInSecurityMasterCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L298) |  |
+| <code>public RelayCommand NavigateToLiveDataCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L301) |  |
+| <code>public RelayCommand NavigateToOrderBookCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L302) |  |
+| <code>public RelayCommand StartBackfillCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:303](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L303) |  |
+| <code>public RelayCommand NavigateToChartCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L304) |  |
+| <code>public RelayCommand ExportSymbolDataCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:305](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L305) |  |
+| <code>public RelayCommand ClearFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L306) |  |
+| <code>public SymbolsPageViewModel(WpfServices.ConfigService configService, WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService, SymbolManagementService symbolManagementService, CommandPaletteService commandPaletteService, IRemoteWorkstationClient? remoteClient = null) : this(configService, watchlistService, loggingService, notificationService, navigationService, symbolManagementService, commandPaletteService, remoteClient, null, null, null);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:308](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L308) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:395](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L395) |  |
+| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:397](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L397) |  |
+| <code>public Task StartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:399](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L399) |  |
+| <code>public async Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L401) |  |
+| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L439) |  |
+| <code>public void CancelActivation();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:441](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L441) |  |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:447](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L447) |  |
+| <code>public async Task LoadSymbolsFromConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:465](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L465) |  |
+| <code>public async Task LoadWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:520](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L520) |  |
+| <code>public void ApplyFilters() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:588](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L588) |  |
+| <code>public void ApplyFilters(string searchText, string filter, string exchangeFilter);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:591](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L591) |  |
+| <code>public void UpdateSelectionCount();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L685) |  |
+| <code>public void BulkEnableTrades();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:693](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L693) |  |
+| <code>public void BulkEnableDepth();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:705](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L705) |  |
+| <code>public async Task BulkDeleteSymbolsAsync(IEnumerable&lt;SymbolViewModel&gt; selectedSymbols, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:717](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L717) |  |
+| <code>public void AddTemplate(string templateName);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:737](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L737) |  |
+| <code>public async Task&lt;bool&gt; LoadWatchlistSymbolsAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:768](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L768) | Loads symbols from a watchlist. Returns false if not found. |
+| <code>public async Task SaveWatchlistAsync(string name, bool saveAsNew, string? existingWatchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:832](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L832) |  |
+| <code>public async Task&lt;string?&gt; SaveSymbolAsync(string symbolName, bool subscribeTrades, bool subscribeDepth, int depthLevels, string exchange, string? localSymbol, string securityType, decimal? strike, string? right, string? lastTradeDateOrContractMonth, string? optionStyle, int? multiplier, SymbolViewModel? editTarget, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:879](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L879) | Adds or updates a symbol. Returns null on success; otherwise a user-visible error message. |
+| <code>public async Task DeleteSymbolAsync(SymbolViewModel symbol, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:956](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L956) |  |
+| <code>public async Task PersistSymbolsToConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1084](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1084) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1151](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1151) |  |
+| <code>public string ContextKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1336](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1336) |  |
+| <code>public IReadOnlyList&lt;CommandEntry&gt; GetContextualCommands();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1338](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1338) |  |
+| <code>public void OnActivated();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1400](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1400) |  |
+| <code>public void OnDeactivated();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1407](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1407) |  |
+
 ## SymbolStorageItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageItem</code>. Kind: `record`.
@@ -1290,27 +1367,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string ApiKey =&gt; …;</code> | [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L14) | Gets the API key entered by the user. |
 | <code>public ApiKeyDialog(string providerName, string envVarName, bool isOptional = false);</code> | [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L16) |  |
-
-## ArchiveHealthPage
-
-Qualified name: <code>Meridian.Wpf.Views.ArchiveHealthPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L17).
-
-Page for archive health monitoring.
-
-```csharp
-public sealed partial class ArchiveHealthPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ArchiveHealthPage(WpfServices.ArchiveHealthService healthService, WpfServices.SchemaService schemaService);</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L25) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:30](../../../../src/Meridian.Wpf/Views/Pages.cs#L30).
-
-```csharp
-public partial class ArchiveHealthPage : Page
-```

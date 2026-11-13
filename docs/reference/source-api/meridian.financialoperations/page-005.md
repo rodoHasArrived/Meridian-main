@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashBalanceSource
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSource</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L11).
+
+```csharp
+public sealed record AccountCashBalanceSource(string SourceId, ReconciliationSourceType SourceType, string Version, string EvidenceReference, DateTimeOffset CapturedAtUtc, bool CompletePopulation, IReadOnlyList<AccountCashBalanceSourceRow> Rows);
+```
+
 ## AccountCashBalanceSourceRow
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSourceRow</code>. Kind: `record`.
@@ -826,16 +836,4 @@ How a detected source column was mapped to a canonical statement field.
 
 ```csharp
 public sealed record StatementColumnMapping(string SourceColumn, StatementCanonicalField? CanonicalField, StatementMappingConfidence Confidence, decimal Score, string Rationale);
-```
-
-## StatementConnectorDescriptor
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L9).
-
-Describes a statement connector so operators can discover what formats can be imported and whether the connector can fetch statements remotely in addition to accepting files.
-
-```csharp
-public sealed record StatementConnectorDescriptor(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
 ```

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationMatchingEngine
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchingEngine</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L31).
+
+The canonical reconciliation matching floor. Matches positions and cash entries captured from multiple sources (prime / custodian / administrator / internal ledger) for one business date with the semantics the W9-INGEST-009 statement/ledger sided matcher inherits via ReconciliationMatchKernel: populations are sided — a candidate pair must span two different source snapshots, so a row never matches its own source and duplicated rows inside one feed surface as breaks; tolerance candidates are scored and assigned best-first with stable tie-breakers instead of first-encountered-wins; unmatched residuals are probed for bounded one-to-many / many-to-one split groups whose shape (anchor, legs, residual) is recorded in MatchEvidence attributes; cash timing consults the IAccountingCalendar: the exact stage requires the same accounting period, settlement windows of a day or longer also admit counterparts within the window measured in business days (a Friday wire and its Monday posting are one business day apart, not three calendar days), and evidence carries business-day distance alongside wall-clock deltas; currencies must agree before amounts are compared, so fail-closed FX normalization (a line kept in its source currency because no rate was available) surfaces as a break instead of a cross-currency mismatch; match-group, break, and evidence identifiers are content-derived from the run&#x27;s idempotency key, snapshot version, rule, and member ids — re-evaluating the same run yields identical artifacts, making re-runs idempotent.
+
+```csharp
+public sealed class ReconciliationMatchingEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationMatchingEngine(IAccountingCalendar? calendar = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L53) |  |
+| <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, MatchingTolerances tolerances) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L56) |  |
+| <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, StatementToleranceProfile toleranceProfile);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L60) |  |
+
 ## ReconciliationMatchKernel
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchKernel</code>. Kind: `class`.
@@ -817,21 +837,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StatementRunMatchingResult Match(CanonicalStatementImport import, IReadOnlyList&lt;CanonicalStatementRow&gt; rows, InternalReconciliationBook internalBook, StatementToleranceProfile toleranceProfile);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatchingService.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatchingService.cs#L22) |  |
-
-## StatementRunRecoveryCheckpoint
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryCheckpoint</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L80).
-
-Versioned, monotonic recovery authority for the canonical statement-run workflow. Artifact hashes bind every completed stage to the exact retained bytes that a retry may adopt.
-
-```csharp
-public sealed record StatementRunRecoveryCheckpoint(int SchemaVersion, string RunId, string ImportId, string RequestFingerprintSha256, string InputFingerprintSha256, StatementRunRecoveryStage Stage, StatementRunRecoveryStatus Status, StatementRunStageArtifact ImportArtifact, StatementRunStageArtifact? MatchArtifact, StatementRunStageArtifact? BreakArtifact, StatementRunStageArtifact? CaseArtifact, int MatchCount, string? FailedStage, string? ErrorType, string? ErrorMessage, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:99](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L99) |  |

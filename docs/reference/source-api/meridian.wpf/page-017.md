@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ArchiveHealthPage
+
+Qualified name: <code>Meridian.Wpf.Views.ArchiveHealthPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L17).
+
+Page for archive health monitoring.
+
+```csharp
+public sealed partial class ArchiveHealthPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ArchiveHealthPage(WpfServices.ArchiveHealthService healthService, WpfServices.SchemaService schemaService);</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L25) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:30](../../../../src/Meridian.Wpf/Views/Pages.cs#L30).
+
+```csharp
+public partial class ArchiveHealthPage : Page
+```
+
 ## BackfillPage
 
 Qualified name: <code>Meridian.Wpf.Views.BackfillPage</code>. Kind: `class`.
@@ -1078,21 +1102,3 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:96](../../../../src/Meridian.Wpf/Views/
 ```csharp
 public partial class NotificationCenterPage : Page
 ```
-
-## OperationsContinuityPage
-
-Qualified name: <code>Meridian.Wpf.Views.OperationsContinuityPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L11).
-
-Provides the desktop page to review continuity workflows, gates, close calendar, and governed approval policy.
-
-```csharp
-public partial class OperationsContinuityPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsContinuityPage(OperationsContinuityViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L15) |  |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ManualEvidenceDocumentExtractor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ManualEvidenceDocumentExtractor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L18).
+
+Builds document extraction results from manual metadata or deterministic fixture inputs.
+
+```csharp
+public sealed class ManualEvidenceDocumentExtractor : IEvidenceDocumentExtractor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ExtractorId = &quot;manual-metadata-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L20) |  |
+| <code>public const string FixtureExtractorId = &quot;deterministic-fixture-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L21) |  |
+| <code>public Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L23) |  |
+
 ## OperationsApprovalEvidenceContributor
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.OperationsApprovalEvidenceContributor</code>. Kind: `class`.
@@ -997,13 +1017,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;AccountingAuditIntegrityReportDto&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs:27](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs#L27) |  |
-
-## AccountingCertificationEvidenceResolutionRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceResolutionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:41](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L41).
-
-```csharp
-public sealed record AccountingCertificationEvidenceResolutionRequest(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> EvidenceReferences);
-```

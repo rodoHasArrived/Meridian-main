@@ -11,6 +11,13 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Application
 
+Native intercompany legal rules validate structured declarations without turning them into accrual
+or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
+dates only. An explicit evidence-bound external-review attestation lets the preparing operator
+record external legal review while ordinary independent review remains available; legal lifecycle
+revisions retain the same separate audit facts. See
+[terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
 
 `SymbolSearchService.SearchAuthoritativeAsync` supplies explicit single-provider candidate lookup.
 Provider failures propagate to the discovery surface as unavailable, separately from a successful

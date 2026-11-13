@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityPage
+
+Qualified name: <code>Meridian.Wpf.Views.OperationsContinuityPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L11).
+
+Provides the desktop page to review continuity workflows, gates, close calendar, and governed approval policy.
+
+```csharp
+public partial class OperationsContinuityPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsContinuityPage(OperationsContinuityViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L15) |  |
+
 ## OperationsRecordReleasePage
 
 Qualified name: <code>Meridian.Wpf.Views.OperationsRecordReleasePage</code>. Kind: `class`.
@@ -1059,27 +1077,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SymbolMappingPage() : this(new SymbolMappingViewModel());</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L19) |  |
 | <code>public SymbolMappingPage(SymbolMappingViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L24) |  |
-
-## SymbolsPage
-
-Qualified name: <code>Meridian.Wpf.Views.SymbolsPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:16](../../../../src/Meridian.Wpf/Views/Pages.cs#L16).
-
-```csharp
-public partial class SymbolsPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L17).
-
-Symbol subscription management page — thin code-behind. All state, business logic, watchlist event handling, and backend sync live in SymbolsPageViewModel.
-
-```csharp
-public partial class SymbolsPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolsPage(WpfServices.ConfigService configService, WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L27) |  |

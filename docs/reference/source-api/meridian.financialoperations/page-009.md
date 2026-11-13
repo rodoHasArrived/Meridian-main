@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunRecoveryCheckpoint
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryCheckpoint</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L80).
+
+Versioned, monotonic recovery authority for the canonical statement-run workflow. Artifact hashes bind every completed stage to the exact retained bytes that a retry may adopt.
+
+```csharp
+public sealed record StatementRunRecoveryCheckpoint(int SchemaVersion, string RunId, string ImportId, string RequestFingerprintSha256, string InputFingerprintSha256, StatementRunRecoveryStage Stage, StatementRunRecoveryStatus Status, StatementRunStageArtifact ImportArtifact, StatementRunStageArtifact? MatchArtifact, StatementRunStageArtifact? BreakArtifact, StatementRunStageArtifact? CaseArtifact, int MatchCount, string? FailedStage, string? ErrorType, string? ErrorMessage, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:99](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L99) |  |
+
 ## StatementRunRecoveryConflictException
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryConflictException</code>. Kind: `class`.

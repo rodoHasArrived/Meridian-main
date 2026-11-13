@@ -6,6 +6,441 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IngestionJobState
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionJobState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:181](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L181).
+
+States for the unified ingestion job state machine.
+
+```csharp
+public enum IngestionJobState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:184](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L184) | Job is being configured but not yet submitted. |
+| <code>Queued</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:187](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L187) | Job is submitted and waiting to run. |
+| <code>Running</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:190](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L190) | Job is actively processing data. |
+| <code>Paused</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:193](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L193) | Job has been temporarily paused by user or system. |
+| <code>Completed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:196](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L196) | Job has successfully completed all work. |
+| <code>Failed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:199](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L199) | Job encountered a fatal error and stopped. |
+| <code>Cancelled</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:202](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L202) | Job was cancelled by user request. |
+
+## IngestionSla
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionSla</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:312](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L312).
+
+SLA expectations for an ingestion job.
+
+```csharp
+public sealed class IngestionSla
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;freshnessTargetSeconds&quot;)] public int FreshnessTargetSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:318](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L318) | Target data freshness in seconds (how stale data can be before violation). |
+| <code>[JsonPropertyName(&quot;completionDeadline&quot;)] public DateTime? CompletionDeadline { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:324](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L324) | Deadline by which the job must complete (for historical workloads). |
+| <code>[JsonPropertyName(&quot;minimumCompleteness&quot;)] public float MinimumCompleteness { get; set; } = 0.95f;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:330](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L330) | Minimum completeness ratio (0.0 to 1.0) required for the job to be considered successful. |
+
+## IngestionSymbolProgress
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionSymbolProgress</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:336](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L336).
+
+Per-symbol progress within an ingestion job.
+
+```csharp
+public sealed class IngestionSymbolProgress
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:342](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L342) | The symbol being processed. |
+| <code>[JsonPropertyName(&quot;state&quot;)] public IngestionJobState State { get; set; } = IngestionJobState.Queued;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:348](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L348) | Current state of this symbol&#x27;s processing. |
+| <code>[JsonPropertyName(&quot;dataPointsProcessed&quot;)] public long DataPointsProcessed { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:354](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L354) | Number of data points (bars, ticks, etc.) processed. |
+| <code>[JsonPropertyName(&quot;expectedDataPoints&quot;)] public long ExpectedDataPoints { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:360](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L360) | Expected total data points (if known). |
+| <code>[JsonPropertyName(&quot;lastCommittedDate&quot;)] public DateTime? LastCommittedDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:366](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L366) | Last date/offset successfully committed. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:372](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L372) | Error message if this symbol failed. |
+| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:378](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L378) | Number of retries for this specific symbol. |
+| <code>[JsonIgnore] public double ProgressPercent =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:384](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L384) | Progress percentage (0-100). |
+
+## IngestionWorkloadType
+
+Qualified name: <code>Meridian.Contracts.Pipeline.IngestionWorkloadType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:209](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L209).
+
+Type of ingestion workload.
+
+```csharp
+public enum IngestionWorkloadType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Realtime</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:212](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L212) | Real-time streaming data collection. |
+| <code>Historical</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:215](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L215) | Historical backfill from a provider. |
+| <code>GapFill</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:218](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L218) | Gap-fill for missing data periods. |
+| <code>ScheduledBackfill</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:221](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L221) | Scheduled recurring backfill. |
+
+## PipelinePolicyConstants
+
+Qualified name: <code>Meridian.Contracts.Pipeline.PipelinePolicyConstants</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:11](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L11).
+
+Constants for pipeline policy configuration. Shared between the main application and desktop projects to ensure consistent channel settings.
+
+```csharp
+public static class PipelinePolicyConstants
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int FullModeWait = 0;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:17](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L17) | Channel full mode: Wait (backpressure - blocks writers when full). Maps to BoundedChannelFullMode.Wait. |
+| <code>public const int FullModeDropNewest = 1;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:23](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L23) | Channel full mode: DropNewest (drop incoming items when full). Maps to BoundedChannelFullMode.DropNewest. |
+| <code>public const int FullModeDropOldest = 2;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:29](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L29) | Channel full mode: DropOldest (drop oldest items when full). Maps to BoundedChannelFullMode.DropOldest. |
+| <code>public const int FullModeDropWrite = 3;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:35](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L35) | Channel full mode: DropWrite (drop write attempt when full). Maps to BoundedChannelFullMode.DropWrite. |
+| <code>public const int DefaultCapacity = 100_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:41](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L41) | Default preset capacity for general-purpose event pipelines. |
+| <code>public const int DefaultFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:46](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L46) | Default preset full mode (DropOldest). |
+| <code>public const int HighThroughputCapacity = 50_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:53](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L53) | HighThroughput preset capacity for streaming data pipelines. |
+| <code>public const int HighThroughputFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:58](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L58) | HighThroughput preset full mode (DropOldest). |
+| <code>public const int DurableStreamingCapacity = 50_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:65](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L65) | DurableStreaming preset capacity for persistence-critical streaming pipelines. |
+| <code>public const int DurableStreamingFullMode = FullModeWait;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:70](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L70) | DurableStreaming preset full mode (Wait/backpressure - no silent eviction). |
+| <code>public const int MessageBufferCapacity = 50_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:77](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L77) | MessageBuffer preset capacity for internal message buffering. |
+| <code>public const int MessageBufferFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:82](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L82) | MessageBuffer preset full mode (DropOldest). |
+| <code>public const int MaintenanceQueueCapacity = 100;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:89](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L89) | MaintenanceQueue preset capacity for background tasks. |
+| <code>public const int MaintenanceQueueFullMode = FullModeWait;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:94](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L94) | MaintenanceQueue preset full mode (Wait/backpressure). |
+| <code>public const int LoggingCapacity = 1_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:101](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L101) | Logging preset capacity for log channels. |
+| <code>public const int LoggingFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:106](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L106) | Logging preset full mode (DropOldest). |
+| <code>public const int CompletionQueueCapacity = 500;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:113](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L113) | CompletionQueue preset capacity for completion notifications. |
+| <code>public const int CompletionQueueFullMode = FullModeWait;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:118](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L118) | CompletionQueue preset full mode (Wait/backpressure - no drops). |
+
+## PipelineStatistics
+
+Qualified name: <code>Meridian.Contracts.Pipeline.PipelineStatistics</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/Pipeline/PipelineStatistics.cs:8](../../../../src/Meridian.Contracts/Pipeline/PipelineStatistics.cs#L8).
+
+Snapshot of pipeline performance statistics.
+
+```csharp
+public readonly record struct PipelineStatistics(long PublishedCount, long DroppedCount, long ConsumedCount, int CurrentQueueSize, long PeakQueueSize, int QueueCapacity, double QueueUtilization, double AverageProcessingTimeUs, TimeSpan TimeSinceLastFlush, DateTimeOffset Timestamp, long RecoveredCount = 0, long RejectedCount = 0, long DeduplicatedCount = 0, bool IsWalEnabled = false, bool IsValidationEnabled = false, bool IsDeduplicationEnabled = false, BoundedChannelFullMode QueueFullMode = BoundedChannelFullMode.Wait, bool HighWaterMarkWarned = false, int ConsumerCount = 1, int ActiveConsumers = 0, int FaultedConsumers = 0, long ConsumerIterationFailures = 0, DateTimeOffset? LastConsumerFaultAtUtc = null);
+```
+
+## RetryEnvelope
+
+Qualified name: <code>Meridian.Contracts.Pipeline.RetryEnvelope</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:263](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L263).
+
+Retry envelope tracking attempt count, backoff schedule, and policy.
+
+```csharp
+public sealed class RetryEnvelope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;attemptCount&quot;)] public int AttemptCount { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:269](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L269) | Number of retry attempts made so far. |
+| <code>[JsonPropertyName(&quot;maxRetries&quot;)] public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:275](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L275) | Maximum number of retries allowed. |
+| <code>[JsonPropertyName(&quot;nextRetryAt&quot;)] public DateTime? NextRetryAt { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:281](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L281) | Scheduled time for the next retry attempt. |
+| <code>[JsonPropertyName(&quot;policyClass&quot;)] public string PolicyClass { get; set; } = &quot;ExponentialBackoff&quot;;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:287](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L287) | The retry policy class name (e.g., ExponentialBackoff, Linear). |
+| <code>[JsonPropertyName(&quot;baseDelaySeconds&quot;)] public int BaseDelaySeconds { get; set; } = 30;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:293](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L293) | Base delay in seconds for retry backoff calculation. |
+| <code>[JsonIgnore] public bool IsExhausted =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:299](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L299) | Whether retries have been exhausted. |
+| <code>[JsonIgnore] public TimeSpan NextDelay =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:305](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L305) | Calculates the next retry delay using exponential backoff. |
+
+## UflCommandMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Pipeline.UflCommandMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs:6](../../../../src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs#L6).
+
+Metadata propagated across UFL command, event, and outbox workflow boundaries.
+
+```csharp
+public sealed record UflCommandMetadataDto(Guid? CommandId, Guid? CorrelationId, Guid? CausationId, string? SourceAssetClass, string? EventType, string? SourceSystem, bool IsReplay);
+```
+
+## UflOutboxMessage (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.Pipeline.UflOutboxMessage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs:19](../../../../src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs#L19).
+
+Durable outbox envelope for UFL workflow publication.
+
+```csharp
+public sealed record UflOutboxMessage<TPayload>(Guid MessageId, string Topic, UflCommandMetadataDto Metadata, TPayload Payload, DateTimeOffset EnqueuedAtUtc);
+```
+
+## IPlaidClient
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:285](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L285).
+
+Defines Plaid API operations for linking institutions, retrieving account data, and transfers.
+
+```csharp
+public interface IPlaidClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidClientCredentials credentials, PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:287](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L287) |  |
+| <code>Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(PlaidClientCredentials credentials, string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:292](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L292) |  |
+| <code>Task&lt;(string ItemId, string AccessToken, string? RequestId)&gt; ExchangePublicTokenAsync(PlaidClientCredentials credentials, string publicToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:299](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L299) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidBalanceDto&gt;&gt; GetBalancesAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:304](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L304) |  |
+| <code>Task&lt;PlaidTransactionsSyncResult&gt; SyncTransactionsAsync(PlaidClientCredentials credentials, string accessToken, string? cursor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:309](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L309) |  |
+| <code>Task&lt;PlaidInvestmentsSnapshot&gt; GetInvestmentsAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:315](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L315) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidIdentitySnapshot&gt;&gt; GetIdentityAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:320](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L320) |  |
+| <code>Task&lt;(string AuthorizationId, bool Approved, string? DecisionRationale)&gt; AuthorizeTransferAsync(PlaidClientCredentials credentials, string accessToken, PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:325](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L325) |  |
+| <code>Task&lt;(string TransferId, string Status)&gt; CreateTransferAsync(PlaidClientCredentials credentials, string accessToken, PlaidTransferRequest request, string authorizationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:331](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L331) |  |
+
+## IPlaidConnectionRepository
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidConnectionRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:342](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L342).
+
+Retains Plaid items, accounts, sync cursors, status, and webhook processing state.
+
+```csharp
+public interface IPlaidConnectionRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:344](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L344) |  |
+| <code>Task&lt;PlaidItemDto?&gt; GetItemAsync(string itemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:346](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L346) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:348](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L348) |  |
+| <code>Task UpsertItemAsync(PlaidItemDto item, IReadOnlyList&lt;PlaidAccountDto&gt; accounts, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:350](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L350) |  |
+| <code>Task UpdateTransactionsCursorAsync(string itemId, string? cursor, DateTimeOffset syncedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:352](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L352) |  |
+| <code>Task UpdateItemStatusAsync(string itemId, PlaidItemStatusDto status, string? webhookType, string? webhookCode, string? error, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:354](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L354) |  |
+| <code>Task&lt;bool&gt; TryAppendWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:362](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L362) |  |
+| <code>Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:364](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L364) |  |
+
+## IPlaidIngestionService
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidIngestionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:370](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L370).
+
+Coordinates Plaid connection setup, account ingestion, synchronization, and webhook recording.
+
+```csharp
+public interface IPlaidIngestionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:372](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L372) |  |
+| <code>Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:374](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L374) |  |
+| <code>Task&lt;PlaidPublicTokenExchangeResult&gt; ExchangePublicTokenAsync(PlaidPublicTokenExchangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:380](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L380) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:382](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L382) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:384](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L384) |  |
+| <code>Task&lt;PlaidSyncResult&gt; SyncItemAsync(PlaidSyncRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:386](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L386) |  |
+| <code>Task&lt;PlaidWebhookEventDto&gt; RecordWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:388](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L388) |  |
+
+## IPlaidTransferService
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidTransferService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:394](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L394).
+
+Creates sandbox Plaid transfers from explicit transfer requests.
+
+```csharp
+public interface IPlaidTransferService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PlaidTransferResult&gt; CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:396](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L396) |  |
+
+## PlaidAccountDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:158](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L158).
+
+```csharp
+public sealed record PlaidAccountDto(string PlaidAccountId, string ItemId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId, Guid? MeridianAccountId, Guid? EntityId, string? VerificationStatus);
+```
+
+## PlaidAccountLinkRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountLinkRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:118](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L118).
+
+```csharp
+public sealed record PlaidAccountLinkRequest(string PlaidAccountId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId = null, Guid? MeridianAccountId = null, Guid? EntityId = null);
+```
+
+## PlaidBalanceDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidBalanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:171](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L171).
+
+```csharp
+public sealed record PlaidBalanceDto(string PlaidAccountId, decimal? Available, decimal? Current, string Currency, DateTimeOffset AsOf, bool IsFresh);
+```
+
+## PlaidClientCredentials
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidClientCredentials</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:77](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L77).
+
+```csharp
+public sealed record PlaidClientCredentials(string ClientId, string Secret, PlaidEnvironmentDto Environment);
+```
+
+## PlaidEnvironmentDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidEnvironmentDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:7](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L7).
+
+```csharp
+public enum PlaidEnvironmentDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Sandbox</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:9](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L9) |  |
+| <code>Development</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:10](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L10) |  |
+| <code>Production</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:11](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L11) |  |
+
+## PlaidIdentitySnapshot
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidIdentitySnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:227](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L227).
+
+```csharp
+public sealed record PlaidIdentitySnapshot(string PlaidAccountId, string? OwnerName, string? OwnerEmail, string? OwnerPhone, string VerificationStatus, DateTimeOffset VerifiedAt);
+```
+
+## PlaidInstitutionDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInstitutionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:104](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L104).
+
+```csharp
+public sealed record PlaidInstitutionDto(string InstitutionId, string Name, IReadOnlyList<PlaidProductDto> Products, IReadOnlyList<string> CountryCodes, string? Url, string? PrimaryColor, string? Logo);
+```
+
+## PlaidInstitutionSearchResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInstitutionSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:113](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L113).
+
+```csharp
+public sealed record PlaidInstitutionSearchResult(string Query, IReadOnlyList<PlaidInstitutionDto> Institutions, string? RequestId);
+```
+
+## PlaidInvestmentHoldingDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInvestmentHoldingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:201](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L201).
+
+```csharp
+public sealed record PlaidInvestmentHoldingDto(string PlaidAccountId, string SecurityId, string? Symbol, string? Name, decimal Quantity, decimal? MarketValue, string Currency, DateTimeOffset AsOf);
+```
+
+## PlaidInvestmentsSnapshot
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInvestmentsSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:222](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L222).
+
+```csharp
+public sealed record PlaidInvestmentsSnapshot(IReadOnlyList<PlaidInvestmentHoldingDto> Holdings, IReadOnlyList<PlaidInvestmentTransactionDto> Transactions, string? RequestId);
+```
+
+## PlaidInvestmentTransactionDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidInvestmentTransactionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:211](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L211).
+
+```csharp
+public sealed record PlaidInvestmentTransactionDto(string InvestmentTransactionId, string PlaidAccountId, string? SecurityId, DateOnly Date, string Name, string Type, decimal Quantity, decimal Amount, string Currency);
+```
+
+## PlaidItemDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:143](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L143).
+
+```csharp
+public sealed record PlaidItemDto(string ItemId, string InstitutionId, string InstitutionName, PlaidEnvironmentDto Environment, PlaidItemStatusDto Status, string AccessTokenKey, string? TransactionsCursor, DateTimeOffset LinkedAt, DateTimeOffset? LastSyncedAt, DateTimeOffset? ConsentExpiresAt, string? LastWebhookType, string? LastWebhookCode, string? LastError);
+```
+
+## PlaidItemStatusDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidItemStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:24](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L24).
+
+```csharp
+public enum PlaidItemStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Linked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:26](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L26) |  |
+| <code>RequiresUpdate</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:27](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L27) |  |
+| <code>Revoked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:28](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L28) |  |
+| <code>Error</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:29](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L29) |  |
+
+## PlaidLinkTokenRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidLinkTokenRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:82](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L82).
+
+```csharp
+public sealed record PlaidLinkTokenRequest(string? UserId = null, Guid? MeridianAccountId = null, IReadOnlyList<PlaidProductDto>? Products = null, string? WebhookUrl = null, string? ClientName = null, string? Language = "en", IReadOnlyList<string>? CountryCodes = null, string? InstitutionId = null, string? InstitutionName = null);
+```
+
 ## PlaidLinkTokenResponse
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidLinkTokenResponse</code>. Kind: `record`.
@@ -263,309 +698,4 @@ Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:43](.
 
 ```csharp
 public sealed record PrivateCapitalImportReceipt(Guid CommandId, Guid BatchId, IReadOnlyList<Guid> SnapshotIds, DateTimeOffset AcceptedAt);
-```
-
-## PrivateCapitalRecords
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalRecords</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:46](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L46).
-
-```csharp
-public sealed record PrivateCapitalRecords(IReadOnlyList<PrivateCapitalCommitment> Commitments, IReadOnlyList<PrivateCapitalSnapshot> Snapshots, DateTimeOffset GeneratedAt);
-```
-
-## PrivateCapitalScope
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:4](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L4).
-
-Authenticated storage partition. Never accepted from a browser request.
-
-```csharp
-public sealed record PrivateCapitalScope(string TenantId, string CompanyId);
-```
-
-## PrivateCapitalSnapshot
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:27](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L27).
-
-```csharp
-public sealed record PrivateCapitalSnapshot(Guid SnapshotId, Guid CommitmentId, string AsOfDate, string? NavValuationDate, string? CommitmentAmount, string? CalledAmount, string? UnfundedAmount, string? CumulativeDistributions, string? NavAmount, string SourceReference, PrivateCapitalEvidence Evidence, Guid? SupersedesSnapshotId, DateTimeOffset RecordedAt, string RecordedBy, string Rationale, Guid BatchId);
-```
-
-## PrivateCapitalSnapshotInput
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:21](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L21).
-
-Source observations; exact decimal text and missing values survive the browser boundary.
-
-```csharp
-public sealed record PrivateCapitalSnapshotInput(Guid CommitmentId, string AsOfDate, string? NavValuationDate, string? CommitmentAmount, string? CalledAmount, string? UnfundedAmount, string? CumulativeDistributions, string? NavAmount, string SourceReference, Guid? SupersedesSnapshotId = null);
-```
-
-## PrivateCapitalVehicle
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalVehicle</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:9](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L9).
-
-```csharp
-public sealed record PrivateCapitalVehicle(string Name, string Strategy, int? VintageYear, long Version);
-```
-
-## IReconciliationApiService
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.IReconciliationApiService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:22](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L22).
-
-Defines scope-authorized statement import, reconciliation-run, and casework API operations.
-
-```csharp
-public interface IReconciliationApiService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;StatementImportSummaryDto&gt;&gt; ListImportsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:24](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L24) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementRunSummaryDto&gt;&gt; ListStatementRunsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:28](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L28) |  |
-| <code>Task&lt;StatementRunDto?&gt; CreateStatementRunAsync(StatementRunCreateDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:32](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L32) |  |
-| <code>Task&lt;bool&gt; OwnsStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:37](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L37) |  |
-| <code>Task&lt;ReconciliationFundAccountAuthorization?&gt; GetAuthorizedFundAccountAsync(Guid fundAccountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:47](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L47) | Resolves an exact fund-account owner for a tenant/company-scoped mutation. The default is deliberately unavailable so compatibility implementations cannot authorize a workflow by accident. |
-| <code>Task&lt;StatementReconciliationRunAuthorization?&gt; GetStatementRunAuthorizationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:57](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L57) | Resolves the immutable fund, ledger-book, accounting-period, and as-of authority retained on a statement run. The default is deliberately unavailable. |
-| <code>Task&lt;StatementRunDto?&gt; GetStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:63](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L63) |  |
-| <code>Task&lt;StatementRunValidationDto?&gt; GetStatementRunValidationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:68](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L68) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementRunBreakDto&gt;?&gt; ListStatementRunBreaksAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:73](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L73) |  |
-| <code>Task&lt;StatementRunDto?&gt; ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:78](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L78) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementRunExceptionDto&gt;&gt; ListOpenExceptionsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:84](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L84) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:88](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L88) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:93](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L93) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:97](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L97) |  |
-
-## ReconciliationCaseSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:11](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L11).
-
-```csharp
-public sealed record ReconciliationCaseSummaryDto(string CaseId, string ImportId, string Status, string Reason, decimal Confidence, string Rationale, string CreatedAtUtc, string? Assignee = null, string Priority = "Normal", string? SlaPolicyId = null, string? SlaDueAtUtc = null, string? SlaWarningAtUtc = null, string? SlaBreachedAtUtc = null, string SlaState = "OnTrack", string? AgeBand = null, double BusinessAgeHours = 0, string? RootCauseCode = null, string? ResolutionCode = null, string? ResolutionNote = null, string? SignedOffBy = null, string? SignedOffAtUtc = null, string? ReopenedBy = null, string? ReopenedAtUtc = null, string? ReopenReason = null, long Version = 0);
-```
-
-## ReconciliationFundAccountAuthorization
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:5](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L5).
-
-```csharp
-public sealed record ReconciliationFundAccountAuthorization(Guid FundAccountId, string FundProfileId);
-```
-
-## ReconciliationQueueAccountStatusDto
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:38](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L38).
-
-```csharp
-public sealed record ReconciliationQueueAccountStatusDto(Guid AccountId, string AccountCode, string QueueState, int UnresolvedBreakCount, bool SignOffReady, string NextBestAction, string BlockerReason, IReadOnlyList<string> EvidenceLinks);
-```
-
-## StatementImportSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.StatementImportSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:3](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L3).
-
-```csharp
-public sealed record StatementImportSummaryDto(string ImportId, string Broker, string StatementDate, string ImportedAtUtc, int RawRowCount, int NormalizedRowCount);
-```
-
-## StatementReconciliationRunAuthorization
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:9](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L9).
-
-```csharp
-public sealed record StatementReconciliationRunAuthorization(string RunId, Guid FundAccountId, string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate, DateOnly PeriodStart, DateOnly PeriodEnd);
-```
-
-## StatementRunEvidenceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:48](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L48).
-
-```csharp
-public sealed record StatementRunEvidenceLinkDto(string EvidenceId, string EvidenceRoute, string RunId, string SourceFileHash, string BrokerCustodian, string Account, string StatementPeriodStart, string StatementPeriodEnd, string MappingProfileId, int MappingProfileVersion, string ToleranceProfileId, int ToleranceProfileVersion, string ValidationSummary, string MatchSummary, IReadOnlyList<string> BreakIds, IReadOnlyList<string> CaseIds, string ImportedBy, string ImportedAtUtc, string ReconciledBy, string ReconciledAtUtc);
-```
-
-## GovernedReportingRunDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.GovernedReportingRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:144](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L144).
-
-Immutable governed reporting run projection returned by canonical lifecycle routes.
-
-```csharp
-public sealed record GovernedReportingRunDto(string RunId, string SeriesId, int Revision, string TemplateId, string TemplateVersion, ReportingGovernanceOperationalScopeDto Scope, ReportingGovernanceAccessScopeDto Access, ReportingGovernanceCertifiedSnapshotDto Snapshot, ReportingGovernanceAuthorityDto CreationAuthority, DateTimeOffset CreatedAtUtc, string? RestatementOfRunId, string ExecutionState, string GovernanceState, long Version, ReportingGovernanceReadinessDto? Readiness, ReportingGovernanceApprovalDto? Approval, ReportingGovernanceReleaseDto? Release, IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail, ReportingRunParametersDto? NormalizedParameters = null, IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:166](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L166) |  |
-
-## ReportingGovernanceAccessPrincipalDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessPrincipalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:48](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L48).
-
-```csharp
-public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string PrincipalId);
-```
-
-## ReportingGovernanceAccessScopeDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:39](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L39).
-
-```csharp
-public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string PolicyVersion, string Mode, string? OwnerPrincipalId, bool AllowOwnerAccess, IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals, string PolicyHash);
-```
-
-## ReportingGovernanceActionAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceActionAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:63](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L63).
-
-```csharp
-public sealed record ReportingGovernanceActionAvailabilityDto(string Action, bool IsAllowed, string? BlockedReason, long ExpectedVersion);
-```
-
-## ReportingGovernanceApprovalDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:92](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L92).
-
-```csharp
-public sealed record ReportingGovernanceApprovalDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ApprovedAtUtc, string DecisionNote);
-```
-
-## ReportingGovernanceApprovalRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:13](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L13).
-
-Human approval rationale plus the required optimistic concurrency token.
-
-```csharp
-public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote);
-```
-
-## ReportingGovernanceArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:97](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L97).
-
-```csharp
-public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string ArtifactHash, long ByteLength);
-```
-
-## ReportingGovernanceAuditEntryDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuditEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:124](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L124).
-
-```csharp
-public sealed record ReportingGovernanceAuditEntryDto(string EventId, string AggregateKind, string AggregateId, long AggregateVersion, DateTimeOffset OccurredAtUtc, string Action, ReportingGovernanceAuthorityDto Authority, string PermissionUsed, string? FromExecutionState, string? ToExecutionState, string? FromGovernanceState, string? ToGovernanceState, string? FromRestatementState, string? ToRestatementState, string? Note, string? PreviousHash, string Hash);
-```
-
-## ReportingGovernanceAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:69](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L69).
-
-```csharp
-public sealed record ReportingGovernanceAuthorityDto(string ActorId, string TenantId, string OrganizationId, string? CompanyId, IReadOnlyList<string> Permissions, string Origin, string CorrelationId, IReadOnlyList<string> PrincipalIds);
-```
-
-## ReportingGovernanceCertifiedSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceCertifiedSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:52](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L52).
-
-```csharp
-public sealed record ReportingGovernanceCertifiedSnapshotDto(string SnapshotId, string SnapshotHash, string ReconciliationCheckpointId, DateTimeOffset CapturedAtUtc, string? SourceCheckpointId = null, string? SourceCheckpointHash = null, string? ReconciliationCheckpointHash = null, string? ParametersCanonicalJson = null, string? ParametersHash = null);
-```
-
-## ReportingGovernanceChangedLineDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceChangedLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:170](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L170).
-
-```csharp
-public sealed record ReportingGovernanceChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<string> EvidenceIds);
-```
-
-## ReportingGovernanceOperationalScopeDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceOperationalScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:31](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L31).
-
-```csharp
-public sealed record ReportingGovernanceOperationalScopeDto(string TenantId, string OrganizationId, string? CompanyId, string? FundId, string BookId, string PeriodId);
-```
-
-## ReportingGovernanceReadinessCheckDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReadinessCheckDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:79](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L79).
-
-```csharp
-public sealed record ReportingGovernanceReadinessCheckDto(string CheckId, bool Passed, IReadOnlyList<string> EvidenceIds, string? FailureReason);
-```
-
-## ReportingGovernanceReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:85](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L85).
-
-```csharp
-public sealed record ReportingGovernanceReadinessDto(string ReceiptId, string ReceiptHash, DateTimeOffset EvaluatedAtUtc, bool IsReady, IReadOnlyList<ReportingGovernanceReadinessCheckDto> Checks);
-```
-
-## ReportingGovernanceReleaseDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReleaseDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:116](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L116).
-
-```csharp
-public sealed record ReportingGovernanceReleaseDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ReleasedAtUtc, string ManifestId, string ManifestHash, IReadOnlyList<ReportingGovernanceArtifactDto> Artifacts, IReadOnlyList<string> EvidenceIds);
 ```

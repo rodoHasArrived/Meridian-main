@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondPerformanceSourceVerifier
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceSourceVerifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:9](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L9).
+
+Cached calculation receipts do not replace current source-byte and accepted-review authority.
+
+```csharp
+public sealed class BondPerformanceSourceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondPerformanceSourceVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:14](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L14) |  |
+| <code>public Task VerifyFxAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;AccountCashFxConversionDto&gt; conversions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:24](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L24) |  |
+
 ## BondPerformanceTransactionSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceTransactionSource</code>. Kind: `class`.
@@ -940,15 +959,3 @@ Declared public members:
 | <code>public static (int Healthy, int Total) CountProviderHealth(IEnumerable&lt;string?&gt; providerStatuses);</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:30](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L30) | Healthy providers out of every listed provider. |
 | <code>public static bool IsOpenBreak(ReconciliationBreakQueueStatus status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:51](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L51) | A break is open until it is resolved, dismissed or signed off. Written as the exclusion so a status added later is counted as work still to do rather than silently dropped. |
 | <code>public static int CountOpenBreaks(IEnumerable&lt;ReconciliationBreakQueueItem&gt; items);</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:57](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L57) | Open breaks in a break-queue read, each item counted once. |
-
-## DailyMarkToMarketIntakeRunResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyMarkToMarketIntakeRunResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:123](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L123).
-
-Valuation evidence and workbench intake outcome for one daily-close run.
-
-```csharp
-public sealed record DailyMarkToMarketIntakeRunResult(DailyMarkToMarketRun Valuation, AutomatedJournalDraftIntakeResult Intake, string? BatchCorrelationId = null);
-```

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PromotionEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.PromotionEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L17).
+
+REST endpoints for the Backtest → Paper → Live promotion workflow. Enables operators to evaluate, approve, or reject strategy promotions through the web dashboard.
+
+```csharp
+public static class PromotionEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapPromotionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L19) |  |
+
 ## ProviderConnectionEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionEndpoints</code>. Kind: `class`.
@@ -788,15 +806,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L23) |  |
 | <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:66](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L66) |  |
 | <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L71) |  |
-
-## StrategyStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:519](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L519).
-
-Snapshot of a strategy&#x27;s current lifecycle state.
-
-```csharp
-public sealed record StrategyStatusDto(string StrategyId, string Status);
-```

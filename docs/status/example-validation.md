@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12455 |
-| Valid | 11973 |
+| Total code blocks | 12501 |
+| Valid | 12019 |
 | Invalid | 0 |
 | Skipped | 482 |
 
@@ -19,7 +19,7 @@
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 109 | 0 | 0 | 109 |
 | `bash` | 265 | 265 | 0 | 0 |
-| `csharp` | 11603 | 11603 | 0 | 0 |
+| `csharp` | 11649 | 11649 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -167,7 +167,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.application/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-003.md` | 50 |
-| `docs/reference/source-api/meridian.application/page-004.md` | 58 |
+| `docs/reference/source-api/meridian.application/page-004.md` | 59 |
 | `docs/reference/source-api/meridian.application/page-005.md` | 51 |
 | `docs/reference/source-api/meridian.application/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-007.md` | 51 |
@@ -175,7 +175,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.application/page-009.md` | 68 |
 | `docs/reference/source-api/meridian.application/page-010.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-011.md` | 50 |
-| `docs/reference/source-api/meridian.application/page-012.md` | 23 |
+| `docs/reference/source-api/meridian.application/page-012.md` | 24 |
 | `docs/reference/source-api/meridian.audit/page-001.md` | 21 |
 | `docs/reference/source-api/meridian.backtesting.sdk/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.backtesting.sdk/page-002.md` | 50 |
@@ -227,17 +227,17 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-044.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-045.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-046.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-047.md` | 53 |
-| `docs/reference/source-api/meridian.contracts/page-048.md` | 54 |
-| `docs/reference/source-api/meridian.contracts/page-049.md` | 53 |
-| `docs/reference/source-api/meridian.contracts/page-050.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-047.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-048.md` | 57 |
+| `docs/reference/source-api/meridian.contracts/page-049.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-050.md` | 53 |
 | `docs/reference/source-api/meridian.contracts/page-051.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-052.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-053.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-054.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-055.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-056.md` | 52 |
-| `docs/reference/source-api/meridian.contracts/page-057.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-056.md` | 51 |
+| `docs/reference/source-api/meridian.contracts/page-057.md` | 51 |
 | `docs/reference/source-api/meridian.contracts/page-058.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-059.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-060.md` | 50 |
@@ -255,7 +255,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-072.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-073.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-074.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-075.md` | 6 |
+| `docs/reference/source-api/meridian.contracts/page-075.md` | 34 |
 | `docs/reference/source-api/meridian.core/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |
@@ -286,7 +286,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.financialoperations/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-007.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-008.md` | 51 |
-| `docs/reference/source-api/meridian.financialoperations/page-009.md` | 20 |
+| `docs/reference/source-api/meridian.financialoperations/page-009.md` | 21 |
 | `docs/reference/source-api/meridian.fsharp/page-001.md` | 2 |
 | `docs/reference/source-api/meridian.ibapi.smokestub/page-001.md` | 21 |
 | `docs/reference/source-api/meridian.identity/page-001.md` | 50 |
@@ -355,12 +355,12 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.services/page-008.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-009.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-010.md` | 50 |
-| `docs/reference/source-api/meridian.ui.services/page-011.md` | 50 |
-| `docs/reference/source-api/meridian.ui.services/page-012.md` | 50 |
+| `docs/reference/source-api/meridian.ui.services/page-011.md` | 56 |
+| `docs/reference/source-api/meridian.ui.services/page-012.md` | 52 |
 | `docs/reference/source-api/meridian.ui.services/page-013.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-014.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-015.md` | 50 |
-| `docs/reference/source-api/meridian.ui.services/page-016.md` | 12 |
+| `docs/reference/source-api/meridian.ui.services/page-016.md` | 15 |
 | `docs/reference/source-api/meridian.ui.shared/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-003.md` | 55 |
@@ -377,8 +377,8 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.shared/page-014.md` | 55 |
 | `docs/reference/source-api/meridian.ui.shared/page-015.md` | 52 |
 | `docs/reference/source-api/meridian.ui.shared/page-016.md` | 60 |
-| `docs/reference/source-api/meridian.ui.shared/page-017.md` | 67 |
-| `docs/reference/source-api/meridian.ui.shared/page-018.md` | 35 |
+| `docs/reference/source-api/meridian.ui.shared/page-017.md` | 65 |
+| `docs/reference/source-api/meridian.ui.shared/page-018.md` | 39 |
 | `docs/reference/source-api/meridian.workflow/page-001.md` | 11 |
 | `docs/reference/source-api/meridian.wpf/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-002.md` | 50 |
@@ -390,17 +390,17 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.wpf/page-008.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-009.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-010.md` | 52 |
-| `docs/reference/source-api/meridian.wpf/page-011.md` | 70 |
+| `docs/reference/source-api/meridian.wpf/page-011.md` | 71 |
 | `docs/reference/source-api/meridian.wpf/page-012.md` | 51 |
 | `docs/reference/source-api/meridian.wpf/page-013.md` | 57 |
 | `docs/reference/source-api/meridian.wpf/page-014.md` | 51 |
 | `docs/reference/source-api/meridian.wpf/page-015.md` | 62 |
-| `docs/reference/source-api/meridian.wpf/page-016.md` | 61 |
-| `docs/reference/source-api/meridian.wpf/page-017.md` | 76 |
-| `docs/reference/source-api/meridian.wpf/page-018.md` | 77 |
-| `docs/reference/source-api/meridian.wpf/page-019.md` | 57 |
+| `docs/reference/source-api/meridian.wpf/page-016.md` | 60 |
+| `docs/reference/source-api/meridian.wpf/page-017.md` | 77 |
+| `docs/reference/source-api/meridian.wpf/page-018.md` | 76 |
+| `docs/reference/source-api/meridian.wpf/page-019.md` | 58 |
 | `docs/reference/source-api/meridian.wpf/page-020.md` | 50 |
-| `docs/reference/source-api/meridian.wpf/page-021.md` | 46 |
+| `docs/reference/source-api/meridian.wpf/page-021.md` | 47 |
 | `docs/reference/source-api/meridian/page-001.md` | 14 |
 | `docs/roadmap/README.md` | 1 |
 | `docs/roadmap/roadmap-item-template.md` | 1 |

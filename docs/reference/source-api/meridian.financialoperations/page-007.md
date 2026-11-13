@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBrokerCustodianReconciliationFeedAdapter
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IBrokerCustodianReconciliationFeedAdapter</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L63).
+
+Reads broker or custodian source data into canonical reconciliation feed batches.
+
+```csharp
+public interface IBrokerCustodianReconciliationFeedAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AdapterId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L65) |  |
+| <code>string AdapterVersion { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L66) |  |
+| <code>CanonicalReconciliationSourceKind SourceKind { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L67) |  |
+| <code>Task&lt;BrokerCustodianFeedBatch&gt; ReadAsync(BrokerCustodianFeedDescriptor descriptor, Stream source, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L69) |  |
+
 ## IDataIntegrationIngestionService
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IDataIntegrationIngestionService</code>. Kind: `interface`.
@@ -858,23 +879,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestion
 ```csharp
 public sealed record ReconciliationIngestionRequest(DateOnly BusinessDate, DateTimeOffset RunTimestampUtc, string BaseCurrency, int SnapshotVersion);
 ```
-
-## ReconciliationMatchingEngine
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchingEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L31).
-
-The canonical reconciliation matching floor. Matches positions and cash entries captured from multiple sources (prime / custodian / administrator / internal ledger) for one business date with the semantics the W9-INGEST-009 statement/ledger sided matcher inherits via ReconciliationMatchKernel: populations are sided — a candidate pair must span two different source snapshots, so a row never matches its own source and duplicated rows inside one feed surface as breaks; tolerance candidates are scored and assigned best-first with stable tie-breakers instead of first-encountered-wins; unmatched residuals are probed for bounded one-to-many / many-to-one split groups whose shape (anchor, legs, residual) is recorded in MatchEvidence attributes; cash timing consults the IAccountingCalendar: the exact stage requires the same accounting period, settlement windows of a day or longer also admit counterparts within the window measured in business days (a Friday wire and its Monday posting are one business day apart, not three calendar days), and evidence carries business-day distance alongside wall-clock deltas; currencies must agree before amounts are compared, so fail-closed FX normalization (a line kept in its source currency because no rate was available) surfaces as a break instead of a cross-currency mismatch; match-group, break, and evidence identifiers are content-derived from the run&#x27;s idempotency key, snapshot version, rule, and member ids — re-evaluating the same run yields identical artifacts, making re-runs idempotent.
-
-```csharp
-public sealed class ReconciliationMatchingEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationMatchingEngine(IAccountingCalendar? calendar = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L53) |  |
-| <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, MatchingTolerances tolerances) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L56) |  |
-| <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, StatementToleranceProfile toleranceProfile);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L60) |  |

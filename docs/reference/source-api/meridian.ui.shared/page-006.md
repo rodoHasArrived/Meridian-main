@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:519](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L519).
+
+Snapshot of a strategy&#x27;s current lifecycle state.
+
+```csharp
+public sealed record StrategyStatusDto(string StrategyId, string Status);
+```
+
 ## SubscriptionEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SubscriptionEndpoints</code>. Kind: `class`.
@@ -109,11 +121,11 @@ Declared public members:
 | <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L116) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:311](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L311) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:330](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L330) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:336](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L336) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:345](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L345) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:119](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L119) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:314](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L314) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:333](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L333) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:339](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L339) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:348](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L348) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -1250,23 +1262,3 @@ Declared public members:
 | <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L32) |  |
 | <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L34) |  |
 | <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L37) |  |
-
-## ManualEvidenceDocumentExtractor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ManualEvidenceDocumentExtractor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L18).
-
-Builds document extraction results from manual metadata or deterministic fixture inputs.
-
-```csharp
-public sealed class ManualEvidenceDocumentExtractor : IEvidenceDocumentExtractor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ExtractorId = &quot;manual-metadata-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L20) |  |
-| <code>public const string FixtureExtractorId = &quot;deterministic-fixture-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L21) |  |
-| <code>public Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L23) |  |

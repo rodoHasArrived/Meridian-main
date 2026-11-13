@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerSavedViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerSavedViewModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:734](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L734).
+
+```csharp
+public sealed record FinancialRecordExplorerSavedViewModel(string ViewId, string Label, string Description, bool IsSystem, bool IsActive, string SearchText)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FinancialRecordExplorerSavedViewModel FromDto(FinancialRecordExplorerSavedViewDto view) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:742](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L742) |  |
+
 ## FundAccountProviderBindingItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.FundAccountProviderBindingItem</code>. Kind: `record`.
@@ -201,6 +217,12 @@ Source: [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.CloseReadiness.cs:6](..
 ```csharp
 public sealed partial class FundLedgerViewModel
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string IntercompanyAdvisoryText { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.CloseReadiness.cs:8](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.CloseReadiness.cs#L8) |  |
 
 Source: [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L17).
 
@@ -1879,59 +1901,3 @@ Source: [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:735](../../../../src/
 ```csharp
 public sealed record OrderBookPosture(string Title, string Detail, string ScopeText, string ActionText);
 ```
-
-## OrderBookViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.OrderBookViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L24).
-
-ViewModel for the Order Book page. Holds all state, HTTP polling, symbol loading, and connection-status tracking so that the code-behind is thinned to lifecycle wiring only.
-
-```csharp
-public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderBookHeatmapViewModel Heatmap { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L56) | Depth heatmap ViewModel — receives the same snapshot data as the ladder. |
-| <code>public ObservableCollection&lt;OrderBookDisplayLevel&gt; Bids { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L60) |  |
-| <code>public ObservableCollection&lt;OrderBookDisplayLevel&gt; Asks { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:61](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L61) |  |
-| <code>public ObservableCollection&lt;RecentTradeModel&gt; RecentTrades { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L62) |  |
-| <code>public ObservableCollection&lt;string&gt; AvailableSymbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L63) |  |
-| <code>public IReadOnlyList&lt;int&gt; DepthLevelOptions { get; } = [5, 10, 20, 50];</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L64) |  |
-| <code>public string ConnectionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L69) |  |
-| <code>public SolidColorBrush ConnectionIndicatorFill { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L76) |  |
-| <code>public string OrderFlowPostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L85) |  |
-| <code>public string OrderFlowPostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L88) |  |
-| <code>public string OrderFlowPostureScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L91) |  |
-| <code>public string OrderFlowPostureActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L94) |  |
-| <code>public bool NoDataVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L99) |  |
-| <code>public bool NoTradesVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L102) |  |
-| <code>public string BestBidText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L107) |  |
-| <code>public string BestAskText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L110) |  |
-| <code>public string MidPriceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L113) |  |
-| <code>public string SpreadText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L116) |  |
-| <code>public string SpreadPercentText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L119) |  |
-| <code>public string BidVolumeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L122) |  |
-| <code>public string AskVolumeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L125) |  |
-| <code>public string ImbalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L128) |  |
-| <code>public string CumulativeDeltaText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L132) | Net directional pressure from the recent trade tape (buy volume − sell volume). |
-| <code>public bool CumulativeDeltaPositive { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L136) | True when cumulative delta is non-negative, used for green/red color binding. |
-| <code>public GridLength BidBarWidth { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L141) |  |
-| <code>public GridLength AskBarWidth { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L144) |  |
-| <code>public string SelectedSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L154) |  |
-| <code>public int SelectedDepthLevels { get; set; }</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:160](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L160) |  |
-| <code>public OrderBookViewModel(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService);</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L168) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L182) |  |
-| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L184) |  |
-| <code>public Task StartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L187) | Subscribes to events, loads symbols, and starts the refresh timer. |
-| <code>public async Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L189) |  |
-| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:210](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L210) | Stops the timer and unsubscribes from events. |
-| <code>public void CancelActivation();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L212) |  |
-| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L218) |  |
-| <code>public void SetSymbol(string? symbol);</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L231) |  |
-| <code>public void SetDepthLevels(int levels);</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L250) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs:700](../../../../src/Meridian.Wpf/ViewModels/OrderBookViewModel.cs#L700) |  |

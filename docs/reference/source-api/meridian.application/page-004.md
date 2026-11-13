@@ -710,16 +710,16 @@ Source: [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:10](..
 Authorizes history against the scoped graph; storage owns immutable concurrency.
 
 ```csharp
-public sealed class EntityLifecycleService(IFundStructureService structure, IEntityLifecycleStore store, IFundScopeTenantAccessor tenantAccessor) : IEntityLifecycleService
+public sealed class EntityLifecycleService(IFundStructureService structure, IEntityLifecycleStore store, IFundScopeTenantAccessor tenantAccessor, IEntityLifecycleExternalReviewEvidenceAuthority? externalReviewEvidence = null, TimeProvider? timeProvider = null) : IEntityLifecycleService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:28](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L28) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:37](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L37) |  |
-| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:44](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L44) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:31](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L31) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:40](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L40) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:47](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L47) |  |
 
 ## FundStructureOwnershipEdge
 
@@ -1008,7 +1008,7 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L10) |  |
 | <code>public async Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:13](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L13) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L16) |  |
-| <code>public async Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L29) |  |
+| <code>public async Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:32](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L32) |  |
 
 ## IntercompanyAgreementRules
 
@@ -1017,7 +1017,7 @@ Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementRu
 Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L8).
 
 ```csharp
-public static class IntercompanyAgreementRules
+public static partial class IntercompanyAgreementRules
 ```
 
 Declared public members:
@@ -1025,14 +1025,20 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IntercompanyAgreementDraftDto Normalize(IntercompanyAgreementDraftDto draft) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L10) |  |
-| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L29) |  |
-| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:43](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L43) |  |
-| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:75](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L75) |  |
-| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:83](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L83) |  |
-| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:128](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L128) |  |
-| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:130](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L130) |  |
-| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:132](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L132) |  |
-| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:134](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L134) |  |
+| <code>public static void ValidateShape(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:30](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L30) |  |
+| <code>public static void ValidateComplete(IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L46) |  |
+| <code>public static void ValidateImmutableParties(IntercompanyAgreementDraftDto initial, IntercompanyAgreementDraftDto draft);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:80](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L80) |  |
+| <code>public static void ValidateExistence(IntercompanyAgreementDraftDto draft, IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; revisions, LegalEntitySummaryDto first, LegalEntitySummaryDto second);</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:88](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L88) |  |
+| <code>public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L133) |  |
+| <code>public static string CommandHash(IntercompanyAgreementCommandDto command) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:135](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L135) |  |
+| <code>public static bool SameEvidence(IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; first, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:137](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L137) |  |
+| <code>public static bool SameActor(string? first, string? second) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs:139](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs#L139) |  |
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:7](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L7).
+
+```csharp
+public static partial class IntercompanyAgreementRules
+```
 
 ## IntercompanyAgreementService
 
@@ -1099,6 +1105,24 @@ Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs
 ```csharp
 public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
 ```
+
+## IntercompanyStructuredTermsPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyStructuredTermsPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L9).
+
+Pure shared date preview. Declared terms never fetch fixings, calculate charges or authorize journals.
+
+```csharp
+public sealed class IntercompanyStructuredTermsPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyStructuredTermsPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyStructuredTermsPreviewDto Preview(IntercompanyAgreementDraftDto draft, string subjectHash);</code> | [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L12) |  |
 
 ## LifecycleLedgerPostingAuthority
 
@@ -1322,13 +1346,3 @@ Declared public members:
 | <code>public static HttpClient CreateHttpClient(IProviderIntegrationHostResolver? resolver = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:17](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L17) | Creates the production client with connection-time DNS validation and address pinning. |
 | <code>public ProviderIntegrationHttpClientTransport(HttpClient httpClient, ILogger&lt;ProviderIntegrationHttpClientTransport&gt;? logger = null, IProviderIntegrationHostResolver? hostResolver = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:54](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L54) |  |
 | <code>public async Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:64](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L64) |  |
-
-## ProviderIntegrationHttpRequest
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:24](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L24).
-
-```csharp
-public sealed record ProviderIntegrationHttpRequest(ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? BodyTemplate, string ApprovedBaseUri);
-```
