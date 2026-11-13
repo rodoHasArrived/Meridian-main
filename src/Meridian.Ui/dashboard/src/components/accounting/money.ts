@@ -72,11 +72,13 @@ export function parseExactDecimal(value: number | string | null | undefined): Ex
   // Statement negatives: "(1,234.00)", optionally followed by an ISO code ("(1,234.00) EUR").
   const parenthesized = /^\(.*\)(?:\s*[A-Z]{3})?$/i.test(s);
   const trailingMinus = /[-−]$/.test(s);
-  const leadingMinus = /^[(\s$€£¥A-Z]*[-−]/i.test(s) && !trailingMinus;
-  // Signs were read above; the amount is the first number token once group separators are gone.
-  const cleaned = s.replace(/,/g, "");
+  // Commas and any whitespace (space, no-break and narrow no-break space) are group separators.
+  const cleaned = s.replace(/[,\s]/g, "");
   const match = [...cleaned.matchAll(DECIMAL_TOKEN)].find((candidate) => candidate[1] || candidate[2]);
   if (!match) return null;
+  // A minus anywhere before the number is its sign, whatever currency symbol or code precedes it
+  // ("-$5", "$-5", "₹-1,234.56", "CHF -5").
+  const leadingMinus = /[-−]/.test(cleaned.slice(0, match.index)) && !trailingMinus;
   const [, whole = "", fraction = "", exponentText] = match;
   const exponent = exponentText ? Number(exponentText) : 0;
   if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > MAX_EXPONENT) return null;

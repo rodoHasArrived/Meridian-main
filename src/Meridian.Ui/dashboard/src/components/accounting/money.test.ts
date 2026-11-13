@@ -102,6 +102,17 @@ describe("money exact decimals", () => {
     expect(sumAmounts(["100.00 EUR", "50.25 EUR"])).toBe(150.25);
   });
 
+  it("reads whitespace group separators and a minus after any currency symbol", () => {
+    expect(toNumber("1 234.56")).toBe(1234.56);
+    expect(toNumber("1\u00a0234.56")).toBe(1234.56);
+    expect(toNumber("1\u202f234.56")).toBe(1234.56);
+    expect(formatMoney("1 234.56")).toBe("1,234.56");
+    expect(toNumber("₹-1,234.56")).toBe(-1234.56);
+    expect(toNumber("CHF -5")).toBe(-5);
+    expect(toNumber("$-5")).toBe(-5);
+    expect(toNumber("-$5")).toBe(-5);
+  });
+
   it("treats an exponent beyond any money value as invalid instead of throwing", () => {
     expect(Number.isNaN(toNumber("1e9999999999"))).toBe(true);
     expect(formatMoney("1e-9999999999")).toBe("1e-9999999999");
