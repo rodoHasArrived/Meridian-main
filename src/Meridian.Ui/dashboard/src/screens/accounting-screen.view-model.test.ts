@@ -3186,15 +3186,35 @@ describe("accounting-screen view model", () => {
 
 describe("authoritative Security Master ladder selection", () => {
   it("loads economics outside search results without changing the query or filtered rows", async () => {
-    const bond = { ...securityResult, securityId: "ladder-bond", displayName: "Ladder bond", classification: { ...securityResult.classification, assetClass: "Bond" } };
-    const getDetail = vi.fn().mockResolvedValue(bond);
+    const bond: SecurityMasterEntry = {
+      ...securityResult,
+      securityId: "33333333-3333-3333-3333-333333333333",
+      displayName: "European issuer 3.5% 2032",
+      classification: { ...securityResult.classification, assetClass: "Bond", primaryIdentifierKind: "Isin", primaryIdentifierValue: "DE0001234567" },
+      economicDefinition: { ...securityResult.economicDefinition, currency: "EUR" }
+    };
+    const detail = deferred<SecurityMasterEntry>();
+    const getDetail = vi.fn().mockReturnValue(detail.promise);
     const services = createSecurityMasterServices({ getDetail });
     const drillInServices = createSecurityMasterDrillInServices();
     const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
     act(() => result.current.updateQuery("existing filter"));
     await waitFor(() => expect(services.search).toHaveBeenCalledWith("existing filter"));
-    await act(() => result.current.selectSecurity("ladder-bond"));
-    expect(getDetail).toHaveBeenCalledWith("ladder-bond");
+    act(() => { void result.current.selectSecurity(bond.securityId); });
+    expect(getDetail).toHaveBeenCalledWith(bond.securityId);
+    expect(result.current.detailLoading).toBe(true);
+    expect(result.current.referenceDataWorkbenchView.loadingText).not.toBeNull();
+    expect(drillInServices.getReferenceDataCoverage).not.toHaveBeenCalled();
+    await act(async () => detail.resolve(bond));
+    await waitFor(() => expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledTimes(1));
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledWith(expect.objectContaining({
+      securityId: bond.securityId,
+      currency: "EUR",
+      primaryIdentifierKind: "Isin",
+      primaryIdentifierValue: "DE0001234567",
+      issuerName: "European issuer 3.5% 2032",
+      underlyingSymbol: "DE000123"
+    }));
     expect(result.current.selectedEntry).toEqual(bond);
     expect(result.current.results).toEqual([]);
     expect(result.current.query).toBe("existing filter");
@@ -3210,8 +3230,42 @@ describe("authoritative Security Master ladder selection", () => {
     await act(() => result.current.selectSecurity("latest"));
     await act(async () => earlier.resolve({ ...securityResult, securityId: "earlier" }));
     expect(result.current.selectedEntry?.securityId).toBe("latest");
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledTimes(1);
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledWith(expect.objectContaining({ securityId: "latest", primaryIdentifierValue: "AAPL" }));
     await act(() => result.current.selectSecurity("mismatched"));
     expect(result.current.selectedEntry).toBeNull();
     expect(result.current.detailErrorText).toContain("different security");
+    expect(result.current.referenceDataWorkbenchView.errorText).toContain("different security");
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not substitute search-row context when authoritative detail fails", async () => {
+    const services = createSecurityMasterServices({
+      search: vi.fn().mockResolvedValue([securityResult]),
+      getDetail: vi.fn().mockRejectedValue(new Error("Retained terms unavailable."))
+    });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => result.current.updateQuery("AAPL"));
+    await waitFor(() => expect(result.current.results).toEqual([securityResult]));
+    await act(() => result.current.selectSecurity(securityResult.securityId));
+    expect(drillInServices.getReferenceDataCoverage).not.toHaveBeenCalled();
+    expect(result.current.referenceDataWorkbenchView.errorText).toBe("Retained terms unavailable.");
+    expect(result.current.referenceDataWorkbenchView.loadingText).toBeNull();
+  });
+
+  it("retains exact search-row context for callers without a full-detail loader", async () => {
+    const services = createSecurityMasterServices({ search: vi.fn().mockResolvedValue([securityResult]) });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => result.current.updateQuery("AAPL"));
+    await waitFor(() => expect(result.current.results).toEqual([securityResult]));
+    await act(() => result.current.selectSecurity(securityResult.securityId));
+    expect(drillInServices.getReferenceDataCoverage).toHaveBeenCalledWith(expect.objectContaining({
+      securityId: securityResult.securityId,
+      primaryIdentifierValue: "AAPL",
+      issuerName: "Apple Inc.",
+      currency: "USD"
+    }));
   });
 });
