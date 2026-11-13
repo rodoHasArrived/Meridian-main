@@ -1007,6 +1007,31 @@ class keys.
 
 Behaviour is unchanged. No golden, corpus or fixture moved and no test changed.
 
+**`Equity.preferredTerms` now has a declared inner shape.** It had none, so its eleven decode
+reads went through the unbound-read ledger (`UnboundCompatibilityReads`). The schema now declares
+it, matching the decode exactly:
+
+- `preferredTerms` itself: `dividendRate`, `redemptionPrice`, `redemptionDate` and `callableDate`
+  optional; `dividendType` required, one of Fixed, Floating or Cumulative; `participationTerms`
+  optional; `liquidationPreference` required.
+- `participationTerms`: both members optional (an absent participation flag reads as false).
+- `liquidationPreference`: `kind` required, one of Pari, Senior or Subordinated; `multiple`
+  optional (read only for Senior).
+
+The eleven reads are now bound and their ledger entries are retired. The only unbound reads left
+are the three CustomAsset legacy-salvage reads, which are permanent.
+
+This is a deliberate write-contract change. The schema validator now walks `preferredTerms` the
+way it already walked `convertibleTerms`:
+
+- A value outside the two vocabularies, or a missing required member, was already refused by the
+  decode. The validator now refuses it first, with the schema's codes.
+- A mistyped optional member (a `dividendRate` of `"6.25"`) used to be read as absent and silently
+  dropped. It is now refused (`SM_TERM_TYPE_INVALID`), as it already was inside `convertibleTerms`.
+
+A new theory pins both vocabulary refusals and the type refusal. The underlying-role coverage
+check lists `liquidationPreference` as not a link, because "preference" only contains "reference".
+
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;
 `Meridian.FSharp.Tests` — 642 passed; `Meridian.Contracts.UnitTests` — 384 passed;
