@@ -47,13 +47,26 @@ public sealed class SecurityTermsFormatDeclarationTests
     [Theory]
     [InlineData("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":1,"shareClass":"Common"}""")]
     [InlineData("""{"customProfileId":"co-invest-spv","termsFormat":"flat","profileFields":{}}""")]
-    [InlineData("""{"schemaVersion":2,"maturity":{"maturityDate":"2030-01-01"},"coupon":null}""")]
     [InlineData("""[1,2]""")]
     [InlineData("""null""")]
-    public void StampDeclaredFormat_DeclaredNonObjectOrUntaggedEconomic_IsReturnedUnchanged(string json)
+    public void StampDeclaredFormat_DeclaredOrNonObject_IsReturnedUnchanged(string json)
     {
         SecurityTermsEnvelope.StampDeclaredFormat(json).Should().BeSameAs(json);
         SecurityTermsEnvelope.StampDeclaredFormat(Parse(json)).GetRawText().Should().Be(json);
+    }
+
+    [Fact]
+    public void StampDeclaredFormat_NeverInfersEconomic_WhileTheLegacyEventClassifierKeepsTheShapeRule()
+    {
+        // ADR-024 amendment 2026-11-13 step 5: a writer declares only the families a write accepts.
+        // An untagged economic-shaped document reads as flat (and the schema-version guard refuses
+        // codec 2); only decoding of untagged event history still classifies it as economic.
+        const string economicShaped = """{"schemaVersion":2,"maturity":{"maturityDate":"2030-01-01"},"coupon":null}""";
+
+        SecurityTermsEnvelope.StampDeclaredFormat(economicShaped)
+            .Should().Be("""{"schemaVersion":2,"termsFormat":"flat","maturity":{"maturityDate":"2030-01-01"},"coupon":null}""");
+        SecurityTermsLegacyEventClassifier.StampDeclaredFormat(Parse(economicShaped)).GetRawText().Should().Be(economicShaped);
+        SecurityTermsLegacyEventClassifier.GetStampableFormat(Parse(economicShaped)).Should().BeNull();
     }
 
     [Theory]
@@ -74,7 +87,7 @@ public sealed class SecurityTermsFormatDeclarationTests
     }
 
     [Fact]
-    public void StampDeclaredFormat_IsIdempotent_AndMatchesTheShapeRule()
+    public void StampDeclaredFormat_IsIdempotent_AndMatchesTheLegacyClassifierOnWritableFamilies()
     {
         foreach (var json in new[]
                  {
@@ -83,9 +96,11 @@ public sealed class SecurityTermsFormatDeclarationTests
                      """{"customProfileId":"x"}""",
                  })
         {
-            var inferred = SecurityTermsEnvelope.ResolveFormat(Parse(json));
+            var inferred = SecurityTermsLegacyEventClassifier.Classify(Parse(json));
             var once = SecurityTermsEnvelope.StampDeclaredFormat(json);
-            SecurityTermsEnvelope.GetDeclaredFormat(Parse(once)).Should().Be(inferred, "the stamp declares what the shape rule infers");
+            SecurityTermsEnvelope.GetDeclaredFormat(Parse(once)).Should().Be(inferred,
+                "for the families a write accepts, the writer stamp declares what the historical rule inferred, so no column value changes");
+            SecurityTermsLegacyEventClassifier.StampDeclaredFormat(Parse(json)).GetRawText().Should().Be(once);
             SecurityTermsEnvelope.StampDeclaredFormat(once).Should().BeSameAs(once);
         }
     }

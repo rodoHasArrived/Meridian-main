@@ -33,12 +33,14 @@ public static class SecurityTermsFormats
 /// place that decides which payload family a stored document belongs to.
 /// <para>
 /// The asset-specific-terms slot historically held two payload families behind one integer
-/// <c>schemaVersion</c> key, so the reader had to guess the family from the integer plus the
-/// presence of module keys — which is why flat version 2 was permanently reserved. Every payload
-/// now states its family in <see cref="FormatKey"/> and, for flat payloads, the asset-class terms
-/// contract version it was written against in <see cref="AssetClassTermsVersionKey"/>. Readers that
-/// see an explicit format dispatch on it; payloads written before the tag existed fall back to the
-/// historical shape heuristic, which stays correct for every document already stored.
+/// <c>schemaVersion</c> key, so readers had to guess the family from the integer plus the presence
+/// of module keys. Every payload now states its family in <see cref="FormatKey"/> and, for flat
+/// payloads, the asset-class terms contract version it was written against in
+/// <see cref="AssetClassTermsVersionKey"/>. Live readers dispatch on the declared tag alone and refuse
+/// an untagged payload with a precise error (ADR-024 decision 5, amendment 2026-11-13 step 5):
+/// migration 068 declared the family on every current-state row and its check constraint refuses new
+/// untagged rows. Untagged retained terms in append-only event history are classified only by
+/// <see cref="SecurityTermsLegacyEventClassifier"/>, during event and snapshot decoding.
 /// </para>
 /// </summary>
 public static class SecurityTermsEnvelope
@@ -97,41 +99,38 @@ public static class SecurityTermsEnvelope
             : null;
 
     /// <summary>
-    /// Resolves the payload family. An explicit <see cref="FormatKey"/> wins; an untagged payload is
-    /// classified by the historical shape rules: a profile envelope is
-    /// <see cref="SecurityTermsFormats.CustomProfile"/>, a version-2 document carrying economic
-    /// module keys is <see cref="SecurityTermsFormats.Economic"/>, and anything else is
-    /// <see cref="SecurityTermsFormats.Flat"/>.
+    /// The declared payload family. Live code never infers a family from a payload's shape: a payload
+    /// without a string <see cref="FormatKey"/> (or a non-object) is refused with
+    /// <see cref="SecurityTermsFormatUndeclaredException"/>, which names the remedy. A declared family
+    /// this node does not know is returned as declared, so the caller can refuse it with its own
+    /// context. Untagged retained terms from event history are classified by
+    /// <see cref="SecurityTermsLegacyEventClassifier.Classify"/> instead.
     /// </summary>
     public static string ResolveFormat(JsonElement payload)
-    {
-        if (GetDeclaredFormat(payload) is { } declared)
-        {
-            return declared;
-        }
-
-        if (payload.ValueKind == JsonValueKind.Object
-            && payload.TryGetProperty("customProfileId", out var profileId)
-            && profileId.ValueKind == JsonValueKind.String
-            && payload.TryGetProperty("profileFields", out var profileFields)
-            && profileFields.ValueKind == JsonValueKind.Object)
-        {
-            return SecurityTermsFormats.CustomProfile;
-        }
-
-        return SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsShape(payload)
-            ? SecurityTermsFormats.Economic
-            : SecurityTermsFormats.Flat;
-    }
+        => GetDeclaredFormat(payload) ?? throw new SecurityTermsFormatUndeclaredException(payload.ValueKind);
 
     /// <summary>
-    /// The family a writer declares on an untagged asset-specific-terms payload: the family
-    /// <see cref="ResolveFormat"/> already infers for it, when that is
-    /// <see cref="SecurityTermsFormats.Flat"/> or <see cref="SecurityTermsFormats.CustomProfile"/>.
-    /// <see langword="null"/> for a payload that already declares a family, a non-object, or an
-    /// untagged economic-shaped document (the asset-specific-terms slot never declares
-    /// <see cref="SecurityTermsFormats.Economic"/>; such a payload is routed through
-    /// <see cref="SecurityAssetSpecificTermsUpcasterChain"/> instead).
+    /// Whether a terms object is a custom-asset profile envelope as a writer submits it: a string
+    /// <c>customProfileId</c> and a <c>profileFields</c> object. Stricter than
+    /// <see cref="CarriesProfileEnvelope"/>, which accepts either signal on its own.
+    /// </summary>
+    public static bool IsProfileEnvelopeDocument(JsonElement payload)
+        => payload.ValueKind == JsonValueKind.Object
+           && payload.TryGetProperty("customProfileId", out var profileId)
+           && profileId.ValueKind == JsonValueKind.String
+           && payload.TryGetProperty("profileFields", out var profileFields)
+           && profileFields.ValueKind == JsonValueKind.Object;
+
+    /// <summary>
+    /// The family a writer declares on untagged asset-specific terms it is about to persist:
+    /// <see cref="SecurityTermsFormats.CustomProfile"/> for a profile envelope
+    /// (<see cref="IsProfileEnvelopeDocument"/>), otherwise <see cref="SecurityTermsFormats.Flat"/>.
+    /// A write accepts only those two families (<see cref="EnsureWritableAsAssetSpecificTerms"/>), so
+    /// the profile envelope is the write contract's only discriminator; this never decides
+    /// <see cref="SecurityTermsFormats.Economic"/> and never consults <c>schemaVersion</c>. A flat
+    /// declaration on a document stamped with a codec version the flat family does not accept is read
+    /// as flat and refused by the schema-version guard, never routed into the economic bridge.
+    /// <see langword="null"/> for a payload that already declares a family, or a non-object.
     /// </summary>
     public static string? GetStampableFormat(JsonElement payload)
     {
@@ -140,31 +139,21 @@ public static class SecurityTermsEnvelope
             return null;
         }
 
-        var inferred = ResolveFormat(payload);
-        return inferred is SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile ? inferred : null;
+        return IsProfileEnvelopeDocument(payload) ? SecurityTermsFormats.CustomProfile : SecurityTermsFormats.Flat;
     }
 
     /// <summary>
-    /// Declares <see cref="FormatKey"/> on an untagged asset-specific-terms payload as the family
-    /// <see cref="ResolveFormat"/> infers (<see cref="GetStampableFormat"/>), so the stored document
-    /// states what readers and the <c>terms_format</c> column already took it to be (ADR-024
-    /// decision 1, amendment 2026-11-13). Only <see cref="FormatKey"/> is added: an absent
-    /// <see cref="AssetClassTermsVersionKey"/> keeps meaning version 1, and every other member is
-    /// copied byte for byte, except that a non-string <see cref="FormatKey"/> member (which declares
-    /// nothing) is replaced. The key goes immediately after <c>schemaVersion</c>, or last when the
-    /// document carries none. A payload that already declares a family, a non-object and an
-    /// untagged economic-shaped document are returned unchanged, so stamping is idempotent.
+    /// Declares <see cref="FormatKey"/> on untagged asset-specific terms a writer is about to persist, as
+    /// <see cref="GetStampableFormat"/> decides (ADR-024 decision 1, amendment 2026-11-13). Only
+    /// <see cref="FormatKey"/> is added: an absent <see cref="AssetClassTermsVersionKey"/> keeps meaning
+    /// version 1, and every other member is copied byte for byte, except that a non-string
+    /// <see cref="FormatKey"/> member (which declares nothing) is replaced. The key goes immediately
+    /// after <c>schemaVersion</c>, or last when the document carries none. A payload that already
+    /// declares a family and a non-object are returned unchanged, so stamping is idempotent. Replay of
+    /// untagged event history uses <see cref="SecurityTermsLegacyEventClassifier.StampDeclaredFormat"/>.
     /// </summary>
     public static JsonElement StampDeclaredFormat(JsonElement payload)
-    {
-        if (GetStampableFormat(payload) is not { } format)
-        {
-            return payload;
-        }
-
-        using var document = JsonDocument.Parse(BuildStamped(payload, format));
-        return document.RootElement.Clone();
-    }
+        => GetStampableFormat(payload) is { } format ? DeclareFormat(payload, format) : payload;
 
     /// <summary>Text form of <see cref="StampDeclaredFormat(JsonElement)"/>; non-JSON text is returned unchanged.</summary>
     public static string StampDeclaredFormat(string json)
@@ -186,6 +175,16 @@ public static class SecurityTermsEnvelope
                 ? BuildStamped(document.RootElement, format)
                 : json;
         }
+    }
+
+    /// <summary>
+    /// Adds <paramref name="format"/> as <see cref="FormatKey"/> to an object, keeping every other
+    /// member byte for byte (see <see cref="StampDeclaredFormat(JsonElement)"/> for placement).
+    /// </summary>
+    internal static JsonElement DeclareFormat(JsonElement payload, string format)
+    {
+        using var document = JsonDocument.Parse(BuildStamped(payload, format));
+        return document.RootElement.Clone();
     }
 
     private static string BuildStamped(JsonElement payload, string format)
@@ -686,4 +685,28 @@ public static class SecurityTermsEnvelope
 
         return true;
     }
+}
+
+/// <summary>
+/// Raised when live code meets an asset-specific-terms payload that declares no
+/// <see cref="SecurityTermsEnvelope.FormatKey"/>. Live readers and writers dispatch on the declared
+/// family alone (ADR-024 decision 5, amendment 2026-11-13 step 5); an untagged payload is refused
+/// instead of being classified by shape.
+/// </summary>
+public sealed class SecurityTermsFormatUndeclaredException : InvalidOperationException
+{
+    /// <summary>Creates the refusal for a payload of the given JSON kind.</summary>
+    public SecurityTermsFormatUndeclaredException(JsonValueKind payloadKind)
+        : base(
+            payloadKind == JsonValueKind.Object
+                ? $"Asset-specific terms declare no {SecurityTermsEnvelope.FormatKey}; this node no longer infers the payload " +
+                  $"family by shape. Declare {SecurityTermsEnvelope.FormatKey} as one of {string.Join(", ", SecurityTermsFormats.All)} " +
+                  "(writers stamp it through SecurityTermsEnvelope.StampDeclaredFormat or StampFlat), or run migration 068 on stored rows."
+                : $"Asset-specific terms are a JSON {payloadKind}, not an object, so they cannot declare {SecurityTermsEnvelope.FormatKey}.")
+    {
+        PayloadKind = payloadKind;
+    }
+
+    /// <summary>The JSON kind of the refused payload.</summary>
+    public JsonValueKind PayloadKind { get; }
 }

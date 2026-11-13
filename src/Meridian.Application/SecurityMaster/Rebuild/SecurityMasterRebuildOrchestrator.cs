@@ -93,11 +93,12 @@ public sealed class SecurityMasterRebuildOrchestrator
                     // incremental paths persist SecurityMasterAggregateRebuilder.RebuildAsync output:
                     // declare the family on each row first, because migration 068's
                     // ck_securities_terms_format_declared refuses an untagged row (ADR-024 amendment
-                    // 2026-11-13). Only the in-memory rows are tagged; no event is rewritten.
+                    // 2026-11-13). The rows are decoded from event history, so the frozen legacy
+                    // classifier decides the family. Only the in-memory rows are tagged; no event is rewritten.
                     var persistable = records
                         .Select(static record => record with
                         {
-                            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(record.AssetSpecificTerms)
+                            AssetSpecificTerms = SecurityTermsLegacyEventClassifier.StampDeclaredFormat(record.AssetSpecificTerms)
                         })
                         .ToArray();
                     await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, persistable, token).ConfigureAwait(false);

@@ -311,7 +311,7 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
 
         var securityId = Guid.NewGuid();
         const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
-        await store.UpsertProjectionAsync(Projection(securityId, untaggedTerms, version: 1));
+        await fixture.UpsertAsPreStampingWriterAsync(store, Projection(securityId, untaggedTerms, version: 1));
         await fixture.Runner().EnsureMigratedAsync();
 
         // A retained pre-tag event at a newer version than the row, carrying the untagged terms.
@@ -367,7 +367,7 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
         var securityId = Guid.NewGuid();
         const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
         var stored = Projection(securityId, untaggedTerms, version: 1);
-        await store.UpsertProjectionAsync(stored);
+        await fixture.UpsertAsPreStampingWriterAsync(store, stored);
         await fixture.Runner().EnsureMigratedAsync();
         (await fixture.TermsAsync(securityId)).Should().Be("""{"shareClass": "Common", "termsFormat": "flat", "schemaVersion": 1}""");
 
@@ -531,6 +531,22 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
                 }, fileName, connection, transaction, isUpgrade, ct)
         });
 
+        /// <summary>
+        /// Leaves an untagged row exactly as a pre-stamping writer on a through-067 schema did. The
+        /// current store refuses an untagged payload (ADR-024 amendment 2026-11-13 step 5), so the row
+        /// is upserted declared and its <c>termsFormat</c> removed by SQL; every column stays what the
+        /// store derived.
+        /// </summary>
+        public async Task UpsertAsPreStampingWriterAsync(PostgresSecurityMasterStore store, SecurityProjectionRecord untagged)
+        {
+            await store.UpsertProjectionAsync(untagged with
+            {
+                AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(untagged.AssetSpecificTerms)
+            });
+            await ScalarAsync(
+                $"update {Schema}.securities set asset_specific_terms = asset_specific_terms - 'termsFormat' where security_id = '{untagged.SecurityId}'");
+        }
+
         public Task WriteMigrationAsync(string sql) => File.WriteAllTextAsync(Path.Combine(scripts, BackfillMigration), sql);
 
         public Task<string> ReceiptsAsync() => ScalarAsync(
@@ -597,7 +613,7 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
 
 /// <summary>
 /// Script-level guards for migration 068 that need no database: the M1 shape rule is the
-/// shipped 042 rule (the same vocabulary <see cref="SecurityTermsEnvelope.ResolveFormat"/> uses),
+/// shipped 042 rule (the same vocabulary <see cref="SecurityTermsLegacyEventClassifier"/> keeps),
 /// and the apply gate's timeout bound.
 /// </summary>
 [Trait("Category", "Unit")]
@@ -611,12 +627,12 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationScriptTests
                 "src", "Meridian.Storage", "SecurityMaster", "Migrations", "068_security_master_terms_format_backfill.sql"))
             .Where(static line => !line.TrimStart().StartsWith("--", StringComparison.Ordinal)));
 
-        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ShapeRuleModules)
+        foreach (var module in SecurityTermsLegacyEventClassifier.ShapeRuleModules)
         {
             sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by ResolveFormat");
         }
 
-        sql.Should().Contain($"asset_specific_terms->>'schemaVersion' = '{EconomicTermsSchema.Current}'");
+        sql.Should().Contain($"asset_specific_terms->>'schemaVersion' = '{SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms}'");
         sql.Should().Contain($"'{SecurityTermsEnvelope.FormatKey}'");
         sql.Should().Contain($"terms_format in ('{SecurityTermsFormats.Flat}', '{SecurityTermsFormats.CustomProfile}')",
             "the backfill never declares the economic family on a legacy row");

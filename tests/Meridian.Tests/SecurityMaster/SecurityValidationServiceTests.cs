@@ -733,7 +733,7 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
-    public void Scenario_MissingTermsFormat_ProducesWarningNamingTheInferredFamily()
+    public void Scenario_MissingTermsFormat_ProducesABlockingErrorThatInfersNoFamily()
     {
         var record = CreateProjection(
             Guid.NewGuid(),
@@ -751,12 +751,13 @@ public sealed class SecurityValidationServiceTests
 
         var report = service.ValidateRecord(record, [record], Now);
 
-        report.Issues.Should().Contain(issue =>
-            issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING"
-            && issue.Severity == SecurityValidationSeverityDto.Warning
-            && issue.AffectedFields.Contains($"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}")
-            && issue.Message.Contains($"'{SecurityTermsFormats.Flat}'", StringComparison.Ordinal));
-        report.HasBlockingIssues.Should().BeFalse("an untagged payload is a backfill item, not a blocker");
+        // ADR-024 amendment 2026-11-13 step 5: live readers and the store refuse an untagged
+        // payload, so the finding is an error and names no inferred family.
+        var issue = report.Issues.Should().ContainSingle(static issue => issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.AffectedFields.Should().Contain($"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}");
+        issue.Message.Should().Contain("no longer infers").And.NotContain($"'{SecurityTermsFormats.Flat}'");
+        report.HasBlockingIssues.Should().BeTrue("an untagged payload is refused by every live reader");
     }
 
     [Fact]
@@ -1310,6 +1311,7 @@ public sealed class SecurityValidationServiceTests
             assetSpecificTerms: JsonSerializer.SerializeToElement(new
             {
                 schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                termsFormat = SecurityTermsFormats.Flat,
                 tranche = "A-1",
                 collateralType = "CLO",
                 originalFace = 1000000m,
@@ -1492,17 +1494,32 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
-    public void Scenario_UnstampedStructuredCredit_ReadsAsVersionOne_AndKeepsTheFormatWarning()
+    public void Scenario_UntaggedStructuredCredit_IsRefusedForItsFormat_AndRaisesNoTermsVersionNotice()
     {
         var report = Validate(StructuredCreditTerms("StructuredCredit", new Dictionary<string, object?>
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
         }));
 
+        // An untagged payload is not the flat codec by declaration (ADR-024 amendment 2026-11-13
+        // step 5), so it is never read as an older terms version; its missing format blocks instead.
+        report.Issues.Should().NotContain(static item => item.Code == TermsVersionBehind);
+        report.Issues.Should().Contain(static item =>
+            item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING" && item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_DeclaredUnversionedStructuredCredit_ReadsAsVersionOne()
+    {
+        var report = Validate(StructuredCreditTerms("StructuredCredit", new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat
+        }));
+
         report.Issues.Should().ContainSingle(static item => item.Code == TermsVersionBehind)
             .Which.Message.Should().Contain("absent or not an integer");
-        report.Issues.Should().Contain(static item =>
-            item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING" && item.Severity == SecurityValidationSeverityDto.Warning);
+        report.Issues.Should().NotContain(static item => item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING");
     }
 
     [Fact]

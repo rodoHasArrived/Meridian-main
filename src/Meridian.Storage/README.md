@@ -595,10 +595,11 @@ the actor.
 
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
-payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
-`SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
-column from the stored payload on every upsert and refuses an unknown declared format before the
-column's check constraint does.
+payload: a declared `termsFormat` wins and an untagged row was classified by the historical shape
+rule, now kept only in `SecurityTermsLegacyEventClassifier` for decoding untagged event history.
+`PostgresSecurityMasterStore` derives the column from the stored payload's declared `termsFormat` on
+every upsert and refuses an untagged payload or an unknown declared format before the check
+constraints do (ADR-024 amendment 2026-11-13 step 5).
 Migration `068_security_master_terms_format_backfill.sql` (ADR-024 amendment 2026-11-13, proposed,
 requires human schema/storage review) rewrites current state only: it adds `termsFormat`, copied
 from `terms_format`, to every untagged flat and custom-profile `asset_specific_terms` document. No

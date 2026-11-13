@@ -1782,7 +1782,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // terms the record will carry declare their family (ADR-024 decision 1, amendment
         // 2026-11-13). That covers the profile-backed override, which persists the submitted or
         // stored envelope, and the domain codec's verbatim custom-asset document alike; a flat
-        // document the codec already stamped is returned unchanged.
+        // document the codec already stamped is returned unchanged. The writer declares what it
+        // writes — a profile envelope or flat terms — and never infers the economic family.
         return projection with
         {
             AssetClass = assetClassOverride ?? projection.AssetClass,

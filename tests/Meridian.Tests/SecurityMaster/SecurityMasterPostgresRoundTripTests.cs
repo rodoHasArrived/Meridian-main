@@ -269,8 +269,9 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         // Migration 042 promotes the payload family to `terms_format`; a tagged payload stores its
         // declared family. Migration 068 backfilled the tag on every stored row and added
         // ck_securities_terms_format_declared, so a payload that does not declare its family is
-        // refused instead of being classified by shape. The store still never adds the tag itself:
-        // writers own stamping.
+        // refused instead of being classified by shape. Since ADR-024 amendment 2026-11-13 step 5 the
+        // store refuses it first, naming the security, and the constraint stays the backstop for any
+        // write that bypasses the store. The store still never adds the tag itself: writers own stamping.
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var tagged = Guid.NewGuid();
         var untagged = Guid.NewGuid();
@@ -288,9 +289,19 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         })));
 
         (await ReadTermsFormatAsync(tagged)).Should().Be(SecurityTermsFormats.Flat);
-        (await upsertUntagged.Should().ThrowAsync<PostgresException>().WithMessage("*ck_securities_terms_format_declared*"))
-            .Which.SqlState.Should().Be(PostgresErrorCodes.CheckViolation);
+        (await upsertUntagged.Should().ThrowAsync<InvalidOperationException>().WithMessage($"*'{untagged}'*cannot be stored*declare no termsFormat*"))
+            .WithInnerException<SecurityTermsFormatUndeclaredException>();
         (await store.GetProjectionAsync(untagged)).Should().BeNull("the refused write leaves no row behind");
+
+        // A write that bypasses the store meets the constraint.
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var strip = connection.CreateCommand();
+        strip.CommandText = $"update {_fixture.Options.Schema}.securities set asset_specific_terms = asset_specific_terms - 'termsFormat' where security_id = @security_id;";
+        strip.Parameters.AddWithValue("security_id", tagged);
+        var bypass = () => strip.ExecuteNonQueryAsync();
+        (await bypass.Should().ThrowAsync<PostgresException>().WithMessage("*ck_securities_terms_format_declared*"))
+            .Which.SqlState.Should().Be(PostgresErrorCodes.CheckViolation);
     }
 
     [SecurityMasterDatabaseFact]
@@ -1405,7 +1416,8 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     {
         // Since migration 068 the database refuses an untagged row, so the decision-5 count stays at
         // zero: the stamped row is stored, and the untagged active, untagged inactive and
-        // non-string-tag rows are refused rather than counted.
+        // non-string-tag rows are refused rather than counted (by the store since ADR-024 amendment
+        // 2026-11-13 step 5, ahead of the constraint).
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         (await store.CountUntaggedAssetSpecificTermsAsync()).Should().Be(0);
 
@@ -1420,7 +1432,8 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
                  })
         {
             var upsert = () => store.UpsertProjectionAsync(GateCountRow("Bond", terms, status));
-            await upsert.Should().ThrowAsync<PostgresException>().WithMessage("*ck_securities_terms_format_declared*");
+            (await upsert.Should().ThrowAsync<InvalidOperationException>().WithMessage("*cannot be stored*declare no termsFormat*"))
+                .WithInnerException<SecurityTermsFormatUndeclaredException>();
         }
 
         var count = await store.CountUntaggedAssetSpecificTermsAsync();

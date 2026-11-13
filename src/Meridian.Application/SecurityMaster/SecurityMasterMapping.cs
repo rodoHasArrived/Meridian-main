@@ -164,9 +164,10 @@ internal static partial class SecurityMasterMapping
 
     /// <summary>
     /// Decodes a stored event or snapshot payload. Retained asset-specific terms written before the
-    /// format tag declare the family the shape rule infers for them, in memory only (ADR-024
-    /// amendment 2026-11-13): the stored event is never rewritten, and a replay or rebuild hands
-    /// every downstream write a tagged document.
+    /// format tag declare the family the frozen <see cref="SecurityTermsLegacyEventClassifier"/>
+    /// assigns them, in memory only (ADR-024 amendment 2026-11-13): the stored event is never
+    /// rewritten, and a replay or rebuild hands every downstream write a tagged document. This is the
+    /// one live decode that classifies untagged terms; every other reader dispatches on the tag.
     /// </summary>
     public static SecurityEconomicDefinitionRecord FromEconomicPayload(JsonElement payload)
     {
@@ -184,8 +185,8 @@ internal static partial class SecurityMasterMapping
         }
 
         return decoded.LegacyAssetSpecificTerms is { } legacyTerms
-               && SecurityTermsEnvelope.GetStampableFormat(legacyTerms) is not null
-            ? decoded with { LegacyAssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(legacyTerms) }
+               && SecurityTermsLegacyEventClassifier.GetStampableFormat(legacyTerms) is not null
+            ? decoded with { LegacyAssetSpecificTerms = SecurityTermsLegacyEventClassifier.StampDeclaredFormat(legacyTerms) }
             : decoded;
     }
 

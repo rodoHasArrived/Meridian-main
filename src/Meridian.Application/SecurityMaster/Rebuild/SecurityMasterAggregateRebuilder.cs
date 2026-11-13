@@ -134,13 +134,14 @@ public sealed class SecurityMasterAggregateRebuilder
         // amendment 2026-11-13). Replayed events already decode with tagged retained terms
         // (SecurityMasterMapping.FromEconomicPayload); this also covers a profile envelope recovered
         // from the economic document and a projection-only security folded back from its stored,
-        // possibly untagged row. Only the in-memory row is tagged; no event is rewritten.
+        // possibly untagged row. The terms come from event history, so the frozen legacy classifier
+        // decides the family. Only the in-memory row is tagged; no event is rewritten.
         var projection = SecurityEconomicDefinitionAdapter.ToProjection(
             rebuilt,
             projectionWithAliases?.Aliases);
         return projection with
         {
-            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(projection.AssetSpecificTerms)
+            AssetSpecificTerms = SecurityTermsLegacyEventClassifier.StampDeclaredFormat(projection.AssetSpecificTerms)
         };
     }
 }

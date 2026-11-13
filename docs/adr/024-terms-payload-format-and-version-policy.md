@@ -13,9 +13,11 @@
 A security's `AssetSpecificTerms` slot holds three payload families — flat per-asset-class terms,
 the structured economic-terms document, and the custom-asset profile envelope — behind one shared
 `schemaVersion` integer. Readers historically had to guess the family from the integer plus the
-presence of module keys, which is why flat version `2` is permanently reserved
-(`AssetSpecificTermsSchema.ReservedForEconomicTerms`): declaring a genuine flat v2 would route every
-such payload through the economic → flat bridge and silently empty it. The
+presence of module keys, which is why flat version `2` was reserved
+(`AssetSpecificTermsSchema.ReservedForEconomicTerms`, retired from live code by amendment
+2026-11-13 step 6 and kept only as `SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms`):
+declaring a genuine flat v2 would have routed every such payload through the economic → flat
+bridge and silently emptied it. The
 [extensibility review](../architecture/security-master-extensibility-review.md) (D1–D3) records the
 failure modes, including the `securities.schema_version` column having had two definitions.
 
@@ -97,13 +99,16 @@ stored family was not queryable, and nothing recorded the policy that lets the s
      term above the stamp is an undeclared key of that row, and is dropped as on a node that reads no
      further.
 4. **Validation surfaces the backlog.** `SecurityValidationService` reports
-   `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` (warning, names the inferred family) for an untagged
-   payload and `SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN` (error) for a tag this node does not know.
+   `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` for an untagged payload (an error since amendment
+   2026-11-13 step 5, which no longer names an inferred family; previously a warning that did) and `SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN` (error) for a tag this node does not know.
 5. **Retirement is gated on evidence.** The shape rule (`IsEconomicTermsShape`, the untagged branch of
    `ResolveFormat`) and the reserved-2 routing stay until `select count(*) from securities where
    asset_specific_terms->>'termsFormat' is null` is zero on every governed deployment and the
    event-sourced history has a read-only legacy upcaster for replay. That removal is a separate,
    later change; untagged payloads then fail with a precise error instead of being inferred.
+   *Implemented by amendment 2026-11-13 steps 5 and 6 (pending human review):* migration 068 is the
+   evidence (its verify step and constraint guarantee zero untagged current-state rows), and
+   `SecurityTermsLegacyEventClassifier` is the read-only legacy classifier for replay.
 
 ## Implementation Links
 
@@ -115,7 +120,8 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Versioned terms | `src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs` | Container keys, `IsVersionedContainer`, the one decode predicate (`Decoding`), the shared block reader and the declared reads |
 | Round-trip guard | `src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs` | Refuses to re-serialize an ahead-of-write row it cannot reproduce |
 | Versions | `src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs` | Codec versions and the reserved value |
-| Upcaster chain | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Tag-first dispatch; shape rule for untagged payloads |
+| Upcaster chain | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Tag-only dispatch; untagged payloads refused (amendment 2026-11-13 step 5) |
+| Legacy event classifier | `src/Meridian.Contracts/SecurityMaster/SecurityTermsLegacyEventClassifier.cs` | Frozen shape rule and reserved version 2, used only to decode untagged event and snapshot history (amendment 2026-11-13 steps 5 and 6) |
 | Migration | `src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql` | `terms_format` column, backfill, check constraint |
 | Backfill | `src/Meridian.Storage/SecurityMaster/Migrations/068_security_master_terms_format_backfill.sql`, `src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs` | Declares `termsFormat` on current state and adds `ck_securities_terms_format_declared`; the upgrade gate (amendment 2026-11-13) |
 | Snapshot regeneration | `src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs` | Re-serializes retained snapshots through the replay decoder (amendment 2026-11-13) |
@@ -611,8 +617,9 @@ write activation, actual exercise authority, or release acceptance.
 
 > **Status: Proposed — requires human review.** This amendment partly reverses Alternative 1
 > (rewrite stored payloads), which this ADR rejected. Nothing below may be treated as accepted
-> until a human reviewer approves it on the pull request that carries it. Steps 1 to 4 are
-> implemented on the branch; steps 5 and 6 are planned and not yet implemented.
+> until a human reviewer approves it on the pull request that carries it. Steps 1 to 6 are
+> implemented on the branch; running the snapshot regeneration job (step 4) is deferred, as
+> decision 2 below records.
 
 **Context.** Decision 1 said no code path persists an untagged payload, but three writers still
 did: the F# codec's custom-asset branch (emitted verbatim), the profile-backed override in
@@ -658,7 +665,7 @@ draining through writes.
 3. **Event replay keeps a frozen legacy classifier.** Once live code stops inferring the family
    (step 5), untagged history is classified only by a frozen legacy classifier keyed by the event's
    `payload_type` and `payload_version` (migration 039). Reserved flat version 2 survives only
-   inside that classifier (step 6).
+   inside that classifier (step 6). *(Implemented, see decisions 8 and 9.)*
 4. **Every writer stamps, at one choke point (implemented).** `SecurityTermsEnvelope.StampDeclaredFormat`
    adds `termsFormat` to an untagged payload as the family `ResolveFormat` already infers (flat or
    customProfile). It copies every other member byte for byte, puts the key after `schemaVersion`
@@ -697,11 +704,53 @@ draining through writes.
    resolve. Re-running the preview produces a matching run. Reviewers should confirm that this
    one-time break is acceptable.
 
+8. **Live code no longer infers the family (step 5, implemented).**
+   - `SecurityTermsEnvelope.ResolveFormat` and
+     `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` read the declared
+     tag only. An untagged object (and, for `ResolveFormat`, a non-object) throws
+     `SecurityTermsFormatUndeclaredException`, which names the remedy. The tag-only overloads of
+     `SecurityAssetSpecificTermsUpcasterChain.Normalize` (and the registered pipeline) therefore
+     refuse an untagged payload; the family-explicit overload normalizes an untagged document as the
+     family its caller names.
+   - `PostgresSecurityMasterStore.ResolveStorableTermsFormat` refuses an untagged payload with the
+     security's identity, before the database constraint would.
+   - `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` is an error, so an untagged record now blocks the
+     validation gate. TX003 and `UntaggedTermsPayloadCount` stay as a regression monitor.
+   - `SecurityAssetClassTermsUpgrader` treats only a declared flat payload as the flat codec, so an
+     untagged payload is never upgraded (every shipped step is an identity step, so no decoded value
+     changes; only the informational terms-version notice no longer fires for untagged payloads).
+   - The writer stamp `SecurityTermsEnvelope.StampDeclaredFormat` no longer consults the shape rule:
+     a write accepts only flat terms or a profile envelope, so it declares `customProfile` for a
+     profile envelope (a string `customProfileId` and a `profileFields` object, as before) and `flat`
+     otherwise. An untagged economic-shaped document cannot reach it (the write guard refuses codec
+     version 2); were one to, it would read as flat and be refused by the schema-version guard,
+     never bridged.
+   - The shape rule (`IsEconomicTermsShape`, `ShapeRuleModules`) moved into
+     `SecurityTermsLegacyEventClassifier`, which only event and snapshot decoding uses:
+     `SecurityMasterMapping.FromEconomicPayload` and the rebuild paths it feeds
+     (`SecurityMasterAggregateRebuilder.RebuildAsync`, the full warm in
+     `SecurityMasterRebuildOrchestrator`). It is not keyed by `payload_type`/`payload_version` in
+     code: every replayable event family and version, and every retained snapshot, is pre-tag history
+     it may meet, and `SecurityMasterEventPayloads.EnsureReplayable` already refuses the rest. The 042
+     SQL parity test now pins the migration to the classifier's list.
+   This is safe in the same change because migration 068's verify step and its constraint guarantee
+   that no untagged current-state row exists and that none can be written.
+9. **Reserved version 2 is retired from live acceptance (step 6, implemented).**
+   `AssetSpecificTermsSchema.ReservedForEconomicTerms` is removed. A declared flat payload stamped
+   `schemaVersion` 2 reads as flat: it is never routed into the economic bridge, and the acceptance
+   guard judges it like any other flat version (today it is not accepted, so it is refused with the
+   precise "Unsupported schemaVersion" diagnostic). The reservation remains only as
+   `SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms`, frozen with the untagged history it
+   classifies.
+
 **Consequences.** The `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` warning and the TX003 count now
 drain as records are written or rebuilt. The goldens change only for custom-asset profile
 envelopes, which gain `termsFormat`. In the write golden that is the custom-asset write, its
 economic image and its validation report, which loses the format-missing warning. In the
-replay-corpus golden it is the profile envelope's amend cycle, the codec's re-serialization. Shape inference stays in live code until step 5.
+replay-corpus golden it is the profile envelope's amend cycle, the codec's re-serialization. Since
+steps 5 and 6, shape inference survives only in the legacy event classifier; the missing-format
+finding is an error, so a regression that persists an untagged row blocks the validation gate and is
+refused by the store and by migration 068's constraint.
 
 **Verification.** `SecurityTermsFormatDeclarationTests` cover stamping, the digest, the
 family-explicit flatten, a create of every profile-backed family, a deactivation of a stored

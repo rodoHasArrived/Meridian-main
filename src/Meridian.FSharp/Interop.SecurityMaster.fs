@@ -353,9 +353,10 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
 
     // Flat payloads are stamped with their format and asset-class terms version so readers
     // dispatch on what the document declares rather than on the shared schemaVersion integer.
-    // The custom-asset document keeps every member verbatim and only declares the family the
-    // shape rule already infers for it (termsFormat; ADR-024 amendment 2026-11-13). A document
-    // that already declares one is returned unchanged, so the round trip stays lossless.
+    // The custom-asset document keeps every member verbatim and only declares its family
+    // (termsFormat; ADR-024 amendment 2026-11-13): customProfile for a profile envelope, flat
+    // otherwise. A document that already declares one is returned unchanged, so the round trip
+    // stays lossless.
     let baseAssetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.CustomAsset _ -> SecurityTermsEnvelope.StampDeclaredFormat(unstampedAssetSpecificTermsJson)
