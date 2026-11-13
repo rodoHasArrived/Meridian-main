@@ -13,7 +13,7 @@
     "test:release": "python3 -m unittest discover -s tests -p test_release.py",
     "test:browser": "node tests/release-browser.mjs",
     "test:agency": "node tests/agency-regression.mjs",
-    "test:patches": "node tests/local-patches-regression.mjs && node tests/interaction-depth-regression.mjs && node tests/core-integration-regression.mjs && node tests/integration-data-accessibility-regression.mjs && node tests/retained-reference-accessibility-regression.mjs && node tests/browser-audit-regression.mjs && node tests/books-loop-readiness-regression.mjs && npm run test:components",
+    "test:patches": "node tests/local-patches-regression.mjs && node tests/interaction-depth-regression.mjs && node tests/core-integration-regression.mjs && node tests/integration-data-accessibility-regression.mjs && node tests/retained-reference-accessibility-regression.mjs && node tests/browser-audit-regression.mjs && node tests/books-loop-readiness-regression.mjs && npm run test:components && node tests/action-queue-retry-regression.mjs && node tests/calendar-keyboard-regression.mjs && node tests/grid-amount-regression.mjs && node tests/core-table-regression.mjs",
     "test:specimens": "node tests/specimen-matrix.mjs",
     "test:components": "node tests/scenario-selector-regression.mjs && node tests/optimistic-observer-regression.mjs && node tests/modal-label-regression.mjs && node tests/chart-accessibility-regression.mjs",
     "test:library": "node tests/full-library-browser.mjs",
