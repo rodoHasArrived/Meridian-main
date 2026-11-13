@@ -105,6 +105,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
             {
                 return new PaperSessionFillAppendResult(
                     string.Equals(existing.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal)
+                    && existing.HasSameAccountingProvenance(record)
                         ? PaperSessionFillAppendStatus.ExistingSame
                         : PaperSessionFillAppendStatus.Conflict,
                     existing.CanonicalHash);
@@ -469,7 +470,8 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
 
             if (byId.TryGetValue(record.FillId, out var duplicate))
             {
-                if (!string.Equals(duplicate.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal))
+                if (!string.Equals(duplicate.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal)
+                    || !duplicate.HasSameAccountingProvenance(record))
                 {
                     throw new InvalidDataException(
                         $"Paper-session FillId '{record.FillId:D}' has conflicting durable records.");

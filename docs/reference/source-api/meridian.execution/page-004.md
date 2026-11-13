@@ -255,7 +255,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1401](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1401).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1414](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1414).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 
@@ -367,7 +367,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.TradeFillLedgerPostingHostOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:314](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L314).
+Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:315](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L315).
 
 Configuration-owned exact ledger scope for the production execution host. A period or book rollover requires updated values and a host restart so retained fills can never cross scopes.
 
@@ -379,24 +379,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string SectionKey = &quot;Execution:TradeFillLedgerPosting&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:316](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L316) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:318](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L318) |  |
-| <code>public Guid AggregateId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:320](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L320) |  |
-| <code>public Guid PeriodId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:322](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L322) |  |
-| <code>public Guid LedgerBookId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:324](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L324) |  |
-| <code>public string AccountingPolicyId { get; set; } = &quot;execution-trade-fill&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:326](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L326) |  |
-| <code>public string AccountingPolicyVersion { get; set; } = &quot;1&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:328](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L328) |  |
-| <code>public long? ExpectedPeriodVersion { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:330](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L330) |  |
-| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:332](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L332) |  |
-| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:334](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L334) |  |
-| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:336](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L336) |  |
-| <code>public TradeFillLedgerPostingContext BuildContext();</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:338](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L338) |  |
+| <code>public const string SectionKey = &quot;Execution:TradeFillLedgerPosting&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:317](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L317) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:319](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L319) |  |
+| <code>public Guid AggregateId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:321](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L321) |  |
+| <code>public Guid PeriodId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:323](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L323) |  |
+| <code>public Guid LedgerBookId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:325](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L325) |  |
+| <code>public string AccountingPolicyId { get; set; } = &quot;execution-trade-fill&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:327](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L327) |  |
+| <code>public string AccountingPolicyVersion { get; set; } = &quot;1&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:329](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L329) |  |
+| <code>public long? ExpectedPeriodVersion { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:331](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L331) |  |
+| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:333](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L333) |  |
+| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:335](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L335) |  |
+| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:337](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L337) |  |
+| <code>public TradeFillLedgerPostingContext BuildContext();</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:339](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L339) |  |
 
 ## TradeFillLedgerPostingOptions
 
 Qualified name: <code>Meridian.Execution.TradeFillLedgerPostingOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:301](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L301).
+Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:302](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L302).
 
 Runtime controls for the explicit fill-to-ledger consumer.
 
@@ -408,6 +408,6 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:303](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L303) |  |
-| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:305](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L305) |  |
-| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:307](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L307) |  |
+| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:304](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L304) |  |
+| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:306](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L306) |  |
+| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:308](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L308) |  |
