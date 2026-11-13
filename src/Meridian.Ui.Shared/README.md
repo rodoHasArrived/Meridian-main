@@ -3498,6 +3498,13 @@ ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their pr
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
 registered and it never writes; applying a proposal is a governed amendment.
 
+`POST /api/security-master/profile-promotion/{profileId}/report` (AdminMaintenance) builds the
+ADR-022 promotion report for one reclassifying profile: the active `CustomAsset` records pinned to it,
+each Ready or Blocked after a dry run under the target class. A profile that does not reclassify
+returns 400. It is mapped only when the Postgres-backed service is registered and it never writes;
+promotion is an envelope amendment
+([runbook](../../docs/operators/security-master-custom-asset-promotion.md)).
+
 ## Analytical read-model evidence
 
 The browser analytical views consume additive shared contracts; WPF is not modified by this slice.

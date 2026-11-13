@@ -495,6 +495,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
             services.AddSingleton<ISecurityMasterStructuredCreditReclassificationService, SecurityMasterStructuredCreditReclassificationService>();
+            services.AddSingleton<ISecurityMasterProfilePromotionService, SecurityMasterProfilePromotionService>();
 
             // Coverage sweep: symbols active in platform surfaces but missing from the master
             // feed RC001 RefreshControl violations, which the exception-casework loop cases.
@@ -588,6 +589,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
         services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
         services.TryAddSingleton<ISecurityMasterStructuredCreditReclassificationService, NullSecurityMasterStructuredCreditReclassificationService>();
+        services.TryAddSingleton<ISecurityMasterProfilePromotionService, NullSecurityMasterProfilePromotionService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         services.TryAddSingleton<ISecurityMasterSnapshotRegenerationService, NullSecurityMasterSnapshotRegenerationService>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).

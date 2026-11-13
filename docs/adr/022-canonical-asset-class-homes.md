@@ -68,6 +68,8 @@ One canonical home per instrument family, enforced by the asset-class validators
 | Readiness catalog | `src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs` | Pack-owned readiness specifications and evidence aliases route securitized products to StructuredCredit |
 | Profile reclassification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs` | `ProfileAssetClasses` maps `structured-credit-io-po` → StructuredCredit; the application service enforces profile consistency |
 | Legacy reclassification report | `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs`, `src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs` | `proposeStructuredCreditReclassification` derives StructuredCredit terms for securitised `Bond` and `CustomAsset` rows and lists blockers instead of guessing; the service serves the report at `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance). Report only: applying a proposal is a governed amendment |
+| CustomAsset promotion report | `src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs` | For one reclassifying profile, lists every active `CustomAsset` pinned to it as Ready or Blocked after a dry run under the target class (classification check, target decode, kind invariants, profile catalog validation); served at `POST /api/security-master/profile-promotion/{profileId}/report` (AdminMaintenance). Report only; the [promotion runbook](../operators/security-master-custom-asset-promotion.md) applies it one envelope amendment at a time |
+| Promotion guard (R1) | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` (`GetProfileBackedAssetClassOverride`) | A write that carries no envelope (an amendment without a terms patch, or a deactivation) keeps a stored `CustomAsset` class, so a record pinned to a reclassifying profile is promoted only by an explicit envelope amendment |
 | Asset family | `src/Meridian.FSharp/Domain/SecurityClassification.fs` | `AssetFamily.SecuritizedCredit` is the securitized family; `StructuredCash` reverts to naming cash vehicles only, so the two no longer share a label |
 | Accounting classification | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | `AccountingInstrumentClass` declares StructuredCredit's accounting home, so every vendor spelling of a securitized tranche posts under one class |
 | Coverage read model | `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Structured evidence that names no security routes to StructuredCredit, not CustomAsset |
@@ -142,12 +144,18 @@ three routes to coexist.
 ### Runtime Verification
 
 - Covered by `SecurityValidationServiceTests` canonical-home cases.
+- `CustomAssetPromotionRoundTripTests` (and its PostgreSQL variant) cover promotion by envelope
+  amendment, the R1 guard, and that every class declaring a reclassifying profile accepts
+  profile-backed terms and has a registry projection descriptor.
 
 ## References
 
 - [Security Master extensibility review](../architecture/security-master-extensibility-review.md)
   — finding 2 and re-ranked priority 2.
+- [Adding a Security Master asset class](../engineering/security-master-adding-an-asset-class.md)
+  — the checklist a new first-class home (including a reclassifying-profile target) follows.
+- [CustomAsset promotion runbook](../operators/security-master-custom-asset-promotion.md).
 
 ---
 
-*Last Updated: 2026-10-28*
+*Last Updated: 2026-11-13*

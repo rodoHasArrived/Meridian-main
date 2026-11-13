@@ -1792,10 +1792,25 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         };
     }
 
+    /// <summary>
+    /// The stored projection's resolution, used when the write carries no profile envelope (a
+    /// no-patch amendment or a deactivation). A stored <c>CustomAsset</c> keeps its class here even
+    /// when its pinned profile is one a class now declares in <c>ReclassifyingProfileIds</c>: promotion
+    /// is an explicit envelope amendment (ADR-022), never a side effect of an unrelated common-terms
+    /// amend or a deactivation. A record already on a first-class profile-backed class resolves as
+    /// before.
+    /// </summary>
     private static string? GetProfileBackedAssetClassOverride(SecurityProjectionRecord projection)
-        => IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms)
-            ? GetProfileBackedAssetClassOverride(projection.AssetClass, projection.AssetSpecificTerms)
-            : null;
+    {
+        if (!IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms))
+        {
+            return null;
+        }
+
+        return SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass) is { RequiresProfileReference: true } storedCustomAsset
+            ? storedCustomAsset.AssetClass
+            : GetProfileBackedAssetClassOverride(projection.AssetClass, projection.AssetSpecificTerms);
+    }
 
     /// <summary>
     /// The SUBMITTED envelope decides an amendment's resolved class: repinning a record to a
@@ -1878,7 +1893,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
-    private static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
+    internal static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
     {
         var profileId = GetString(assetSpecificTerms, "customProfileId");
 

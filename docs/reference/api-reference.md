@@ -747,6 +747,17 @@ is configured.
 |--------|-------|-------------|
 | GET | `/api/security-master/projections/{assetClass}/{securityId:guid}` | One security's relational terms projection for any class the projection registry writes, read from the registry descriptor as column-to-value data: the parent row, each child table's rows in ordinal order, and each satellite table's row (`SecurityTermsProjectionReadDto`). `assetClass` accepts a catalog name or alias in any casing. Returns 404 when the class has no registry projection (Option, CustomAsset, an unknown name), when the security does not exist, when its current asset class is a different class, or when it has no projection row. |
 
+### Security Master reclassification reports
+
+Report only: both scans build an inventory and write nothing; applying a proposal is a governed
+amendment. Both require `AdminMaintenance` and are mapped only when Security Master storage is
+configured.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/security-master/structured-credit-reclassification/report` | Legacy securitised `Bond` and `CustomAsset` rows with the `StructuredCredit` terms the domain can carry over and the blockers it cannot resolve (`StructuredCreditReclassificationReportDto`). |
+| POST | `/api/security-master/profile-promotion/{profileId}/report` | Active `CustomAsset` records pinned to the reclassifying profile `profileId`, each Ready or Blocked after a dry run under the profile's target class: classification-metadata check, target decode, domain invariants and profile catalog validation (`SecurityMasterProfilePromotionReportDto`). Returns 400 when `profileId` is not a reclassifying profile. See the [promotion runbook](../operators/security-master-custom-asset-promotion.md). |
+
 ### Packaging (`/api/packaging/*`)
 
 | Method | Route | Description |

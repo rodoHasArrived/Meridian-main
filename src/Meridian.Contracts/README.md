@@ -2425,6 +2425,11 @@ it. The dated `factorScheduleEntries` array is the schedule; a pointer with no e
 derived asset-specific terms and the blocker codes the operator must clear. The report never applies
 a proposal.
 
+`ISecurityMasterProfilePromotionService` returns `SecurityMasterProfilePromotionReportDto` for one
+reclassifying profile: the target class, how many pinned records already carry it, and one candidate
+per active pinned `CustomAsset` with a `Ready` or `Blocked` disposition and its blocker codes. It
+throws `ArgumentException` for a profile no class declares in `ReclassifyingProfileIds`.
+
 The former Application resolver/adjuster interfaces and adjustment result retain their fully qualified
 names under `SecurityMaster/Compatibility/` in this assembly. Application forwards those type
 identities so compiled clients continue to load. Their namespaces remain deprecated; new code uses

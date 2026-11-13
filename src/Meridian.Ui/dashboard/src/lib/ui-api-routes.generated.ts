@@ -406,6 +406,7 @@ export const UI_API_ROUTES = {
   SecurityMasterQualityReportRun: "/api/security-master/quality-report/run",
   SecurityMasterQualityReportLatest: "/api/security-master/quality-report/latest",
   SecurityMasterStructuredCreditReclassificationReport: "/api/security-master/structured-credit-reclassification/report",
+  SecurityMasterProfilePromotionReport: "/api/security-master/profile-promotion/{profileId}/report",
   SecurityMasterExceptionsAging: "/api/security-master/exceptions/aging",
   ReferenceDataEdgarFiler: "/api/reference-data/edgar/filers/{cik}",
   ReferenceDataEdgarFacts: "/api/reference-data/edgar/facts/{cik}",

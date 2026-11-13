@@ -487,6 +487,9 @@ public static class UiApiRoutes
     // Structured-credit reclassification report (ADR-022, report first)
     public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
 
+    // CustomAsset profile promotion report (ADR-022, report first; promotion is an envelope amendment)
+    public const string SecurityMasterProfilePromotionReport = "/api/security-master/profile-promotion/{profileId}/report";
+
     // Exception aging / SLA
     public const string SecurityMasterExceptionsAging = "/api/security-master/exceptions/aging";
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
